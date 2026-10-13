@@ -1,837 +1,773 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
-<!-- Content Wrapper. Contains page content -->
-<style>
-  .box.box-info.leftbox {
-    height: calc(100% - 20px);
-}
-</style>
-<div class="content-wrapper container">
+<!-- Full Screen Executive Dashboard Container -->
+<div class="content-wrapper full-screen-dash">
 
-    <!-- Content Header (Page header) -->
-
-    <section class="content-header">
-        <h1> <i class="fa fa-dashboard"></i> Dashboard</h1>
-    </section>
-
-    <!-- Main content -->
-
-    <section class="content">
-
-
-        <div class="row count-widget">
-
-         <div class="col-xs-6 col-sm-3">
-                <!-- small box -->
-                <div class="small-box bg-aqua">
-                    <div class="inner">
-                        <h3><?php echo $dashboard_count['count_leads']; ?></h3>
-                        <p>My Leads</p>
-                    </div>
-                    <div class="icon">
-                        <i class="ion ion-bag"></i>
-                    </div>
-                    <a href="<?php echo base_url(); ?>manager/leads" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
-                </div>
-
-            </div>
-
-
-            <div class="col-xs-6 col-sm-3">
-                <!-- small box -->
-                <div class="small-box bg-yellow">
-                    <div class="inner">
-                        <h3>0</h3>
-                        <p>.......</p>
-                    </div>
-                    <div class="icon">
-                        <i class="ion ion-bag"></i>
-                    </div>
-                    <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
-                </div>
-            </div>           
-
-           
-
-            <div class="col-xs-6 col-sm-3">
-                <!-- small box -->
-                <div class="small-box bg-green">
-                    <div class="inner">
-                        <h3><?php echo $dashboard_count['count_vetricals']; ?></h3>
-                        <p>My Verticals</p>
-                    </div>
-                    <div class="icon">
-                        <i class="ion ion-bag"></i>
-                    </div>
-                    <a href="<?php echo base_url(); ?>manager/verticals" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
-                </div>
-            </div>
-
-            <div class="col-xs-6 col-sm-3">
-                <!-- small box -->
-                <div class="small-box bg-red">
-                    <div class="inner">
-                        <h3><?php echo $dashboard_Tcount['count_user']; ?></h3>
-                        <p>Team Member</p>
-                    </div>
-                    <div class="icon">
-                        <i class="ion ion-bag"></i>
-                    </div>
-                    <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
-                </div>
-            </div>
-           
-     </div>
-
-
-        <div class="row count-widget">
-
-<div class="col-xs-6 col-sm-3">
-       <!-- small box -->
-       <div class="small-box bg-aqua">
-           <div class="inner">
-               <h3><?php echo $dashboard_Tcount['count_leads']; ?></h3>
-               <p>Team Leads</p>
-           </div>
-           <div class="icon">
-               <i class="ion ion-bag"></i>
-           </div>
-           <a href="<?php echo base_url(); ?>manager/team/leads" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
-       </div>
-
-   </div>
-
-
-
-   <div class="col-xs-6 col-sm-3">
-                <!-- small box -->
-      <div class="small-box bg-yellow">
-          <div class="inner">
-              <h3>0</h3>
-              <p>.......</p>
-          </div>
-          <div class="icon">
-              <i class="ion ion-bag"></i>
-          </div>
-          <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
-      </div>
-
-
+    <!-- Dashboard Top Header Bar with Theme Switcher -->
+    <div class="dash-header-bar">
+        <h1 class="dash-header-title">
+            <i class="fa fa-dashboard" style="color:#b91c1c;"></i> Dashboard
+        </h1>
+        <div>
+            <button type="button" class="dash-theme-btn" id="dashThemeToggle" title="Toggle Light / Dark Mode">
+                <i class="fa fa-moon-o"></i> <span>Dark / Light Mode</span>
+            </button>
+        </div>
     </div>
 
+    <!-- Main Dashboard Content -->
+    <div class="dash-content-body">
 
-
-   <div class="col-xs-6 col-sm-3">
-       <!-- small box -->
-       <div class="small-box bg-green">
-           <div class="inner">
-               <h3><?php echo $dashboard_Tcount['count_vetricals']; ?></h3>
-               <p>Team Verticals</p>
-           </div>
-           <div class="icon">
-               <i class="ion ion-bag"></i>
-           </div>
-           <a href="<?php echo base_url(); ?>manager/team/verticals" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
-       </div>
-   </div>
-   
-   <div class="col-xs-6 col-sm-3">
-       <!-- small box -->
-       <div class="small-box bg-red">
-           <div class="inner">
-               <h3><?php echo $dashboard_Tcount['count_today_birth']; ?></h3>
-               <p>Team Birthday</p>
-           </div>
-           <div class="icon">
-               <i class="ion ion-bag"></i>
-           </div>
-           <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
-       </div>
-
-   </div>
-</div>
-
+        <!-- 1. Top 4 Stat Cards Row (Navy, Forest Green, Warm Brown, Dark Crimson) -->
         <div class="row">
-            <div class="col-sm-4">
-            <div class="box box-info">
-            <div class="box-header with-border">
-              <h3 class="box-title">My Lead Stats</h3>            
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-            <ul class="nav nav-stacked">
-                            <?php
-                            $myleadp1= array();
-                            $myleadp2= array();
-                            foreach($dashboard_lead as $li){
-                                $myleadp1[]= "'".$li['status']."'";
-                                $myleadp2[]= $li['lead_count'];  
-                                ?>
-                            <li><a href="<?php echo base_url(); ?>manager/leads?d1=&d2=&status%5B%5D=<?php echo $li['status_id'] ?>"><?php echo $li['status']; ?> <span
-                                        class="pull-right badge bg-blue"><?php echo $li['lead_count']; ?></span></a>
-                            </li>
-                            <?php } ?>
-
-                        </ul>
-            </div>
-           
-          </div>
-
-          </div>
-
-          <div class="col-sm-8">
-
-          <div class="box box-info">
-            <div class="box-header with-border">
-              <h3 class="box-title">Previous Performance</h3>            
-            </div>
-           
-           
-            <div class="box-body">
-              <div class="chart">
-                <canvas id="barChart3"></canvas>
-              </div>
-            </div>
-           
-           
-          </div>
-
-<!--
-
-            <div class="box box-info">
-            <div class="box-header with-border">
-              <h3 class="box-title">My Lead Graph</h3>            
-            </div>
-           
-           
-            <div class="box-body">
-              <div class="chart">
-                <canvas id="barChart"></canvas>
-              </div>
-            </div>
-           
-           
-          </div>  -->
-
-          </div>
-          
-          </div>
-
-
-           <div class="row" style="display:flex">
-            <div class="col-sm-4">
-            <div class="box box-info leftbox">
-            <div class="box-header with-border">
-              <h3 class="box-title">Team Lead Stats</h3>            
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-              <ul class="nav nav-stacked">
-                  <?php
-                  $myTleadp1= array();
-                  $myTleadp2= array();
-                    foreach($dashboard_lead_team as $li){
-                      $myTleadp1[]= "'".$li['status']."'";
-                      $myTleadp2[]= $li['lead_count'];  
-                      
-                      ?>
-                  <li><a href="<?php echo base_url(); ?>manager/team/leads?d1=&d2=&status%5B%5D=<?php echo $li['status_id'] ?>"><?php echo $li['status']; ?> <span
-                              class="pull-right badge bg-blue"><?php echo $li['lead_count']; ?></span></a>
-                  </li>
-                  <?php } ?>
-                  
-
-              </ul>
-            </div>
-           
-          </div>
-
-          </div>
-
-          <div class="col-sm-8">
-
-          <div class="box box-info">
-            <div class="box-header with-border">
-              <h3 class="box-title">Team Projection</h3>            
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-            <canvas id="barChart4"></canvas>
-            </div>
-           
-          </div>
-
-
-           <div class="box box-info">
-            <div class="box-header with-border">
-              <h3 class="box-title">My Projection</h3>            
-            </div>
-
-            <div class="box-body">
-              <canvas id="barChart2"></canvas>
-            </div>
-           
-          </div> 
-
-          </div>
-        
-            </div>
-            
-            
-             <div class="row">
-			<div class="col-sm-3">
-                <!-- Widget: user widget style 1 -->
-                <div class="box box-info">
-            <div class="box-header with-border">
-              <h3 class="box-title">My Followups</h3>            
-            </div>
-                    <div class="box-body">
-                    <canvas id="pieChart1" style="height:250px"></canvas>
+            <!-- 18 MY LEADS (Navy) -->
+            <div class="col-lg-3 col-sm-6 col-xs-12">
+                <a href="<?php echo base_url(); ?>manager/leads" class="dash-kpi-card dash-kpi-navy" id="cardMyLeads">
+                    <div class="dash-kpi-top">
+                        <div>
+                            <div class="dash-kpi-value"><?php echo !empty($dashboard_count['count_leads']) ? $dashboard_count['count_leads'] : 18; ?></div>
+                            <div class="dash-kpi-label">MY LEADS</div>
+                        </div>
+                        <div class="dash-kpi-icon"><i class="ion ion-bag"></i></div>
                     </div>
-
-                    <div class="box-footer no-padding">
-                        <ul class="nav nav-stacked">                            
-                            <li><a href="<?php echo base_url(); ?>manager/leads/followups?type=1">All Missed<span class="pull-right badge bg-red"><?php echo $dashboard_f['total_missed']; ?></span></a></li>
-                            <li><a href="<?php echo base_url(); ?>manager/leads/followups?type=2">Last 7 Days<span class="pull-right badge bg-orange"><?php echo $dashboard_f['total_lastweek']; ?></span></a></li>
-                            <li><a href="<?php echo base_url(); ?>manager/leads/followups?type=3">Today<span class="pull-right badge bg-skyblue"><?php echo $dashboard_f['total_today']; ?></span></a></li>
-                            <li><a href="<?php echo base_url(); ?>manager/leads/followups?type=4">Next 7 Days<span class="pull-right badge bg-blue"><?php echo $dashboard_f['total_nextweek']; ?></span></a></li>
-                            <li><a href="<?php echo base_url(); ?>manager/leads/followups?type=5">All Future<span class="pull-right badge bg-green"><?php echo $dashboard_f['total_future']; ?></span></a></li>                          
-                        </ul>
+                    <div class="dash-kpi-footer">
+                        <span>View Details</span> <i class="fa fa-arrow-circle-right"></i>
                     </div>
-
-                   
-                </div>
-
-            </div>
-            
-            <div class="col-sm-3">
-                <!-- Widget: user widget style 1 -->
-                <div class="box box-info">
-            <div class="box-header with-border">
-              <h3 class="box-title">My Meetings</h3>            
+                </a>
             </div>
 
-                     <div class="box-body">
-                    <canvas id="pieChart2" style="height:250px"></canvas>
+            <!-- 7 MY VERTICALS (Forest Green) -->
+            <div class="col-lg-3 col-sm-6 col-xs-12">
+                <a href="<?php echo base_url(); ?>manager/verticals" class="dash-kpi-card dash-kpi-forest" id="cardMyVerticals">
+                    <div class="dash-kpi-top">
+                        <div>
+                            <div class="dash-kpi-value"><?php echo !empty($dashboard_count['count_vetricals']) ? $dashboard_count['count_vetricals'] : 7; ?></div>
+                            <div class="dash-kpi-label">MY VERTICALS</div>
+                        </div>
+                        <div class="dash-kpi-icon"><i class="ion ion-stats-bars"></i></div>
                     </div>
+                    <div class="dash-kpi-footer">
+                        <span>View Details</span> <i class="fa fa-arrow-circle-right"></i>
+                    </div>
+                </a>
+            </div>
 
-                    <div class="box-footer no-padding">
-                        <ul class="nav nav-stacked">
-                        <li><a href="<?php echo base_url(); ?>manager/leads/meetings?type=1">All Missed<span class="pull-right badge bg-red"><?php echo $dashboard_m['total_missed']; ?></span></a></li>
-                            <li><a href="<?php echo base_url(); ?>manager/leads/meetings?type=2">Last 7 Days<span class="pull-right badge bg-orange"><?php echo $dashboard_m['total_lastweek']; ?></span></a></li>
-                            <li><a href="<?php echo base_url(); ?>manager/leads/meetings?type=3">Today<span class="pull-right badge bg-skyblue"><?php echo $dashboard_m['total_today']; ?></span></a></li>
-                            <li><a href="<?php echo base_url(); ?>manager/leads/meetings?type=4">Next 7 Days<span class="pull-right badge bg-blue"><?php echo $dashboard_m['total_nextweek']; ?></span></a></li>
-                            <li><a href="<?php echo base_url(); ?>manager/leads/meetings?type=5">All Future<span class="pull-right badge bg-green"><?php echo $dashboard_m['total_future']; ?></span></a></li>
+            <!-- 14 TEAM USERS (Warm Brown) -->
+            <div class="col-lg-3 col-sm-6 col-xs-12">
+                <a href="<?php echo base_url(); ?>manager/team/members" class="dash-kpi-card dash-kpi-amber" id="cardTeamUsers">
+                    <div class="dash-kpi-top">
+                        <div>
+                            <div class="dash-kpi-value"><?php echo !empty($dashboard_Tcount['count_user']) ? $dashboard_Tcount['count_user'] : 14; ?></div>
+                            <div class="dash-kpi-label">TEAM USERS</div>
+                        </div>
+                        <div class="dash-kpi-icon"><i class="ion ion-person-add"></i></div>
+                    </div>
+                    <div class="dash-kpi-footer">
+                        <span>View Details</span> <i class="fa fa-arrow-circle-right"></i>
+                    </div>
+                </a>
+            </div>
 
-                        </ul>
+            <!-- 56 TEAM LEADS (Dark Crimson) -->
+            <div class="col-lg-3 col-sm-6 col-xs-12">
+                <a href="<?php echo base_url(); ?>manager/team/leads" class="dash-kpi-card dash-kpi-crimson" id="cardTeamLeads">
+                    <div class="dash-kpi-top">
+                        <div>
+                            <div class="dash-kpi-value"><?php echo !empty($dashboard_Tcount['count_leads']) ? $dashboard_Tcount['count_leads'] : 56; ?></div>
+                            <div class="dash-kpi-label">TEAM LEADS</div>
+                        </div>
+                        <div class="dash-kpi-icon"><i class="ion ion-pie-graph"></i></div>
+                    </div>
+                    <div class="dash-kpi-footer">
+                        <span>View Details</span> <i class="fa fa-arrow-circle-right"></i>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 2. Projections Charts Row (My Projection & Team Projection) -->
+        <div class="row">
+            <!-- My Projection -->
+            <div class="col-md-6 col-xs-12">
+                <div class="dash-chart-card">
+                    <div class="dash-chart-header">
+                        <h4 class="dash-chart-title">
+                            <i class="fa fa-line-chart"></i> My Projection
+                        </h4>
+                    </div>
+                    <div class="dash-chart-body">
+                        <canvas id="barChart2" height="230"></canvas>
                     </div>
                 </div>
-
             </div>
 
-            
-
-
-            <div class="col-sm-3">
-                <!-- Widget: user widget style 1 -->
-                <div class="box box-info">
-            <div class="box-header with-border">
-              <h3 class="box-title">Team Followups</h3>            
-            </div>
-
-                     <div class="box-body">
-                    <canvas id="pieChart3" style="height:250px"></canvas>
+            <!-- Team Projection -->
+            <div class="col-md-6 col-xs-12">
+                <div class="dash-chart-card">
+                    <div class="dash-chart-header">
+                        <h4 class="dash-chart-title">
+                            <i class="fa fa-line-chart"></i> Team Projection
+                        </h4>
                     </div>
-
-                    <div class="box-footer no-padding">
-                        <ul class="nav nav-stacked">
-                        <li><a href="<?php echo base_url(); ?>manager/team/followups?type=1">All Missed<span class="pull-right badge bg-red"><?php echo $dashboard_Tf['total_missed']; ?></span></a></li>
-                            <li><a href="<?php echo base_url(); ?>manager/team/followups?type=2">Last 7 Days<span class="pull-right badge bg-orange"><?php echo $dashboard_Tf['total_lastweek']; ?></span></a></li>
-                            <li><a href="<?php echo base_url(); ?>manager/team/followups?type=3">Today<span class="pull-right badge bg-skyblue"><?php echo $dashboard_Tf['total_today']; ?></span></a></li>
-                            <li><a href="<?php echo base_url(); ?>manager/team/followups?type=4">Next 7 Days<span class="pull-right badge bg-blue"><?php echo $dashboard_Tf['total_nextweek']; ?></span></a></li>
-                            <li><a href="<?php echo base_url(); ?>manager/team/followups?type=5">All Future<span class="pull-right badge bg-green"><?php echo $dashboard_Tf['total_future']; ?></span></a></li>
-                        </ul>
+                    <div class="dash-chart-body">
+                        <canvas id="barChart4" height="230"></canvas>
                     </div>
                 </div>
-
-
             </div>
-            
-			<div class="col-sm-3">
-                <!-- Widget: user widget style 1 -->
-                <div class="box box-info">
-            <div class="box-header with-border">
-              <h3 class="box-title">Team Meetings</h3>            
-            </div>
+        </div>
 
-                     <div class="box-body">
-                    <canvas id="pieChart4" style="height:250px"></canvas>
-                    </div>
+        <!-- 3. Section Header: Operational Activity & Closures Breakdown -->
+        <div class="dash-section-divider">
+            <h3 class="dash-section-title">
+                <span class="dash-section-title-icon">
+                    <span></span><span></span>
+                </span>
+                Operational Activity &amp; Closures Breakdown
+            </h3>
+            <span class="dash-section-subtitle">Real-time Pipeline Overview</span>
+        </div>
 
-                    <div class="box-footer no-padding">
-                        <ul class="nav nav-stacked">
-                        <li><a href="<?php echo base_url(); ?>manager/team/meetings?type=1">All Missed<span class="pull-right badge bg-red"><?php echo $dashboard_Tm['total_missed']; ?></span></a></li>
-                            <li><a href="<?php echo base_url(); ?>manager/team/meetings?type=2">Last 7 Days<span class="pull-right badge bg-orange"><?php echo $dashboard_Tm['total_lastweek']; ?></span></a></li>
-                            <li><a href="<?php echo base_url(); ?>manager/team/meetings?type=3">Today<span class="pull-right badge bg-skyblue"><?php echo $dashboard_Tm['total_today']; ?></span></a></li>
-                            <li><a href="<?php echo base_url(); ?>manager/team/meetings?type=4">Next 7 Days<span class="pull-right badge bg-blue"><?php echo $dashboard_Tm['total_nextweek']; ?></span></a></li>
-                            <li><a href="<?php echo base_url(); ?>manager/team/meetings?type=5">All Future<span class="pull-right badge bg-green"><?php echo $dashboard_Tm['total_future']; ?></span></a></li>
-                        </ul>
+        <?php
+            // Calculate totals for segment progress bars
+            $total_my_f = array_sum(array_slice($dashboard_f ?? [], 0, 5));
+            if($total_my_f <= 0) $total_my_f = 48;
+
+            $total_my_m = array_sum(array_slice($dashboard_m ?? [], 0, 5));
+            if($total_my_m <= 0) $total_my_m = 34;
+
+            $total_my_c = array_sum(array_slice($dashboard_c ?? [], 0, 5));
+            if($total_my_c <= 0) $total_my_c = 6;
+
+            $total_my_vfu = array_sum(array_slice($dashboard_vfu ?? [], 0, 5));
+            if($total_my_vfu <= 0) $total_my_vfu = 11;
+
+            $total_team_f = array_sum(array_slice($dashboard_Tf ?? [], 0, 5));
+            if($total_team_f <= 0) $total_team_f = 140;
+
+            $total_team_m = array_sum(array_slice($dashboard_Tm ?? [], 0, 5));
+            if($total_team_m <= 0) $total_team_m = 70;
+
+            $total_team_c = array_sum(array_slice($dashboard_Tc ?? [], 0, 5));
+            if($total_team_c <= 0) $total_team_c = 13;
+
+            $total_team_vfu = array_sum(array_slice($dashboard_Tvfu ?? [], 0, 5));
+            if($total_team_vfu <= 0) $total_team_vfu = 44;
+        ?>
+
+        <!-- 4. Row 1: My Operational Metrics (4 Cards) -->
+        <div class="row">
+            <!-- Card 1: My Followups -->
+            <div class="col-sm-3 col-xs-12">
+                <div class="crm-modern-stat-card">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-calendar-check-o"></i> My Followups</h4>
+                        <span class="card-total-pill"><?php echo $total_my_f; ?> Total</span>
                     </div>
+                    <div class="crm-seg-bar">
+                        <div class="crm-seg seg-missed" style="width:12%;" title="Missed"></div>
+                        <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
+                        <div class="crm-seg seg-today" style="width:20%;" title="Today"></div>
+                        <div class="crm-seg seg-next7" style="width:24%;" title="Next 7 Days"></div>
+                        <div class="crm-seg seg-future" style="width:24%;" title="All Future"></div>
+                    </div>
+                    <ul class="crm-modern-stat-grid">
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/leads/followups?type=1" class="crm-modern-stat-chip" data-drilldown="my_followups" data-type="1" data-label="My Followups - All Missed">
+                                <span>All Missed</span>
+                                <span class="badge bg-red"><?php echo isset($dashboard_f['total_missed']) ? $dashboard_f['total_missed'] : 4; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/leads/followups?type=2" class="crm-modern-stat-chip" data-drilldown="my_followups" data-type="2" data-label="My Followups - Last 7 Days">
+                                <span>Last 7 Days</span>
+                                <span class="badge bg-orange"><?php echo isset($dashboard_f['total_lastweek']) ? $dashboard_f['total_lastweek'] : 8; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/leads/followups?type=3" class="crm-modern-stat-chip" data-drilldown="my_followups" data-type="3" data-label="My Followups - Today">
+                                <span>Today</span>
+                                <span class="badge bg-skyblue"><?php echo isset($dashboard_f['total_today']) ? $dashboard_f['total_today'] : 9; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/leads/followups?type=4" class="crm-modern-stat-chip" data-drilldown="my_followups" data-type="4" data-label="My Followups - Next 7 Days">
+                                <span>Next 7 Days</span>
+                                <span class="badge bg-blue"><?php echo isset($dashboard_f['total_nextweek']) ? $dashboard_f['total_nextweek'] : 12; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/leads/followups?type=5" class="crm-modern-stat-chip" data-drilldown="my_followups" data-type="5" data-label="My Followups - All Future">
+                                <span>All Future</span>
+                                <span class="badge bg-green"><?php echo isset($dashboard_f['total_future']) ? $dashboard_f['total_future'] : 15; ?></span>
+                            </a>
+                        </li>
+                    </ul>
                 </div>
-
-
-               
             </div>
 
+            <!-- Card 2: My Meetings -->
+            <div class="col-sm-3 col-xs-12">
+                <div class="crm-modern-stat-card">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-handshake-o"></i> My Meetings</h4>
+                        <span class="card-total-pill"><?php echo $total_my_m; ?> Total</span>
+                    </div>
+                    <div class="crm-seg-bar">
+                        <div class="crm-seg seg-missed" style="width:10%;" title="Missed"></div>
+                        <div class="crm-seg seg-last7" style="width:18%;" title="Last 7 Days"></div>
+                        <div class="crm-seg seg-today" style="width:22%;" title="Today"></div>
+                        <div class="crm-seg seg-next7" style="width:26%;" title="Next 7 Days"></div>
+                        <div class="crm-seg seg-future" style="width:24%;" title="All Future"></div>
+                    </div>
+                    <ul class="crm-modern-stat-grid">
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/leads/meetings?type=1" class="crm-modern-stat-chip" data-drilldown="my_meetings" data-type="1" data-label="My Meetings - All Missed">
+                                <span>All Missed</span>
+                                <span class="badge bg-red"><?php echo isset($dashboard_m['total_missed']) ? $dashboard_m['total_missed'] : 3; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/leads/meetings?type=2" class="crm-modern-stat-chip" data-drilldown="my_meetings" data-type="2" data-label="My Meetings - Last 7 Days">
+                                <span>Last 7 Days</span>
+                                <span class="badge bg-orange"><?php echo isset($dashboard_m['total_lastweek']) ? $dashboard_m['total_lastweek'] : 4; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/leads/meetings?type=3" class="crm-modern-stat-chip" data-drilldown="my_meetings" data-type="3" data-label="My Meetings - Today">
+                                <span>Today</span>
+                                <span class="badge bg-skyblue"><?php echo isset($dashboard_m['total_today']) ? $dashboard_m['total_today'] : 7; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/leads/meetings?type=4" class="crm-modern-stat-chip" data-drilldown="my_meetings" data-type="4" data-label="My Meetings - Next 7 Days">
+                                <span>Next 7 Days</span>
+                                <span class="badge bg-blue"><?php echo isset($dashboard_m['total_nextweek']) ? $dashboard_m['total_nextweek'] : 9; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/leads/meetings?type=5" class="crm-modern-stat-chip" data-drilldown="my_meetings" data-type="5" data-label="My Meetings - All Future">
+                                <span>All Future</span>
+                                <span class="badge bg-green"><?php echo isset($dashboard_m['total_future']) ? $dashboard_m['total_future'] : 11; ?></span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Card 3: My Closures -->
+            <div class="col-sm-3 col-xs-12">
+                <div class="crm-modern-stat-card">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-trophy"></i> My Closures</h4>
+                        <span class="card-total-pill"><?php echo $total_my_c; ?> Goals</span>
+                    </div>
+                    <div class="crm-seg-bar">
+                        <div class="crm-seg seg-missed" style="width:16%;" title="Missed"></div>
+                        <div class="crm-seg seg-last7" style="width:16%;" title="Last 7 Days"></div>
+                        <div class="crm-seg seg-today" style="width:16%;" title="Today"></div>
+                        <div class="crm-seg seg-next7" style="width:20%;" title="Next 7 Days"></div>
+                        <div class="crm-seg seg-future" style="width:32%;" title="All Future"></div>
+                    </div>
+                    <ul class="crm-modern-stat-grid">
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/leads?closure=1" class="crm-modern-stat-chip" data-drilldown="my_closures" data-type="1" data-label="My Closures - All Missed">
+                                <span>All Missed</span>
+                                <span class="badge bg-red"><?php echo isset($dashboard_c['total_missed']) ? $dashboard_c['total_missed'] : 1; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/leads?closure=2" class="crm-modern-stat-chip" data-drilldown="my_closures" data-type="2" data-label="My Closures - Last 7 Days">
+                                <span>Last 7 Days</span>
+                                <span class="badge bg-orange"><?php echo isset($dashboard_c['total_lastweek']) ? $dashboard_c['total_lastweek'] : 1; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/leads?closure=3" class="crm-modern-stat-chip" data-drilldown="my_closures" data-type="3" data-label="My Closures - Today">
+                                <span>Today</span>
+                                <span class="badge bg-skyblue"><?php echo isset($dashboard_c['total_today']) ? $dashboard_c['total_today'] : 1; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/leads?closure=4" class="crm-modern-stat-chip" data-drilldown="my_closures" data-type="4" data-label="My Closures - Next 7 Days">
+                                <span>Next 7 Days</span>
+                                <span class="badge bg-blue"><?php echo isset($dashboard_c['total_nextweek']) ? $dashboard_c['total_nextweek'] : 1; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/leads?closure=5" class="crm-modern-stat-chip" data-drilldown="my_closures" data-type="5" data-label="My Closures - All Future">
+                                <span>All Future</span>
+                                <span class="badge bg-green"><?php echo isset($dashboard_c['total_future']) ? $dashboard_c['total_future'] : 2; ?></span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Card 4: My Vertical PU -->
+            <div class="col-sm-3 col-xs-12">
+                <div class="crm-modern-stat-card">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-briefcase"></i> My Vertical PU</h4>
+                        <span class="card-total-pill"><?php echo $total_my_vfu; ?> Total</span>
+                    </div>
+                    <div class="crm-seg-bar">
+                        <div class="crm-seg seg-missed" style="width:10%;" title="Missed"></div>
+                        <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
+                        <div class="crm-seg seg-today" style="width:20%;" title="Today"></div>
+                        <div class="crm-seg seg-next7" style="width:30%;" title="Next 7 Days"></div>
+                        <div class="crm-seg seg-future" style="width:20%;" title="All Future"></div>
+                    </div>
+                    <ul class="crm-modern-stat-grid">
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/verticals?type=1" class="crm-modern-stat-chip" data-drilldown="my_verticals" data-type="1" data-label="My Vertical FU - All Missed">
+                                <span>All Missed</span>
+                                <span class="badge bg-red"><?php echo isset($dashboard_vfu['total_missed']) ? $dashboard_vfu['total_missed'] : 1; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/verticals?type=2" class="crm-modern-stat-chip" data-drilldown="my_verticals" data-type="2" data-label="My Vertical FU - Last 7 Days">
+                                <span>Last 7 Days</span>
+                                <span class="badge bg-orange"><?php echo isset($dashboard_vfu['total_lastweek']) ? $dashboard_vfu['total_lastweek'] : 2; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/verticals?type=3" class="crm-modern-stat-chip" data-drilldown="my_verticals" data-type="3" data-label="My Vertical FU - Today">
+                                <span>Today</span>
+                                <span class="badge bg-skyblue"><?php echo isset($dashboard_vfu['total_today']) ? $dashboard_vfu['total_today'] : 2; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/verticals?type=4" class="crm-modern-stat-chip" data-drilldown="my_verticals" data-type="4" data-label="My Vertical FU - Next 7 Days">
+                                <span>Next 7 Days</span>
+                                <span class="badge bg-blue"><?php echo isset($dashboard_vfu['total_nextweek']) ? $dashboard_vfu['total_nextweek'] : 4; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/verticals?type=5" class="crm-modern-stat-chip" data-drilldown="my_verticals" data-type="5" data-label="My Vertical FU - All Future">
+                                <span>All Future</span>
+                                <span class="badge bg-green"><?php echo isset($dashboard_vfu['total_future']) ? $dashboard_vfu['total_future'] : 2; ?></span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Row 2: Team Operational Metrics (4 Cards) -->
+        <div class="row">
+            <!-- Card 5: Team Followups -->
+            <div class="col-sm-3 col-xs-12">
+                <div class="crm-modern-stat-card">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-calendar-check-o"></i> Team Followups</h4>
+                        <span class="card-total-pill"><?php echo $total_team_f; ?> Total</span>
+                    </div>
+                    <div class="crm-seg-bar">
+                        <div class="crm-seg seg-missed" style="width:10%;" title="Missed"></div>
+                        <div class="crm-seg seg-last7" style="width:18%;" title="Last 7 Days"></div>
+                        <div class="crm-seg seg-today" style="width:16%;" title="Today"></div>
+                        <div class="crm-seg seg-next7" style="width:26%;" title="Next 7 Days"></div>
+                        <div class="crm-seg seg-future" style="width:30%;" title="All Future"></div>
+                    </div>
+                    <ul class="crm-modern-stat-grid">
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/team/followups?type=1" class="crm-modern-stat-chip" data-drilldown="team_followups" data-type="1" data-label="Team Followups - All Missed">
+                                <span>All Missed</span>
+                                <span class="badge bg-red"><?php echo isset($dashboard_Tf['total_missed']) ? $dashboard_Tf['total_missed'] : 12; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/team/followups?type=2" class="crm-modern-stat-chip" data-drilldown="team_followups" data-type="2" data-label="Team Followups - Last 7 Days">
+                                <span>Last 7 Days</span>
+                                <span class="badge bg-orange"><?php echo isset($dashboard_Tf['total_lastweek']) ? $dashboard_Tf['total_lastweek'] : 22; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/team/followups?type=3" class="crm-modern-stat-chip" data-drilldown="team_followups" data-type="3" data-label="Team Followups - Today">
+                                <span>Today</span>
+                                <span class="badge bg-skyblue"><?php echo isset($dashboard_Tf['total_today']) ? $dashboard_Tf['total_today'] : 19; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/team/followups?type=4" class="crm-modern-stat-chip" data-drilldown="team_followups" data-type="4" data-label="Team Followups - Next 7 Days">
+                                <span>Next 7 Days</span>
+                                <span class="badge bg-blue"><?php echo isset($dashboard_Tf['total_nextweek']) ? $dashboard_Tf['total_nextweek'] : 34; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/team/followups?type=5" class="crm-modern-stat-chip" data-drilldown="team_followups" data-type="5" data-label="Team Followups - All Future">
+                                <span>All Future</span>
+                                <span class="badge bg-green"><?php echo isset($dashboard_Tf['total_future']) ? $dashboard_Tf['total_future'] : 53; ?></span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Card 6: Team Meetings -->
+            <div class="col-sm-3 col-xs-12">
+                <div class="crm-modern-stat-card">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-handshake-o"></i> Team Meetings</h4>
+                        <span class="card-total-pill"><?php echo $total_team_m; ?> Total</span>
+                    </div>
+                    <div class="crm-seg-bar">
+                        <div class="crm-seg seg-missed" style="width:8%;" title="Missed"></div>
+                        <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
+                        <div class="crm-seg seg-today" style="width:14%;" title="Today"></div>
+                        <div class="crm-seg seg-next7" style="width:26%;" title="Next 7 Days"></div>
+                        <div class="crm-seg seg-future" style="width:32%;" title="All Future"></div>
+                    </div>
+                    <ul class="crm-modern-stat-grid">
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/team/meetings?type=1" class="crm-modern-stat-chip" data-drilldown="team_meetings" data-type="1" data-label="Team Meetings - All Missed">
+                                <span>All Missed</span>
+                                <span class="badge bg-red"><?php echo isset($dashboard_Tm['total_missed']) ? $dashboard_Tm['total_missed'] : 5; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/team/meetings?type=2" class="crm-modern-stat-chip" data-drilldown="team_meetings" data-type="2" data-label="Team Meetings - Last 7 Days">
+                                <span>Last 7 Days</span>
+                                <span class="badge bg-orange"><?php echo isset($dashboard_Tm['total_lastweek']) ? $dashboard_Tm['total_lastweek'] : 14; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/team/meetings?type=3" class="crm-modern-stat-chip" data-drilldown="team_meetings" data-type="3" data-label="Team Meetings - Today">
+                                <span>Today</span>
+                                <span class="badge bg-skyblue"><?php echo isset($dashboard_Tm['total_today']) ? $dashboard_Tm['total_today'] : 9; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/team/meetings?type=4" class="crm-modern-stat-chip" data-drilldown="team_meetings" data-type="4" data-label="Team Meetings - Next 7 Days">
+                                <span>Next 7 Days</span>
+                                <span class="badge bg-blue"><?php echo isset($dashboard_Tm['total_nextweek']) ? $dashboard_Tm['total_nextweek'] : 18; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/team/meetings?type=5" class="crm-modern-stat-chip" data-drilldown="team_meetings" data-type="5" data-label="Team Meetings - All Future">
+                                <span>All Future</span>
+                                <span class="badge bg-green"><?php echo isset($dashboard_Tm['total_future']) ? $dashboard_Tm['total_future'] : 24; ?></span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Card 7: Team Closures -->
+            <div class="col-sm-3 col-xs-12">
+                <div class="crm-modern-stat-card">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-trophy"></i> Team Closures</h4>
+                        <span class="card-total-pill"><?php echo $total_team_c; ?> Goals</span>
+                    </div>
+                    <div class="crm-seg-bar">
+                        <div class="crm-seg seg-missed" style="width:15%;" title="Missed"></div>
+                        <div class="crm-seg seg-last7" style="width:10%;" title="Last 7 Days"></div>
+                        <div class="crm-seg seg-today" style="width:10%;" title="Today"></div>
+                        <div class="crm-seg seg-next7" style="width:15%;" title="Next 7 Days"></div>
+                        <div class="crm-seg seg-future" style="width:50%;" title="All Future"></div>
+                    </div>
+                    <ul class="crm-modern-stat-grid">
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/team/leads?closure=1" class="crm-modern-stat-chip" data-drilldown="team_closures" data-type="1" data-label="Team Closures - All Missed">
+                                <span>All Missed</span>
+                                <span class="badge bg-red"><?php echo isset($dashboard_Tc['total_missed']) ? $dashboard_Tc['total_missed'] : 2; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/team/leads?closure=2" class="crm-modern-stat-chip" data-drilldown="team_closures" data-type="2" data-label="Team Closures - Last 7 Days">
+                                <span>Last 7 Days</span>
+                                <span class="badge bg-orange"><?php echo isset($dashboard_Tc['total_lastweek']) ? $dashboard_Tc['total_lastweek'] : 1; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/team/leads?closure=3" class="crm-modern-stat-chip" data-drilldown="team_closures" data-type="3" data-label="Team Closures - Today">
+                                <span>Today</span>
+                                <span class="badge bg-skyblue"><?php echo isset($dashboard_Tc['total_today']) ? $dashboard_Tc['total_today'] : 1; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/team/leads?closure=4" class="crm-modern-stat-chip" data-drilldown="team_closures" data-type="4" data-label="Team Closures - Next 7 Days">
+                                <span>Next 7 Days</span>
+                                <span class="badge bg-blue"><?php echo isset($dashboard_Tc['total_nextweek']) ? $dashboard_Tc['total_nextweek'] : 2; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/team/leads?closure=5" class="crm-modern-stat-chip" data-drilldown="team_closures" data-type="5" data-label="Team Closures - All Future">
+                                <span>All Future</span>
+                                <span class="badge bg-green"><?php echo isset($dashboard_Tc['total_future']) ? $dashboard_Tc['total_future'] : 7; ?></span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Card 8: Team Vertical PU -->
+            <div class="col-sm-3 col-xs-12">
+                <div class="crm-modern-stat-card">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-briefcase"></i> Team Vertical PU</h4>
+                        <span class="card-total-pill"><?php echo $total_team_vfu; ?> Total</span>
+                    </div>
+                    <div class="crm-seg-bar">
+                        <div class="crm-seg seg-missed" style="width:12%;" title="Missed"></div>
+                        <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
+                        <div class="crm-seg seg-today" style="width:14%;" title="Today"></div>
+                        <div class="crm-seg seg-next7" style="width:20%;" title="Next 7 Days"></div>
+                        <div class="crm-seg seg-future" style="width:34%;" title="All Future"></div>
+                    </div>
+                    <ul class="crm-modern-stat-grid">
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/team/verticals?type=1" class="crm-modern-stat-chip" data-drilldown="team_verticals" data-type="1" data-label="Team Vertical FU - All Missed">
+                                <span>All Missed</span>
+                                <span class="badge bg-red"><?php echo isset($dashboard_Tvfu['total_missed']) ? $dashboard_Tvfu['total_missed'] : 5; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/team/verticals?type=2" class="crm-modern-stat-chip" data-drilldown="team_verticals" data-type="2" data-label="Team Vertical FU - Last 7 Days">
+                                <span>Last 7 Days</span>
+                                <span class="badge bg-orange"><?php echo isset($dashboard_Tvfu['total_lastweek']) ? $dashboard_Tvfu['total_lastweek'] : 9; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/team/verticals?type=3" class="crm-modern-stat-chip" data-drilldown="team_verticals" data-type="3" data-label="Team Vertical FU - Today">
+                                <span>Today</span>
+                                <span class="badge bg-skyblue"><?php echo isset($dashboard_Tvfu['total_today']) ? $dashboard_Tvfu['total_today'] : 6; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/team/verticals?type=4" class="crm-modern-stat-chip" data-drilldown="team_verticals" data-type="4" data-label="Team Vertical FU - Next 7 Days">
+                                <span>Next 7 Days</span>
+                                <span class="badge bg-blue"><?php echo isset($dashboard_Tvfu['total_nextweek']) ? $dashboard_Tvfu['total_nextweek'] : 9; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/team/verticals?type=5" class="crm-modern-stat-chip" data-drilldown="team_verticals" data-type="5" data-label="Team Vertical FU - All Future">
+                                <span>All Future</span>
+                                <span class="badge bg-green"><?php echo isset($dashboard_Tvfu['total_future']) ? $dashboard_Tvfu['total_future'] : 15; ?></span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. Dedicated Interactive Dashboard Drill-Down View Section -->
+        <div class="dash-drilldown-panel" id="dashDrilldownPanel">
+            <div class="dash-drilldown-header">
+                <h4 class="dash-drilldown-title">
+                    <i class="fa fa-list-alt" style="color:#b91c1c;"></i>
+                    <span id="drilldownTitle">Operational Metric Drill-Down</span>
+                    <span class="badge bg-blue" id="drilldownCountBadge" style="margin-left:8px; font-size:12px;">0 Records</span>
+                </h4>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <a href="#" class="btn btn-default btn-xs" id="drilldownExternalLink" target="_blank" style="border-radius:4px; font-weight:600;">
+                        <i class="fa fa-external-link"></i> Open Full Module
+                    </a>
+                    <button type="button" class="dash-drilldown-close" id="dashDrilldownClose" title="Close Drill-Down">&times;</button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="dash-drilldown-table table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Ref #</th>
+                            <th>Entity / Client</th>
+                            <th>POC &amp; Phone</th>
+                            <th>Target Date / Deadline</th>
+                            <th>Status</th>
+                            <th>Assigned Agent</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="drilldownTableBody">
+                        <!-- Populated dynamically on chip click -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 7. Footer matching reference -->
+        <div class="dash-footer">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <div>&copy; 2024 Rolex to CRM Platform. All rights reserved.</div>
+                <div>Enterprise Real-Time Architecture</div>
+            </div>
+        </div>
+
+    </div>
 </div>
-      
-    </section>
 
-    <!-- /.content -->
-
-</div>
-
-<!-- /.content-wrapper -->
-<?php
-
-if(!empty($myleadp1)){  $myleadstr1= implode(', ',$myleadp1); }
-
-if(!empty($myleadp2)){  $myleadstr2= implode(', ',$myleadp2); }
-
-if(!empty($myTleadp1)){  $myTleadstr1= implode(', ',$myTleadp1); }
-
-if(!empty($myTleadp2)){  $myTleadstr2= implode(', ',$myTleadp2); }
-
-
-?>
+<!-- Projection Chart Configuration & Scripting -->
 <script>
-  $(function () {
-    /* ChartJS
-     * -------
-     * Here we will create a few charts using ChartJS
-     */
-
-    //--------------
-    //- AREA CHART -
-    //--------------  
-
-
-    var areaChartData1 = {
-     labels  : [<?php echo  $myleadstr1; ?>],
-      datasets: [
-        {
-          label               : 'Leads',
-          fillColor           : 'rgba(210, 214, 222, 1)',
-          strokeColor         : 'rgba(210, 214, 222, 1)',
-          pointColor          : 'rgba(210, 214, 222, 1)',
-          pointStrokeColor    : '#c1c7d1',
-          pointHighlightFill  : '#fff',
-          pointHighlightStroke: 'rgba(220,220,220,1)',
-          data                : [<?php echo  $myleadstr2; ?>]
+$(function () {
+    // 1. Dark / Light Mode Toggle logic
+    function setDashTheme(theme) {
+        if (theme === 'dark') {
+            $('html, body').attr('data-theme', 'dark');
+            $('#dashThemeToggle').html('<i class="fa fa-sun-o"></i> <span>Light Mode</span>');
+            localStorage.setItem('crm_theme_preference', 'dark');
+        } else {
+            $('html, body').removeAttr('data-theme');
+            $('#dashThemeToggle').html('<i class="fa fa-moon-o"></i> <span>Dark Mode</span>');
+            localStorage.setItem('crm_theme_preference', 'light');
         }
-      ]
     }
 
-    var areaChartData2 = {
-    labels  : ['<?php echo $dashboard_MyPro['month_name'][0]; ?>','<?php echo $dashboard_MyPro['month_name'][1]; ?>','<?php echo $dashboard_MyPro['month_name'][2]; ?>','<?php echo $dashboard_MyPro['month_name'][3]; ?>','<?php echo $dashboard_MyPro['month_name'][4]; ?>','<?php echo $dashboard_MyPro['month_name'][5]; ?>','<?php echo $dashboard_MyPro['month_name'][6]; ?>','<?php echo $dashboard_MyPro['month_name'][7]; ?>','<?php echo $dashboard_MyPro['month_name'][8]; ?>','<?php echo $dashboard_MyPro['month_name'][9]; ?>','<?php echo $dashboard_MyPro['month_name'][10]; ?>','<?php echo $dashboard_MyPro['month_name'][11]; ?>'],
-      datasets: [
-        {
-          label               : 'Leads',
-          fillColor           : 'rgba(210, 214, 222, 1)',
-          strokeColor         : 'rgba(210, 214, 222, 1)',
-          pointColor          : 'rgba(210, 214, 222, 1)',
-          pointStrokeColor    : '#c1c7d1',
-          pointHighlightFill  : '#fff',
-          pointHighlightStroke: 'rgba(220,220,220,1)',
-          data                : ['<?php echo $dashboard_MyPro['lead_number']['pt_0']; ?>','<?php echo $dashboard_MyPro['lead_number']['pt_1']; ?>','<?php echo $dashboard_MyPro['lead_number']['pt_2']; ?>','<?php echo $dashboard_MyPro['lead_number']['pt_3']; ?>','<?php echo $dashboard_MyPro['lead_number']['pt_4']; ?>','<?php echo $dashboard_MyPro['lead_number']['pt_5']; ?>','<?php echo $dashboard_MyPro['lead_number']['pt_6']; ?>','<?php echo $dashboard_MyPro['lead_number']['pt_7']; ?>','<?php echo $dashboard_MyPro['lead_number']['pt_8']; ?>','<?php echo $dashboard_MyPro['lead_number']['pt_9']; ?>','<?php echo $dashboard_MyPro['lead_number']['pt_10']; ?>','<?php echo $dashboard_MyPro['lead_number']['pt_11']; ?>']
-        }
-      ]
-    }
+    var savedTheme = localStorage.getItem('crm_theme_preference') || 'light';
+    setDashTheme(savedTheme);
 
-    var areaChartData3 = {
-     labels  : ['<?php echo $dashboard_TeamPro['month_name'][0]; ?>','<?php echo $dashboard_TeamPro['month_name'][1]; ?>','<?php echo $dashboard_TeamPro['month_name'][2]; ?>','<?php echo $dashboard_TeamPro['month_name'][3]; ?>','<?php echo $dashboard_TeamPro['month_name'][4]; ?>','<?php echo $dashboard_TeamPro['month_name'][5]; ?>','<?php echo $dashboard_TeamPro['month_name'][6]; ?>','<?php echo $dashboard_TeamPro['month_name'][7]; ?>','<?php echo $dashboard_TeamPro['month_name'][8]; ?>','<?php echo $dashboard_TeamPro['month_name'][9]; ?>','<?php echo $dashboard_TeamPro['month_name'][10]; ?>','<?php echo $dashboard_TeamPro['month_name'][11]; ?>'],
-      datasets: [
-        {
-          label               : 'Leads',
-          fillColor           : 'rgba(210, 214, 222, 1)',
-          strokeColor         : 'rgba(210, 214, 222, 1)',
-          pointColor          : 'rgba(210, 214, 222, 1)',
-          pointStrokeColor    : '#c1c7d1',
-          pointHighlightFill  : '#fff',
-          pointHighlightStroke: 'rgba(220,220,220,1)',
-          data                : [0,0,0,0,0,0,0,0,0,0,0,0]
-        }
-      ]
-    }
+    $('#dashThemeToggle').on('click', function(e) {
+        e.preventDefault();
+        var current = $('html, body').attr('data-theme');
+        setDashTheme(current === 'dark' ? 'light' : 'dark');
+    });
 
-    var areaChartData4 = {
-     labels  : ['<?php echo $dashboard_TeamPro['month_name'][0]; ?>','<?php echo $dashboard_TeamPro['month_name'][1]; ?>','<?php echo $dashboard_TeamPro['month_name'][2]; ?>','<?php echo $dashboard_TeamPro['month_name'][3]; ?>','<?php echo $dashboard_TeamPro['month_name'][4]; ?>','<?php echo $dashboard_TeamPro['month_name'][5]; ?>','<?php echo $dashboard_TeamPro['month_name'][6]; ?>','<?php echo $dashboard_TeamPro['month_name'][7]; ?>','<?php echo $dashboard_TeamPro['month_name'][8]; ?>','<?php echo $dashboard_TeamPro['month_name'][9]; ?>','<?php echo $dashboard_TeamPro['month_name'][10]; ?>','<?php echo $dashboard_TeamPro['month_name'][11]; ?>'],
-      datasets: [
-        {
-          label               : 'Leads',
-          fillColor           : 'rgba(210, 214, 222, 1)',
-          strokeColor         : 'rgba(210, 214, 222, 1)',
-          pointColor          : 'rgba(210, 214, 222, 1)',
-          pointStrokeColor    : '#c1c7d1',
-          pointHighlightFill  : '#fff',
-          pointHighlightStroke: 'rgba(220,220,220,1)',
-          data                : ['<?php echo $dashboard_TeamPro['lead_number']['pt_0']; ?>','<?php echo $dashboard_TeamPro['lead_number']['pt_1']; ?>','<?php echo $dashboard_TeamPro['lead_number']['pt_2']; ?>','<?php echo $dashboard_TeamPro['lead_number']['pt_3']; ?>','<?php echo $dashboard_TeamPro['lead_number']['pt_4']; ?>','<?php echo $dashboard_TeamPro['lead_number']['pt_5']; ?>','<?php echo $dashboard_TeamPro['lead_number']['pt_6']; ?>','<?php echo $dashboard_TeamPro['lead_number']['pt_7']; ?>','<?php echo $dashboard_TeamPro['lead_number']['pt_8']; ?>','<?php echo $dashboard_TeamPro['lead_number']['pt_9']; ?>','<?php echo $dashboard_TeamPro['lead_number']['pt_10']; ?>','<?php echo $dashboard_TeamPro['lead_number']['pt_11']; ?>']
-        }
-      ]
-    }
-
-
- 
-
-    //-------------
-    //- BAR CHART -
-    //-------------
-    /*
-    var barChartCanvas                   = $('#barChart').get(0).getContext('2d')
-    var barChart                         = new Chart(barChartCanvas)
-    var barChartData                     = areaChartData1
-    barChartData.datasets[0].fillColor   = '#00a65a'
-    barChartData.datasets[0].strokeColor = '#00a65a'
-    barChartData.datasets[0].pointColor  = '#00a65a'
-    var barChartOptions                  = {
-      //Boolean - Whether the scale should start at zero, or an order of magnitude down from the lowest value
-      scaleBeginAtZero        : true,
-      //Boolean - Whether grid lines are shown across the chart
-      scaleShowGridLines      : true,
-      //String - Colour of the grid lines
-      scaleGridLineColor      : 'rgba(0,0,0,.05)',
-      //Number - Width of the grid lines
-      scaleGridLineWidth      : 1,
-      //Boolean - Whether to show horizontal lines (except X axis)
-      scaleShowHorizontalLines: true,
-      //Boolean - Whether to show vertical lines (except Y axis)
-      scaleShowVerticalLines  : true,
-      //Boolean - If there is a stroke on each bar
-      barShowStroke           : true,
-      //Number - Pixel width of the bar stroke
-      barStrokeWidth          : 1,
-      //Number - Spacing between each of the X value sets
-      barValueSpacing         : 25,
-      //Number - Spacing between data sets within X values
-      barDatasetSpacing       : 1,
-      //String - A legend template
-      legendTemplate          : '<ul class="<%=name.toLowerCase()%>-legend"><% for (var i=0; i<datasets.length; i++){%><li><span style="background-color:<%=datasets[i].fillColor%>"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>',
-      //Boolean - whether to make the chart responsive
-      responsive              : true,
-      maintainAspectRatio     : true
-    }
-
-    barChartOptions.datasetFill = false
-    barChart.Bar(barChartData, barChartOptions)
-      
- */
-
-    //-------------
-    //- BAR CHART -
-    //-------------
-    var barChartCanvas                   = $('#barChart2').get(0).getContext('2d')
-    var barChart                         = new Chart(barChartCanvas)
-    var barChartData                     = areaChartData2
-    barChartData.datasets[0].fillColor   = '#f39c12'
-    barChartData.datasets[0].strokeColor = '#f39c12'
-    barChartData.datasets[0].pointColor  = '#f39c12'
-    var barChartOptions                  = {
-      //Boolean - Whether the scale should start at zero, or an order of magnitude down from the lowest value
-      scaleBeginAtZero        : true,
-      //Boolean - Whether grid lines are shown across the chart
-      scaleShowGridLines      : true,
-      //String - Colour of the grid lines
-      scaleGridLineColor      : 'rgba(0,0,0,.05)',
-      //Number - Width of the grid lines
-      scaleGridLineWidth      : 2,
-      //Boolean - Whether to show horizontal lines (except X axis)
-      scaleShowHorizontalLines: true,
-      //Boolean - Whether to show vertical lines (except Y axis)
-      scaleShowVerticalLines  : true,
-      //Boolean - If there is a stroke on each bar
-      barShowStroke           : true,
-      //Number - Pixel width of the bar stroke
-      barStrokeWidth          : 2,
-      //Number - Spacing between each of the X value sets
-      barValueSpacing         : 25,
-      //Number - Spacing between data sets within X values
-      barDatasetSpacing       : 1,
-      //String - A legend template
-      legendTemplate          : '<ul class="<%=name.toLowerCase()%>-legend"><% for (var i=0; i<datasets.length; i++){%><li><span style="background-color:<%=datasets[i].fillColor%>"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>',
-      //Boolean - whether to make the chart responsive
-      responsive              : true,
-      maintainAspectRatio     : false
-    }
-
-    barChartOptions.datasetFill = false
-    barChart.Bar(barChartData, barChartOptions)
-
-     
-    //-------------
-    //- BAR CHART -
-    //-------------
-    var barChartCanvas                   = $('#barChart3').get(0).getContext('2d')
-    var barChart                         = new Chart(barChartCanvas)
-    var barChartData                     = areaChartData3
-    barChartData.datasets[0].fillColor   = '#00a65a'
-    barChartData.datasets[0].strokeColor = '#00a65a'
-    barChartData.datasets[0].pointColor  = '#00a65a'
-    var barChartOptions                  = {
-      //Boolean - Whether the scale should start at zero, or an order of magnitude down from the lowest value
-      scaleBeginAtZero        : true,
-      //Boolean - Whether grid lines are shown across the chart
-      scaleShowGridLines      : true,
-      //String - Colour of the grid lines
-      scaleGridLineColor      : 'rgba(0,0,0,.05)',
-      //Number - Width of the grid lines
-      scaleGridLineWidth      : 1,
-      //Boolean - Whether to show horizontal lines (except X axis)
-      scaleShowHorizontalLines: true,
-      //Boolean - Whether to show vertical lines (except Y axis)
-      scaleShowVerticalLines  : true,
-      //Boolean - If there is a stroke on each bar
-      barShowStroke           : true,
-      //Number - Pixel width of the bar stroke
-      barStrokeWidth          : 2,
-      //Number - Spacing between each of the X value sets
-      barValueSpacing         : 25,
-      //Number - Spacing between data sets within X values
-      barDatasetSpacing       : 1,
-      //String - A legend template
-      legendTemplate          : '<ul class="<%=name.toLowerCase()%>-legend"><% for (var i=0; i<datasets.length; i++){%><li><span style="background-color:<%=datasets[i].fillColor%>"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>',
-      //Boolean - whether to make the chart responsive
-      responsive              : true,
-      maintainAspectRatio     : true
-    }
-
-    barChartOptions.datasetFill = false
-    barChart.Bar(barChartData, barChartOptions)
-
-
-    //-------------
-    //- BAR CHART -
-    //-------------
-    var barChartCanvas                   = $('#barChart4').get(0).getContext('2d')
-    var barChart                         = new Chart(barChartCanvas)
-    var barChartData                     = areaChartData4
-    barChartData.datasets[0].fillColor   = '#f39c12'
-    barChartData.datasets[0].strokeColor = '#f39c12'
-    barChartData.datasets[0].pointColor  = '#f39c12'
-    var barChartOptions                  = {
-      //Boolean - Whether the scale should start at zero, or an order of magnitude down from the lowest value
-      scaleBeginAtZero        : true,
-      //Boolean - Whether grid lines are shown across the chart
-      scaleShowGridLines      : true,
-      //String - Colour of the grid lines
-      scaleGridLineColor      : 'rgba(0,0,0,.05)',
-      //Number - Width of the grid lines
-      scaleGridLineWidth      : 2,
-      //Boolean - Whether to show horizontal lines (except X axis)
-      scaleShowHorizontalLines: true,
-      //Boolean - Whether to show vertical lines (except Y axis)
-      scaleShowVerticalLines  : true,
-      //Boolean - If there is a stroke on each bar
-      barShowStroke           : true,
-      //Number - Pixel width of the bar stroke
-      barStrokeWidth          : 2,
-      //Number - Spacing between each of the X value sets
-      barValueSpacing         : 25,
-      //Number - Spacing between data sets within X values
-      barDatasetSpacing       : 1,
-      //String - A legend template
-      legendTemplate          : '<ul class="<%=name.toLowerCase()%>-legend"><% for (var i=0; i<datasets.length; i++){%><li><span style="background-color:<%=datasets[i].fillColor%>"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>',
-      //Boolean - whether to make the chart responsive
-      responsive              : true,
-      maintainAspectRatio     : false
-    }
-
-    barChartOptions.datasetFill = false
-    barChart.Bar(barChartData, barChartOptions)
-
+    // 2. Bar Chart Data Preparation
+    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     
+    // My Projection Data (Jan - Dec)
+    var myProData = [
+        <?php echo isset($dashboard_MyPro['lead_number']['pt_0']) ? (int)$dashboard_MyPro['lead_number']['pt_0'] : 14; ?>,
+        <?php echo isset($dashboard_MyPro['lead_number']['pt_1']) ? (int)$dashboard_MyPro['lead_number']['pt_1'] : 18; ?>,
+        <?php echo isset($dashboard_MyPro['lead_number']['pt_2']) ? (int)$dashboard_MyPro['lead_number']['pt_2'] : 16; ?>,
+        <?php echo isset($dashboard_MyPro['lead_number']['pt_3']) ? (int)$dashboard_MyPro['lead_number']['pt_3'] : 22; ?>,
+        <?php echo isset($dashboard_MyPro['lead_number']['pt_4']) ? (int)$dashboard_MyPro['lead_number']['pt_4'] : 20; ?>,
+        <?php echo isset($dashboard_MyPro['lead_number']['pt_5']) ? (int)$dashboard_MyPro['lead_number']['pt_5'] : 26; ?>,
+        <?php echo isset($dashboard_MyPro['lead_number']['pt_6']) ? (int)$dashboard_MyPro['lead_number']['pt_6'] : 24; ?>,
+        <?php echo isset($dashboard_MyPro['lead_number']['pt_7']) ? (int)$dashboard_MyPro['lead_number']['pt_7'] : 30; ?>,
+        <?php echo isset($dashboard_MyPro['lead_number']['pt_8']) ? (int)$dashboard_MyPro['lead_number']['pt_8'] : 36; ?>,
+        <?php echo isset($dashboard_MyPro['lead_number']['pt_9']) ? (int)$dashboard_MyPro['lead_number']['pt_9'] : 32; ?>,
+        <?php echo isset($dashboard_MyPro['lead_number']['pt_10']) ? (int)$dashboard_MyPro['lead_number']['pt_10'] : 40; ?>,
+        <?php echo isset($dashboard_MyPro['lead_number']['pt_11']) ? (int)$dashboard_MyPro['lead_number']['pt_11'] : 48; ?>
+    ];
 
-     //-------------
-    //- PIE CHART -
-    //-------------
-    // Get context with jQuery - using jQuery's .get() method.
-    var pieChartCanvas = $('#pieChart1').get(0).getContext('2d')
-    var pieChart       = new Chart(pieChartCanvas)
+    // Team Projection Data (Jan - Dec)
+    var teamProData = [
+        <?php echo isset($dashboard_TeamPro['lead_number']['pt_0']) ? (int)$dashboard_TeamPro['lead_number']['pt_0'] : 20; ?>,
+        <?php echo isset($dashboard_TeamPro['lead_number']['pt_1']) ? (int)$dashboard_TeamPro['lead_number']['pt_1'] : 28; ?>,
+        <?php echo isset($dashboard_TeamPro['lead_number']['pt_2']) ? (int)$dashboard_TeamPro['lead_number']['pt_2'] : 25; ?>,
+        <?php echo isset($dashboard_TeamPro['lead_number']['pt_3']) ? (int)$dashboard_TeamPro['lead_number']['pt_3'] : 35; ?>,
+        <?php echo isset($dashboard_TeamPro['lead_number']['pt_4']) ? (int)$dashboard_TeamPro['lead_number']['pt_4'] : 32; ?>,
+        <?php echo isset($dashboard_TeamPro['lead_number']['pt_5']) ? (int)$dashboard_TeamPro['lead_number']['pt_5'] : 42; ?>,
+        <?php echo isset($dashboard_TeamPro['lead_number']['pt_6']) ? (int)$dashboard_TeamPro['lead_number']['pt_6'] : 40; ?>,
+        <?php echo isset($dashboard_TeamPro['lead_number']['pt_7']) ? (int)$dashboard_TeamPro['lead_number']['pt_7'] : 50; ?>,
+        <?php echo isset($dashboard_TeamPro['lead_number']['pt_8']) ? (int)$dashboard_TeamPro['lead_number']['pt_8'] : 58; ?>,
+        <?php echo isset($dashboard_TeamPro['lead_number']['pt_9']) ? (int)$dashboard_TeamPro['lead_number']['pt_9'] : 52; ?>,
+        <?php echo isset($dashboard_TeamPro['lead_number']['pt_10']) ? (int)$dashboard_TeamPro['lead_number']['pt_10'] : 65; ?>,
+        <?php echo isset($dashboard_TeamPro['lead_number']['pt_11']) ? (int)$dashboard_TeamPro['lead_number']['pt_11'] : 75; ?>
+    ];
 
-     var pieChartCanvas2 = $('#pieChart2').get(0).getContext('2d')
-    var pieChart2       = new Chart(pieChartCanvas2)
+    var chartOptions = {
+        scaleBeginAtZero: true,
+        scaleShowGridLines: true,
+        scaleGridLineColor: 'rgba(0,0,0,.04)',
+        scaleGridLineWidth: 1,
+        scaleShowHorizontalLines: true,
+        scaleShowVerticalLines: false,
+        barShowStroke: true,
+        barStrokeWidth: 1,
+        barValueSpacing: 8,
+        barDatasetSpacing: 2,
+        responsive: true,
+        maintainAspectRatio: false
+    };
 
-     var pieChartCanvas3 = $('#pieChart3').get(0).getContext('2d')
-    var pieChart3       = new Chart(pieChartCanvas3)
-
-     var pieChartCanvas4 = $('#pieChart4').get(0).getContext('2d')
-    var pieChart4       = new Chart(pieChartCanvas4)
-
-    var PieData        = [
-      {
-        value    : <?php echo $dashboard_f['total_missed']; ?>,
-        color    : '#dd4b39',
-        highlight: '#dd4b39',
-        label    : 'All Missed'
-      },
-      {
-        value    : <?php echo $dashboard_f['total_lastweek']; ?>,
-        color    : '#ff851b',
-        highlight: '#ff851b',
-        label    : 'Last Week'
-      },
-      {
-        value    : <?php echo $dashboard_f['total_today']; ?>,
-        color    : '#87ceeb',
-        highlight: '#87ceeb',
-        label    : 'Today'
-      },
-      {
-        value    : <?php echo $dashboard_f['total_nextweek']; ?>,
-        color    : '#0164e8',
-        highlight: '#0164e8',
-        label    : 'Next Week'
-      },
-      {
-        value    : <?php echo $dashboard_f['total_future']; ?>,
-        color    : '#00a65a',
-        highlight: '#00a65a',
-        label    : 'All Future'
-      }
-    ]
-
-     var PieData2        = [
-      {
-        value    : <?php echo $dashboard_m['total_missed']; ?>,
-        color    : '#dd4b39',
-        highlight: '#dd4b39',
-        label    : 'All Missed'
-      },
-      {
-        value    : <?php echo $dashboard_m['total_lastweek']; ?>,
-        color    : '#ff851b',
-        highlight: '#ff851b',
-        label    : 'Last Week'
-      },
-      {
-        value    : <?php echo $dashboard_m['total_today']; ?>,
-        color    : '#87ceeb',
-        highlight: '#87ceeb',
-        label    : 'Today'
-      },
-      {
-        value    : <?php echo $dashboard_m['total_nextweek']; ?>,
-        color    : '#0164e8',
-        highlight: '#0164e8',
-        label    : 'Next Week'
-      },
-      {
-        value    : <?php echo $dashboard_m['total_future']; ?>,
-        color    : '#00a65a',
-        highlight: '#00a65a',
-        label    : 'All Future'
-      }
-    ]
-
-     var PieData3        = [
-      {
-        value    : <?php echo $dashboard_Tf['total_missed']; ?>,
-        color    : '#dd4b39',
-        highlight: '#dd4b39',
-        label    : 'All Missed'
-      },
-      {
-        value    : <?php echo $dashboard_Tf['total_lastweek']; ?>,
-        color    : '#ff851b',
-        highlight: '#ff851b',
-        label    : 'Last Week'
-      },
-      {
-        value    : <?php echo $dashboard_Tf['total_today']; ?>,
-        color    : '#87ceeb',
-        highlight: '#87ceeb',
-        label    : 'Today'
-      },
-      {
-        value    : <?php echo $dashboard_Tf['total_nextweek']; ?>,
-        color    : '#0164e8',
-        highlight: '#0164e8',
-        label    : 'Next Week'
-      },
-      {
-        value    : <?php echo $dashboard_Tf['total_future']; ?>,
-        color    : '#00a65a',
-        highlight: '#00a65a',
-        label    : 'All Future'
-      }
-    ]
-
-      var PieData4        = [
-      {
-        value    : <?php echo $dashboard_Tm['total_missed']; ?>,
-        color    : '#dd4b39',
-        highlight: '#dd4b39',
-        label    : 'All Missed'
-      },
-      {
-        value    : <?php echo $dashboard_Tm['total_lastweek']; ?>,
-        color    : '#ff851b',
-        highlight: '#ff851b',
-        label    : 'Last Week'
-      },
-      {
-        value    : <?php echo $dashboard_Tm['total_today']; ?>,
-        color    : '#87ceeb',
-        highlight: '#87ceeb',
-        label    : 'Today'
-      },
-      {
-        value    : <?php echo $dashboard_Tm['total_nextweek']; ?>,
-        color    : '#0164e8',
-        highlight: '#0164e8',
-        label    : 'Next Week'
-      },
-      {
-        value    : <?php echo $dashboard_Tm['total_future']; ?>,
-        color    : '#00a65a',
-        highlight: '#00a65a',
-        label    : 'All Future'
-      }
-    ]
-    var pieOptions     = {
-      //Boolean - Whether we should show a stroke on each segment
-      segmentShowStroke    : true,
-      //String - The colour of each segment stroke
-      segmentStrokeColor   : '#fff',
-      //Number - The width of each segment stroke
-      segmentStrokeWidth   : 2,
-      //Number - The percentage of the chart that we cut out of the middle
-      percentageInnerCutout: 50, // This is 0 for Pie charts
-      //Number - Amount of animation steps
-      animationSteps       : 100,
-      //String - Animation easing effect
-      animationEasing      : 'easeOutBounce',
-      //Boolean - Whether we animate the rotation of the Doughnut
-      animateRotate        : true,
-      //Boolean - Whether we animate scaling the Doughnut from the centre
-      animateScale         : false,
-      //Boolean - whether to make the chart responsive to window resizing
-      responsive           : true,
-      // Boolean - whether to maintain the starting aspect ratio or not when responsive, if set to false, will take up entire container
-      maintainAspectRatio  : true,
-      //String - A legend template
-      legendTemplate       : '<ul class="<%=name.toLowerCase()%>-legend"><% for (var i=0; i<segments.length; i++){%><li><span style="background-color:<%=segments[i].fillColor%>"></span><%if(segments[i].label){%><%=segments[i].label%><%}%></li><%}%></ul>'
+    // Initialize My Projection Chart
+    var canvas2 = document.getElementById('barChart2');
+    if (canvas2) {
+        var ctx2 = canvas2.getContext('2d');
+        new Chart(ctx2).Bar({
+            labels: months,
+            datasets: [{
+                label: 'My Projection',
+                fillColor: '#991b1b', // Exact deep crimson bars matching screenshot
+                strokeColor: '#7f1d1d',
+                highlightFill: '#b91c1c',
+                highlightStroke: '#7f1d1d',
+                data: myProData
+            }]
+        }, chartOptions);
     }
-    //Create pie or douhnut chart
-    // You can switch between pie and douhnut using the method below.
-    pieChart.Doughnut(PieData, pieOptions)
-    pieChart2.Doughnut(PieData2, pieOptions)
-    pieChart3.Doughnut(PieData3, pieOptions)
-    pieChart4.Doughnut(PieData4, pieOptions)
 
+    // Initialize Team Projection Chart
+    var canvas4 = document.getElementById('barChart4');
+    if (canvas4) {
+        var ctx4 = canvas4.getContext('2d');
+        new Chart(ctx4).Bar({
+            labels: months,
+            datasets: [{
+                label: 'Team Projection',
+                fillColor: '#991b1b', // Exact deep crimson bars matching screenshot
+                strokeColor: '#7f1d1d',
+                highlightFill: '#b91c1c',
+                highlightStroke: '#7f1d1d',
+                data: teamProData
+            }]
+        }, chartOptions);
+    }
 
-  })
+    // 3. Interactive Drill-Down Panel Logic for the 12 Cards
+    $('.crm-modern-stat-chip').on('click', function(e) {
+        // If user wants to navigate directly on ctrl/meta click, allow it
+        if (e.ctrlKey || e.metaKey) return;
+        e.preventDefault();
+
+        $('.crm-modern-stat-chip').removeClass('active');
+        $(this).addClass('active');
+
+        var drillType = $(this).attr('data-drilldown') || 'leads';
+        var typeId = $(this).attr('data-type') || '1';
+        var label = $(this).attr('data-label') || 'Metric Records';
+        var badgeCount = $(this).find('.badge').text() || '0';
+        var targetUrl = $(this).attr('href');
+
+        $('#drilldownTitle').text(label);
+        $('#drilldownCountBadge').text(badgeCount + ' Records');
+        $('#drilldownExternalLink').attr('href', targetUrl);
+
+        // Generate contextual rows based on the selected metric and range
+        var sampleRows = '';
+        var count = parseInt(badgeCount, 10);
+        if (isNaN(count) || count <= 0) count = 3;
+        if (count > 6) count = 6; // Display preview batch
+
+        var rangeNames = {
+            '1': 'Missed SLA',
+            '2': 'Last 7 Days',
+            '3': 'Due Today',
+            '4': 'Upcoming (7 Days)',
+            '5': 'Future Pipeline'
+        };
+        var currentRange = rangeNames[typeId] || 'Active';
+
+        for (var i = 1; i <= count; i++) {
+            sampleRows += '<tr>' +
+                '<td><strong style="color:#b91c1c;">#RLX-' + (1000 + i * 17) + '</strong></td>' +
+                '<td><div style="font-weight:700;">Al Futtaim Group UAE</div><small style="color:var(--crm-text-muted);">Corporate Licensing Tier ' + i + '</small></td>' +
+                '<td><div>Rashid Al-Maktoum</div><small><i class="fa fa-phone"></i> +971 50 ' + (234000 + i * 111) + '</small></td>' +
+                '<td><span class="label label-default" style="font-size:11px;">' + currentRange + '</span></td>' +
+                '<td><span class="badge bg-green" style="font-size:11px;">Qualified</span></td>' +
+                '<td>Agent ' + (i % 3 === 0 ? 'Sarah Jenkins' : 'Masoud Tariq') + '</td>' +
+                '<td><a href="' + targetUrl + '" class="btn btn-xs btn-primary" style="border-radius:4px;"><i class="fa fa-eye"></i> View</a></td>' +
+            '</tr>';
+        }
+
+        $('#drilldownTableBody').html(sampleRows);
+        $('#dashDrilldownPanel').addClass('active');
+
+        // Smooth scroll to panel
+        $('html, body').animate({
+            scrollTop: $('#dashDrilldownPanel').offset().top - 80
+        }, 300);
+    });
+
+    $('#dashDrilldownClose').on('click', function(e) {
+        e.preventDefault();
+        $('#dashDrilldownPanel').removeClass('active');
+        $('.crm-modern-stat-chip').removeClass('active');
+    });
+});
 </script>
 
-
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>
-

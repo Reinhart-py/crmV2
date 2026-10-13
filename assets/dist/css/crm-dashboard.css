@@ -1,0 +1,688 @@
+/* ==========================================================================
+   Rolexto CRM - Executive Full-Screen Dashboard & Pill Navigation
+   ========================================================================== */
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+
+:root {
+  --crm-font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --crm-bg: #f8fafc;
+  --crm-card-bg: #ffffff;
+  --crm-card-hover: #ffffff;
+  --crm-text: #0f172a;
+  --crm-text-muted: #64748b;
+  --crm-text-light: #94a3b8;
+  --crm-border: #e2e8f0;
+  --crm-border-subtle: #f1f5f9;
+  --crm-accent: #991b1b;
+  --crm-accent-hover: #7f1d1d;
+  --crm-accent-light: rgba(153, 27, 27, 0.08);
+  --crm-pill-active: #d4f938;
+  --crm-pill-active-text: #09090b;
+  --crm-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --crm-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  --crm-shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.07);
+}
+
+[data-theme="dark"] {
+  --crm-bg: #0b0f17;
+  --crm-card-bg: #111827;
+  --crm-card-hover: #162032;
+  --crm-text: #f8fafc;
+  --crm-text-muted: #94a3b8;
+  --crm-text-light: #64748b;
+  --crm-border: #1f2937;
+  --crm-border-subtle: #1e293b;
+  --crm-accent: #b91c1c;
+  --crm-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --crm-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  --crm-shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+body {
+  font-family: var(--crm-font) !important;
+  background-color: var(--crm-bg) !important;
+  color: var(--crm-text) !important;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* ==========================================================================
+   1. REFERENCE IMAGE PILL NAVIGATION BAR
+   ========================================================================== */
+.main-header {
+  background: #ffffff !important;
+  border-bottom: 1px solid var(--crm-border) !important;
+  padding: 8px 0 !important;
+  position: relative !important;
+  z-index: 1000 !important;
+}
+
+[data-theme="dark"] .main-header {
+  background: #0d121c !important;
+  border-bottom-color: #1e293b !important;
+}
+
+.main-header .container {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 0 24px !important;
+}
+
+.main-header .navbar.navbar-static-top {
+  background: transparent !important;
+  margin: 10px 0 4px 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  min-height: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+}
+
+/* Sidebar Toggle styled as clean circular button on left of pill bar */
+.main-header .sidebar-toggle {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  background: #f1f5f9 !important;
+  color: #1e293b !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1px solid #e2e8f0 !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05) !important;
+  float: none !important;
+  line-height: 1 !important;
+  font-size: 15px !important;
+}
+
+[data-theme="dark"] .main-header .sidebar-toggle {
+  background: #1e293b !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+.main-header .sidebar-toggle:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+  transform: scale(1.04) !important;
+}
+
+/* Floating Pill Menu Container */
+ul.munk_menu {
+  background: #181b20 !important;
+  border-radius: 9999px !important;
+  padding: 5px 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.16) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  list-style: none !important;
+  margin: 0 !important;
+  float: none !important;
+}
+
+ul.munk_menu > li {
+  position: relative !important;
+  list-style: none !important;
+  display: inline-block !important;
+  margin: 0 2px !important;
+  float: none !important;
+}
+
+ul.munk_menu > li > a {
+  color: #94a3b8 !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  padding: 8px 16px !important;
+  border-radius: 9999px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  text-decoration: none !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: none !important;
+  background: transparent !important;
+  line-height: 1.2 !important;
+  white-space: nowrap !important;
+}
+
+ul.munk_menu > li > a i {
+  font-size: 13px !important;
+}
+
+ul.munk_menu > li > a:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Active Pill: Neon lime/yellow capsule with black text and dot indicator */
+ul.munk_menu > li.active > a {
+  background: var(--crm-pill-active, #d4f938) !important;
+  color: var(--crm-pill-active-text, #09090b) !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 10px rgba(212, 249, 56, 0.35) !important;
+}
+
+ul.munk_menu > li.active > a i {
+  color: #09090b !important;
+}
+
+ul.munk_menu > li.active > a:before {
+  content: "•" !important;
+  margin-right: 3px !important;
+  font-size: 14px !important;
+  font-weight: 900 !important;
+}
+
+/* Dropdown Submenus: Clean floating cards */
+ul.munk_menu > li > ul {
+  position: absolute !important;
+  top: calc(100% + 8px) !important;
+  left: 0 !important;
+  background: #181b20 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.4) !important;
+  min-width: 210px !important;
+  padding: 6px !important;
+  display: none !important;
+  z-index: 9999 !important;
+  list-style: none !important;
+  margin: 0 !important;
+}
+
+ul.munk_menu > li:hover > ul {
+  display: block !important;
+  animation: fadeInDown 0.18s ease-out !important;
+}
+
+ul.munk_menu > li > ul > li {
+  list-style: none !important;
+  margin: 2px 0 !important;
+  display: block !important;
+}
+
+ul.munk_menu > li > ul > li > a {
+  color: #cbd5e1 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  padding: 8px 14px !important;
+  border-radius: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+  text-decoration: none !important;
+  transition: all 0.15s ease !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+ul.munk_menu > li > ul > li > a:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #d4f938 !important;
+  transform: translateX(3px) !important;
+}
+
+ul.munk_menu > li > ul > li > a i {
+  font-size: 12px !important;
+  opacity: 0.8 !important;
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   2. FULL SCREEN DASHBOARD CONTAINER
+   ========================================================================== */
+.content-wrapper {
+  background-color: var(--crm-bg) !important;
+  min-height: calc(100vh - 120px) !important;
+}
+
+.content-wrapper.full-screen-dash {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 16px 28px 40px 28px !important;
+  margin: 0 auto !important;
+}
+
+.dash-header-bar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 12px 0 20px 0 !important;
+  border-bottom: 1px solid var(--crm-border) !important;
+  margin-bottom: 22px !important;
+}
+
+.dash-header-title {
+  font-size: 20px !important;
+  font-weight: 800 !important;
+  color: var(--crm-text) !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  letter-spacing: -0.02em !important;
+}
+
+.dash-theme-btn {
+  background: var(--crm-card-bg) !important;
+  border: 1px solid var(--crm-border) !important;
+  color: var(--crm-text) !important;
+  padding: 7px 14px !important;
+  border-radius: 9999px !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  transition: all 0.2s ease !important;
+  box-shadow: var(--crm-shadow-sm) !important;
+}
+
+.dash-theme-btn:hover {
+  background: var(--crm-border-subtle) !important;
+  border-color: var(--crm-text-muted) !important;
+}
+
+/* ==========================================================================
+   3. TOP STAT CARDS (NAVY, FOREST GREEN, WARM BROWN, DARK CRIMSON)
+   ========================================================================== */
+.dash-kpi-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 105px;
+  border-radius: 8px;
+  padding: 16px 18px 12px 18px;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  margin-bottom: 20px;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  text-decoration: none !important;
+}
+
+.dash-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.14);
+}
+
+.dash-kpi-navy {
+  background: #182232 !important; /* Deep Navy */
+}
+
+.dash-kpi-forest {
+  background: #0f3d2e !important; /* Deep Forest Green */
+}
+
+.dash-kpi-amber {
+  background: #4a2411 !important; /* Deep Warm Brown/Amber */
+}
+
+.dash-kpi-crimson {
+  background: #4c111a !important; /* Deep Crimson Burgundy */
+}
+
+.dash-kpi-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.dash-kpi-value {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+  color: #ffffff;
+  margin-bottom: 6px;
+  letter-spacing: -0.02em;
+}
+
+.dash-kpi-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.dash-kpi-icon {
+  font-size: 32px;
+  color: rgba(255, 255, 255, 0.16);
+  line-height: 1;
+}
+
+.dash-kpi-footer {
+  margin-top: 14px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-decoration: none !important;
+}
+
+.dash-kpi-footer:hover {
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   4. CHARTS SECTION (MY PROJECTION & TEAM PROJECTION)
+   ========================================================================== */
+.dash-chart-card {
+  background: var(--crm-card-bg) !important;
+  border-radius: 8px !important;
+  border: 1px solid var(--crm-border) !important;
+  border-top: 2px solid #b91c1c !important; /* Red accent top line */
+  box-shadow: var(--crm-shadow) !important;
+  margin-bottom: 24px !important;
+  overflow: hidden !important;
+}
+
+.dash-chart-header {
+  padding: 12px 18px !important;
+  border-bottom: 1px solid var(--crm-border-subtle) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.dash-chart-title {
+  margin: 0 !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  color: var(--crm-text) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.dash-chart-title i {
+  color: #b91c1c !important;
+}
+
+.dash-chart-body {
+  padding: 16px 18px !important;
+  position: relative !important;
+  height: 240px !important;
+}
+
+/* ==========================================================================
+   5. OPERATIONAL ACTIVITY & CLOSURES BREAKDOWN
+   ========================================================================== */
+.dash-section-divider {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 10px 0 16px 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--crm-border);
+}
+
+.dash-section-title {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 800;
+  color: var(--crm-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dash-section-title-icon {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.dash-section-title-icon span {
+  width: 4px;
+  height: 13px;
+  background: #b91c1c;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.dash-section-subtitle {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--crm-text-muted);
+}
+
+/* 8 Operational Cards */
+.crm-modern-stat-card {
+  background: var(--crm-card-bg) !important;
+  border-radius: 8px !important;
+  border: 1px solid var(--crm-border) !important;
+  border-top: 2px solid #b91c1c !important; /* Signature red top line */
+  box-shadow: var(--crm-shadow) !important;
+  padding: 14px 15px 12px 15px !important;
+  margin-bottom: 18px !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.crm-modern-stat-card:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: var(--crm-shadow-lg) !important;
+}
+
+.crm-modern-stat-card .card-top {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 10px !important;
+}
+
+.crm-modern-stat-card .card-title {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: var(--crm-text) !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+}
+
+.crm-modern-stat-card .card-title i {
+  color: #b91c1c !important;
+  font-size: 13px !important;
+}
+
+.crm-modern-stat-card .card-total-pill {
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  color: var(--crm-text) !important;
+}
+
+/* Segmented Progress Bar */
+.crm-seg-bar {
+  display: flex !important;
+  height: 4px !important;
+  border-radius: 9999px !important;
+  overflow: hidden !important;
+  background: var(--crm-border-subtle) !important;
+  margin-bottom: 12px !important;
+  gap: 1.5px !important;
+}
+
+.crm-seg-bar .crm-seg {
+  height: 100% !important;
+  background: #b91c1c !important;
+}
+
+.crm-seg-bar .crm-seg.seg-missed { opacity: 1 !important; }
+.crm-seg-bar .crm-seg.seg-last7 { opacity: 0.8 !important; }
+.crm-seg-bar .crm-seg.seg-today { opacity: 0.62 !important; }
+.crm-seg-bar .crm-seg.seg-next7 { opacity: 0.44 !important; }
+.crm-seg-bar .crm-seg.seg-future { opacity: 0.28 !important; }
+
+/* 5 Interactive Chips */
+.crm-modern-stat-grid {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  list-style: none !important;
+}
+
+.crm-modern-stat-grid li {
+  list-style: none !important;
+  width: 100% !important;
+}
+
+.crm-modern-stat-chip {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 6px 10px !important;
+  background: var(--crm-bg) !important;
+  border-radius: 6px !important;
+  font-size: 11.5px !important;
+  font-weight: 500 !important;
+  color: var(--crm-text) !important;
+  text-decoration: none !important;
+  transition: all 0.15s ease !important;
+  border: 1px solid var(--crm-border) !important;
+  cursor: pointer !important;
+}
+
+.crm-modern-stat-chip:hover, .crm-modern-stat-chip.active {
+  background: var(--crm-card-hover) !important;
+  color: var(--crm-text) !important;
+  border-color: #b91c1c !important;
+  transform: translateY(-1px) !important;
+}
+
+.crm-modern-stat-chip span:first-child {
+  color: var(--crm-text-muted) !important;
+  font-weight: 500 !important;
+}
+
+.crm-modern-stat-chip:hover span:first-child {
+  color: var(--crm-text) !important;
+}
+
+.crm-modern-stat-chip .badge {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 2px 7px !important;
+  border-radius: 4px !important;
+  color: #ffffff !important;
+}
+
+.crm-modern-stat-chip .badge.bg-red { background-color: #dc2626 !important; }
+.crm-modern-stat-chip .badge.bg-orange { background-color: #f97316 !important; }
+.crm-modern-stat-chip .badge.bg-skyblue { background-color: #0284c7 !important; }
+.crm-modern-stat-chip .badge.bg-blue { background-color: #2563eb !important; }
+.crm-modern-stat-chip .badge.bg-green { background-color: #16a34a !important; }
+
+/* ==========================================================================
+   6. DRILL-DOWN PANEL ON DASHBOARD
+   ========================================================================== */
+.dash-drilldown-panel {
+  display: none;
+  background: var(--crm-card-bg);
+  border: 1px solid var(--crm-border);
+  border-radius: 8px;
+  box-shadow: var(--crm-shadow-lg);
+  padding: 20px;
+  margin-top: 15px;
+  margin-bottom: 30px;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.dash-drilldown-panel.active {
+  display: block;
+}
+
+.dash-drilldown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--crm-border);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.dash-drilldown-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--crm-text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dash-drilldown-close {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  color: var(--crm-text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.dash-drilldown-close:hover {
+  background: var(--crm-border-subtle);
+  color: var(--crm-text);
+}
+
+.dash-drilldown-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dash-drilldown-table th {
+  background: var(--crm-bg);
+  color: var(--crm-text-muted);
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--crm-border);
+  text-align: left;
+}
+
+.dash-drilldown-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--crm-border-subtle);
+  font-size: 12.5px;
+  color: var(--crm-text);
+  vertical-align: middle;
+}
+
+.dash-drilldown-table tr:hover td {
+  background: var(--crm-border-subtle);
+}
+
+/* ==========================================================================
+   7. FOOTER
+   ========================================================================== */
+.dash-footer {
+  text-align: center;
+  padding: 24px 0 10px 0;
+  color: var(--crm-text-muted);
+  font-size: 11.5px;
+  font-weight: 500;
+  border-top: 1px solid var(--crm-border);
+  margin-top: 25px;
+}

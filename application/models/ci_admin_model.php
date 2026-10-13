@@ -212,8 +212,74 @@ public function dashboard_TeamPro($table='ci_leads'){
 						
 						}
 
-			
-	
+	public function dashboard_closures($type){
+		$today = date('Y-m-d');
+		$last_date = date('Y-m-d', strtotime("-7 day"));
+		$next_date = date('Y-m-d', strtotime("+7 day"));
+		if($type==0){
+			$manager_id = $this->session->userdata('manager_id');
+			$user_cond = "created_by=".$manager_id;
+		}else{
+			$team_array = $this->fetchTeamList($this->session->userdata('manager_id'),'');
+			$team_str = !empty($team_array) ? implode(',',$team_array) : $this->session->userdata('manager_id');
+			$user_cond = "FIND_IN_SET(created_by,'".$team_str."')>0";
+		}
+		$data = array(
+			'total_missed' => 0,
+			'total_lastweek' => 0,
+			'total_today' => 0,
+			'total_nextweek' => 0,
+			'total_future' => 0,
+			'total_all' => 0
+		);
+		$sql = "SELECT 
+			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE close_date < '$today' AND close_date != '' AND close_date != '0000-00-00' AND ".$user_cond.") AS total_missed,
+			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE close_date < '$today' AND close_date >= '$last_date' AND close_date != '' AND close_date != '0000-00-00' AND ".$user_cond.") AS total_lastweek,
+			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE close_date = '$today' AND ".$user_cond.") AS total_today,
+			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE close_date > '$today' AND close_date <= '$next_date' AND ".$user_cond.") AS total_nextweek,
+			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE close_date > '$today' AND ".$user_cond.") AS total_future,
+			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE ".$user_cond." AND (status=39 OR status IN (42,43,44) OR (close_date != '' AND close_date != '0000-00-00'))) AS total_all";
+		$rows = $this->db->query($sql);
+		if($rows && $rows->num_rows() >= 1){
+			$data = $rows->row_array();
+		}
+		return $data;
+	}
+
+	public function dashboard_vertical_fu($type){
+		$today = date('Y-m-d');
+		$last_date = date('Y-m-d', strtotime("-7 day"));
+		$next_date = date('Y-m-d', strtotime("+7 day"));
+		if($type==0){
+			$manager_id = $this->session->userdata('manager_id');
+			$user_cond = "created_by=".$manager_id;
+		}else{
+			$team_array = $this->fetchTeamList($this->session->userdata('manager_id'),'');
+			$team_str = !empty($team_array) ? implode(',',$team_array) : $this->session->userdata('manager_id');
+			$user_cond = "FIND_IN_SET(created_by,'".$team_str."')>0";
+		}
+		$data = array(
+			'total_missed' => 0,
+			'total_lastweek' => 0,
+			'total_today' => 0,
+			'total_nextweek' => 0,
+			'total_future' => 0,
+			'total_all' => 0
+		);
+		$sql = "SELECT 
+			(SELECT COUNT(DISTINCT id) FROM ci_verticals WHERE followup_date < '$today' AND followup_date != '' AND ".$user_cond.") AS total_missed,
+			(SELECT COUNT(DISTINCT id) FROM ci_verticals WHERE followup_date < '$today' AND followup_date >= '$last_date' AND followup_date != '' AND ".$user_cond.") AS total_lastweek,
+			(SELECT COUNT(DISTINCT id) FROM ci_verticals WHERE followup_date = '$today' AND ".$user_cond.") AS total_today,
+			(SELECT COUNT(DISTINCT id) FROM ci_verticals WHERE followup_date > '$today' AND followup_date <= '$next_date' AND ".$user_cond.") AS total_nextweek,
+			(SELECT COUNT(DISTINCT id) FROM ci_verticals WHERE followup_date > '$today' AND ".$user_cond.") AS total_future,
+			(SELECT COUNT(DISTINCT id) FROM ci_verticals WHERE ".$user_cond.") AS total_all";
+		$rows = $this->db->query($sql);
+		if($rows && $rows->num_rows() >= 1){
+			$data = $rows->row_array();
+		}
+		return $data;
+	}
+
 	public function checkDuplicate($value,$col,$table) {
     $this->db->where($col,$value);
     $query = $this->db->get($table);
