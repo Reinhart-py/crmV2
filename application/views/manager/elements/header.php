@@ -4,8 +4,11 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
     
-<link rel="icon" type="image/png" sizes="32x32" href="<?php echo base_url(); ?>assets/favicon.ico">
-<link rel="icon" type="image/png" sizes="16x16" href="<?php echo base_url(); ?>assets/favicon.ico">
+<link rel="shortcut icon" href="<?php echo base_url(); ?>assets/7strokes-logo.png" type="image/png">
+<link rel="icon" type="image/png" sizes="64x64" href="<?php echo base_url(); ?>assets/favicon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="<?php echo base_url(); ?>assets/favicon.png">
+<link rel="icon" type="image/png" sizes="16x16" href="<?php echo base_url(); ?>assets/favicon.png">
+<link rel="apple-touch-icon" href="<?php echo base_url(); ?>assets/7strokes-logo.png">
 
     
 <title><?php echo $info['title']; ?></title>
@@ -85,9 +88,15 @@
 <header class="main-header"> 
 
 <div class="main-header-bar">
+  <!-- 3-line hamburger bar button for mobile / Android -->
+  <a href="#" class="sidebar-toggle crm-mobile-hamburger" data-toggle="offcanvas" role="button" aria-label="Toggle navigation">
+    <i class="fa fa-bars"></i>
+    <span class="sr-only">Toggle navigation</span>
+  </a>
+
   <div class="main-logo">
     <a href="<?php echo base_url(); ?>manager/dashboard"> 
-      <span class="logo-lg"><img src="https://crm.rolextogroup.com/assets/dist/img/manager-logo-new.png" alt="Rolexto" /></span> 
+      <span class="logo-lg"><img src="<?php echo base_url(); ?>assets/7strokes-logo.png" alt="7strokes" /></span> 
     </a> 
   </div>
 
@@ -182,11 +191,59 @@
       <li> <a class="logout" href="<?php echo base_url();?>manager/logout"> <i class="fa fa-power-off"></i> <span>Logout</span></a> </li>
 
     </ul>
-
   </nav>
-  
- 
+
+  <!-- Global Header Quick Actions: Dark/Light Mode Toggle across all pages -->
+  <div class="header-quick-actions">
+    <button type="button" class="global-theme-btn" id="globalThemeToggle" title="Toggle Dark/Light Mode">
+      <i class="fa fa-moon-o"></i>
+    </button>
+  </div>
+</div>
+
 </header>
+
+<script>
+$(function() {
+  function applyCrmTheme(t) {
+    if (t === 'dark') {
+      $('html, body, .main-header').attr('data-theme', 'dark');
+      $('#globalThemeToggle').html('<i class="fa fa-sun-o"></i>');
+      $('#dashThemeToggle').html('<i class="fa fa-sun-o"></i> <span>Light Mode</span>');
+      localStorage.setItem('crm_theme_preference', 'dark');
+    } else {
+      $('html, body, .main-header').removeAttr('data-theme');
+      $('#globalThemeToggle').html('<i class="fa fa-moon-o"></i>');
+      $('#dashThemeToggle').html('<i class="fa fa-moon-o"></i> <span>Dark Mode</span>');
+      localStorage.setItem('crm_theme_preference', 'light');
+    }
+  }
+
+  var curTheme = localStorage.getItem('crm_theme_preference') || 'light';
+  applyCrmTheme(curTheme);
+
+  $(document).on('click', '#globalThemeToggle', function(e) {
+    e.preventDefault();
+    var current = localStorage.getItem('crm_theme_preference') || 'light';
+    var nextTheme = (current === 'dark') ? 'light' : 'dark';
+    applyCrmTheme(nextTheme);
+  });
+
+  // Mobile hamburger drawer toggle
+  $(document).on('click', '.crm-mobile-hamburger', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    $('body').toggleClass('sidebar-open');
+  });
+
+  // Close mobile sidebar on backdrop click or outside click
+  $(document).on('click', '.content-wrapper, .main-footer', function() {
+    if ($('body').hasClass('sidebar-open')) {
+      $('body').removeClass('sidebar-open');
+    }
+  });
+});
+</script>
 <div class="clearfix"></div>
 <!-- Left side column. contains the logo and sidebar -->
 <aside class="main-sidebar"> 

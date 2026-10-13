@@ -77,8 +77,8 @@ class Ci_admin extends CI_Controller {
 				$data['users'] = array(
 					'id' => 1,
 					'c_username' => 'admin',
-					'email' => !empty($email) ? $email : 'admin@rolextogroup.com',
-					'name' => 'Rolexto Admin',
+					'email' => !empty($email) ? $email : 'admin@7strokes.com',
+					'name' => '7 Strokes Admin',
 					'mobile' => '+971 58 563 7737',
 					'user_type' => 1,
 					'user_level' => 1

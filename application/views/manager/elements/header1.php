@@ -4,8 +4,11 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
     
-<link rel="icon" type="image/png" sizes="32x32" href="<?php echo base_url(); ?>assets/favicon.ico">
-<link rel="icon" type="image/png" sizes="16x16" href="<?php echo base_url(); ?>assets/favicon.ico">
+<link rel="shortcut icon" href="<?php echo base_url(); ?>assets/7strokes-logo.png" type="image/png">
+<link rel="icon" type="image/png" sizes="64x64" href="<?php echo base_url(); ?>assets/favicon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="<?php echo base_url(); ?>assets/favicon.png">
+<link rel="icon" type="image/png" sizes="16x16" href="<?php echo base_url(); ?>assets/favicon.png">
+<link rel="apple-touch-icon" href="<?php echo base_url(); ?>assets/7strokes-logo.png">
 
     
 <title><?php echo $info['title']; ?></title>
@@ -40,6 +43,7 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/rowreorder/1.2.7/css/rowReorder.dataTables.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.5/css/responsive.dataTables.min.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/bootstrap/developer.css">
+<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-dashboard.css">
 
 <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -47,6 +51,14 @@
   <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
   <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
   <![endif]-->
+<script>
+(function() {
+    var theme = localStorage.getItem('crm_theme_preference');
+    if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    }
+})();
+</script>
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
@@ -57,14 +69,14 @@
 <div class="x_row align-items-center">
 <div class="x_col-12 x_col-md-4 text-center text-md-left">
 <div class="main-logo">
-<a href="<?php echo base_url(); ?>manager/dashboard"> <span class="logo-lg"> <img src="<?php echo base_url(); ?>assets/logo.png" height="60"/> </span> <span class="logo-mini">SRJ</span> </a> 
+<a href="<?php echo base_url(); ?>manager/dashboard"> <span class="logo-lg"> <img src="<?php echo base_url(); ?>assets/7strokes-logo.png" height="50" alt="7strokes"/> </span> </a> 
 </div>
 </div>
 <div class="X_col-12 x_col-md-8 ">
   
 <div class="head-co text-center text-md-left">
-<p><a href="mailto:support@srjsolution.com"><i class="fa fa-envelope" aria-hidden="true"></i> support@srjsolution.com</a> | <a href="tel:+971554644151"><i class="fa fa-phone-square" aria-hidden="true"></i> +971 55 464 4151</a></p>
-<p> <strong> Hello, <?php echo $this->session->userdata['manager_name']; ?></strong></p>
+<p><a href="mailto:hr@7strokes.com"><i class="fa fa-envelope" aria-hidden="true"></i> hr@7strokes.com</a> | <a href="tel:+971585637737"><i class="fa fa-phone-square" aria-hidden="true"></i> +971 58 563 7737</a></p>
+<p> <strong> Hello, <?php echo isset($this->session->userdata['manager_name']) ? $this->session->userdata['manager_name'] : '7 Strokes Admin'; ?></strong></p>
 
 
 </div>

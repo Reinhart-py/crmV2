@@ -572,13 +572,7 @@
             </div>
         </div>
 
-        <!-- 7. Footer matching reference -->
-        <div class="dash-footer">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                <div>&copy; 2024 Rolex to CRM Platform. All rights reserved.</div>
-                <div>Enterprise Real-Time Architecture</div>
-            </div>
-        </div>
+
 
     </div>
 </div>

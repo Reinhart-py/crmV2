@@ -7,8 +7,8 @@
   <!-- Tell the browser to be responsive to screen width -->
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         
-<link rel="shortcut icon" href="<?php echo base_url(); ?>assets/favicon.ico" type="image/x-icon">
-<link rel="icon" href="<?php echo base_url(); ?>assets/favicon.ico" type="image/x-icon">        
+<link rel="shortcut icon" href="<?php echo base_url(); ?>assets/7strokes-logo.png" type="image/png">
+<link rel="icon" type="image/png" href="<?php echo base_url(); ?>assets/7strokes-logo.png">        
     
     
   <!-- Bootstrap 3.3.6 -->
@@ -49,7 +49,7 @@
  <div class="">
      <div class="login-box-body">
      <div class="login-logo mb-5">
-    <a href="<?php echo base_url(); ?>"><img src="<?php echo base_url(); ?>assets/logo.png" width="260" ></a>
+    <a href="<?php echo base_url(); ?>"><img src="<?php echo base_url(); ?>assets/7strokes-logo.png" style="max-height: 70px; max-width: 100%;"></a>
   </div>
 
    <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?> <?php echo get_message($this->session->flashdata('message'),'message'); ?>

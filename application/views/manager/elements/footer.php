@@ -1,12 +1,24 @@
+<?php 
+  $footer_admin_name = $this->session->userdata('manager_name') ? $this->session->userdata('manager_name') : '7 Strokes Admin';
+  $footer_email = $this->session->userdata('manager_email') ? $this->session->userdata('manager_email') : 'hr@7strokes.com';
+  $footer_mobile = $this->session->userdata('manager_mobile') ? $this->session->userdata('manager_mobile') : '+971 58 563 7737';
+?>
 <footer class="main-footer crm-global-footer">
-  <div class="footer-contact-row">
-    <span class="footer-admin"><i class="fa fa-user-circle"></i> Hello, Rolexto Admin</span>
-    <span class="footer-divider">|</span>
-    <a href="mailto:hr@rolextogroup.com"><i class="fa fa-envelope"></i> hr@rolextogroup.com</a>
-    <span class="footer-divider">|</span>
-    <a href="tel:+971585637737"><i class="fa fa-phone"></i> +971 58 563 7737</a>
+  <div class="footer-container">
+    <div class="footer-left">
+      &copy; <?php echo date('Y'); ?> 7 Strokes CRM Platform. All rights reserved.
+    </div>
+    <div class="footer-center">
+      <span class="footer-admin"><i class="fa fa-user-circle"></i> Hello, <?php echo htmlspecialchars($footer_admin_name); ?></span>
+      <span class="footer-divider">|</span>
+      <a href="mailto:<?php echo htmlspecialchars($footer_email); ?>"><i class="fa fa-envelope"></i> <?php echo htmlspecialchars($footer_email); ?></a>
+      <span class="footer-divider">|</span>
+      <a href="tel:<?php echo preg_replace('/[^0-9+]/', '', $footer_mobile); ?>"><i class="fa fa-phone"></i> <?php echo htmlspecialchars($footer_mobile); ?></a>
+    </div>
+    <div class="footer-right">
+      Enterprise Real-Time Architecture
+    </div>
   </div>
-  <p class="footer-copy">&copy; <?php echo date('Y'); ?> Rolexto Group. All Rights Reserved. Executive CRM Management System.</p>
 </footer>
 </div>
 <!-- ./wrapper -->
