@@ -4649,9 +4649,8 @@ box-shadow:5px 7px 7px 0 rgba(2,150,102, 0.25);
 
 	.main-sidebar{    display: none;}
 	.skin-blue .main-header .navbar .sidebar-toggle{ display:none}
-	.main-header{ background-color:#fff;}
- 	body{padding-top: 111px;}
-	.main-header{ position: fixed; top:0; left:0; width:100%;  background-color: #fff; }
+ 	body{padding-top: 0;}
+	.main-header{ position: relative; width:100%; }
 
 
 	ul.munk_menu > li > a{padding: 15px 19px;}

@@ -604,11 +604,11 @@ $(function () {
     // 1. Dark / Light Mode Toggle logic
     function setDashTheme(theme) {
         if (theme === 'dark') {
-            $('html, body').attr('data-theme', 'dark');
+            $('html, body, .main-header').attr('data-theme', 'dark');
             $('#dashThemeToggle').html('<i class="fa fa-sun-o"></i> <span>Light Mode</span>');
             localStorage.setItem('crm_theme_preference', 'dark');
         } else {
-            $('html, body').removeAttr('data-theme');
+            $('html, body, .main-header').removeAttr('data-theme');
             $('#dashThemeToggle').html('<i class="fa fa-moon-o"></i> <span>Dark Mode</span>');
             localStorage.setItem('crm_theme_preference', 'light');
         }
@@ -619,7 +619,7 @@ $(function () {
 
     $('#dashThemeToggle').on('click', function(e) {
         e.preventDefault();
-        var current = $('html, body').attr('data-theme');
+        var current = $('html').attr('data-theme');
         setDashTheme(current === 'dark' ? 'light' : 'dark');
     });
 

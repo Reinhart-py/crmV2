@@ -18,12 +18,16 @@
   --crm-accent-light: rgba(153, 27, 27, 0.08);
   --crm-pill-active: #d4f938;
   --crm-pill-active-text: #09090b;
+  --crm-header-bg: #ffffff;
+  --crm-header-contact: #00235b;
   --crm-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
   --crm-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
   --crm-shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.07);
 }
 
-[data-theme="dark"] {
+[data-theme="dark"],
+html[data-theme="dark"],
+body[data-theme="dark"] {
   --crm-bg: #0b0f17;
   --crm-card-bg: #111827;
   --crm-card-hover: #162032;
@@ -33,33 +37,63 @@
   --crm-border: #1f2937;
   --crm-border-subtle: #1e293b;
   --crm-accent: #b91c1c;
+  --crm-header-bg: #0b0f17;
+  --crm-header-contact: #cbd5e1;
   --crm-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
   --crm-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
   --crm-shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  padding-top: 0 !important;
 }
 
 body {
   font-family: var(--crm-font) !important;
   background-color: var(--crm-bg) !important;
   color: var(--crm-text) !important;
+  padding-top: 0 !important;
+  margin-top: 0 !important;
   transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.wrapper {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+  background-color: transparent !important;
 }
 
 /* ==========================================================================
    1. REFERENCE IMAGE PILL NAVIGATION BAR
    ========================================================================== */
 .main-header {
-  background: #ffffff !important;
+  background: var(--crm-header-bg, #ffffff) !important;
+  background-color: var(--crm-header-bg, #ffffff) !important;
   border-bottom: 1px solid var(--crm-border) !important;
   position: relative !important;
   z-index: 1000 !important;
-  padding: 6px 0 4px 0 !important;
+  padding: 4px 0 2px 0 !important;
   margin: 0 !important;
+  transition: background-color 0.25s ease, border-color 0.25s ease !important;
 }
 
-[data-theme="dark"] .main-header {
-  background: #0d121c !important;
+[data-theme="dark"] .main-header,
+html[data-theme="dark"] .main-header,
+body[data-theme="dark"] .main-header,
+.main-header[data-theme="dark"] {
+  background: #0b0f17 !important;
+  background-color: #0b0f17 !important;
   border-bottom-color: #1e293b !important;
+}
+
+.main-header .container,
+.main-header .x_row,
+.main-header .main-logo,
+.main-header .head-co {
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 /* Full-width container pushing logo to left corner and contact info to right corner */
@@ -98,31 +132,35 @@ body {
 }
 
 .main-header .head-co p {
-  margin: 0 0 2px 0 !important;
-  line-height: 1.3 !important;
-  color: #00235b !important;
+  margin: 0 0 1px 0 !important;
+  line-height: 1.25 !important;
+  color: var(--crm-header-contact, #00235b) !important;
   font-size: 13px !important;
   text-align: right !important;
 }
 
-[data-theme="dark"] .main-header .head-co p {
+[data-theme="dark"] .main-header .head-co p,
+html[data-theme="dark"] .main-header .head-co p,
+body[data-theme="dark"] .main-header .head-co p {
   color: #cbd5e1 !important;
 }
 
 .main-header .head-co a {
-  color: #00235b !important;
+  color: var(--crm-header-contact, #00235b) !important;
   font-weight: 500 !important;
   text-decoration: none !important;
 }
 
-[data-theme="dark"] .main-header .head-co a {
+[data-theme="dark"] .main-header .head-co a,
+html[data-theme="dark"] .main-header .head-co a,
+body[data-theme="dark"] .main-header .head-co a {
   color: #93c5fd !important;
 }
 
-/* 3. Centered Floating Navbar: Pulled UP, tight margin, centered in middle */
+/* 3. Centered Floating Navbar: Pulled UP, tight margin, minimal space to border */
 .main-header .navbar.navbar-static-top {
   background: transparent !important;
-  margin: -4px auto 4px auto !important;
+  margin: -14px auto 2px auto !important;
   padding: 0 !important;
   border: none !important;
   min-height: auto !important;
@@ -133,6 +171,12 @@ body {
   width: 100% !important;
   gap: 10px !important;
   margin-left: 0 !important;
+}
+
+@media (min-width: 992px) {
+  .main-header .navbar.navbar-static-top {
+    margin: -18px auto 2px auto !important;
+  }
 }
 
 /* Sidebar Toggle styled as clean circular button on left of pill bar */
@@ -846,7 +890,7 @@ ul.munk_menu > li > ul > li > a i {
 
   /* Centered pill container on mobile */
   .main-header .navbar.navbar-static-top {
-    margin: 2px auto 6px auto !important;
+    margin: 2px auto 2px auto !important;
     width: 100% !important;
     max-width: 100% !important;
     overflow-x: auto !important;
