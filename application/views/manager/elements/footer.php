@@ -1,4 +1,12 @@
- <footer class="main-footer">
+<footer class="main-footer crm-global-footer">
+  <div class="footer-contact-row">
+    <span class="footer-admin"><i class="fa fa-user-circle"></i> Hello, Rolexto Admin</span>
+    <span class="footer-divider">|</span>
+    <a href="mailto:hr@rolextogroup.com"><i class="fa fa-envelope"></i> hr@rolextogroup.com</a>
+    <span class="footer-divider">|</span>
+    <a href="tel:+971585637737"><i class="fa fa-phone"></i> +971 58 563 7737</a>
+  </div>
+  <p class="footer-copy">&copy; <?php echo date('Y'); ?> Rolexto Group. All Rights Reserved. Executive CRM Management System.</p>
 </footer>
 </div>
 <!-- ./wrapper -->

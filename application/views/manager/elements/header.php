@@ -84,38 +84,15 @@
 
 <header class="main-header"> 
 
-<div class="container">
-<div class="x_row align-items-center">
-<div class="x_col-12 x_col-md-4 text-center text-md-left">
-<div class="main-logo">
-<a href="<?php echo base_url(); ?>manager/dashboard"> <span class="logo-lg"> <img src="https://crm.rolextogroup.com/assets/dist/img/manager-logo-new.png" height=""/> </span> <span class="logo-mini">SRJ</span> </a> 
-</div>
-</div>
-<div class="X_col-12 x_col-md-8 ">
-  
-<div class="head-co text-center text-md-left">
-<p><a href="mailto:hr@rolextogroup.com"><i class="fa fa-envelope" aria-hidden="true"></i> hr@rolextogroup.com</a> | <a href="tel:+971585637737"><i class="fa fa-phone-square" aria-hidden="true"></i> +971 58 563 7737</a></p>
-<p> <strong> Hello, Rolexto Admin<?php //echo $this->session->userdata['manager_name']; ?></strong></p>
+<div class="main-header-bar">
+  <div class="main-logo">
+    <a href="<?php echo base_url(); ?>manager/dashboard"> 
+      <span class="logo-lg"><img src="https://crm.rolextogroup.com/assets/dist/img/manager-logo-new.png" alt="Rolexto" /></span> 
+    </a> 
+  </div>
 
-
-</div>
-  
-</div>
-</div>
-</div>
-
-
-
-  
-  <!-- Header Navbar: style can be found in header.less -->
-  
+  <!-- Header Navbar -->
   <nav class="navbar navbar-static-top"> 
-    
-    <!-- Sidebar toggle button--> 
-    
-    <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button"> <span class="sr-only">Toggle navigation</span> </a> 
-  
-  
     <ul class="munk_menu">
       <?php  $route1=$this->uri->segment(2);
 	  $route2=$this->uri->segment(3);?>
