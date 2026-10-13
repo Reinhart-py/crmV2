@@ -337,7 +337,13 @@ class CI_DB_driver {
 										);
 			}
 
-			return FALSE;
+			// Return a safe empty result object so callers calling num_rows() / result_array() never throw fatal errors in PHP 8
+			$driver = $this->load_rdriver();
+			$RES = new $driver();
+			$RES->conn_id = $this->conn_id;
+			$RES->result_id = FALSE;
+			$RES->num_rows = 0;
+			return $RES;
 		}
 
 		// Stop and aggregate the query time results

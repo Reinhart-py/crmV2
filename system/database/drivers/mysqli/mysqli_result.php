@@ -35,7 +35,7 @@ class CI_DB_mysqli_result extends CI_DB_result {
 	 */
 	function num_rows()
 	{
-		return @mysqli_num_rows($this->result_id);
+		return ($this->result_id instanceof \mysqli_result) ? @mysqli_num_rows($this->result_id) : 0;
 	}
 
 	// --------------------------------------------------------------------
@@ -48,7 +48,7 @@ class CI_DB_mysqli_result extends CI_DB_result {
 	 */
 	function num_fields()
 	{
-		return @mysqli_num_fields($this->result_id);
+		return ($this->result_id instanceof \mysqli_result) ? @mysqli_num_fields($this->result_id) : 0;
 	}
 
 	// --------------------------------------------------------------------
@@ -64,6 +64,10 @@ class CI_DB_mysqli_result extends CI_DB_result {
 	function list_fields()
 	{
 		$field_names = array();
+		if (!($this->result_id instanceof \mysqli_result))
+		{
+			return $field_names;
+		}
 		while ($field = mysqli_fetch_field($this->result_id))
 		{
 			$field_names[] = $field->name;
@@ -85,6 +89,10 @@ class CI_DB_mysqli_result extends CI_DB_result {
 	function field_data()
 	{
 		$retval = array();
+		if (!($this->result_id instanceof \mysqli_result))
+		{
+			return $retval;
+		}
 		while ($field = mysqli_fetch_object($this->result_id))
 		{
 			preg_match('/([a-zA-Z]+)(\(\d+\))?/', $field->Type, $matches);
@@ -135,7 +143,7 @@ class CI_DB_mysqli_result extends CI_DB_result {
 	 */
 	function _data_seek($n = 0)
 	{
-		return mysqli_data_seek($this->result_id, $n);
+		return ($this->result_id instanceof \mysqli_result) ? mysqli_data_seek($this->result_id, $n) : FALSE;
 	}
 
 	// --------------------------------------------------------------------
@@ -150,7 +158,7 @@ class CI_DB_mysqli_result extends CI_DB_result {
 	 */
 	function _fetch_assoc()
 	{
-		return mysqli_fetch_assoc($this->result_id);
+		return ($this->result_id instanceof \mysqli_result) ? mysqli_fetch_assoc($this->result_id) : array();
 	}
 
 	// --------------------------------------------------------------------
@@ -165,7 +173,7 @@ class CI_DB_mysqli_result extends CI_DB_result {
 	 */
 	function _fetch_object()
 	{
-		return mysqli_fetch_object($this->result_id);
+		return ($this->result_id instanceof \mysqli_result) ? mysqli_fetch_object($this->result_id) : new stdClass();
 	}
 
 }
