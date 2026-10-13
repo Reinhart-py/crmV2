@@ -265,7 +265,7 @@
              <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Exp. Close Date<span>*</span></label>
-                <input type="text" class="form-control datepicker2" name="close_date" required value="<?php echo date('d-m-Y', strtotime($list['close_date']));  ?>" >
+                <input type="text" class="form-control datepicker2" name="close_date" id="close_date" required value="<?php echo (!empty($list['close_date']) && $list['close_date'] != '0000-00-00') ? date('d-m-Y', strtotime($list['close_date'])) : '';  ?>" >
               </div>
             </div>
 
@@ -406,6 +406,27 @@
               <div class="form-group">
                 <label>Website / Source Link</label>
                 <input type="text" class="form-control" name="lead_source" value="<?php echo $list['lead_source']; ?>">
+              </div>
+            </div>
+
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>Trade License Number</label>
+                <input type="text" class="form-control" name="tl_number" value="<?php echo isset($list['tl_number']) ? $list['tl_number'] : ''; ?>" placeholder="Enter Trade License Number">
+              </div>
+            </div>
+
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>TL Issue Date</label>
+                <input type="text" class="form-control datepicker" name="tl_issue_date" value="<?php echo (!empty($list['tl_issue_date']) && $list['tl_issue_date'] != '0000-00-00') ? date('d-m-Y', strtotime($list['tl_issue_date'])) : ''; ?>" placeholder="DD-MM-YYYY">
+              </div>
+            </div>
+
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>TL Expire Date</label>
+                <input type="text" class="form-control datepicker" name="tl_expire_date" value="<?php echo (!empty($list['tl_expire_date']) && $list['tl_expire_date'] != '0000-00-00') ? date('d-m-Y', strtotime($list['tl_expire_date'])) : ''; ?>" placeholder="DD-MM-YYYY">
               </div>
             </div>
 
@@ -866,17 +887,52 @@
 
     
 
+   function checkCloseDateValidity() {
+     var cd = $('#close_date').val();
+     if (!cd) return true;
+     var cdP = cd.split('-');
+     if (cdP.length !== 3) return true;
+     var cdDate = new Date(cdP[2], cdP[1] - 1, cdP[0]);
+
+     var maxFuDate = null;
+     var maxFuStr = '';
+
+     $('[name="followup_date[]"]').each(function() {
+       var val = $(this).val();
+       if (val) {
+         var p = val.split('-');
+         if (p.length === 3) {
+           var d = new Date(p[2], p[1] - 1, p[0]);
+           if (!maxFuDate || d > maxFuDate) {
+             maxFuDate = d;
+             maxFuStr = val;
+           }
+         }
+       }
+     });
+
+     if (maxFuDate && cdDate < maxFuDate) {
+       alert('Exp. Close Date cannot be previous or past of the follow up date (' + maxFuStr + ')!');
+       $('#close_date').val(maxFuStr);
+       return false;
+     }
+     return true;
+   }
+
+   $('#close_date, [name="followup_date[]"]').on('change changeDate', function() {
+     checkCloseDateValidity();
+   });
+
    $('form[name=add_form]').validate({         
+     submitHandler: function(form) {
+       if (!checkCloseDateValidity()) {
+         return false;
+       }
+       form.submit();
+     }
+   });
 
-  submitHandler: function(form) {
-
-      form.submit();
-
-    }
-
-  });
-
-});
+ });
 
 var input = $('[name="mrc"],[name="revenue"]'),
     input1 = $('[name="mrc"]'),

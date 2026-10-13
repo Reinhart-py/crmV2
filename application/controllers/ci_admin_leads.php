@@ -348,9 +348,16 @@ function __construct()
 
 				extract($_POST);				
 
+				$f_date = !empty($followup_date) ? db_date($followup_date) : '';
+				$c_date = !empty($close_date) ? db_date($close_date) : '';
+				if(!empty($f_date) && !empty($c_date)){
+					if(strtotime($c_date) < strtotime($f_date)){
+						$c_date = $f_date; // Exp. Close Date can never be previous or past of follow up dates
+					}
+				}
+
 				$list= array(				
 				'lead_id'=> 100000000,
-				'customer'=>$customer,
 				'customer'=>$customer,
 				'vertical_id'=>$vertical_id,
 				'a_number'=>$a_number,
@@ -367,23 +374,16 @@ function __construct()
 				'mrr'=>($mrc+$revenue),
 				'poc'=>$poc,
 				'contact1'=>$contact1,
-				//'sub_date'=>$sub_date,
-				//'followup_date'=>$followup_date,
-				//'close_date'=>$close_date,
-				//'month'=>$month,
-				//'agents'=>$agents,
-				//'status'=>$status,
-				//'remark'=>$remark,
 				'location'=>$location,
 				'status'=>$status,
 
-				'followup_date'=>db_date($followup_date),
+				'followup_date'=>$f_date,
 				'followup_time'=>$followup_time,
 
 				'm_date'=>db_date($m_date),
 				'm_time'=>$m_time,
 
-				'close_date'=>db_date($close_date),
+				'close_date'=>$c_date,
 				'remark'=>$remark,
 
 				'address'=>$address,
@@ -397,6 +397,10 @@ function __construct()
 				'lead_cat'=>$lead_cat,
 				'lead_assign'=>$lead_assign,
 				'lead_source'=>$lead_source,
+
+				'tl_number'=>isset($tl_number) ? $tl_number : '',
+				'tl_issue_date'=>!empty($tl_issue_date) ? db_date($tl_issue_date) : '',
+				'tl_expire_date'=>!empty($tl_expire_date) ? db_date($tl_expire_date) : '',
 
 				'v_amount'=>$v_amount,
 				'v_remark'=>$v_remark,
@@ -537,6 +541,25 @@ function __construct()
 		$data['meeting_list']=$this->comman_model->getAll(array('lead_id'=>$id),'','ci_meetings');
 		if($this->input->server('REQUEST_METHOD')==='POST'){
 			extract($_POST);
+
+			$c_date = !empty($close_date) ? db_date($close_date) : '';
+			$max_fu = '';
+			if(!empty($followup_date)){
+				foreach((array)$followup_date as $fd){
+					if(!empty($fd)){
+						$dfd = db_date($fd);
+						if(empty($max_fu) || strtotime($dfd) > strtotime($max_fu)){
+							$max_fu = $dfd;
+						}
+					}
+				}
+			}
+			if(!empty($max_fu) && !empty($c_date)){
+				if(strtotime($c_date) < strtotime($max_fu)){
+					$c_date = $max_fu; // Exp. Close Date can never be previous or past of follow up dates
+				}
+			}
+
 			$list= array(
 				'customer'=>$customer,
 				'vertical_id'=>$vertical_id,
@@ -556,16 +579,9 @@ function __construct()
 				'poc'=>$poc,
 				'contact1'=>$contact1,
 
-				//'sub_date'=>$sub_date,
-				//'followup_date'=>$followup_date,
-				//'close_date'=>$close_date,
-				//'month'=>$month,
-				//'agents'=>$agents,
-				//'status'=>$status,
-				//'remark'=>$remark,
 				'location'=>$location,
 				'status'=>$status,				
-				'close_date'=>db_date($close_date),
+				'close_date'=>$c_date,
 				'remark'=>$remark,
 				'address'=>$address,
 				'city'=>$city,
@@ -578,6 +594,10 @@ function __construct()
 				'lead_cat'=>$lead_cat,
 				'lead_assign'=>$lead_assign,
 				'lead_source'=>$lead_source,
+
+				'tl_number'=>isset($tl_number) ? $tl_number : '',
+				'tl_issue_date'=>!empty($tl_issue_date) ? db_date($tl_issue_date) : '',
+				'tl_expire_date'=>!empty($tl_expire_date) ? db_date($tl_expire_date) : '',
 
 				'v_amount'=>$v_amount,
 				'v_remark'=>$v_remark,
@@ -614,16 +634,21 @@ function __construct()
 						}else{
 
 							if(!empty($followup_date[$i])){
+								$new_fu = db_date($followup_date[$i]);
 								$so= array(		     				
 									'lead_id'=>$id,
 									'lead_type'=>'lead',
-									'followup_date'=>db_date($followup_date[$i]),
+									'followup_date'=>$new_fu,
 									'followup_time'=>$followup_time[$i],
 									'followup_remark'=>$followup_remark[$i],
 									'user_id'=>$this->session->userdata('manager_id')	     				
 								);
 								$this->comman_model->saveData('ci_followup',$so);
-								$this->comman_model->updateData('id',$id,array('followup_date'=>db_date($followup_date[$i]),'followup_time'=>$followup_time[$i]),'ci_leads');
+								$lead_up = array('followup_date'=>$new_fu,'followup_time'=>$followup_time[$i]);
+								if(!empty($c_date) && strtotime($c_date) < strtotime($new_fu)){
+									$lead_up['close_date'] = $new_fu;
+								}
+								$this->comman_model->updateData('id',$id,$lead_up,'ci_leads');
 							}
 							
 							

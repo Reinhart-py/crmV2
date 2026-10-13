@@ -48,14 +48,20 @@
 $active_group = 'default';
 $active_record = TRUE;
  
-$db['default']['hostname'] = 'localhost';
-$db['default']['username'] = 'jaipuuwy_crmrolexto';
-$db['default']['password'] = '&K94v7ogU457';
+$is_local = (
+    (isset($_SERVER['REMOTE_ADDR']) && in_array($_SERVER['REMOTE_ADDR'], array('127.0.0.1', '::1'))) ||
+    (isset($_SERVER['HTTP_HOST']) && (strpos($_SERVER['HTTP_HOST'], 'localhost') !== FALSE || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== FALSE)) ||
+    (php_sapi_name() === 'cli')
+);
+
+$db['default']['hostname'] = '127.0.0.1';
+$db['default']['username'] = $is_local ? 'root' : 'jaipuuwy_crmrolexto';
+$db['default']['password'] = $is_local ? '' : '&K94v7ogU457';
 $db['default']['database'] = 'jaipuuwy_crmrolexto';
 $db['default']['dbdriver'] = 'mysqli';
 $db['default']['dbprefix'] = '';
-$db['default']['pconnect'] = TRUE;
-$db['default']['db_debug'] = FALSE;
+$db['default']['pconnect'] = FALSE;
+$db['default']['db_debug'] = TRUE;
 $db['default']['cache_on'] = FALSE;
 $db['default']['cachedir'] = '';
 $db['default']['char_set'] = 'utf8';

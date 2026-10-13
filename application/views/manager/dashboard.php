@@ -20,12 +20,12 @@
 
         <!-- 1. Top 4 Stat Cards Row (Navy, Forest Green, Warm Brown, Dark Crimson) -->
         <div class="row">
-            <!-- 18 MY LEADS (Navy) -->
+            <!-- MY LEADS (Navy) -->
             <div class="col-lg-3 col-sm-6 col-xs-12">
                 <a href="<?php echo base_url(); ?>manager/leads" class="dash-kpi-card dash-kpi-navy" id="cardMyLeads">
                     <div class="dash-kpi-top">
                         <div>
-                            <div class="dash-kpi-value"><?php echo !empty($dashboard_count['count_leads']) ? $dashboard_count['count_leads'] : 18; ?></div>
+                            <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_leads']) ? (int)$dashboard_count['count_leads'] : 0; ?></div>
                             <div class="dash-kpi-label">MY LEADS</div>
                         </div>
                         <div class="dash-kpi-icon"><i class="ion ion-bag"></i></div>
@@ -36,12 +36,12 @@
                 </a>
             </div>
 
-            <!-- 7 MY VERTICALS (Forest Green) -->
+            <!-- MY VERTICALS (Forest Green) -->
             <div class="col-lg-3 col-sm-6 col-xs-12">
                 <a href="<?php echo base_url(); ?>manager/verticals" class="dash-kpi-card dash-kpi-forest" id="cardMyVerticals">
                     <div class="dash-kpi-top">
                         <div>
-                            <div class="dash-kpi-value"><?php echo !empty($dashboard_count['count_vetricals']) ? $dashboard_count['count_vetricals'] : 7; ?></div>
+                            <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_vetricals']) ? (int)$dashboard_count['count_vetricals'] : 0; ?></div>
                             <div class="dash-kpi-label">MY VERTICALS</div>
                         </div>
                         <div class="dash-kpi-icon"><i class="ion ion-stats-bars"></i></div>
@@ -52,12 +52,12 @@
                 </a>
             </div>
 
-            <!-- 14 TEAM USERS (Warm Brown) -->
+            <!-- TEAM USERS (Warm Brown) -->
             <div class="col-lg-3 col-sm-6 col-xs-12">
                 <a href="<?php echo base_url(); ?>manager/team/members" class="dash-kpi-card dash-kpi-amber" id="cardTeamUsers">
                     <div class="dash-kpi-top">
                         <div>
-                            <div class="dash-kpi-value"><?php echo !empty($dashboard_Tcount['count_user']) ? $dashboard_Tcount['count_user'] : 14; ?></div>
+                            <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_user']) ? (int)$dashboard_Tcount['count_user'] : 0; ?></div>
                             <div class="dash-kpi-label">TEAM USERS</div>
                         </div>
                         <div class="dash-kpi-icon"><i class="ion ion-person-add"></i></div>
@@ -68,12 +68,12 @@
                 </a>
             </div>
 
-            <!-- 56 TEAM LEADS (Dark Crimson) -->
+            <!-- TEAM LEADS (Dark Crimson) -->
             <div class="col-lg-3 col-sm-6 col-xs-12">
                 <a href="<?php echo base_url(); ?>manager/team/leads" class="dash-kpi-card dash-kpi-crimson" id="cardTeamLeads">
                     <div class="dash-kpi-top">
                         <div>
-                            <div class="dash-kpi-value"><?php echo !empty($dashboard_Tcount['count_leads']) ? $dashboard_Tcount['count_leads'] : 56; ?></div>
+                            <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_leads']) ? (int)$dashboard_Tcount['count_leads'] : 0; ?></div>
                             <div class="dash-kpi-label">TEAM LEADS</div>
                         </div>
                         <div class="dash-kpi-icon"><i class="ion ion-pie-graph"></i></div>
@@ -128,31 +128,16 @@
         </div>
 
         <?php
-            // Calculate totals for segment progress bars
-            $total_my_f = array_sum(array_slice($dashboard_f ?? [], 0, 5));
-            if($total_my_f <= 0) $total_my_f = 48;
+            // Calculate totals strictly from real database metrics
+            $total_my_f = !empty($dashboard_f) ? (int)array_sum(array_slice($dashboard_f, 0, 5)) : 0;
+            $total_my_m = !empty($dashboard_m) ? (int)array_sum(array_slice($dashboard_m, 0, 5)) : 0;
+            $total_my_c = !empty($dashboard_c['total_all']) ? (int)$dashboard_c['total_all'] : (!empty($dashboard_c) ? (int)array_sum(array_slice($dashboard_c, 0, 5)) : 0);
+            $total_my_vfu = !empty($dashboard_vfu) ? (int)array_sum(array_slice($dashboard_vfu, 0, 5)) : 0;
 
-            $total_my_m = array_sum(array_slice($dashboard_m ?? [], 0, 5));
-            if($total_my_m <= 0) $total_my_m = 34;
-
-            $total_my_c = array_sum(array_slice($dashboard_c ?? [], 0, 5));
-            if($total_my_c <= 0) $total_my_c = 6;
-
-            $total_my_vfu = array_sum(array_slice($dashboard_vfu ?? [], 0, 5));
-            if($total_my_vfu <= 0) $total_my_vfu = 11;
-
-            $total_team_f = array_sum(array_slice($dashboard_Tf ?? [], 0, 5));
-            if($total_team_f <= 0) $total_team_f = 140;
-
-            $total_team_m = array_sum(array_slice($dashboard_Tm ?? [], 0, 5));
-            if($total_team_m <= 0) $total_team_m = 70;
-
-            $total_team_c = array_sum(array_slice($dashboard_Tc ?? [], 0, 5));
-            if($total_team_c <= 0) $total_team_c = 13;
-
-            $total_team_vfu = array_sum(array_slice($dashboard_Tvfu ?? [], 0, 5));
-            if($total_team_vfu <= 0) $total_team_vfu = 44;
-        ?>
+            $total_team_f = !empty($dashboard_Tf) ? (int)array_sum(array_slice($dashboard_Tf, 0, 5)) : 0;
+            $total_team_m = !empty($dashboard_Tm) ? (int)array_sum(array_slice($dashboard_Tm, 0, 5)) : 0;
+            $total_team_c = !empty($dashboard_Tc['total_all']) ? (int)$dashboard_Tc['total_all'] : (!empty($dashboard_Tc) ? (int)array_sum(array_slice($dashboard_Tc, 0, 5)) : 0);
+            $total_team_vfu = !empty($dashboard_Tvfu) ? (int)array_sum(array_slice($dashboard_Tvfu, 0, 5)) : 0; ?>
 
         <!-- 4. Row 1: My Operational Metrics (4 Cards) -->
         <div class="row">
@@ -174,31 +159,31 @@
                         <li>
                             <a href="<?php echo base_url(); ?>manager/leads/followups?type=1" class="crm-modern-stat-chip" data-drilldown="my_followups" data-type="1" data-label="My Followups - All Missed">
                                 <span>All Missed</span>
-                                <span class="badge bg-red"><?php echo isset($dashboard_f['total_missed']) ? $dashboard_f['total_missed'] : 4; ?></span>
+                                <span class="badge bg-red"><?php echo isset($dashboard_f['total_missed']) ? $dashboard_f['total_missed'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/leads/followups?type=2" class="crm-modern-stat-chip" data-drilldown="my_followups" data-type="2" data-label="My Followups - Last 7 Days">
                                 <span>Last 7 Days</span>
-                                <span class="badge bg-orange"><?php echo isset($dashboard_f['total_lastweek']) ? $dashboard_f['total_lastweek'] : 8; ?></span>
+                                <span class="badge bg-orange"><?php echo isset($dashboard_f['total_lastweek']) ? $dashboard_f['total_lastweek'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/leads/followups?type=3" class="crm-modern-stat-chip" data-drilldown="my_followups" data-type="3" data-label="My Followups - Today">
                                 <span>Today</span>
-                                <span class="badge bg-skyblue"><?php echo isset($dashboard_f['total_today']) ? $dashboard_f['total_today'] : 9; ?></span>
+                                <span class="badge bg-skyblue"><?php echo isset($dashboard_f['total_today']) ? $dashboard_f['total_today'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/leads/followups?type=4" class="crm-modern-stat-chip" data-drilldown="my_followups" data-type="4" data-label="My Followups - Next 7 Days">
                                 <span>Next 7 Days</span>
-                                <span class="badge bg-blue"><?php echo isset($dashboard_f['total_nextweek']) ? $dashboard_f['total_nextweek'] : 12; ?></span>
+                                <span class="badge bg-blue"><?php echo isset($dashboard_f['total_nextweek']) ? $dashboard_f['total_nextweek'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/leads/followups?type=5" class="crm-modern-stat-chip" data-drilldown="my_followups" data-type="5" data-label="My Followups - All Future">
                                 <span>All Future</span>
-                                <span class="badge bg-green"><?php echo isset($dashboard_f['total_future']) ? $dashboard_f['total_future'] : 15; ?></span>
+                                <span class="badge bg-green"><?php echo isset($dashboard_f['total_future']) ? $dashboard_f['total_future'] : 0; ?></span>
                             </a>
                         </li>
                     </ul>
@@ -223,31 +208,31 @@
                         <li>
                             <a href="<?php echo base_url(); ?>manager/leads/meetings?type=1" class="crm-modern-stat-chip" data-drilldown="my_meetings" data-type="1" data-label="My Meetings - All Missed">
                                 <span>All Missed</span>
-                                <span class="badge bg-red"><?php echo isset($dashboard_m['total_missed']) ? $dashboard_m['total_missed'] : 3; ?></span>
+                                <span class="badge bg-red"><?php echo isset($dashboard_m['total_missed']) ? $dashboard_m['total_missed'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/leads/meetings?type=2" class="crm-modern-stat-chip" data-drilldown="my_meetings" data-type="2" data-label="My Meetings - Last 7 Days">
                                 <span>Last 7 Days</span>
-                                <span class="badge bg-orange"><?php echo isset($dashboard_m['total_lastweek']) ? $dashboard_m['total_lastweek'] : 4; ?></span>
+                                <span class="badge bg-orange"><?php echo isset($dashboard_m['total_lastweek']) ? $dashboard_m['total_lastweek'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/leads/meetings?type=3" class="crm-modern-stat-chip" data-drilldown="my_meetings" data-type="3" data-label="My Meetings - Today">
                                 <span>Today</span>
-                                <span class="badge bg-skyblue"><?php echo isset($dashboard_m['total_today']) ? $dashboard_m['total_today'] : 7; ?></span>
+                                <span class="badge bg-skyblue"><?php echo isset($dashboard_m['total_today']) ? $dashboard_m['total_today'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/leads/meetings?type=4" class="crm-modern-stat-chip" data-drilldown="my_meetings" data-type="4" data-label="My Meetings - Next 7 Days">
                                 <span>Next 7 Days</span>
-                                <span class="badge bg-blue"><?php echo isset($dashboard_m['total_nextweek']) ? $dashboard_m['total_nextweek'] : 9; ?></span>
+                                <span class="badge bg-blue"><?php echo isset($dashboard_m['total_nextweek']) ? $dashboard_m['total_nextweek'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/leads/meetings?type=5" class="crm-modern-stat-chip" data-drilldown="my_meetings" data-type="5" data-label="My Meetings - All Future">
                                 <span>All Future</span>
-                                <span class="badge bg-green"><?php echo isset($dashboard_m['total_future']) ? $dashboard_m['total_future'] : 11; ?></span>
+                                <span class="badge bg-green"><?php echo isset($dashboard_m['total_future']) ? $dashboard_m['total_future'] : 0; ?></span>
                             </a>
                         </li>
                     </ul>
@@ -272,31 +257,31 @@
                         <li>
                             <a href="<?php echo base_url(); ?>manager/leads?closure=1" class="crm-modern-stat-chip" data-drilldown="my_closures" data-type="1" data-label="My Closures - All Missed">
                                 <span>All Missed</span>
-                                <span class="badge bg-red"><?php echo isset($dashboard_c['total_missed']) ? $dashboard_c['total_missed'] : 1; ?></span>
+                                <span class="badge bg-red"><?php echo isset($dashboard_c['total_missed']) ? $dashboard_c['total_missed'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/leads?closure=2" class="crm-modern-stat-chip" data-drilldown="my_closures" data-type="2" data-label="My Closures - Last 7 Days">
                                 <span>Last 7 Days</span>
-                                <span class="badge bg-orange"><?php echo isset($dashboard_c['total_lastweek']) ? $dashboard_c['total_lastweek'] : 1; ?></span>
+                                <span class="badge bg-orange"><?php echo isset($dashboard_c['total_lastweek']) ? $dashboard_c['total_lastweek'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/leads?closure=3" class="crm-modern-stat-chip" data-drilldown="my_closures" data-type="3" data-label="My Closures - Today">
                                 <span>Today</span>
-                                <span class="badge bg-skyblue"><?php echo isset($dashboard_c['total_today']) ? $dashboard_c['total_today'] : 1; ?></span>
+                                <span class="badge bg-skyblue"><?php echo isset($dashboard_c['total_today']) ? $dashboard_c['total_today'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/leads?closure=4" class="crm-modern-stat-chip" data-drilldown="my_closures" data-type="4" data-label="My Closures - Next 7 Days">
                                 <span>Next 7 Days</span>
-                                <span class="badge bg-blue"><?php echo isset($dashboard_c['total_nextweek']) ? $dashboard_c['total_nextweek'] : 1; ?></span>
+                                <span class="badge bg-blue"><?php echo isset($dashboard_c['total_nextweek']) ? $dashboard_c['total_nextweek'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/leads?closure=5" class="crm-modern-stat-chip" data-drilldown="my_closures" data-type="5" data-label="My Closures - All Future">
                                 <span>All Future</span>
-                                <span class="badge bg-green"><?php echo isset($dashboard_c['total_future']) ? $dashboard_c['total_future'] : 2; ?></span>
+                                <span class="badge bg-green"><?php echo isset($dashboard_c['total_future']) ? $dashboard_c['total_future'] : 0; ?></span>
                             </a>
                         </li>
                     </ul>
@@ -321,31 +306,31 @@
                         <li>
                             <a href="<?php echo base_url(); ?>manager/verticals?type=1" class="crm-modern-stat-chip" data-drilldown="my_verticals" data-type="1" data-label="My Vertical FU - All Missed">
                                 <span>All Missed</span>
-                                <span class="badge bg-red"><?php echo isset($dashboard_vfu['total_missed']) ? $dashboard_vfu['total_missed'] : 1; ?></span>
+                                <span class="badge bg-red"><?php echo isset($dashboard_vfu['total_missed']) ? $dashboard_vfu['total_missed'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/verticals?type=2" class="crm-modern-stat-chip" data-drilldown="my_verticals" data-type="2" data-label="My Vertical FU - Last 7 Days">
                                 <span>Last 7 Days</span>
-                                <span class="badge bg-orange"><?php echo isset($dashboard_vfu['total_lastweek']) ? $dashboard_vfu['total_lastweek'] : 2; ?></span>
+                                <span class="badge bg-orange"><?php echo isset($dashboard_vfu['total_lastweek']) ? $dashboard_vfu['total_lastweek'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/verticals?type=3" class="crm-modern-stat-chip" data-drilldown="my_verticals" data-type="3" data-label="My Vertical FU - Today">
                                 <span>Today</span>
-                                <span class="badge bg-skyblue"><?php echo isset($dashboard_vfu['total_today']) ? $dashboard_vfu['total_today'] : 2; ?></span>
+                                <span class="badge bg-skyblue"><?php echo isset($dashboard_vfu['total_today']) ? $dashboard_vfu['total_today'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/verticals?type=4" class="crm-modern-stat-chip" data-drilldown="my_verticals" data-type="4" data-label="My Vertical FU - Next 7 Days">
                                 <span>Next 7 Days</span>
-                                <span class="badge bg-blue"><?php echo isset($dashboard_vfu['total_nextweek']) ? $dashboard_vfu['total_nextweek'] : 4; ?></span>
+                                <span class="badge bg-blue"><?php echo isset($dashboard_vfu['total_nextweek']) ? $dashboard_vfu['total_nextweek'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/verticals?type=5" class="crm-modern-stat-chip" data-drilldown="my_verticals" data-type="5" data-label="My Vertical FU - All Future">
                                 <span>All Future</span>
-                                <span class="badge bg-green"><?php echo isset($dashboard_vfu['total_future']) ? $dashboard_vfu['total_future'] : 2; ?></span>
+                                <span class="badge bg-green"><?php echo isset($dashboard_vfu['total_future']) ? $dashboard_vfu['total_future'] : 0; ?></span>
                             </a>
                         </li>
                     </ul>
@@ -373,31 +358,31 @@
                         <li>
                             <a href="<?php echo base_url(); ?>manager/team/followups?type=1" class="crm-modern-stat-chip" data-drilldown="team_followups" data-type="1" data-label="Team Followups - All Missed">
                                 <span>All Missed</span>
-                                <span class="badge bg-red"><?php echo isset($dashboard_Tf['total_missed']) ? $dashboard_Tf['total_missed'] : 12; ?></span>
+                                <span class="badge bg-red"><?php echo isset($dashboard_Tf['total_missed']) ? $dashboard_Tf['total_missed'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/team/followups?type=2" class="crm-modern-stat-chip" data-drilldown="team_followups" data-type="2" data-label="Team Followups - Last 7 Days">
                                 <span>Last 7 Days</span>
-                                <span class="badge bg-orange"><?php echo isset($dashboard_Tf['total_lastweek']) ? $dashboard_Tf['total_lastweek'] : 22; ?></span>
+                                <span class="badge bg-orange"><?php echo isset($dashboard_Tf['total_lastweek']) ? $dashboard_Tf['total_lastweek'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/team/followups?type=3" class="crm-modern-stat-chip" data-drilldown="team_followups" data-type="3" data-label="Team Followups - Today">
                                 <span>Today</span>
-                                <span class="badge bg-skyblue"><?php echo isset($dashboard_Tf['total_today']) ? $dashboard_Tf['total_today'] : 19; ?></span>
+                                <span class="badge bg-skyblue"><?php echo isset($dashboard_Tf['total_today']) ? $dashboard_Tf['total_today'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/team/followups?type=4" class="crm-modern-stat-chip" data-drilldown="team_followups" data-type="4" data-label="Team Followups - Next 7 Days">
                                 <span>Next 7 Days</span>
-                                <span class="badge bg-blue"><?php echo isset($dashboard_Tf['total_nextweek']) ? $dashboard_Tf['total_nextweek'] : 34; ?></span>
+                                <span class="badge bg-blue"><?php echo isset($dashboard_Tf['total_nextweek']) ? $dashboard_Tf['total_nextweek'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/team/followups?type=5" class="crm-modern-stat-chip" data-drilldown="team_followups" data-type="5" data-label="Team Followups - All Future">
                                 <span>All Future</span>
-                                <span class="badge bg-green"><?php echo isset($dashboard_Tf['total_future']) ? $dashboard_Tf['total_future'] : 53; ?></span>
+                                <span class="badge bg-green"><?php echo isset($dashboard_Tf['total_future']) ? $dashboard_Tf['total_future'] : 0; ?></span>
                             </a>
                         </li>
                     </ul>
@@ -422,31 +407,31 @@
                         <li>
                             <a href="<?php echo base_url(); ?>manager/team/meetings?type=1" class="crm-modern-stat-chip" data-drilldown="team_meetings" data-type="1" data-label="Team Meetings - All Missed">
                                 <span>All Missed</span>
-                                <span class="badge bg-red"><?php echo isset($dashboard_Tm['total_missed']) ? $dashboard_Tm['total_missed'] : 5; ?></span>
+                                <span class="badge bg-red"><?php echo isset($dashboard_Tm['total_missed']) ? $dashboard_Tm['total_missed'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/team/meetings?type=2" class="crm-modern-stat-chip" data-drilldown="team_meetings" data-type="2" data-label="Team Meetings - Last 7 Days">
                                 <span>Last 7 Days</span>
-                                <span class="badge bg-orange"><?php echo isset($dashboard_Tm['total_lastweek']) ? $dashboard_Tm['total_lastweek'] : 14; ?></span>
+                                <span class="badge bg-orange"><?php echo isset($dashboard_Tm['total_lastweek']) ? $dashboard_Tm['total_lastweek'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/team/meetings?type=3" class="crm-modern-stat-chip" data-drilldown="team_meetings" data-type="3" data-label="Team Meetings - Today">
                                 <span>Today</span>
-                                <span class="badge bg-skyblue"><?php echo isset($dashboard_Tm['total_today']) ? $dashboard_Tm['total_today'] : 9; ?></span>
+                                <span class="badge bg-skyblue"><?php echo isset($dashboard_Tm['total_today']) ? $dashboard_Tm['total_today'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/team/meetings?type=4" class="crm-modern-stat-chip" data-drilldown="team_meetings" data-type="4" data-label="Team Meetings - Next 7 Days">
                                 <span>Next 7 Days</span>
-                                <span class="badge bg-blue"><?php echo isset($dashboard_Tm['total_nextweek']) ? $dashboard_Tm['total_nextweek'] : 18; ?></span>
+                                <span class="badge bg-blue"><?php echo isset($dashboard_Tm['total_nextweek']) ? $dashboard_Tm['total_nextweek'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/team/meetings?type=5" class="crm-modern-stat-chip" data-drilldown="team_meetings" data-type="5" data-label="Team Meetings - All Future">
                                 <span>All Future</span>
-                                <span class="badge bg-green"><?php echo isset($dashboard_Tm['total_future']) ? $dashboard_Tm['total_future'] : 24; ?></span>
+                                <span class="badge bg-green"><?php echo isset($dashboard_Tm['total_future']) ? $dashboard_Tm['total_future'] : 0; ?></span>
                             </a>
                         </li>
                     </ul>
@@ -471,31 +456,31 @@
                         <li>
                             <a href="<?php echo base_url(); ?>manager/team/leads?closure=1" class="crm-modern-stat-chip" data-drilldown="team_closures" data-type="1" data-label="Team Closures - All Missed">
                                 <span>All Missed</span>
-                                <span class="badge bg-red"><?php echo isset($dashboard_Tc['total_missed']) ? $dashboard_Tc['total_missed'] : 2; ?></span>
+                                <span class="badge bg-red"><?php echo isset($dashboard_Tc['total_missed']) ? $dashboard_Tc['total_missed'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/team/leads?closure=2" class="crm-modern-stat-chip" data-drilldown="team_closures" data-type="2" data-label="Team Closures - Last 7 Days">
                                 <span>Last 7 Days</span>
-                                <span class="badge bg-orange"><?php echo isset($dashboard_Tc['total_lastweek']) ? $dashboard_Tc['total_lastweek'] : 1; ?></span>
+                                <span class="badge bg-orange"><?php echo isset($dashboard_Tc['total_lastweek']) ? $dashboard_Tc['total_lastweek'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/team/leads?closure=3" class="crm-modern-stat-chip" data-drilldown="team_closures" data-type="3" data-label="Team Closures - Today">
                                 <span>Today</span>
-                                <span class="badge bg-skyblue"><?php echo isset($dashboard_Tc['total_today']) ? $dashboard_Tc['total_today'] : 1; ?></span>
+                                <span class="badge bg-skyblue"><?php echo isset($dashboard_Tc['total_today']) ? $dashboard_Tc['total_today'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/team/leads?closure=4" class="crm-modern-stat-chip" data-drilldown="team_closures" data-type="4" data-label="Team Closures - Next 7 Days">
                                 <span>Next 7 Days</span>
-                                <span class="badge bg-blue"><?php echo isset($dashboard_Tc['total_nextweek']) ? $dashboard_Tc['total_nextweek'] : 2; ?></span>
+                                <span class="badge bg-blue"><?php echo isset($dashboard_Tc['total_nextweek']) ? $dashboard_Tc['total_nextweek'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/team/leads?closure=5" class="crm-modern-stat-chip" data-drilldown="team_closures" data-type="5" data-label="Team Closures - All Future">
                                 <span>All Future</span>
-                                <span class="badge bg-green"><?php echo isset($dashboard_Tc['total_future']) ? $dashboard_Tc['total_future'] : 7; ?></span>
+                                <span class="badge bg-green"><?php echo isset($dashboard_Tc['total_future']) ? $dashboard_Tc['total_future'] : 0; ?></span>
                             </a>
                         </li>
                     </ul>
@@ -520,31 +505,31 @@
                         <li>
                             <a href="<?php echo base_url(); ?>manager/team/verticals?type=1" class="crm-modern-stat-chip" data-drilldown="team_verticals" data-type="1" data-label="Team Vertical FU - All Missed">
                                 <span>All Missed</span>
-                                <span class="badge bg-red"><?php echo isset($dashboard_Tvfu['total_missed']) ? $dashboard_Tvfu['total_missed'] : 5; ?></span>
+                                <span class="badge bg-red"><?php echo isset($dashboard_Tvfu['total_missed']) ? $dashboard_Tvfu['total_missed'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/team/verticals?type=2" class="crm-modern-stat-chip" data-drilldown="team_verticals" data-type="2" data-label="Team Vertical FU - Last 7 Days">
                                 <span>Last 7 Days</span>
-                                <span class="badge bg-orange"><?php echo isset($dashboard_Tvfu['total_lastweek']) ? $dashboard_Tvfu['total_lastweek'] : 9; ?></span>
+                                <span class="badge bg-orange"><?php echo isset($dashboard_Tvfu['total_lastweek']) ? $dashboard_Tvfu['total_lastweek'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/team/verticals?type=3" class="crm-modern-stat-chip" data-drilldown="team_verticals" data-type="3" data-label="Team Vertical FU - Today">
                                 <span>Today</span>
-                                <span class="badge bg-skyblue"><?php echo isset($dashboard_Tvfu['total_today']) ? $dashboard_Tvfu['total_today'] : 6; ?></span>
+                                <span class="badge bg-skyblue"><?php echo isset($dashboard_Tvfu['total_today']) ? $dashboard_Tvfu['total_today'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/team/verticals?type=4" class="crm-modern-stat-chip" data-drilldown="team_verticals" data-type="4" data-label="Team Vertical FU - Next 7 Days">
                                 <span>Next 7 Days</span>
-                                <span class="badge bg-blue"><?php echo isset($dashboard_Tvfu['total_nextweek']) ? $dashboard_Tvfu['total_nextweek'] : 9; ?></span>
+                                <span class="badge bg-blue"><?php echo isset($dashboard_Tvfu['total_nextweek']) ? $dashboard_Tvfu['total_nextweek'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
                             <a href="<?php echo base_url(); ?>manager/team/verticals?type=5" class="crm-modern-stat-chip" data-drilldown="team_verticals" data-type="5" data-label="Team Vertical FU - All Future">
                                 <span>All Future</span>
-                                <span class="badge bg-green"><?php echo isset($dashboard_Tvfu['total_future']) ? $dashboard_Tvfu['total_future'] : 15; ?></span>
+                                <span class="badge bg-green"><?php echo isset($dashboard_Tvfu['total_future']) ? $dashboard_Tvfu['total_future'] : 0; ?></span>
                             </a>
                         </li>
                     </ul>
@@ -628,34 +613,34 @@ $(function () {
     
     // My Projection Data (Jan - Dec)
     var myProData = [
-        <?php echo isset($dashboard_MyPro['lead_number']['pt_0']) ? (int)$dashboard_MyPro['lead_number']['pt_0'] : 14; ?>,
-        <?php echo isset($dashboard_MyPro['lead_number']['pt_1']) ? (int)$dashboard_MyPro['lead_number']['pt_1'] : 18; ?>,
-        <?php echo isset($dashboard_MyPro['lead_number']['pt_2']) ? (int)$dashboard_MyPro['lead_number']['pt_2'] : 16; ?>,
-        <?php echo isset($dashboard_MyPro['lead_number']['pt_3']) ? (int)$dashboard_MyPro['lead_number']['pt_3'] : 22; ?>,
-        <?php echo isset($dashboard_MyPro['lead_number']['pt_4']) ? (int)$dashboard_MyPro['lead_number']['pt_4'] : 20; ?>,
-        <?php echo isset($dashboard_MyPro['lead_number']['pt_5']) ? (int)$dashboard_MyPro['lead_number']['pt_5'] : 26; ?>,
-        <?php echo isset($dashboard_MyPro['lead_number']['pt_6']) ? (int)$dashboard_MyPro['lead_number']['pt_6'] : 24; ?>,
-        <?php echo isset($dashboard_MyPro['lead_number']['pt_7']) ? (int)$dashboard_MyPro['lead_number']['pt_7'] : 30; ?>,
-        <?php echo isset($dashboard_MyPro['lead_number']['pt_8']) ? (int)$dashboard_MyPro['lead_number']['pt_8'] : 36; ?>,
-        <?php echo isset($dashboard_MyPro['lead_number']['pt_9']) ? (int)$dashboard_MyPro['lead_number']['pt_9'] : 32; ?>,
-        <?php echo isset($dashboard_MyPro['lead_number']['pt_10']) ? (int)$dashboard_MyPro['lead_number']['pt_10'] : 40; ?>,
-        <?php echo isset($dashboard_MyPro['lead_number']['pt_11']) ? (int)$dashboard_MyPro['lead_number']['pt_11'] : 48; ?>
+        <?php echo isset($dashboard_MyPro['lead_number']['pt_0']) ? (int)$dashboard_MyPro['lead_number']['pt_0'] : 0; ?>,
+        <?php echo isset($dashboard_MyPro['lead_number']['pt_1']) ? (int)$dashboard_MyPro['lead_number']['pt_1'] : 0; ?>,
+        <?php echo isset($dashboard_MyPro['lead_number']['pt_2']) ? (int)$dashboard_MyPro['lead_number']['pt_2'] : 0; ?>,
+        <?php echo isset($dashboard_MyPro['lead_number']['pt_3']) ? (int)$dashboard_MyPro['lead_number']['pt_3'] : 0; ?>,
+        <?php echo isset($dashboard_MyPro['lead_number']['pt_4']) ? (int)$dashboard_MyPro['lead_number']['pt_4'] : 0; ?>,
+        <?php echo isset($dashboard_MyPro['lead_number']['pt_5']) ? (int)$dashboard_MyPro['lead_number']['pt_5'] : 0; ?>,
+        <?php echo isset($dashboard_MyPro['lead_number']['pt_6']) ? (int)$dashboard_MyPro['lead_number']['pt_6'] : 0; ?>,
+        <?php echo isset($dashboard_MyPro['lead_number']['pt_7']) ? (int)$dashboard_MyPro['lead_number']['pt_7'] : 0; ?>,
+        <?php echo isset($dashboard_MyPro['lead_number']['pt_8']) ? (int)$dashboard_MyPro['lead_number']['pt_8'] : 0; ?>,
+        <?php echo isset($dashboard_MyPro['lead_number']['pt_9']) ? (int)$dashboard_MyPro['lead_number']['pt_9'] : 0; ?>,
+        <?php echo isset($dashboard_MyPro['lead_number']['pt_10']) ? (int)$dashboard_MyPro['lead_number']['pt_10'] : 0; ?>,
+        <?php echo isset($dashboard_MyPro['lead_number']['pt_11']) ? (int)$dashboard_MyPro['lead_number']['pt_11'] : 0; ?>
     ];
 
     // Team Projection Data (Jan - Dec)
     var teamProData = [
-        <?php echo isset($dashboard_TeamPro['lead_number']['pt_0']) ? (int)$dashboard_TeamPro['lead_number']['pt_0'] : 20; ?>,
-        <?php echo isset($dashboard_TeamPro['lead_number']['pt_1']) ? (int)$dashboard_TeamPro['lead_number']['pt_1'] : 28; ?>,
-        <?php echo isset($dashboard_TeamPro['lead_number']['pt_2']) ? (int)$dashboard_TeamPro['lead_number']['pt_2'] : 25; ?>,
-        <?php echo isset($dashboard_TeamPro['lead_number']['pt_3']) ? (int)$dashboard_TeamPro['lead_number']['pt_3'] : 35; ?>,
-        <?php echo isset($dashboard_TeamPro['lead_number']['pt_4']) ? (int)$dashboard_TeamPro['lead_number']['pt_4'] : 32; ?>,
-        <?php echo isset($dashboard_TeamPro['lead_number']['pt_5']) ? (int)$dashboard_TeamPro['lead_number']['pt_5'] : 42; ?>,
-        <?php echo isset($dashboard_TeamPro['lead_number']['pt_6']) ? (int)$dashboard_TeamPro['lead_number']['pt_6'] : 40; ?>,
-        <?php echo isset($dashboard_TeamPro['lead_number']['pt_7']) ? (int)$dashboard_TeamPro['lead_number']['pt_7'] : 50; ?>,
-        <?php echo isset($dashboard_TeamPro['lead_number']['pt_8']) ? (int)$dashboard_TeamPro['lead_number']['pt_8'] : 58; ?>,
-        <?php echo isset($dashboard_TeamPro['lead_number']['pt_9']) ? (int)$dashboard_TeamPro['lead_number']['pt_9'] : 52; ?>,
-        <?php echo isset($dashboard_TeamPro['lead_number']['pt_10']) ? (int)$dashboard_TeamPro['lead_number']['pt_10'] : 65; ?>,
-        <?php echo isset($dashboard_TeamPro['lead_number']['pt_11']) ? (int)$dashboard_TeamPro['lead_number']['pt_11'] : 75; ?>
+        <?php echo isset($dashboard_TeamPro['lead_number']['pt_0']) ? (int)$dashboard_TeamPro['lead_number']['pt_0'] : 0; ?>,
+        <?php echo isset($dashboard_TeamPro['lead_number']['pt_1']) ? (int)$dashboard_TeamPro['lead_number']['pt_1'] : 0; ?>,
+        <?php echo isset($dashboard_TeamPro['lead_number']['pt_2']) ? (int)$dashboard_TeamPro['lead_number']['pt_2'] : 0; ?>,
+        <?php echo isset($dashboard_TeamPro['lead_number']['pt_3']) ? (int)$dashboard_TeamPro['lead_number']['pt_3'] : 0; ?>,
+        <?php echo isset($dashboard_TeamPro['lead_number']['pt_4']) ? (int)$dashboard_TeamPro['lead_number']['pt_4'] : 0; ?>,
+        <?php echo isset($dashboard_TeamPro['lead_number']['pt_5']) ? (int)$dashboard_TeamPro['lead_number']['pt_5'] : 0; ?>,
+        <?php echo isset($dashboard_TeamPro['lead_number']['pt_6']) ? (int)$dashboard_TeamPro['lead_number']['pt_6'] : 0; ?>,
+        <?php echo isset($dashboard_TeamPro['lead_number']['pt_7']) ? (int)$dashboard_TeamPro['lead_number']['pt_7'] : 0; ?>,
+        <?php echo isset($dashboard_TeamPro['lead_number']['pt_8']) ? (int)$dashboard_TeamPro['lead_number']['pt_8'] : 0; ?>,
+        <?php echo isset($dashboard_TeamPro['lead_number']['pt_9']) ? (int)$dashboard_TeamPro['lead_number']['pt_9'] : 0; ?>,
+        <?php echo isset($dashboard_TeamPro['lead_number']['pt_10']) ? (int)$dashboard_TeamPro['lead_number']['pt_10'] : 0; ?>,
+        <?php echo isset($dashboard_TeamPro['lead_number']['pt_11']) ? (int)$dashboard_TeamPro['lead_number']['pt_11'] : 0; ?>
     ];
 
     var chartOptions = {

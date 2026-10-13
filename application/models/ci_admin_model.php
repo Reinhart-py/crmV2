@@ -236,13 +236,14 @@ public function dashboard_TeamPro($table='ci_leads'){
 			'total_future' => 0,
 			'total_all' => 0
 		);
+		$effective_close = "(CASE WHEN close_date < followup_date AND followup_date != '' AND followup_date != '0000-00-00' THEN followup_date ELSE close_date END)";
 		$sql = "SELECT 
-			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE close_date < '$today' AND close_date != '' AND close_date != '0000-00-00' AND ".$user_cond.") AS total_missed,
-			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE close_date < '$today' AND close_date >= '$last_date' AND close_date != '' AND close_date != '0000-00-00' AND ".$user_cond.") AS total_lastweek,
-			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE close_date = '$today' AND ".$user_cond.") AS total_today,
-			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE close_date > '$today' AND close_date <= '$next_date' AND ".$user_cond.") AS total_nextweek,
-			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE close_date > '$today' AND ".$user_cond.") AS total_future,
-			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE ".$user_cond." AND (status=39 OR status IN (42,43,44) OR (close_date != '' AND close_date != '0000-00-00'))) AS total_all";
+			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE $effective_close < '$today' AND $effective_close != '' AND $effective_close != '0000-00-00' AND ".$user_cond.") AS total_missed,
+			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE $effective_close < '$today' AND $effective_close >= '$last_date' AND $effective_close != '' AND $effective_close != '0000-00-00' AND ".$user_cond.") AS total_lastweek,
+			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE $effective_close = '$today' AND ".$user_cond.") AS total_today,
+			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE $effective_close > '$today' AND $effective_close <= '$next_date' AND ".$user_cond.") AS total_nextweek,
+			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE $effective_close > '$today' AND ".$user_cond.") AS total_future,
+			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE ".$user_cond." AND (status=39 OR status IN (42,43,44) OR ($effective_close != '' AND $effective_close != '0000-00-00'))) AS total_all";
 		$rows = $this->db->query($sql);
 		if($rows && $rows->num_rows() >= 1){
 			$data = $rows->row_array();

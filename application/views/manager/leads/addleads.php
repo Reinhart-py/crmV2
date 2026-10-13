@@ -181,7 +181,7 @@
              <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Exp. Close Date<span>*</span></label>
-                <input type="text" class="form-control datepicker2" required name="close_date"  >
+                <input type="text" class="form-control datepicker2" required name="close_date" id="close_date"  >
               </div>
             </div>
 
@@ -319,6 +319,27 @@
                 <input type="text" class="form-control" name="lead_source"  >
               </div>
             </div>          
+
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>Trade License Number</label>
+                <input type="text" class="form-control" name="tl_number" placeholder="Enter Trade License Number">
+              </div>
+            </div>
+
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>TL Issue Date</label>
+                <input type="text" class="form-control datepicker" name="tl_issue_date" placeholder="DD-MM-YYYY">
+              </div>
+            </div>
+
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>TL Expire Date</label>
+                <input type="text" class="form-control datepicker" name="tl_expire_date" placeholder="DD-MM-YYYY">
+              </div>
+            </div>
            
         
         </div>
@@ -343,7 +364,7 @@
             <div class="col-lg-2 col-sm-6">
               <div class="form-group">
                 <label>Next Follow Up Date</label>
-                <input type="text" class="form-control datepicker2" name="followup_date"  >
+                <input type="text" class="form-control datepicker2" name="followup_date" id="followup_date"  >
               </div>
             </div>
 
@@ -699,17 +720,39 @@
 
     
 
+   function checkCloseDateValidity() {
+     var fu = $('#followup_date').val();
+     var cd = $('#close_date').val();
+     if (fu && cd) {
+       var fuP = fu.split('-');
+       var cdP = cd.split('-');
+       if (fuP.length === 3 && cdP.length === 3) {
+         var fuDate = new Date(fuP[2], fuP[1] - 1, fuP[0]);
+         var cdDate = new Date(cdP[2], cdP[1] - 1, cdP[0]);
+         if (cdDate < fuDate) {
+           alert('Exp. Close Date cannot be previous or past of the Follow Up Date (' + fu + ')!');
+           $('#close_date').val(fu);
+           return false;
+         }
+       }
+     }
+     return true;
+   }
+
+   $('#close_date, #followup_date').on('change changeDate', function() {
+     checkCloseDateValidity();
+   });
+
    $('form[name=add_form]').validate({         
+     submitHandler: function(form) {
+       if (!checkCloseDateValidity()) {
+         return false;
+       }
+       form.submit();
+     }
+   });
 
-  submitHandler: function(form) {
-
-      form.submit();
-
-    }
-
-  });
-
-});
+ });
 
 
 var input = $('[name="mrc"],[name="revenue"]'),

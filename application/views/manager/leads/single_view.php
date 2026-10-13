@@ -203,7 +203,21 @@
               <tr>
               <th scope="col">One time charges   </th>
               <td scope="col"><?php echo $p_info['otc']; ?></td>              
-            
+              </tr>
+
+              <tr>
+              <th scope="col">Trade License Number</th>
+              <td scope="col"><?php echo !empty($p_info['tl_number']) ? $p_info['tl_number'] : '-'; ?></td>              
+              </tr>
+
+              <tr>
+              <th scope="col">TL Issue Date</th>
+              <td scope="col"><?php echo (!empty($p_info['tl_issue_date']) && $p_info['tl_issue_date'] != '0000-00-00') ? simple_date($p_info['tl_issue_date']) : '-'; ?></td>              
+              </tr>
+
+              <tr>
+              <th scope="col">TL Expire Date</th>
+              <td scope="col"><?php echo (!empty($p_info['tl_expire_date']) && $p_info['tl_expire_date'] != '0000-00-00') ? simple_date($p_info['tl_expire_date']) : '-'; ?></td>              
               </tr>
 
             
