@@ -272,11 +272,11 @@ $(".logout").click(function(){
 <script>
         $('.munk_menu').slimmenu(
             {
-                resizeWidth: '767',
+                resizeWidth: '0',
                 collapserTitle: '',
                 animSpeed: 'medium',
-                indentChildren: true,
-                childrenIndenter: '&raquo;'
+                indentChildren: false,
+                childrenIndenter: ''
             });
     </script>
     

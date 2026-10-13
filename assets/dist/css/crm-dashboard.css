@@ -176,12 +176,14 @@ ul.munk_menu {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  flex-wrap: wrap !important;
+  flex-wrap: nowrap !important;
+  white-space: nowrap !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05) !important;
   border: 1px solid #e2e8f0 !important;
   list-style: none !important;
   margin: 0 auto !important;
   float: none !important;
+  max-width: 100% !important;
 }
 
 [data-theme="dark"] ul.munk_menu {
@@ -807,3 +809,183 @@ ul.munk_menu > li > ul > li > a i {
   border-top: 1px solid var(--crm-border);
   margin-top: 25px;
 }
+
+/* ==========================================================================
+   8. RESPONSIVE MOBILE & ANDROID STYLING (PROPORTIONALLY SHRINKED PILL MENU)
+   ========================================================================== */
+@media (max-width: 992px) {
+  ul.munk_menu > li > a {
+    font-size: 12px !important;
+    padding: 6px 10px !important;
+    gap: 5px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Prevent slimmenu accordion overrides */
+  .menu-collapser,
+  .sub-collapser,
+  .sub-toggle {
+    display: none !important;
+  }
+
+  /* Header Top elements scaled down for mobile screen */
+  .main-header .container {
+    padding: 0 10px !important;
+  }
+
+  .main-header .main-logo img {
+    max-height: 28px !important;
+  }
+
+  .main-header .head-co p {
+    font-size: 10.5px !important;
+    line-height: 1.25 !important;
+    margin: 0 0 1px 0 !important;
+  }
+
+  /* Centered pill container on mobile */
+  .main-header .navbar.navbar-static-top {
+    margin: 2px auto 6px auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    padding: 2px 6px !important;
+    justify-content: center !important;
+  }
+
+  .main-header .navbar.navbar-static-top::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  .main-header .sidebar-toggle {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 12px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Retain exact horizontal floating pill design, scaled down smoothly */
+  ul.munk_menu,
+  ul.munk_menu.collapsed {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    white-space: nowrap !important;
+    max-width: calc(100vw - 50px) !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    border-radius: 9999px !important;
+    padding: 3px 5px !important;
+    margin: 0 auto !important;
+    float: none !important;
+    height: auto !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  }
+
+  ul.munk_menu::-webkit-scrollbar,
+  ul.munk_menu.collapsed::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  ul.munk_menu > li,
+  ul.munk_menu.collapsed > li {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    float: none !important;
+    width: auto !important;
+    margin: 0 1px !important;
+    flex-shrink: 0 !important;
+  }
+
+  ul.munk_menu > li > a,
+  ul.munk_menu.collapsed > li > a {
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    padding: 5px 8px !important;
+    gap: 4px !important;
+    border-radius: 9999px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    white-space: nowrap !important;
+    border: none !important;
+    border-bottom: none !important;
+    line-height: 1.2 !important;
+  }
+
+  ul.munk_menu > li > a i,
+  ul.munk_menu.collapsed > li > a i {
+    font-size: 11px !important;
+  }
+
+  ul.munk_menu > li.active > a,
+  ul.munk_menu.collapsed > li.active > a {
+    font-size: 11px !important;
+    padding: 5px 9px !important;
+    font-weight: 700 !important;
+  }
+
+  ul.munk_menu > li.active > a:before,
+  ul.munk_menu.collapsed > li.active > a:before {
+    font-size: 11px !important;
+    margin-right: 2px !important;
+  }
+
+  /* Floating Dropdown Submenus on Mobile */
+  ul.munk_menu > li > ul,
+  ul.munk_menu.collapsed > li > ul {
+    position: absolute !important;
+    top: calc(100% + 4px) !important;
+    left: 0 !important;
+    transform: none !important;
+    min-width: 140px !important;
+    padding: 4px !important;
+    border-radius: 10px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+    z-index: 999999 !important;
+  }
+
+  ul.munk_menu > li > ul > li > a,
+  ul.munk_menu.collapsed > li > ul > li > a {
+    font-size: 11px !important;
+    padding: 6px 10px !important;
+    border-radius: 6px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-header .head-co p {
+    font-size: 9.5px !important;
+    letter-spacing: -0.01em !important;
+  }
+
+  .main-header .main-logo img {
+    max-height: 24px !important;
+  }
+
+  ul.munk_menu > li > a,
+  ul.munk_menu.collapsed > li > a {
+    font-size: 10.5px !important;
+    padding: 4px 7px !important;
+    gap: 3px !important;
+  }
+
+  ul.munk_menu > li.active > a,
+  ul.munk_menu.collapsed > li.active > a {
+    font-size: 10.5px !important;
+    padding: 4px 8px !important;
+  }
+}
+
