@@ -103,6 +103,11 @@ class CI_DB_driver {
 	 */
 	function initialize()
 	{
+		if (isset($this->_failed_connect) && $this->_failed_connect === TRUE)
+		{
+			return FALSE;
+		}
+
 		// If an existing connection resource is available
 		// there is no need to connect and select the database
 		if (is_resource($this->conn_id) OR is_object($this->conn_id))
@@ -118,6 +123,7 @@ class CI_DB_driver {
 		// No connection resource?  Throw an error
 		if ( ! $this->conn_id)
 		{
+			$this->_failed_connect = TRUE;
 			log_message('error', 'Unable to connect to the database');
 
 			if ($this->db_debug)
