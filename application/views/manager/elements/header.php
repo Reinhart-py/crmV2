@@ -117,7 +117,7 @@
      <?php if($this->session->userdata['manager_role']==1){ ?>
 
 
-     <li class="<?php if($route1=="users"){ echo "active";}else{ echo "";}?> "> <a href="#"><i class="fa fa-users"></i> <span>Users</span> </a>
+     <li class="<?php if($route1=="users"){ echo "active";}else{ echo "";}?> "> <a href="<?php echo base_url();?>manager/users"><i class="fa fa-users"></i> <span>Users</span> </a>
         <ul>
           <li><a href="<?php echo base_url();?>manager/users/add"><i class="fa fa-plus"></i>Add </a></li>
           <li><a href="<?php echo base_url();?>manager/users"><i class="fa fa-list"></i>View</a></li>
@@ -133,7 +133,7 @@
 
 
 
-      <li class="<?php if($route1=="leads"){ echo "active";}else{ echo "";}?>"> <a href="#"><i class="fa fa-list"></i> <span>Leads</span> </a>
+      <li class="<?php if($route1=="leads"){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/leads"><i class="fa fa-list"></i> <span>Leads</span> </a>
         <ul>
           <li><a href="<?php echo base_url();?>manager/leads/add"><i class="fa fa-plus"></i>Add </a></li>
           <li><a href="<?php echo base_url();?>manager/leads"><i class="fa fa-list"></i>View</a></li>
@@ -146,7 +146,7 @@
 
 
       
-    <li class="<?php if($route1=="users"){ echo "active";}else{ echo "";}?> "> <a href="#"><i class="fa fa-users"></i> <span>Verticals</span> </a>
+    <li class="<?php if($route1=="verticals"){ echo "active";}else{ echo "";}?> "> <a href="<?php echo base_url();?>manager/verticals"><i class="fa fa-users"></i> <span>Verticals</span> </a>
         <ul>
           <li><a href="<?php echo base_url();?>manager/verticals/add"><i class="fa fa-plus"></i>Add </a></li>
           <li><a href="<?php echo base_url();?>manager/verticals"><i class="fa fa-list"></i>View</a></li>
@@ -156,7 +156,7 @@
       </li>
 
 
-      <li class="<?php if($route1=="team"){ echo "active";}else{ echo "";}?>"> <a href="#"><i class="fa fa-list"></i> <span>Team</span> </a>
+      <li class="<?php if($route1=="team"){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/team/members"><i class="fa fa-list"></i> <span>Team</span> </a>
         <ul>
           <li><a href="<?php echo base_url();?>manager/team/members"><i class="fa fa-plus"></i>Members </a></li>
           <li><a href="<?php echo base_url();?>manager/team/chart"><i class="fa fa-list"></i>Chart</a></li>
@@ -175,7 +175,7 @@
      <?php if($this->session->userdata['manager_role']==1){ ?>
      
 
-      <li class="<?php if($route1=="roles"){ echo "active";}else{ echo "";}?>"> <a href="#"><i class="fa fa-paperclip"></i> <span>System</span> </a>
+      <li class="<?php if($route1=="roles"){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/roles"><i class="fa fa-paperclip"></i> <span>System</span> </a>
         <ul>        
           <li><a href="<?php echo base_url();?>manager/roles"><i class="fa fa-list"></i>Roles</a></li>
           <li><a href="<?php echo base_url();?>manager/terms"><i class="fa fa-list"></i>Category</a></li>
@@ -186,7 +186,7 @@
    
       
       
-      <li class="<?php if($route1=="profile"){ echo "active";}else{ echo "";}?>"> <a href="#"> <i class="fa fa-user" aria-hidden="true"></i><span>Profile</span></a>
+      <li class="<?php if($route1=="profile"){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/profile"> <i class="fa fa-user" aria-hidden="true"></i><span>Profile</span></a>
       <ul>        
           <li><a href="<?php echo base_url();?>manager/profile"><i class="fa fa-eye"></i>View Profile</a></li>
           <li><a href="<?php echo base_url();?>manager/password"><i class="fa fa-list"></i>Change Password</a></li>
@@ -194,7 +194,7 @@
          </li>
 
     
-      <li> <a class="logout" href="#"> <i class="fa fa-power-off"></i> <span>Logout</span></a> </li>
+      <li> <a class="logout" href="<?php echo base_url();?>manager/logout"> <i class="fa fa-power-off"></i> <span>Logout</span></a> </li>
 
     </ul>
 

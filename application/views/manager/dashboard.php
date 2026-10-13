@@ -707,65 +707,12 @@ $(function () {
         }, chartOptions);
     }
 
-    // 3. Interactive Drill-Down Panel Logic for the 12 Cards
+    // 3. Stat chips and cards navigate cleanly
     $('.crm-modern-stat-chip').on('click', function(e) {
-        // If user wants to navigate directly on ctrl/meta click, allow it
-        if (e.ctrlKey || e.metaKey) return;
-        e.preventDefault();
-
-        $('.crm-modern-stat-chip').removeClass('active');
-        $(this).addClass('active');
-
-        var drillType = $(this).attr('data-drilldown') || 'leads';
-        var typeId = $(this).attr('data-type') || '1';
-        var label = $(this).attr('data-label') || 'Metric Records';
-        var badgeCount = $(this).find('.badge').text() || '0';
         var targetUrl = $(this).attr('href');
-
-        $('#drilldownTitle').text(label);
-        $('#drilldownCountBadge').text(badgeCount + ' Records');
-        $('#drilldownExternalLink').attr('href', targetUrl);
-
-        // Generate contextual rows based on the selected metric and range
-        var sampleRows = '';
-        var count = parseInt(badgeCount, 10);
-        if (isNaN(count) || count <= 0) count = 3;
-        if (count > 6) count = 6; // Display preview batch
-
-        var rangeNames = {
-            '1': 'Missed SLA',
-            '2': 'Last 7 Days',
-            '3': 'Due Today',
-            '4': 'Upcoming (7 Days)',
-            '5': 'Future Pipeline'
-        };
-        var currentRange = rangeNames[typeId] || 'Active';
-
-        for (var i = 1; i <= count; i++) {
-            sampleRows += '<tr>' +
-                '<td><strong style="color:#b91c1c;">#RLX-' + (1000 + i * 17) + '</strong></td>' +
-                '<td><div style="font-weight:700;">Al Futtaim Group UAE</div><small style="color:var(--crm-text-muted);">Corporate Licensing Tier ' + i + '</small></td>' +
-                '<td><div>Rashid Al-Maktoum</div><small><i class="fa fa-phone"></i> +971 50 ' + (234000 + i * 111) + '</small></td>' +
-                '<td><span class="label label-default" style="font-size:11px;">' + currentRange + '</span></td>' +
-                '<td><span class="badge bg-green" style="font-size:11px;">Qualified</span></td>' +
-                '<td>Agent ' + (i % 3 === 0 ? 'Sarah Jenkins' : 'Masoud Tariq') + '</td>' +
-                '<td><a href="' + targetUrl + '" class="btn btn-xs btn-primary" style="border-radius:4px;"><i class="fa fa-eye"></i> View</a></td>' +
-            '</tr>';
+        if (targetUrl && targetUrl !== '#' && targetUrl.indexOf('javascript') === -1) {
+            window.location.href = targetUrl;
         }
-
-        $('#drilldownTableBody').html(sampleRows);
-        $('#dashDrilldownPanel').addClass('active');
-
-        // Smooth scroll to panel
-        $('html, body').animate({
-            scrollTop: $('#dashDrilldownPanel').offset().top - 80
-        }, 300);
-    });
-
-    $('#dashDrilldownClose').on('click', function(e) {
-        e.preventDefault();
-        $('#dashDrilldownPanel').removeClass('active');
-        $('.crm-modern-stat-chip').removeClass('active');
     });
 });
 </script>

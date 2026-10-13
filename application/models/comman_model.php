@@ -14,7 +14,7 @@
 					$this->db->order_by($order[0], $order[1]); 
 				}	
 				$data = $this->db->get($table);
-				if($data->num_rows()>=1){
+				if($data && is_object($data) && $data->num_rows()>=1){
 					foreach($data->result_array() as  $row){
 						$ret[] = $row;	
 					}
@@ -33,7 +33,7 @@
 					$this->db->order_by($order[0], $order[1]); 
 				}
 				$data = $this->db->get($table);
-				if($data->num_rows()>=1){
+				if($data && is_object($data) && $data->num_rows()>=1){
 					foreach($data->result_array() as  $row){
 						$ret[] = $row[$field];	
 					}
@@ -50,7 +50,7 @@
 					$this->db->order_by($order[0], $order[1]); 
 				}	
 				$data = $this->db->get($table);
-				if($data->num_rows()>=1){
+				if($data && is_object($data) && $data->num_rows()>=1){
 					foreach($data->result_array() as  $k=>$row){
 						$ret[] = $row[$fields[0]];	
 						$ret[] = $row[$fields[1]];	
@@ -130,9 +130,12 @@
 					$this->db->order_by($order[0],$order[1]);
 				}
 				$data = $this->db->get($table);
-				foreach($data->result_array() as $row)
+				if($data && is_object($data))
 				{
-					$result[]= $row;
+					foreach($data->result_array() as $row)
+					{
+						$result[]= $row;
+					}
 				}
 				if(!empty($result)){
 				return $result[0];
@@ -168,9 +171,12 @@
 				$this->db->order_by($order[0], $order[1]); 
 			}				
 			$data = $this->db->get();
-			foreach($data->result_array() as $row)
+			if($data && is_object($data))
 			{
-				$result[]= $row;
+				foreach($data->result_array() as $row)
+				{
+					$result[]= $row;
+				}
 			}
 		   return $result;
 		}

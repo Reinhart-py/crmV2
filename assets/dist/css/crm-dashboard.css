@@ -51,7 +51,6 @@ body {
 .main-header {
   background: #ffffff !important;
   border-bottom: 1px solid var(--crm-border) !important;
-  padding: 8px 0 !important;
   position: relative !important;
   z-index: 1000 !important;
 }
@@ -61,15 +60,14 @@ body {
   border-bottom-color: #1e293b !important;
 }
 
-.main-header .container {
-  width: 100% !important;
-  max-width: 100% !important;
-  padding: 0 24px !important;
+.main-logo img {
+  max-height: 48px !important;
+  width: auto !important;
 }
 
 .main-header .navbar.navbar-static-top {
   background: transparent !important;
-  margin: 10px 0 4px 0 !important;
+  margin: 6px 0 10px 0 !important;
   padding: 0 !important;
   border: none !important;
   min-height: auto !important;
@@ -149,6 +147,7 @@ ul.munk_menu > li > a {
   background: transparent !important;
   line-height: 1.2 !important;
   white-space: nowrap !important;
+  pointer-events: auto !important;
 }
 
 ul.munk_menu > li > a i {
@@ -179,26 +178,38 @@ ul.munk_menu > li.active > a:before {
   font-weight: 900 !important;
 }
 
-/* Dropdown Submenus: Clean floating cards */
+/* Dropdown Submenus: Clean floating cards with zero gap */
 ul.munk_menu > li > ul {
   position: absolute !important;
-  top: calc(100% + 8px) !important;
+  top: 100% !important;
   left: 0 !important;
   background: #181b20 !important;
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  border-radius: 14px !important;
+  border-radius: 12px !important;
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.4) !important;
   min-width: 210px !important;
   padding: 6px !important;
   display: none !important;
-  z-index: 9999 !important;
+  z-index: 999999 !important;
   list-style: none !important;
   margin: 0 !important;
+  pointer-events: auto !important;
 }
 
 ul.munk_menu > li:hover > ul {
   display: block !important;
   animation: fadeInDown 0.18s ease-out !important;
+}
+
+/* Invisible bridge so mouse never loses hover */
+ul.munk_menu > li > ul::before {
+  content: "" !important;
+  position: absolute !important;
+  top: -10px !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 10px !important;
+  background: transparent !important;
 }
 
 ul.munk_menu > li > ul > li {
@@ -220,10 +231,12 @@ ul.munk_menu > li > ul > li > a {
   transition: all 0.15s ease !important;
   border: none !important;
   background: transparent !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
 }
 
 ul.munk_menu > li > ul > li > a:hover {
-  background: rgba(255, 255, 255, 0.08) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
   color: #d4f938 !important;
   transform: translateX(3px) !important;
 }

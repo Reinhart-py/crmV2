@@ -22,7 +22,12 @@
 | a PHP script and you can easily do that on your own.
 |
 */
-$config['base_url'] = 'https://crm.rolextogroup.com/';
+if (!empty($_SERVER['HTTP_HOST'])) {
+	$protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https://" : "http://";
+	$config['base_url'] = $protocol . $_SERVER['HTTP_HOST'] . '/';
+} else {
+	$config['base_url'] = 'https://crm.rolextogroup.com/';
+}
 
 /*
 |--------------------------------------------------------------------------

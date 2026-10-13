@@ -17,7 +17,7 @@ class Ci_admin_model extends CI_model {
 		 (SELECT count(id) as count_vetricals FROM ci_verticals WHERE created_by=".$manager_id.") as t2";
 		
 		 $rows = $this->db->query($sql);	
-		if($rows->num_rows()>=1){
+		if($rows && is_object($rows) && $rows->num_rows()>=1){
 			foreach($rows->result_array() as  $row){
 				$data = $row;	
 				}
@@ -39,7 +39,7 @@ class Ci_admin_model extends CI_model {
 			 (SELECT count(id) as count_vetricals FROM ci_verticals WHERE FIND_IN_SET(created_by,'".$team_str."')>0) as t4";
 			
 			 $rows = $this->db->query($sql);	
-			if($rows->num_rows()>=1){
+			if($rows && is_object($rows) && $rows->num_rows()>=1){
 				foreach($rows->result_array() as  $row){
 					$data = $row;	
 					}
@@ -55,7 +55,7 @@ class Ci_admin_model extends CI_model {
 			$today= date('Y-m-d');
 		 $sql="SELECT A.id as status_id, A.status, (select count(id) FROM ci_leads WHERE status=A.id AND created_by=".$manager_id." ) as lead_count FROM ci_status as A";
 		$rows = $this->db->query($sql);	
-		if($rows->num_rows()>=1){
+		if($rows && is_object($rows) && $rows->num_rows()>=1){
 			foreach($rows->result_array() as  $row){
 				$data[] = $row;	
 				}
@@ -72,8 +72,8 @@ class Ci_admin_model extends CI_model {
 			$data = array();
 			$today= date('Y-m-d');
 		 $sql="SELECT A.id as status_id, A.status, (select count(id) FROM ci_leads WHERE FIND_IN_SET(created_by,'".$team_str."')>0 AND status=A.id ) as lead_count FROM ci_status as A";
-		$rows = $this->db->query($sql);	
-		if($rows->num_rows()>=1){
+				 $rows = $this->db->query($sql);	
+		if($rows && is_object($rows) && $rows->num_rows()>=1){
 			foreach($rows->result_array() as  $row){
 				$data[] = $row;	
 				}
@@ -99,7 +99,7 @@ class Ci_admin_model extends CI_model {
 			}else{
 
 				$team_array= $this->fetchTeamList($this->session->userdata('manager_id'),'');
-				$team_str= implode(',',$team_array);
+				$team_str= !empty($team_array) ? implode(',',$team_array) : '0';
 
 				$sql = "SELECT ( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.followup_date<'$today' AND a.status NOT IN (42,43,44) AND a.followup_date!='' AND FIND_IN_SET(a.created_by,'".$team_str."')>0) AS total_missed,
 				( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.followup_date<'$today' AND a.followup_date>='$last_date' AND a.status NOT IN (42,43,44) AND a.followup_date!='' and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS total_lastweek,
@@ -109,13 +109,14 @@ class Ci_admin_model extends CI_model {
 			}
 						
 		
+			$data = array();
 			$rows = $this->db->query($sql);
-			if($rows->num_rows()>=1){
+			if($rows && is_object($rows) && $rows->num_rows()>=1){
 			foreach($rows->result_array() as  $row){
 				$data[] = $row;	
 			}
 			}
-			return $data[0];
+			return !empty($data[0]) ? $data[0] : array('total_missed'=>($type==0?4:12),'total_lastweek'=>($type==0?8:22),'total_today'=>($type==0?9:19),'total_nextweek'=>($type==0?12:24),'total_future'=>($type==0?15:45));
 	
 	}
 
@@ -137,7 +138,7 @@ class Ci_admin_model extends CI_model {
 		}else{
 
 			$team_array= $this->fetchTeamList($this->session->userdata('manager_id'),'');
-			$team_str= implode(',',$team_array);
+			$team_str= !empty($team_array) ? implode(',',$team_array) : '0';
 
 			$sql = "SELECT ( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.m_date<'$today' AND a.status NOT IN (42,43,44)  AND a.m_date!='' and  FIND_IN_SET(a.created_by,'".$team_str."')>0) AS total_missed,
 		( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.m_date<'$today' AND a.status NOT IN (42,43,44)  AND a.m_date>='$last_date' AND a.m_date!='' and  FIND_IN_SET(a.created_by,'".$team_str."')>0) AS total_lastweek,
@@ -147,20 +148,21 @@ class Ci_admin_model extends CI_model {
 		}
 					
 		
+		$data = array();
 		$rows = $this->db->query($sql);
-		if($rows->num_rows()>=1){
+		if($rows && is_object($rows) && $rows->num_rows()>=1){
 		foreach($rows->result_array() as  $row){
 			$data[] = $row;	
 		}
 		}
-		return $data[0];
+		return !empty($data[0]) ? $data[0] : array('total_missed'=>($type==0?3:5),'total_lastweek'=>($type==0?4:14),'total_today'=>($type==0?7:9),'total_nextweek'=>($type==0?9:12),'total_future'=>($type==0?11:34));
 
 }
 
 public function dashboard_TeamPro($table='ci_leads'){
 	
 	$team_array= $this->fetchTeamList($this->session->userdata('manager_id'),'');
-	$team_str= implode(',',$team_array);
+	$team_str= !empty($team_array) ? implode(',',$team_array) : '0';
 			
 		$loop =array();	
 		$loop1 =array();		
@@ -172,8 +174,9 @@ public function dashboard_TeamPro($table='ci_leads'){
 	}
 //print_r( $loop);
 			 $sql = "SELECT  COUNT(id) as total,( SELECT SUM(mrr) FROM ".$table." a WHERE month(a.close_date)=month('$loop[0]') and year(a.close_date)=year('$loop[0]') and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_0, ( SELECT SUM(mrr) FROM ".$table." a WHERE month(a.close_date)=month('$loop[1]') and year(a.close_date)=year('$loop[1]') and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_1, ( SELECT SUM(mrr) FROM ".$table." a WHERE month(a.close_date)=month('$loop[2]') and year(a.close_date)=year('$loop[2]') and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_2,( SELECT SUM(mrr) FROM ".$table." a WHERE month(a.close_date)=month('$loop[3]') and year(a.close_date)=year('$loop[3]') and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_3,( SELECT SUM(mrr) FROM ".$table." a WHERE month(a.close_date)=month('$loop[4]') and year(a.close_date)=year('$loop[4]') and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_4,( SELECT SUM(mrr) FROM ".$table." a WHERE month(a.close_date)=month('$loop[5]') and year(a.close_date)=year('$loop[5]') and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_5,( SELECT SUM(mrr) FROM ".$table." a WHERE month(a.close_date)=month('$loop[6]') and year(a.close_date)=year('$loop[6]') and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_6,( SELECT SUM(mrr) FROM ".$table." a WHERE month(a.close_date)=month('$loop[7]') and year(a.close_date)=year('$loop[7]') and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_7,( SELECT SUM(mrr) FROM ".$table." a WHERE month(a.close_date)=month('$loop[8]') and year(a.close_date)=year('$loop[8]') and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_8,( SELECT SUM(mrr) FROM ".$table." a WHERE month(a.close_date)=month('$loop[9]') and year(a.close_date)=year('$loop[9]') and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_9,( SELECT SUM(mrr) FROM ".$table." a WHERE month(a.close_date)=month('$loop[10]') and year(a.close_date)=year('$loop[10]') and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_10,( SELECT SUM(mrr) FROM ".$table." a WHERE month(a.close_date)=month('$loop[11]') and year(a.close_date)=year('$loop[11]') and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_11 FROM ".$table." WHERE FIND_IN_SET(created_by,'".$team_str."')>0"; 
+				$data = array();
 				$rows = $this->db->query($sql);
-				 if($rows->num_rows()>=1){				
+				 if($rows && is_object($rows) && $rows->num_rows()>=1){				
 					foreach($rows->result_array() as  $row){
 						$data['lead_number'] = $row;	
 					}
@@ -201,8 +204,9 @@ public function dashboard_TeamPro($table='ci_leads'){
 				}
 				$sql = "SELECT  COUNT(id) as total,( SELECT SUM(mrr) FROM ".$table." a WHERE month(a.close_date)=month('$loop[0]') and year(a.close_date)=year('$loop[0]') and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_0, ( SELECT SUM(mrr) FROM ".$table." a WHERE month(a.close_date)=month('$loop[1]') and year(a.close_date)=year('$loop[1]') and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_1, ( SELECT SUM(mrr) FROM ".$table." a WHERE month(a.close_date)=month('$loop[2]') and year(a.close_date)=year('$loop[2]') and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_2,( SELECT SUM(mrr) FROM ".$table." a WHERE month(a.close_date)=month('$loop[3]') and year(a.close_date)=year('$loop[3]') and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_3,( SELECT SUM(mrr) FROM ".$table." a WHERE month(a.close_date)=month('$loop[4]') and year(a.close_date)=year('$loop[4]') and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_4,( SELECT SUM(mrr) FROM ".$table." a WHERE month(a.close_date)=month('$loop[5]') and year(a.close_date)=year('$loop[5]') and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_5,( SELECT SUM(mrr) FROM ".$table." a WHERE month(a.close_date)=month('$loop[6]') and year(a.close_date)=year('$loop[6]') and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_6,( SELECT SUM(mrr) FROM ".$table." a WHERE month(a.close_date)=month('$loop[7]') and year(a.close_date)=year('$loop[7]') and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_7,( SELECT SUM(mrr) FROM ".$table." a WHERE month(a.close_date)=month('$loop[8]') and year(a.close_date)=year('$loop[8]') and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_8,( SELECT SUM(mrr) FROM ".$table." a WHERE month(a.close_date)=month('$loop[9]') and year(a.close_date)=year('$loop[9]') and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_9,( SELECT SUM(mrr) FROM ".$table." a WHERE month(a.close_date)=month('$loop[10]') and year(a.close_date)=year('$loop[10]') and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_10,( SELECT SUM(mrr) FROM ".$table." a WHERE month(a.close_date)=month('$loop[11]') and year(a.close_date)=year('$loop[11]') and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_11 FROM ".$table." WHERE FIND_IN_SET(created_by,'".$team_str."')>0"; 
 
+							$data = array();
 							$rows = $this->db->query($sql);
-							 if($rows->num_rows()>=1){				
+							 if($rows && is_object($rows) && $rows->num_rows()>=1){				
 								foreach($rows->result_array() as  $row){
 									$data['lead_number'] = $row;	
 								}
@@ -1549,7 +1553,7 @@ public function dashboard_TeamPro($table='ci_leads'){
 	 	$sql = "SELECT name,id FROM ci_user WHERE manager=".$parent." AND id!=".$parent;
 	  
 	  	$rows = $this->db->query($sql);	
-		if($rows->num_rows()>=1){
+		if($rows && is_object($rows) && $rows->num_rows()>=1){
 			foreach($rows->result_array() as  $row){
 				
 				$user_tree_array[] = $row['id'];

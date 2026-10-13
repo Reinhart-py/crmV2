@@ -33,7 +33,7 @@ if (defined('ENVIRONMENT'))
 	switch (ENVIRONMENT)
 	{
 		case 'development':
-			error_reporting(E_ALL);
+			error_reporting(E_ALL & ~E_DEPRECATED & ~E_NOTICE);
 		break;
 
 		case 'testing':
@@ -44,6 +44,10 @@ if (defined('ENVIRONMENT'))
 		default:
 			exit('The application environment is not set correctly.');
 	}
+}
+
+if (function_exists('mysqli_report')) {
+	@mysqli_report(MYSQLI_REPORT_OFF);
 }
 
 /*

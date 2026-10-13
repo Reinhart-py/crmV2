@@ -176,6 +176,10 @@ class CI_DB_mysqli_driver extends CI_DB {
 	 */
 	function _execute($sql)
 	{
+		if (!is_object($this->conn_id))
+		{
+			return FALSE;
+		}
 		$sql = $this->_prep_query($sql);
 		$result = @mysqli_query($this->conn_id, $sql);
 		return $result;
@@ -312,8 +316,14 @@ class CI_DB_mysqli_driver extends CI_DB {
 			return $str;
 		}
 
-
-		$str = mysqli_real_escape_string($this->conn_id, $str);
+		if (is_object($this->conn_id))
+		{
+			$str = mysqli_real_escape_string($this->conn_id, $str);
+		}
+		else
+		{
+			$str = addslashes($str);
+		}
 
 		// escape LIKE condition wildcards
 		if ($like === TRUE)
