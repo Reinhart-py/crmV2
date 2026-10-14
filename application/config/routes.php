@@ -22,6 +22,10 @@ $route['manager/users/view/(:num)'] = 'ci_admin_user/view/$1';
 $route['manager/users/report'] = "ci_admin_report/users";
 
 //My Leads
+$route['manager/leads/import'] = "ci_admin_leads/import";
+$route['manager/leads/import_action'] = "ci_admin_leads/import_action";
+$route['manager/leads/export'] = "ci_admin_leads/export";
+$route['manager/leads/download_sample_csv'] = "ci_admin_leads/download_sample_csv";
 $route['manager/leads'] = "ci_admin_leads/index";
 $route['manager/leads/(:num)'] = 'ci_admin_leads/index/$1';
 $route['manager/leads/add'] = "ci_admin_leads/add";
@@ -76,11 +80,21 @@ $route['manager/roles/(:num)'] = 'ci_admin_roles/index/$1';
 $route['manager/roles/add'] = "ci_admin_roles/add";
 $route['manager/roles/edit/(:num)'] = 'ci_admin_roles/edit/$1';
 
-//Manager Category
+// Manager Category
 $route['manager/terms'] = 'ci_admin_terms/index';
 $route['manager/terms/add'] = 'ci_admin_terms/add';
 $route['manager/terms/edit/(:any)'] = 'ci_admin_terms/edit/$1';
 $route['manager/category-delete/(:any)'] = 'ci_admin_category/delete/$1';
+
+// Ticket Trace / Help Desk
+$route['manager/tickets'] = "ci_admin_tickets/index";
+$route['manager/tickets/add'] = "ci_admin_tickets/add";
+$route['manager/tickets/quick_add'] = "ci_admin_tickets/quick_add";
+$route['manager/tickets/view/(:any)'] = "ci_admin_tickets/view/$1";
+$route['manager/tickets/respond'] = "ci_admin_tickets/respond";
+$route['manager/tickets/close/(:any)'] = "ci_admin_tickets/close/$1";
+$route['manager/tickets/status/(:any)/(:any)'] = "ci_admin_tickets/status/$1/$2";
+$route['manager/tickets/delete/(:any)'] = "ci_admin_tickets/delete/$1";
 
 
 

@@ -72,10 +72,13 @@ body {
   background: var(--crm-header-bg, #ffffff) !important;
   background-color: var(--crm-header-bg, #ffffff) !important;
   border-bottom: 1px solid var(--crm-border) !important;
-  position: relative !important;
-  z-index: 1000 !important;
-  padding: 8px 0 !important;
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1040 !important;
+  padding: 7px 0 !important;
   margin: 0 !important;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.05) !important;
   transition: background-color 0.25s ease, border-color 0.25s ease !important;
 }
 
@@ -95,14 +98,14 @@ body[data-theme="dark"] .main-header,
   justify-content: center !important;
   position: relative !important;
   width: 100% !important;
-  padding: 0 24px !important;
-  min-height: 44px !important;
+  padding: 0 20px !important;
+  min-height: 42px !important;
 }
 
 /* 1. Logo pinned to left, vertically centered to align seamlessly with navigation */
 .main-header .main-logo {
   position: absolute !important;
-  left: 24px !important;
+  left: 16px !important;
   top: 50% !important;
   transform: translateY(-50%) !important;
   display: flex !important;
@@ -118,9 +121,24 @@ body[data-theme="dark"] .main-header,
 }
 
 .main-header .main-logo img {
-  max-height: 38px !important;
+  max-height: 40px !important;
   width: auto !important;
   display: block !important;
+  object-fit: contain !important;
+}
+
+.logo-dark {
+  display: none !important;
+}
+.logo-light {
+  display: inline-block !important;
+}
+
+[data-theme="dark"] .logo-light {
+  display: none !important;
+}
+[data-theme="dark"] .logo-dark {
+  display: inline-block !important;
 }
 
 /* 2. Centered Floating Navbar: Vertically aligned with logo, perfectly centered */
@@ -266,7 +284,7 @@ body[data-theme="dark"] .main-header,
 ul.munk_menu {
   background: #ffffff !important;
   border-radius: 9999px !important;
-  padding: 4px 6px !important;
+  padding: 4px 8px !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -290,16 +308,16 @@ ul.munk_menu > li {
   position: relative !important;
   list-style: none !important;
   display: inline-block !important;
-  margin: 0 2px !important;
+  margin: 0 1px !important;
   float: none !important;
 }
 
 /* Light mode menu links */
 ul.munk_menu > li > a {
   color: #334155 !important;
-  font-size: 13.5px !important;
+  font-size: 13px !important;
   font-weight: 500 !important;
-  padding: 7px 15px !important;
+  padding: 6px 14px !important;
   border-radius: 9999px !important;
   display: inline-flex !important;
   align-items: center !important;
@@ -314,7 +332,7 @@ ul.munk_menu > li > a {
 }
 
 ul.munk_menu > li > a i {
-  font-size: 13px !important;
+  font-size: 12.5px !important;
   color: #64748b !important;
 }
 
@@ -350,8 +368,8 @@ ul.munk_menu > li.active > a i {
 
 ul.munk_menu > li.active > a:before {
   content: "•" !important;
-  margin-right: 3px !important;
-  font-size: 14px !important;
+  margin-right: 2px !important;
+  font-size: 11px !important;
   font-weight: 900 !important;
   color: #09090b !important;
 }
@@ -941,27 +959,32 @@ ul.munk_menu > li > ul > li > a i {
    ========================================================================== */
 .header-quick-actions {
   position: absolute !important;
-  right: 24px !important;
+  right: 16px !important;
   top: 50% !important;
   transform: translateY(-50%) !important;
   display: flex !important;
   align-items: center !important;
-  gap: 8px !important;
+  gap: 6px !important;
   z-index: 1010 !important;
+}
+
+.header-user-greeting {
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
 }
 
 .global-theme-btn {
   background: var(--crm-card-bg, #ffffff) !important;
   border: 1px solid var(--crm-border, #e2e8f0) !important;
   color: var(--crm-text, #0f172a) !important;
-  width: 32px !important;
-  height: 32px !important;
+  width: 30px !important;
+  height: 30px !important;
   border-radius: 50% !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer !important;
-  font-size: 13.5px !important;
+  font-size: 12.5px !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
   transition: all 0.2s ease !important;
   padding: 0 !important;
@@ -1008,10 +1031,15 @@ ul.munk_menu > li > ul > li > a i {
   color: #f8fafc !important;
 }
 
-/* Desktop & Tablet (min-width: 769px): Hide hamburger & sidebar, show horizontal pill bar */
-@media (min-width: 769px) {
-  .crm-mobile-hamburger {
+/* Desktop (min-width: 992px): Hide hamburger & sidebar, show horizontal pill bar */
+@media (min-width: 992px) {
+  .crm-mobile-hamburger,
+  #crmMobileHamburger,
+  .crm-sidebar-header {
     display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
   }
   .main-sidebar {
     display: none !important;
@@ -1022,25 +1050,33 @@ ul.munk_menu > li > ul > li > a i {
   }
 }
 
-/* Android & Mobile (max-width: 768px): 3-line hamburger bar on left, logo center, offcanvas drawer */
-@media (max-width: 768px) {
+/* Android, Mobile & Tablet (max-width: 991px): 3-line hamburger bar on left, logo center, offcanvas drawer */
+@media (max-width: 991px) {
   .main-header-bar {
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
-    justify-content: center !important;
+    justify-content: flex-start !important;
     padding: 6px 14px !important;
-    min-height: 48px !important;
+    min-height: 52px !important;
     position: relative !important;
+    gap: 10px !important;
   }
 
-  .crm-mobile-hamburger {
+  .crm-mobile-hamburger,
+  #crmMobileHamburger {
     display: inline-flex !important;
-    position: absolute !important;
-    left: 14px !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    position: static !important;
+    transform: none !important;
+    margin: 0 !important;
+    flex-shrink: 0 !important;
     z-index: 1010 !important;
+    cursor: pointer !important;
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: transparent !important;
   }
 
   .main-header .main-logo {
@@ -1074,14 +1110,65 @@ ul.munk_menu > li > ul > li > a i {
     top: 0 !important;
     bottom: 0 !important;
     left: 0 !important;
-    width: 260px !important;
+    width: 270px !important;
+    max-width: 85vw !important;
     z-index: 999999 !important;
     background: #ffffff !important;
     box-shadow: 4px 0 25px rgba(0, 0, 0, 0.25) !important;
     transform: translateX(-100%) !important;
     transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
     overflow-y: auto !important;
-    padding-top: 20px !important;
+    padding-top: 0 !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .crm-sidebar-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 14px 16px 12px 18px !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    background: #ffffff !important;
+  }
+
+  .crm-sidebar-header img {
+    max-height: 28px !important;
+    width: auto !important;
+  }
+
+  .crm-sidebar-close {
+    background: transparent !important;
+    border: none !important;
+    font-size: 26px !important;
+    line-height: 1 !important;
+    color: #64748b !important;
+    cursor: pointer !important;
+    padding: 0 6px !important;
+    border-radius: 6px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .crm-sidebar-close:hover,
+  .crm-sidebar-close:active {
+    color: #b91c1c !important;
+    background: #f1f5f9 !important;
+  }
+
+  [data-theme="dark"] .crm-sidebar-header {
+    background: #1e293b !important;
+    border-bottom-color: #334155 !important;
+  }
+
+  [data-theme="dark"] .crm-sidebar-close {
+    color: #94a3b8 !important;
+  }
+
+  [data-theme="dark"] .crm-sidebar-close:hover,
+  [data-theme="dark"] .crm-sidebar-close:active {
+    color: #f59e0b !important;
+    background: #334155 !important;
   }
 
   body.sidebar-open .main-sidebar {
@@ -1117,30 +1204,95 @@ ul.munk_menu > li > ul > li > a i {
     color: #1e293b !important;
     text-decoration: none !important;
     transition: all 0.15s ease !important;
+    cursor: pointer !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .main-sidebar .sidebar-menu > li > a .pull-right-container {
+    margin-left: auto !important;
+    display: inline-flex !important;
+    align-items: center !important;
+  }
+
+  .main-sidebar .sidebar-menu > li > a .sidebar-arrow {
+    font-size: 14px !important;
+    color: #64748b !important;
+    transition: transform 0.2s ease !important;
   }
 
   .main-sidebar .sidebar-menu > li > a:hover,
-  .main-sidebar .sidebar-menu > li.active > a {
+  .main-sidebar .sidebar-menu > li.active > a,
+  .main-sidebar .sidebar-menu > li.menu-open > a {
     background: #f1f5f9 !important;
     color: #b91c1c !important;
   }
 
+  .main-sidebar .sidebar-menu > li.menu-open > a .sidebar-arrow,
+  .main-sidebar .sidebar-menu > li.active > a .sidebar-arrow {
+    color: #b91c1c !important;
+  }
+
   .main-sidebar .sidebar-menu .treeview-menu {
+    display: none;
     list-style: none !important;
-    padding: 4px 0 4px 28px !important;
-    margin: 0 !important;
+    padding: 6px 0 8px 18px !important;
+    margin: 4px 0 8px 0 !important;
+    background: #f8fafc !important;
+    border-radius: 8px !important;
+    border-left: 3px solid #000000 !important;
+  }
+
+  /* Android & Mobile Submenu Display - Super High Specificity Overriding AdminLTE's sidebar-collapse suppression */
+  html body .main-sidebar .sidebar-menu li.treeview.menu-open > .treeview-menu,
+  html body .main-sidebar .sidebar-menu li.treeview.is-expanded > .treeview-menu,
+  html body .main-sidebar .sidebar-menu li.treeview > .treeview-menu.menu-open,
+  html body.sidebar-mini.sidebar-collapse .main-sidebar .sidebar-menu > li.treeview.menu-open > .treeview-menu,
+  html body.sidebar-mini.sidebar-collapse .main-sidebar .sidebar-menu > li.treeview.is-expanded > .treeview-menu,
+  html body.sidebar-open .main-sidebar .sidebar-menu > li.treeview.menu-open > .treeview-menu,
+  html body.sidebar-open .main-sidebar .sidebar-menu > li.treeview.is-expanded > .treeview-menu {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    position: static !important;
+    margin: 4px 0 8px 0 !important;
+    padding: 6px 0 8px 18px !important;
+    background: #f8fafc !important;
+    border-radius: 8px !important;
+    border-left: 3px solid #000000 !important;
+  }
+
+  html body .main-sidebar .sidebar-menu li.treeview:not(.menu-open):not(.is-expanded) > .treeview-menu,
+  html body.sidebar-mini.sidebar-collapse .main-sidebar .sidebar-menu > li.treeview:not(.menu-open):not(.is-expanded) > .treeview-menu,
+  html body.sidebar-open .main-sidebar .sidebar-menu > li.treeview:not(.menu-open):not(.is-expanded) > .treeview-menu {
+    display: none !important;
+  }
+
+  html body .main-sidebar .sidebar-menu li.treeview.menu-open > a .sidebar-arrow,
+  html body .main-sidebar .sidebar-menu li.treeview.is-expanded > a .sidebar-arrow {
+    transform: rotate(-90deg) !important;
+    color: #b91c1c !important;
   }
 
   .main-sidebar .sidebar-menu .treeview-menu > li > a {
-    display: block !important;
-    padding: 7px 10px !important;
-    font-size: 12.5px !important;
-    color: #64748b !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 9px 12px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: #334155 !important;
     text-decoration: none !important;
+    border-radius: 6px !important;
+    transition: background 0.15s ease, color 0.15s ease !important;
   }
 
   .main-sidebar .sidebar-menu .treeview-menu > li > a:hover {
-    color: #b91c1c !important;
+    background: #e2e8f0 !important;
+    color: #000000 !important;
   }
 
   /* Dark mode styling for mobile sidebar drawer */
@@ -1153,18 +1305,34 @@ ul.munk_menu > li > ul > li > a i {
     color: #f8fafc !important;
   }
 
-  [data-theme="dark"] .main-sidebar .sidebar-menu > li > a:hover,
-  [data-theme="dark"] .main-sidebar .sidebar-menu > li.active > a {
-    background: #1e293b !important;
-    color: #d4f938 !important;
-  }
-
-  [data-theme="dark"] .main-sidebar .sidebar-menu .treeview-menu > li > a {
+  [data-theme="dark"] .main-sidebar .sidebar-menu > li > a .sidebar-arrow {
     color: #94a3b8 !important;
   }
 
+  [data-theme="dark"] .main-sidebar .sidebar-menu > li > a:hover,
+  [data-theme="dark"] .main-sidebar .sidebar-menu > li.active > a,
+  [data-theme="dark"] .main-sidebar .sidebar-menu > li.menu-open > a {
+    background: #1e293b !important;
+    color: #ffffff !important;
+  }
+
+  [data-theme="dark"] .main-sidebar .sidebar-menu > li.menu-open > a .sidebar-arrow,
+  [data-theme="dark"] .main-sidebar .sidebar-menu > li.active > a .sidebar-arrow {
+    color: #ffffff !important;
+  }
+
+  [data-theme="dark"] .main-sidebar .sidebar-menu .treeview-menu {
+    background: #1e293b !important;
+    border-left-color: #ffffff !important;
+  }
+
+  [data-theme="dark"] .main-sidebar .sidebar-menu .treeview-menu > li > a {
+    color: #cbd5e1 !important;
+  }
+
   [data-theme="dark"] .main-sidebar .sidebar-menu .treeview-menu > li > a:hover {
-    color: #f8fafc !important;
+    background: #334155 !important;
+    color: #ffffff !important;
   }
 
   .content-wrapper,
@@ -1381,4 +1549,84 @@ ul.munk_menu > li > ul > li > a i {
 [data-theme="dark"] .breadcrumb > .active {
   color: #cbd5e1 !important;
 }
+
+/* ==========================================================================
+   DESKTOP TABLES ZOOM & RESPONSIVE COLLAPSIBLE CHILD ROWS (+ BUTTON)
+   ========================================================================== */
+.dataTables_wrapper {
+  width: 100% !important;
+  clear: both !important;
+}
+
+/* On desktop ratio: Zoom out data tables to 82% so all columns & action buttons are fully visible without clipping */
+@media (min-width: 992px) {
+  .dataTables_wrapper {
+    zoom: 0.82 !important;
+  }
+}
+
+table.dataTable {
+  width: 100% !important;
+  margin: 0 auto !important;
+}
+
+.table-responsive {
+  width: 100% !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* Fix Bootstrap 3 form rows to prevent float-snagging */
+.box-body > .row {
+  display: flex !important;
+  flex-wrap: wrap !important;
+}
+
+/* ==========================================================================
+   FLOATING HELP ICON & MODAL (TICKET TRACE / HELP DESK)
+   ========================================================================== */
+.floating-help-fab {
+  position: fixed !important;
+  bottom: 24px !important;
+  left: 24px !important;
+  z-index: 1050 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  background: #000000 !important;
+  color: #ffffff !important;
+  padding: 8px 16px !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.25) !important;
+  cursor: pointer !important;
+  font-family: var(--crm-font) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  transition: all 0.2s ease !important;
+  border: 1px solid #333333 !important;
+}
+
+.floating-help-fab:hover, .floating-help-fab:focus {
+  background: #222222 !important;
+  color: #ffffff !important;
+  transform: translateY(-2px) scale(1.02) !important;
+  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.35) !important;
+  text-decoration: none !important;
+}
+
+.floating-help-fab i {
+  font-size: 14px !important;
+}
+
+@media (max-width: 767px) {
+  .floating-help-fab {
+    bottom: 16px !important;
+    left: 16px !important;
+    padding: 10px 14px !important;
+    font-size: 12px !important;
+  }
+}
+
+
 

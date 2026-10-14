@@ -115,11 +115,13 @@ class Ci_admin_team extends CI_Controller {
         if(!empty($status)){
 	         $status= implode(',', $status); 
 		 }
+		 $closure = isset($_GET['closure']) ? $_GET['closure'] : '';
+
 		 $data['st_list']= $this->comman_model->getAll(array('active'=>1),'','ci_status');
 		 $data['c_list'] =$this->comman_model->getAll('',array('id','ASC'),'countries');
 		 $data['pc_list']= $this->comman_model->getAll(array('cat_type'=>'p_cat','parent_id'=>0),'','ci_terms');
 		 $data['lc_list']= $this->comman_model->getAll(array('cat_type'=>'lead_cat','parent_id'=>0),'','ci_terms');
-	  	 $data['product_list']= $this->ci_admin_model->getTeamLeads($d1, $d2, $mrr1, $mrr2, '','',$order_by,$sort_by,$search,$status,$category,$lCat,$user_name,$country,$state);
+	  	 $data['product_list']= $this->ci_admin_model->getTeamLeads($d1, $d2, $mrr1, $mrr2, '','',$order_by,$sort_by,$search,$status,$category,$lCat,$user_name,$country,$state,$closure);
 
 		$page2 = ($this->uri->segment(4)) ? $this->uri->segment(4): 0;       
 		 	$con_q= '';

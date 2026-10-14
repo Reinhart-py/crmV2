@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
     
-<link rel="shortcut icon" href="<?php echo base_url(); ?>assets/7strokes-logo.png" type="image/png">
-<link rel="icon" type="image/png" sizes="64x64" href="<?php echo base_url(); ?>assets/favicon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="<?php echo base_url(); ?>assets/favicon.png">
-<link rel="icon" type="image/png" sizes="16x16" href="<?php echo base_url(); ?>assets/favicon.png">
-<link rel="apple-touch-icon" href="<?php echo base_url(); ?>assets/7strokes-logo.png">
+<link rel="shortcut icon" href="<?php echo base_url(); ?>assets/logo-7strokes.png" type="image/png">
+<link rel="icon" type="image/png" sizes="64x64" href="<?php echo base_url(); ?>assets/logo-7strokes.png">
+<link rel="icon" type="image/png" sizes="32x32" href="<?php echo base_url(); ?>assets/logo-7strokes.png">
+<link rel="icon" type="image/png" sizes="16x16" href="<?php echo base_url(); ?>assets/logo-7strokes.png">
+<link rel="apple-touch-icon" href="<?php echo base_url(); ?>assets/logo-7strokes.png">
 
     
 <title><?php echo $info['title']; ?></title>
@@ -88,15 +88,14 @@
 <header class="main-header"> 
 
 <div class="main-header-bar">
-  <!-- 3-line hamburger bar button for mobile / Android -->
-  <a href="#" class="sidebar-toggle crm-mobile-hamburger" data-toggle="offcanvas" role="button" aria-label="Toggle navigation">
+  <!-- 3-line hamburger bar button for Android only (strictly hidden on desktop) -->
+  <button type="button" class="crm-mobile-hamburger" id="crmMobileHamburger" aria-label="Toggle navigation">
     <i class="fa fa-bars"></i>
-    <span class="sr-only">Toggle navigation</span>
-  </a>
+  </button>
 
   <div class="main-logo">
     <a href="<?php echo base_url(); ?>manager/dashboard"> 
-      <span class="logo-lg"><img src="<?php echo base_url(); ?>assets/7strokes-logo.png" alt="7strokes" /></span> 
+      <img src="<?php echo base_url(); ?>assets/logo-7strokes.png" alt="7 Strokes" />
     </a> 
   </div>
 
@@ -164,18 +163,32 @@
 
         </ul>
       </li>
-     
 
-     <?php if($this->session->userdata['manager_role']==1){ ?>
-     
-
-      <li class="<?php if($route1=="roles"){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/roles"><i class="fa fa-paperclip"></i> <span>System</span> </a>
-        <ul>        
-          <li><a href="<?php echo base_url();?>manager/roles"><i class="fa fa-list"></i>Roles</a></li>
-          <li><a href="<?php echo base_url();?>manager/terms"><i class="fa fa-list"></i>Category</a></li>
+      <li class="<?php if($route1=="reports"){ echo "active";}else{ echo "";}?>"> <a href="#"><i class="fa fa-bar-chart"></i> <span>Reports</span> </a>
+        <ul>
+          <li><a href="https://7strokes.maxvendor47.workers.dev/" target="_blank"><i class="fa fa-database"></i>Generate Data</a></li>
+          <li><a href="<?php echo base_url();?>manager/performance-report"><i class="fa fa-file-pdf-o"></i>Download Report</a></li>
         </ul>
       </li>
      
+
+     <?php 
+       $m_role = $this->session->userdata['manager_role'];
+       if($m_role == 1 || $m_role == 4){ 
+     ?>
+      <li class="<?php if($route1=="roles" || $route1=="terms" || ($route1=="leads" && in_array($route2, array("import", "export")))){ echo "active";}else{ echo "";}?>"> 
+        <a href="<?php echo ($m_role == 1)? base_url().'manager/roles' : base_url().'manager/leads/import'; ?>"><i class="fa fa-paperclip"></i> <span>System</span> </a>
+        <ul>        
+          <?php if($m_role == 1){ ?>
+            <li><a href="<?php echo base_url();?>manager/roles"><i class="fa fa-list"></i>Roles</a></li>
+            <li><a href="<?php echo base_url();?>manager/terms"><i class="fa fa-list"></i>Category</a></li>
+          <?php } ?>
+          <li><a href="<?php echo base_url();?>manager/leads/import"><i class="fa fa-upload"></i>Import Leads</a></li>
+          <?php if($m_role == 1){ ?>
+            <li><a href="<?php echo base_url();?>manager/leads/export"><i class="fa fa-download"></i>Export Leads</a></li>
+          <?php } ?>
+        </ul>
+      </li>
       <?php } ?>
    
       
@@ -187,14 +200,28 @@
         </ul>
          </li>
 
-    
+
       <li> <a class="logout" href="<?php echo base_url();?>manager/logout"> <i class="fa fa-power-off"></i> <span>Logout</span></a> </li>
 
     </ul>
   </nav>
 
-  <!-- Global Header Quick Actions: Dark/Light Mode Toggle across all pages -->
+  <!-- Global Header Quick Actions: Dynamic User Greeting + Dark/Light Mode Toggle -->
   <div class="header-quick-actions">
+    <span class="header-user-greeting">Hi, <?php 
+      $current_user_id = $this->session->userdata('manager_id');
+      $current_user_name = '';
+      if ($current_user_id) {
+        $u_row = $this->db->select('name')->get_where('ci_user', array('id' => $current_user_id))->row_array();
+        if (!empty($u_row['name'])) {
+          $current_user_name = $u_row['name'];
+        }
+      }
+      if (empty($current_user_name)) {
+        $current_user_name = $this->session->userdata('manager_name');
+      }
+      echo !empty($current_user_name) ? htmlspecialchars($current_user_name) : 'User';
+    ?></span>
     <button type="button" class="global-theme-btn" id="globalThemeToggle" title="Toggle Dark/Light Mode">
       <i class="fa fa-moon-o"></i>
     </button>
@@ -228,103 +255,111 @@ $(function() {
     var nextTheme = (current === 'dark') ? 'light' : 'dark';
     applyCrmTheme(nextTheme);
   });
-
-  // Mobile hamburger drawer toggle
-  $(document).on('click', '.crm-mobile-hamburger', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    $('body').toggleClass('sidebar-open');
-  });
-
-  // Close mobile sidebar on backdrop click or outside click
-  $(document).on('click', '.content-wrapper, .main-footer', function() {
-    if ($('body').hasClass('sidebar-open')) {
-      $('body').removeClass('sidebar-open');
-    }
-  });
 });
 </script>
 <div class="clearfix"></div>
 <!-- Left side column. contains the logo and sidebar -->
 <aside class="main-sidebar"> 
   
+  <div class="crm-sidebar-header">
+    <img src="<?php echo base_url(); ?>assets/logo-7strokes.png" alt="7 Strokes" />
+    <button type="button" class="crm-sidebar-close" id="crmSidebarClose" aria-label="Close navigation">&times;</button>
+  </div>
+  
   <!-- sidebar: style can be found in sidebar.less -->
   
   <section class="sidebar">
     <ul class="sidebar-menu">
-      <?php  $route1=$this->uri->segment(2);
-	  $route2=$this->uri->segment(3);?>
-      <li class="<?php if($route1=="dashboard"){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/dashboard"> <i class="fa fa-tachometer"></i> <span>Dashboard</span> <span class="pull-right-container"> <small class="label pull-right"></small> </span> </a> </li>
-
-
-     <?php if($this->session->userdata['manager_role']==1){ ?>
-
-
-     <li class="<?php if($route1=="users"){ echo "active";}else{ echo "";}?> treeview"> <a href="#"><i class="fa fa-users"></i> <span>Users</span> <span class="pull-right-container"> <span class="label label-primary pull-right"></span> </span> </a>
-        <ul class="treeview-menu">
-        <li><a href="<?php echo base_url();?>manager/users/add"><i class="fa fa-plus"></i>Add </a></li>
-          <li><a href="<?php echo base_url();?>manager/users"><i class="fa fa-list"></i>View</a></li>
-          <?php /* <li><a href="<?php echo base_url();?>manager/users/report"><i class="fa fa-list"></i>Report</a></li> */ ?>
-        </ul>
+      <?php  
+        $route1=$this->uri->segment(2);
+	      $route2=$this->uri->segment(3);
+        $m_role = $this->session->userdata['manager_role'];
+      ?>
+      <li class="<?php if($route1=="dashboard"){ echo "active";}else{ echo "";}?>"> 
+        <a href="<?php echo base_url();?>manager/dashboard"> <i class="fa fa-tachometer"></i> <span>Dashboard</span> </a> 
       </li>
 
-   <?php }   ?>
 
-      <li class="<?php if($route1=="leads"){ echo "active";}else{ echo "";}?> treeview"> <a href="#"><i class="fa fa-database"></i> <span>Leads</span> <span class="pull-right-container"> <span class="label label-primary pull-right"></span> </span> </a>
+     <?php if($m_role == 1){ ?>
+      <li class="<?php if($route1=="users"){ echo "active";}else{ echo "";}?> treeview"> 
+        <a href="javascript:void(0);"><i class="fa fa-users"></i> <span>Users</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu">
-        <li><a href="<?php echo base_url();?>manager/leads/add"><i class="fa fa-plus"></i>Add </a></li>
+          <li><a href="<?php echo base_url();?>manager/users/add"><i class="fa fa-plus"></i>Add </a></li>
+          <li><a href="<?php echo base_url();?>manager/users"><i class="fa fa-list"></i>View</a></li>
+        </ul>
+      </li>
+     <?php } ?>
+
+      <li class="<?php if($route1=="leads"){ echo "active";}else{ echo "";}?> treeview"> 
+        <a href="javascript:void(0);"><i class="fa fa-database"></i> <span>Leads</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
+        <ul class="treeview-menu">
+          <li><a href="<?php echo base_url();?>manager/leads/add"><i class="fa fa-plus"></i>Add </a></li>
           <li><a href="<?php echo base_url();?>manager/leads"><i class="fa fa-list"></i>View</a></li>
-          <?php /* <li><a href="<?php echo base_url();?>manager/leads/report"><i class="fa fa-list"></i>Report</a></li> */ ?>
           <li><a href="<?php echo base_url();?>manager/leads/followups"><i class="fa fa-list"></i>Follow up</a></li>
           <li><a href="<?php echo base_url();?>manager/leads/meetings"><i class="fa fa-list"></i>Meetings</a></li>
           <li><a href="<?php echo base_url();?>manager/performance-report/individual"><i class="fa fa-list"></i>Performance Report</a></li>          
         </ul>
       </li>
 
-      
-    <li class="<?php if($route1=="users"){ echo "active";}else{ echo "";}?> treeview"> <a href="#"><i class="fa fa-users"></i> <span>Verticals</span> </a>
+      <li class="<?php if($route1=="verticals"){ echo "active";}else{ echo "";}?> treeview"> 
+        <a href="javascript:void(0);"><i class="fa fa-users"></i> <span>Verticals</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu">
           <li><a href="<?php echo base_url();?>manager/verticals/add"><i class="fa fa-plus"></i>Add </a></li>
           <li><a href="<?php echo base_url();?>manager/verticals"><i class="fa fa-list"></i>View</a></li>
-          <?php /*<li><a href="<?php echo base_url();?>manager/verticals/report"><i class="fa fa-list"></i>Report</a></li> */ ?>
+          <li><a href="<?php echo base_url();?>manager/verticals"><i class="fa fa-list"></i>Follow up</a></li>
         </ul>
       </li>
 
-      <li class="<?php if($route1=="team"){ echo "active";}else{ echo "";}?> treeview"> <a href="#"><i class="fa fa-list"></i> <span>Team</span> </a>
+      <li class="<?php if($route1=="team"){ echo "active";}else{ echo "";}?> treeview"> 
+        <a href="javascript:void(0);"><i class="fa fa-list"></i> <span>Team</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu">
-        <li><a href="<?php echo base_url();?>manager/team/members"><i class="fa fa-plus"></i>Members </a></li>
+          <li><a href="<?php echo base_url();?>manager/team/members"><i class="fa fa-plus"></i>Members </a></li>
           <li><a href="<?php echo base_url();?>manager/team/chart"><i class="fa fa-list"></i>Chart</a></li>
           <li><a href="<?php echo base_url();?>manager/team/leads"><i class="fa fa-list"></i>Leads</a></li>
           <li><a href="<?php echo base_url();?>manager/team/verticals"><i class="fa fa-list"></i>Verticals</a></li>
           <li><a href="<?php echo base_url();?>manager/team/followups"><i class="fa fa-list"></i>Follow up</a></li>
           <li><a href="<?php echo base_url();?>manager/team/meetings"><i class="fa fa-list"></i>Meetings</a></li>
           <li><a href="<?php echo base_url();?>manager/team/assignmeetings"><i class="fa fa-list"></i>Assigned Meetings</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/assignleads"><i class="fa fa-list"></i>Assigned Leads</a></li>
           <li><a href="<?php echo base_url();?>manager/performance-report"><i class="fa fa-list"></i>Performance Report</a></li>
-          
         </ul>
       </li>
 
-     <?php if($this->session->userdata['manager_role']==1){ ?>
-     
+      <li class="<?php if($route1=="reports"){ echo "active";}else{ echo "";}?> treeview"> 
+        <a href="javascript:void(0);"><i class="fa fa-bar-chart"></i> <span>Reports</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
+        <ul class="treeview-menu">
+          <li><a href="https://7strokes.maxvendor47.workers.dev/" target="_blank"><i class="fa fa-database"></i>Generate Data</a></li>
+          <li><a href="<?php echo base_url();?>manager/performance-report"><i class="fa fa-file-pdf-o"></i>Download Report</a></li>
+        </ul>
+      </li>
 
-      <li class="<?php if($route1=="roles"){ echo "active";}else{ echo "";}?> treeview"> <a href="#"><i class="fa fa-paperclip"></i> <span>System</span> <span class="pull-right-container"> <span class="label label-primary pull-right"></span> </span> </a>
+     <?php if($m_role == 1 || $m_role == 4){ ?>
+      <li class="<?php if($route1=="roles" || $route1=="terms" || ($route1=="leads" && in_array($route2, array("import", "export")))){ echo "active";}else{ echo "";}?> treeview"> 
+        <a href="javascript:void(0);"><i class="fa fa-paperclip"></i> <span>System</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu">        
-        <li><a href="<?php echo base_url();?>manager/roles"><i class="fa fa-list"></i>Roles</a></li>
-          <li><a href="<?php echo base_url();?>manager/terms"><i class="fa fa-list"></i>Category</a></li>
+          <?php if($m_role == 1){ ?>
+            <li><a href="<?php echo base_url();?>manager/roles"><i class="fa fa-list"></i>Roles</a></li>
+            <li><a href="<?php echo base_url();?>manager/terms"><i class="fa fa-list"></i>Category</a></li>
+          <?php } ?>
+          <li><a href="<?php echo base_url();?>manager/leads/import"><i class="fa fa-upload"></i>Import Leads</a></li>
+          <?php if($m_role == 1){ ?>
+            <li><a href="<?php echo base_url();?>manager/leads/export"><i class="fa fa-download"></i>Export Leads</a></li>
+          <?php } ?>
         </ul>
       </li>
-     
-      <?php } ?>
-   
-  
-      <li class="<?php if($route1=="profile"){ echo "active";}else{ echo "";}?> treeview"> <a href="#"> <i class="fa fa-cog" aria-hidden="true"></i><span>Profile</span></a>
-      <ul class="treeview-menu">        
+     <?php } ?>
+
+      <li class="<?php if($route1=="profile"){ echo "active";}else{ echo "";}?> treeview"> 
+        <a href="javascript:void(0);"> <i class="fa fa-cog" aria-hidden="true"></i><span>Profile</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span></a>
+        <ul class="treeview-menu">        
           <li><a href="<?php echo base_url();?>manager/profile"><i class="fa fa-eye"></i>View Profile</a></li>
           <li><a href="<?php echo base_url();?>manager/password"><i class="fa fa-exchange"></i>Change Password</a></li>
         </ul>
-         </li>
+      </li>
     
-      <li> <a href="<?php echo base_url();?>manager/logout"> <i class="fa fa-power-off"></i> <span>Logout</span> <span class="pull-right-container"> <small class="label pull-right"></small> </span> </a> </li>
+      <li> 
+        <a href="<?php echo base_url();?>manager/logout"> <i class="fa fa-power-off"></i> <span>Logout</span> </a> 
+      </li>
 
     </ul>
   </section>

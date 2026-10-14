@@ -211,6 +211,11 @@
               </tr>
 
               <tr>
+              <th scope="col">Trade License Authority</th>
+              <td scope="col"><?php echo !empty($p_info['tl_authority']) ? $p_info['tl_authority'] : '-'; ?></td>              
+              </tr>
+
+              <tr>
               <th scope="col">TL Issue Date</th>
               <td scope="col"><?php echo (!empty($p_info['tl_issue_date']) && $p_info['tl_issue_date'] != '0000-00-00') ? simple_date($p_info['tl_issue_date']) : '-'; ?></td>              
               </tr>

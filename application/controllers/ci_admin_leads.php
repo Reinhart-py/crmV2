@@ -91,11 +91,14 @@ function __construct()
 			$status= implode(',', $status); 
 		}
 
+		$closure = isset($_GET['closure']) ? $_GET['closure'] : '';
+		$vertical_fu = isset($_GET['vertical_fu']) ? $_GET['vertical_fu'] : '';
+
 		$data['st_list']= $this->comman_model->getAll(array('active'=>1),'','ci_status');
 		$data['c_list'] =$this->comman_model->getAll('',array('id','ASC'),'countries');
 		$data['pc_list']= $this->comman_model->getAll(array('cat_type'=>'p_cat','parent_id'=>0),'','ci_terms');
 		$data['lc_list']= $this->comman_model->getAll(array('cat_type'=>'lead_cat','parent_id'=>0),'','ci_terms');
-		$data['product_list']= $this->ci_admin_model->get_Myleads($d1, $d2, $mrr1, $mrr2, '','',$order_by,$sort_by,$search,$status,$category,$lCat,$user_name,$country,$state);
+		$data['product_list']= $this->ci_admin_model->get_Myleads($d1, $d2, $mrr1, $mrr2, '','',$order_by,$sort_by,$search,$status,$category,$lCat,$user_name,$country,$state,$closure,$vertical_fu);
 		//print_r($data['product_list']);
 		$con_q= '';
 		 if(!empty($_SERVER['QUERY_STRING']))
@@ -346,7 +349,14 @@ function __construct()
 		if($this->input->server('REQUEST_METHOD')==='POST')
 		{	 			
 
-				extract($_POST);				
+				extract($_POST);
+
+				$cur_role = $this->session->userdata('manager_role');
+				if ($cur_role != 1 && $cur_role != 4) {
+					$lead_assign = (int)$this->session->userdata('manager_id');
+				} else {
+					$lead_assign = isset($lead_assign) ? (int)$lead_assign : 0;
+				}
 
 				$f_date = !empty($followup_date) ? db_date($followup_date) : '';
 				$c_date = !empty($close_date) ? db_date($close_date) : '';
@@ -399,6 +409,7 @@ function __construct()
 				'lead_source'=>$lead_source,
 
 				'tl_number'=>isset($tl_number) ? $tl_number : '',
+				'tl_authority'=>isset($tl_authority) ? $tl_authority : '',
 				'tl_issue_date'=>!empty($tl_issue_date) ? db_date($tl_issue_date) : '',
 				'tl_expire_date'=>!empty($tl_expire_date) ? db_date($tl_expire_date) : '',
 
@@ -542,6 +553,13 @@ function __construct()
 		if($this->input->server('REQUEST_METHOD')==='POST'){
 			extract($_POST);
 
+			$cur_role = $this->session->userdata('manager_role');
+			if ($cur_role != 1 && $cur_role != 4) {
+				$lead_assign = isset($data['list']['lead_assign']) ? (int)$data['list']['lead_assign'] : (int)$this->session->userdata('manager_id');
+			} else {
+				$lead_assign = isset($lead_assign) ? (int)$lead_assign : 0;
+			}
+
 			$c_date = !empty($close_date) ? db_date($close_date) : '';
 			$max_fu = '';
 			if(!empty($followup_date)){
@@ -596,6 +614,7 @@ function __construct()
 				'lead_source'=>$lead_source,
 
 				'tl_number'=>isset($tl_number) ? $tl_number : '',
+				'tl_authority'=>isset($tl_authority) ? $tl_authority : '',
 				'tl_issue_date'=>!empty($tl_issue_date) ? db_date($tl_issue_date) : '',
 				'tl_expire_date'=>!empty($tl_expire_date) ? db_date($tl_expire_date) : '',
 
@@ -835,16 +854,542 @@ $data['info2']=$this->if_not_login();
 
 		echo "done";
 
-    }  
+    }
 
-	
+	/**
+	 * Export Leads in CSV format with actual DB values and scope filtering
+	 * Strict Access: Admin only (manager_role == 1)
+	 */
+	public function export()
+	{
+		$this->if_not_login();
+		$role = $this->session->userdata('manager_role');
+		if ($role != 1) {
+			show_error('Access Denied: Only Administrators have permission to export Leads data.', 403);
+			return;
+		}
 
-	
+		// If download parameter is requested, stream CSV
+		if ($this->input->get('download') == 1) {
+			$user_id = $this->input->get('user_id');
 
-	
+			// Pre-fetch lookups for readable CSV values
+			$status_map = array();
+			$statuses = $this->comman_model->getAll('', '', 'ci_status');
+			if (!empty($statuses)) {
+				foreach ($statuses as $st) {
+					$status_map[$st['id']] = $st['status'];
+				}
+			}
+
+			$terms_map = array();
+			$terms = $this->comman_model->getAll('', '', 'ci_terms');
+			if (!empty($terms)) {
+				foreach ($terms as $tm) {
+					$terms_map[$tm['id']] = $tm['title'];
+				}
+			}
+
+			$countries_map = array();
+			$countries = $this->comman_model->getAll('', '', 'countries');
+			if (!empty($countries)) {
+				foreach ($countries as $c) {
+					$countries_map[$c['id']] = $c['name'];
+				}
+			}
+
+			$states_map = array();
+			$states = $this->comman_model->getAll('', '', 'states');
+			if (!empty($states)) {
+				foreach ($states as $s) {
+					$states_map[$s['id']] = $s['name'];
+				}
+			}
+
+			$users_map = array();
+			$users = $this->comman_model->getAll('', '', 'ci_user');
+			if (!empty($users)) {
+				foreach ($users as $u) {
+					$users_map[$u['id']] = $u['name'];
+				}
+			}
+
+			$file_prefix = 'leads_export_';
+			if ($user_id === 'unassigned') {
+				$this->db->where('(lead_assign = 0 OR lead_assign IS NULL)');
+				$file_prefix .= 'unassigned_';
+			} else if (is_numeric($user_id) && (int)$user_id > 0) {
+				$this->db->where('lead_assign', (int)$user_id);
+				$uname = isset($users_map[(int)$user_id]) ? preg_replace('/[^a-zA-Z0-9_-]/', '_', $users_map[(int)$user_id]) : 'user_'.$user_id;
+				$file_prefix .= strtolower($uname).'_';
+			} else {
+				$file_prefix .= 'all_users_';
+			}
+
+			$leads = $this->db->order_by('id', 'DESC')->get('ci_leads')->result_array();
+
+			$filename = $file_prefix . date('Y-m-d_His') . '.csv';
+			header('Content-Type: text/csv; charset=utf-8');
+			header('Content-Disposition: attachment; filename=' . $filename);
+			header('Pragma: no-cache');
+			header('Expires: 0');
+
+			$output = fopen('php://output', 'w');
+			fputs($output, "\xEF\xBB\xBF");
+
+			// CSV Column Headers matching Add Leads Initial & Additional Category fields
+			$headers = array(
+				'Lead ID',
+				'Customer Name',
+				'POC Name',
+				'POC Contact Number',
+				'Email',
+				'Account Number',
+				'Account Under Vertical',
+				'Current Monthly Revenue Amount',
+				'Current Monthly Revenue Date',
+				'Category',
+				'Service Category',
+				'Product Category',
+				'Product Details',
+				'Trade License Number',
+				'Trade License Authority',
+				'Trade License Issue Date',
+				'Trade License Expiry Date',
+				'Qty',
+				'MRC',
+				'Revenue',
+				'MRR',
+				'Location',
+				'Status',
+				'Exp Close Date',
+				'Remarks',
+				'Address',
+				'Country',
+				'State',
+				'City',
+				'Alternate POC Name',
+				'Alternate POC Contact Number',
+				'Channel Partner',
+				'One Time Charges',
+				'Lead Category',
+				'Lead Assigned To',
+				'Website / Source Link',
+				'Next Follow Up Date',
+				'Next Follow Up Time',
+				'Next Meeting Date',
+				'Next Meeting Time',
+				'Created Date'
+			);
+			fputcsv($output, $headers);
+
+			if (!empty($leads)) {
+				foreach ($leads as $l) {
+					$s_cat_name = isset($terms_map[$l['s_cat']]) ? $terms_map[$l['s_cat']] : $l['s_cat'];
+					$p_cat_name = isset($terms_map[$l['p_cat']]) ? $terms_map[$l['p_cat']] : $l['p_cat'];
+					$lead_cat_name = isset($terms_map[$l['lead_cat']]) ? $terms_map[$l['lead_cat']] : $l['lead_cat'];
+					$status_name = isset($status_map[$l['status']]) ? $status_map[$l['status']] : $l['status'];
+					$country_name = isset($countries_map[$l['country']]) ? $countries_map[$l['country']] : $l['country'];
+					$state_name = isset($states_map[$l['state']]) ? $states_map[$l['state']] : $l['state'];
+					$assigned_name = !empty($l['lead_assign']) && isset($users_map[$l['lead_assign']]) ? $users_map[$l['lead_assign']] : 'Unassigned';
+
+					$row = array(
+						!empty($l['lead_id']) ? $l['lead_id'] : (100000000 + (int)$l['id']),
+						$l['customer'],
+						$l['poc'],
+						$l['contact1'],
+						$l['email'],
+						$l['a_number'],
+						$l['a_department'],
+						$l['r_amount'],
+						$l['r_date'],
+						$l['category'],
+						$s_cat_name,
+						$p_cat_name,
+						$l['p_details'],
+						$l['tl_number'],
+						$l['tl_authority'],
+						$l['tl_issue_date'],
+						$l['tl_expire_date'],
+						$l['qty'],
+						$l['mrc'],
+						$l['revenue'],
+						$l['mrr'],
+						$l['location'],
+						$status_name,
+						$l['close_date'],
+						$l['remark'],
+						$l['address'],
+						$country_name,
+						$state_name,
+						$l['city'],
+						$l['poc2'],
+						$l['contact2'],
+						$l['c_partner'],
+						$l['otc'],
+						$lead_cat_name,
+						$assigned_name,
+						$l['lead_source'],
+						$l['followup_date'],
+						$l['followup_time'],
+						$l['m_date'],
+						$l['m_time'],
+						$l['created']
+					);
+					fputcsv($output, $row);
+				}
+			}
+
+			fclose($output);
+			exit();
+		}
+
+		// Configure View Data
+		$data = array();
+		$data['info'] = array(
+			'title' => 'Manager - Export Leads',
+			'page_heading' => 'Export Leads Data'
+		);
+		$data['info2'] = $this->if_not_login();
+
+		$data['total_count'] = $this->db->count_all_results('ci_leads');
+		
+		$this->db->where('(lead_assign = 0 OR lead_assign IS NULL)');
+		$data['unassigned_count'] = $this->db->count_all_results('ci_leads');
+
+		$data['users'] = $this->db->select('id, name, email')->get_where('ci_user', array('status' => 1))->result_array();
+
+		// Count leads per user
+		$user_counts_raw = $this->db->select('lead_assign, COUNT(*) as cnt')->group_by('lead_assign')->get('ci_leads')->result_array();
+		$user_counts = array();
+		foreach ($user_counts_raw as $uc) {
+			if (!empty($uc['lead_assign'])) {
+				$user_counts[$uc['lead_assign']] = $uc['cnt'];
+			}
+		}
+		$data['user_counts'] = $user_counts;
+
+		$this->load->view('manager/leads/export', $data);
+	}
+
+	/**
+	 * Leads Import UI
+	 * Admin has full upload permission; Managers have view-only access; others blocked.
+	 */
+	public function import()
+	{
+		$this->if_not_login();
+		$role = $this->session->userdata('manager_role');
+		if ($role != 1 && $role != 4) {
+			show_error('Access Denied: You do not have permission to access Leads Import.', 403);
+			return;
+		}
+
+		$data = array();
+		$data['info'] = array(
+			'title' => 'Manager - Leads',
+			'page_heading' => 'Import Leads Data'
+		);
+		$data['info2'] = $this->if_not_login();
+		$data['is_admin'] = ($role == 1);
+		$data['is_support'] = ($role == 4);
+
+		$this->load->view('manager/leads/import', $data);
+	}
+
+	/**
+	 * Process Leads CSV Import
+	 * Backend Permission: Admin and Support (manager_role == 1 || manager_role == 4)
+	 */
+	public function import_action()
+	{
+		$this->if_not_login();
+		$role = $this->session->userdata('manager_role');
+		if ($role != 1 && $role != 4) {
+			$this->session->set_flashdata('error_message', 'Permission Denied: Only Admin and Support are permitted to import Leads data.');
+			redirect('manager/leads/import');
+			return;
+		}
+
+		if (!isset($_FILES['csv_file']) || $_FILES['csv_file']['error'] !== UPLOAD_ERR_OK) {
+			$this->session->set_flashdata('error_message', 'Please select a valid CSV file to upload.');
+			redirect('manager/leads/import');
+			return;
+		}
+
+		$file_ext = strtolower(pathinfo($_FILES['csv_file']['name'], PATHINFO_EXTENSION));
+		if ($file_ext !== 'csv') {
+			$this->session->set_flashdata('error_message', 'Invalid file type. Please upload a .csv file.');
+			redirect('manager/leads/import');
+			return;
+		}
+
+		$handle = fopen($_FILES['csv_file']['tmp_name'], 'r');
+		if (!$handle) {
+			$this->session->set_flashdata('error_message', 'Could not open the uploaded file.');
+			redirect('manager/leads/import');
+			return;
+		}
+
+		// Read header line
+		$raw_headers = fgetcsv($handle, 5000, ',');
+		if (!$raw_headers) {
+			fclose($handle);
+			$this->session->set_flashdata('error_message', 'The uploaded CSV file is empty.');
+			redirect('manager/leads/import');
+			return;
+		}
+
+		// Normalize headers to map keys
+		$col_index = array();
+		foreach ($raw_headers as $idx => $hdr) {
+			$clean = strtolower(trim(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $hdr)));
+			$clean = preg_replace('/[^a-z0-9]/', '', $clean);
+			$col_index[$clean] = $idx;
+		}
+
+		$get_val = function($row, $aliases) use ($col_index) {
+			foreach ($aliases as $alias) {
+				if (isset($col_index[$alias]) && isset($row[$col_index[$alias]])) {
+					return trim($row[$col_index[$alias]]);
+				}
+			}
+			return '';
+		};
+
+		$imported_count = 0;
+		$manager_id = $this->session->userdata('manager_id');
+
+		while (($row = fgetcsv($handle, 5000, ',')) !== FALSE) {
+			if (empty(array_filter($row))) {
+				continue;
+			}
+
+			$customer = $get_val($row, array('customername', 'customer', 'clientname', 'client'));
+			if (empty($customer)) {
+				continue;
+			}
+
+			$poc = $get_val($row, array('pocname', 'poc', 'contactperson'));
+			$contact1 = $get_val($row, array('poccontactnumber', 'contact1', 'contactnumber', 'mobile', 'phone'));
+			$email = $get_val($row, array('email', 'emailid'));
+			$a_number = $get_val($row, array('accountnumber', 'anumber', 'accountno'));
+			$a_department = $get_val($row, array('accountundervertical', 'adepartment', 'department', 'vertical'));
+			$r_amount = $get_val($row, array('currentmonthlyrevenueamount', 'ramount', 'revenueamount'));
+			$r_date = $get_val($row, array('currentmonthlyrevenuedate', 'rdate', 'revenuedate'));
+			$category = $get_val($row, array('category', 'cat'));
+			if (empty($category)) {
+				$category = 'New';
+			}
+
+			$s_cat = $get_val($row, array('servicecategory', 'scat'));
+			$p_cat = $get_val($row, array('productcategory', 'pcat'));
+			$p_details = $get_val($row, array('productdetails', 'pdetails'));
+			$tl_number = $get_val($row, array('tradelicensenumber', 'tlnumber', 'tradelicense'));
+			$tl_authority = $get_val($row, array('tradelicenseauthority', 'tlauthority', 'authority'));
+			$tl_issue_date = $get_val($row, array('tradelicenseissuedate', 'tlissuedate'));
+			$tl_expire_date = $get_val($row, array('tradelicenseexpirydate', 'tlexpiredate', 'tradelicenseexpiry'));
+			$qty = $get_val($row, array('qty', 'quantity'));
+			$mrc = $get_val($row, array('mrc'));
+			$revenue = $get_val($row, array('revenue'));
+			$mrr = $get_val($row, array('mrr'));
+			if (empty($mrr)) {
+				$mrr = (float)$mrc + (float)$revenue;
+			}
+
+			$location = $get_val($row, array('location'));
+			$status_raw = $get_val($row, array('status'));
+			$status = 39;
+			if (is_numeric($status_raw) && (int)$status_raw > 0) {
+				$status = (int)$status_raw;
+			} else if (!empty($status_raw)) {
+				$st_row = $this->db->like('status', $status_raw)->get('ci_status')->row_array();
+				if (!empty($st_row)) {
+					$status = $st_row['id'];
+				}
+			}
+
+			$close_date = $get_val($row, array('expclosedate', 'closedate', 'expectedclosedate'));
+			$remark = $get_val($row, array('remarks', 'remark'));
+			$address = $get_val($row, array('address'));
+			$country = $get_val($row, array('country'));
+			$state = $get_val($row, array('state'));
+			$city = $get_val($row, array('city'));
+			$poc2 = $get_val($row, array('alternatepocname', 'poc2', 'altpoc'));
+			$contact2 = $get_val($row, array('alternatepoccontactnumber', 'contact2', 'altcontact'));
+			$c_partner = $get_val($row, array('channelpartner', 'cpartner'));
+			$otc = $get_val($row, array('onetimecharges', 'otc'));
+			$lead_cat = $get_val($row, array('leadcategory', 'leadcat'));
+			$lead_source = $get_val($row, array('websitesourcelink', 'leadsource', 'source', 'website'));
+			$followup_date = $get_val($row, array('nextfollowupdate', 'followupdate', 'nextfu'));
+			$followup_time = $get_val($row, array('nextfollowuptime', 'followuptime'));
+			$m_date = $get_val($row, array('nextmeetingdate', 'mdate', 'meetingdate'));
+			$m_time = $get_val($row, array('nextmeetingtime', 'mtime', 'meetingtime'));
+
+			$insert_data = array(
+				'lead_id' => 100000000,
+				'customer' => $customer,
+				'poc' => $poc,
+				'contact1' => $contact1,
+				'email' => $email,
+				'a_number' => $a_number,
+				'a_department' => $a_department,
+				'r_amount' => $r_amount,
+				'r_date' => !empty($r_date) ? db_date($r_date) : '',
+				'category' => $category,
+				's_cat' => $s_cat,
+				'p_cat' => $p_cat,
+				'p_details' => $p_details,
+				'tl_number' => $tl_number,
+				'tl_authority' => $tl_authority,
+				'tl_issue_date' => !empty($tl_issue_date) ? db_date($tl_issue_date) : '',
+				'tl_expire_date' => !empty($tl_expire_date) ? db_date($tl_expire_date) : '',
+				'qty' => $qty,
+				'mrc' => $mrc,
+				'revenue' => $revenue,
+				'mrr' => $mrr,
+				'location' => $location,
+				'status' => $status,
+				'close_date' => !empty($close_date) ? db_date($close_date) : '',
+				'remark' => $remark,
+				'address' => $address,
+				'country' => is_numeric($country) ? $country : 0,
+				'state' => is_numeric($state) ? $state : 0,
+				'city' => $city,
+				'poc2' => $poc2,
+				'contact2' => $contact2,
+				'c_partner' => !empty($c_partner) ? $c_partner : 'SRJ Electronics Trading LLC',
+				'otc' => $otc,
+				'lead_cat' => $lead_cat,
+				'lead_assign' => 0, // Unassigned by default so Admin and Support can assign them
+				'lead_source' => $lead_source,
+				'followup_date' => !empty($followup_date) ? db_date($followup_date) : '',
+				'followup_time' => $followup_time,
+				'm_date' => !empty($m_date) ? db_date($m_date) : '',
+				'm_time' => $m_time,
+				'created_by' => $manager_id,
+				'admin_status' => 1,
+				'created' => date('Y-m-d')
+			);
+
+			$new_id = $this->comman_model->saveData('ci_leads', $insert_data);
+			if ($new_id) {
+				$this->comman_model->updateData('id', $new_id, array('lead_id' => 100000000 + $new_id), 'ci_leads');
+				$imported_count++;
+			}
+		}
+
+		fclose($handle);
+
+		if ($imported_count > 0) {
+			$this->session->set_flashdata('message', 'Success: ' . $imported_count . ' leads successfully imported into the system!');
+		} else {
+			$this->session->set_flashdata('error_message', 'No valid lead rows could be imported from the CSV file. Please verify the file format.');
+		}
+
+		redirect('manager/leads');
+	}
+
+	/**
+	 * Download sample CSV file template for Leads import
+	 */
+	public function download_sample_csv()
+	{
+		$this->if_not_login();
+		$role = $this->session->userdata('manager_role');
+		if ($role != 1 && $role != 4) {
+			show_error('Access Denied', 403);
+			return;
+		}
+
+		$filename = 'sample_leads_template.csv';
+		header('Content-Type: text/csv; charset=utf-8');
+		header('Content-Disposition: attachment; filename=' . $filename);
+		header('Pragma: no-cache');
+		header('Expires: 0');
+
+		$output = fopen('php://output', 'w');
+		fputs($output, "\xEF\xBB\xBF");
+
+		$headers = array(
+			'Customer Name',
+			'POC Name',
+			'POC Contact Number',
+			'Email',
+			'Account Number',
+			'Account Under Vertical',
+			'Current Monthly Revenue Amount',
+			'Current Monthly Revenue Date',
+			'Category',
+			'Service Category',
+			'Product Category',
+			'Product Details',
+			'Trade License Number',
+			'Trade License Authority',
+			'Trade License Issue Date',
+			'Trade License Expiry Date',
+			'Qty',
+			'MRC',
+			'Revenue',
+			'MRR',
+			'Location',
+			'Status',
+			'Exp Close Date',
+			'Remarks',
+			'Address',
+			'City',
+			'Alternate POC Name',
+			'Alternate POC Contact Number',
+			'Channel Partner',
+			'One Time Charges',
+			'Website / Source Link',
+			'Next Follow Up Date',
+			'Next Follow Up Time'
+		);
+		fputcsv($output, $headers);
+
+		$sample_row = array(
+			'Sample Enterprise LLC',
+			'John Doe',
+			'+971 50 123 4567',
+			'john@sample.com',
+			'ACC-98765',
+			'Telecom',
+			'1500',
+			date('d-m-Y'),
+			'New',
+			'Voice Services',
+			'SIP Trunk',
+			'Corporate 10-line package',
+			'TL-554433',
+			'DED Dubai',
+			date('d-m-Y', strtotime('-1 year')),
+			date('d-m-Y', strtotime('+1 year')),
+			'1',
+			'500',
+			'1000',
+			'1500',
+			'Dubai, Business Bay',
+			'Active',
+			date('d-m-Y', strtotime('+30 days')),
+			'Prospect interested in corporate discount',
+			'Office 402, Opal Tower',
+			'Dubai',
+			'Jane Smith',
+			'+971 50 987 6543',
+			'SRJ Electronics Trading LLC',
+			'200',
+			'https://example.com',
+			date('d-m-Y', strtotime('+7 days')),
+			'10:30 AM'
+		);
+		fputcsv($output, $sample_row);
+
+		fclose($output);
+		exit();
+	}
 
 }
-
 
 
 /* End of file welcome.php */

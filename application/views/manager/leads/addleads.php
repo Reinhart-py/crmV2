@@ -132,6 +132,34 @@
               </div>
             </div>
 
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Trade License Number</label>
+                <input type="text" class="form-control" name="tl_number" placeholder="Enter Trade License Number">
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Trade License Authority</label>
+                <input type="text" class="form-control" name="tl_authority" placeholder="Enter Trade License Authority">
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Trade License Issue Date</label>
+                <input type="text" class="form-control datepicker" name="tl_issue_date" placeholder="DD-MM-YYYY">
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Trade License Expiry</label>
+                <input type="text" class="form-control datepicker" name="tl_expire_date" placeholder="DD-MM-YYYY">
+              </div>
+            </div>
+
              <div class="col-lg-3 col-sm-6">
               <div class="form-group">
                 <label>Qty</label>
@@ -297,19 +325,23 @@
             </div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Lead Assigned To</label>               
-                <select class="form-control select2" name="lead_assign" style="width: 100%;">
-                <option value="">Select</option>
-                <?php if(isset($u_list) && !empty($u_list))
-                  { 
-                    foreach($u_list as $li){
-                  ?>
-
-                  <option value="<?php echo $li['id']; ?>"><?php echo $li['name']; ?></option>          
-
-               <?php } } ?>
-            </select>
-
+                <label>Lead Assigned To</label>
+                <?php 
+                  $cur_role = $this->session->userdata('manager_role');
+                  if ($cur_role == 1 || $cur_role == 4) { 
+                ?>               
+                  <select class="form-control select2" name="lead_assign" style="width: 100%;">
+                    <option value="0">Unassigned (Distribute Later)</option>
+                    <?php if(isset($u_list) && !empty($u_list)) { 
+                      foreach($u_list as $li){
+                    ?>
+                      <option value="<?php echo $li['id']; ?>" <?php if($li['id'] == $this->session->userdata('manager_id')){ echo 'selected'; } ?>><?php echo $li['name']; ?></option>          
+                    <?php } } ?>
+                  </select>
+                <?php } else { ?>
+                  <input type="text" class="form-control" value="<?php echo htmlspecialchars($this->session->userdata('manager_name')); ?>" readonly style="background: #f8fafc; font-weight: 600;">
+                  <input type="hidden" name="lead_assign" value="<?php echo (int)$this->session->userdata('manager_id'); ?>">
+                <?php } ?>
               </div>
             </div>
 
@@ -317,27 +349,6 @@
               <div class="form-group">
                 <label>Website / Source Link</label>
                 <input type="text" class="form-control" name="lead_source"  >
-              </div>
-            </div>          
-
-            <div class="col-lg-4 col-sm-6">
-              <div class="form-group">
-                <label>Trade License Number</label>
-                <input type="text" class="form-control" name="tl_number" placeholder="Enter Trade License Number">
-              </div>
-            </div>
-
-            <div class="col-lg-4 col-sm-6">
-              <div class="form-group">
-                <label>TL Issue Date</label>
-                <input type="text" class="form-control datepicker" name="tl_issue_date" placeholder="DD-MM-YYYY">
-              </div>
-            </div>
-
-            <div class="col-lg-4 col-sm-6">
-              <div class="form-group">
-                <label>TL Expire Date</label>
-                <input type="text" class="form-control datepicker" name="tl_expire_date" placeholder="DD-MM-YYYY">
               </div>
             </div>
            

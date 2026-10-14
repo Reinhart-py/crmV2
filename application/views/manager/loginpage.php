@@ -79,6 +79,11 @@
 
 
          
+      <div class="text-center" style="margin-top: 18px; border-top: 1px solid #eee; padding-top: 14px;">
+        <a href="https://7strokes.maxvendor47.workers.dev/" target="_blank" class="btn btn-default btn-xs" style="color: #4b5563; font-weight: 500; border-radius: 4px; padding: 5px 14px; border: 1px solid #d1d5db; background: #f9fafb; display: inline-flex; align-items: center; gap: 5px;">
+          <i class="fa fa-external-link" style="color: #2563eb;"></i> Generate Data
+        </a>
+      </div>
       </form> 
        
  </div>      

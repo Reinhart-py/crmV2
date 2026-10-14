@@ -18,7 +18,7 @@
     <!-- Main Dashboard Content -->
     <div class="dash-content-body">
 
-        <!-- 1. Top 4 Stat Cards Row (Navy, Forest Green, Warm Brown, Dark Crimson) -->
+        <!-- 1. Top 4 Statistic Cards Row -->
         <div class="row">
             <!-- MY LEADS (Navy) -->
             <div class="col-lg-3 col-sm-6 col-xs-12">
@@ -244,7 +244,7 @@
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-trophy"></i> My Closures</h4>
-                        <span class="card-total-pill"><?php echo $total_my_c; ?> Goals</span>
+                        <span class="card-total-pill"><?php echo $total_my_c; ?> Total</span>
                     </div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:16%;" title="Missed"></div>
@@ -288,11 +288,11 @@
                 </div>
             </div>
 
-            <!-- Card 4: My Vertical PU -->
+            <!-- Card 4: My Vertical FU -->
             <div class="col-sm-3 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
-                        <h4 class="card-title"><i class="fa fa-briefcase"></i> My Vertical PU</h4>
+                        <h4 class="card-title"><i class="fa fa-briefcase"></i> My Vertical FU</h4>
                         <span class="card-total-pill"><?php echo $total_my_vfu; ?> Total</span>
                     </div>
                     <div class="crm-seg-bar">
@@ -304,31 +304,31 @@
                     </div>
                     <ul class="crm-modern-stat-grid">
                         <li>
-                            <a href="<?php echo base_url(); ?>manager/verticals?type=1" class="crm-modern-stat-chip" data-drilldown="my_verticals" data-type="1" data-label="My Vertical FU - All Missed">
+                            <a href="<?php echo base_url(); ?>manager/leads?vertical_fu=1" class="crm-modern-stat-chip" data-drilldown="my_vertical_fu" data-type="1" data-label="My Vertical FU - All Missed">
                                 <span>All Missed</span>
                                 <span class="badge bg-red"><?php echo isset($dashboard_vfu['total_missed']) ? $dashboard_vfu['total_missed'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
-                            <a href="<?php echo base_url(); ?>manager/verticals?type=2" class="crm-modern-stat-chip" data-drilldown="my_verticals" data-type="2" data-label="My Vertical FU - Last 7 Days">
+                            <a href="<?php echo base_url(); ?>manager/leads?vertical_fu=2" class="crm-modern-stat-chip" data-drilldown="my_vertical_fu" data-type="2" data-label="My Vertical FU - Last 7 Days">
                                 <span>Last 7 Days</span>
                                 <span class="badge bg-orange"><?php echo isset($dashboard_vfu['total_lastweek']) ? $dashboard_vfu['total_lastweek'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
-                            <a href="<?php echo base_url(); ?>manager/verticals?type=3" class="crm-modern-stat-chip" data-drilldown="my_verticals" data-type="3" data-label="My Vertical FU - Today">
+                            <a href="<?php echo base_url(); ?>manager/leads?vertical_fu=3" class="crm-modern-stat-chip" data-drilldown="my_vertical_fu" data-type="3" data-label="My Vertical FU - Today">
                                 <span>Today</span>
                                 <span class="badge bg-skyblue"><?php echo isset($dashboard_vfu['total_today']) ? $dashboard_vfu['total_today'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
-                            <a href="<?php echo base_url(); ?>manager/verticals?type=4" class="crm-modern-stat-chip" data-drilldown="my_verticals" data-type="4" data-label="My Vertical FU - Next 7 Days">
+                            <a href="<?php echo base_url(); ?>manager/leads?vertical_fu=4" class="crm-modern-stat-chip" data-drilldown="my_vertical_fu" data-type="4" data-label="My Vertical FU - Next 7 Days">
                                 <span>Next 7 Days</span>
                                 <span class="badge bg-blue"><?php echo isset($dashboard_vfu['total_nextweek']) ? $dashboard_vfu['total_nextweek'] : 0; ?></span>
                             </a>
                         </li>
                         <li>
-                            <a href="<?php echo base_url(); ?>manager/verticals?type=5" class="crm-modern-stat-chip" data-drilldown="my_verticals" data-type="5" data-label="My Vertical FU - All Future">
+                            <a href="<?php echo base_url(); ?>manager/leads?vertical_fu=5" class="crm-modern-stat-chip" data-drilldown="my_vertical_fu" data-type="5" data-label="My Vertical FU - All Future">
                                 <span>All Future</span>
                                 <span class="badge bg-green"><?php echo isset($dashboard_vfu['total_future']) ? $dashboard_vfu['total_future'] : 0; ?></span>
                             </a>
@@ -443,7 +443,7 @@
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-trophy"></i> Team Closures</h4>
-                        <span class="card-total-pill"><?php echo $total_team_c; ?> Goals</span>
+                        <span class="card-total-pill"><?php echo $total_team_c; ?> Total</span>
                     </div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:15%;" title="Missed"></div>
@@ -487,11 +487,11 @@
                 </div>
             </div>
 
-            <!-- Card 8: Team Vertical PU -->
+            <!-- Card 8: Team Vertical FU -->
             <div class="col-sm-3 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
-                        <h4 class="card-title"><i class="fa fa-briefcase"></i> Team Vertical PU</h4>
+                        <h4 class="card-title"><i class="fa fa-briefcase"></i> Team Vertical FU</h4>
                         <span class="card-total-pill"><?php echo $total_team_vfu; ?> Total</span>
                     </div>
                     <div class="crm-seg-bar">
@@ -602,8 +602,14 @@ $(function () {
         setDashTheme(current === 'dark' ? 'light' : 'dark');
     });
 
-    // 2. Bar Chart Data Preparation
-    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    // 2. Bar Chart Data Preparation (Current month & Future months only)
+    var months = <?php 
+        if (!empty($dashboard_MyPro['month_labels'])) {
+            echo json_encode($dashboard_MyPro['month_labels']);
+        } else {
+            echo json_encode(array('Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'));
+        }
+    ?>;
     
     // My Projection Data (Jan - Dec)
     var myProData = [

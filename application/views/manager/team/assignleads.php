@@ -98,6 +98,25 @@ foreach($lc_list as $cli){
                 </select>
             </div> 
 
+            <?php if ($this->session->userdata('manager_role') == 1 || $this->session->userdata('manager_role') == 4) { 
+              $scope = isset($_GET['assign_scope']) ? $_GET['assign_scope'] : '';
+            ?>
+              <div class="form-group">
+                <select class="form-control" name="assign_scope" style="font-weight: 600;">
+                  <option value="" <?php if(empty($scope)){ echo 'selected'; } ?>>All Leads (Assigned & Unassigned)</option>
+                  <option value="unassigned" <?php if($scope === 'unassigned'){ echo 'selected'; } ?>>⚡ Unassigned Leads Only</option>
+                  <?php 
+                    $all_users = $this->db->select('id, name')->get_where('ci_user', array('status' => 1))->result_array();
+                    foreach($all_users as $au){
+                  ?>
+                    <option value="<?php echo $au['id']; ?>" <?php if($scope == $au['id']){ echo 'selected'; } ?>>
+                      Assigned to: <?php echo htmlspecialchars($au['name']); ?>
+                    </option>
+                  <?php } ?>
+                </select>
+              </div>
+            <?php } ?>
+
               <div class="form-group">
               <button type="submit" class="btn btn-success">Search</button>
                 <a href="<?php echo base_url(); ?>manager/team/assignleads" class="btn btn-danger"> Reset</a>
@@ -120,13 +139,14 @@ foreach($lc_list as $cli){
                    
                     <th>ID</th>
                     <th>Customer</th>
+                    <th>Assigned To</th>
                     <th>Service Type</th>
                     <th>MRR</th>
                     <th>POC Name</th>
                     <th>Contact Number</th>
                     <th>Next FU date</th>   
                     <th>Date</th>                   
-                    <th>Created</th>
+                    <th>Created By</th>
                     <th>Status</th>                                    
                     <th width="150">Action</th>          
                    
@@ -136,6 +156,7 @@ foreach($lc_list as $cli){
                   <tr>
                     <th></th>
                     <th></th>                    
+                    <th></th>
                     <th></th>
                     <th></th>
                     <th></th>
@@ -154,6 +175,13 @@ foreach($lc_list as $cli){
                                        
                     <td><?php echo $li['lead_id']; ?></td>
                     <td><?php echo $li['customer']; ?></td>
+                    <td>
+                      <?php if (!empty($li['assigned_to_name'])) { ?>
+                        <span class="label label-primary" style="font-size: 11.5px;"><?php echo htmlspecialchars($li['assigned_to_name']); ?></span>
+                      <?php } else { ?>
+                        <span class="label label-danger" style="font-size: 11.5px; font-weight: bold; background-color: #dc2626 !important;">Unassigned</span>
+                      <?php } ?>
+                    </td>
                     <td><?php echo $li['servicecat']; ?></td>
                     <td><?php echo $li['mrr']; ?></td>
                      <td><?php echo $li['poc']; ?></td>
@@ -174,7 +202,9 @@ foreach($lc_list as $cli){
                   </button>
                   <ul class="dropdown-menu" role="menu">
                     <li> <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>/tm" data-toggle="tooltip" title="View">Preview</a> </li>                  
-                    <li> <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($li['id']); ?>/tm" data-toggle="tooltip" title="Edit">Edit</a>  </li>
+                    <li> <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($li['id']); ?>/tm" data-toggle="tooltip" title="Edit">
+                      <?php echo ($this->session->userdata('manager_role') == 1 || $this->session->userdata('manager_role') == 4) ? 'Edit / Assign' : 'Edit'; ?>
+                    </a>  </li>
                   </ul>
                 </div>
 

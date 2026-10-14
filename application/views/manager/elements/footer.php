@@ -1,5 +1,15 @@
 <?php 
-  $footer_admin_name = $this->session->userdata('manager_name') ? $this->session->userdata('manager_name') : '7 Strokes Admin';
+  $current_user_id = $this->session->userdata('manager_id');
+  $footer_admin_name = '';
+  if ($current_user_id) {
+    $u_db = $this->db->select('name, email, mobile')->get_where('ci_user', array('id' => $current_user_id))->row_array();
+    if (!empty($u_db['name'])) {
+      $footer_admin_name = $u_db['name'];
+    }
+  }
+  if (empty($footer_admin_name)) {
+    $footer_admin_name = $this->session->userdata('manager_name') ? $this->session->userdata('manager_name') : 'User';
+  }
   $footer_email = $this->session->userdata('manager_email') ? $this->session->userdata('manager_email') : 'hr@7strokes.com';
   $footer_mobile = $this->session->userdata('manager_mobile') ? $this->session->userdata('manager_mobile') : '+971 58 563 7737';
 ?>
@@ -7,13 +17,6 @@
   <div class="footer-container">
     <div class="footer-left">
       &copy; <?php echo date('Y'); ?> 7 Strokes CRM Platform. All rights reserved.
-    </div>
-    <div class="footer-center">
-      <span class="footer-admin"><i class="fa fa-user-circle"></i> Hello, <?php echo htmlspecialchars($footer_admin_name); ?></span>
-      <span class="footer-divider">|</span>
-      <a href="mailto:<?php echo htmlspecialchars($footer_email); ?>"><i class="fa fa-envelope"></i> <?php echo htmlspecialchars($footer_email); ?></a>
-      <span class="footer-divider">|</span>
-      <a href="tel:<?php echo preg_replace('/[^0-9+]/', '', $footer_mobile); ?>"><i class="fa fa-phone"></i> <?php echo htmlspecialchars($footer_mobile); ?></a>
     </div>
     <div class="footer-right">
       Enterprise Real-Time Architecture
@@ -52,6 +55,40 @@
 <script src="<?php echo base_url(); ?>assets/plugins/datatables/dataTables.bootstrap.min.js"></script>
 <script src="https://cdn.datatables.net/rowreorder/1.2.7/js/dataTables.rowReorder.min.js"></script>
 <script src="https://cdn.datatables.net/responsive/2.2.5/js/dataTables.responsive.min.js"></script>
+<script>
+if (window.jQuery && $.fn && $.fn.dataTable) {
+  $.extend(true, $.fn.dataTable.defaults, {
+    responsive: true,
+    autoWidth: false,
+    scrollX: false
+  });
+  var _origDtFn = $.fn.dataTable;
+  $.fn.dataTable = function(options) {
+    options = options || {};
+    options.responsive = true;
+    options.scrollX = false;
+    return _origDtFn.apply(this, [options]);
+  };
+  for (var k in _origDtFn) {
+    if (Object.prototype.hasOwnProperty.call(_origDtFn, k)) {
+      $.fn.dataTable[k] = _origDtFn[k];
+    }
+  }
+
+  var _origDTFn = $.fn.DataTable;
+  $.fn.DataTable = function(options) {
+    options = options || {};
+    options.responsive = true;
+    options.scrollX = false;
+    return _origDTFn.apply(this, [options]);
+  };
+  for (var k2 in _origDTFn) {
+    if (Object.prototype.hasOwnProperty.call(_origDTFn, k2)) {
+      $.fn.DataTable[k2] = _origDTFn[k2];
+    }
+  }
+}
+</script>
 <script src="<?php echo base_url(); ?>assets/plugins/countdown/countdown-timer.js"></script>
 <script src="<?php echo base_url(); ?>assets/dist/js/app.min.js"></script>
 <script src="https://cdn.ckeditor.com/4.5.7/standard/ckeditor.js"></script>
@@ -208,7 +245,9 @@ $('.datepicker2').datepicker({
       rowReorder: {
             selector: 'td:nth-child(2)'
         },
-      responsive: true
+      responsive: false,
+      scrollX: true,
+      autoWidth: false
     });
     $('#example2').DataTable({
       "paging": true,
@@ -309,6 +348,129 @@ else {
 $('header').removeClass('fixed-header');
 }
 });
+</script>
+
+<!-- Floating Help Icon (Bottom-Left) -> Opens Dedicated Help Desk Page -->
+<a href="<?php echo base_url(); ?>manager/tickets" class="floating-help-fab" title="Help Desk" id="floatingHelpFab">
+  <i class="fa fa-life-ring"></i>
+  <span>Help Desk</span>
+</a>
+
+<script>
+// Authoritative mobile navigation handler for Android / touch / small screen devices
+(function() {
+  function closeDrawer() {
+    document.body.classList.remove('sidebar-open');
+  }
+
+  function openDrawer() {
+    document.body.classList.remove('sidebar-collapse');
+    document.body.classList.add('sidebar-open');
+  }
+
+  function toggleDrawer(e) {
+    if (e) {
+      e.preventDefault();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+      else if (e.stopPropagation) e.stopPropagation();
+    }
+    if (document.body.classList.contains('sidebar-open')) {
+      closeDrawer();
+    } else {
+      openDrawer();
+    }
+  }
+
+  document.addEventListener('click', function(e) {
+    // 1. Mobile hamburger toggle
+    var hamburger = e.target.closest('#crmMobileHamburger');
+    if (hamburger) {
+      toggleDrawer(e);
+      return;
+    }
+
+    // 2. Mobile drawer close button
+    var closeBtn = e.target.closest('#crmSidebarClose');
+    if (closeBtn) {
+      e.preventDefault();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+      closeDrawer();
+      return;
+    }
+
+    // 3. Treeview dropdown toggle inside sidebar
+    var treeviewLink = e.target.closest('.main-sidebar .sidebar-menu li.treeview > a');
+    if (treeviewLink) {
+      e.preventDefault();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+      var li = treeviewLink.closest('li.treeview');
+      var isExpanded = li.classList.contains('menu-open') || li.classList.contains('is-expanded');
+      var subMenu = li.querySelector('.treeview-menu');
+
+      // Close sibling treeviews in sidebar
+      var siblings = li.parentElement.querySelectorAll('li.treeview');
+      for (var i = 0; i < siblings.length; i++) {
+        var sib = siblings[i];
+        if (sib !== li) {
+          sib.classList.remove('active', 'menu-open', 'is-expanded');
+          var sibSub = sib.querySelector('.treeview-menu');
+          if (sibSub) sibSub.style.display = 'none';
+          var sibArrow = sib.querySelector('.sidebar-arrow');
+          if (sibArrow) {
+            sibArrow.classList.remove('fa-angle-down');
+            sibArrow.classList.add('fa-angle-left');
+          }
+        }
+      }
+
+      var arrow = li.querySelector('.sidebar-arrow');
+      if (isExpanded) {
+        li.classList.remove('active', 'menu-open', 'is-expanded');
+        if (subMenu) subMenu.style.display = 'none';
+        if (arrow) {
+          arrow.classList.remove('fa-angle-down');
+          arrow.classList.add('fa-angle-left');
+        }
+      } else {
+        li.classList.add('menu-open', 'is-expanded');
+        if (subMenu) subMenu.style.display = 'block';
+        if (arrow) {
+          arrow.classList.remove('fa-angle-left');
+          arrow.classList.add('fa-angle-down');
+        }
+      }
+      return;
+    }
+
+    // 4. Outside click or backdrop click closes mobile drawer
+    if (document.body.classList.contains('sidebar-open')) {
+      if (!e.target.closest('.main-sidebar') && !e.target.closest('#crmMobileHamburger')) {
+        closeDrawer();
+      }
+    }
+  }, true); // Capture phase ensures this fires first before any library can intercept or cancel
+
+  // Expand active route on load
+  function initActiveTreeview() {
+    var activeLi = document.querySelector('.main-sidebar .sidebar-menu li.treeview.active');
+    if (activeLi) {
+      activeLi.classList.add('menu-open', 'is-expanded');
+      var subMenu = activeLi.querySelector('.treeview-menu');
+      if (subMenu) subMenu.style.display = 'block';
+      var arr = activeLi.querySelector('.sidebar-arrow');
+      if (arr) {
+        arr.classList.remove('fa-angle-left');
+        arr.classList.add('fa-angle-down');
+      }
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initActiveTreeview);
+  } else {
+    initActiveTreeview();
+  }
+})();
 </script>
 
 </body>
