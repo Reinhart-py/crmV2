@@ -45,9 +45,12 @@
                   <?php 
                   $current_comp = !empty($ticket['company_name']) ? $ticket['company_name'] : $ticket['customer'];
                   if(isset($companies_list) && !empty($companies_list)){
-                    foreach($companies_list as $comp){ ?>
-                      <option value="<?php echo htmlspecialchars($comp['name']); ?>" <?php if($comp['name'] == $current_comp) echo 'selected'; ?>>
-                        <?php echo htmlspecialchars($comp['name']); ?>
+                    foreach($companies_list as $comp){ 
+                      $cname = is_array($comp) ? ($comp['name'] ?? $comp['company'] ?? '') : $comp;
+                      if(empty($cname)) continue;
+                    ?>
+                      <option value="<?php echo htmlspecialchars($cname); ?>" <?php if($cname == $current_comp) echo 'selected'; ?>>
+                        <?php echo htmlspecialchars($cname); ?>
                       </option>
                   <?php } } ?>
                 </select>

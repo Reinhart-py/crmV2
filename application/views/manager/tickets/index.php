@@ -33,9 +33,12 @@
                   <select class="form-control select2" name="company" style="min-width: 150px;">
                     <option value="">Select Company</option>
                     <?php if(isset($companies_list) && !empty($companies_list)){
-                      foreach($companies_list as $comp){ ?>
-                        <option value="<?php echo htmlspecialchars($comp['name']); ?>" <?php if(isset($_GET['company']) && $_GET['company']==$comp['name']){ echo 'selected'; } ?>>
-                          <?php echo htmlspecialchars($comp['name']); ?>
+                      foreach($companies_list as $comp){ 
+                        $cname = is_array($comp) ? ($comp['name'] ?? $comp['company'] ?? '') : $comp;
+                        if(empty($cname)) continue;
+                      ?>
+                        <option value="<?php echo htmlspecialchars($cname); ?>" <?php if(isset($_GET['company']) && $_GET['company']==$cname){ echo 'selected'; } ?>>
+                          <?php echo htmlspecialchars($cname); ?>
                         </option>
                     <?php } } ?>
                   </select>

@@ -43,8 +43,11 @@
                 <select class="form-control select2" name="company_name" required style="width: 100%;">
                   <option value="">Select Company</option>
                   <?php if(isset($companies_list) && !empty($companies_list)){
-                    foreach($companies_list as $comp){ ?>
-                      <option value="<?php echo htmlspecialchars($comp['name']); ?>"><?php echo htmlspecialchars($comp['name']); ?></option>
+                    foreach($companies_list as $comp){ 
+                      $cname = is_array($comp) ? ($comp['name'] ?? $comp['company'] ?? '') : $comp;
+                      if(empty($cname)) continue;
+                    ?>
+                      <option value="<?php echo htmlspecialchars($cname); ?>"><?php echo htmlspecialchars($cname); ?></option>
                   <?php } } ?>
                 </select>
               </div>
