@@ -4,6 +4,22 @@ All notable changes, features, bug fixes, and refinements for the Rolexto CRM re
 
 ---
 
+### [Commit 5d21809] — Remove Header Banner Clutter from Admin Logs and Integrate Online/Offline into Status Filter and Column
+- **Commit Hash**: `5d21809` (`5d2180949d2146e49226d9c6ca1087cf23709b8e`)
+- **Tree Code**: `d5c5f7ec763317d87631311d97043dc6cb9fb510`
+- **Author**: Reinhart-py
+- **Date & Time**: `2026-10-15 18:07:42 +0530`
+
+#### Changes & Additions:
+- **Admin Logs Header Clutter Removed**:
+  - Removed the custom summary card banner (`System User Sessions: 1 Online Now | 131 Total Users`) from `application/views/manager/system/admin_logs.php` to maintain a clean AdminLTE interface matching `Team > Leads`.
+- **Status Filter & Column Integration**:
+  - Integrated `Online` and `Offline` user state directly into the native **Status** dropdown filter (`Online`, `Offline`, `SUCCESS`, `FAILED`) instead of displaying intrusive session cards in the header.
+  - Updated `application/controllers/ci_admin_system.php` to cleanly filter logs by user online/offline status when selected from the Status dropdown.
+  - Positioned the `Online` / `Offline` status badge inside the table's **Status** column alongside the action outcome badge (`SUCCESS`, `FAILED`, `TIMEOUT`), keeping the **User** column clean with username only.
+
+---
+
 ### [Commit 6de47b2] — Normalize Company Dropdown Items for String and Array Models
 - **Commit Hash**: `6de47b2` (`6de47b209d84639b7d5bead45c110996841072aa`)
 - **Tree Code**: `afcd71d34729b80bc8d21172db535b72edf7b069`
