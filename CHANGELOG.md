@@ -4,6 +4,27 @@ All notable changes, features, bug fixes, and refinements for the Rolexto CRM re
 
 ---
 
+### [Commit fc4f813] — Complete Field Suite for Tickets with Add Lead UI Styling and Clean Codebase
+- **Commit Hash**: `fc4f813` (`fc4f813a1e473c1ea71bab40e53272e18b1ba822`)
+- **Tree Code**: `4d6e3754f5da7d4ae30ab1a74c648ed1e58bfb8b`
+- **Author**: Reinhart-py
+- **Date & Time**: `2026-10-15 17:52:34 +0530`
+
+#### Changes & Additions:
+- **Complete Ticket Field Suite Restored in Raise Ticket & Edit Ticket Views**:
+  - Re-integrated all required customer contact, classification, assignment, and scheduling fields into `application/views/manager/tickets/add.php` and `edit.php`:
+    - **Client & Company Information**: Client Type (`Onboarded` / `Non-Onboarded`), Company Name (searchable DB dropdown from all companies), POC Name, POC Contact Number, Alternative Contact Number, Email, City / Location, and Ticket Source (`Internal Request`, `Phone Call`, `Email`, `WhatsApp`, `Client Portal`, `Direct / Meeting`).
+    - **Ticket Classification**: Department (`Sales`, `Back Office`, `Operations`, `IT`, `HR`, `Support`, `Accounts`), Ticket Type (`Bug / Technical Issue`, `Feature Request`, `System Access / Permission`, `Billing / Invoice Inquiry`, `Client Query / Onboarding`, `Operational Support`, `Hardware / Equipment`, `General Inquiry`, `Escalation`), Category (`Software`, `Hardware`, `Network`, `Lead Management`, `Calling System`, `CRM Access`, `Data Correction`, `Attendance / HR`, `Security / Breach`, `Other`), Priority (`Low`, `Medium`, `High`, `Urgent`), Status (`Open`, `Assigned`, `In Progress`, `Pending`, `On Hold`, `Resolved`, `Closed`), and Ticket Title.
+    - **Assignment & Deadlines**: Multi-user assignment (`assigned_users[]`), Notify / Tag Users (`tagged_users[]`), Raised By, Created Date, Last Updated By (in Edit), Last Updated Date (in Edit), Deadline Date, Expected Closure Date, Initial Follow-up Date, and Initial Follow-up Time.
+    - **Details & Attachments**: Detailed Description, Internal Staff Notes, and File Attachment.
+  - Native AdminLTE box styling matching `views/manager/leads/addleads.php` without custom SVG icons, colorful borders, or clutter.
+- **Codebase Cleanliness & Comment Removal**:
+  - Removed all inline comments, explanatory developer notes, guide comments, and AI-like annotations across all PHP controller and view files (`ci_admin_tickets.php`, `add.php`, `edit.php`, `index.php`, `view.php`, `followups.php`).
+- **Ticket Preview & Audit History Enhancement**:
+  - Enhanced `application/views/manager/tickets/view.php` to display all client POC contacts, location, ticket source, assignment, and deadline details in the 2-column key-value tables matching `views/manager/leads/single_view.php`.
+
+---
+
 ### [Commit 212f501] — Align Raise Ticket to Add Lead UI, View Tickets to Team Leads UI, and Preview Ticket to Lead Preview UI
 - **Commit Hash**: `212f501` (`212f50125142d08d26634f72c3551f0301550d1e`)
 - **Tree Code**: `f5c9a62fe079f2842f017be714c4028e3c39ad8e`
