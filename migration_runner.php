@@ -163,4 +163,94 @@ foreach ($business_cats as $bc) {
     }
 }
 
+// 5. ci_tickets extended columns
+add_col_if_missing($mysqli, 'ci_tickets', 'client_type', "VARCHAR(50) NULL DEFAULT 'Onboarded'");
+add_col_if_missing($mysqli, 'ci_tickets', 'company_name', "VARCHAR(255) NULL");
+add_col_if_missing($mysqli, 'ci_tickets', 'company_id', "INT(11) NULL DEFAULT 0");
+add_col_if_missing($mysqli, 'ci_tickets', 'ticket_type', "VARCHAR(100) NULL");
+add_col_if_missing($mysqli, 'ci_tickets', 'department', "VARCHAR(100) NULL");
+add_col_if_missing($mysqli, 'ci_tickets', 'ticket_title', "VARCHAR(255) NULL");
+add_col_if_missing($mysqli, 'ci_tickets', 'assigned_users', "TEXT NULL");
+add_col_if_missing($mysqli, 'ci_tickets', 'tagged_users', "TEXT NULL");
+add_col_if_missing($mysqli, 'ci_tickets', 'raised_by', "INT(11) NULL DEFAULT 0");
+add_col_if_missing($mysqli, 'ci_tickets', 'created_date', "DATETIME NULL");
+add_col_if_missing($mysqli, 'ci_tickets', 'deadline_date', "DATE NULL");
+add_col_if_missing($mysqli, 'ci_tickets', 'expected_close_date', "DATE NULL");
+add_col_if_missing($mysqli, 'ci_tickets', 'last_updated_date', "DATETIME NULL");
+add_col_if_missing($mysqli, 'ci_tickets', 'last_updated_by', "INT(11) NULL DEFAULT 0");
+add_col_if_missing($mysqli, 'ci_tickets', 'internal_notes', "TEXT NULL");
+add_col_if_missing($mysqli, 'ci_tickets', 'resolution_remarks', "TEXT NULL");
+add_col_if_missing($mysqli, 'ci_tickets', 'resolution_reviewed_by', "INT(11) NULL DEFAULT 0");
+add_col_if_missing($mysqli, 'ci_tickets', 'resolution_confirmed_at', "DATETIME NULL");
+add_col_if_missing($mysqli, 'ci_tickets', 'attachment', "VARCHAR(255) NULL");
+
+// 6. ci_ticket_history table
+$q_thistory = "CREATE TABLE IF NOT EXISTS `ci_ticket_history` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `ticket_id` INT(11) NOT NULL,
+    `action` VARCHAR(100) NOT NULL,
+    `old_status` VARCHAR(50) NULL,
+    `new_status` VARCHAR(50) NULL,
+    `old_assigned` TEXT NULL,
+    `new_assigned` TEXT NULL,
+    `remarks` TEXT NULL,
+    `user_id` INT(11) NOT NULL,
+    `user_name` VARCHAR(255) NOT NULL,
+    `user_role` VARCHAR(100) NULL,
+    `created_at` DATETIME NOT NULL,
+    PRIMARY KEY (`id`),
+    KEY `idx_ticket_id` (`ticket_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+if ($mysqli->query($q_thistory)) {
+    echo "Table `ci_ticket_history` created / verified\n";
+} else {
+    echo "Error creating `ci_ticket_history`: " . $mysqli->error . "\n";
+}
+
+// 7. ci_ticket_followups table
+$q_tfollow = "CREATE TABLE IF NOT EXISTS `ci_ticket_followups` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `ticket_id` INT(11) NOT NULL,
+    `followup_date` DATE NOT NULL,
+    `next_followup_date` DATE NULL,
+    `assigned_user_id` INT(11) NULL,
+    `remarks` TEXT NULL,
+    `status` VARCHAR(50) NULL,
+    `next_action` VARCHAR(255) NULL,
+    `created_by` INT(11) NOT NULL,
+    `created_at` DATETIME NOT NULL,
+    PRIMARY KEY (`id`),
+    KEY `idx_ticket_id` (`ticket_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+if ($mysqli->query($q_tfollow)) {
+    echo "Table `ci_ticket_followups` created / verified\n";
+} else {
+    echo "Error creating `ci_ticket_followups`: " . $mysqli->error . "\n";
+}
+
+// 8. ci_user session and online tracking
+add_col_if_missing($mysqli, 'ci_user', 'current_session_token', "VARCHAR(64) NULL");
+add_col_if_missing($mysqli, 'ci_user', 'last_ip', "VARCHAR(100) NULL");
+add_col_if_missing($mysqli, 'ci_user', 'last_active_at', "DATETIME NULL");
+add_col_if_missing($mysqli, 'ci_user', 'is_online', "TINYINT(1) NULL DEFAULT 0");
+
+// 9. Standard roles in ci_roles
+$roles = array(
+    1 => 'Admin',
+    2 => 'Back Office',
+    3 => 'Sales',
+    4 => 'Support',
+    5 => 'Operations',
+    6 => 'IT',
+    7 => 'HR'
+);
+foreach ($roles as $r_id => $r_title) {
+    $r_esc = $mysqli->real_escape_string($r_title);
+    $check_r = $mysqli->query("SELECT id FROM ci_roles WHERE id=$r_id");
+    if ($check_r && $check_r->num_rows == 0) {
+        $mysqli->query("INSERT INTO ci_roles (id, title, status, created) VALUES ($r_id, '$r_esc', 1, NOW())");
+        echo "Inserted role: $r_title\n";
+    }
+}
+
 echo "Database migrations complete.\n";

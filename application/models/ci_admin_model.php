@@ -1722,6 +1722,25 @@ public function dashboard_MyPro($table='ci_leads'){
 	   return $result;
 	}
 
+	public function get_client_ip()
+	{
+		$ip = '';
+		if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+			$ip = $_SERVER['HTTP_CLIENT_IP'];
+		} elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+			$ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+			$ip = trim($ips[0]);
+		} elseif (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
+			$ip = $_SERVER['HTTP_CF_CONNECTING_IP'];
+		} elseif (!empty($_SERVER['REMOTE_ADDR'])) {
+			$ip = $_SERVER['REMOTE_ADDR'];
+		}
+		if (!empty($ip) && filter_var($ip, FILTER_VALIDATE_IP)) {
+			return $ip;
+		}
+		return !empty($ip) ? $ip : '127.0.0.1';
+	}
+
 	public function log_admin_action($activity, $details = '', $status = 'SUCCESS', $user_id = null, $username = null)
 	{
 		if ($user_id === null) {
@@ -1731,7 +1750,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			$username = $this->session->userdata('manager_name') ? $this->session->userdata('manager_name') : ($this->session->userdata('manager_email') ? $this->session->userdata('manager_email') : 'Guest');
 		}
 
-		$ip = !empty($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '127.0.0.1';
+		$ip = $this->get_client_ip();
 		$ua = !empty($_SERVER['HTTP_USER_AGENT']) ? substr($_SERVER['HTTP_USER_AGENT'], 0, 255) : '';
 		$now = date('Y-m-d H:i:s');
 
@@ -1748,7 +1767,7 @@ public function dashboard_MyPro($table='ci_leads'){
 
 		if ($activity === 'login' && $status === 'SUCCESS') {
 			$log_data['login_time'] = $now;
-		} else if ($activity === 'logout' || $activity === 'session_timeout') {
+		} else if ($activity === 'logout' || $activity === 'session_timeout' || $activity === 'concurrent_logout') {
 			$log_data['logout_time'] = $now;
 		}
 
@@ -1757,23 +1776,71 @@ public function dashboard_MyPro($table='ci_leads'){
 
 	public function check_auth_timeout()
 	{
-		$manager_id = $this->session->userdata('manager_id');
+		$manager_id = (int)$this->session->userdata('manager_id');
 		if (!empty($manager_id)) {
 			$last_activity = $this->session->userdata('last_activity_time');
-			$timeout_seconds = 300; // 5 minutes inactivity
+			$timeout_seconds = 600; // 10 minutes inactivity timeout
 
 			if (!empty($last_activity) && (time() - $last_activity) > $timeout_seconds) {
-				$this->log_admin_action('session_timeout', 'Logged out due to 5 minutes of inactivity', 'TIMEOUT', $manager_id);
+				$this->log_admin_action('session_timeout', 'Logged out due to 10 minutes of inactivity', 'TIMEOUT', $manager_id);
+				$this->db->where('id', $manager_id)->update('ci_user', array('is_online' => 0));
 				$this->session->unset_userdata('manager_id');
 				$this->session->unset_userdata('manager_email');
 				$this->session->unset_userdata('manager_name');
 				$this->session->unset_userdata('manager_mobile');
+				$this->session->unset_userdata('login_session_token');
 				$this->session->sess_destroy();
 				redirect('/manager/login?timeout=1');
 				exit;
 			}
+
+			// Single Device Login Verification:
+			// Check if another device has logged in with this user account
+			$session_token = $this->session->userdata('login_session_token');
+			if (!empty($session_token)) {
+				$user_row = $this->db->select('current_session_token')->where('id', $manager_id)->get('ci_user')->row_array();
+				if (!empty($user_row['current_session_token']) && $user_row['current_session_token'] !== $session_token) {
+					// Another device logged in! Terminate this device's session
+					$this->log_admin_action('concurrent_logout', 'Session terminated: account logged in from another device', 'TERMINATED', $manager_id);
+					$this->session->unset_userdata('manager_id');
+					$this->session->unset_userdata('manager_email');
+					$this->session->unset_userdata('manager_name');
+					$this->session->unset_userdata('manager_mobile');
+					$this->session->unset_userdata('login_session_token');
+					$this->session->sess_destroy();
+					redirect('/manager/login?conflict=1');
+					exit;
+				}
+			}
+
+			// Update activity timestamp and keep online flag fresh
 			$this->session->set_userdata('last_activity_time', time());
+			$client_ip = $this->get_client_ip();
+			$this->db->where('id', $manager_id)->update('ci_user', array(
+				'last_active_at' => date('Y-m-d H:i:s'),
+				'last_ip' => $client_ip,
+				'is_online' => 1
+			));
 		}
+	}
+
+	public function get_all_companies_dropdown()
+	{
+		$this->db->distinct();
+		$this->db->select('TRIM(customer) as company');
+		$this->db->from('ci_leads');
+		$this->db->where('customer IS NOT NULL', null, false);
+		$this->db->where('TRIM(customer) !=', '');
+		$this->db->order_by('customer', 'ASC');
+		$res = $this->db->get()->result_array();
+		$companies = array();
+		foreach ($res as $r) {
+			$clean = trim($r['company']);
+			if (!empty($clean) && !in_array($clean, $companies)) {
+				$companies[] = $clean;
+			}
+		}
+		return $companies;
 	}
 
 }

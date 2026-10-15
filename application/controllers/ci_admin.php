@@ -100,26 +100,37 @@ class Ci_admin extends CI_Controller {
 			}
 			if(!empty($data['users']))
 			{
+				$session_token = md5(uniqid(mt_rand(), true));
+				$client_ip = $this->ci_admin_model->get_client_ip();
+
+				// Enforce single device login: overwrite current_session_token in db
+				$this->db->where('id', (int)$data['users']['id'])->update('ci_user', array(
+					'current_session_token' => $session_token,
+					'last_ip' => $client_ip,
+					'last_active_at' => date('Y-m-d H:i:s'),
+					'is_online' => 1
+				));
+
 				$user_data=array(
-				'manager_id' => $data['users']['id'],
-				'manager_username' => $data['users']['c_username'],
-			    'manager_email'=>$data['users']['email'],
-				'manager_name'=>$data['users']['name'],
-				'manager_mobile'=>$data['users']['mobile'],
-				'manager_role'=>$data['users']['user_type'],
-				'manager_level'=>$data['users']['user_level'],
-				'last_activity_time'=>time()
-			);		
-		     $this->session->set_userdata($user_data);
-			 $this->ci_admin_model->log_admin_action('login', 'User logged in successfully', 'SUCCESS', $data['users']['id'], $data['users']['name']);
-			 redirect('manager/dashboard');
-			
+					'manager_id' => $data['users']['id'],
+					'manager_username' => $data['users']['c_username'],
+					'manager_email'=>$data['users']['email'],
+					'manager_name'=>$data['users']['name'],
+					'manager_mobile'=>$data['users']['mobile'],
+					'manager_role'=>$data['users']['user_type'],
+					'manager_level'=>$data['users']['user_level'],
+					'last_activity_time'=>time(),
+					'login_session_token'=>$session_token
+				);		
+				$this->session->set_userdata($user_data);
+				$this->ci_admin_model->log_admin_action('login', 'User logged in successfully (IP: ' . $client_ip . ')', 'SUCCESS', $data['users']['id'], $data['users']['name']);
+				redirect('manager/dashboard');
 			}
 			else
 			{   
-			$this->ci_admin_model->log_admin_action('login_failed', 'Failed login attempt for: '.$email, 'FAILED', 0, $email);
-			$this->session->set_flashdata('error_message', 'You entered wrong username or password');
-            redirect("manager/login");
+				$this->ci_admin_model->log_admin_action('login_failed', 'Failed login attempt for: '.$email, 'FAILED', 0, $email);
+				$this->session->set_flashdata('error_message', 'You entered wrong username or password');
+				redirect("manager/login");
 			}
 			
 		}
@@ -160,6 +171,12 @@ class Ci_admin extends CI_Controller {
 	{
 		$uid = $this->session->userdata('manager_id');
 		$uname = $this->session->userdata('manager_name');
+		if (!empty($uid)) {
+			$this->db->where('id', (int)$uid)->update('ci_user', array(
+				'is_online' => 0,
+				'current_session_token' => null
+			));
+		}
 		$this->ci_admin_model->log_admin_action('logout', 'User logged out', 'SUCCESS', $uid, $uname);
 		$this->session->unset_userdata('manager_id');
 		$this->session->unset_userdata('manager_email');
@@ -168,6 +185,7 @@ class Ci_admin extends CI_Controller {
 		$this->session->unset_userdata('manager_role');
 		$this->session->unset_userdata('manager_level');
 		$this->session->unset_userdata('last_activity_time');
+		$this->session->unset_userdata('login_session_token');
 		$this->session->sess_destroy();
 		if ($this->input->is_ajax_request()) {
 			echo 'done';

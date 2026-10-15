@@ -73,6 +73,41 @@ class Ci_admin_system extends CI_Controller {
 		$status = $this->input->get('status');
 		$d1 = $this->input->get('d1');
 		$d2 = $this->input->get('d2');
+		$online_status = $this->input->get('online_status');
+
+		// Fetch all users with their online/offline state
+		$users_with_status = $this->db->select('id, name, email, is_online, last_active_at, last_ip')
+			->order_by('name', 'ASC')
+			->get('ci_user')
+			->result_array();
+
+		$user_status_map = array();
+		$online_count = 0;
+		$threshold_time = time() - 600; // 10 minutes activity window
+		$online_uids = array();
+		$offline_uids = array();
+
+		foreach ($users_with_status as $u) {
+			$is_active_recently = (!empty($u['last_active_at']) && strtotime($u['last_active_at']) >= $threshold_time);
+			$is_online = ($u['is_online'] == 1 && $is_active_recently);
+			if ($is_online) {
+				$online_count++;
+				$online_uids[] = (int)$u['id'];
+			} else {
+				$offline_uids[] = (int)$u['id'];
+			}
+			$user_status_map[$u['id']] = array(
+				'name' => $u['name'],
+				'email' => $u['email'],
+				'is_online' => $is_online,
+				'last_active_at' => $u['last_active_at'],
+				'last_ip' => $u['last_ip']
+			);
+		}
+		$data['users_with_status'] = $users_with_status;
+		$data['user_status_map'] = $user_status_map;
+		$data['online_users_count'] = $online_count;
+		$data['total_users_count'] = count($users_with_status);
 
 		$this->db->start_cache();
 		if (!empty($user_id)) {
@@ -80,6 +115,19 @@ class Ci_admin_system extends CI_Controller {
 		}
 		if (!empty($user_name)) {
 			$this->db->like('ci_admin_logs.username', $user_name);
+		}
+		if (!empty($online_status)) {
+			if ($online_status === 'online') {
+				if (!empty($online_uids)) {
+					$this->db->where_in('ci_admin_logs.user_id', $online_uids);
+				} else {
+					$this->db->where('ci_admin_logs.user_id', -1);
+				}
+			} elseif ($online_status === 'offline') {
+				if (!empty($offline_uids)) {
+					$this->db->where_in('ci_admin_logs.user_id', $offline_uids);
+				}
+			}
 		}
 		if (!empty($activity)) {
 			if (is_array($activity)) {
@@ -112,7 +160,7 @@ class Ci_admin_system extends CI_Controller {
 		$this->db->flush_cache();
 
 		$data['total_logs'] = $total_rows;
-		$data['users_list'] = $this->db->select('id, name, email')->order_by('name', 'ASC')->get('ci_user')->result_array();
+		$data['users_list'] = $users_with_status;
 		$data['activities'] = array('login', 'login_failed', 'logout', 'session_timeout', 'lead_create', 'lead_update', 'lead_delete', 'lead_import', 'lead_export', 'lead_reassign', 'user_create', 'user_update');
 
 		$this->load->view('manager/system/admin_logs', $data);

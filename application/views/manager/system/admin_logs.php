@@ -9,6 +9,21 @@
   <section class="content"> <!-- /.row -->
     <div class="row"> <!-- form close-->
       <div class="col-xs-12">
+      <div class="row" style="margin-bottom: 12px;">
+        <div class="col-sm-12">
+          <div style="background: #ffffff; border: 1px solid #d2d6de; border-radius: 4px; padding: 10px 15px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <span style="font-size: 14px; font-weight: 600; color: #333;"><i class="fa fa-shield text-primary"></i> System User Sessions:</span>
+              <span class="label label-success" style="font-size: 12px; margin-left: 8px; padding: 4px 8px;"><i class="fa fa-circle"></i> <?php echo isset($online_users_count) ? $online_users_count : 0; ?> Online Now</span>
+              <span class="label label-default" style="font-size: 12px; margin-left: 6px; padding: 4px 8px;"><i class="fa fa-users"></i> <?php echo isset($total_users_count) ? $total_users_count : 0; ?> Total Users</span>
+            </div>
+            <div style="font-size: 12px; color: #666;">
+              <i class="fa fa-laptop"></i> Enforced: Single-device login per user account | Real IP address tracking active
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="box p-4">
       <div class="x_row">
       <div class="x_col">      
@@ -47,6 +62,14 @@
                   ?>
                     <option <?php if(isset($_GET['user_id']) && $_GET['user_id'] == $u['id']){ echo "selected"; } ?> value="<?php echo $u['id']; ?>"><?php echo htmlspecialchars($u['name']); ?><?php if(!empty($u['email'])){ echo ' ('.htmlspecialchars($u['email']).')'; } ?></option>
                   <?php } } ?>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <select class="form-control" name="online_status">
+                  <option value="">All Online/Offline Status</option>
+                  <option value="online" <?php if(isset($_GET['online_status']) && $_GET['online_status']=='online'){ echo 'selected'; } ?>>Online Users Only</option>
+                  <option value="offline" <?php if(isset($_GET['online_status']) && $_GET['online_status']=='offline'){ echo 'selected'; } ?>>Offline Users Only</option>
                 </select>
               </div>
 
@@ -97,7 +120,20 @@
                 <?php foreach($logs as $k=>$li){ ?>
                 <tr>
                   <td><?php echo $li['id']; ?></td>
-                  <td><?php echo !empty($li['username']) ? htmlspecialchars($li['username']) : (!empty($li['user_name']) ? htmlspecialchars($li['user_name']) : 'System'); ?></td>
+                  <td>
+                    <?php 
+                      $u_id = isset($li['user_id']) ? (int)$li['user_id'] : 0;
+                      $is_user_online = (isset($user_status_map[$u_id]) && !empty($user_status_map[$u_id]['is_online']));
+                    ?>
+                    <strong><?php echo !empty($li['username']) ? htmlspecialchars($li['username']) : (!empty($li['user_name']) ? htmlspecialchars($li['user_name']) : 'System'); ?></strong>
+                    <?php if($u_id > 0) { ?>
+                      <?php if($is_user_online) { ?>
+                        <span class="label label-success" style="font-size:10px; margin-left:4px;" title="User currently logged in"><i class="fa fa-circle"></i> Online</span>
+                      <?php } else { ?>
+                        <span class="label label-default" style="font-size:10px; margin-left:4px;" title="User offline"><i class="fa fa-circle-o"></i> Offline</span>
+                      <?php } ?>
+                    <?php } ?>
+                  </td>
                   <td><?php echo ucwords(str_replace('_', ' ', $li['activity'])); ?></td>
                   <td><?php echo $li['status']; ?></td>
                   <td><?php echo htmlspecialchars($li['ip_address']); ?></td>
