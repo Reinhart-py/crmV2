@@ -1,10 +1,8 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
-<!-- Content Wrapper. Contains page content -->
 <div class="container">
 <div class="content-wrapper"> 
   
-  <!-- Content Header (Page header) -->
   <section class="content-header">
     <h1> Tickets </h1>
     <ol class="breadcrumb">
@@ -14,7 +12,6 @@
     </ol>
   </section>
   
-  <!-- Main content -->
   <section class="content"> 
     
     <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?> 
@@ -22,10 +19,9 @@
      
     <form role="form" action="<?php echo base_url(); ?>manager/tickets/add" method="post" enctype="multipart/form-data" name="add_form">
       
-      <!-- Primary Ticket Information Box -->
       <div class="box box-default">
         <div class="box-header with-border">
-          <h3 class="box-title">Ticket Information</h3>
+          <h3 class="box-title">Client & Company Information</h3>
         </div>
         
         <div class="box-body">
@@ -53,6 +49,67 @@
                 </select>
               </div>
             </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>POC Name</label>
+                <input type="text" class="form-control" name="poc">
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>POC Contact Number</label>
+                <input type="text" class="form-control" name="contact1">
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Alternative Contact Number</label>
+                <input type="text" class="form-control" name="alt_contact">
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Email</label>
+                <input type="email" class="form-control" name="email">
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>City / Location</label>
+                <input type="text" class="form-control" name="city">
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Ticket Source</label>
+                <select class="form-control select2" name="lead_source" style="width: 100%;">
+                  <option value="Internal Request">Internal Request</option>
+                  <option value="Phone Call">Phone Call</option>
+                  <option value="Email">Email</option>
+                  <option value="WhatsApp">WhatsApp</option>
+                  <option value="Client Portal">Client Portal</option>
+                  <option value="Direct / Meeting">Direct / Meeting</option>
+                </select>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="box box-default">
+        <div class="box-header with-border">
+          <h3 class="box-title">Ticket Classification</h3>
+        </div>
+        
+        <div class="box-body">
+          <div class="row">
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
@@ -130,6 +187,63 @@
               </div>
             </div>
 
+            <div class="col-lg-9 col-sm-6">
+              <div class="form-group">
+                <label>Ticket Title<span>*</span></label>
+                <input type="text" name="ticket_title" class="form-control" placeholder="Enter ticket title" required>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="box box-default">
+        <div class="box-header with-border">
+          <h3 class="box-title">Assignment & Deadlines</h3>
+        </div>
+        
+        <div class="box-body">
+          <div class="row">
+            
+            <div class="col-lg-6 col-sm-12">
+              <div class="form-group">
+                <label>Assigned To (Multiple Users Supported)<span>*</span></label>
+                <select class="form-control select2" name="assigned_users[]" multiple="multiple" data-placeholder="Select assignees" style="width: 100%;" required>
+                  <?php if(isset($users_list) && !empty($users_list)){
+                    foreach($users_list as $u){ ?>
+                      <option value="<?php echo $u['id']; ?>"><?php echo htmlspecialchars($u['name']); ?> (<?php echo htmlspecialchars($u['email']); ?>)</option>
+                  <?php } } ?>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-lg-6 col-sm-12">
+              <div class="form-group">
+                <label>Notify / Tag Users</label>
+                <select class="form-control select2" name="tagged_users[]" multiple="multiple" data-placeholder="Select users to tag" style="width: 100%;">
+                  <?php if(isset($users_list) && !empty($users_list)){
+                    foreach($users_list as $u){ ?>
+                      <option value="<?php echo $u['id']; ?>"><?php echo htmlspecialchars($u['name']); ?></option>
+                  <?php } } ?>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Raised By</label>
+                <input type="text" class="form-control" value="<?php echo htmlspecialchars($this->session->userdata('manager_name')); ?>" readonly>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Created Date</label>
+                <input type="text" class="form-control" value="<?php echo date('d-m-Y'); ?>" readonly>
+              </div>
+            </div>
+
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
                 <label>Deadline Date</label>
@@ -144,10 +258,17 @@
               </div>
             </div>
 
-            <div class="col-lg-9 col-sm-6">
+            <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>Ticket Title<span>*</span></label>
-                <input type="text" name="ticket_title" class="form-control" placeholder="Enter clear summary or title of the ticket" required>
+                <label>Initial Follow-up Date</label>
+                <input type="text" class="form-control datepicker" name="followup_date" autocomplete="off" placeholder="YYYY-MM-DD">
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Initial Follow-up Time</label>
+                <input type="text" class="form-control" name="followup_time" placeholder="HH:MM">
               </div>
             </div>
 
@@ -155,47 +276,9 @@
         </div>
       </div>
 
-      <!-- Assignment & Notification Box -->
       <div class="box box-default">
         <div class="box-header with-border">
-          <h3 class="box-title">Assignment & Notifications</h3>
-        </div>
-        
-        <div class="box-body">
-          <div class="row">
-            
-            <div class="col-lg-6 col-sm-12">
-              <div class="form-group">
-                <label>Assigned To (Multiple Users Supported)<span>*</span></label>
-                <select class="form-control select2" name="assigned_users[]" multiple="multiple" data-placeholder="Select one or more assignees" style="width: 100%;" required>
-                  <?php if(isset($users_list) && !empty($users_list)){
-                    foreach($users_list as $u){ ?>
-                      <option value="<?php echo $u['id']; ?>"><?php echo htmlspecialchars($u['name']); ?> (<?php echo htmlspecialchars($u['email']); ?>)</option>
-                  <?php } } ?>
-                </select>
-              </div>
-            </div>
-
-            <div class="col-lg-6 col-sm-12">
-              <div class="form-group">
-                <label>Notify / Tag Users</label>
-                <select class="form-control select2" name="tagged_users[]" multiple="multiple" data-placeholder="Select users to notify" style="width: 100%;">
-                  <?php if(isset($users_list) && !empty($users_list)){
-                    foreach($users_list as $u){ ?>
-                      <option value="<?php echo $u['id']; ?>"><?php echo htmlspecialchars($u['name']); ?></option>
-                  <?php } } ?>
-                </select>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
-      <!-- Description & Notes Box -->
-      <div class="box box-default">
-        <div class="box-header with-border">
-          <h3 class="box-title">Details & Attachments</h3>
+          <h3 class="box-title">Description & Attachments</h3>
         </div>
         
         <div class="box-body">
@@ -204,14 +287,14 @@
             <div class="col-lg-6 col-sm-12">
               <div class="form-group">
                 <label>Description<span>*</span></label>
-                <textarea class="form-control" name="description" rows="5" placeholder="Detailed explanation of the issue, request, or requirement..." required></textarea>
+                <textarea class="form-control" name="description" rows="5" placeholder="Enter detailed ticket description..." required></textarea>
               </div>
             </div>
 
             <div class="col-lg-6 col-sm-12">
               <div class="form-group">
                 <label>Internal Notes</label>
-                <textarea class="form-control" name="internal_notes" rows="3" placeholder="Optional internal notes for staff..."></textarea>
+                <textarea class="form-control" name="internal_notes" rows="3" placeholder="Enter optional internal notes..."></textarea>
               </div>
               <div class="form-group">
                 <label>Attach File / Document</label>

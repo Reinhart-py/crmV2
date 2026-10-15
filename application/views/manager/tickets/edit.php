@@ -1,10 +1,8 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
-<!-- Content Wrapper. Contains page content -->
 <div class="container">
 <div class="content-wrapper"> 
   
-  <!-- Content Header (Page header) -->
   <section class="content-header">
     <h1> Tickets </h1>
     <ol class="breadcrumb">
@@ -14,7 +12,6 @@
     </ol>
   </section>
   
-  <!-- Main content -->
   <section class="content"> 
     
     <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?> 
@@ -22,10 +19,9 @@
      
     <form role="form" action="<?php echo base_url(); ?>manager/tickets/edit/<?php echo $ticket['id']; ?>" method="post" enctype="multipart/form-data" name="edit_form">
       
-      <!-- Primary Ticket Information Box -->
       <div class="box box-default">
         <div class="box-header with-border">
-          <h3 class="box-title">Ticket Information (#<?php echo htmlspecialchars($ticket['ticket_number']); ?>)</h3>
+          <h3 class="box-title">Client & Company Information</h3>
         </div>
         
         <div class="box-body">
@@ -60,12 +56,74 @@
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
+                <label>POC Name</label>
+                <input type="text" class="form-control" name="poc" value="<?php echo htmlspecialchars($ticket['poc'] ?? ''); ?>">
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>POC Contact Number</label>
+                <input type="text" class="form-control" name="contact1" value="<?php echo htmlspecialchars($ticket['contact1'] ?? ''); ?>">
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Alternative Contact Number</label>
+                <input type="text" class="form-control" name="alt_contact" value="<?php echo htmlspecialchars($ticket['alt_contact'] ?? ''); ?>">
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Email</label>
+                <input type="email" class="form-control" name="email" value="<?php echo htmlspecialchars($ticket['email'] ?? ''); ?>">
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>City / Location</label>
+                <input type="text" class="form-control" name="city" value="<?php echo htmlspecialchars($ticket['city'] ?? ''); ?>">
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Ticket Source</label>
+                <select class="form-control select2" name="lead_source" style="width: 100%;">
+                  <?php 
+                  $src = !empty($ticket['lead_source']) ? $ticket['lead_source'] : 'Internal Request';
+                  $sources = array('Internal Request', 'Phone Call', 'Email', 'WhatsApp', 'Client Portal', 'Direct / Meeting');
+                  foreach($sources as $s){ ?>
+                    <option value="<?php echo $s; ?>" <?php if($src == $s) echo 'selected'; ?>><?php echo $s; ?></option>
+                  <?php } ?>
+                </select>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="box box-default">
+        <div class="box-header with-border">
+          <h3 class="box-title">Ticket Classification</h3>
+        </div>
+        
+        <div class="box-body">
+          <div class="row">
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
                 <label>Department<span>*</span></label>
                 <select class="form-control select2" name="department" required style="width: 100%;">
                   <?php 
+                  $cur_dept = $ticket['department'] ?? 'Support';
                   $depts = array('Sales', 'Back Office', 'Operations', 'IT', 'HR', 'Support', 'Accounts');
-                  foreach($depts as $d){ ?>
-                    <option value="<?php echo $d; ?>" <?php if(!empty($ticket['department']) && $ticket['department']==$d) echo 'selected'; ?>><?php echo $d; ?></option>
+                  foreach($depts as $dept){ ?>
+                    <option value="<?php echo $dept; ?>" <?php if($cur_dept == $dept) echo 'selected'; ?>><?php echo $dept; ?></option>
                   <?php } ?>
                 </select>
               </div>
@@ -76,19 +134,10 @@
                 <label>Ticket Type<span>*</span></label>
                 <select class="form-control select2" name="ticket_type" required style="width: 100%;">
                   <?php 
-                  $ttypes = array(
-                    'Bug / Technical Issue',
-                    'Feature Request',
-                    'System Access / Permission',
-                    'Billing / Invoice Inquiry',
-                    'Client Query / Onboarding',
-                    'Operational Support',
-                    'Hardware / Equipment',
-                    'General Inquiry',
-                    'Escalation'
-                  );
-                  foreach($ttypes as $tt){ ?>
-                    <option value="<?php echo $tt; ?>" <?php if(!empty($ticket['ticket_type']) && $ticket['ticket_type']==$tt) echo 'selected'; ?>><?php echo $tt; ?></option>
+                  $cur_type = $ticket['ticket_type'] ?? 'Technical Support';
+                  $types = array('Bug / Technical Issue', 'Feature Request', 'System Access / Permission', 'Billing / Invoice Inquiry', 'Client Query / Onboarding', 'Operational Support', 'Hardware / Equipment', 'General Inquiry', 'Escalation');
+                  foreach($types as $t){ ?>
+                    <option value="<?php echo $t; ?>" <?php if($cur_type == $t) echo 'selected'; ?>><?php echo $t; ?></option>
                   <?php } ?>
                 </select>
               </div>
@@ -99,9 +148,10 @@
                 <label>Category<span>*</span></label>
                 <select class="form-control select2" name="category" required style="width: 100%;">
                   <?php 
+                  $cur_cat = $ticket['category'] ?? 'General';
                   $cats = array('Software', 'Hardware', 'Network', 'Lead Management', 'Calling System', 'CRM Access', 'Data Correction', 'Attendance / HR', 'Security / Breach', 'Other');
                   foreach($cats as $c){ ?>
-                    <option value="<?php echo $c; ?>" <?php if(!empty($ticket['category']) && $ticket['category']==$c) echo 'selected'; ?>><?php echo $c; ?></option>
+                    <option value="<?php echo $c; ?>" <?php if($cur_cat == $c) echo 'selected'; ?>><?php echo $c; ?></option>
                   <?php } ?>
                 </select>
               </div>
@@ -111,32 +161,37 @@
               <div class="form-group">
                 <label>Priority<span>*</span></label>
                 <select class="form-control select2" name="priority" required style="width: 100%;">
-                  <option value="Low" <?php if($ticket['priority']=='Low') echo 'selected'; ?>>Low</option>
-                  <option value="Medium" <?php if($ticket['priority']=='Medium') echo 'selected'; ?>>Medium</option>
-                  <option value="High" <?php if($ticket['priority']=='High') echo 'selected'; ?>>High</option>
-                  <option value="Urgent" <?php if($ticket['priority']=='Urgent') echo 'selected'; ?>>Urgent</option>
+                  <?php 
+                  $cur_pri = $ticket['priority'] ?? 'Medium';
+                  $pris = array('Low', 'Medium', 'High', 'Urgent');
+                  foreach($pris as $p){ ?>
+                    <option value="<?php echo $p; ?>" <?php if($cur_pri == $p) echo 'selected'; ?>><?php echo $p; ?></option>
+                  <?php } ?>
                 </select>
               </div>
             </div>
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>Deadline Date</label>
-                <input type="text" class="form-control datepicker" name="deadline_date" autocomplete="off" value="<?php echo htmlspecialchars($ticket['deadline_date'] ?? ''); ?>" placeholder="YYYY-MM-DD">
+                <label>Status<span>*</span></label>
+                <select class="form-control select2" name="status" required style="width: 100%;">
+                  <?php 
+                  $cur_status = $ticket['status'] ?? 'Open';
+                  $statuses = array('Open', 'Assigned', 'In Progress', 'Pending', 'On Hold', 'Resolved');
+                  if($can_close || strtolower($cur_status) == 'closed'){
+                    $statuses[] = 'Closed';
+                  }
+                  foreach($statuses as $st){ ?>
+                    <option value="<?php echo $st; ?>" <?php if($cur_status == $st) echo 'selected'; ?>><?php echo $st; ?></option>
+                  <?php } ?>
+                </select>
               </div>
             </div>
 
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group">
-                <label>Expected Closure Date</label>
-                <input type="text" class="form-control datepicker" name="expected_close_date" autocomplete="off" value="<?php echo htmlspecialchars($ticket['expected_close_date'] ?? ''); ?>" placeholder="YYYY-MM-DD">
-              </div>
-            </div>
-
-            <div class="col-lg-12 col-sm-12">
+            <div class="col-lg-9 col-sm-6">
               <div class="form-group">
                 <label>Ticket Title<span>*</span></label>
-                <input type="text" name="ticket_title" class="form-control" value="<?php echo htmlspecialchars(!empty($ticket['ticket_title']) ? $ticket['ticket_title'] : $ticket['subject']); ?>" required>
+                <input type="text" name="ticket_title" class="form-control" value="<?php echo htmlspecialchars($ticket['ticket_title'] ?? $ticket['subject'] ?? ''); ?>" required>
               </div>
             </div>
 
@@ -144,27 +199,29 @@
         </div>
       </div>
 
-      <!-- Assignment & Notification Box -->
       <div class="box box-default">
         <div class="box-header with-border">
-          <h3 class="box-title">Assignment & Notifications</h3>
+          <h3 class="box-title">Assignment & Deadlines</h3>
         </div>
         
         <div class="box-body">
           <div class="row">
             
-            <?php 
-              $assigned_arr = !empty($ticket['assigned_users']) ? explode(',', $ticket['assigned_users']) : (!empty($ticket['assigned_to']) ? array($ticket['assigned_to']) : array());
-              $tagged_arr = !empty($ticket['tagged_users']) ? explode(',', $ticket['tagged_users']) : array();
-            ?>
-
             <div class="col-lg-6 col-sm-12">
               <div class="form-group">
                 <label>Assigned To (Multiple Users Supported)<span>*</span></label>
+                <?php 
+                $selected_assigned = array();
+                if(!empty($ticket['assigned_users'])){
+                  $selected_assigned = array_map('trim', explode(',', $ticket['assigned_users']));
+                } elseif(!empty($ticket['assigned_to'])){
+                  $selected_assigned = array((string)$ticket['assigned_to']);
+                }
+                ?>
                 <select class="form-control select2" name="assigned_users[]" multiple="multiple" data-placeholder="Select assignees" style="width: 100%;" required>
                   <?php if(isset($users_list) && !empty($users_list)){
                     foreach($users_list as $u){ ?>
-                      <option value="<?php echo $u['id']; ?>" <?php if(in_array((string)$u['id'], $assigned_arr)) echo 'selected'; ?>>
+                      <option value="<?php echo $u['id']; ?>" <?php if(in_array((string)$u['id'], $selected_assigned)) echo 'selected'; ?>>
                         <?php echo htmlspecialchars($u['name']); ?> (<?php echo htmlspecialchars($u['email']); ?>)
                       </option>
                   <?php } } ?>
@@ -175,10 +232,16 @@
             <div class="col-lg-6 col-sm-12">
               <div class="form-group">
                 <label>Notify / Tag Users</label>
-                <select class="form-control select2" name="tagged_users[]" multiple="multiple" data-placeholder="Select users to notify" style="width: 100%;">
+                <?php 
+                $selected_tagged = array();
+                if(!empty($ticket['tagged_users'])){
+                  $selected_tagged = array_map('trim', explode(',', $ticket['tagged_users']));
+                }
+                ?>
+                <select class="form-control select2" name="tagged_users[]" multiple="multiple" data-placeholder="Select users to tag" style="width: 100%;">
                   <?php if(isset($users_list) && !empty($users_list)){
                     foreach($users_list as $u){ ?>
-                      <option value="<?php echo $u['id']; ?>" <?php if(in_array((string)$u['id'], $tagged_arr)) echo 'selected'; ?>>
+                      <option value="<?php echo $u['id']; ?>" <?php if(in_array((string)$u['id'], $selected_tagged)) echo 'selected'; ?>>
                         <?php echo htmlspecialchars($u['name']); ?>
                       </option>
                   <?php } } ?>
@@ -186,14 +249,82 @@
               </div>
             </div>
 
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Raised By</label>
+                <?php 
+                $raised_name = 'User';
+                if(!empty($ticket['raised_by'])){
+                  $u_row = $this->db->get_where('ci_user', array('id' => (int)$ticket['raised_by']))->row_array();
+                  if(!empty($u_row['name'])) $raised_name = $u_row['name'];
+                } elseif(!empty($ticket['created_by'])){
+                  $u_row = $this->db->get_where('ci_user', array('id' => (int)$ticket['created_by']))->row_array();
+                  if(!empty($u_row['name'])) $raised_name = $u_row['name'];
+                }
+                ?>
+                <input type="text" class="form-control" value="<?php echo htmlspecialchars($raised_name); ?>" readonly>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Created Date</label>
+                <?php 
+                $cdate = !empty($ticket['created_date']) ? date('d-m-Y', strtotime($ticket['created_date'])) : (!empty($ticket['created_at']) ? date('d-m-Y', strtotime($ticket['created_at'])) : '');
+                ?>
+                <input type="text" class="form-control" value="<?php echo $cdate; ?>" readonly>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Last Updated By</label>
+                <input type="text" class="form-control" value="<?php echo htmlspecialchars($this->session->userdata('manager_name')); ?>" readonly>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Last Updated Date</label>
+                <input type="text" class="form-control" value="<?php echo date('d-m-Y'); ?>" readonly>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Deadline Date</label>
+                <input type="text" class="form-control datepicker" name="deadline_date" value="<?php echo !empty($ticket['deadline_date']) ? htmlspecialchars($ticket['deadline_date']) : ''; ?>" autocomplete="off" placeholder="YYYY-MM-DD">
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Expected Closure Date</label>
+                <input type="text" class="form-control datepicker" name="expected_close_date" value="<?php echo !empty($ticket['expected_close_date']) ? htmlspecialchars($ticket['expected_close_date']) : ''; ?>" autocomplete="off" placeholder="YYYY-MM-DD">
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Initial Follow-up Date</label>
+                <input type="text" class="form-control datepicker" name="followup_date" value="<?php echo !empty($ticket['followup_date']) ? htmlspecialchars($ticket['followup_date']) : ''; ?>" autocomplete="off" placeholder="YYYY-MM-DD">
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Initial Follow-up Time</label>
+                <input type="text" class="form-control" name="followup_time" value="<?php echo htmlspecialchars($ticket['followup_time'] ?? ''); ?>" placeholder="HH:MM">
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
 
-      <!-- Description & Notes Box -->
       <div class="box box-default">
         <div class="box-header with-border">
-          <h3 class="box-title">Details & Attachments</h3>
+          <h3 class="box-title">Description & Attachments</h3>
         </div>
         
         <div class="box-body">
@@ -213,10 +344,10 @@
               </div>
               <div class="form-group">
                 <label>Attach File / Document</label>
-                <?php if(!empty($ticket['attachment'])){ ?>
-                  <p class="help-block">Current: <a href="<?php echo base_url(); ?>assets/admin/tickets/<?php echo htmlspecialchars($ticket['attachment']); ?>" target="_blank"><?php echo htmlspecialchars($ticket['attachment']); ?></a></p>
-                <?php } ?>
                 <input type="file" name="attachment" class="form-control">
+                <?php if(!empty($ticket['attachment'])){ ?>
+                  <p class="help-block"><a href="<?php echo base_url(); ?>assets/uploads/tickets/<?php echo $ticket['attachment']; ?>" target="_blank"><i class="fa fa-paperclip"></i> View Current: <?php echo htmlspecialchars($ticket['attachment']); ?></a></p>
+                <?php } ?>
               </div>
             </div>
 

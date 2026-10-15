@@ -11,7 +11,6 @@
       <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?> 
       <?php echo get_message($this->session->flashdata('message'),'message'); ?>
 
-      <!-- Top Action Navigation Box (Matches single_view.php) -->
       <div class="row">
         <div class="box box-default">
           <div class="box-header">
@@ -27,7 +26,6 @@
         </div>
       </div>
 
-      <!-- Main Ticket Details Box (Matches single_view.php) -->
       <div class="row my-profile">
         <div class="box box-default">
           <div class="box-header">
@@ -40,7 +38,6 @@
           <div class="box-body">
             <div class="row">
               
-              <!-- Left Column Table -->
               <div class="col-md-6">
                 <div class="table-responsive border">
                   <table class="table">
@@ -49,12 +46,47 @@
                       <td><?php echo htmlspecialchars($ticket['ticket_number']); ?></td>
                     </tr>
                     <tr>
+                      <th scope="col">Client Type</th>
+                      <td><?php echo htmlspecialchars(!empty($ticket['client_type']) ? $ticket['client_type'] : 'Onboarded'); ?></td>
+                    </tr>
+                    <tr>
                       <th scope="col">Company Name</th>
                       <td><?php echo htmlspecialchars(!empty($ticket['company_name']) ? $ticket['company_name'] : (!empty($ticket['customer']) ? $ticket['customer'] : '-')); ?></td>
                     </tr>
                     <tr>
-                      <th scope="col">Client Type</th>
-                      <td><?php echo htmlspecialchars(!empty($ticket['client_type']) ? $ticket['client_type'] : 'Onboarded'); ?></td>
+                      <th scope="col">POC Name</th>
+                      <td><?php echo htmlspecialchars(!empty($ticket['poc']) ? $ticket['poc'] : '-'); ?></td>
+                    </tr>
+                    <tr>
+                      <th scope="col">POC Contact Number</th>
+                      <td><?php echo htmlspecialchars(!empty($ticket['contact1']) ? $ticket['contact1'] : '-'); ?></td>
+                    </tr>
+                    <tr>
+                      <th scope="col">Alternative Contact Number</th>
+                      <td><?php echo htmlspecialchars(!empty($ticket['alt_contact']) ? $ticket['alt_contact'] : '-'); ?></td>
+                    </tr>
+                    <tr>
+                      <th scope="col">Email</th>
+                      <td><?php echo htmlspecialchars(!empty($ticket['email']) ? $ticket['email'] : '-'); ?></td>
+                    </tr>
+                    <tr>
+                      <th scope="col">City / Location</th>
+                      <td><?php echo htmlspecialchars(!empty($ticket['city']) ? $ticket['city'] : '-'); ?></td>
+                    </tr>
+                    <tr>
+                      <th scope="col">Ticket Source</th>
+                      <td><?php echo htmlspecialchars(!empty($ticket['lead_source']) ? $ticket['lead_source'] : 'Internal Request'); ?></td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="table-responsive border">
+                  <table class="table">
+                    <tr>
+                      <th scope="col" style="width: 40%;">Ticket Title</th>
+                      <td><?php echo htmlspecialchars(!empty($ticket['ticket_title']) ? $ticket['ticket_title'] : $ticket['subject']); ?></td>
                     </tr>
                     <tr>
                       <th scope="col">Department</th>
@@ -75,22 +107,6 @@
                     <tr>
                       <th scope="col">Status</th>
                       <td><strong><?php echo htmlspecialchars($ticket['status']); ?></strong></td>
-                    </tr>
-                  </table>
-                </div>
-              </div>
-
-              <!-- Right Column Table -->
-              <div class="col-md-6">
-                <div class="table-responsive border">
-                  <table class="table">
-                    <tr>
-                      <th scope="col" style="width: 40%;">Ticket Title</th>
-                      <td><?php echo htmlspecialchars(!empty($ticket['ticket_title']) ? $ticket['ticket_title'] : $ticket['subject']); ?></td>
-                    </tr>
-                    <tr>
-                      <th scope="col">Raised By</th>
-                      <td><?php echo htmlspecialchars(!empty($ticket['creator_name']) ? $ticket['creator_name'] : 'User'); ?></td>
                     </tr>
                     <tr>
                       <th scope="col">Assigned To</th>
@@ -117,6 +133,14 @@
                       </td>
                     </tr>
                     <tr>
+                      <th scope="col">Raised By</th>
+                      <td><?php echo htmlspecialchars(!empty($ticket['creator_name']) ? $ticket['creator_name'] : 'User'); ?></td>
+                    </tr>
+                    <tr>
+                      <th scope="col">Created Date</th>
+                      <td><?php echo simple_date(!empty($ticket['created_date']) ? $ticket['created_date'] : $ticket['created_at']); ?></td>
+                    </tr>
+                    <tr>
                       <th scope="col">Deadline Date</th>
                       <td><?php echo !empty($ticket['deadline_date']) ? simple_date($ticket['deadline_date']) : '-'; ?></td>
                     </tr>
@@ -124,19 +148,10 @@
                       <th scope="col">Expected Closure Date</th>
                       <td><?php echo !empty($ticket['expected_close_date']) ? simple_date($ticket['expected_close_date']) : '-'; ?></td>
                     </tr>
-                    <tr>
-                      <th scope="col">Created Date</th>
-                      <td><?php echo simple_date(!empty($ticket['created_date']) ? $ticket['created_date'] : $ticket['created_at']); ?></td>
-                    </tr>
-                    <tr>
-                      <th scope="col">Last Updated Date</th>
-                      <td><?php echo simple_date(!empty($ticket['last_updated_date']) ? $ticket['last_updated_date'] : $ticket['updated_at']); ?></td>
-                    </tr>
                   </table>
                 </div>
               </div>
 
-              <!-- Description & Remarks Full Width Table -->
               <div class="col-md-12" style="margin-top: 15px;">
                 <div class="table-responsive border">
                   <table class="table">
@@ -154,7 +169,7 @@
                     <tr>
                       <th scope="col">Attachment</th>
                       <td>
-                        <a href="<?php echo base_url(); ?>assets/admin/tickets/<?php echo htmlspecialchars($ticket['attachment']); ?>" target="_blank" class="btn btn-xs btn-primary">
+                        <a href="<?php echo base_url(); ?>assets/uploads/tickets/<?php echo htmlspecialchars($ticket['attachment']); ?>" target="_blank" class="btn btn-xs btn-primary">
                           <i class="fa fa-download"></i> Download Attachment (<?php echo htmlspecialchars($ticket['attachment']); ?>)
                         </a>
                       </td>
@@ -182,7 +197,6 @@
         </div>
       </div>
 
-      <!-- Update Status Box (For Assigned Users) -->
       <div class="row">
         <div class="box box-default">
           <div class="box-header with-border">
@@ -220,7 +234,6 @@
         </div>
       </div>
 
-      <!-- Support Role Manual Review & Close Box -->
       <?php if(!empty($can_manage_tickets)){ ?>
       <div class="row">
         <div class="box box-default">
@@ -257,7 +270,6 @@
       </div>
       <?php } ?>
 
-      <!-- Follow-up Section -->
       <div class="row" id="followup">
         <div class="box box-default">
           <div class="box-header with-border">
@@ -298,7 +310,6 @@
               <div class="alert alert-info">No follow-ups recorded yet.</div>
             <?php } ?>
 
-            <!-- Add Follow-up Form -->
             <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
               <h4>Add Follow-up</h4>
               <form action="<?php echo base_url(); ?>manager/tickets/add_followup" method="post">
@@ -370,7 +381,6 @@
         </div>
       </div>
 
-      <!-- Ticket History Audit Log Box -->
       <div class="row">
         <div class="box box-default">
           <div class="box-header with-border">

@@ -1,8 +1,6 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
-<!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper px-4">
-    <!-- Content Header (Page header) -->
     <section class="content-header">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
             <h1 style="margin: 0; font-size: 22px; font-weight: 700;">
@@ -19,11 +17,9 @@
         </div>
     </section>
 
-    <!-- Main content -->
     <section class="content">
         <div class="row">
             <div class="col-xs-12">
-                <!-- Filter Box -->
                 <div class="box box-default p-4" style="border-top: 3px solid #00a65a; margin-bottom: 20px;">
                     <form class="form-inline head_filter form-inline-mob" method="get" action="<?php echo base_url(); ?>manager/tickets/followups">
                         <div class="form-group">
@@ -59,41 +55,29 @@
                         </div>
 
                         <div class="form-group">
-                            <input type="text" class="form-control" name="search" placeholder="Search ticket # or company..."
-                                value="<?php if(isset($_GET['search'])){ echo htmlspecialchars($_GET['search']); } ?>" autocomplete="off" style="min-width: 200px;" />
+                            <input type="text" name="search" class="form-control" placeholder="Search ticket # or company..."
+                                value="<?php if(isset($_GET['search'])){ echo htmlspecialchars($_GET['search']); } ?>" style="min-width: 200px;">
                         </div>
 
-                        <div class="form-group">
-                            <button type="submit" class="btn btn-success" style="font-weight: 600;">
-                                <i class="fa fa-filter"></i> Filter
-                            </button>
-                            <a href="<?php echo base_url(); ?>manager/tickets/followups" class="btn btn-default" style="font-weight: 600; margin-left: 5px;">
-                                <i class="fa fa-refresh"></i> Reset
-                            </a>
-                        </div>
+                        <button type="submit" class="btn btn-primary" style="margin-left: 5px;">Filter</button>
+                        <a href="<?php echo base_url(); ?>manager/tickets/followups" class="btn btn-default" style="margin-left: 5px;">Reset</a>
                     </form>
                 </div>
 
-                <!-- Follow-up Tickets Table -->
-                <div class="box box-solid">
-                    <div class="box-body" style="padding: 10px;">
-                        <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?>
-                        <?php echo get_message($this->session->flashdata('message'),'message'); ?>
-
-                        <?php $today_str = date('Y-m-d'); ?>
-
+                <div class="box box-default">
+                    <div class="box-body" style="padding: 0;">
                         <div class="table-responsive">
-                            <table class="table table-hover table-bordered table-striped" style="width:100%; font-size: 12.5px;">
+                            <table class="table table-bordered table-hover" style="margin-bottom: 0;">
                                 <thead>
-                                    <tr style="background: #f8fafc;">
-                                        <th style="width: 95px;">Ticket #</th>
-                                        <th>Company & Client</th>
-                                        <th>Title & Department</th>
-                                        <th style="width: 120px;">Follow-up Date</th>
-                                        <th style="width: 120px;">Next Date</th>
-                                        <th>Latest Remarks & Action</th>
-                                        <th style="width: 90px;">Status</th>
-                                        <th style="width: 110px; text-align: center;">Action</th>
+                                    <tr style="background-color: #f8fafc; font-size: 12px; text-transform: uppercase; color: #475569;">
+                                        <th style="width: 110px;">Ticket #</th>
+                                        <th>Company / Client</th>
+                                        <th>Title / Department</th>
+                                        <th style="width: 140px;">Follow-up Date</th>
+                                        <th style="width: 130px;">Next Date</th>
+                                        <th>Latest Remarks</th>
+                                        <th style="width: 100px;">Status</th>
+                                        <th style="width: 130px; text-align: center;">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -105,14 +89,11 @@
                                             $latest_fu = isset($latest_fu_map[$t['id']]) ? $latest_fu_map[$t['id']] : null;
                                     ?>
                                     <tr style="<?php echo $is_missed ? 'background-color: #fff1f2;' : ''; ?>">
-                                        <!-- Ticket # -->
                                         <td>
                                             <a href="<?php echo base_url(); ?>manager/tickets/view/<?php echo $t['id']; ?>" style="font-weight: 700; color: #1d4ed8;">
                                                 <?php echo htmlspecialchars($t['ticket_number']); ?>
                                             </a>
                                         </td>
-
-                                        <!-- Company & Client -->
                                         <td>
                                             <strong><?php echo htmlspecialchars(!empty($t['company_name']) ? $t['company_name'] : (!empty($t['customer']) ? $t['customer'] : '-')); ?></strong>
                                             <div style="font-size: 11px; margin-top: 2px;">
@@ -121,8 +102,6 @@
                                                 </span>
                                             </div>
                                         </td>
-
-                                        <!-- Title & Department -->
                                         <td>
                                             <div style="font-weight: 600; color: #1e293b;">
                                                 <a href="<?php echo base_url(); ?>manager/tickets/view/<?php echo $t['id']; ?>" style="color: inherit;">
@@ -133,8 +112,6 @@
                                                 <i class="fa fa-building-o"></i> <?php echo htmlspecialchars(!empty($t['department']) ? $t['department'] : 'General'); ?>
                                             </div>
                                         </td>
-
-                                        <!-- Follow-up Date -->
                                         <td>
                                             <?php if($fu_date){ ?>
                                                 <div style="font-weight: 700; color: <?php echo $is_missed ? '#dc2626' : ($is_today ? '#047857' : '#1e293b'); ?>;">
@@ -149,8 +126,6 @@
                                                 <span style="color: #94a3b8;">Not Scheduled</span>
                                             <?php } ?>
                                         </td>
-
-                                        <!-- Next Date -->
                                         <td>
                                             <?php if(!empty($latest_fu['next_followup_date']) && $latest_fu['next_followup_date'] != '0000-00-00'){ ?>
                                                 <span class="label label-info" style="font-size: 11px;">
@@ -160,8 +135,6 @@
                                                 <span style="color: #94a3b8;">-</span>
                                             <?php } ?>
                                         </td>
-
-                                        <!-- Latest Remarks & Next Action -->
                                         <td>
                                             <?php if(!empty($latest_fu['remarks'])){ ?>
                                                 <div style="color: #1e293b; font-size: 12px; margin-bottom: 2px;">
@@ -181,20 +154,16 @@
                                                 </div>
                                             <?php } ?>
                                         </td>
-
-                                        <!-- Status -->
                                         <td>
                                             <span class="label label-default" style="font-size: 11px;">
                                                 <?php echo htmlspecialchars($t['status']); ?>
                                             </span>
                                         </td>
-
-                                        <!-- Action -->
                                         <td style="text-align: center;">
                                             <a href="<?php echo base_url(); ?>manager/tickets/view/<?php echo $t['id']; ?>" class="btn btn-xs btn-primary" style="margin-right: 3px;">
                                                 <i class="fa fa-eye"></i> View
                                             </a>
-                                            <a href="<?php echo base_url(); ?>manager/tickets/view/<?php echo $t['id']; ?>#followup-section" class="btn btn-xs btn-success">
+                                            <a href="<?php echo base_url(); ?>manager/tickets/view/<?php echo $t['id']; ?>#followup" class="btn btn-xs btn-success">
                                                 <i class="fa fa-plus"></i> Follow-up
                                             </a>
                                         </td>

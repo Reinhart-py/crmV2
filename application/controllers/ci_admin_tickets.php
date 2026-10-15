@@ -30,9 +30,6 @@ class Ci_admin_tickets extends CI_Controller {
 		}
 	}
 
-	/**
-	 * Helper: Check if current user has Support role
-	 */
 	public function is_support_user()
 	{
 		$role = (int)$this->session->userdata('manager_role');
@@ -41,18 +38,12 @@ class Ci_admin_tickets extends CI_Controller {
 		return (!empty($role_row['title']) && strtolower(trim($role_row['title'])) === 'support');
 	}
 
-	/**
-	 * Helper: Check if current user is Admin or Support
-	 */
 	public function is_admin_or_support()
 	{
 		$role = (int)$this->session->userdata('manager_role');
 		return ($role === 1 || $this->is_support_user());
 	}
 
-	/**
-	 * Helper: Audit log for ticket history
-	 */
 	public function log_ticket_history($ticket_id, $action, $remarks = '', $old_status = null, $new_status = null, $old_assigned = null, $new_assigned = null)
 	{
 		$manager_id = (int)$this->session->userdata('manager_id');
@@ -76,9 +67,6 @@ class Ci_admin_tickets extends CI_Controller {
 		));
 	}
 
-	/**
-	 * List all tickets with comprehensive filters, overdue badges, and permissions
-	 */
 	public function index()
 	{
 		$this->if_not_login();
@@ -96,11 +84,9 @@ class Ci_admin_tickets extends CI_Controller {
 		$data['is_support'] = $this->is_support_user();
 		$data['can_manage_tickets'] = $can_manage;
 
-		// Lists for dropdowns & filters
 		$data['users_list'] = $this->db->select('id, name, email')->order_by('name', 'ASC')->get('ci_user')->result_array();
 		$data['companies_list'] = $this->ci_admin_model->get_all_companies_dropdown();
 
-		// Build filter queries
 		$client_type = $this->input->get('client_type');
 		$company = $this->input->get('company');
 		$ticket_type = $this->input->get('ticket_type');
@@ -124,7 +110,6 @@ class Ci_admin_tickets extends CI_Controller {
 		$this->db->join('ci_user l', 'l.id = t.last_updated_by', 'left');
 
 		if (!$can_manage) {
-			// Authorized users see tickets they raised, tickets assigned to them, or tickets where they are tagged
 			$this->db->group_start();
 			$this->db->where('t.created_by', $manager_id);
 			$this->db->or_where('t.raised_by', $manager_id);
@@ -211,7 +196,6 @@ class Ci_admin_tickets extends CI_Controller {
 		$this->db->order_by('t.id', 'DESC');
 		$data['tickets'] = $this->db->get()->result_array();
 
-		// Count summary statistics
 		$today = date('Y-m-d');
 		$this->db->select('status, deadline_date, COUNT(*) as cnt');
 		$this->db->from('ci_tickets');
@@ -237,7 +221,6 @@ class Ci_admin_tickets extends CI_Controller {
 		$data['count_closed'] = 0;
 		$data['count_overdue'] = 0;
 
-		// Calculate exact totals
 		foreach ($data['tickets'] as $tk) {
 			$st = strtolower(trim($tk['status']));
 			$data['count_all']++;
@@ -257,9 +240,6 @@ class Ci_admin_tickets extends CI_Controller {
 		$this->load->view('manager/tickets/index', $data);
 	}
 
-	/**
-	 * Raise a new ticket with all required fields
-	 */
 	public function add()
 	{
 		$this->if_not_login();
@@ -293,14 +273,23 @@ class Ci_admin_tickets extends CI_Controller {
 			$expected_close_raw = trim($this->input->post('expected_close_date'));
 			$expected_close_date = !empty($expected_close_raw) ? date('Y-m-d', strtotime($expected_close_raw)) : null;
 
-			// Multi-user assignment
+			$poc = trim($this->input->post('poc'));
+			$contact1 = trim($this->input->post('contact1'));
+			$alt_contact = trim($this->input->post('alt_contact'));
+			$email = trim($this->input->post('email'));
+			$city = trim($this->input->post('city'));
+			$lead_source = trim($this->input->post('lead_source'));
+
+			$followup_date_raw = trim($this->input->post('followup_date'));
+			$followup_date = !empty($followup_date_raw) ? date('Y-m-d', strtotime($followup_date_raw)) : null;
+			$followup_time = trim($this->input->post('followup_time'));
+
 			$assigned_arr = $this->input->post('assigned_users');
 			$assigned_users_str = '';
 			if (!empty($assigned_arr) && is_array($assigned_arr)) {
 				$assigned_users_str = implode(',', array_filter(array_map('intval', $assigned_arr)));
 			}
 
-			// Tagged users
 			$tagged_arr = $this->input->post('tagged_users');
 			$tagged_users_str = '';
 			if (!empty($tagged_arr) && is_array($tagged_arr)) {
@@ -313,7 +302,6 @@ class Ci_admin_tickets extends CI_Controller {
 				return;
 			}
 
-			// Handle file attachment upload
 			$attachment_file = '';
 			if (!empty($_FILES['attachment']['name'])) {
 				$upload_dir = FCPATH . 'assets/uploads/tickets/';
@@ -322,7 +310,7 @@ class Ci_admin_tickets extends CI_Controller {
 				}
 				$config['upload_path'] = $upload_dir;
 				$config['allowed_types'] = 'pdf|doc|docx|xls|xlsx|csv|jpg|jpeg|png|txt|zip';
-				$config['max_size'] = 15360; // 15MB
+				$config['max_size'] = 15360;
 				$config['encrypt_name'] = TRUE;
 				$this->load->library('upload', $config);
 				if ($this->upload->do_upload('attachment')) {
@@ -331,7 +319,6 @@ class Ci_admin_tickets extends CI_Controller {
 				}
 			}
 
-			// Generate unique ticket number: TKT-YYYYMM-XXXX
 			$total_t = $this->db->count_all('ci_tickets') + 1;
 			$ticket_number = 'TKT-' . date('Ym') . '-' . sprintf('%04d', $total_t);
 			$check = $this->db->get_where('ci_tickets', array('ticket_number' => $ticket_number))->row_array();
@@ -346,13 +333,19 @@ class Ci_admin_tickets extends CI_Controller {
 				'ticket_number' => $ticket_number,
 				'client_type' => $client_type,
 				'company_name' => $company_name,
-				'customer' => $company_name, // sync for backward compatibility
+				'customer' => $company_name,
+				'poc' => $poc,
+				'contact1' => $contact1,
+				'alt_contact' => $alt_contact,
+				'email' => $email,
+				'city' => $city,
+				'lead_source' => !empty($lead_source) ? $lead_source : 'Internal Request',
 				'department' => $department,
 				'ticket_type' => !empty($ticket_type) ? $ticket_type : 'Technical Support',
 				'category' => !empty($category) ? $category : 'General',
 				'priority' => $priority,
 				'ticket_title' => $ticket_title,
-				'subject' => $ticket_title, // sync for backward compatibility
+				'subject' => $ticket_title,
 				'description' => $description,
 				'internal_notes' => $internal_notes,
 				'attachment' => $attachment_file,
@@ -368,16 +361,16 @@ class Ci_admin_tickets extends CI_Controller {
 				'updated_at' => $now,
 				'last_updated_by' => $manager_id,
 				'deadline_date' => $deadline_date,
-				'expected_close_date' => $expected_close_date
+				'expected_close_date' => $expected_close_date,
+				'followup_date' => $followup_date,
+				'followup_time' => $followup_time
 			);
 
 			$this->db->insert('ci_tickets', $insert_data);
 			$new_ticket_id = $this->db->insert_id();
 
-			// Log creation in ticket history audit log
 			$this->log_ticket_history($new_ticket_id, 'Ticket Created', 'Ticket raised with initial status ' . $initial_status, null, $initial_status, null, $assigned_users_str);
 
-			// Insert initial message into conversation thread
 			$u_row = $this->db->get_where('ci_user', array('id' => $manager_id))->row_array();
 			$user_name = !empty($u_row['name']) ? $u_row['name'] : 'User';
 			$this->db->insert('ci_ticket_messages', array(
@@ -406,9 +399,6 @@ class Ci_admin_tickets extends CI_Controller {
 		$this->load->view('manager/tickets/add', $data);
 	}
 
-	/**
-	 * Edit ticket details (authorized roles)
-	 */
 	public function edit($id = '')
 	{
 		$this->if_not_login();
@@ -427,7 +417,6 @@ class Ci_admin_tickets extends CI_Controller {
 			return;
 		}
 
-		// Security: Non-admin/support can only edit tickets they raised
 		if (!$can_manage && $ticket['created_by'] != $manager_id && $ticket['raised_by'] != $manager_id) {
 			show_error('Access Denied: You do not have permission to edit this ticket.', 403);
 			return;
@@ -453,6 +442,17 @@ class Ci_admin_tickets extends CI_Controller {
 			$expected_close_raw = trim($this->input->post('expected_close_date'));
 			$expected_close_date = !empty($expected_close_raw) ? date('Y-m-d', strtotime($expected_close_raw)) : null;
 
+			$poc = trim($this->input->post('poc'));
+			$contact1 = trim($this->input->post('contact1'));
+			$alt_contact = trim($this->input->post('alt_contact'));
+			$email = trim($this->input->post('email'));
+			$city = trim($this->input->post('city'));
+			$lead_source = trim($this->input->post('lead_source'));
+
+			$followup_date_raw = trim($this->input->post('followup_date'));
+			$followup_date = !empty($followup_date_raw) ? date('Y-m-d', strtotime($followup_date_raw)) : null;
+			$followup_time = trim($this->input->post('followup_time'));
+
 			$assigned_arr = $this->input->post('assigned_users');
 			$assigned_users_str = '';
 			if (!empty($assigned_arr) && is_array($assigned_arr)) {
@@ -465,7 +465,6 @@ class Ci_admin_tickets extends CI_Controller {
 				$tagged_users_str = implode(',', array_filter(array_map('intval', $tagged_arr)));
 			}
 
-			// File attachment update if provided
 			$attachment_file = $ticket['attachment'];
 			if (!empty($_FILES['attachment']['name'])) {
 				$upload_dir = FCPATH . 'assets/uploads/tickets/';
@@ -488,6 +487,12 @@ class Ci_admin_tickets extends CI_Controller {
 				'client_type' => $client_type,
 				'company_name' => $company_name,
 				'customer' => $company_name,
+				'poc' => $poc,
+				'contact1' => $contact1,
+				'alt_contact' => $alt_contact,
+				'email' => $email,
+				'city' => $city,
+				'lead_source' => !empty($lead_source) ? $lead_source : 'Internal Request',
 				'department' => $department,
 				'ticket_type' => $ticket_type,
 				'category' => $category,
@@ -502,6 +507,8 @@ class Ci_admin_tickets extends CI_Controller {
 				'tagged_users' => $tagged_users_str,
 				'deadline_date' => $deadline_date,
 				'expected_close_date' => $expected_close_date,
+				'followup_date' => $followup_date,
+				'followup_time' => $followup_time,
 				'last_updated_date' => $now,
 				'updated_at' => $now,
 				'last_updated_by' => $manager_id
@@ -509,7 +516,6 @@ class Ci_admin_tickets extends CI_Controller {
 
 			$this->db->where('id', (int)$id)->update('ci_tickets', $update_data);
 
-			// Check reassignment changes for history log
 			if ($ticket['assigned_users'] !== $assigned_users_str) {
 				$this->log_ticket_history($id, 'Reassigned', 'Assigned users updated', null, null, $ticket['assigned_users'], $assigned_users_str);
 			} else {
@@ -534,9 +540,6 @@ class Ci_admin_tickets extends CI_Controller {
 		$this->load->view('manager/tickets/edit', $data);
 	}
 
-	/**
-	 * View a single ticket details, follow-ups, complete history, and chat conversation
-	 */
 	public function view($id = '')
 	{
 		$this->if_not_login();
@@ -570,7 +573,6 @@ class Ci_admin_tickets extends CI_Controller {
 			return;
 		}
 
-		// Security: Non-admin/support can only view if creator, assigned, or tagged
 		$assigned_ids = !empty($ticket['assigned_users']) ? explode(',', $ticket['assigned_users']) : array();
 		$tagged_ids = !empty($ticket['tagged_users']) ? explode(',', $ticket['tagged_users']) : array();
 		$is_assigned = in_array((string)$manager_id, $assigned_ids) || ($ticket['assigned_to'] == $manager_id);
@@ -582,7 +584,6 @@ class Ci_admin_tickets extends CI_Controller {
 			return;
 		}
 
-		// Fetch assigned user names
 		$assigned_user_names = array();
 		if (!empty($assigned_ids)) {
 			$users_q = $this->db->select('id, name, email')->where_in('id', $assigned_ids)->get('ci_user')->result_array();
@@ -591,7 +592,6 @@ class Ci_admin_tickets extends CI_Controller {
 			}
 		}
 
-		// Fetch tagged user names
 		$tagged_user_names = array();
 		if (!empty($tagged_ids)) {
 			$tag_q = $this->db->select('id, name, email')->where_in('id', $tagged_ids)->get('ci_user')->result_array();
@@ -600,7 +600,6 @@ class Ci_admin_tickets extends CI_Controller {
 			}
 		}
 
-		// Fetch Follow-up History from ci_ticket_followups
 		$this->db->select('f.*, u.name as assigned_name, c.name as creator_name');
 		$this->db->from('ci_ticket_followups f');
 		$this->db->join('ci_user u', 'u.id = f.assigned_user_id', 'left');
@@ -609,10 +608,8 @@ class Ci_admin_tickets extends CI_Controller {
 		$this->db->order_by('f.id', 'DESC');
 		$followups = $this->db->get()->result_array();
 
-		// Fetch Complete Audit History from ci_ticket_history
 		$history = $this->db->where('ticket_id', $ticket['id'])->order_by('id', 'DESC')->get('ci_ticket_history')->result_array();
 
-		// Fetch chat messages
 		$messages = $this->db->where('ticket_id', $ticket['id'])->order_by('id', 'ASC')->get('ci_ticket_messages')->result_array();
 
 		$data = array();
@@ -637,9 +634,6 @@ class Ci_admin_tickets extends CI_Controller {
 		$this->load->view('manager/tickets/view', $data);
 	}
 
-	/**
-	 * Add a follow-up entry to a ticket without overwriting previous entries
-	 */
 	public function add_followup($ticket_id = '')
 	{
 		$this->if_not_login();
@@ -685,7 +679,6 @@ class Ci_admin_tickets extends CI_Controller {
 
 		$this->db->insert('ci_ticket_followups', $insert_followup);
 
-		// Update ticket follow-up date and last updated info
 		$update_ticket = array(
 			'followup_date' => $next_followup_date ? $next_followup_date : $followup_date,
 			'last_updated_date' => $now,
@@ -695,7 +688,6 @@ class Ci_admin_tickets extends CI_Controller {
 
 		if (!empty($new_status) && $new_status !== $ticket['status']) {
 			if ($new_status === 'Closed' && !$this->is_admin_or_support()) {
-				// Non-support cannot close
 			} else {
 				$update_ticket['status'] = $new_status;
 			}
@@ -703,18 +695,12 @@ class Ci_admin_tickets extends CI_Controller {
 
 		$this->db->where('id', $ticket_id)->update('ci_tickets', $update_ticket);
 
-		// Audit log in history
 		$this->log_ticket_history($ticket_id, 'Follow-up Added', $remarks, $ticket['status'], isset($update_ticket['status']) ? $update_ticket['status'] : $ticket['status']);
 
 		$this->session->set_flashdata('message', 'Follow-up entry added successfully.');
 		redirect('manager/tickets/view/' . $ticket_id);
 	}
 
-	/**
-	 * Update Ticket Status:
-	 * Assigned users can update status & add remarks, but ONLY Support role (or Admin) can Close.
-	 * Closing requires manual review & resolution confirmation!
-	 */
 	public function update_status()
 	{
 		$this->if_not_login();
@@ -742,7 +728,6 @@ class Ci_admin_tickets extends CI_Controller {
 			return;
 		}
 
-		// Check Closing Permissions
 		if ($status === 'Closed') {
 			if (!$can_close) {
 				$this->session->set_flashdata('error_message', 'Permission Denied: Only users with the Support role or Administrators can review and close tickets.');
@@ -750,7 +735,6 @@ class Ci_admin_tickets extends CI_Controller {
 				return;
 			}
 
-			// Manual review confirmation requirement
 			if ($confirm_review !== 1) {
 				$this->session->set_flashdata('error_message', 'Resolution review required: You must confirm resolution review before closing this ticket.');
 				redirect('manager/tickets/view/' . $ticket_id);
@@ -790,12 +774,10 @@ class Ci_admin_tickets extends CI_Controller {
 
 		$this->db->where('id', $ticket_id)->update('ci_tickets', $update_data);
 
-		// Record in Complete History Audit Log
 		$action_title = ($status === 'Closed') ? 'Resolution Confirmed & Ticket Closed' : 'Status Changed to ' . $status;
 		$log_comment = !empty($resolution_remarks) ? $resolution_remarks : (!empty($remarks) ? $remarks : 'Status updated');
 		$this->log_ticket_history($ticket_id, $action_title, $log_comment, $ticket['status'], $status);
 
-		// Also insert into conversation messages thread
 		$u_row = $this->db->get_where('ci_user', array('id' => $manager_id))->row_array();
 		$actor_name = !empty($u_row['name']) ? $u_row['name'] : 'User';
 		$actor_display = $actor_name . ($can_close ? ' (Support Review)' : '');
@@ -816,9 +798,6 @@ class Ci_admin_tickets extends CI_Controller {
 		redirect('manager/tickets/view/' . $ticket_id);
 	}
 
-	/**
-	 * Send reply / message in ticket chat
-	 */
 	public function respond()
 	{
 		$this->if_not_login();
@@ -865,7 +844,6 @@ class Ci_admin_tickets extends CI_Controller {
 
 		if (!empty($new_status)) {
 			if ($new_status === 'Closed' && !$can_manage) {
-				// Only support can close
 			} else {
 				$update_data['status'] = $new_status;
 			}
@@ -878,9 +856,6 @@ class Ci_admin_tickets extends CI_Controller {
 		redirect('manager/tickets/view/' . $ticket_id);
 	}
 
-	/**
-	 * Direct status action helper from lists / quick buttons
-	 */
 	public function status($id = '', $target_status = '')
 	{
 		$this->if_not_login();
@@ -913,7 +888,6 @@ class Ci_admin_tickets extends CI_Controller {
 				redirect('manager/tickets/view/' . (int)$id);
 				return;
 			}
-			// Redirect to view to confirm resolution review
 			$this->session->set_flashdata('error_message', 'Please review the resolution and confirm closure below.');
 			redirect('manager/tickets/view/' . (int)$id . '#review_close_section');
 			return;
@@ -939,9 +913,6 @@ class Ci_admin_tickets extends CI_Controller {
 		redirect('manager/tickets');
 	}
 
-	/**
-	 * Follow-up Ticket List View: Connected to actual database storage
-	 */
 	public function followups()
 	{
 		$this->if_not_login();
@@ -964,7 +935,6 @@ class Ci_admin_tickets extends CI_Controller {
 		$search = $this->input->get('search');
 		$today = date('Y-m-d');
 
-		// Fetch tickets with follow-up schedules
 		$this->db->select('t.*, u.name as creator_name');
 		$this->db->from('ci_tickets t');
 		$this->db->join('ci_user u', 'u.id = t.created_by', 'left');
@@ -979,18 +949,18 @@ class Ci_admin_tickets extends CI_Controller {
 		}
 
 		if (!empty($type)) {
-			if ($type == 1) { // All Missed
+			if ($type == 1) {
 				$this->db->where('t.followup_date <', $today);
 				$this->db->where_not_in('t.status', array('Resolved', 'Closed'));
-			} elseif ($type == 2) { // Last 7 Days
+			} elseif ($type == 2) {
 				$this->db->where('t.followup_date >=', date('Y-m-d', strtotime('-7 days')));
 				$this->db->where('t.followup_date <=', $today);
-			} elseif ($type == 3) { // Today
+			} elseif ($type == 3) {
 				$this->db->where('t.followup_date', $today);
-			} elseif ($type == 4) { // Next 7 Days
+			} elseif ($type == 4) {
 				$this->db->where('t.followup_date >=', $today);
 				$this->db->where('t.followup_date <=', date('Y-m-d', strtotime('+7 days')));
-			} elseif ($type == 5) { // All Futures
+			} elseif ($type == 5) {
 				$this->db->where('t.followup_date >', $today);
 			}
 		}
@@ -1019,7 +989,6 @@ class Ci_admin_tickets extends CI_Controller {
 		$data['tickets'] = $this->db->get()->result_array();
 		$data['list'] = $data['tickets'];
 
-		// Fetch all latest follow-up entries mapped by ticket_id
 		$all_fus = $this->db->order_by('id', 'DESC')->get('ci_ticket_followups')->result_array();
 		$latest_fu_map = array();
 		foreach ($all_fus as $fu) {
@@ -1032,9 +1001,6 @@ class Ci_admin_tickets extends CI_Controller {
 		$this->load->view('manager/tickets/followups', $data);
 	}
 
-	/**
-	 * Delete a Ticket (Restricted strictly to Admin)
-	 */
 	public function delete($id = '')
 	{
 		$this->if_not_login();

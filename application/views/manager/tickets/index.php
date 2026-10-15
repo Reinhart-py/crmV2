@@ -1,12 +1,10 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
-<!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper px-4">
   <section class="content-header">
     <h1> <?php echo $info['page_heading']; ?> </h1>
   </section>
 
-  <!-- Main content -->
   <section class="content">
     <div class="row">
       <div class="col-xs-12">
