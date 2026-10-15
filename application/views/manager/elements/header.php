@@ -113,19 +113,22 @@
       <li class="<?php if($route1=="dashboard"){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/dashboard"> <i class="fa fa-tachometer"></i> <span>Dashboard</span>  </a> </li>
 
 
-      <li class="<?php if($route1=="tasks"){ echo "active";}else{ echo "";}?> "> <a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-tasks"></i> <span>Task</span> </a>
+      <li class="<?php if(in_array($route1, array('tasks', 'tickets', 'operations'))){ echo "active";}else{ echo "";}?>"> <a href="javascript:void(0);"><i class="fa fa-cogs"></i> <span>Operations</span> </a>
         <ul>
-          <li><a href="<?php echo base_url();?>manager/tasks/add"><i class="fa fa-plus"></i>Task Add</a></li>
+          <li><a href="<?php echo base_url();?>manager/tasks/add"><i class="fa fa-plus"></i>Add Task</a></li>
           <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-list"></i>Task View</a></li>
           <li><a href="<?php echo base_url();?>manager/tasks/followups"><i class="fa fa-calendar-check-o"></i>Task Follow-up</a></li>
+          <li><a href="<?php echo base_url();?>manager/tickets/add"><i class="fa fa-plus"></i>Raise Ticket</a></li>
+          <li><a href="<?php echo base_url();?>manager/tickets"><i class="fa fa-ticket"></i>Ticket View</a></li>
+          <li><a href="<?php echo base_url();?>manager/tickets/followups"><i class="fa fa-calendar-check-o"></i>Ticket Follow-up</a></li>
         </ul>
       </li>
 
-      <li class="<?php if($route1=="tickets"){ echo "active";}else{ echo "";}?> "> <a href="<?php echo base_url();?>manager/tickets"><i class="fa fa-ticket"></i> <span>Ticket</span> </a>
+      <li class="<?php if($route1=="kam"){ echo "active";}else{ echo "";}?>"> <a href="javascript:void(0);"><i class="fa fa-briefcase"></i> <span>KAM</span> </a>
         <ul>
-          <li><a href="<?php echo base_url();?>manager/tickets/add"><i class="fa fa-plus"></i>Raise Ticket</a></li>
-          <li><a href="<?php echo base_url();?>manager/tickets"><i class="fa fa-list"></i>View Ticket</a></li>
-          <li><a href="<?php echo base_url();?>manager/tickets/followups"><i class="fa fa-calendar-check-o"></i>Follow-up Ticket</a></li>
+          <li><a href="<?php echo base_url();?>manager/kam/onboard"><i class="fa fa-user-plus"></i>Onboard Client</a></li>
+          <li><a href="<?php echo base_url();?>manager/kam/schedule"><i class="fa fa-calendar"></i>Create Schedule</a></li>
+          <li><a href="<?php echo base_url();?>manager/kam/report"><i class="fa fa-bar-chart"></i>Report</a></li>
         </ul>
       </li>
 
@@ -288,21 +291,24 @@ $(function() {
       </li>
 
 
-      <li class="<?php if($route1=="tasks"){ echo "active";}else{ echo "";}?> treeview"> 
-        <a href="javascript:void(0);"><i class="fa fa-tasks"></i> <span>Task</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
+      <li class="<?php if(in_array($route1, array('tasks', 'tickets', 'operations'))){ echo "active";}else{ echo "";}?> treeview"> 
+        <a href="javascript:void(0);"><i class="fa fa-cogs"></i> <span>Operations</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu">
-          <li><a href="<?php echo base_url();?>manager/tasks/add"><i class="fa fa-plus"></i>Task Add</a></li>
+          <li><a href="<?php echo base_url();?>manager/tasks/add"><i class="fa fa-plus"></i>Add Task</a></li>
           <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-list"></i>Task View</a></li>
           <li><a href="<?php echo base_url();?>manager/tasks/followups"><i class="fa fa-calendar-check-o"></i>Task Follow-up</a></li>
+          <li><a href="<?php echo base_url();?>manager/tickets/add"><i class="fa fa-plus"></i>Raise Ticket</a></li>
+          <li><a href="<?php echo base_url();?>manager/tickets"><i class="fa fa-ticket"></i>Ticket View</a></li>
+          <li><a href="<?php echo base_url();?>manager/tickets/followups"><i class="fa fa-calendar-check-o"></i>Ticket Follow-up</a></li>
         </ul>
       </li>
 
-      <li class="<?php if($route1=="tickets"){ echo "active";}else{ echo "";}?> treeview"> 
-        <a href="javascript:void(0);"><i class="fa fa-ticket"></i> <span>Ticket</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
+      <li class="<?php if($route1=="kam"){ echo "active";}else{ echo "";}?> treeview"> 
+        <a href="javascript:void(0);"><i class="fa fa-briefcase"></i> <span>KAM</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu">
-          <li><a href="<?php echo base_url();?>manager/tickets/add"><i class="fa fa-plus"></i>Raise Ticket</a></li>
-          <li><a href="<?php echo base_url();?>manager/tickets"><i class="fa fa-ticket"></i>View Ticket</a></li>
-          <li><a href="<?php echo base_url();?>manager/tickets/followups"><i class="fa fa-calendar-check-o"></i>Follow-up Ticket</a></li>
+          <li><a href="<?php echo base_url();?>manager/kam/onboard"><i class="fa fa-user-plus"></i>Onboard Client</a></li>
+          <li><a href="<?php echo base_url();?>manager/kam/schedule"><i class="fa fa-calendar"></i>Create Schedule</a></li>
+          <li><a href="<?php echo base_url();?>manager/kam/report"><i class="fa fa-bar-chart"></i>Report</a></li>
         </ul>
       </li>
 
