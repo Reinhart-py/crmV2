@@ -4,6 +4,47 @@ All notable changes, features, bug fixes, and refinements for the Rolexto CRM re
 
 ---
 
+### [Commit 36b3231] — Ticket Section Overhaul, Multi-User Assignment, Support Review & Close Gate, Audit History, Multiple Follow-ups, and Single-Device Login Enforcement
+- **Commit Hash**: `36b3231` (`36b32313aa60f45d26cc6d9c5868e005b972f3a3`)
+- **Tree Code**: `7449fd190bdb96776acdef13c60833d3c9532f01`
+- **Author**: Reinhart-py
+- **Date & Time**: `2026-10-15 17:26:01 +0530`
+
+#### Changes & Additions:
+- **Comprehensive Ticket Section Architecture**:
+  - **Client Type**: Added `Onboarded` and `Non-Onboarded` selector with color-coded badges in ticket lists and detail views.
+  - **Company Dropdown**: Integrated live company dropdown populated dynamically from all unique companies available in the CRM database (`ci_leads.customer`) with searchable select2 typeahead and custom entry support.
+  - **Multi-Role Ticket Raising**: Any authorized user from Sales, Back Office, Operations, IT, HR, Support, and other departments can raise tickets.
+  - **Department & Categorization**: Added configurable Department (`Sales`, `Back Office`, `Operations`, `IT`, `HR`, `Support`, `Accounts`), Ticket Type (`Bug / Technical Issue`, `Feature Request`, `System Access / Permission`, `Billing / Invoice Inquiry`, `Client Query / Onboarding`, `Operational Support`, `Hardware / Equipment`, `General Inquiry`, `Escalation`), and Category dropdowns.
+  - **Priority & Status**: Configured Priority (`Low`, `Medium`, `High`, `Urgent`) and extended Ticket Statuses (`Open`, `Assigned`, `In Progress`, `Pending`, `On Hold`, `Resolved`, `Closed`).
+  - **Multi-User Assignment**: Enabled assignment of one ticket to multiple staff members simultaneously via comma-separated storage (`assigned_users`) with interactive user badge chips and individual user filtering.
+  - **Notify / Tag Users**: Implemented user tagging option (`tagged_users`) to alert relevant colleagues about tickets.
+  - **Deadlines & Overdue Detection**: Added `deadline_date` (when action must be taken) and `expected_close_date`. Highlighted overdue tickets with prominent red `<span class="label label-danger">OVERDUE</span>` badges and amber `<span class="label label-warning">Due Soon</span>` badges for tickets approaching deadlines (&le; 48 hours).
+  - **Full Tracking & Audit Fields**: Persisted `raised_by`, `created_date`, `last_updated_date`, and `last_updated_by`.
+- **Support-Only Resolution Review & Close Gate**:
+  - Assigned users and staff can update status to `Open`, `Assigned`, `In Progress`, `Pending`, `On Hold`, or `Resolved`, record progress remarks, and add follow-ups.
+  - **Ticket closure is strictly restricted to users with the Support role (or Admin)**.
+  - When closing a ticket, the system requires Support personnel to provide resolution/closing remarks and check a mandatory review confirmation checkbox (`confirm_review = 1`), verifying that the resolution has been manually reviewed and verified with the client/department.
+  - Logged `resolution_reviewed_by` and `resolution_confirmed_at` timestamps.
+- **Complete Ticket History Audit Log**:
+  - Created `ci_ticket_history` database table to track every event in the ticket lifecycle: creation, field edits, reassignments, status transitions (`old_status` &rarr; `new_status`), progress remarks, and resolution closures with exact timestamps, user names, and role identifiers.
+- **Multiple Follow-ups Storage**:
+  - Created `ci_ticket_followups` database table supporting unlimited sequential follow-up entries per ticket (`followup_date`, `next_followup_date`, `assigned_user_id`, `remarks`, `status`, `next_action`) without overwriting previous records.
+  - Updated `manager/tickets/followups` and `manager/tickets/view` to display complete follow-up chronologies connected directly to database records.
+- **Attachment & Internal Notes**:
+  - Integrated file attachment uploads stored in `assets/admin/tickets/` with download buttons, confidential `internal_notes` for internal staff discussion, and resolution summaries.
+- **Top Metrics Cards & Comprehensive Filters**:
+  - Added summary KPI cards at the top of the ticket list: Total Tickets, Open & Assigned, In Progress & Pending, Overdue Tickets (in red), Resolved, and Closed.
+  - Filter by Client Type, Company, Ticket Type, Category, Status, Priority, Assigned User, Raised By, Department, Overdue toggle, Date Range, and Keyword search.
+- **Strict Separation of Tasks and Tickets**:
+  - Separated `Task` and `Ticket` in both desktop navigation bar and Android mobile drawer into dedicated, independent top-level menus.
+- **Single-Device Login Enforcement & IP Tracking**:
+  - Enforced single-device login per user account by saving a unique `current_session_token` upon login. Active session token verification runs on every request (`ci_admin_model::check_auth_timeout`). If a user logs in from another device or browser, previous active sessions are immediately terminated with a redirect to `/manager/login?conflict=1`.
+  - Extracted real client IP across reverse proxies and Cloudflare via `get_client_ip()` (`HTTP_CF_CONNECTING_IP`, `HTTP_X_FORWARDED_FOR`, `HTTP_CLIENT_IP`, `REMOTE_ADDR`) and logged with all admin actions.
+  - Integrated live Online/Offline status indicators in `admin_logs.php` with session overview metrics and online/offline status filter.
+
+---
+
 ### [Commit 253d0e3] — Consolidate Alternative Contact Fields and Standardize DNCR/DND & DNCR Date Terminology
 - **Commit Hash**: `253d0e3` (`253d0e357691269ed6b4e04be867f1318a87af0a`)
 - **Tree Code**: `d4e536115aaa36f6ac883d6e5fc1ee72bc25b765`
