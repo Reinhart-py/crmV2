@@ -4,11 +4,33 @@ All notable changes, features, bug fixes, and refinements for the Rolexto CRM re
 
 ---
 
-### [Commit 258f7d9] — Admin Logs UI Matched to Team Leads, Dashboard Cleanup, Routing Fix, and Multi-Platform Hosting Documentation
-- **Commit Hash**: `258f7d9` (`258f7d92deb678df944234b9e4fa372c210a76c9`)
-- **Tree Code**: `a7ae6d29a3be3243933303ba13cf56e194ac160c`
+### [Commit 253d0e3] — Consolidate Alternative Contact Fields and Standardize DNCR/DND & DNCR Date Terminology
+- **Commit Hash**: `253d0e3` (`253d0e357691269ed6b4e04be867f1318a87af0a`)
+- **Tree Code**: `d4e536115aaa36f6ac883d6e5fc1ee72bc25b765`
 - **Author**: Reinhart-py
-- **Date & Time**: `2026-10-15 16:03:08 +0530`
+- **Date & Time**: `2026-10-15 16:20:57 +0530`
+
+#### Changes & Additions:
+- **Consolidated Alternative Contact Number**:
+  - Removed duplicate `alt_mobile` ("Alternative Mobile Number") field from lead creation and edit forms.
+  - Retained a single unified field: **"Alternative Contact Number"** (`name="alt_contact"`) in both `application/views/manager/leads/addleads.php` and `application/views/manager/leads/editleads.php`.
+  - In `application/controllers/ci_admin_leads.php`, synchronized both `alt_contact` and legacy `alt_mobile` database columns on `add()` and `edit()` to preserve full backward compatibility with historical records and database queries.
+  - In `application/controllers/ci_admin_leads.php::import_action()`, updated CSV import to map aliases (`alternativecontactnumber`, `altcontact`, `alternatecontact`, `alternativemobilenumber`, `altmobile`, `alternatemobile`) into `alt_contact` and `alt_mobile`.
+  - In `download_sample_csv()`, removed `'Alternative Mobile Number'` and retained `'Alternative Contact Number'` with updated sample data.
+- **Standardized DNCR/DND and DNCR Date Terminology**:
+  - Replaced all legacy `TNCR/TND` and `TNCR Check Date` / `DNCR / DND Check Date` labels across the system with strictly **"DNCR/DND"** and **"DNCR Date"**.
+  - Updated `addleads.php`, `editleads.php`, and `single_view.php` to display **DNCR/DND** and **DNCR Date** uniformly.
+  - Updated CSV sample download headers (`download_sample_csv()`) and CSV import mapping (`import_action()`) to recognize `dncrdnd`, `dncr`, and `dncrdate`.
+- **Lead Single View Details Expansion**:
+  - Enhanced `application/views/manager/leads/single_view.php` to prominently display **Alternative Contact Number**, **Email**, **DNCR/DND**, and **DNCR Date** in the customer details table.
+
+---
+
+### [Commit 317e3b2] — Admin Logs UI Matched to Team Leads, Dashboard Cleanup, Routing Fix, and Multi-Platform Hosting Documentation
+- **Commit Hash**: `317e3b2` (`317e3b20732e6ef419f7d4d7f046e492fc1660f2`)
+- **Tree Code**: `45fbe2f1e18ec3346d03caee198fe190b3aa2c65`
+- **Author**: Reinhart-py
+- **Date & Time**: `2026-10-15 16:03:10 +0530`
 
 #### Changes & Additions:
 - **Admin Logs Page UI & Options Matched to `Teams > Leads`**:

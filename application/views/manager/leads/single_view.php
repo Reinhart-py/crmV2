@@ -307,6 +307,26 @@
             
               </tr>
 
+              <tr>
+              <th scope="col">Alternative Contact Number</th>
+              <td scope="col"><?php echo !empty($p_info['alt_contact']) ? $p_info['alt_contact'] : (!empty($p_info['alt_mobile']) ? $p_info['alt_mobile'] : '-'); ?></td>
+              </tr>
+
+              <tr>
+              <th scope="col">Email</th>
+              <td scope="col"><?php echo !empty($p_info['email']) ? $p_info['email'] : '-'; ?></td>
+              </tr>
+
+              <tr>
+              <th scope="col">DNCR/DND</th>
+              <td scope="col"><?php echo !empty($p_info['dnd_status']) ? $p_info['dnd_status'] : 'No'; ?></td>
+              </tr>
+
+              <tr>
+              <th scope="col">DNCR Date</th>
+              <td scope="col"><?php echo (!empty($p_info['dnd_check_date']) && $p_info['dnd_check_date'] != '0000-00-00') ? simple_date($p_info['dnd_check_date']) : '-'; ?></td>
+              </tr>
+
 
               <tr>
               <th scope="col">Status</th>

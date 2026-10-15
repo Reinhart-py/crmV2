@@ -59,15 +59,8 @@
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>Alternative Mobile Number</label>
-                <input type="text" class="form-control" name="alt_mobile" placeholder="Alternative Mobile">
-              </div>
-            </div>
-
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group">
                 <label>Alternative Contact Number</label>
-                <input type="text" class="form-control" name="alt_contact" placeholder="Alternative Contact">
+                <input type="text" class="form-control" name="alt_contact" placeholder="Alternative Contact Number">
               </div>
             </div>
 
@@ -130,7 +123,7 @@
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>TNCR/TND</label>
+                <label>DNCR/DND</label>
                 <select class="form-control" name="dnd_status">
                   <option value="No" selected="selected">No</option>
                   <option value="Yes">Yes</option>
@@ -140,7 +133,7 @@
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>TNCR Check Date</label>
+                <label>DNCR Date</label>
                 <input type="text" class="form-control datepicker" name="dnd_check_date" placeholder="DD-MM-YYYY">
               </div>
             </div>

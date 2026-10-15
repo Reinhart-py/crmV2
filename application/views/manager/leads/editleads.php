@@ -124,15 +124,8 @@
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>Alternative Mobile Number</label>
-                <input type="text" class="form-control" name="alt_mobile" value="<?php echo isset($list['alt_mobile']) ? $list['alt_mobile'] : ''; ?>" placeholder="Alternative Mobile">
-              </div>
-            </div>
-
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group">
                 <label>Alternative Contact Number</label>
-                <input type="text" class="form-control" name="alt_contact" value="<?php echo isset($list['alt_contact']) ? $list['alt_contact'] : ''; ?>" placeholder="Alternative Contact">
+                <input type="text" class="form-control" name="alt_contact" value="<?php echo !empty($list['alt_contact']) ? htmlspecialchars($list['alt_contact']) : (isset($list['alt_mobile']) ? htmlspecialchars($list['alt_mobile']) : ''); ?>" placeholder="Alternative Contact Number">
               </div>
             </div>
 
@@ -197,7 +190,7 @@
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>DNCR / DND</label>
+                <label>DNCR/DND</label>
                 <select class="form-control" name="dnd_status">
                   <option value="No" <?php echo (isset($list['dnd_status']) && $list['dnd_status'] == 'No') ? 'selected' : ''; ?>>No</option>
                   <option value="Yes" <?php echo (isset($list['dnd_status']) && $list['dnd_status'] == 'Yes') ? 'selected' : ''; ?>>Yes</option>
@@ -207,7 +200,7 @@
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>DNCR / DND Check Date</label>
+                <label>DNCR Date</label>
                 <input type="text" class="form-control datepicker" name="dnd_check_date" value="<?php echo (!empty($list['dnd_check_date']) && $list['dnd_check_date'] != '0000-00-00') ? date('d-m-Y', strtotime($list['dnd_check_date'])) : ''; ?>" placeholder="DD-MM-YYYY">
               </div>
             </div>

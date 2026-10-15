@@ -386,8 +386,8 @@ function __construct()
 				'mrr'=>(floatval($mrc)+floatval($revenue)),
 				'poc'=>$poc,
 				'contact1'=>$contact1,
-				'alt_mobile'=>isset($alt_mobile) ? $alt_mobile : '',
-				'alt_contact'=>isset($alt_contact) ? $alt_contact : '',
+				'alt_mobile'=>!empty($alt_contact) ? $alt_contact : (isset($alt_mobile) ? $alt_mobile : ''),
+				'alt_contact'=>!empty($alt_contact) ? $alt_contact : (isset($alt_mobile) ? $alt_mobile : ''),
 				'business_category'=>isset($business_category) ? $business_category : '',
 				'dnd_status'=>isset($dnd_status) ? $dnd_status : 'No',
 				'dnd_check_date'=>!empty($dnd_check_date) ? db_date($dnd_check_date) : '',
@@ -604,8 +604,8 @@ function __construct()
 				'mrr'=>(floatval($mrc)+floatval($revenue)),
 				'poc'=>$poc,
 				'contact1'=>$contact1,
-				'alt_mobile'=>isset($alt_mobile) ? $alt_mobile : '',
-				'alt_contact'=>isset($alt_contact) ? $alt_contact : '',
+				'alt_mobile'=>!empty($alt_contact) ? $alt_contact : (isset($alt_mobile) ? $alt_mobile : ''),
+				'alt_contact'=>!empty($alt_contact) ? $alt_contact : (isset($alt_mobile) ? $alt_mobile : ''),
 				'business_category'=>isset($business_category) ? $business_category : '',
 				'dnd_status'=>isset($dnd_status) ? $dnd_status : 'No',
 				'dnd_check_date'=>!empty($dnd_check_date) ? db_date($dnd_check_date) : '',
@@ -1211,8 +1211,8 @@ $data['info2']=$this->if_not_login();
 
 			$poc = $get_val($row, array('pocname', 'poc', 'contactperson'));
 			$contact1 = $get_val($row, array('poccontactnumber', 'contact1', 'contactnumber', 'mobile', 'phone'));
-			$alt_mobile = $get_val($row, array('alternativemobilenumber', 'altmobile', 'alternatemobile'));
-			$alt_contact = $get_val($row, array('alternativecontactnumber', 'altcontact', 'alternatecontact'));
+			$alt_contact = $get_val($row, array('alternativecontactnumber', 'altcontact', 'alternatecontact', 'alternativemobilenumber', 'altmobile', 'alternatemobile'));
+			$alt_mobile = $alt_contact;
 			$email = $get_val($row, array('email', 'emailid'));
 			$a_number = $get_val($row, array('accountnumber', 'anumber', 'accountno'));
 			$a_department = $get_val($row, array('accountundervertical', 'adepartment', 'department', 'vertical'));
@@ -1224,13 +1224,13 @@ $data['info2']=$this->if_not_login();
 			}
 
 			$business_category = $get_val($row, array('businesscategory', 'businesscat'));
-			$dnd_status = $get_val($row, array('tncrtnd', 'dndstatus', 'dnd', 'tncr'));
+			$dnd_status = $get_val($row, array('dncrdnd', 'dncr', 'dnd', 'dndstatus', 'tncrtnd', 'tncr'));
 			if (empty($dnd_status) || !in_array(strtolower($dnd_status), array('yes', 'no'))) {
 				$dnd_status = 'No';
 			} else {
 				$dnd_status = ucfirst(strtolower($dnd_status));
 			}
-			$dnd_check_date = $get_val($row, array('tncrcheckdate', 'dndcheckdate', 'checkdate'));
+			$dnd_check_date = $get_val($row, array('dncrdate', 'dncrcheckdate', 'dndcheckdate', 'checkdate', 'tncrcheckdate'));
 
 			$s_cat = $get_val($row, array('servicecategory', 'scat'));
 			$p_cat = $get_val($row, array('productcategory', 'pcat'));
@@ -1266,7 +1266,7 @@ $data['info2']=$this->if_not_login();
 			$state = $get_val($row, array('state'));
 			$city = $get_val($row, array('city'));
 			$poc2 = $get_val($row, array('alternatepocname', 'poc2', 'altpoc'));
-			$contact2 = $get_val($row, array('alternatepoccontactnumber', 'contact2', 'altcontact'));
+			$contact2 = $get_val($row, array('alternatepoccontactnumber', 'contact2', 'altpoccontact'));
 			$c_partner = $get_val($row, array('channelpartner', 'cpartner'));
 			$otc = $get_val($row, array('onetimecharges', 'otc'));
 			$lead_cat = $get_val($row, array('leadcategory', 'leadcat'));
@@ -1379,7 +1379,6 @@ $data['info2']=$this->if_not_login();
 			'Customer Name',
 			'POC Name',
 			'POC Contact Number',
-			'Alternative Mobile Number',
 			'Alternative Contact Number',
 			'Email',
 			'Account Number',
@@ -1388,8 +1387,8 @@ $data['info2']=$this->if_not_login();
 			'Current Monthly Revenue Date',
 			'Category',
 			'Business Category',
-			'TNCR/TND',
-			'TNCR Check Date',
+			'DNCR/DND',
+			'DNCR Date',
 			'Service Category',
 			'Product Category',
 			'Product Details',
@@ -1423,7 +1422,6 @@ $data['info2']=$this->if_not_login();
 			'John Doe',
 			'+971 50 123 4567',
 			'+971 52 111 2222',
-			'+971 4 333 4444',
 			'john@sample.com',
 			'ACC-98765',
 			'Telecom',
