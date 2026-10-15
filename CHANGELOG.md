@@ -4,6 +4,42 @@ All notable changes, features, bug fixes, and refinements for the Rolexto CRM re
 
 ---
 
+### [Commit 212f501] — Align Raise Ticket to Add Lead UI, View Tickets to Team Leads UI, and Preview Ticket to Lead Preview UI
+- **Commit Hash**: `212f501` (`212f50125142d08d26634f72c3551f0301550d1e`)
+- **Tree Code**: `f5c9a62fe079f2842f017be714c4028e3c39ad8e`
+- **Author**: Reinhart-py
+- **Date & Time**: `2026-10-15 17:36:05 +0530`
+
+#### Changes & Additions:
+- **Raise Ticket & Edit Ticket UI Matched to Add Lead (`addleads.php`)**:
+  - Re-architected `application/views/manager/tickets/add.php` and `edit.php` to replicate the clean native AdminLTE form structure of `views/manager/leads/addleads.php`.
+  - Removed all custom SVG icons, colorful border highlights, and decorative design clutter.
+  - Form organized cleanly into standard `.box.box-default` panels:
+    - *Ticket Information*: Client Type, Company Name (searchable DB dropdown), Department, Ticket Type, Category, Priority, Status, Deadline Date, Expected Closure Date, and Ticket Title.
+    - *Assignment & Notifications*: Multi-user assignment (`assigned_users[]`) and user notification tagging (`tagged_users[]`).
+    - *Details & Attachments*: Description textarea, optional internal notes, and file attachment.
+  - Centered box footer with standard CRM buttons: Submit (`btn-info`) and Cancel (`btn-default`).
+- **View Tickets Table & Filter Toolbar Matched to `Team > Leads` (`team/leads.php`)**:
+  - Replaced custom dashboard stat cards with the clean standard `team/leads.php` layout.
+  - Filter toolbar structured inside `div.box.p-4` with `x_row`/`x_col` and `form.form-inline.head_filter`:
+    - Date range (`Create From` to `Create To`) using `.input-daterange.input-group` and `.datepicker`.
+    - Standard `.select2` dropdowns for Client Type, Company, Department, Ticket Type, Priority, Status, and Assigned User.
+    - Text search input for ticket ID/title/company keyword search.
+    - Standard `Search` (`btn-success`) and `Reset` (`btn-danger`) buttons, with `Raise Ticket` (`btn-success`) button.
+  - Standard DataTables table (`#example_lead`) with columns: `Ticket #`, `Customer / Company`, `Client Type`, `Title`, `Department`, `Priority`, `Assigned To`, `Deadline`, `Created`, `Status`, and `Action`.
+  - Implemented dynamic column footer dropdown filters (`initComplete`) matching `team/leads.php`.
+- **Ticket Preview Page Matched to `Team > Leads > Action > Preview` (`single_view.php`)**:
+  - Restructured `application/views/manager/tickets/view.php` to follow the exact profile card and table structure of `views/manager/leads/single_view.php`.
+  - Top action header with Back button (`btn-info pull-left`) and Edit Ticket button (`btn-danger pull-right`).
+  - `.my-profile` container with standard 2-column key-value tables for all ticket details, followed by full-width rows for Description, Internal Notes, Attachment download, and Resolution Remarks.
+  - Clean AdminLTE `.box.box-default` panels for Update Status & Progress (assigned users), Support Review & Ticket Closure (Support/Admin only with review confirmation), Multiple Follow-up History table with Add Follow-up form, and Complete Ticket History audit log.
+- **Action Menu Streamlining**:
+  - Standardized the table Action dropdown in `View Tickets` to mirror `team/leads.php`:
+    - `Preview` (direct link to ticket preview view)
+    - `Edit` (direct link to edit ticket view)
+
+---
+
 ### [Commit 36b3231] — Ticket Section Overhaul, Multi-User Assignment, Support Review & Close Gate, Audit History, Multiple Follow-ups, and Single-Device Login Enforcement
 - **Commit Hash**: `36b3231` (`36b32313aa60f45d26cc6d9c5868e005b972f3a3`)
 - **Tree Code**: `7449fd190bdb96776acdef13c60833d3c9532f01`
