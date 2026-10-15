@@ -4,6 +4,38 @@ All notable changes, features, bug fixes, and refinements for the Rolexto CRM re
 
 ---
 
+### [Commit 4fe6960] — Consolidate Task and Ticket into Operations and Add KAM Navigation Section with Blank Pages
+- **Commit Hash**: `4fe6960` (`4fe69606819fe22ab0f9a12ea73c9ceca148da2c`)
+- **Tree Code**: `a2f800a72f4fd0a615d6d0d8657bd9c7039a441d`
+- **Author**: Reinhart-py
+- **Date & Time**: `2026-10-15 18:44:57 +0530`
+
+#### Changes & Additions:
+- **Consolidated Operations Navigation Section**:
+  - Combined separate Task and Ticket menu entries into a unified **Operations** navigation section in both desktop navbar (`.munk_menu`) and mobile offcanvas drawer (`.sidebar-menu`) in `application/views/manager/elements/header.php`.
+  - Arranged dropdown options in the exact order requested:
+    1. **Add Task** (`manager/tasks/add`)
+    2. **Task View** (`manager/tasks`)
+    3. **Task Follow-up** (`manager/tasks/followups`)
+    4. **Raise Ticket** (`manager/tickets/add`)
+    5. **Ticket View** (`manager/tickets`)
+    6. **Ticket Follow-up** (`manager/tickets/followups`)
+- **New KAM Navigation Section**:
+  - Added new top-level **KAM** (uppercase) navigation section in both desktop navbar and mobile drawer.
+  - Arranged dropdown options in the exact order requested:
+    1. **Onboard Client** (`manager/kam/onboard`)
+    2. **Create Schedule** (`manager/kam/schedule`)
+    3. **Report** (`manager/kam/report`)
+- **KAM Controller & Blank Views**:
+  - Implemented `Ci_admin_kam` controller (`application/controllers/ci_admin_kam.php`) handling `onboard()`, `schedule()`, and `report()` methods with session verification and clean structure.
+  - Configured matching routes in `application/config/routes.php` (`manager/kam/onboard`, `manager/kam/schedule`, `manager/kam/report`).
+  - Created `application/views/manager/kam/onboard.php` adopting the exact layout and table design of the Leads section (date pickers, MRR range, search filter, table headers, and action menu) without connecting to or modifying the leads database.
+  - Created `application/views/manager/kam/schedule.php` and `report.php` as clean blank AdminLTE views.
+  - Preserved strict zero-schema-change policy with no new database tables or backend modifications.
+  - Maintained zero inline code comments across all PHP files.
+
+---
+
 ### [Commit 5d21809] — Remove Header Banner Clutter from Admin Logs and Integrate Online/Offline into Status Filter and Column
 - **Commit Hash**: `5d21809` (`5d2180949d2146e49226d9c6ca1087cf23709b8e`)
 - **Tree Code**: `d5c5f7ec763317d87631311d97043dc6cb9fb510`
