@@ -4,6 +4,19 @@ All notable changes, features, bug fixes, and refinements for the Rolexto CRM re
 
 ---
 
+### [Commit 6de47b2] — Normalize Company Dropdown Items for String and Array Models
+- **Commit Hash**: `6de47b2` (`6de47b209d84639b7d5bead45c110996841072aa`)
+- **Tree Code**: `afcd71d34729b80bc8d21172db535b72edf7b069`
+- **Author**: Reinhart-py
+- **Date & Time**: `2026-10-15 18:01:15 +0530`
+
+#### Changes & Additions:
+- **Company Dropdown Rendering Normalization**:
+  - Fixed company list iteration in `application/views/manager/tickets/add.php`, `edit.php`, and `index.php` to seamlessly support both flat string arrays returned by `ci_admin_model->get_all_companies_dropdown()` and associative arrays.
+  - Eliminated PHP 8+ string offset type errors, ensuring the entire Raise Ticket form, Edit Ticket form, and View Tickets filter toolbar render without interruption.
+
+---
+
 ### [Commit fc4f813] — Complete Field Suite for Tickets with Add Lead UI Styling and Clean Codebase
 - **Commit Hash**: `fc4f813` (`fc4f813a1e473c1ea71bab40e53272e18b1ba822`)
 - **Tree Code**: `4d6e3754f5da7d4ae30ab1a74c648ed1e58bfb8b`
