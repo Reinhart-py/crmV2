@@ -59,7 +59,6 @@ class Ci_admin_system extends CI_Controller {
 		);
 		$data['info2'] = $this->if_not_login();
 		
-		// Admin access check (role 1)
 		$role = $this->session->userdata('manager_role');
 		if ($role != 1) {
 			$this->session->set_flashdata('error_message', 'Access denied. Admin logs are restricted to administrators.');
@@ -70,12 +69,26 @@ class Ci_admin_system extends CI_Controller {
 		$user_id = $this->input->get('user_id');
 		$user_name = $this->input->get('user_name');
 		$activity = $this->input->get('activity');
-		$status = $this->input->get('status');
+		$status_input = $this->input->get('status');
+		$online_status_input = $this->input->get('online_status');
 		$d1 = $this->input->get('d1');
 		$d2 = $this->input->get('d2');
-		$online_status = $this->input->get('online_status');
 
-		// Fetch all users with their online/offline state
+		$status_list = is_array($status_input) ? $status_input : (!empty($status_input) ? array($status_input) : array());
+		if (!empty($online_status_input)) {
+			$status_list[] = $online_status_input;
+		}
+
+		$is_filter_online = in_array('online', $status_list);
+		$is_filter_offline = in_array('offline', $status_list);
+
+		$db_status = array();
+		foreach ($status_list as $st) {
+			if ($st !== 'online' && $st !== 'offline' && !empty($st)) {
+				$db_status[] = $st;
+			}
+		}
+
 		$users_with_status = $this->db->select('id, name, email, is_online, last_active_at, last_ip')
 			->order_by('name', 'ASC')
 			->get('ci_user')
@@ -83,7 +96,7 @@ class Ci_admin_system extends CI_Controller {
 
 		$user_status_map = array();
 		$online_count = 0;
-		$threshold_time = time() - 600; // 10 minutes activity window
+		$threshold_time = time() - 600;
 		$online_uids = array();
 		$offline_uids = array();
 
@@ -116,17 +129,15 @@ class Ci_admin_system extends CI_Controller {
 		if (!empty($user_name)) {
 			$this->db->like('ci_admin_logs.username', $user_name);
 		}
-		if (!empty($online_status)) {
-			if ($online_status === 'online') {
-				if (!empty($online_uids)) {
-					$this->db->where_in('ci_admin_logs.user_id', $online_uids);
-				} else {
-					$this->db->where('ci_admin_logs.user_id', -1);
-				}
-			} elseif ($online_status === 'offline') {
-				if (!empty($offline_uids)) {
-					$this->db->where_in('ci_admin_logs.user_id', $offline_uids);
-				}
+		if ($is_filter_online) {
+			if (!empty($online_uids)) {
+				$this->db->where_in('ci_admin_logs.user_id', $online_uids);
+			} else {
+				$this->db->where('ci_admin_logs.user_id', -1);
+			}
+		} elseif ($is_filter_offline) {
+			if (!empty($offline_uids)) {
+				$this->db->where_in('ci_admin_logs.user_id', $offline_uids);
 			}
 		}
 		if (!empty($activity)) {
@@ -136,12 +147,8 @@ class Ci_admin_system extends CI_Controller {
 				$this->db->where('ci_admin_logs.activity', $activity);
 			}
 		}
-		if (!empty($status)) {
-			if (is_array($status)) {
-				$this->db->where_in('ci_admin_logs.status', $status);
-			} else {
-				$this->db->where('ci_admin_logs.status', $status);
-			}
+		if (!empty($db_status)) {
+			$this->db->where_in('ci_admin_logs.status', $db_status);
 		}
 		if (!empty($d1)) {
 			$this->db->where('DATE(ci_admin_logs.created_at) >=', date('Y-m-d', strtotime($d1)));

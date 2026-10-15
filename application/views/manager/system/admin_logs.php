@@ -1,28 +1,13 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
-<!-- Content Wrapper. Contains page content -->
-<div class="content-wrapper px-4"> <!-- Content Header (Page header) -->
+<div class="content-wrapper px-4">
   <section class="content-header">
     <h1> <?php echo $info['page_heading']; ?> </h1>
   </section>
-  <!-- Main content -->
-  <section class="content"> <!-- /.row -->
-    <div class="row"> <!-- form close-->
+
+  <section class="content">
+    <div class="row">
       <div class="col-xs-12">
-      <div class="row" style="margin-bottom: 12px;">
-        <div class="col-sm-12">
-          <div style="background: #ffffff; border: 1px solid #d2d6de; border-radius: 4px; padding: 10px 15px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-            <div>
-              <span style="font-size: 14px; font-weight: 600; color: #333;"><i class="fa fa-shield text-primary"></i> System User Sessions:</span>
-              <span class="label label-success" style="font-size: 12px; margin-left: 8px; padding: 4px 8px;"><i class="fa fa-circle"></i> <?php echo isset($online_users_count) ? $online_users_count : 0; ?> Online Now</span>
-              <span class="label label-default" style="font-size: 12px; margin-left: 6px; padding: 4px 8px;"><i class="fa fa-users"></i> <?php echo isset($total_users_count) ? $total_users_count : 0; ?> Total Users</span>
-            </div>
-            <div style="font-size: 12px; color: #666;">
-              <i class="fa fa-laptop"></i> Enforced: Single-device login per user account | Real IP address tracking active
-            </div>
-          </div>
-        </div>
-      </div>
 
       <div class="box p-4">
       <div class="x_row">
@@ -31,9 +16,9 @@
 
               <div class="form-group">
                 <div class="input-daterange input-group" id="datepicker" style="width: 100%;">             
-                  <input type="text" class="input-md form-control datepicker" name="d1" placeholder="Create From" value="<?php if(isset($_GET['d1'])&&(!empty($_GET['d1']))){ echo $_GET['d1'];}?>" autocomplete="off"/>
+                  <input type="text" class="input-md form-control datepicker" name="d1" placeholder="Create From" value="<?php if(isset($_GET['d1'])&&(!empty($_GET['d1']))){ echo htmlspecialchars($_GET['d1']);}?>" autocomplete="off"/>
                   <span class="input-group-addon">To</span>
-                  <input type="text" class="input-md form-control datepicker" name="d2" placeholder="Create To" value="<?php if(isset($_GET['d2'])&&(!empty($_GET['d2']))){ echo $_GET['d2'];}?>" autocomplete="off"/>
+                  <input type="text" class="input-md form-control datepicker" name="d2" placeholder="Create To" value="<?php if(isset($_GET['d2'])&&(!empty($_GET['d2']))){ echo htmlspecialchars($_GET['d2']);}?>" autocomplete="off"/>
                 </div>
               </div>
 
@@ -48,14 +33,23 @@
               </div>
 
               <div class="form-group">
-                <select id="dates-field2" class="multiselect-ui form-control" multiple="multiple" name="status[]" data-placeholder="Status">
-                  <option <?php if(isset($_GET['status']) && in_array('SUCCESS', (array)$_GET['status'])){ echo "selected"; } ?> value="SUCCESS">SUCCESS</option>
-                  <option <?php if(isset($_GET['status']) && in_array('FAILED', (array)$_GET['status'])){ echo "selected"; } ?> value="FAILED">FAILED</option>
+                <?php 
+                  $selected_status = isset($_GET['status']) ? (array)$_GET['status'] : array();
+                  if (isset($_GET['online_status']) && !empty($_GET['online_status'])) {
+                    $selected_status[] = $_GET['online_status'];
+                  }
+                ?>
+                <select class="form-control select2" name="status" style="min-width: 130px;">
+                  <option value="">Status</option>
+                  <option value="online" <?php if(in_array('online', $selected_status)) echo 'selected'; ?>>Online</option>
+                  <option value="offline" <?php if(in_array('offline', $selected_status)) echo 'selected'; ?>>Offline</option>
+                  <option value="SUCCESS" <?php if(in_array('SUCCESS', $selected_status)) echo 'selected'; ?>>SUCCESS</option>
+                  <option value="FAILED" <?php if(in_array('FAILED', $selected_status)) echo 'selected'; ?>>FAILED</option>
                 </select>
               </div>
 
               <div class="form-group">
-                <select class="form-control select2" name="user_id" data-placeholder="Select User" id="select_val">
+                <select class="form-control select2" name="user_id" data-placeholder="Select User" id="select_val" style="min-width: 160px;">
                   <option value="">Select User</option>
                   <?php if(isset($users_list) && !empty($users_list)){
                     foreach($users_list as $u){
@@ -66,15 +60,7 @@
               </div>
 
               <div class="form-group">
-                <select class="form-control" name="online_status">
-                  <option value="">All Online/Offline Status</option>
-                  <option value="online" <?php if(isset($_GET['online_status']) && $_GET['online_status']=='online'){ echo 'selected'; } ?>>Online Users Only</option>
-                  <option value="offline" <?php if(isset($_GET['online_status']) && $_GET['online_status']=='offline'){ echo 'selected'; } ?>>Offline Users Only</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <input type="text" class="input-md form-control" name="user_name" placeholder="User Name" value="<?php if(isset($_GET['user_name'])&&(!empty($_GET['user_name']))){ echo $_GET['user_name'];}?>" autocomplete="off" />
+                <input type="text" class="input-md form-control" name="user_name" placeholder="User Name" value="<?php if(isset($_GET['user_name'])&&(!empty($_GET['user_name']))){ echo htmlspecialchars($_GET['user_name']);}?>" autocomplete="off" />
               </div>
 
               <div class="form-group">
@@ -117,25 +103,22 @@
                 </tr>
               </tfoot>
               <tbody>
-                <?php foreach($logs as $k=>$li){ ?>
+                <?php foreach($logs as $k=>$li){ 
+                  $u_id = isset($li['user_id']) ? (int)$li['user_id'] : 0;
+                  $is_user_online = (isset($user_status_map[$u_id]) && !empty($user_status_map[$u_id]['is_online']));
+                ?>
                 <tr>
                   <td><?php echo $li['id']; ?></td>
                   <td>
-                    <?php 
-                      $u_id = isset($li['user_id']) ? (int)$li['user_id'] : 0;
-                      $is_user_online = (isset($user_status_map[$u_id]) && !empty($user_status_map[$u_id]['is_online']));
-                    ?>
                     <strong><?php echo !empty($li['username']) ? htmlspecialchars($li['username']) : (!empty($li['user_name']) ? htmlspecialchars($li['user_name']) : 'System'); ?></strong>
-                    <?php if($u_id > 0) { ?>
-                      <?php if($is_user_online) { ?>
-                        <span class="label label-success" style="font-size:10px; margin-left:4px;" title="User currently logged in"><i class="fa fa-circle"></i> Online</span>
-                      <?php } else { ?>
-                        <span class="label label-default" style="font-size:10px; margin-left:4px;" title="User offline"><i class="fa fa-circle-o"></i> Offline</span>
-                      <?php } ?>
-                    <?php } ?>
                   </td>
                   <td><?php echo ucwords(str_replace('_', ' ', $li['activity'])); ?></td>
-                  <td><?php echo $li['status']; ?></td>
+                  <td>
+                    <?php if($u_id > 0) { ?>
+                      <span class="label <?php echo $is_user_online ? 'label-success' : 'label-default'; ?>"><?php echo $is_user_online ? 'Online' : 'Offline'; ?></span>
+                    <?php } ?>
+                    <span class="label <?php echo ($li['status'] == 'SUCCESS') ? 'label-info' : 'label-danger'; ?>" style="margin-left: 3px;"><?php echo htmlspecialchars($li['status']); ?></span>
+                  </td>
                   <td><?php echo htmlspecialchars($li['ip_address']); ?></td>
                   <td>
                     <?php echo htmlspecialchars($li['details']); ?>
