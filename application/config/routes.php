@@ -95,10 +95,28 @@ $route['manager/tickets/respond'] = "ci_admin_tickets/respond";
 $route['manager/tickets/close/(:any)'] = "ci_admin_tickets/close/$1";
 $route['manager/tickets/status/(:any)/(:any)'] = "ci_admin_tickets/status/$1/$2";
 $route['manager/tickets/delete/(:any)'] = "ci_admin_tickets/delete/$1";
+$route['manager/tickets/followups'] = "ci_admin_tickets/followups";
 
+// Tasks
+$route['manager/tasks'] = "ci_admin_tasks/index";
+$route['manager/tasks/add'] = "ci_admin_tasks/add";
+$route['manager/tasks/followups'] = "ci_admin_tasks/followups";
 
+// Reports & Admin Reports
+$route['manager/download-report'] = "ci_admin_report/downloadReport";
+$route['manager/admin-reports'] = "ci_admin_report/adminReports";
 
+// System > Assigned Leads & Bulk Move
+$route['manager/assigned-leads'] = "ci_admin_leads/assigned_leads";
+$route['manager/assigned-leads/(:num)'] = "ci_admin_leads/assigned_leads/$1";
+$route['manager/leads/bulk-move'] = "ci_admin_leads/bulk_move_assign";
 
+// System > Admin Logs
+$route['manager/admin-logs'] = "ci_admin_system/logs";
+$route['manager/admin-logs/(:num)'] = "ci_admin_system/logs/$1";
+
+// 5-minute inactivity session keepalive/ping
+$route['manager/ping'] = "ci_admin/ping";
 
 /* End of file routes.php */
 

@@ -102,29 +102,27 @@
   <!-- Header Navbar -->
   <nav class="navbar navbar-static-top"> 
     <ul class="munk_menu">
-      <?php  $route1=$this->uri->segment(2);
-	  $route2=$this->uri->segment(3);?>
+      <?php  
+        $route1=$this->uri->segment(2);
+	      $route2=$this->uri->segment(3);
+        $m_role = (int)$this->session->userdata('manager_role');
+        if (empty($m_role) && $this->session->userdata('manager_id') == 1) {
+            $m_role = 1;
+        }
+      ?>
       <li class="<?php if($route1=="dashboard"){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/dashboard"> <i class="fa fa-tachometer"></i> <span>Dashboard</span>  </a> </li>
 
 
-     <?php if($this->session->userdata['manager_role']==1){ ?>
-
-
-     <li class="<?php if($route1=="users"){ echo "active";}else{ echo "";}?> "> <a href="<?php echo base_url();?>manager/users"><i class="fa fa-users"></i> <span>Users</span> </a>
+      <li class="<?php if($route1=="tasks" || $route1=="tickets"){ echo "active";}else{ echo "";}?> "> <a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-tasks"></i> <span>Task</span> </a>
         <ul>
-          <li><a href="<?php echo base_url();?>manager/users/add"><i class="fa fa-plus"></i>Add </a></li>
-          <li><a href="<?php echo base_url();?>manager/users"><i class="fa fa-list"></i>View</a></li>
-          <?php /* <li><a href="<?php echo base_url();?>manager/users/report"><i class="fa fa-list"></i>Report</a></li> */ ?>
+          <li><a href="<?php echo base_url();?>manager/tasks/add"><i class="fa fa-plus"></i>Task Add</a></li>
+          <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-list"></i>Task View</a></li>
+          <li><a href="<?php echo base_url();?>manager/tasks/followups"><i class="fa fa-calendar-check-o"></i>Task Follow-up</a></li>
+          <li><a href="<?php echo base_url();?>manager/tickets/add"><i class="fa fa-plus"></i>Raise Ticket</a></li>
+          <li><a href="<?php echo base_url();?>manager/tickets"><i class="fa fa-ticket"></i>View Ticket</a></li>
+          <li><a href="<?php echo base_url();?>manager/tickets/followups"><i class="fa fa-calendar-check-o"></i>Follow-up Ticket</a></li>
         </ul>
       </li>
-
-      
-
-
-   <?php }   ?>
-
-
-
 
       <li class="<?php if($route1=="leads"){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/leads"><i class="fa fa-list"></i> <span>Leads</span> </a>
         <ul>
@@ -159,33 +157,38 @@
           <li><a href="<?php echo base_url();?>manager/team/meetings"><i class="fa fa-list"></i>Meetings</a></li>
           <li><a href="<?php echo base_url();?>manager/team/assignmeetings"><i class="fa fa-list"></i>Assigned Meetings</a></li>
           <li><a href="<?php echo base_url();?>manager/team/assignleads"><i class="fa fa-list"></i>Assigned Leads</a></li>
+          <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-tasks"></i>Task</a></li>
+          <li><a href="<?php echo base_url();?>manager/tickets"><i class="fa fa-ticket"></i>Ticket</a></li>
           <li><a href="<?php echo base_url();?>manager/performance-report"><i class="fa fa-list"></i>Performance Report</a></li>
-
         </ul>
       </li>
 
-      <li class="<?php if($route1=="reports"){ echo "active";}else{ echo "";}?>"> <a href="#"><i class="fa fa-bar-chart"></i> <span>Reports</span> </a>
+      <li class="<?php if($route1=="reports" || $route1=="download-report"){ echo "active";}else{ echo "";}?>"> <a href="#"><i class="fa fa-bar-chart"></i> <span>Reports</span> </a>
         <ul>
           <li><a href="https://7strokes.maxvendor47.workers.dev/" target="_blank"><i class="fa fa-database"></i>Generate Data</a></li>
-          <li><a href="<?php echo base_url();?>manager/performance-report"><i class="fa fa-file-pdf-o"></i>Download Report</a></li>
+          <li><a href="<?php echo base_url();?>manager/download-report"><i class="fa fa-file-pdf-o"></i>Download Report</a></li>
         </ul>
       </li>
      
 
      <?php 
-       $m_role = $this->session->userdata['manager_role'];
        if($m_role == 1 || $m_role == 4){ 
      ?>
-      <li class="<?php if($route1=="roles" || $route1=="terms" || ($route1=="leads" && in_array($route2, array("import", "export")))){ echo "active";}else{ echo "";}?>"> 
+      <li class="<?php if($route1=="roles" || $route1=="terms" || $route1=="users" || $route1=="admin-reports" || $route1=="assigned-leads" || $route1=="admin-logs" || ($route1=="leads" && in_array($route2, array("import", "export")))){ echo "active";}else{ echo "";}?>"> 
         <a href="<?php echo ($m_role == 1)? base_url().'manager/roles' : base_url().'manager/leads/import'; ?>"><i class="fa fa-paperclip"></i> <span>System</span> </a>
         <ul>        
           <?php if($m_role == 1){ ?>
+            <li><a href="<?php echo base_url();?>manager/users/add"><i class="fa fa-plus"></i>User Add</a></li>
+            <li><a href="<?php echo base_url();?>manager/users"><i class="fa fa-list"></i>User View</a></li>
             <li><a href="<?php echo base_url();?>manager/roles"><i class="fa fa-list"></i>Roles</a></li>
             <li><a href="<?php echo base_url();?>manager/terms"><i class="fa fa-list"></i>Category</a></li>
           <?php } ?>
           <li><a href="<?php echo base_url();?>manager/leads/import"><i class="fa fa-upload"></i>Import Leads</a></li>
           <?php if($m_role == 1){ ?>
             <li><a href="<?php echo base_url();?>manager/leads/export"><i class="fa fa-download"></i>Export Leads</a></li>
+            <li><a href="<?php echo base_url();?>manager/assigned-leads"><i class="fa fa-tasks"></i>Assigned Leads</a></li>
+            <li><a href="<?php echo base_url();?>manager/admin-reports"><i class="fa fa-file-text-o"></i>Admin Reports</a></li>
+            <li><a href="<?php echo base_url();?>manager/admin-logs"><i class="fa fa-history"></i>Admin Logs</a></li>
           <?php } ?>
         </ul>
       </li>
@@ -201,7 +204,7 @@
          </li>
 
 
-      <li> <a class="logout" href="<?php echo base_url();?>manager/logout"> <i class="fa fa-power-off"></i> <span>Logout</span></a> </li>
+      <li> <a class="logout" href="#"> <i class="fa fa-power-off"></i> <span>Logout</span></a> </li>
 
     </ul>
   </nav>
@@ -280,15 +283,17 @@ $(function() {
       </li>
 
 
-     <?php if($m_role == 1){ ?>
-      <li class="<?php if($route1=="users"){ echo "active";}else{ echo "";}?> treeview"> 
-        <a href="javascript:void(0);"><i class="fa fa-users"></i> <span>Users</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
+      <li class="<?php if($route1=="tasks" || $route1=="tickets"){ echo "active";}else{ echo "";}?> treeview"> 
+        <a href="javascript:void(0);"><i class="fa fa-tasks"></i> <span>Task</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu">
-          <li><a href="<?php echo base_url();?>manager/users/add"><i class="fa fa-plus"></i>Add </a></li>
-          <li><a href="<?php echo base_url();?>manager/users"><i class="fa fa-list"></i>View</a></li>
+          <li><a href="<?php echo base_url();?>manager/tasks/add"><i class="fa fa-plus"></i>Task Add</a></li>
+          <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-list"></i>Task View</a></li>
+          <li><a href="<?php echo base_url();?>manager/tasks/followups"><i class="fa fa-calendar-check-o"></i>Task Follow-up</a></li>
+          <li><a href="<?php echo base_url();?>manager/tickets/add"><i class="fa fa-plus"></i>Raise Ticket</a></li>
+          <li><a href="<?php echo base_url();?>manager/tickets"><i class="fa fa-ticket"></i>View Ticket</a></li>
+          <li><a href="<?php echo base_url();?>manager/tickets/followups"><i class="fa fa-calendar-check-o"></i>Follow-up Ticket</a></li>
         </ul>
       </li>
-     <?php } ?>
 
       <li class="<?php if($route1=="leads"){ echo "active";}else{ echo "";}?> treeview"> 
         <a href="javascript:void(0);"><i class="fa fa-database"></i> <span>Leads</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
@@ -321,29 +326,36 @@ $(function() {
           <li><a href="<?php echo base_url();?>manager/team/meetings"><i class="fa fa-list"></i>Meetings</a></li>
           <li><a href="<?php echo base_url();?>manager/team/assignmeetings"><i class="fa fa-list"></i>Assigned Meetings</a></li>
           <li><a href="<?php echo base_url();?>manager/team/assignleads"><i class="fa fa-list"></i>Assigned Leads</a></li>
+          <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-tasks"></i>Task</a></li>
+          <li><a href="<?php echo base_url();?>manager/tickets"><i class="fa fa-ticket"></i>Ticket</a></li>
           <li><a href="<?php echo base_url();?>manager/performance-report"><i class="fa fa-list"></i>Performance Report</a></li>
         </ul>
       </li>
 
-      <li class="<?php if($route1=="reports"){ echo "active";}else{ echo "";}?> treeview"> 
+      <li class="<?php if($route1=="reports" || $route1=="download-report"){ echo "active";}else{ echo "";}?> treeview"> 
         <a href="javascript:void(0);"><i class="fa fa-bar-chart"></i> <span>Reports</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu">
           <li><a href="https://7strokes.maxvendor47.workers.dev/" target="_blank"><i class="fa fa-database"></i>Generate Data</a></li>
-          <li><a href="<?php echo base_url();?>manager/performance-report"><i class="fa fa-file-pdf-o"></i>Download Report</a></li>
+          <li><a href="<?php echo base_url();?>manager/download-report"><i class="fa fa-file-pdf-o"></i>Download Report</a></li>
         </ul>
       </li>
 
      <?php if($m_role == 1 || $m_role == 4){ ?>
-      <li class="<?php if($route1=="roles" || $route1=="terms" || ($route1=="leads" && in_array($route2, array("import", "export")))){ echo "active";}else{ echo "";}?> treeview"> 
+      <li class="<?php if($route1=="roles" || $route1=="terms" || $route1=="users" || $route1=="admin-reports" || $route1=="assigned-leads" || $route1=="admin-logs" || ($route1=="leads" && in_array($route2, array("import", "export")))){ echo "active";}else{ echo "";}?> treeview"> 
         <a href="javascript:void(0);"><i class="fa fa-paperclip"></i> <span>System</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu">        
           <?php if($m_role == 1){ ?>
+            <li><a href="<?php echo base_url();?>manager/users/add"><i class="fa fa-plus"></i>User Add</a></li>
+            <li><a href="<?php echo base_url();?>manager/users"><i class="fa fa-list"></i>User View</a></li>
             <li><a href="<?php echo base_url();?>manager/roles"><i class="fa fa-list"></i>Roles</a></li>
             <li><a href="<?php echo base_url();?>manager/terms"><i class="fa fa-list"></i>Category</a></li>
           <?php } ?>
           <li><a href="<?php echo base_url();?>manager/leads/import"><i class="fa fa-upload"></i>Import Leads</a></li>
           <?php if($m_role == 1){ ?>
             <li><a href="<?php echo base_url();?>manager/leads/export"><i class="fa fa-download"></i>Export Leads</a></li>
+            <li><a href="<?php echo base_url();?>manager/assigned-leads"><i class="fa fa-tasks"></i>Assigned Leads</a></li>
+            <li><a href="<?php echo base_url();?>manager/admin-reports"><i class="fa fa-file-text-o"></i>Admin Reports</a></li>
+            <li><a href="<?php echo base_url();?>manager/admin-logs"><i class="fa fa-history"></i>Admin Logs</a></li>
           <?php } ?>
         </ul>
       </li>
@@ -358,7 +370,7 @@ $(function() {
       </li>
     
       <li> 
-        <a href="<?php echo base_url();?>manager/logout"> <i class="fa fa-power-off"></i> <span>Logout</span> </a> 
+        <a class="logout" href="#"> <i class="fa fa-power-off"></i> <span>Logout</span> </a> 
       </li>
 
     </ul>

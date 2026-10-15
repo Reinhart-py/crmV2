@@ -345,6 +345,7 @@ function __construct()
 		$data['c_list'] =$this->comman_model->getAll('',array('id','ASC'),'countries');  
 		$data['u_list'] =$this->comman_model->getAll('',array('id','ASC'),'ci_user');
 		$data['v_list'] =$this->ci_admin_model->getShortVerticals($this->session->userdata('manager_id'));
+		$data['business_categories'] = $this->comman_model->getAll(array('cat_type'=>'business_cat','status'=>1),'','ci_terms');
 
 		if($this->input->server('REQUEST_METHOD')==='POST')
 		{	 			
@@ -369,6 +370,7 @@ function __construct()
 				$list= array(				
 				'lead_id'=> 100000000,
 				'customer'=>$customer,
+				'category'=>isset($category) ? $category : '',
 				'vertical_id'=>$vertical_id,
 				'a_number'=>$a_number,
 				'a_department'=>$a_department,
@@ -381,9 +383,14 @@ function __construct()
 				'qty'=>$qty,
 				'mrc'=>$mrc,
 				'revenue'=>$revenue,
-				'mrr'=>($mrc+$revenue),
+				'mrr'=>(floatval($mrc)+floatval($revenue)),
 				'poc'=>$poc,
 				'contact1'=>$contact1,
+				'alt_mobile'=>isset($alt_mobile) ? $alt_mobile : '',
+				'alt_contact'=>isset($alt_contact) ? $alt_contact : '',
+				'business_category'=>isset($business_category) ? $business_category : '',
+				'dnd_status'=>isset($dnd_status) ? $dnd_status : 'No',
+				'dnd_check_date'=>!empty($dnd_check_date) ? db_date($dnd_check_date) : '',
 				'location'=>$location,
 				'status'=>$status,
 
@@ -547,6 +554,7 @@ function __construct()
 		$data['c_list'] =$this->comman_model->getAll('',array('id','ASC'),'countries');			
 		$data['bo_list']=$this->comman_model->getAll(array('lead_id'=>$id),'','ci_boleads');
 		$data['u_list'] =$this->comman_model->getAll('',array('id','ASC'),'ci_user');
+		$data['business_categories'] = $this->comman_model->getAll(array('cat_type'=>'business_cat','status'=>1),'','ci_terms');
 		$data['action']= $action;
 		$data['follow_list']=$this->comman_model->getAll(array('lead_id'=>$id,'lead_type'=>'lead'),'','ci_followup');
 		$data['meeting_list']=$this->comman_model->getAll(array('lead_id'=>$id),'','ci_meetings');
@@ -593,9 +601,14 @@ function __construct()
 				'qty'=>$qty,
 				'mrc'=>$mrc,
 				'revenue'=>$revenue,
-				'mrr'=>($mrc+$revenue),
+				'mrr'=>(floatval($mrc)+floatval($revenue)),
 				'poc'=>$poc,
 				'contact1'=>$contact1,
+				'alt_mobile'=>isset($alt_mobile) ? $alt_mobile : '',
+				'alt_contact'=>isset($alt_contact) ? $alt_contact : '',
+				'business_category'=>isset($business_category) ? $business_category : '',
+				'dnd_status'=>isset($dnd_status) ? $dnd_status : 'No',
+				'dnd_check_date'=>!empty($dnd_check_date) ? db_date($dnd_check_date) : '',
 
 				'location'=>$location,
 				'status'=>$status,				
@@ -1158,11 +1171,37 @@ $data['info2']=$this->if_not_login();
 		};
 
 		$imported_count = 0;
+		$row_errors = array();
+		$row_num = 1;
 		$manager_id = $this->session->userdata('manager_id');
 
 		while (($row = fgetcsv($handle, 5000, ',')) !== FALSE) {
+			$row_num++;
 			if (empty(array_filter($row))) {
 				continue;
+			}
+
+			// Clean formula injection characters from all cells
+			foreach ($row as $k => $val) {
+				$val = trim($val);
+				if (strlen($val) > 0 && in_array($val[0], array('=', '+', '-', '@'))) {
+					$row[$k] = "'" . $val;
+				}
+			}
+
+			$username_val = $get_val($row, array('username', 'user', 'assigneduser', 'agent'));
+			$assigned_user_id = 0;
+			if (!empty($username_val)) {
+				$username_clean = ltrim($username_val, "'=@+-");
+				$u_match = $this->db->where('email', $username_clean)
+					->or_where('name', $username_clean)
+					->get('ci_user')->row_array();
+				if (!empty($u_match['id'])) {
+					$assigned_user_id = (int)$u_match['id'];
+				} else {
+					$row_errors[] = "Row {$row_num}: Username '{$username_val}' does not match any registered user.";
+					continue;
+				}
 			}
 
 			$customer = $get_val($row, array('customername', 'customer', 'clientname', 'client'));
@@ -1172,6 +1211,8 @@ $data['info2']=$this->if_not_login();
 
 			$poc = $get_val($row, array('pocname', 'poc', 'contactperson'));
 			$contact1 = $get_val($row, array('poccontactnumber', 'contact1', 'contactnumber', 'mobile', 'phone'));
+			$alt_mobile = $get_val($row, array('alternativemobilenumber', 'altmobile', 'alternatemobile'));
+			$alt_contact = $get_val($row, array('alternativecontactnumber', 'altcontact', 'alternatecontact'));
 			$email = $get_val($row, array('email', 'emailid'));
 			$a_number = $get_val($row, array('accountnumber', 'anumber', 'accountno'));
 			$a_department = $get_val($row, array('accountundervertical', 'adepartment', 'department', 'vertical'));
@@ -1181,6 +1222,15 @@ $data['info2']=$this->if_not_login();
 			if (empty($category)) {
 				$category = 'New';
 			}
+
+			$business_category = $get_val($row, array('businesscategory', 'businesscat'));
+			$dnd_status = $get_val($row, array('tncrtnd', 'dndstatus', 'dnd', 'tncr'));
+			if (empty($dnd_status) || !in_array(strtolower($dnd_status), array('yes', 'no'))) {
+				$dnd_status = 'No';
+			} else {
+				$dnd_status = ucfirst(strtolower($dnd_status));
+			}
+			$dnd_check_date = $get_val($row, array('tncrcheckdate', 'dndcheckdate', 'checkdate'));
 
 			$s_cat = $get_val($row, array('servicecategory', 'scat'));
 			$p_cat = $get_val($row, array('productcategory', 'pcat'));
@@ -1199,7 +1249,7 @@ $data['info2']=$this->if_not_login();
 
 			$location = $get_val($row, array('location'));
 			$status_raw = $get_val($row, array('status'));
-			$status = 39;
+			$status = 36; // Default to Database
 			if (is_numeric($status_raw) && (int)$status_raw > 0) {
 				$status = (int)$status_raw;
 			} else if (!empty($status_raw)) {
@@ -1231,12 +1281,17 @@ $data['info2']=$this->if_not_login();
 				'customer' => $customer,
 				'poc' => $poc,
 				'contact1' => $contact1,
+				'alt_mobile' => $alt_mobile,
+				'alt_contact' => $alt_contact,
 				'email' => $email,
 				'a_number' => $a_number,
 				'a_department' => $a_department,
 				'r_amount' => $r_amount,
 				'r_date' => !empty($r_date) ? db_date($r_date) : '',
 				'category' => $category,
+				'business_category' => $business_category,
+				'dnd_status' => $dnd_status,
+				'dnd_check_date' => !empty($dnd_check_date) ? db_date($dnd_check_date) : '',
 				's_cat' => $s_cat,
 				'p_cat' => $p_cat,
 				'p_details' => $p_details,
@@ -1261,7 +1316,7 @@ $data['info2']=$this->if_not_login();
 				'c_partner' => !empty($c_partner) ? $c_partner : 'SRJ Electronics Trading LLC',
 				'otc' => $otc,
 				'lead_cat' => $lead_cat,
-				'lead_assign' => 0, // Unassigned by default so Admin and Support can assign them
+				'lead_assign' => $assigned_user_id, // Assigned to specified user or 0 (unassigned)
 				'lead_source' => $lead_source,
 				'followup_date' => !empty($followup_date) ? db_date($followup_date) : '',
 				'followup_time' => $followup_time,
@@ -1282,9 +1337,17 @@ $data['info2']=$this->if_not_login();
 		fclose($handle);
 
 		if ($imported_count > 0) {
-			$this->session->set_flashdata('message', 'Success: ' . $imported_count . ' leads successfully imported into the system!');
+			$msg = 'Success: ' . $imported_count . ' leads successfully imported!';
+			if (!empty($row_errors)) {
+				$msg .= '<br><br><strong>Row Warnings/Errors:</strong><br>' . implode('<br>', array_slice($row_errors, 0, 10));
+			}
+			$this->session->set_flashdata('message', $msg);
 		} else {
-			$this->session->set_flashdata('error_message', 'No valid lead rows could be imported from the CSV file. Please verify the file format.');
+			$err_msg = 'No valid lead rows could be imported.';
+			if (!empty($row_errors)) {
+				$err_msg .= '<br><br>' . implode('<br>', array_slice($row_errors, 0, 10));
+			}
+			$this->session->set_flashdata('error_message', $err_msg);
 		}
 
 		redirect('manager/leads');
@@ -1312,15 +1375,21 @@ $data['info2']=$this->if_not_login();
 		fputs($output, "\xEF\xBB\xBF");
 
 		$headers = array(
+			'Username',
 			'Customer Name',
 			'POC Name',
 			'POC Contact Number',
+			'Alternative Mobile Number',
+			'Alternative Contact Number',
 			'Email',
 			'Account Number',
 			'Account Under Vertical',
 			'Current Monthly Revenue Amount',
 			'Current Monthly Revenue Date',
 			'Category',
+			'Business Category',
+			'TNCR/TND',
+			'TNCR Check Date',
 			'Service Category',
 			'Product Category',
 			'Product Details',
@@ -1349,15 +1418,21 @@ $data['info2']=$this->if_not_login();
 		fputcsv($output, $headers);
 
 		$sample_row = array(
+			'admin@rolextogroup.com',
 			'Sample Enterprise LLC',
 			'John Doe',
 			'+971 50 123 4567',
+			'+971 52 111 2222',
+			'+971 4 333 4444',
 			'john@sample.com',
 			'ACC-98765',
 			'Telecom',
 			'1500',
 			date('d-m-Y'),
 			'New',
+			'Corporate Solutions',
+			'No',
+			date('d-m-Y'),
 			'Voice Services',
 			'SIP Trunk',
 			'Corporate 10-line package',
@@ -1370,7 +1445,7 @@ $data['info2']=$this->if_not_login();
 			'1000',
 			'1500',
 			'Dubai, Business Bay',
-			'Active',
+			'Database',
 			date('d-m-Y', strtotime('+30 days')),
 			'Prospect interested in corporate discount',
 			'Office 402, Opal Tower',
@@ -1381,12 +1456,122 @@ $data['info2']=$this->if_not_login();
 			'200',
 			'https://example.com',
 			date('d-m-Y', strtotime('+7 days')),
-			'10:30 AM'
+			'11:00 AM'
 		);
 		fputcsv($output, $sample_row);
-
 		fclose($output);
-		exit();
+		exit;
+	}
+
+	public function assigned_leads($page = 0)
+	{
+		$data = array();
+		$data['info'] = array(
+			'title' => 'Assigned Leads',
+			'page_heading' => 'Assigned Leads'
+		);
+		$data['info2'] = $this->if_not_login();
+
+		// Restricted to Admin (role 1) and Support (role 4)
+		$role = $this->session->userdata('manager_role');
+		if ($role != 1 && $role != 4) {
+			$this->session->set_flashdata('error_message', 'Access denied.');
+			redirect('manager/dashboard');
+			return;
+		}
+
+		$order_by = isset($_GET['order_by']) ? $_GET['order_by'] : 'A.id';
+		$sort_by = isset($_GET['sort_by']) ? $_GET['sort_by'] : 'DESC';
+		$search = isset($_GET['search']) ? $_GET['search'] : '';
+
+		$d1 = isset($_GET['d1']) ? $_GET['d1'] : '';
+		$d2 = isset($_GET['d2']) ? $_GET['d2'] : '';
+
+		$mrr1 = isset($_GET['mrr1']) ? $_GET['mrr1'] : '';
+		$mrr2 = isset($_GET['mrr2']) ? $_GET['mrr2'] : '';
+
+		$user_name = isset($_GET['user_name']) ? $_GET['user_name'] : '';
+		$country = isset($_GET['country']) ? $_GET['country'] : '';
+		$state = isset($_GET['state']) ? $_GET['state'] : '';
+
+		if (!empty($country)) {
+			$country = implode(',', $country);
+			$data['state_list'] = $this->comman_model->getAll(array('country_id' => $country), '', 'states');
+		}
+		if (!empty($state)) {
+			$state = implode(',', $state);
+		}
+
+		$status = isset($_GET['status']) ? $_GET['status'] : '';
+		$category = isset($_GET['category']) ? $_GET['category'] : '';
+		$type = isset($_GET['type']) ? $_GET['type'] : 0;
+		$lCat = isset($_GET['lCat']) ? $_GET['lCat'] : '';
+
+		if (!empty($lCat)) {
+			$lCat = implode(',', $lCat);
+		}
+		if (!empty($category)) {
+			$category = implode(',', $category);
+		}
+		if (!empty($status)) {
+			$status = implode(',', $status);
+		}
+
+		$data['st_list'] = $this->comman_model->getAll(array('active' => 1), '', 'ci_status');
+		$data['c_list'] = $this->comman_model->getAll('', array('id', 'ASC'), 'countries');
+		$data['pc_list'] = $this->comman_model->getAll(array('cat_type' => 'p_cat', 'parent_id' => 0), '', 'ci_terms');
+		$data['lc_list'] = $this->comman_model->getAll(array('cat_type' => 'lead_cat', 'parent_id' => 0), '', 'ci_terms');
+		$data['users_list'] = $this->db->select('id, name, email')->get('ci_user')->result_array();
+
+		$data['product_list'] = $this->ci_admin_model->getLeadsFollowups($d1, $d2, $mrr1, $mrr2, '', '', $order_by, $sort_by, $search, $status, $category, $type, $lCat, $user_name, $country, $state);
+
+		$this->load->view('manager/leads/assigned_leads', $data);
+	}
+
+	public function bulk_move_assign()
+	{
+		$this->if_not_login();
+		$role = $this->session->userdata('manager_role');
+		if ($role != 1 && $role != 4) {
+			$this->session->set_flashdata('error_message', 'Access denied.');
+			redirect('manager/dashboard');
+			return;
+		}
+
+		$lead_ids = $this->input->post('lead_ids');
+		$target_user = $this->input->post('target_user');
+
+		if (empty($lead_ids) || !is_array($lead_ids)) {
+			$this->session->set_flashdata('error_message', 'No leads selected for reassignment.');
+			redirect('manager/assigned-leads');
+			return;
+		}
+
+		$target_user_id = (int)$target_user;
+		$target_user_row = $this->db->get_where('ci_user', array('id' => $target_user_id))->row_array();
+		$target_name = !empty($target_user_row['name']) ? $target_user_row['name'] : ($target_user_id === 0 ? 'Unassigned' : 'User #'.$target_user_id);
+
+		$sanitized_ids = array_map('intval', $lead_ids);
+		$this->db->where_in('id', $sanitized_ids);
+		$this->db->update('ci_leads', array(
+			'lead_assign' => $target_user_id,
+			'edited_by' => $this->session->userdata('manager_id'),
+			'modified' => date('Y-m-d')
+		));
+
+		$count = count($sanitized_ids);
+		$uid = $this->session->userdata('manager_id');
+		$uname = $this->session->userdata('manager_name');
+		$this->ci_admin_model->log_admin_action(
+			'lead_reassign',
+			"Bulk reassigned $count leads to $target_name (ID: $target_user_id)",
+			'SUCCESS',
+			$uid,
+			$uname
+		);
+
+		$this->session->set_flashdata('success_message', "Successfully reassigned $count leads to $target_name.");
+		redirect('manager/assigned-leads');
 	}
 
 }

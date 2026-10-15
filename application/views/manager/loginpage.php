@@ -52,6 +52,11 @@
     <a href="<?php echo base_url(); ?>"><img src="<?php echo base_url(); ?>assets/7strokes-logo.png" style="max-height: 70px; max-width: 100%;"></a>
   </div>
  
+     <?php if(isset($_GET['timeout'])) { ?>
+      <div class="alert alert-warning" style="font-size: 13px; margin-bottom: 15px; border-radius: 4px;">
+        <i class="fa fa-clock-o"></i> Your session has expired due to 5 minutes of inactivity. Please log in again.
+      </div>
+     <?php } ?>
      <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?> <?php echo get_message($this->session->flashdata('message'),'message'); ?>
     <form action="<?php echo base_url(); ?>manager/login" method="post">
       <div class="form-group has-feedback">

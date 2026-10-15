@@ -4,6 +4,41 @@ All notable changes, features, bug fixes, and refinements for the Rolexto CRM re
 
 ---
 
+### [Commit 258f7d9] — Admin Logs UI Matched to Team Leads, Dashboard Cleanup, Routing Fix, and Multi-Platform Hosting Documentation
+- **Commit Hash**: `258f7d9` (`258f7d92deb678df944234b9e4fa372c210a76c9`)
+- **Tree Code**: `a7ae6d29a3be3243933303ba13cf56e194ac160c`
+- **Author**: Reinhart-py
+- **Date & Time**: `2026-10-15 16:03:08 +0530`
+
+#### Changes & Additions:
+- **Admin Logs Page UI & Options Matched to `Teams > Leads`**:
+  - Re-architected `application/views/manager/system/admin_logs.php` to replicate the exact UI, styling, and options of `views/manager/team/leads.php`.
+  - Added matching top filter toolbar (`.head_filter`) with:
+    - Date range (`Create From` to `Create To`) using `.input-daterange input-group` and `.datepicker`.
+    - Multi-select dropdown for `activity[]` (`login`, `logout`, `lead_create`, `lead_update`, `lead_delete`, etc.).
+    - Multi-select dropdown for `status[]` (`SUCCESS`, `FAILED`).
+    - Standard `.select2` user dropdown populated with all users from `ci_user`.
+    - Text search input for instant `user_name` matching.
+    - Standard CRM `Search` (`btn-success`) and `Reset` (`btn-danger`) buttons.
+  - Implemented matching DataTables layout (`#example_lead`) with:
+    - Columns: `ID`, `User`, `Activity`, `Status`, `IP Address`, `Logs`, and `Date & Time`.
+    - Hidden chronological timestamp (`span.no_show`) for accurate date/time sorting.
+    - Dynamic column footer filter dropdowns (`initComplete`) on User, Activity, and Status columns.
+  - Removed all arbitrary inline rainbow badge colors, custom red card borders, and dark pills in favor of standard AdminLTE/CRM theme styles.
+  - Updated `application/controllers/ci_admin_system.php` to handle multi-filtering by `user_id`, `user_name`, `activity[]`, `status[]`, and date range (`d1`, `d2`).
+- **Dashboard Cleanup & Operational Metrics Alignment**:
+  - Reverted operational metrics rows in `application/views/manager/dashboard.php` back to clean 4-card grids (`col-sm-3 col-xs-12`) for both personal and team metrics, eliminating visual crowding from dummy tasks.
+  - Restored "My Lead Stats" and "Team Lead Stats" as compact `.crm-modern-stat-card` elements directly above the Projections charts with real status chips and counts from the database (`$dashboard_lead`, `$dashboard_lead_team`).
+- **PHP Built-in Server Router**:
+  - Updated `index.php` to act as a router for PHP CLI development server (`php -S localhost:8080 index.php`), resolving direct controller routing for `/manager/login` and `/manager/dashboard` without 404s.
+- **Git & Environment Cleanliness**:
+  - Added `cookie.txt` and temporary session files to `.gitignore`.
+- **Clutter-Free Hosting & Architecture Guide**:
+  - Completely redesigned `README.md` in the clean, structured style of `alichtman/shallow-backup#readme`.
+  - Documented complete deployment instructions for Local (PHP CLI & XAMPP), cPanel, Linux/VPS, Cloudflare Tunnel, and Netlify, detailing where data is stored and where to check logs/status on each platform.
+
+---
+
 ### [Commit b49a421] — Comprehensive CHANGELOG.md Documentation
 - **Commit Hash**: `b49a421` (`b49a42197c4a8069e6a1a7b7243777edbdb46cb3`)
 - **Tree Code**: `2f3edf64450fd9dd0325b298a3801326f0f8f285`

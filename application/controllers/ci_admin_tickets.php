@@ -61,13 +61,16 @@ class Ci_admin_tickets extends CI_Controller {
 
 		$data = array();
 		$data['info'] = array(
-			'title' => 'Help Desk',
-			'page_heading' => 'Help Desk'
+			'title' => 'Manager - Tickets',
+			'page_heading' => 'View Ticket'
 		);
 		$data['info2'] = $this->if_not_login();
 		$data['is_admin'] = ($role === 1);
 		$data['is_support'] = $this->is_support_user();
 		$data['can_manage_tickets'] = $can_manage;
+		$data['st_list'] = $this->comman_model->getAll(array('active' => 1), '', 'ci_status');
+		$data['pc_list'] = $this->comman_model->getAll(array('parent_id' => 0, 'status' => 1, 'cat_type' => 'p_cat'), '', 'ci_terms');
+		$data['lc_list'] = $this->comman_model->getAll(array('cat_type' => 'lead_cat', 'parent_id' => 0), '', 'ci_terms');
 
 		$status_filter = $this->input->get('status');
 		$search_query = $this->input->get('search');
@@ -140,9 +143,20 @@ class Ci_admin_tickets extends CI_Controller {
 			$priority = trim($this->input->post('priority'));
 			$description = trim($this->input->post('description'));
 
+			$customer = trim($this->input->post('customer'));
+			if (!empty($customer) && empty($subject)) {
+				$subject = 'Ticket for ' . $customer;
+			}
+			if (empty($description)) {
+				$description = trim($this->input->post('remark'));
+				if (empty($description)) {
+					$description = 'Ticket raised from portal.';
+				}
+			}
+
 			if (empty($subject) || empty($description)) {
-				$this->session->set_flashdata('error_message', 'Please fill in both the Subject and Description for your ticket.');
-				redirect('manager/tickets');
+				$this->session->set_flashdata('error_message', 'Please fill in the required fields for your ticket.');
+				redirect('manager/tickets/add');
 				return;
 			}
 
@@ -185,11 +199,44 @@ class Ci_admin_tickets extends CI_Controller {
 			));
 
 			$this->session->set_flashdata('message', 'Ticket #' . $ticket_number . ' has been successfully submitted! It will remain open until resolved.');
-			redirect('manager/tickets/view/' . $new_ticket_id);
+			redirect('manager/tickets');
 			return;
 		}
 
-		redirect('manager/tickets');
+		$data = array();
+		$data['info'] = array(
+			'title' => 'Manager - Tickets',
+			'page_heading' => 'Raise Ticket'
+		);
+		$data['info2'] = $this->if_not_login();
+
+		$data['st_list'] = $this->comman_model->getAll(array('active' => 1), '', 'ci_status');
+		$data['so_list'] = $this->comman_model->getAll(array('active' => 1), '', 'ci_sources');
+		$data['p_cat'] = $this->comman_model->getAll(array('parent_id' => 0, 'status' => 1, 'cat_type' => 'p_cat'), '', 'ci_terms');
+		$data['lc_list'] = $this->comman_model->getAll(array('cat_type' => 'lead_cat', 'parent_id' => 0), '', 'ci_terms');
+		$data['c_list'] = $this->comman_model->getAll('', array('id', 'ASC'), 'countries');  
+		$data['u_list'] = $this->comman_model->getAll('', array('id', 'ASC'), 'ci_user');
+		$data['v_list'] = $this->ci_admin_model->getShortVerticals($this->session->userdata('manager_id'));
+
+		$this->load->view('manager/tickets/add', $data);
+	}
+
+	/**
+	 * Follow-up Ticket: Reuses existing followups layout
+	 */
+	public function followups()
+	{
+		$this->if_not_login();
+		$data = array();
+		$data['info'] = array(
+			'title' => 'Manager - Ticket Follow-up',
+			'page_heading' => 'Follow-up Ticket'
+		);
+		$data['info2'] = $this->if_not_login();
+		$data['st_list'] = $this->comman_model->getAll(array('active' => 1), '', 'ci_status');
+		$data['list'] = array();
+
+		$this->load->view('manager/tickets/followups', $data);
 	}
 
 	/**

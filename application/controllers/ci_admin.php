@@ -24,6 +24,7 @@ class Ci_admin extends CI_Controller {
                 redirect('/manager/login');
             }
         } else {
+            $this->ci_admin_model->check_auth_timeout();
             $data = array();
             //$data['logo'] = $this->comman_model->getpostdata2(array('id'=>1),'','ci_logo');
            return $data;
@@ -39,7 +40,20 @@ class Ci_admin extends CI_Controller {
                redirect('manager/dashboard');
             }
         }
-    }	
+    }
+
+	public function ping()
+	{
+		if ($this->session->userdata('manager_id') != '') {
+			$this->session->set_userdata('last_activity_time', time());
+			header('Content-Type: application/json');
+			echo json_encode(array('status' => 'active', 'timestamp' => time()));
+		} else {
+			header('Content-Type: application/json');
+			echo json_encode(array('status' => 'expired'));
+		}
+		exit;
+	}	
 	
 	public function index()
 	{	  
@@ -93,15 +107,17 @@ class Ci_admin extends CI_Controller {
 				'manager_name'=>$data['users']['name'],
 				'manager_mobile'=>$data['users']['mobile'],
 				'manager_role'=>$data['users']['user_type'],
-				'manager_level'=>$data['users']['user_level']		
-				
+				'manager_level'=>$data['users']['user_level'],
+				'last_activity_time'=>time()
 			);		
 		     $this->session->set_userdata($user_data);
+			 $this->ci_admin_model->log_admin_action('login', 'User logged in successfully', 'SUCCESS', $data['users']['id'], $data['users']['name']);
 			 redirect('manager/dashboard');
 			
 			}
 			else
 			{   
+			$this->ci_admin_model->log_admin_action('login_failed', 'Failed login attempt for: '.$email, 'FAILED', 0, $email);
 			$this->session->set_flashdata('error_message', 'You entered wrong username or password');
             redirect("manager/login");
 			}
@@ -142,14 +158,22 @@ class Ci_admin extends CI_Controller {
   
     public function logout()
 	{
-	    
-			$this->session->unset_userdata('manager_id');
-			$this->session->unset_userdata('manager_email');
-			$this->session->unset_userdata('manager_name');
-			$this->session->unset_userdata('manager_mobile');
-			$this->session->sess_destroy();
+		$uid = $this->session->userdata('manager_id');
+		$uname = $this->session->userdata('manager_name');
+		$this->ci_admin_model->log_admin_action('logout', 'User logged out', 'SUCCESS', $uid, $uname);
+		$this->session->unset_userdata('manager_id');
+		$this->session->unset_userdata('manager_email');
+		$this->session->unset_userdata('manager_name');
+		$this->session->unset_userdata('manager_mobile');
+		$this->session->unset_userdata('manager_role');
+		$this->session->unset_userdata('manager_level');
+		$this->session->unset_userdata('last_activity_time');
+		$this->session->sess_destroy();
+		if ($this->input->is_ajax_request()) {
 			echo 'done';
-			//redirect('/manager/login');
+		} else {
+			redirect('manager/login');
+		}
 	}
 
 	public function forgot()

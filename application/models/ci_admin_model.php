@@ -47,35 +47,29 @@ class Ci_admin_model extends CI_model {
 				return $data; 
 			}
         public function dashboard_leaddata(){
-
-			$manager_id= $this->session->userdata('manager_id');
-	
-
+			$manager_id = $this->session->userdata('manager_id');
+			if (empty($manager_id)) { $manager_id = 0; }
 			$data = array();
-			$today= date('Y-m-d');
-		 $sql="SELECT A.id as status_id, A.status, (select count(id) FROM ci_leads WHERE status=A.id AND created_by=".$manager_id." ) as lead_count FROM ci_status as A";
-		$rows = $this->db->query($sql);	
-		if($rows && is_object($rows) && $rows->num_rows()>=1){
-			foreach($rows->result_array() as  $row){
-				$data[] = $row;	
+			$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(id) FROM ci_leads WHERE status = A.id AND (created_by = ".$manager_id." OR lead_assign = ".$manager_id.")) as lead_count FROM ci_status as A ORDER BY A.id ASC";
+			$rows = $this->db->query($sql);	
+			if($rows && is_object($rows) && $rows->num_rows()>=1){
+				foreach($rows->result_array() as $row){
+					$data[] = $row;	
 				}
 			}
 			return $data; 
 		}
 
 		public function dashboard_leaddataT(){
-
-			$team_array= $this->fetchTeamList($this->session->userdata('manager_id'),'');
-			$team_str= implode(',',$team_array);
-			
-
+			$team_array = $this->fetchTeamList($this->session->userdata('manager_id'),'');
+			$team_str = !empty($team_array) ? implode(',',$team_array) : $this->session->userdata('manager_id');
+			if (empty($team_str)) { $team_str = '0'; }
 			$data = array();
-			$today= date('Y-m-d');
-		 $sql="SELECT A.id as status_id, A.status, (select count(id) FROM ci_leads WHERE FIND_IN_SET(created_by,'".$team_str."')>0 AND status=A.id ) as lead_count FROM ci_status as A";
-				 $rows = $this->db->query($sql);	
-		if($rows && is_object($rows) && $rows->num_rows()>=1){
-			foreach($rows->result_array() as  $row){
-				$data[] = $row;	
+			$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(id) FROM ci_leads WHERE (FIND_IN_SET(created_by,'".$team_str."')>0 OR (lead_assign > 0 AND FIND_IN_SET(lead_assign,'".$team_str."')>0)) AND status = A.id) as lead_count FROM ci_status as A ORDER BY A.id ASC";
+			$rows = $this->db->query($sql);	
+			if($rows && is_object($rows) && $rows->num_rows()>=1){
+				foreach($rows->result_array() as $row){
+					$data[] = $row;	
 				}
 			}
 			return $data; 
@@ -169,58 +163,68 @@ public function dashboard_TeamPro($table='ci_leads'){
 	$loop = array();	
 	$loop1 = array();
 	$loop_labels = array();
-	$proj_date = "(CASE WHEN a.followup_date IS NOT NULL AND a.followup_date != '' AND a.followup_date != '0000-00-00' THEN a.followup_date ELSE a.close_date END)";
+	$month_dates = array();
 	
 	$select_parts = array("COUNT(id) as total");
 	for ($i = 0; $i < 12; $i++) {
 		$m_date = date("Y-m-01", strtotime("+$i month"));
 		$loop[] = $m_date;
-		$loop1[] = date("M Y", strtotime("+$i month"));
-		$loop_labels[] = date("M Y", strtotime("+$i month"));
-		$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ".$table." a WHERE month($proj_date) = month('$m_date') AND year($proj_date) = year('$m_date') AND FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_".$i;
+		$label = strtoupper(date("M-y", strtotime("+$i month")));
+		$loop1[] = $label;
+		$loop_labels[] = $label;
+		$d1 = date("Y-m-01", strtotime("+$i month"));
+		$d2 = date("Y-m-t", strtotime("+$i month"));
+		$month_dates[] = array('d1' => $d1, 'd2' => $d2);
+		$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ".$table." a WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_".$i;
 	}
 
 	$sql = "SELECT " . implode(", ", $select_parts) . " FROM " . $table . " WHERE FIND_IN_SET(created_by,'".$team_str."')>0"; 
 	$data = array();
 	$rows = $this->db->query($sql);
 	if($rows && is_object($rows) && $rows->num_rows()>=1){				
-		foreach($rows->result_array() as  $row){
+		foreach($rows->result_array() as $row){
 			$data['lead_number'] = $row;	
 		}
 	}
 	$data['month_name'] = $loop1;			
 	$data['month_labels'] = $loop_labels;
+	$data['month_dates'] = $month_dates;
 	return $data;			
 }
 
 public function dashboard_MyPro($table='ci_leads'){
 	$manager_id = $this->session->userdata('manager_id');
-	$team_str = !empty($manager_id) ? $manager_id : '0';
+	$user_id = !empty($manager_id) ? (int)$manager_id : 0;
 			
 	$loop = array();	
 	$loop1 = array();
 	$loop_labels = array();
-	$proj_date = "(CASE WHEN a.followup_date IS NOT NULL AND a.followup_date != '' AND a.followup_date != '0000-00-00' THEN a.followup_date ELSE a.close_date END)";
+	$month_dates = array();
 
 	$select_parts = array("COUNT(id) as total");
 	for ($i = 0; $i < 12; $i++) {
 		$m_date = date("Y-m-01", strtotime("+$i month"));
 		$loop[] = $m_date;
-		$loop1[] = date("M Y", strtotime("+$i month"));
-		$loop_labels[] = date("M Y", strtotime("+$i month"));
-		$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ".$table." a WHERE month($proj_date) = month('$m_date') AND year($proj_date) = year('$m_date') AND FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_".$i;
+		$label = strtoupper(date("M-y", strtotime("+$i month")));
+		$loop1[] = $label;
+		$loop_labels[] = $label;
+		$d1 = date("Y-m-01", strtotime("+$i month"));
+		$d2 = date("Y-m-t", strtotime("+$i month"));
+		$month_dates[] = array('d1' => $d1, 'd2' => $d2);
+		$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ".$table." a WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND a.created_by = ".$user_id.") AS pt_".$i;
 	}
 
-	$sql = "SELECT " . implode(", ", $select_parts) . " FROM " . $table . " WHERE FIND_IN_SET(created_by,'".$team_str."')>0"; 
+	$sql = "SELECT " . implode(", ", $select_parts) . " FROM " . $table . " WHERE created_by = ".$user_id; 
 	$data = array();
 	$rows = $this->db->query($sql);
 	if($rows && is_object($rows) && $rows->num_rows()>=1){				
-		foreach($rows->result_array() as  $row){
+		foreach($rows->result_array() as $row){
 			$data['lead_number'] = $row;	
 		}
 	}
 	$data['month_name'] = $loop1;			
 	$data['month_labels'] = $loop_labels;
+	$data['month_dates'] = $month_dates;
 	return $data;			
 }
 
@@ -447,6 +451,12 @@ public function dashboard_MyPro($table='ci_leads'){
 			    $where = '(A.created BETWEEN "'.$date1.'" AND "'.$date2.'")';	
                $this->db->where($where);
 			  }	
+			  if(!empty($_GET['exp_d1']) && !empty($_GET['exp_d2']))
+			  {
+			    $exp_d1 = date("Y-m-d", strtotime($_GET['exp_d1']));
+			    $exp_d2 = date("Y-m-d", strtotime($_GET['exp_d2']));
+			    $this->db->where("A.close_date >= '{$exp_d1}' AND A.close_date <= '{$exp_d2}' AND A.close_date != '' AND A.close_date != '0000-00-00'");
+			  }
 			  if((!empty($mrr1) OR  ($mrr1=='0')) && !empty($mrr2))
 			  {
 			    $where = '(A.mrr BETWEEN '.$mrr1.' AND '.$mrr2.')';	
@@ -493,8 +503,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			    $where = '(A.lead_id LIKE "%'.$search.'%" OR A.mrr LIKE "%'.$search.'%"  OR A.contact1 LIKE "%'.$search.'%" OR A.id LIKE "%'.$search.'%")';	
                $this->db->where($where);
 			  }	
-			  //if ($this->session->userdata('manager_id') !=1) {
-			   $where1="A.created_by = ".$this->session->userdata('manager_id');	
+			   $where1="(A.created_by = ".$this->session->userdata('manager_id')." OR A.lead_assign = ".$this->session->userdata('manager_id').")";	
 			   $this->db->where($where1);
 			 // }		
 			   if(!empty($order_by) && !empty($sort_by)){
@@ -834,7 +843,12 @@ public function dashboard_MyPro($table='ci_leads'){
 				 $where = '(A.created BETWEEN "'.$date1.'" AND "'.$date2.'")';	
 				$this->db->where($where);
 			   }	
-
+			  if(!empty($_GET['exp_d1']) && !empty($_GET['exp_d2']))
+			  {
+			    $exp_d1 = date("Y-m-d", strtotime($_GET['exp_d1']));
+			    $exp_d2 = date("Y-m-d", strtotime($_GET['exp_d2']));
+			    $this->db->where("A.close_date >= '{$exp_d1}' AND A.close_date <= '{$exp_d2}' AND A.close_date != '' AND A.close_date != '0000-00-00'");
+			  }
 			  if((!empty($mrr1) OR  ($mrr1=='0')) && !empty($mrr2))
 			  {
 				$where = '(A.mrr BETWEEN '.$mrr1.' AND '.$mrr2.')';	
@@ -1706,6 +1720,60 @@ public function dashboard_MyPro($table='ci_leads'){
 		   
 	   }
 	   return $result;
+	}
+
+	public function log_admin_action($activity, $details = '', $status = 'SUCCESS', $user_id = null, $username = null)
+	{
+		if ($user_id === null) {
+			$user_id = $this->session->userdata('manager_id');
+		}
+		if ($username === null) {
+			$username = $this->session->userdata('manager_name') ? $this->session->userdata('manager_name') : ($this->session->userdata('manager_email') ? $this->session->userdata('manager_email') : 'Guest');
+		}
+
+		$ip = !empty($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '127.0.0.1';
+		$ua = !empty($_SERVER['HTTP_USER_AGENT']) ? substr($_SERVER['HTTP_USER_AGENT'], 0, 255) : '';
+		$now = date('Y-m-d H:i:s');
+
+		$log_data = array(
+			'user_id' => !empty($user_id) ? (int)$user_id : null,
+			'username' => $username,
+			'ip_address' => $ip,
+			'user_agent' => $ua,
+			'activity' => $activity,
+			'status' => $status,
+			'details' => $details,
+			'created_at' => $now
+		);
+
+		if ($activity === 'login' && $status === 'SUCCESS') {
+			$log_data['login_time'] = $now;
+		} else if ($activity === 'logout' || $activity === 'session_timeout') {
+			$log_data['logout_time'] = $now;
+		}
+
+		$this->db->insert('ci_admin_logs', $log_data);
+	}
+
+	public function check_auth_timeout()
+	{
+		$manager_id = $this->session->userdata('manager_id');
+		if (!empty($manager_id)) {
+			$last_activity = $this->session->userdata('last_activity_time');
+			$timeout_seconds = 300; // 5 minutes inactivity
+
+			if (!empty($last_activity) && (time() - $last_activity) > $timeout_seconds) {
+				$this->log_admin_action('session_timeout', 'Logged out due to 5 minutes of inactivity', 'TIMEOUT', $manager_id);
+				$this->session->unset_userdata('manager_id');
+				$this->session->unset_userdata('manager_email');
+				$this->session->unset_userdata('manager_name');
+				$this->session->unset_userdata('manager_mobile');
+				$this->session->sess_destroy();
+				redirect('/manager/login?timeout=1');
+				exit;
+			}
+			$this->session->set_userdata('last_activity_time', time());
+		}
 	}
 
 }

@@ -111,14 +111,28 @@
 
              <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>POC Name<span>*</span></label>
-                <input type="text" required class="form-control" name="poc" value="<?php echo $list['poc']; ?>" >
+                <label>POC Name</label>
+                <input type="text" class="form-control" name="poc" value="<?php echo $list['poc']; ?>" >
               </div>
             </div>
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
                 <label>POC Contact Number<span>*</span></label>
                 <input type="text" required class="form-control" name="contact1" value="<?php echo $list['contact1']; ?>" >
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Alternative Mobile Number</label>
+                <input type="text" class="form-control" name="alt_mobile" value="<?php echo isset($list['alt_mobile']) ? $list['alt_mobile'] : ''; ?>" placeholder="Alternative Mobile">
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Alternative Contact Number</label>
+                <input type="text" class="form-control" name="alt_contact" value="<?php echo isset($list['alt_contact']) ? $list['alt_contact'] : ''; ?>" placeholder="Alternative Contact">
               </div>
             </div>
 
@@ -158,11 +172,43 @@
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>Category<span>*</span></label>
-                <select class="form-control" required style="width: 100%;" name="category">
+                <label>Category</label>
+                <select class="form-control" style="width: 100%;" name="category">
                   <option <?php if($list['category']=='New'){ echo "selected"; } ?> value="New" selected="selected">New</option>
                   <option <?php if($list['category']=='Existing'){ echo "selected"; } ?> value="Existing">Existing</option>                  
                 </select>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Business Category</label>
+                <select class="form-control" style="width: 100%;" name="business_category">
+                  <option value="">Select Business Category</option>
+                  <?php if(isset($business_categories) && !empty($business_categories)){
+                    foreach($business_categories as $bcat){ 
+                      $sel = (isset($list['business_category']) && $list['business_category'] == $bcat['title']) ? 'selected' : '';
+                    ?>
+                      <option value="<?php echo htmlspecialchars($bcat['title']); ?>" <?php echo $sel; ?>><?php echo htmlspecialchars($bcat['title']); ?></option>
+                  <?php } } ?>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>DNCR / DND</label>
+                <select class="form-control" name="dnd_status">
+                  <option value="No" <?php echo (isset($list['dnd_status']) && $list['dnd_status'] == 'No') ? 'selected' : ''; ?>>No</option>
+                  <option value="Yes" <?php echo (isset($list['dnd_status']) && $list['dnd_status'] == 'Yes') ? 'selected' : ''; ?>>Yes</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>DNCR / DND Check Date</label>
+                <input type="text" class="form-control datepicker" name="dnd_check_date" value="<?php echo (!empty($list['dnd_check_date']) && $list['dnd_check_date'] != '0000-00-00') ? date('d-m-Y', strtotime($list['dnd_check_date'])) : ''; ?>" placeholder="DD-MM-YYYY">
               </div>
             </div>
 
@@ -237,19 +283,19 @@
             </div>
              <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>MRC<span>*</span></label>
-                <input type="text" required name="mrc" class="form-control" value="<?php echo $list['mrc']; ?>">
+                <label>MRC</label>
+                <input type="text" name="mrc" class="form-control" value="<?php echo $list['mrc']; ?>">
               </div>
             </div>
              <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>Revenue<span>*</span></label>
-                <input type="text" required name="revenue" class="form-control" value="<?php echo $list['revenue']; ?>">
+                <label>Revenue</label>
+                <input type="text" name="revenue" class="form-control" value="<?php echo $list['revenue']; ?>">
               </div>
             </div>
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>MRR<span>*</span></label>
+                <label>MRR</label>
                 <input type="text" name="mrr" class="form-control" value="<?php echo $list['mrr']; ?>" readonly>
               </div>
             </div>
@@ -293,8 +339,8 @@
             </div> */ ?>
              <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Exp. Close Date<span>*</span></label>
-                <input type="text" class="form-control datepicker2" name="close_date" id="close_date" required value="<?php echo (!empty($list['close_date']) && $list['close_date'] != '0000-00-00') ? date('d-m-Y', strtotime($list['close_date'])) : '';  ?>" >
+                <label>Exp. Close Date</label>
+                <input type="text" class="form-control datepicker2" name="close_date" id="close_date" value="<?php echo (!empty($list['close_date']) && $list['close_date'] != '0000-00-00') ? date('d-m-Y', strtotime($list['close_date'])) : '';  ?>" >
               </div>
             </div>
 

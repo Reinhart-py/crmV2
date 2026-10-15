@@ -134,15 +134,23 @@
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Status<span>*</span></label>
-                <select class="form-control" required name="status">
-                <option value="">Select Status</option>
-               
-                  <?php if(isset($st_list) && !empty($st_list)){
+                <?php
+                  $db_id = 81; $act_id = 50; $inact_id = 51; $ni_id = 56;
+                  if(isset($st_list) && !empty($st_list)){
                     foreach($st_list as $cli){
-                  ?>
-                  <option value="<?php echo $cli['id']; ?>" ><?php echo $cli['title']; ?></option>
-              <?php } }  ?>
-            </select>
+                      if(strcasecmp(trim($cli['title']), 'Database') === 0) $db_id = $cli['id'];
+                      if(strcasecmp(trim($cli['title']), 'Active') === 0) $act_id = $cli['id'];
+                      if(strcasecmp(trim($cli['title']), 'Inactive') === 0) $inact_id = $cli['id'];
+                      if(strcasecmp(trim($cli['title']), 'Not Interested') === 0) $ni_id = $cli['id'];
+                    }
+                  }
+                ?>
+                <select class="form-control" required name="status">
+                  <option value="<?php echo $db_id; ?>" selected="selected">Database</option>
+                  <option value="<?php echo $act_id; ?>">Active</option>
+                  <option value="<?php echo $inact_id; ?>">Inactive</option>
+                  <option value="<?php echo $ni_id; ?>">Not Interested</option>
+                </select>
               </div>
             </div>
 

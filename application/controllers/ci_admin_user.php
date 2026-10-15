@@ -421,40 +421,37 @@ public function view($id='') //userloyee id
 
 
 	public function delete($id='')
-
 	{
-
-    	 $data=array();
-				$data['info']=array(
-					'title'=>'Manager- Roles',
-					'page_heading'=>'All Roles'
-				);
-				$data['info2']=$this->if_not_login();
+    	$data=array();
+		$data['info']=array(
+			'title'=>'Manager- Roles',
+			'page_heading'=>'All Roles'
+		);
+		$data['info2']=$this->if_not_login();
 
 		if(empty($id))
-
    	    {
-
-    	     redirect('manager/users/add');
-
+    	    redirect('manager/users');
 	    }
 
-	    
+		$user_to_delete = $this->comman_model->getAll(array('id' => $id), '', 'ci_user', 'first');
+		$uname = !empty($user_to_delete['name']) ? $user_to_delete['name'] : 'User #' . $id;
 
-		$response= $this->ci_admin_model->deleteData('id',$id,'ci_user');
+		$this->db->trans_start();
+		$this->db->where('lead_assign', $id);
+		$this->db->update('ci_leads', array('lead_assign' => 0));
 
-		if($response)
+		$this->ci_admin_model->deleteData('id', $id, 'ci_user');
+		$this->db->trans_complete();
 
-		{
-
-			 redirect('manager/users');
-
-			
-
+		if ($this->db->trans_status() !== FALSE) {
+			$this->ci_admin_model->log_admin_action('user_deleted', 'User deleted: ' . $uname . ' (Leads moved to unassigned queue)', 'SUCCESS');
+			$this->session->set_flashdata('message', 'User deleted successfully and leads moved to unassigned queue.');
+		} else {
+			$this->session->set_flashdata('error_message', 'Failed to delete user.');
 		}
 
-	   
-
+		redirect('manager/users');
 	}  
 	
 

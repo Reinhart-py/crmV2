@@ -85,6 +85,92 @@
             </div>
         </div>
 
+        <!-- Lead Status Overview (My Lead Stats & Team Lead Stats) -->
+        <?php
+            $my_lead_total = 0;
+            if (!empty($dashboard_lead)) {
+                foreach($dashboard_lead as $item) {
+                    $my_lead_total += (int)$item['lead_count'];
+                }
+            }
+            $team_lead_total = 0;
+            if (!empty($dashboard_lead_team)) {
+                foreach($dashboard_lead_team as $item) {
+                    $team_lead_total += (int)$item['lead_count'];
+                }
+            }
+        ?>
+        <div class="row" style="margin-top: 15px;">
+            <!-- My Lead Stats -->
+            <div class="col-md-6 col-xs-12">
+                <div class="crm-modern-stat-card" style="margin-bottom: 20px;">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-list"></i> My Lead Stats</h4>
+                        <span class="card-total-pill"><?php echo number_format($my_lead_total); ?> Total</span>
+                    </div>
+                    <div class="crm-seg-bar">
+                        <?php if (!empty($dashboard_lead) && $my_lead_total > 0) {
+                            foreach($dashboard_lead as $li) {
+                                $pct = round(((int)$li['lead_count'] / $my_lead_total) * 100, 1);
+                                if ($pct > 0) {
+                                    echo '<div class="crm-seg" style="width:' . $pct . '%; opacity:0.85;" title="' . htmlspecialchars($li['status']) . ': ' . (int)$li['lead_count'] . '"></div>';
+                                }
+                            }
+                        } else { ?>
+                            <div class="crm-seg" style="width:100%; opacity:0.3;"></div>
+                        <?php } ?>
+                    </div>
+                    <ul class="crm-modern-stat-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:6px;">
+                        <?php if (!empty($dashboard_lead)) { foreach($dashboard_lead as $li) { ?>
+                            <li style="margin:0;">
+                                <a href="<?php echo base_url(); ?>manager/leads?d1=&d2=&status%5B%5D=<?php echo $li['status_id']; ?>" class="crm-modern-stat-chip" style="padding:6px 9px;">
+                                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;" title="<?php echo htmlspecialchars($li['status']); ?>"><?php echo htmlspecialchars($li['status']); ?></span>
+                                    <span class="badge" style="background:var(--crm-card-bg, #ffffff); color:var(--crm-text, #0f172a); border:1px solid var(--crm-border, #cbd5e1); font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;"><?php echo (int)$li['lead_count']; ?></span>
+                                </a>
+                            </li>
+                        <?php } } else { ?>
+                            <li style="grid-column: 1 / -1;"><span class="text-muted" style="font-size:12px;">No leads found</span></li>
+                        <?php } ?>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Team Lead Stats -->
+            <div class="col-md-6 col-xs-12">
+                <div class="crm-modern-stat-card" style="margin-bottom: 20px;">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-users"></i> Team Lead Stats</h4>
+                        <span class="card-total-pill"><?php echo number_format($team_lead_total); ?> Total</span>
+                    </div>
+                    <div class="crm-seg-bar">
+                        <?php if (!empty($dashboard_lead_team) && $team_lead_total > 0) {
+                            foreach($dashboard_lead_team as $li) {
+                                $pct = round(((int)$li['lead_count'] / $team_lead_total) * 100, 1);
+                                if ($pct > 0) {
+                                    echo '<div class="crm-seg" style="width:' . $pct . '%; opacity:0.85;" title="' . htmlspecialchars($li['status']) . ': ' . (int)$li['lead_count'] . '"></div>';
+                                }
+                            }
+                        } else { ?>
+                            <div class="crm-seg" style="width:100%; opacity:0.3;"></div>
+                        <?php } ?>
+                    </div>
+                    <ul class="crm-modern-stat-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:6px;">
+                        <?php if (!empty($dashboard_lead_team)) { foreach($dashboard_lead_team as $li) { ?>
+                            <li style="margin:0;">
+                                <a href="<?php echo base_url(); ?>manager/team/leads?d1=&d2=&status%5B%5D=<?php echo $li['status_id']; ?>" class="crm-modern-stat-chip" style="padding:6px 9px;">
+                                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;" title="<?php echo htmlspecialchars($li['status']); ?>"><?php echo htmlspecialchars($li['status']); ?></span>
+                                    <span class="badge" style="background:var(--crm-card-bg, #ffffff); color:var(--crm-text, #0f172a); border:1px solid var(--crm-border, #cbd5e1); font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;"><?php echo (int)$li['lead_count']; ?></span>
+                                </a>
+                            </li>
+                        <?php } } else { ?>
+                            <li style="grid-column: 1 / -1;"><span class="text-muted" style="font-size:12px;">No team leads found</span></li>
+                        <?php } ?>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+
         <!-- 2. Projections Charts Row (My Projection & Team Projection) -->
         <div class="row">
             <!-- My Projection -->
@@ -116,15 +202,15 @@
             </div>
         </div>
 
-        <!-- 3. Section Header: Operational Activity & Closures Breakdown -->
+        <!-- 3. Section Header: Operational Activity and Breakdown -->
         <div class="dash-section-divider">
             <h3 class="dash-section-title">
                 <span class="dash-section-title-icon">
                     <span></span><span></span>
                 </span>
-                Operational Activity &amp; Closures Breakdown
+                Operational Activity and Breakdown
             </h3>
-            <span class="dash-section-subtitle">Real-time Pipeline Overview</span>
+            <span class="dash-section-subtitle">Real-time Overview</span>
         </div>
 
         <?php
@@ -296,11 +382,11 @@
                         <span class="card-total-pill"><?php echo $total_my_vfu; ?> Total</span>
                     </div>
                     <div class="crm-seg-bar">
-                        <div class="crm-seg seg-missed" style="width:10%;" title="Missed"></div>
+                        <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
-                        <div class="crm-seg seg-today" style="width:20%;" title="Today"></div>
-                        <div class="crm-seg seg-next7" style="width:30%;" title="Next 7 Days"></div>
-                        <div class="crm-seg seg-future" style="width:20%;" title="All Future"></div>
+                        <div class="crm-seg seg-today" style="width:16%;" title="Today"></div>
+                        <div class="crm-seg seg-next7" style="width:20%;" title="Next 7 Days"></div>
+                        <div class="crm-seg seg-future" style="width:30%;" title="All Future"></div>
                     </div>
                     <ul class="crm-modern-stat-grid">
                         <li>
@@ -340,7 +426,7 @@
 
         <!-- 5. Row 2: Team Operational Metrics (4 Cards) -->
         <div class="row">
-            <!-- Card 5: Team Followups -->
+            <!-- Card 6: Team Followups -->
             <div class="col-sm-3 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
@@ -389,7 +475,7 @@
                 </div>
             </div>
 
-            <!-- Card 6: Team Meetings -->
+            <!-- Card 7: Team Meetings -->
             <div class="col-sm-3 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
@@ -438,7 +524,7 @@
                 </div>
             </div>
 
-            <!-- Card 7: Team Closures -->
+            <!-- Card 8: Team Closures -->
             <div class="col-sm-3 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
@@ -487,7 +573,7 @@
                 </div>
             </div>
 
-            <!-- Card 8: Team Vertical FU -->
+            <!-- Card 9: Team Vertical FU -->
             <div class="col-sm-3 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
@@ -658,11 +744,15 @@ $(function () {
         maintainAspectRatio: false
     };
 
+    var monthDates = <?php echo json_encode(!empty($dashboard_MyPro['month_dates']) ? $dashboard_MyPro['month_dates'] : array()); ?>;
+    var teamMonthDates = <?php echo json_encode(!empty($dashboard_TeamPro['month_dates']) ? $dashboard_TeamPro['month_dates'] : array()); ?>;
+
     // Initialize My Projection Chart
     var canvas2 = document.getElementById('barChart2');
     if (canvas2) {
+        canvas2.style.cursor = 'pointer';
         var ctx2 = canvas2.getContext('2d');
-        new Chart(ctx2).Bar({
+        var chartInstance2 = new Chart(ctx2).Bar({
             labels: months,
             datasets: [{
                 label: 'My Projection',
@@ -673,13 +763,27 @@ $(function () {
                 data: myProData
             }]
         }, chartOptions);
+
+        canvas2.onclick = function(evt) {
+            if (chartInstance2 && typeof chartInstance2.getBarsAtEvent === 'function') {
+                var activeBars = chartInstance2.getBarsAtEvent(evt);
+                if (activeBars && activeBars.length > 0) {
+                    var barLabel = activeBars[0].label;
+                    var idx = months.indexOf(barLabel);
+                    if (idx !== -1 && monthDates[idx]) {
+                        window.location.href = '<?php echo base_url(); ?>manager/leads?d1=' + encodeURIComponent(monthDates[idx].d1) + '&d2=' + encodeURIComponent(monthDates[idx].d2);
+                    }
+                }
+            }
+        };
     }
 
     // Initialize Team Projection Chart
     var canvas4 = document.getElementById('barChart4');
     if (canvas4) {
+        canvas4.style.cursor = 'pointer';
         var ctx4 = canvas4.getContext('2d');
-        new Chart(ctx4).Bar({
+        var chartInstance4 = new Chart(ctx4).Bar({
             labels: months,
             datasets: [{
                 label: 'Team Projection',
@@ -690,6 +794,19 @@ $(function () {
                 data: teamProData
             }]
         }, chartOptions);
+
+        canvas4.onclick = function(evt) {
+            if (chartInstance4 && typeof chartInstance4.getBarsAtEvent === 'function') {
+                var activeBars = chartInstance4.getBarsAtEvent(evt);
+                if (activeBars && activeBars.length > 0) {
+                    var barLabel = activeBars[0].label;
+                    var idx = months.indexOf(barLabel);
+                    if (idx !== -1 && teamMonthDates[idx]) {
+                        window.location.href = '<?php echo base_url(); ?>manager/team/leads?d1=' + encodeURIComponent(teamMonthDates[idx].d1) + '&d2=' + encodeURIComponent(teamMonthDates[idx].d2);
+                    }
+                }
+            }
+        };
     }
 
     // 3. Stat chips and cards navigate cleanly

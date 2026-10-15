@@ -1628,5 +1628,44 @@ table.dataTable {
   }
 }
 
+/* ==========================================================================
+   5-Column Grid for Dashboard Operational Cards (2 Rows of 5)
+   ========================================================================== */
+.crm-row-5cols {
+  margin-left: -8px !important;
+  margin-right: -8px !important;
+}
+
+.crm-row-5cols > .crm-col-5 {
+  width: 20% !important;
+  float: left !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+  position: relative !important;
+  min-height: 1px !important;
+}
+
+@media (max-width: 1199px) and (min-width: 992px) {
+  .crm-row-5cols > .crm-col-5 {
+    width: 20% !important;
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+  }
+}
+
+@media (max-width: 991px) and (min-width: 768px) {
+  .crm-row-5cols > .crm-col-5 {
+    width: 33.333% !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .crm-row-5cols > .crm-col-5 {
+    width: 100% !important;
+    float: none !important;
+  }
+}
+
+
 
 

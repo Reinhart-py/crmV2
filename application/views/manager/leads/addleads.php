@@ -46,21 +46,35 @@
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>POC Name<span>*</span></label>
-                <input type="text" required class="form-control" name="poc"  >
+                <label>POC Name</label>
+                <input type="text" class="form-control" name="poc">
               </div>
             </div>
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
                 <label>POC Contact Number</label>
-                <input type="text" class="form-control" name="contact1" >
+                <input type="text" class="form-control" name="contact1">
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Alternative Mobile Number</label>
+                <input type="text" class="form-control" name="alt_mobile" placeholder="Alternative Mobile">
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Alternative Contact Number</label>
+                <input type="text" class="form-control" name="alt_contact" placeholder="Alternative Contact">
               </div>
             </div>
 
              <div class="col-lg-3 col-sm-6">
               <div class="form-group">
                 <label>Email</label>
-                <input type="email" class="form-control" name="email" >
+                <input type="email" class="form-control" name="email">
               </div>
             </div>
            
@@ -68,36 +82,66 @@
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
                 <label>Account Number</label>
-                <input type="text" class="form-control" name="a_number"  >
+                <input type="text" class="form-control" name="a_number">
               </div>
             </div>
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
                 <label>Account Under Vertical</label>
-                <input type="text" class="form-control" name="a_department"  >
+                <input type="text" class="form-control" name="a_department">
               </div>
             </div>
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
                 <label>Current Monthly Revenue Amount</label>
-                <input type="text" class="form-control only_number" name="r_amount"  >
+                <input type="text" class="form-control only_number" name="r_amount">
               </div>
             </div>
               <div class="col-lg-3 col-sm-6">
               <div class="form-group">
                 <label>Current Monthly Revenue Date</label>
-                <input type="text" class="form-control datepicker" name="r_date"  >
+                <input type="text" class="form-control datepicker" name="r_date">
               </div>
             </div>
 
              <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>Category<span>*</span></label>
-                <select class="form-control" style="width: 100%;" required name="category">
+                <label>Category</label>
+                <select class="form-control" style="width: 100%;" name="category">
                 <option value="">Select</option>
                   <option value="New" selected="selected">New</option>
                   <option value="Existing">Existing</option>                  
                 </select>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Business Category</label>
+                <select class="form-control" style="width: 100%;" name="business_category">
+                  <option value="">Select Business Category</option>
+                  <?php if(isset($business_categories) && !empty($business_categories)){
+                    foreach($business_categories as $bcat){ ?>
+                      <option value="<?php echo htmlspecialchars($bcat['title']); ?>"><?php echo htmlspecialchars($bcat['title']); ?></option>
+                  <?php } } ?>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>TNCR/TND</label>
+                <select class="form-control" name="dnd_status">
+                  <option value="No" selected="selected">No</option>
+                  <option value="Yes">Yes</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>TNCR Check Date</label>
+                <input type="text" class="form-control datepicker" name="dnd_check_date" placeholder="DD-MM-YYYY">
               </div>
             </div>
 
@@ -168,19 +212,19 @@
             </div>
              <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>MRC<span>*</span></label>
-                <input type="text" required name="mrc" class="form-control only_number" >
+                <label>MRC</label>
+                <input type="text" name="mrc" class="form-control only_number" >
               </div>
             </div>
              <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>Revenue<span>*</span></label>
-                <input type="text" required name="revenue" class="form-control only_number" >
+                <label>Revenue</label>
+                <input type="text" name="revenue" class="form-control only_number" >
               </div>
             </div>
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>MRR<span>*</span></label>
+                <label>MRR</label>
                 <input type="text" name="mrr" class="form-control only_number" readonly >
               </div>
             </div>
@@ -208,8 +252,8 @@
            
              <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Exp. Close Date<span>*</span></label>
-                <input type="text" class="form-control datepicker2" required name="close_date" id="close_date"  >
+                <label>Exp. Close Date</label>
+                <input type="text" class="form-control datepicker2" name="close_date" id="close_date"  >
               </div>
             </div>
 

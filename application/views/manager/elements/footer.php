@@ -294,9 +294,12 @@ $('.datepicker2').datepicker({
    
   });
 
-$(".logout").click(function(){       
-    
-       swal({
+$(document).on("click", ".logout, a[href*='manager/logout']", function(e){       
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    swal({
         title: "Are you sure?",
         text: "You want to logout!",
         type: "warning",
@@ -306,25 +309,25 @@ $(".logout").click(function(){
         cancelButtonText: "No",
         closeOnConfirm: false,
         closeOnCancel: true
-      },
-      function(isConfirm) {
+    },
+    function(isConfirm) {
         if (isConfirm) {
-          $.ajax({
-             url: '/ci_admin/logout/',            
-             error: function() {
-                alert('Something is wrong');
-             },
-             success: function(data) {
-                 // $("#"+id).remove();
-                swal("Logged Out!", "", "success");
-                location.reload();
-                  //swal("Logged Out!", "", "success");
-             }
-          });
+            $.ajax({
+                url: '<?php echo base_url(); ?>manager/logout',            
+                error: function() {
+                    window.location.href = '<?php echo base_url(); ?>manager/login';
+                },
+                success: function(data) {
+                    swal("Logged Out!", "", "success");
+                    setTimeout(function() {
+                        window.location.href = '<?php echo base_url(); ?>manager/login';
+                    }, 500);
+                }
+            });
         } 
-      });
-     
     });
+    return false;
+});
 </script>
 
 <script src="<?php echo base_url(); ?>assets/dist/js/jquery.slimmenu.js"></script> 
@@ -350,11 +353,6 @@ $('header').removeClass('fixed-header');
 });
 </script>
 
-<!-- Floating Help Icon (Bottom-Left) -> Opens Dedicated Help Desk Page -->
-<a href="<?php echo base_url(); ?>manager/tickets" class="floating-help-fab" title="Help Desk" id="floatingHelpFab">
-  <i class="fa fa-life-ring"></i>
-  <span>Help Desk</span>
-</a>
 
 <script>
 // Authoritative mobile navigation handler for Android / touch / small screen devices
@@ -470,6 +468,40 @@ $('header').removeClass('fixed-header');
   } else {
     initActiveTreeview();
   }
+})();
+
+// 5-Minute Inactivity Auto-Logout & Session Keepalive
+(function() {
+  <?php if ($this->session->userdata('manager_id')) { ?>
+  var inactivityLimit = 300; // 300 seconds = 5 minutes
+  var idleTime = 0;
+  var lastPingTime = Date.now();
+
+  function resetIdle() {
+    idleTime = 0;
+    if (Date.now() - lastPingTime > 60000) {
+      lastPingTime = Date.now();
+      if (window.jQuery) {
+        $.getJSON('<?php echo base_url(); ?>manager/ping', function(res) {
+          if (res && res.status === 'expired') {
+            window.location.href = '<?php echo base_url(); ?>manager/login?timeout=1';
+          }
+        });
+      }
+    }
+  }
+
+  ['mousemove', 'keydown', 'mousedown', 'touchstart', 'scroll', 'click'].forEach(function(evt) {
+    window.addEventListener(evt, resetIdle, { passive: true });
+  });
+
+  setInterval(function() {
+    idleTime++;
+    if (idleTime >= inactivityLimit) {
+      window.location.href = '<?php echo base_url(); ?>manager/login?timeout=1';
+    }
+  }, 1000);
+  <?php } ?>
 })();
 </script>
 
