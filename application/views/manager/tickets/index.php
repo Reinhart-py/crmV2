@@ -226,7 +226,7 @@
                       <span class="no_show"><?php echo date('Ymd', strtotime(!empty($t['created_date']) ? $t['created_date'] : $t['created_at'])); ?></span>
                       <?php echo simple_date(!empty($t['created_date']) ? $t['created_date'] : $t['created_at']); ?>
                     </td>
-                    <td><?php echo htmlspecialchars(!empty($t['creator_name']) ? $t['creator_name'] : '-'); ?></td>
+                    <td><?php echo htmlspecialchars(!empty($t['creator_name']) ? $t['creator_name'] : (!empty($user_map[$t['raised_by']]) ? $user_map[$t['raised_by']] : '-')); ?></td>
                     <td><?php echo htmlspecialchars($t['status']); ?></td>
                     <td>
                       <div class="btn-group">

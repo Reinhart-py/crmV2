@@ -107,10 +107,9 @@ class Ci_admin_tickets extends CI_Controller {
 		$d1 = $this->input->get('d1');
 		$d2 = $this->input->get('d2');
 
-		$this->db->select('t.*, COALESCE(u.name, u2.name) as creator_name, u.email as creator_email, r.name as resolver_name, l.name as updater_name');
+		$this->db->select('t.*, u.name as creator_name, u.email as creator_email, r.name as resolver_name, l.name as updater_name');
 		$this->db->from('ci_tickets t');
 		$this->db->join('ci_user u', 'u.id = t.created_by', 'left');
-		$this->db->join('ci_user u2', 'u2.id = t.raised_by', 'left');
 		$this->db->join('ci_user r', 'r.id = t.resolved_by', 'left');
 		$this->db->join('ci_user l', 'l.id = t.last_updated_by', 'left');
 
@@ -953,10 +952,9 @@ class Ci_admin_tickets extends CI_Controller {
 		$d1 = $this->input->get('d1');
 		$d2 = $this->input->get('d2');
 
-		$this->db->select('t.*, COALESCE(u.name, u2.name) as creator_name, u.email as creator_email, r.name as resolver_name, l.name as updater_name');
+		$this->db->select('t.*, u.name as creator_name, u.email as creator_email, r.name as resolver_name, l.name as updater_name');
 		$this->db->from('ci_tickets t');
 		$this->db->join('ci_user u', 'u.id = t.created_by', 'left');
-		$this->db->join('ci_user u2', 'u2.id = t.raised_by', 'left');
 		$this->db->join('ci_user r', 'r.id = t.resolved_by', 'left');
 		$this->db->join('ci_user l', 'l.id = t.last_updated_by', 'left');
 
