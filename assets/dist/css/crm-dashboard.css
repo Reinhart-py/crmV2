@@ -63,6 +63,8 @@ body {
   padding-top: 0 !important;
   margin-top: 0 !important;
   background-color: transparent !important;
+  overflow: visible !important;
+  min-height: 100vh !important;
 }
 
 /* ==========================================================================
@@ -1628,9 +1630,6 @@ table.dataTable {
   }
 }
 
-/* ==========================================================================
-   5-Column Grid for Dashboard Operational Cards (2 Rows of 5)
-   ========================================================================== */
 .crm-row-5cols {
   margin-left: -8px !important;
   margin-right: -8px !important;

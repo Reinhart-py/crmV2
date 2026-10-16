@@ -231,7 +231,7 @@
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Status<span>*</span></label>
-                <select class="form-control" required name="status">
+                <select class="form-control" required name="status" id="lead_status_select">
                 <option value="">Select Status</option>
                
                   <?php if(isset($st_list) && !empty($st_list)){
@@ -240,6 +240,22 @@
                   <option value="<?php echo $cli['id']; ?>" ><?php echo $cli['status']; ?></option>
               <?php } }  ?>
             </select>
+              </div>
+            </div>
+
+            <div class="col-lg-4 col-sm-6" id="lost_reason_col" style="display:none;">
+              <div class="form-group">
+                <label>Lost Reason<span>*</span></label>
+                <select class="form-control" id="lost_reason_dropdown" style="margin-bottom: 5px;">
+                  <option value="">Select Reason</option>
+                  <option value="Pricing / Budget Constraints">Pricing / Budget Constraints</option>
+                  <option value="Competitor Chosen">Competitor Chosen</option>
+                  <option value="Product / Requirements Mismatch">Product / Requirements Mismatch</option>
+                  <option value="Client Postponed / Not Interested">Client Postponed / Not Interested</option>
+                  <option value="Unreachable / Dropped Contact">Unreachable / Dropped Contact</option>
+                  <option value="Other">Other (Custom Reason)</option>
+                </select>
+                <input type="text" class="form-control" name="lost_reason" id="lost_reason_input" placeholder="Enter custom reason..." style="display:none;">
               </div>
             </div>
            
@@ -882,5 +898,37 @@ function getpSubCat()
         }
         });
 }
+
+$(document).ready(function() {
+  function handleLostReasonToggle() {
+    var val = $('#lead_status_select').val();
+    if (val == '43') {
+      $('#lost_reason_col').show();
+      $('#lost_reason_dropdown').prop('required', true);
+      if ($('#lost_reason_dropdown').val() === 'Other') {
+        $('#lost_reason_input').prop('required', true);
+      }
+    } else {
+      $('#lost_reason_col').hide();
+      $('#lost_reason_dropdown').prop('required', false).val('');
+      $('#lost_reason_input').prop('required', false).val('').hide();
+    }
+  }
+
+  $('#lead_status_select').on('change', handleLostReasonToggle);
+
+  $('#lost_reason_dropdown').on('change', function() {
+    var chosen = $(this).val();
+    if (chosen === 'Other') {
+      $('#lost_reason_input').show().val('').prop('required', true).focus();
+    } else if (chosen !== '') {
+      $('#lost_reason_input').hide().val(chosen).prop('required', false);
+    } else {
+      $('#lost_reason_input').hide().val('').prop('required', false);
+    }
+  });
+
+  handleLostReasonToggle();
+});
 </script>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

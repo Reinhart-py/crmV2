@@ -4,6 +4,54 @@ All notable changes, features, bug fixes, and refinements for the Rolexto CRM re
 
 ---
 
+### Operations, KAM Role Governance, Sticky Navbar, Leads Lost Reason & Dashboard Enhancements
+- **Date & Time**: `2026-10-16 13:50:00 +0530`
+
+#### Changes & Additions:
+- **Operations > Raise Ticket**:
+  - Replaced visible form fields for **Raised By** and **Created Date** with hidden inputs in `application/views/manager/tickets/add.php`.
+  - Preserved backend auto-population of `created_by` and `created_date`/`created_at` in `Ci_admin_tickets::add()`.
+  - Maintained clean layout alignment for Deadline Date, Expected Closure Date, Follow-up Date, and Time.
+- **Operations > Ticket Follow-up**:
+  - Filtered records to show only open tickets (`status = 'Open'`) in `application/controllers/ci_admin_tickets.php`.
+  - Replaced follow-up interface with the exact Ticket View listing layout (`application/views/manager/tickets/followups.php`), including customer/company, client type, department, priority, assignees, overdue deadlines, and action dropdowns (Preview, Edit).
+- **Operations > Ticket View**:
+  - Preserved complete ticket listing displaying all tickets regardless of status in `Ci_admin_tickets::index()`.
+- **Sticky Top Navigation Bar**:
+  - Updated `.wrapper` in `assets/dist/css/crm-dashboard.css` with `overflow: visible !important; min-height: 100vh !important;`.
+  - Configured `.main-header` with `position: sticky !important; top: 0 !important; z-index: 1040 !important;`.
+  - Kept navigation visible across scrolling without breaking desktop dropdowns, user profile menu, dark mode toggle, or mobile drawer.
+- **Team Navigation**:
+  - Renamed `Ticket` submenu to **Tickets** in both desktop navigation and mobile offcanvas drawer in `application/views/manager/elements/header.php`.
+- **System Role Management**:
+  - Added **Sales** user role (`id = 8`, `title = 'Sales'`) in `ci_roles` alongside existing roles.
+- **KAM Role Access Control & Governance**:
+  - Admin (Role 1) and Support (Role 4): Granted full access to all KAM options (**My Client**, **Onboard Client**, **Create Schedule**, **Report**).
+  - Back Office (Role 2): Granted access to KAM with **My Client** as the only visible and accessible option.
+  - Sales (Role 8) and ordinary Users (Role 3): Completely hidden from navigation, with direct URL access blocked via HTTP 403 Forbidden in `application/controllers/ci_admin_kam.php`.
+  - Implemented `my_client()` view and controller method with routes `manager/kam/my-client` and `manager/kam/my_client`.
+- **Leads Add & Edit (Lost Reason)**:
+  - Added **Lost Reason** field beside Status in `application/views/manager/leads/addleads.php` and `editleads.php`.
+  - Conditioned field visibility and requirement strictly to `Lost` status (Status ID 43) via dynamic JavaScript toggling.
+  - Enabled selection of predefined reasons or entry of custom reasons.
+  - Persisted `lost_reason` in `ci_leads` database table in `Ci_admin_leads::add()` and `edit()`.
+  - Displayed `lost_reason` in `application/views/manager/leads/single_view.php` and `leadsview.php`.
+  - Included **Lost Reason** column in CSV export in `Ci_admin_leads::export()`.
+- **Dashboard Projections & Operational Breakdown Status Exclusions**:
+  - Excluded leads with `Activated` (42), `Lost` (43), or `Invalid Entry` (44) from monthly sum subqueries and count queries in `dashboard_MyPro()` and `dashboard_TeamPro()` in `application/models/ci_admin_model.php`.
+  - Excluded statuses 42, 43, 44 from `dashboard_closures()` and `dashboard_vertical_fu()`.
+  - Excluded statuses 42, 43, 44 when filtering by `closure` and `vertical_fu` in `get_Myleads()` and `getTeamLeads()`.
+  - Corrected date range order in `getLeadsMeetings()` for last 7 days (`between '$last_date' AND '$today'`).
+- **Dashboard Operational Activity and Breakdown Cards Restored**:
+  - Restored **My Tasks** and **My Team Tasks** cards to Operational Activity and Breakdown in `application/views/manager/dashboard.php`.
+  - Implemented `dashboard_tasks($type)` in `ci_admin_model.php` querying `ci_tasks` for missed, last 7 days, today, next 7 days, future, and total counts.
+  - Updated `ci_admin_tasks.php` `followups()` to support `type` (1 to 5) and `team` parameters.
+  - Organized Operational Activity into 5-card responsive rows using `.crm-row-5cols` and `.crm-col-5` (5 cards in My section: My Tasks, My Followups, My Meetings, My Closures, My Vertical FU; 5 cards in Team section: My Team Tasks, Team Followups, Team Meetings, Team Closures, Team Vertical FU).
+- **Code Standards**:
+  - Strict compliance with zero inline comment policy across all code files (PHP, JS, CSS).
+
+---
+
 ### [Commit 4fe6960] — Consolidate Task and Ticket into Operations and Add KAM Navigation Section with Blank Pages
 - **Commit Hash**: `4fe6960` (`4fe69606819fe22ab0f9a12ea73c9ceca148da2c`)
 - **Tree Code**: `a2f800a72f4fd0a615d6d0d8657bd9c7039a441d`

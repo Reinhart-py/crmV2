@@ -102,7 +102,9 @@ $route['manager/tasks'] = "ci_admin_tasks/index";
 $route['manager/tasks/add'] = "ci_admin_tasks/add";
 $route['manager/tasks/followups'] = "ci_admin_tasks/followups";
 
-$route['manager/kam'] = "ci_admin_kam/onboard";
+$route['manager/kam'] = "ci_admin_kam/index";
+$route['manager/kam/my-client'] = "ci_admin_kam/my_client";
+$route['manager/kam/my_client'] = "ci_admin_kam/my_client";
 $route['manager/kam/onboard'] = "ci_admin_kam/onboard";
 $route['manager/kam/schedule'] = "ci_admin_kam/schedule";
 $route['manager/kam/pitch-schedule'] = "ci_admin_kam/schedule";

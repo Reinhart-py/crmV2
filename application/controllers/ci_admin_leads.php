@@ -393,6 +393,7 @@ function __construct()
 				'dnd_check_date'=>!empty($dnd_check_date) ? db_date($dnd_check_date) : '',
 				'location'=>$location,
 				'status'=>$status,
+				'lost_reason'=>($status == 43) ? trim($this->input->post('lost_reason')) : null,
 
 				'followup_date'=>$f_date,
 				'followup_time'=>$followup_time,
@@ -612,6 +613,7 @@ function __construct()
 
 				'location'=>$location,
 				'status'=>$status,				
+				'lost_reason'=>($status == 43) ? trim($this->input->post('lost_reason')) : null,
 				'close_date'=>$c_date,
 				'remark'=>$remark,
 				'address'=>$address,
@@ -975,6 +977,7 @@ $data['info2']=$this->if_not_login();
 				'MRR',
 				'Location',
 				'Status',
+				'Lost Reason',
 				'Exp Close Date',
 				'Remarks',
 				'Address',
@@ -1030,6 +1033,7 @@ $data['info2']=$this->if_not_login();
 						$l['mrr'],
 						$l['location'],
 						$status_name,
+						!empty($l['lost_reason']) ? $l['lost_reason'] : '',
 						$l['close_date'],
 						$l['remark'],
 						$l['address'],

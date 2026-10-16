@@ -124,13 +124,18 @@
         </ul>
       </li>
 
+      <?php if($m_role == 1 || $m_role == 2 || $m_role == 4){ ?>
       <li class="<?php if($route1=="kam"){ echo "active";}else{ echo "";}?>"> <a href="javascript:void(0);"><i class="fa fa-briefcase"></i> <span>KAM</span> </a>
         <ul>
+          <li><a href="<?php echo base_url();?>manager/kam/my-client"><i class="fa fa-user"></i>My Client</a></li>
+          <?php if($m_role == 1 || $m_role == 4){ ?>
           <li><a href="<?php echo base_url();?>manager/kam/onboard"><i class="fa fa-user-plus"></i>Onboard Client</a></li>
           <li><a href="<?php echo base_url();?>manager/kam/schedule"><i class="fa fa-calendar"></i>Create Schedule</a></li>
           <li><a href="<?php echo base_url();?>manager/kam/report"><i class="fa fa-bar-chart"></i>Report</a></li>
+          <?php } ?>
         </ul>
       </li>
+      <?php } ?>
 
       <li class="<?php if($route1=="leads"){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/leads"><i class="fa fa-list"></i> <span>Leads</span> </a>
         <ul>
@@ -166,7 +171,7 @@
           <li><a href="<?php echo base_url();?>manager/team/assignmeetings"><i class="fa fa-list"></i>Assigned Meetings</a></li>
           <li><a href="<?php echo base_url();?>manager/team/assignleads"><i class="fa fa-list"></i>Assigned Leads</a></li>
           <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-tasks"></i>Task</a></li>
-          <li><a href="<?php echo base_url();?>manager/tickets"><i class="fa fa-ticket"></i>Ticket</a></li>
+          <li><a href="<?php echo base_url();?>manager/tickets"><i class="fa fa-ticket"></i>Tickets</a></li>
           <li><a href="<?php echo base_url();?>manager/performance-report"><i class="fa fa-list"></i>Performance Report</a></li>
         </ul>
       </li>
@@ -303,14 +308,19 @@ $(function() {
         </ul>
       </li>
 
+      <?php if($m_role == 1 || $m_role == 2 || $m_role == 4){ ?>
       <li class="<?php if($route1=="kam"){ echo "active";}else{ echo "";}?> treeview"> 
         <a href="javascript:void(0);"><i class="fa fa-briefcase"></i> <span>KAM</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu">
+          <li><a href="<?php echo base_url();?>manager/kam/my-client"><i class="fa fa-user"></i>My Client</a></li>
+          <?php if($m_role == 1 || $m_role == 4){ ?>
           <li><a href="<?php echo base_url();?>manager/kam/onboard"><i class="fa fa-user-plus"></i>Onboard Client</a></li>
           <li><a href="<?php echo base_url();?>manager/kam/schedule"><i class="fa fa-calendar"></i>Create Schedule</a></li>
           <li><a href="<?php echo base_url();?>manager/kam/report"><i class="fa fa-bar-chart"></i>Report</a></li>
+          <?php } ?>
         </ul>
       </li>
+      <?php } ?>
 
       <li class="<?php if($route1=="leads"){ echo "active";}else{ echo "";}?> treeview"> 
         <a href="javascript:void(0);"><i class="fa fa-database"></i> <span>Leads</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
@@ -344,7 +354,7 @@ $(function() {
           <li><a href="<?php echo base_url();?>manager/team/assignmeetings"><i class="fa fa-list"></i>Assigned Meetings</a></li>
           <li><a href="<?php echo base_url();?>manager/team/assignleads"><i class="fa fa-list"></i>Assigned Leads</a></li>
           <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-tasks"></i>Task</a></li>
-          <li><a href="<?php echo base_url();?>manager/tickets"><i class="fa fa-ticket"></i>Ticket</a></li>
+          <li><a href="<?php echo base_url();?>manager/tickets"><i class="fa fa-ticket"></i>Tickets</a></li>
           <li><a href="<?php echo base_url();?>manager/performance-report"><i class="fa fa-list"></i>Performance Report</a></li>
         </ul>
       </li>

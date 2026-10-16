@@ -926,53 +926,74 @@ class Ci_admin_tickets extends CI_Controller {
 			'page_heading' => 'Ticket Follow-up'
 		);
 		$data['info2'] = $this->if_not_login();
-		$data['users_list'] = $this->db->select('id, name, email')->order_by('name', 'ASC')->get('ci_user')->result_array();
+		$data['is_admin'] = ($role === 1);
+		$data['is_support'] = $this->is_support_user();
+		$data['can_manage_tickets'] = $can_manage;
 
-		$type = $this->input->get('type');
+		$data['users_list'] = $this->db->select('id, name, email')->order_by('name', 'ASC')->get('ci_user')->result_array();
+		$data['companies_list'] = $this->ci_admin_model->get_all_companies_dropdown();
+
+		$client_type = $this->input->get('client_type');
+		$company = $this->input->get('company');
+		$ticket_type = $this->input->get('ticket_type');
+		$category = $this->input->get('category');
+		$priority = $this->input->get('priority');
+		$assigned_user = $this->input->get('assigned_user');
+		$department = $this->input->get('department');
+		$search = $this->input->get('search');
 		$d1 = $this->input->get('d1');
 		$d2 = $this->input->get('d2');
-		$status = $this->input->get('status');
-		$search = $this->input->get('search');
-		$today = date('Y-m-d');
 
-		$this->db->select('t.*, u.name as creator_name');
+		$this->db->select('t.*, u.name as creator_name, u.email as creator_email, r.name as resolver_name, l.name as updater_name');
 		$this->db->from('ci_tickets t');
 		$this->db->join('ci_user u', 'u.id = t.created_by', 'left');
+		$this->db->join('ci_user r', 'r.id = t.resolved_by', 'left');
+		$this->db->join('ci_user l', 'l.id = t.last_updated_by', 'left');
+
+		$this->db->where('t.status', 'Open');
 
 		if (!$can_manage) {
 			$this->db->group_start();
 			$this->db->where('t.created_by', $manager_id);
 			$this->db->or_where('t.raised_by', $manager_id);
 			$this->db->or_where("FIND_IN_SET('$manager_id', t.assigned_users) >", 0);
+			$this->db->or_where("FIND_IN_SET('$manager_id', t.tagged_users) >", 0);
 			$this->db->or_where('t.assigned_to', $manager_id);
 			$this->db->group_end();
 		}
 
-		if (!empty($type)) {
-			if ($type == 1) {
-				$this->db->where('t.followup_date <', $today);
-				$this->db->where_not_in('t.status', array('Resolved', 'Closed'));
-			} elseif ($type == 2) {
-				$this->db->where('t.followup_date >=', date('Y-m-d', strtotime('-7 days')));
-				$this->db->where('t.followup_date <=', $today);
-			} elseif ($type == 3) {
-				$this->db->where('t.followup_date', $today);
-			} elseif ($type == 4) {
-				$this->db->where('t.followup_date >=', $today);
-				$this->db->where('t.followup_date <=', date('Y-m-d', strtotime('+7 days')));
-			} elseif ($type == 5) {
-				$this->db->where('t.followup_date >', $today);
-			}
+		if (!empty($client_type)) {
+			$this->db->where('t.client_type', $client_type);
 		}
-
+		if (!empty($company)) {
+			$this->db->group_start();
+			$this->db->where('t.company_name', $company);
+			$this->db->or_where('t.customer', $company);
+			$this->db->group_end();
+		}
+		if (!empty($ticket_type)) {
+			$this->db->where('t.ticket_type', $ticket_type);
+		}
+		if (!empty($category)) {
+			$this->db->where('t.category', $category);
+		}
+		if (!empty($priority)) {
+			$this->db->where('t.priority', $priority);
+		}
+		if (!empty($department)) {
+			$this->db->where('t.department', $department);
+		}
+		if (!empty($assigned_user)) {
+			$this->db->group_start();
+			$this->db->where("FIND_IN_SET('$assigned_user', t.assigned_users) >", 0);
+			$this->db->or_where('t.assigned_to', $assigned_user);
+			$this->db->group_end();
+		}
 		if (!empty($d1)) {
-			$this->db->where('t.followup_date >=', date('Y-m-d', strtotime($d1)));
+			$this->db->where('t.created_date >=', date('Y-m-d 00:00:00', strtotime($d1)));
 		}
 		if (!empty($d2)) {
-			$this->db->where('t.followup_date <=', date('Y-m-d', strtotime($d2)));
-		}
-		if (!empty($status)) {
-			$this->db->where('t.status', $status);
+			$this->db->where('t.created_date <=', date('Y-m-d 23:59:59', strtotime($d2)));
 		}
 		if (!empty($search)) {
 			$this->db->group_start();
@@ -981,22 +1002,15 @@ class Ci_admin_tickets extends CI_Controller {
 			$this->db->or_like('t.subject', $search);
 			$this->db->or_like('t.company_name', $search);
 			$this->db->or_like('t.customer', $search);
+			$this->db->or_like('t.poc', $search);
+			$this->db->or_like('t.contact1', $search);
+			$this->db->or_like('t.email', $search);
 			$this->db->group_end();
 		}
 
-		$this->db->order_by('t.followup_date', 'ASC');
 		$this->db->order_by('t.id', 'DESC');
 		$data['tickets'] = $this->db->get()->result_array();
 		$data['list'] = $data['tickets'];
-
-		$all_fus = $this->db->order_by('id', 'DESC')->get('ci_ticket_followups')->result_array();
-		$latest_fu_map = array();
-		foreach ($all_fus as $fu) {
-			if (!isset($latest_fu_map[$fu['ticket_id']])) {
-				$latest_fu_map[$fu['ticket_id']] = $fu;
-			}
-		}
-		$data['latest_fu_map'] = $latest_fu_map;
 
 		$this->load->view('manager/tickets/followups', $data);
 	}

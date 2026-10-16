@@ -158,11 +158,12 @@ class Ci_admin extends CI_Controller {
 		$data['dashboard_Tc']=$this->ci_admin_model->dashboard_closures(1);
 		$data['dashboard_vfu']=$this->ci_admin_model->dashboard_vertical_fu(0);
 		$data['dashboard_Tvfu']=$this->ci_admin_model->dashboard_vertical_fu(1);
+		$data['dashboard_tasks']=$this->ci_admin_model->dashboard_tasks(0);
+		$data['dashboard_Ttasks']=$this->ci_admin_model->dashboard_tasks(1);
 		
 		$data['dashboard_TeamPro']=$this->ci_admin_model->dashboard_TeamPro();
 		$data['dashboard_MyPro']=$this->ci_admin_model->dashboard_MyPro();
 
-		//print_r($data['dashboard_TeamPro']);
 		$this->load->view('manager/dashboard',$data);
 	}
 	

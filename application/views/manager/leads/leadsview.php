@@ -333,7 +333,12 @@ foreach($st_list as $cli){
                                         <td><?php echo $li['contact1']; ?></td>
                                         <td><span class="no_show"><?php echo date('Ymd',strtotime($li['followup_date'])); ?></span><?php echo simple_date($li['followup_date']); ?></td>
                                         <td><span class="no_show"><?php echo date('Ymd',strtotime($li['created'])); ?></span><?php echo simple_date($li['created']); ?></td>
-                                        <td><?php echo $li['lead_status']; ?></td>
+                                        <td>
+                                            <?php echo $li['lead_status']; ?>
+                                            <?php if (!empty($li['lost_reason'])): ?>
+                                                <br><small class="text-muted" style="color:#d9534f; font-weight: 500;">Reason: <?php echo htmlspecialchars($li['lost_reason']); ?></small>
+                                            <?php endif; ?>
+                                        </td>
                                         <td>
                                             <div class="btn-group" style="min-width: 85px;">
                                                 <button type="button" class="btn btn-sm btn-warning">Action</button>

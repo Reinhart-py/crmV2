@@ -302,7 +302,7 @@
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Status<span>*</span></label>
-                <select class="form-control" required name="status">
+                <select class="form-control" required name="status" id="lead_status_select">
                 <option value="">Select Status</option>
 
                   <?php if(isset($st_list) && !empty($st_list)){
@@ -311,6 +311,32 @@
                   <option <?php if($list['status']==$cli['id']){ echo "selected"; } ?> value="<?php echo $cli['id']; ?>" ><?php echo $cli['status']; ?></option>
               <?php } }  ?>
             </select>
+              </div>
+            </div>
+            <?php 
+              $predefined_reasons = array(
+                'Pricing / Budget Constraints',
+                'Competitor Chosen',
+                'Product / Requirements Mismatch',
+                'Client Postponed / Not Interested',
+                'Unreachable / Dropped Contact'
+              );
+              $is_lost = ($list['status'] == 43);
+              $existing_reason = isset($list['lost_reason']) ? $list['lost_reason'] : '';
+              $is_predefined = in_array($existing_reason, $predefined_reasons);
+              $is_other = ($is_lost && !empty($existing_reason) && !$is_predefined);
+            ?>
+            <div class="col-lg-4 col-sm-6" id="lost_reason_col" style="<?php echo $is_lost ? '' : 'display:none;'; ?>">
+              <div class="form-group">
+                <label>Lost Reason<span>*</span></label>
+                <select class="form-control" id="lost_reason_dropdown" style="margin-bottom: 5px;" <?php echo $is_lost ? 'required' : ''; ?>>
+                  <option value="">Select Reason</option>
+                  <?php foreach($predefined_reasons as $pr){ ?>
+                    <option value="<?php echo htmlspecialchars($pr); ?>" <?php if($existing_reason === $pr) echo 'selected'; ?>><?php echo htmlspecialchars($pr); ?></option>
+                  <?php } ?>
+                  <option value="Other" <?php if($is_other) echo 'selected'; ?>>Other (Custom Reason)</option>
+                </select>
+                <input type="text" class="form-control" name="lost_reason" id="lost_reason_input" placeholder="Enter custom reason..." value="<?php echo htmlspecialchars($existing_reason); ?>" style="<?php echo ($is_other || ($is_lost && empty($existing_reason))) ? '' : 'display:none;'; ?>">
               </div>
             </div>
             <?php /* <div class="col-lg-4 col-sm-6">
@@ -1070,5 +1096,35 @@ function getpSubCat()
         }
         });
 }
+
+$(document).ready(function() {
+  function handleLostReasonToggle() {
+    var val = $('#lead_status_select').val();
+    if (val == '43') {
+      $('#lost_reason_col').show();
+      $('#lost_reason_dropdown').prop('required', true);
+      if ($('#lost_reason_dropdown').val() === 'Other') {
+        $('#lost_reason_input').prop('required', true).show();
+      }
+    } else {
+      $('#lost_reason_col').hide();
+      $('#lost_reason_dropdown').prop('required', false);
+      $('#lost_reason_input').prop('required', false);
+    }
+  }
+
+  $('#lead_status_select').on('change', handleLostReasonToggle);
+
+  $('#lost_reason_dropdown').on('change', function() {
+    var chosen = $(this).val();
+    if (chosen === 'Other') {
+      $('#lost_reason_input').show().val('').prop('required', true).focus();
+    } else if (chosen !== '') {
+      $('#lost_reason_input').hide().val(chosen).prop('required', false);
+    } else {
+      $('#lost_reason_input').hide().val('').prop('required', false);
+    }
+  });
+});
 </script>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

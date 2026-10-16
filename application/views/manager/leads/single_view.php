@@ -331,8 +331,13 @@
               <tr>
               <th scope="col">Status</th>
                 <td scope="col"><?php echo $p_info['status']; ?></td>
-              
               </tr>
+              <?php if (!empty($p_info['lost_reason'])): ?>
+              <tr>
+              <th scope="col">Lost Reason</th>
+                <td scope="col"><?php echo htmlspecialchars($p_info['lost_reason']); ?></td>
+              </tr>
+              <?php endif; ?>
 
               <tr>
               <th scope="col">Next Follow Up Time </th>

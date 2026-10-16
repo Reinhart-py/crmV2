@@ -175,10 +175,10 @@ public function dashboard_TeamPro($table='ci_leads'){
 		$d1 = date("Y-m-01", strtotime("+$i month"));
 		$d2 = date("Y-m-t", strtotime("+$i month"));
 		$month_dates[] = array('d1' => $d1, 'd2' => $d2);
-		$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ".$table." a WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_".$i;
+		$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ".$table." a WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND a.status NOT IN (42,43,44) AND FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_".$i;
 	}
 
-	$sql = "SELECT " . implode(", ", $select_parts) . " FROM " . $table . " WHERE FIND_IN_SET(created_by,'".$team_str."')>0"; 
+	$sql = "SELECT " . implode(", ", $select_parts) . " FROM " . $table . " WHERE status NOT IN (42,43,44) AND FIND_IN_SET(created_by,'".$team_str."')>0"; 
 	$data = array();
 	$rows = $this->db->query($sql);
 	if($rows && is_object($rows) && $rows->num_rows()>=1){				
@@ -211,10 +211,10 @@ public function dashboard_MyPro($table='ci_leads'){
 		$d1 = date("Y-m-01", strtotime("+$i month"));
 		$d2 = date("Y-m-t", strtotime("+$i month"));
 		$month_dates[] = array('d1' => $d1, 'd2' => $d2);
-		$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ".$table." a WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND a.created_by = ".$user_id.") AS pt_".$i;
+		$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ".$table." a WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND a.status NOT IN (42,43,44) AND a.created_by = ".$user_id.") AS pt_".$i;
 	}
 
-	$sql = "SELECT " . implode(", ", $select_parts) . " FROM " . $table . " WHERE created_by = ".$user_id; 
+	$sql = "SELECT " . implode(", ", $select_parts) . " FROM " . $table . " WHERE status NOT IN (42,43,44) AND created_by = ".$user_id; 
 	$data = array();
 	$rows = $this->db->query($sql);
 	if($rows && is_object($rows) && $rows->num_rows()>=1){				
@@ -250,12 +250,12 @@ public function dashboard_MyPro($table='ci_leads'){
 		);
 		$effective_close = "(CASE WHEN close_date != '' AND close_date != '0000-00-00' AND followup_date != '' AND followup_date != '0000-00-00' AND close_date < followup_date THEN followup_date WHEN close_date != '' AND close_date != '0000-00-00' THEN close_date WHEN followup_date != '' AND followup_date != '0000-00-00' THEN followup_date ELSE NULL END)";
 		$sql = "SELECT 
-			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE $effective_close < '$today' AND $effective_close IS NOT NULL AND $effective_close != '' AND $effective_close != '0000-00-00' AND ".$user_cond.") AS total_missed,
-			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE $effective_close < '$today' AND $effective_close >= '$last_date' AND $effective_close IS NOT NULL AND $effective_close != '' AND $effective_close != '0000-00-00' AND ".$user_cond.") AS total_lastweek,
-			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE $effective_close = '$today' AND ".$user_cond.") AS total_today,
-			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE $effective_close > '$today' AND $effective_close <= '$next_date' AND $effective_close IS NOT NULL AND ".$user_cond.") AS total_nextweek,
-			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE $effective_close > '$today' AND $effective_close IS NOT NULL AND ".$user_cond.") AS total_future,
-			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE ".$user_cond." AND (status=39 OR status IN (42,43,44) OR ($effective_close IS NOT NULL AND $effective_close != '' AND $effective_close != '0000-00-00'))) AS total_all";
+			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE $effective_close < '$today' AND $effective_close IS NOT NULL AND $effective_close != '' AND $effective_close != '0000-00-00' AND status NOT IN (42,43,44) AND ".$user_cond.") AS total_missed,
+			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE $effective_close < '$today' AND $effective_close >= '$last_date' AND $effective_close IS NOT NULL AND $effective_close != '' AND $effective_close != '0000-00-00' AND status NOT IN (42,43,44) AND ".$user_cond.") AS total_lastweek,
+			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE $effective_close = '$today' AND status NOT IN (42,43,44) AND ".$user_cond.") AS total_today,
+			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE $effective_close > '$today' AND $effective_close <= '$next_date' AND $effective_close IS NOT NULL AND status NOT IN (42,43,44) AND ".$user_cond.") AS total_nextweek,
+			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE $effective_close > '$today' AND $effective_close IS NOT NULL AND status NOT IN (42,43,44) AND ".$user_cond.") AS total_future,
+			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE ".$user_cond." AND status NOT IN (42,43,44) AND ($effective_close IS NOT NULL AND $effective_close != '' AND $effective_close != '0000-00-00')) AS total_all";
 		$rows = $this->db->query($sql);
 		if($rows && $rows->num_rows() >= 1){
 			$data = $rows->row_array();
@@ -276,9 +276,8 @@ public function dashboard_MyPro($table='ci_leads'){
 			'total_all' => 0
 		);
 		if($type==0){
-			// My Vertical FU: counted from Leads, using the My Vertical Follow-up Date and FU date
 			$manager_id = $this->session->userdata('manager_id');
-			$user_cond = "created_by=".$manager_id." AND (vertical_id != '' AND vertical_id != '0' AND vertical_id IS NOT NULL)";
+			$user_cond = "created_by=".$manager_id." AND status NOT IN (42,43,44) AND (vertical_id != '' AND vertical_id != '0' AND vertical_id IS NOT NULL)";
 			$sql = "SELECT 
 				(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE followup_date < '$today' AND followup_date != '' AND followup_date != '0000-00-00' AND ".$user_cond.") AS total_missed,
 				(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE followup_date < '$today' AND followup_date >= '$last_date' AND followup_date != '' AND followup_date != '0000-00-00' AND ".$user_cond.") AS total_lastweek,
@@ -287,7 +286,6 @@ public function dashboard_MyPro($table='ci_leads'){
 				(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE followup_date > '$today' AND ".$user_cond.") AS total_future,
 				(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE ".$user_cond." AND followup_date != '' AND followup_date != '0000-00-00') AS total_all";
 		}else{
-			// Team Vertical FU: counted from Team > Verticals, using the next FU date of Team Verticals
 			$team_array = $this->fetchTeamList($this->session->userdata('manager_id'),'');
 			$team_str = !empty($team_array) ? implode(',',$team_array) : $this->session->userdata('manager_id');
 			$user_cond = "FIND_IN_SET(created_by,'".$team_str."')>0";
@@ -299,6 +297,44 @@ public function dashboard_MyPro($table='ci_leads'){
 				(SELECT COUNT(DISTINCT id) FROM ci_verticals WHERE followup_date > '$today' AND ".$user_cond.") AS total_future,
 				(SELECT COUNT(DISTINCT id) FROM ci_verticals WHERE ".$user_cond." AND followup_date != '' AND followup_date != '0000-00-00') AS total_all";
 		}
+		$rows = $this->db->query($sql);
+		if($rows && $rows->num_rows() >= 1){
+			$data = $rows->row_array();
+		}
+		return $data;
+	}
+
+	public function dashboard_tasks($type){
+		$manager_id = (int)$this->session->userdata('manager_id');
+		$today = date('Y-m-d');
+		$last_date = date('Y-m-d', strtotime("-7 day"));
+		$next_date = date('Y-m-d', strtotime("+7 day"));
+
+		if($type == 0){
+			$user_cond = "(created_by = ".$manager_id." OR assigned_to = ".$manager_id.")";
+		}else{
+			$team_array = $this->fetchTeamList($manager_id, '');
+			$team_str = !empty($team_array) ? implode(',', $team_array) : $manager_id;
+			$user_cond = "(FIND_IN_SET(created_by, '".$team_str."') > 0 OR FIND_IN_SET(assigned_to, '".$team_str."') > 0)";
+		}
+
+		$data = array(
+			'total_missed' => 0,
+			'total_lastweek' => 0,
+			'total_today' => 0,
+			'total_nextweek' => 0,
+			'total_future' => 0,
+			'total_all' => 0
+		);
+
+		$sql = "SELECT 
+			(SELECT COUNT(DISTINCT id) FROM ci_tasks WHERE followup_date < '$today' AND followup_date != '' AND followup_date != '0000-00-00' AND followup_date IS NOT NULL AND status != 'Completed' AND status != 'Closed' AND ".$user_cond.") AS total_missed,
+			(SELECT COUNT(DISTINCT id) FROM ci_tasks WHERE followup_date < '$today' AND followup_date >= '$last_date' AND followup_date != '' AND followup_date != '0000-00-00' AND followup_date IS NOT NULL AND status != 'Completed' AND status != 'Closed' AND ".$user_cond.") AS total_lastweek,
+			(SELECT COUNT(DISTINCT id) FROM ci_tasks WHERE followup_date = '$today' AND status != 'Completed' AND status != 'Closed' AND ".$user_cond.") AS total_today,
+			(SELECT COUNT(DISTINCT id) FROM ci_tasks WHERE followup_date > '$today' AND followup_date <= '$next_date' AND followup_date != '' AND followup_date != '0000-00-00' AND followup_date IS NOT NULL AND status != 'Completed' AND status != 'Closed' AND ".$user_cond.") AS total_nextweek,
+			(SELECT COUNT(DISTINCT id) FROM ci_tasks WHERE followup_date > '$today' AND followup_date != '' AND followup_date != '0000-00-00' AND followup_date IS NOT NULL AND status != 'Completed' AND status != 'Closed' AND ".$user_cond.") AS total_future,
+			(SELECT COUNT(DISTINCT id) FROM ci_tasks WHERE ".$user_cond.") AS total_all";
+
 		$rows = $this->db->query($sql);
 		if($rows && $rows->num_rows() >= 1){
 			$data = $rows->row_array();
@@ -411,6 +447,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			  $this->db->join('ci_terms as E','A.s_cat=E.id','LEFT');
 			 
 			   if(!empty($closure)){
+				   $this->db->where_not_in('A.status', array(42, 43, 44));
 				   $today = date('Y-m-d');
 				   $last_date = date('Y-m-d', strtotime("-7 day"));
 				   $next_date = date('Y-m-d', strtotime("+7 day"));
@@ -429,6 +466,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			   }
 
 			   if(!empty($vertical_fu)){
+				   $this->db->where_not_in('A.status', array(42, 43, 44));
 				   $today = date('Y-m-d');
 				   $last_date = date('Y-m-d', strtotime("-7 day"));
 				   $next_date = date('Y-m-d', strtotime("+7 day"));
@@ -710,7 +748,7 @@ public function dashboard_MyPro($table='ci_leads'){
 					   $where.= " AND A.m_date < '$today'";
 				   }elseif($type==2)
 				   {
-					$where.= " AND A.m_date between '$today' AND '$last_date' ";
+					$where.= " AND A.m_date between '$last_date' AND '$today' ";
 				   }elseif($type==3)
 				   {
 					$where.= " AND A.m_date = '$today'";
@@ -821,6 +859,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			   $this->db->join('ci_terms as E','A.s_cat=E.id','LEFT');
 			  
 			   if(!empty($closure)){
+				   $this->db->where_not_in('A.status', array(42, 43, 44));
 				   $today = date('Y-m-d');
 				   $last_date = date('Y-m-d', strtotime("-7 day"));
 				   $next_date = date('Y-m-d', strtotime("+7 day"));

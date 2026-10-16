@@ -214,21 +214,68 @@
         </div>
 
         <?php
-            // Calculate totals strictly from real database metrics
+            $total_my_tasks = !empty($dashboard_tasks['total_all']) ? (int)$dashboard_tasks['total_all'] : (!empty($dashboard_tasks) ? (int)array_sum(array_slice($dashboard_tasks, 0, 5)) : 0);
             $total_my_f = !empty($dashboard_f) ? (int)array_sum(array_slice($dashboard_f, 0, 5)) : 0;
             $total_my_m = !empty($dashboard_m) ? (int)array_sum(array_slice($dashboard_m, 0, 5)) : 0;
             $total_my_c = !empty($dashboard_c['total_all']) ? (int)$dashboard_c['total_all'] : (!empty($dashboard_c) ? (int)array_sum(array_slice($dashboard_c, 0, 5)) : 0);
             $total_my_vfu = !empty($dashboard_vfu) ? (int)array_sum(array_slice($dashboard_vfu, 0, 5)) : 0;
 
+            $total_team_tasks = !empty($dashboard_Ttasks['total_all']) ? (int)$dashboard_Ttasks['total_all'] : (!empty($dashboard_Ttasks) ? (int)array_sum(array_slice($dashboard_Ttasks, 0, 5)) : 0);
             $total_team_f = !empty($dashboard_Tf) ? (int)array_sum(array_slice($dashboard_Tf, 0, 5)) : 0;
             $total_team_m = !empty($dashboard_Tm) ? (int)array_sum(array_slice($dashboard_Tm, 0, 5)) : 0;
             $total_team_c = !empty($dashboard_Tc['total_all']) ? (int)$dashboard_Tc['total_all'] : (!empty($dashboard_Tc) ? (int)array_sum(array_slice($dashboard_Tc, 0, 5)) : 0);
             $total_team_vfu = !empty($dashboard_Tvfu) ? (int)array_sum(array_slice($dashboard_Tvfu, 0, 5)) : 0; ?>
 
-        <!-- 4. Row 1: My Operational Metrics (4 Cards) -->
-        <div class="row">
-            <!-- Card 1: My Followups -->
-            <div class="col-sm-3 col-xs-12">
+        <div class="row crm-row-5cols">
+            <div class="crm-col-5 col-xs-12">
+                <div class="crm-modern-stat-card">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-tasks"></i> My Tasks</h4>
+                        <span class="card-total-pill"><?php echo $total_my_tasks; ?> Total</span>
+                    </div>
+                    <div class="crm-seg-bar">
+                        <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
+                        <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
+                        <div class="crm-seg seg-today" style="width:16%;" title="Today"></div>
+                        <div class="crm-seg seg-next7" style="width:20%;" title="Next 7 Days"></div>
+                        <div class="crm-seg seg-future" style="width:30%;" title="All Future"></div>
+                    </div>
+                    <ul class="crm-modern-stat-grid">
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/tasks/followups?type=1" class="crm-modern-stat-chip" data-drilldown="my_tasks" data-type="1" data-label="My Tasks - All Missed">
+                                <span>All Missed</span>
+                                <span class="badge bg-red"><?php echo isset($dashboard_tasks['total_missed']) ? $dashboard_tasks['total_missed'] : 0; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/tasks/followups?type=2" class="crm-modern-stat-chip" data-drilldown="my_tasks" data-type="2" data-label="My Tasks - Last 7 Days">
+                                <span>Last 7 Days</span>
+                                <span class="badge bg-orange"><?php echo isset($dashboard_tasks['total_lastweek']) ? $dashboard_tasks['total_lastweek'] : 0; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/tasks/followups?type=3" class="crm-modern-stat-chip" data-drilldown="my_tasks" data-type="3" data-label="My Tasks - Today">
+                                <span>Today</span>
+                                <span class="badge bg-skyblue"><?php echo isset($dashboard_tasks['total_today']) ? $dashboard_tasks['total_today'] : 0; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/tasks/followups?type=4" class="crm-modern-stat-chip" data-drilldown="my_tasks" data-type="4" data-label="My Tasks - Next 7 Days">
+                                <span>Next 7 Days</span>
+                                <span class="badge bg-blue"><?php echo isset($dashboard_tasks['total_nextweek']) ? $dashboard_tasks['total_nextweek'] : 0; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/tasks/followups?type=5" class="crm-modern-stat-chip" data-drilldown="my_tasks" data-type="5" data-label="My Tasks - All Future">
+                                <span>All Future</span>
+                                <span class="badge bg-green"><?php echo isset($dashboard_tasks['total_future']) ? $dashboard_tasks['total_future'] : 0; ?></span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="crm-col-5 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-calendar-check-o"></i> My Followups</h4>
@@ -276,8 +323,7 @@
                 </div>
             </div>
 
-            <!-- Card 2: My Meetings -->
-            <div class="col-sm-3 col-xs-12">
+            <div class="crm-col-5 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-handshake-o"></i> My Meetings</h4>
@@ -325,8 +371,7 @@
                 </div>
             </div>
 
-            <!-- Card 3: My Closures -->
-            <div class="col-sm-3 col-xs-12">
+            <div class="crm-col-5 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-trophy"></i> My Closures</h4>
@@ -374,8 +419,7 @@
                 </div>
             </div>
 
-            <!-- Card 4: My Vertical FU -->
-            <div class="col-sm-3 col-xs-12">
+            <div class="crm-col-5 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-briefcase"></i> My Vertical FU</h4>
@@ -424,10 +468,56 @@
             </div>
         </div>
 
-        <!-- 5. Row 2: Team Operational Metrics (4 Cards) -->
-        <div class="row">
-            <!-- Card 6: Team Followups -->
-            <div class="col-sm-3 col-xs-12">
+        <div class="row crm-row-5cols">
+            <div class="crm-col-5 col-xs-12">
+                <div class="crm-modern-stat-card">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-tasks"></i> My Team Tasks</h4>
+                        <span class="card-total-pill"><?php echo $total_team_tasks; ?> Total</span>
+                    </div>
+                    <div class="crm-seg-bar">
+                        <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
+                        <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
+                        <div class="crm-seg seg-today" style="width:16%;" title="Today"></div>
+                        <div class="crm-seg seg-next7" style="width:20%;" title="Next 7 Days"></div>
+                        <div class="crm-seg seg-future" style="width:30%;" title="All Future"></div>
+                    </div>
+                    <ul class="crm-modern-stat-grid">
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/tasks/followups?type=1&team=1" class="crm-modern-stat-chip" data-drilldown="team_tasks" data-type="1" data-label="Team Tasks - All Missed">
+                                <span>All Missed</span>
+                                <span class="badge bg-red"><?php echo isset($dashboard_Ttasks['total_missed']) ? $dashboard_Ttasks['total_missed'] : 0; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/tasks/followups?type=2&team=1" class="crm-modern-stat-chip" data-drilldown="team_tasks" data-type="2" data-label="Team Tasks - Last 7 Days">
+                                <span>Last 7 Days</span>
+                                <span class="badge bg-orange"><?php echo isset($dashboard_Ttasks['total_lastweek']) ? $dashboard_Ttasks['total_lastweek'] : 0; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/tasks/followups?type=3&team=1" class="crm-modern-stat-chip" data-drilldown="team_tasks" data-type="3" data-label="Team Tasks - Today">
+                                <span>Today</span>
+                                <span class="badge bg-skyblue"><?php echo isset($dashboard_Ttasks['total_today']) ? $dashboard_Ttasks['total_today'] : 0; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/tasks/followups?type=4&team=1" class="crm-modern-stat-chip" data-drilldown="team_tasks" data-type="4" data-label="Team Tasks - Next 7 Days">
+                                <span>Next 7 Days</span>
+                                <span class="badge bg-blue"><?php echo isset($dashboard_Ttasks['total_nextweek']) ? $dashboard_Ttasks['total_nextweek'] : 0; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/tasks/followups?type=5&team=1" class="crm-modern-stat-chip" data-drilldown="team_tasks" data-type="5" data-label="Team Tasks - All Future">
+                                <span>All Future</span>
+                                <span class="badge bg-green"><?php echo isset($dashboard_Ttasks['total_future']) ? $dashboard_Ttasks['total_future'] : 0; ?></span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="crm-col-5 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-calendar-check-o"></i> Team Followups</h4>
@@ -475,8 +565,7 @@
                 </div>
             </div>
 
-            <!-- Card 7: Team Meetings -->
-            <div class="col-sm-3 col-xs-12">
+            <div class="crm-col-5 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-handshake-o"></i> Team Meetings</h4>
@@ -524,8 +613,7 @@
                 </div>
             </div>
 
-            <!-- Card 8: Team Closures -->
-            <div class="col-sm-3 col-xs-12">
+            <div class="crm-col-5 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-trophy"></i> Team Closures</h4>
@@ -573,8 +661,7 @@
                 </div>
             </div>
 
-            <!-- Card 9: Team Vertical FU -->
-            <div class="col-sm-3 col-xs-12">
+            <div class="crm-col-5 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-briefcase"></i> Team Vertical FU</h4>

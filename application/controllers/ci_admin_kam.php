@@ -29,14 +29,51 @@ class Ci_admin_kam extends CI_Controller {
 		}
 	}
 
+	private function _check_kam_access($action = '')
+	{
+		$this->if_not_login();
+		$role = (int)$this->session->userdata('manager_role');
+		if ($role !== 1 && $role !== 2 && $role !== 4) {
+			show_error('Access Denied: You do not have permission to access KAM.', 403);
+			return false;
+		}
+		if ($role === 2 && $action !== 'my_client') {
+			show_error('Access Denied: You do not have permission to access this KAM section.', 403);
+			return false;
+		}
+		return true;
+	}
+
 	public function index()
 	{
-		redirect('manager/kam/onboard');
+		$this->if_not_login();
+		$role = (int)$this->session->userdata('manager_role');
+		if ($role === 2) {
+			redirect('manager/kam/my-client');
+		} elseif ($role === 1 || $role === 4) {
+			redirect('manager/kam/my-client');
+		} else {
+			show_error('Access Denied: You do not have permission to access KAM.', 403);
+		}
+	}
+
+	public function my_client()
+	{
+		if (!$this->_check_kam_access('my_client')) return;
+
+		$data = array();
+		$data['info'] = array(
+			'title' => 'Manager - KAM My Client',
+			'page_heading' => 'My Client'
+		);
+		$data['info2'] = $this->if_not_login();
+
+		$this->load->view('manager/kam/my_client', $data);
 	}
 
 	public function onboard()
 	{
-		$this->if_not_login();
+		if (!$this->_check_kam_access('onboard')) return;
 
 		$data = array();
 		$data['info'] = array(
@@ -51,7 +88,7 @@ class Ci_admin_kam extends CI_Controller {
 
 	public function schedule()
 	{
-		$this->if_not_login();
+		if (!$this->_check_kam_access('schedule')) return;
 
 		$data = array();
 		$data['info'] = array(
@@ -70,7 +107,7 @@ class Ci_admin_kam extends CI_Controller {
 
 	public function report()
 	{
-		$this->if_not_login();
+		if (!$this->_check_kam_access('report')) return;
 
 		$data = array();
 		$data['info'] = array(

@@ -156,6 +156,8 @@ class Ci_admin_tasks extends CI_Controller {
 		$this->if_not_login();
 		$role = (int)$this->session->userdata('manager_role');
 		$manager_id = (int)$this->session->userdata('manager_id');
+		$type = (int)$this->input->get('type');
+		$team = (int)$this->input->get('team');
 
 		$data = array();
 		$data['info'] = array(
@@ -171,18 +173,42 @@ class Ci_admin_tasks extends CI_Controller {
 		$this->db->join('ci_user u', 'u.id = t.assigned_to', 'left');
 		$this->db->where('t.followup_date !=', '');
 		$this->db->where('t.followup_date IS NOT NULL', NULL, FALSE);
-		if ($role !== 1 && $role !== 4) {
+		$this->db->where_not_in('t.status', array('Completed', 'Closed'));
+
+		if ($team === 1) {
+			$team_array = $this->ci_admin_model->fetchTeamList($manager_id, '');
+			$team_str = !empty($team_array) ? implode(',', $team_array) : $manager_id;
+			$this->db->where("(FIND_IN_SET(t.created_by, '".$team_str."') > 0 OR FIND_IN_SET(t.assigned_to, '".$team_str."') > 0)");
+		} elseif ($role !== 1 && $role !== 4) {
 			$this->db->group_start();
 			$this->db->where('t.created_by', $manager_id);
 			$this->db->or_where('t.assigned_to', $manager_id);
 			$this->db->group_end();
 		}
+
+		$today = date('Y-m-d');
+		$last_date = date('Y-m-d', strtotime("-7 day"));
+		$next_date = date('Y-m-d', strtotime("+7 day"));
+
+		if ($type === 1) {
+			$this->db->where('t.followup_date <', $today);
+		} elseif ($type === 2) {
+			$this->db->where('t.followup_date >=', $last_date);
+			$this->db->where('t.followup_date <', $today);
+		} elseif ($type === 3) {
+			$this->db->where('t.followup_date', $today);
+		} elseif ($type === 4) {
+			$this->db->where('t.followup_date >', $today);
+			$this->db->where('t.followup_date <=', $next_date);
+		} elseif ($type === 5) {
+			$this->db->where('t.followup_date >', $today);
+		}
+
 		$this->db->order_by('t.followup_date', 'ASC');
 		$data['list'] = $this->db->get()->result_array();
 
 		$this->load->view('manager/tasks/followups', $data);
 	}
-
 }
 /* End of file ci_admin_tasks.php */
 /* Location: ./application/controllers/ci_admin_tasks.php */

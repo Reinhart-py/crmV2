@@ -233,19 +233,8 @@
               </div>
             </div>
 
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group">
-                <label>Raised By</label>
-                <input type="text" class="form-control" value="<?php echo htmlspecialchars($this->session->userdata('manager_name')); ?>" readonly>
-              </div>
-            </div>
-
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group">
-                <label>Created Date</label>
-                <input type="text" class="form-control" value="<?php echo date('d-m-Y'); ?>" readonly>
-              </div>
-            </div>
+            <input type="hidden" name="raised_by" value="<?php echo (int)$this->session->userdata('manager_id'); ?>">
+            <input type="hidden" name="created_date" value="<?php echo date('Y-m-d H:i:s'); ?>">
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
