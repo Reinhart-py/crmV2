@@ -346,6 +346,8 @@ function __construct()
 		$data['u_list'] =$this->comman_model->getAll('',array('id','ASC'),'ci_user');
 		$data['v_list'] =$this->ci_admin_model->getShortVerticals($this->session->userdata('manager_id'));
 		$data['business_categories'] = $this->comman_model->getAll(array('cat_type'=>'business_cat','status'=>1),'','ci_terms');
+		$data['data_sources'] = $this->comman_model->getAll(array('cat_type'=>'data_source','status'=>1),'','ci_terms');
+		$data['database_categories'] = $this->comman_model->getAll(array('cat_type'=>'database_cat','status'=>1),'','ci_terms');
 
 		if($this->input->server('REQUEST_METHOD')==='POST')
 		{	 			
@@ -363,9 +365,13 @@ function __construct()
 				$c_date = !empty($close_date) ? db_date($close_date) : '';
 				if(!empty($f_date) && !empty($c_date)){
 					if(strtotime($c_date) < strtotime($f_date)){
-						$c_date = $f_date; // Exp. Close Date can never be previous or past of follow up dates
+						$c_date = $f_date;
 					}
 				}
+
+				$ind_cat = !empty($industry_category) ? trim($industry_category) : (isset($business_category) ? trim($business_category) : '');
+				$stat_cat = !empty($status_category) ? trim($status_category) : (isset($lost_reason) ? trim($lost_reason) : '');
+				$q_amt = (isset($quote_amount) && is_numeric($quote_amount) && $quote_amount !== '') ? floatval($quote_amount) : null;
 
 				$list= array(				
 				'lead_id'=> 100000000,
@@ -388,12 +394,23 @@ function __construct()
 				'contact1'=>$contact1,
 				'alt_mobile'=>!empty($alt_contact) ? $alt_contact : (isset($alt_mobile) ? $alt_mobile : ''),
 				'alt_contact'=>!empty($alt_contact) ? $alt_contact : (isset($alt_mobile) ? $alt_mobile : ''),
-				'business_category'=>isset($business_category) ? $business_category : '',
+				'industry_category'=>$ind_cat,
+				'business_category'=>$ind_cat,
+				'quote_status'=>!empty($quote_status) ? trim($quote_status) : null,
+				'quote_mode'=>!empty($quote_mode) ? trim($quote_mode) : null,
+				'quote_amount'=>$q_amt,
+				'corporate_tax_status'=>!empty($corporate_tax_status) ? trim($corporate_tax_status) : 'Not Registered',
+				'vat_status'=>!empty($vat_status) ? trim($vat_status) : 'Not Registered',
+				'data_source'=>!empty($data_source) ? trim($data_source) : '',
+				'data_batch_referral_no'=>!empty($data_batch_referral_no) ? trim($data_batch_referral_no) : '',
+				'database_category'=>!empty($database_category) ? trim($database_category) : '',
+				'status_category'=>$stat_cat,
+				'status_remarks'=>!empty($status_remarks) ? trim($status_remarks) : '',
 				'dnd_status'=>isset($dnd_status) ? $dnd_status : 'No',
 				'dnd_check_date'=>!empty($dnd_check_date) ? db_date($dnd_check_date) : '',
 				'location'=>$location,
 				'status'=>$status,
-				'lost_reason'=>($status == 43) ? trim($this->input->post('lost_reason')) : null,
+				'lost_reason'=>!empty($stat_cat) ? $stat_cat : null,
 
 				'followup_date'=>$f_date,
 				'followup_time'=>$followup_time,
@@ -556,6 +573,8 @@ function __construct()
 		$data['bo_list']=$this->comman_model->getAll(array('lead_id'=>$id),'','ci_boleads');
 		$data['u_list'] =$this->comman_model->getAll('',array('id','ASC'),'ci_user');
 		$data['business_categories'] = $this->comman_model->getAll(array('cat_type'=>'business_cat','status'=>1),'','ci_terms');
+		$data['data_sources'] = $this->comman_model->getAll(array('cat_type'=>'data_source','status'=>1),'','ci_terms');
+		$data['database_categories'] = $this->comman_model->getAll(array('cat_type'=>'database_cat','status'=>1),'','ci_terms');
 		$data['action']= $action;
 		$data['follow_list']=$this->comman_model->getAll(array('lead_id'=>$id,'lead_type'=>'lead'),'','ci_followup');
 		$data['meeting_list']=$this->comman_model->getAll(array('lead_id'=>$id),'','ci_meetings');
@@ -583,9 +602,13 @@ function __construct()
 			}
 			if(!empty($max_fu) && !empty($c_date)){
 				if(strtotime($c_date) < strtotime($max_fu)){
-					$c_date = $max_fu; // Exp. Close Date can never be previous or past of follow up dates
+					$c_date = $max_fu;
 				}
 			}
+
+			$ind_cat = !empty($industry_category) ? trim($industry_category) : (isset($business_category) ? trim($business_category) : '');
+			$stat_cat = !empty($status_category) ? trim($status_category) : (isset($lost_reason) ? trim($lost_reason) : '');
+			$q_amt = (isset($quote_amount) && is_numeric($quote_amount) && $quote_amount !== '') ? floatval($quote_amount) : null;
 
 			$list= array(
 				'customer'=>$customer,
@@ -607,13 +630,24 @@ function __construct()
 				'contact1'=>$contact1,
 				'alt_mobile'=>!empty($alt_contact) ? $alt_contact : (isset($alt_mobile) ? $alt_mobile : ''),
 				'alt_contact'=>!empty($alt_contact) ? $alt_contact : (isset($alt_mobile) ? $alt_mobile : ''),
-				'business_category'=>isset($business_category) ? $business_category : '',
+				'industry_category'=>$ind_cat,
+				'business_category'=>$ind_cat,
+				'quote_status'=>!empty($quote_status) ? trim($quote_status) : null,
+				'quote_mode'=>!empty($quote_mode) ? trim($quote_mode) : null,
+				'quote_amount'=>$q_amt,
+				'corporate_tax_status'=>!empty($corporate_tax_status) ? trim($corporate_tax_status) : 'Not Registered',
+				'vat_status'=>!empty($vat_status) ? trim($vat_status) : 'Not Registered',
+				'data_source'=>!empty($data_source) ? trim($data_source) : '',
+				'data_batch_referral_no'=>!empty($data_batch_referral_no) ? trim($data_batch_referral_no) : '',
+				'database_category'=>!empty($database_category) ? trim($database_category) : '',
+				'status_category'=>$stat_cat,
+				'status_remarks'=>!empty($status_remarks) ? trim($status_remarks) : '',
 				'dnd_status'=>isset($dnd_status) ? $dnd_status : 'No',
 				'dnd_check_date'=>!empty($dnd_check_date) ? db_date($dnd_check_date) : '',
 
 				'location'=>$location,
 				'status'=>$status,				
-				'lost_reason'=>($status == 43) ? trim($this->input->post('lost_reason')) : null,
+				'lost_reason'=>!empty($stat_cat) ? $stat_cat : null,
 				'close_date'=>$c_date,
 				'remark'=>$remark,
 				'address'=>$address,
@@ -952,7 +986,6 @@ $data['info2']=$this->if_not_login();
 			$output = fopen('php://output', 'w');
 			fputs($output, "\xEF\xBB\xBF");
 
-			// CSV Column Headers matching Add Leads Initial & Additional Category fields
 			$headers = array(
 				'Lead ID',
 				'Customer Name',
@@ -964,6 +997,15 @@ $data['info2']=$this->if_not_login();
 				'Current Monthly Revenue Amount',
 				'Current Monthly Revenue Date',
 				'Category',
+				'Industry Category',
+				'Quote Status',
+				'Quote Mode',
+				'Quote Amount',
+				'Corporate Tax Status',
+				'VAT Status',
+				'Data Source',
+				'Data Batch Referral Number',
+				'Database Category',
 				'Service Category',
 				'Product Category',
 				'Product Details',
@@ -977,7 +1019,8 @@ $data['info2']=$this->if_not_login();
 				'MRR',
 				'Location',
 				'Status',
-				'Lost Reason',
+				'Status Category',
+				'Status Remarks',
 				'Exp Close Date',
 				'Remarks',
 				'Address',
@@ -1009,6 +1052,9 @@ $data['info2']=$this->if_not_login();
 					$state_name = isset($states_map[$l['state']]) ? $states_map[$l['state']] : $l['state'];
 					$assigned_name = !empty($l['lead_assign']) && isset($users_map[$l['lead_assign']]) ? $users_map[$l['lead_assign']] : 'Unassigned';
 
+					$ind_val = !empty($l['industry_category']) ? $l['industry_category'] : (!empty($l['business_category']) ? $l['business_category'] : '');
+					$stat_cat_val = !empty($l['status_category']) ? $l['status_category'] : (!empty($l['lost_reason']) ? $l['lost_reason'] : '');
+
 					$row = array(
 						!empty($l['lead_id']) ? $l['lead_id'] : (100000000 + (int)$l['id']),
 						$l['customer'],
@@ -1020,6 +1066,15 @@ $data['info2']=$this->if_not_login();
 						$l['r_amount'],
 						$l['r_date'],
 						$l['category'],
+						$ind_val,
+						!empty($l['quote_status']) ? $l['quote_status'] : '',
+						!empty($l['quote_mode']) ? $l['quote_mode'] : '',
+						isset($l['quote_amount']) ? $l['quote_amount'] : '',
+						!empty($l['corporate_tax_status']) ? $l['corporate_tax_status'] : '',
+						!empty($l['vat_status']) ? $l['vat_status'] : '',
+						!empty($l['data_source']) ? $l['data_source'] : '',
+						!empty($l['data_batch_referral_no']) ? $l['data_batch_referral_no'] : '',
+						!empty($l['database_category']) ? $l['database_category'] : '',
 						$s_cat_name,
 						$p_cat_name,
 						$l['p_details'],
@@ -1033,7 +1088,8 @@ $data['info2']=$this->if_not_login();
 						$l['mrr'],
 						$l['location'],
 						$status_name,
-						!empty($l['lost_reason']) ? $l['lost_reason'] : '',
+						$stat_cat_val,
+						!empty($l['status_remarks']) ? $l['status_remarks'] : '',
 						$l['close_date'],
 						$l['remark'],
 						$l['address'],
@@ -1227,7 +1283,20 @@ $data['info2']=$this->if_not_login();
 				$category = 'New';
 			}
 
-			$business_category = $get_val($row, array('businesscategory', 'businesscat'));
+			$business_category = $get_val($row, array('industrycategory', 'industrycat', 'businesscategory', 'businesscat'));
+			$industry_category = $business_category;
+			$quote_status = $get_val($row, array('quotestatus', 'quotestat', 'quote'));
+			$quote_mode = $get_val($row, array('quotemode', 'quotemod'));
+			$quote_amount_val = $get_val($row, array('quoteamount', 'quoteamt', 'quotedamount'));
+			$quote_amount = (is_numeric($quote_amount_val) && $quote_amount_val !== '') ? floatval($quote_amount_val) : null;
+			$corporate_tax_status = $get_val($row, array('corporatetaxstatus', 'corporatetax', 'corptax'));
+			$vat_status = $get_val($row, array('vatstatus', 'vat'));
+			$data_source = $get_val($row, array('datasource', 'sourcecategory'));
+			$data_batch_referral_no = $get_val($row, array('databatchreferralnumber', 'databatchreferralno', 'batchreferralno', 'batchno', 'referralno'));
+			$database_category = $get_val($row, array('databasecategory', 'databasecat'));
+			$status_category = $get_val($row, array('statuscategory', 'statuscat', 'lostreason'));
+			$status_remarks = $get_val($row, array('statusremarks', 'statusremark'));
+
 			$dnd_status = $get_val($row, array('dncrdnd', 'dncr', 'dnd', 'dndstatus', 'tncrtnd', 'tncr'));
 			if (empty($dnd_status) || !in_array(strtolower($dnd_status), array('yes', 'no'))) {
 				$dnd_status = 'No';
@@ -1253,7 +1322,7 @@ $data['info2']=$this->if_not_login();
 
 			$location = $get_val($row, array('location'));
 			$status_raw = $get_val($row, array('status'));
-			$status = 36; // Default to Database
+			$status = 36;
 			if (is_numeric($status_raw) && (int)$status_raw > 0) {
 				$status = (int)$status_raw;
 			} else if (!empty($status_raw)) {
@@ -1293,7 +1362,19 @@ $data['info2']=$this->if_not_login();
 				'r_amount' => $r_amount,
 				'r_date' => !empty($r_date) ? db_date($r_date) : '',
 				'category' => $category,
+				'industry_category' => $industry_category,
 				'business_category' => $business_category,
+				'quote_status' => !empty($quote_status) ? $quote_status : null,
+				'quote_mode' => !empty($quote_mode) ? $quote_mode : null,
+				'quote_amount' => $quote_amount,
+				'corporate_tax_status' => !empty($corporate_tax_status) ? $corporate_tax_status : 'Not Registered',
+				'vat_status' => !empty($vat_status) ? $vat_status : 'Not Registered',
+				'data_source' => !empty($data_source) ? $data_source : '',
+				'data_batch_referral_no' => !empty($data_batch_referral_no) ? $data_batch_referral_no : '',
+				'database_category' => !empty($database_category) ? $database_category : '',
+				'status_category' => !empty($status_category) ? $status_category : '',
+				'status_remarks' => !empty($status_remarks) ? $status_remarks : '',
+				'lost_reason' => !empty($status_category) ? $status_category : null,
 				'dnd_status' => $dnd_status,
 				'dnd_check_date' => !empty($dnd_check_date) ? db_date($dnd_check_date) : '',
 				's_cat' => $s_cat,
@@ -1320,7 +1401,7 @@ $data['info2']=$this->if_not_login();
 				'c_partner' => !empty($c_partner) ? $c_partner : 'SRJ Electronics Trading LLC',
 				'otc' => $otc,
 				'lead_cat' => $lead_cat,
-				'lead_assign' => $assigned_user_id, // Assigned to specified user or 0 (unassigned)
+				'lead_assign' => $assigned_user_id,
 				'lead_source' => $lead_source,
 				'followup_date' => !empty($followup_date) ? db_date($followup_date) : '',
 				'followup_time' => $followup_time,
@@ -1390,7 +1471,15 @@ $data['info2']=$this->if_not_login();
 			'Current Monthly Revenue Amount',
 			'Current Monthly Revenue Date',
 			'Category',
-			'Business Category',
+			'Industry Category',
+			'Quote Status',
+			'Quote Mode',
+			'Quote Amount',
+			'Corporate Tax Status',
+			'VAT Status',
+			'Data Source',
+			'Data Batch Referral Number',
+			'Database Category',
 			'DNCR/DND',
 			'DNCR Date',
 			'Service Category',
@@ -1406,6 +1495,8 @@ $data['info2']=$this->if_not_login();
 			'MRR',
 			'Location',
 			'Status',
+			'Status Category',
+			'Status Remarks',
 			'Exp Close Date',
 			'Remarks',
 			'Address',
@@ -1432,7 +1523,15 @@ $data['info2']=$this->if_not_login();
 			'1500',
 			date('d-m-Y'),
 			'New',
-			'Corporate Solutions',
+			'Trading',
+			'Quote Given',
+			'Email',
+			'1500.00',
+			'Registered',
+			'Registered',
+			'Google Maps',
+			'REF-2026-001',
+			'New Database',
 			'No',
 			date('d-m-Y'),
 			'Voice Services',
@@ -1448,6 +1547,8 @@ $data['info2']=$this->if_not_login();
 			'1500',
 			'Dubai, Business Bay',
 			'Database',
+			'Raw Database',
+			'Verified direct company lead',
 			date('d-m-Y', strtotime('+30 days')),
 			'Prospect interested in corporate discount',
 			'Office 402, Opal Tower',

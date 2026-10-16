@@ -472,7 +472,7 @@
             <div class="crm-col-5 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
-                        <h4 class="card-title"><i class="fa fa-tasks"></i> My Team Tasks</h4>
+                        <h4 class="card-title"><i class="fa fa-tasks"></i> Team Tasks</h4>
                         <span class="card-total-pill"><?php echo $total_team_tasks; ?> Total</span>
                     </div>
                     <div class="crm-seg-bar">

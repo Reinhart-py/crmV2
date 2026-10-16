@@ -177,8 +177,17 @@
                      <td><?php echo $li['poc']; ?></td>
                       <td><?php echo $li['contact1']; ?></td>
                       <td><span class="no_show"><?php echo date('Ymd',strtotime($li['followup_date'])); ?></span><?php echo simple_date($li['followup_date']); ?></td>
-                      <td><span class="no_show"><?php echo date('Ymd',strtotime($li['created'])); ?></span><?php echo simple_date($li['created']); ?></td>
-                   <td><?php echo $li['lead_status']; ?></td>
+                    <td>
+                      <?php echo $li['lead_status']; ?>
+                      <?php 
+                      $cat_label = !empty($li['status_category']) ? $li['status_category'] : (!empty($li['lost_reason']) ? $li['lost_reason'] : '');
+                      if (!empty($cat_label)): ?>
+                        <br><small class="text-muted" style="font-weight: 500;">Category: <?php echo htmlspecialchars($cat_label); ?></small>
+                      <?php endif; ?>
+                      <?php if (!empty($li['quote_status'])): ?>
+                        <br><span class="label label-info" style="font-size: 10px;"><?php echo htmlspecialchars($li['quote_status']); ?></span>
+                      <?php endif; ?>
+                    </td>
                    <td>
                   <div class="btn-group" style="min-width: 85px;">
                   <button type="button" class="btn btn-sm btn-warning">Action</button>

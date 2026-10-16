@@ -175,15 +175,41 @@
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>Business Category</label>
-                <select class="form-control" style="width: 100%;" name="business_category">
-                  <option value="">Select Business Category</option>
-                  <?php if(isset($business_categories) && !empty($business_categories)){
-                    foreach($business_categories as $bcat){ 
-                      $sel = (isset($list['business_category']) && $list['business_category'] == $bcat['title']) ? 'selected' : '';
-                    ?>
-                      <option value="<?php echo htmlspecialchars($bcat['title']); ?>" <?php echo $sel; ?>><?php echo htmlspecialchars($bcat['title']); ?></option>
+                <label>Industry Category</label>
+                <select class="form-control" style="width: 100%;" name="industry_category">
+                  <option value="">Select Industry Category</option>
+                  <?php 
+                    $cur_ind = !empty($list['industry_category']) ? $list['industry_category'] : (!empty($list['business_category']) ? $list['business_category'] : '');
+                    if(isset($business_categories) && !empty($business_categories)){
+                      foreach($business_categories as $bcat){ 
+                        $sel = ($cur_ind == $bcat['title']) ? 'selected' : '';
+                      ?>
+                        <option value="<?php echo htmlspecialchars($bcat['title']); ?>" <?php echo $sel; ?>><?php echo htmlspecialchars($bcat['title']); ?></option>
                   <?php } } ?>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Corporate Tax Status</label>
+                <select class="form-control" style="width: 100%;" name="corporate_tax_status">
+                  <?php $cur_ct = isset($list['corporate_tax_status']) ? $list['corporate_tax_status'] : 'Not Registered'; ?>
+                  <option value="Not Registered" <?php if($cur_ct == 'Not Registered') echo 'selected'; ?>>Not Registered</option>
+                  <option value="Registered" <?php if($cur_ct == 'Registered') echo 'selected'; ?>>Registered</option>
+                  <option value="Not Applicable" <?php if($cur_ct == 'Not Applicable') echo 'selected'; ?>>Not Applicable</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>VAT Status</label>
+                <select class="form-control" style="width: 100%;" name="vat_status">
+                  <?php $cur_vat = isset($list['vat_status']) ? $list['vat_status'] : 'Not Registered'; ?>
+                  <option value="Not Registered" <?php if($cur_vat == 'Not Registered') echo 'selected'; ?>>Not Registered</option>
+                  <option value="Registered" <?php if($cur_vat == 'Registered') echo 'selected'; ?>>Registered</option>
+                  <option value="Not Applicable" <?php if($cur_vat == 'Not Applicable') echo 'selected'; ?>>Not Applicable</option>
                 </select>
               </div>
             </div>
@@ -296,47 +322,79 @@
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Location</label>
-                <input type="text" class="form-control" name="location" value="<?php echo $list['location']; ?>" >
+                <input type="text" class="form-control" name="location" value="<?php echo htmlspecialchars($list['location']); ?>">
               </div>
             </div>
+
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>Quote Status</label>
+                <?php $cur_qs = isset($list['quote_status']) ? $list['quote_status'] : 'Not Given'; ?>
+                <select class="form-control" style="width: 100%;" name="quote_status">
+                  <option value="Not Given" <?php if($cur_qs == 'Not Given') echo 'selected'; ?>>Not Given</option>
+                  <option value="Quote Given" <?php if($cur_qs == 'Quote Given') echo 'selected'; ?>>Quote Given</option>
+                  <option value="Proposal Sent" <?php if($cur_qs == 'Proposal Sent') echo 'selected'; ?>>Proposal Sent</option>
+                  <option value="Under Review" <?php if($cur_qs == 'Under Review') echo 'selected'; ?>>Under Review</option>
+                  <option value="Revised Quote" <?php if($cur_qs == 'Revised Quote') echo 'selected'; ?>>Revised Quote</option>
+                  <option value="Accepted" <?php if($cur_qs == 'Accepted') echo 'selected'; ?>>Accepted</option>
+                  <option value="Rejected" <?php if($cur_qs == 'Rejected') echo 'selected'; ?>>Rejected</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>Quote Mode</label>
+                <?php $cur_qm = isset($list['quote_mode']) ? $list['quote_mode'] : ''; ?>
+                <select class="form-control" style="width: 100%;" name="quote_mode">
+                  <option value="">Select Quote Mode</option>
+                  <option value="Email" <?php if($cur_qm == 'Email') echo 'selected'; ?>>Email</option>
+                  <option value="WhatsApp" <?php if($cur_qm == 'WhatsApp') echo 'selected'; ?>>WhatsApp</option>
+                  <option value="SMS/Text" <?php if($cur_qm == 'SMS/Text') echo 'selected'; ?>>SMS/Text</option>
+                  <option value="Phone Call/Verbal" <?php if($cur_qm == 'Phone Call/Verbal') echo 'selected'; ?>>Phone Call/Verbal</option>
+                  <option value="Other" <?php if($cur_qm == 'Other') echo 'selected'; ?>>Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>Quote Amount</label>
+                <input type="number" step="0.01" class="form-control" name="quote_amount" value="<?php echo isset($list['quote_amount']) ? htmlspecialchars($list['quote_amount']) : ''; ?>" placeholder="0.00">
+              </div>
+            </div>
+
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Status<span>*</span></label>
                 <select class="form-control" required name="status" id="lead_status_select">
-                <option value="">Select Status</option>
-
+                  <option value="">Select Status</option>
                   <?php if(isset($st_list) && !empty($st_list)){
-                    foreach($st_list as $cli){
-                  ?>
-                  <option <?php if($list['status']==$cli['id']){ echo "selected"; } ?> value="<?php echo $cli['id']; ?>" ><?php echo $cli['status']; ?></option>
-              <?php } }  ?>
-            </select>
+                    foreach($st_list as $cli){ ?>
+                      <option <?php if($list['status']==$cli['id']){ echo "selected"; } ?> value="<?php echo $cli['id']; ?>"><?php echo $cli['status']; ?></option>
+                  <?php } } ?>
+                </select>
               </div>
             </div>
+
             <?php 
-              $predefined_reasons = array(
-                'Pricing / Budget Constraints',
-                'Competitor Chosen',
-                'Product / Requirements Mismatch',
-                'Client Postponed / Not Interested',
-                'Unreachable / Dropped Contact'
-              );
-              $is_lost = ($list['status'] == 43);
-              $existing_reason = isset($list['lost_reason']) ? $list['lost_reason'] : '';
-              $is_predefined = in_array($existing_reason, $predefined_reasons);
-              $is_other = ($is_lost && !empty($existing_reason) && !$is_predefined);
+              $existing_status_cat = !empty($list['status_category']) ? $list['status_category'] : (!empty($list['lost_reason']) ? $list['lost_reason'] : '');
             ?>
-            <div class="col-lg-4 col-sm-6" id="lost_reason_col" style="<?php echo $is_lost ? '' : 'display:none;'; ?>">
+            <div class="col-lg-4 col-sm-6" id="status_category_col">
               <div class="form-group">
-                <label>Lost Reason<span>*</span></label>
-                <select class="form-control" id="lost_reason_dropdown" style="margin-bottom: 5px;" <?php echo $is_lost ? 'required' : ''; ?>>
-                  <option value="">Select Reason</option>
-                  <?php foreach($predefined_reasons as $pr){ ?>
-                    <option value="<?php echo htmlspecialchars($pr); ?>" <?php if($existing_reason === $pr) echo 'selected'; ?>><?php echo htmlspecialchars($pr); ?></option>
-                  <?php } ?>
-                  <option value="Other" <?php if($is_other) echo 'selected'; ?>>Other (Custom Reason)</option>
+                <label>Status Category</label>
+                <select class="form-control" id="status_category_dropdown" style="margin-bottom: 5px;">
+                  <option value="">Select Status Category</option>
                 </select>
-                <input type="text" class="form-control" name="lost_reason" id="lost_reason_input" placeholder="Enter custom reason..." value="<?php echo htmlspecialchars($existing_reason); ?>" style="<?php echo ($is_other || ($is_lost && empty($existing_reason))) ? '' : 'display:none;'; ?>">
+                <input type="text" class="form-control" name="status_category" id="status_category_input" placeholder="Enter custom status category..." value="<?php echo htmlspecialchars($existing_status_cat); ?>" style="display:none;">
+                <input type="hidden" name="lost_reason" id="hidden_lost_reason" value="<?php echo htmlspecialchars($existing_status_cat); ?>">
+              </div>
+            </div>
+
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>Status Remarks</label>
+                <input type="text" class="form-control" name="status_remarks" value="<?php echo isset($list['status_remarks']) ? htmlspecialchars($list['status_remarks']) : ''; ?>" placeholder="Enter status remarks / explanation">
               </div>
             </div>
             <?php /* <div class="col-lg-4 col-sm-6">
@@ -509,7 +567,70 @@
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Website / Source Link</label>
-                <input type="text" class="form-control" name="lead_source" value="<?php echo $list['lead_source']; ?>">
+                <input type="text" class="form-control" name="lead_source" value="<?php echo htmlspecialchars($list['lead_source']); ?>">
+              </div>
+            </div>
+
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>Data Source</label>
+                <select class="form-control" style="width: 100%;" name="data_source">
+                  <option value="">Select Data Source</option>
+                  <?php 
+                    $avail_sources = array();
+                    if(isset($data_sources) && !empty($data_sources)){
+                      foreach($data_sources as $ds_item){
+                        $avail_sources[] = $ds_item['title'];
+                      }
+                    }
+                    if(empty($avail_sources)){
+                      $avail_sources = array('Google Maps', 'GPS', 'Referral', 'Website', 'Social Media', 'Other');
+                    }
+                    $cur_src = isset($list['data_source']) ? $list['data_source'] : '';
+                    if(!empty($cur_src) && !in_array($cur_src, $avail_sources)){
+                      $avail_sources[] = $cur_src;
+                    }
+                    foreach($avail_sources as $src_opt){ 
+                      $sel = ($cur_src == $src_opt) ? 'selected' : '';
+                    ?>
+                      <option value="<?php echo htmlspecialchars($src_opt); ?>" <?php echo $sel; ?>><?php echo htmlspecialchars($src_opt); ?></option>
+                  <?php } ?>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>Data Batch Referral Number</label>
+                <input type="text" class="form-control" name="data_batch_referral_no" value="<?php echo isset($list['data_batch_referral_no']) ? htmlspecialchars($list['data_batch_referral_no']) : ''; ?>" placeholder="Enter Data Batch / Referral No">
+              </div>
+            </div>
+
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>Database Category</label>
+                <select class="form-control" style="width: 100%;" name="database_category">
+                  <option value="">Select Database Category</option>
+                  <?php 
+                    $avail_db_cats = array();
+                    if(isset($database_categories) && !empty($database_categories)){
+                      foreach($database_categories as $dc_item){
+                        $avail_db_cats[] = $dc_item['title'];
+                      }
+                    }
+                    if(empty($avail_db_cats)){
+                      $avail_db_cats = array('New Database', 'Online', 'Reference', 'Ported Out', 'Competitor DB', 'Contract Agent', 'Raw / Unverified', 'Cleansed', 'High Value', 'Re-engaged', 'Other');
+                    }
+                    $cur_db_cat = isset($list['database_category']) ? $list['database_category'] : '';
+                    if(!empty($cur_db_cat) && !in_array($cur_db_cat, $avail_db_cats)){
+                      $avail_db_cats[] = $cur_db_cat;
+                    }
+                    foreach($avail_db_cats as $db_opt){ 
+                      $sel = ($cur_db_cat == $db_opt) ? 'selected' : '';
+                    ?>
+                      <option value="<?php echo htmlspecialchars($db_opt); ?>" <?php echo $sel; ?>><?php echo htmlspecialchars($db_opt); ?></option>
+                  <?php } ?>
+                </select>
               </div>
             </div>
 
@@ -1098,33 +1219,128 @@ function getpSubCat()
 }
 
 $(document).ready(function() {
-  function handleLostReasonToggle() {
-    var val = $('#lead_status_select').val();
-    if (val == '43') {
-      $('#lost_reason_col').show();
-      $('#lost_reason_dropdown').prop('required', true);
-      if ($('#lost_reason_dropdown').val() === 'Other') {
-        $('#lost_reason_input').prop('required', true).show();
-      }
-    } else {
-      $('#lost_reason_col').hide();
-      $('#lost_reason_dropdown').prop('required', false);
-      $('#lost_reason_input').prop('required', false);
+  var statusCategoryMap = {
+    '43': [
+      'Pricing / Budget Constraints',
+      'Competitor Chosen',
+      'Product / Requirements Mismatch',
+      'Client Postponed / Not Interested',
+      'Unreachable / Dropped Contact',
+      'Other'
+    ],
+    '44': [
+      'Wrong Number / Invalid Contact',
+      'Fake / Spam Enquiry',
+      'Duplicate Lead Entry',
+      'Not Interested / Out of Scope',
+      'Out of Service Territory',
+      'Other'
+    ],
+    '36': [
+      'Raw Database',
+      'Cleansed Lead',
+      'Cold Prospect',
+      'Direct Reference',
+      'Other'
+    ],
+    '37': [
+      'Proposal Under Discussion',
+      'Decision Maker Pending',
+      'Budget Approval Awaited',
+      'Expected This Month',
+      'Other'
+    ],
+    '38': [
+      'Follow-up in Progress',
+      'Negotiation Ongoing',
+      'KYC / Document Collection',
+      'Awaiting Client Feedback',
+      'Other'
+    ],
+    '39': [
+      'Successfully Converted',
+      'Contract Signed',
+      'Payment Received',
+      'Other'
+    ],
+    '40': [
+      'Documents Submitted',
+      'Form Submitted to Operator',
+      'Back Office Review',
+      'Other'
+    ],
+    '41': [
+      'Sim / Service Dispatched',
+      'Activation Under Process',
+      'Verification Pending',
+      'Other'
+    ],
+    '42': [
+      'Service Live',
+      'Handover Completed',
+      'First Bill Generated',
+      'Other'
+    ],
+    'default': [
+      'General Enquiry',
+      'Follow-up Required',
+      'High Priority',
+      'Decision Maker Unavailable',
+      'Other'
+    ]
+  };
+
+  function updateStatusCategoryOptions(selectedStatus, preserveVal) {
+    var opts = statusCategoryMap[selectedStatus] || statusCategoryMap['default'];
+    var $dd = $('#status_category_dropdown');
+    var currentInputVal = (preserveVal !== undefined && preserveVal !== null) ? preserveVal : $('#status_category_input').val();
+    $dd.empty().append('<option value="">Select Status Category</option>');
+
+    var matched = false;
+    for (var i = 0; i < opts.length; i++) {
+      var opt = opts[i];
+      var isSel = (currentInputVal && currentInputVal === opt);
+      if (isSel) matched = true;
+      $dd.append($('<option></option>').attr('value', opt).text(opt).prop('selected', isSel));
     }
+
+    if (currentInputVal && !matched) {
+      $dd.val('Other');
+      $('#status_category_input').show().val(currentInputVal);
+    } else if (matched && currentInputVal !== 'Other') {
+      $('#status_category_input').hide().val(currentInputVal);
+    } else if (currentInputVal === 'Other') {
+      $('#status_category_input').show().val('');
+    } else {
+      $('#status_category_input').hide();
+    }
+    $('#hidden_lost_reason').val($('#status_category_input').val());
   }
 
-  $('#lead_status_select').on('change', handleLostReasonToggle);
+  $('#lead_status_select').on('change', function() {
+    updateStatusCategoryOptions($(this).val(), null);
+  });
 
-  $('#lost_reason_dropdown').on('change', function() {
+  $('#status_category_dropdown').on('change', function() {
     var chosen = $(this).val();
     if (chosen === 'Other') {
-      $('#lost_reason_input').show().val('').prop('required', true).focus();
+      $('#status_category_input').show().val('').focus();
+      $('#hidden_lost_reason').val('');
     } else if (chosen !== '') {
-      $('#lost_reason_input').hide().val(chosen).prop('required', false);
+      $('#status_category_input').hide().val(chosen);
+      $('#hidden_lost_reason').val(chosen);
     } else {
-      $('#lost_reason_input').hide().val('').prop('required', false);
+      $('#status_category_input').hide().val('');
+      $('#hidden_lost_reason').val('');
     }
   });
+
+  $('#status_category_input').on('input change', function() {
+    $('#hidden_lost_reason').val($(this).val());
+  });
+
+  var initialVal = $('#status_category_input').val();
+  updateStatusCategoryOptions($('#lead_status_select').val(), initialVal);
 });
 </script>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

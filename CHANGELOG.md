@@ -4,6 +4,39 @@ All notable changes, features, bug fixes, and refinements for the Rolexto CRM re
 
 ---
 
+### CRM Update Checklist: Dashboard, Leads Add/Edit, Backend, Database & Workflow Overhaul
+- **Date & Time**: `2026-10-16 15:55:00 +0530`
+
+#### Changes & Additions:
+- **Dashboard**:
+  - Renamed "My Team Tasks" card header to **Team Tasks** while keeping both **My Tasks** and **Team Tasks** side-by-side on the manager dashboard (`application/views/manager/dashboard.php`).
+- **Leads Add / Edit**:
+  - Added **Quote Status** dropdown (`Not Given`, `Quote Given`, `Proposal Sent`, `Under Review`, `Revised Quote`, `Accepted`, `Rejected`).
+  - Added **Quote Mode** dropdown (`Email`, `WhatsApp`, `SMS/Text`, `Phone Call/Verbal`, `Other`).
+  - Added **Quote Amount** numeric field (`quote_amount`).
+  - Renamed **Business Category** to **Industry Category** (`industry_category`) throughout the UI, with dual-write to `business_category` for seamless backward compatibility.
+  - Added **Corporate Tax Status** dropdown (`Not Registered`, `Registered`, `Not Applicable`).
+  - Added **VAT Status** dropdown (`Not Registered`, `Registered`, `Not Applicable`).
+  - Added **Data Source** dropdown with configurable options (`Google Maps`, `GPS`, `Referral`, `Website`, `Social Media`, `Other`), populated dynamically from `ci_terms`.
+  - Added **Data Batch Referral Number** text field (`data_batch_referral_no`).
+  - Added **Database Category** dropdown (`New Database`, `Online`, `Reference`, `Ported Out`, `Competitor DB`, `Contract Agent`, `Raw / Unverified`, `Cleansed`, `High Value`, `Re-engaged`, `Other`), populated dynamically from `ci_terms`.
+  - Renamed **Lost Reason** to **Status Category** (`status_category`), kept visible across all lead statuses with dynamic contextual reason presets (Lost, Invalid Entry, Database, etc.) and custom reason text entry.
+  - Added **Status Remarks** multiline text area (`status_remarks`) for detailed rationale.
+  - Retained all existing lead statuses, workflows, and database source configurations.
+- **Database & Migrations**:
+  - Added 11 database columns to `ci_leads`: `quote_status`, `quote_mode`, `quote_amount`, `industry_category`, `corporate_tax_status`, `vat_status`, `data_source`, `data_batch_referral_no`, `database_category`, `status_category`, and `status_remarks`.
+  - Updated `migration_runner.php` with idempotent column additions using `SET SESSION innodb_strict_mode = 0;` and seeded default terms in `ci_terms` for `data_source` and `database_cat`.
+- **Backend Controllers & Views**:
+  - Updated `Ci_admin_leads::add()` and `Ci_admin_leads::edit()` to sanitize, validate, and persist all 11 fields.
+  - Updated `Ci_admin_leads::export()` with all 11 new column headers and field exports.
+  - Updated `Ci_admin_leads::import_action()` to map and import new fields from CSV files with header aliases and security cleansing.
+  - Updated `Ci_admin_leads::download_sample_csv()` with all 11 columns and sample row data.
+  - Updated `single_view.php` to display Industry Category, Tax & VAT status, Quote details, Data Source, Batch, and Status Category/Remarks.
+  - Updated `leadsview.php`, `team/leads.php`, `assigned_leads.php`, and `followupsview.php` to display Status Category and Quote Status badges.
+  - Verified end-to-end with automated database insert/update/retrieve tests.
+
+---
+
 ### Tickets UI Alignment (Created By Header & Select Dropdown) & Open Tickets Renaming
 - **Date & Time**: `2026-10-16 14:10:00 +0530`
 

@@ -223,18 +223,36 @@
               <tr>
               <th scope="col">TL Expire Date</th>
               <td scope="col"><?php echo (!empty($p_info['tl_expire_date']) && $p_info['tl_expire_date'] != '0000-00-00') ? simple_date($p_info['tl_expire_date']) : '-'; ?></td>              
+              <tr>
+              <th scope="col">Industry Category</th>
+              <td scope="col"><?php echo !empty($p_info['industry_category']) ? htmlspecialchars($p_info['industry_category']) : (!empty($p_info['business_category']) ? htmlspecialchars($p_info['business_category']) : '-'); ?></td>              
               </tr>
 
-            
-
-
-            
-
-
-
-
+              <tr>
+              <th scope="col">Corporate Tax Status</th>
+              <td scope="col"><?php echo !empty($p_info['corporate_tax_status']) ? htmlspecialchars($p_info['corporate_tax_status']) : '-'; ?></td>              
+              </tr>
 
               <tr>
+              <th scope="col">VAT Status</th>
+              <td scope="col"><?php echo !empty($p_info['vat_status']) ? htmlspecialchars($p_info['vat_status']) : '-'; ?></td>              
+              </tr>
+
+              <tr>
+              <th scope="col">Quote Status</th>
+              <td scope="col"><?php echo !empty($p_info['quote_status']) ? htmlspecialchars($p_info['quote_status']) : '-'; ?></td>              
+              </tr>
+
+              <tr>
+              <th scope="col">Quote Mode</th>
+              <td scope="col"><?php echo !empty($p_info['quote_mode']) ? htmlspecialchars($p_info['quote_mode']) : '-'; ?></td>              
+              </tr>
+
+              <tr>
+              <th scope="col">Quote Amount</th>
+              <td scope="col"><?php echo (isset($p_info['quote_amount']) && $p_info['quote_amount'] !== '' && $p_info['quote_amount'] !== null) ? htmlspecialchars($p_info['quote_amount']) : '-'; ?></td>              
+              </tr>
+
               <th scope="col">Modified At</th>
               <td scope="col"><?php echo simple_date($p_info['modified']); ?>  </td>              
             
@@ -332,12 +350,26 @@
               <th scope="col">Status</th>
                 <td scope="col"><?php echo $p_info['status']; ?></td>
               </tr>
-              <?php if (!empty($p_info['lost_reason'])): ?>
               <tr>
-              <th scope="col">Lost Reason</th>
-                <td scope="col"><?php echo htmlspecialchars($p_info['lost_reason']); ?></td>
+              <th scope="col">Status Category</th>
+                <td scope="col"><?php echo !empty($p_info['status_category']) ? htmlspecialchars($p_info['status_category']) : (!empty($p_info['lost_reason']) ? htmlspecialchars($p_info['lost_reason']) : '-'); ?></td>
               </tr>
-              <?php endif; ?>
+              <tr>
+              <th scope="col">Status Remarks</th>
+                <td scope="col"><?php echo !empty($p_info['status_remarks']) ? htmlspecialchars($p_info['status_remarks']) : '-'; ?></td>
+              </tr>
+              <tr>
+              <th scope="col">Data Source</th>
+                <td scope="col"><?php echo !empty($p_info['data_source']) ? htmlspecialchars($p_info['data_source']) : '-'; ?></td>
+              </tr>
+              <tr>
+              <th scope="col">Data Batch Referral No.</th>
+                <td scope="col"><?php echo !empty($p_info['data_batch_referral_no']) ? htmlspecialchars($p_info['data_batch_referral_no']) : '-'; ?></td>
+              </tr>
+              <tr>
+              <th scope="col">Database Category</th>
+                <td scope="col"><?php echo !empty($p_info['database_category']) ? htmlspecialchars($p_info['database_category']) : '-'; ?></td>
+              </tr>
 
               <tr>
               <th scope="col">Next Follow Up Time </th>

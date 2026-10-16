@@ -253,4 +253,34 @@ foreach ($roles as $r_id => $r_title) {
     }
 }
 
+add_col_if_missing($mysqli, 'ci_leads', 'quote_status', "VARCHAR(100) NULL");
+add_col_if_missing($mysqli, 'ci_leads', 'quote_mode', "VARCHAR(100) NULL");
+add_col_if_missing($mysqli, 'ci_leads', 'quote_amount', "DECIMAL(15,2) NULL");
+add_col_if_missing($mysqli, 'ci_leads', 'industry_category', "VARCHAR(150) NULL");
+add_col_if_missing($mysqli, 'ci_leads', 'corporate_tax_status', "VARCHAR(50) NULL");
+add_col_if_missing($mysqli, 'ci_leads', 'vat_status', "VARCHAR(50) NULL");
+add_col_if_missing($mysqli, 'ci_leads', 'data_source', "VARCHAR(150) NULL");
+add_col_if_missing($mysqli, 'ci_leads', 'data_batch_referral_no', "VARCHAR(100) NULL");
+add_col_if_missing($mysqli, 'ci_leads', 'database_category', "VARCHAR(100) NULL");
+add_col_if_missing($mysqli, 'ci_leads', 'status_category', "VARCHAR(255) NULL");
+add_col_if_missing($mysqli, 'ci_leads', 'status_remarks', "TEXT NULL");
+
+$default_sources = array('Google Maps', 'GPS', 'Referral', 'Website', 'Social Media', 'Other');
+foreach ($default_sources as $ds) {
+    $ds_esc = $mysqli->real_escape_string($ds);
+    $chk = $mysqli->query("SELECT id FROM ci_terms WHERE cat_type='data_source' AND title='$ds_esc'");
+    if ($chk && $chk->num_rows == 0) {
+        $mysqli->query("INSERT INTO ci_terms (title, cat_type, status, parent_id) VALUES ('$ds_esc', 'data_source', 1, 0)");
+    }
+}
+
+$default_db_cats = array('New Database', 'Online', 'Reference', 'Ported Out', 'Competitor DB', 'Contract Agent', 'Raw / Unverified', 'Cleansed', 'High Value', 'Re-engaged', 'Other');
+foreach ($default_db_cats as $dc) {
+    $dc_esc = $mysqli->real_escape_string($dc);
+    $chk = $mysqli->query("SELECT id FROM ci_terms WHERE cat_type='database_cat' AND title='$dc_esc'");
+    if ($chk && $chk->num_rows == 0) {
+        $mysqli->query("INSERT INTO ci_terms (title, cat_type, status, parent_id) VALUES ('$dc_esc', 'database_cat', 1, 0)");
+    }
+}
+
 echo "Database migrations complete.\n";
