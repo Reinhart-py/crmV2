@@ -120,7 +120,7 @@
           <li><a href="<?php echo base_url();?>manager/tasks/followups"><i class="fa fa-calendar-check-o"></i>Task Follow-up</a></li>
           <li><a href="<?php echo base_url();?>manager/tickets/add"><i class="fa fa-plus"></i>Raise Ticket</a></li>
           <li><a href="<?php echo base_url();?>manager/tickets"><i class="fa fa-ticket"></i>Ticket View</a></li>
-          <li><a href="<?php echo base_url();?>manager/tickets/followups"><i class="fa fa-calendar-check-o"></i>Ticket Follow-up</a></li>
+          <li><a href="<?php echo base_url();?>manager/tickets/followups"><i class="fa fa-calendar-check-o"></i>Open Tickets</a></li>
         </ul>
       </li>
 
@@ -171,7 +171,7 @@
           <li><a href="<?php echo base_url();?>manager/team/assignmeetings"><i class="fa fa-list"></i>Assigned Meetings</a></li>
           <li><a href="<?php echo base_url();?>manager/team/assignleads"><i class="fa fa-list"></i>Assigned Leads</a></li>
           <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-tasks"></i>Task</a></li>
-          <li><a href="<?php echo base_url();?>manager/tickets"><i class="fa fa-ticket"></i>Tickets</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/tickets"><i class="fa fa-ticket"></i>Tickets</a></li>
           <li><a href="<?php echo base_url();?>manager/performance-report"><i class="fa fa-list"></i>Performance Report</a></li>
         </ul>
       </li>
@@ -304,7 +304,7 @@ $(function() {
           <li><a href="<?php echo base_url();?>manager/tasks/followups"><i class="fa fa-calendar-check-o"></i>Task Follow-up</a></li>
           <li><a href="<?php echo base_url();?>manager/tickets/add"><i class="fa fa-plus"></i>Raise Ticket</a></li>
           <li><a href="<?php echo base_url();?>manager/tickets"><i class="fa fa-ticket"></i>Ticket View</a></li>
-          <li><a href="<?php echo base_url();?>manager/tickets/followups"><i class="fa fa-calendar-check-o"></i>Ticket Follow-up</a></li>
+          <li><a href="<?php echo base_url();?>manager/tickets/followups"><i class="fa fa-calendar-check-o"></i>Open Tickets</a></li>
         </ul>
       </li>
 
@@ -354,7 +354,7 @@ $(function() {
           <li><a href="<?php echo base_url();?>manager/team/assignmeetings"><i class="fa fa-list"></i>Assigned Meetings</a></li>
           <li><a href="<?php echo base_url();?>manager/team/assignleads"><i class="fa fa-list"></i>Assigned Leads</a></li>
           <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-tasks"></i>Task</a></li>
-          <li><a href="<?php echo base_url();?>manager/tickets"><i class="fa fa-ticket"></i>Tickets</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/tickets"><i class="fa fa-ticket"></i>Tickets</a></li>
           <li><a href="<?php echo base_url();?>manager/performance-report"><i class="fa fa-list"></i>Performance Report</a></li>
         </ul>
       </li>

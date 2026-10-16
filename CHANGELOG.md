@@ -4,6 +4,23 @@ All notable changes, features, bug fixes, and refinements for the Rolexto CRM re
 
 ---
 
+### Tickets UI Alignment (Created By Header & Select Dropdown) & Open Tickets Renaming
+- **Date & Time**: `2026-10-16 14:10:00 +0530`
+
+#### Changes & Additions:
+- **Operations > Renamed "Ticket Follow-up" to "Open Tickets"**:
+  - Renamed menu item in `application/views/manager/elements/header.php` (both desktop menu and mobile sidebar) from `Ticket Follow-up` to **Open Tickets** (`manager/tickets/followups`).
+  - Updated page heading and title to **Open Tickets** in `Ci_admin_tickets::followups()`.
+  - Added route aliases `manager/tickets/open` and `manager/team/tickets`.
+  - Maintained filtering to display exclusively open tickets with the identical tickets table UI.
+- **Tickets Section & Team > Tickets (Created By Header & Select Dropdown Parity)**:
+  - Added **Created By** select dropdown to the search filter toolbar in both `index.php` and `followups.php` allowing user selection.
+  - Added **Created By** column to table header (`<th>Date</th><th>Created By</th>`), displaying the ticket creator/raiser's name (`creator_name`).
+  - Added DataTables column footer select dropdown for column 9 (**Created By**) alongside Status (column 10), Department (column 4), Client Type (column 2), and Priority (column 5), matching the footer select behavior in `Team > Leads` (`team/leads.php`).
+  - Linked `Team > Tickets` to `manager/team/tickets` in both desktop and mobile navigation.
+
+---
+
 ### Operations, KAM Role Governance, Sticky Navbar, Leads Lost Reason & Dashboard Enhancements
 - **Date & Time**: `2026-10-16 13:50:00 +0530`
 

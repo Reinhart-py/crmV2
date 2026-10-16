@@ -95,6 +95,10 @@ class Ci_admin_tickets extends CI_Controller {
 		$priority = $this->input->get('priority');
 		$assigned_user = $this->input->get('assigned_user');
 		$raised_by = $this->input->get('raised_by');
+		$created_by = $this->input->get('created_by');
+		if (empty($created_by)) {
+			$created_by = $raised_by;
+		}
 		$department = $this->input->get('department');
 		$deadline = $this->input->get('deadline');
 		$expected_close_date = $this->input->get('expected_close_date');
@@ -103,9 +107,10 @@ class Ci_admin_tickets extends CI_Controller {
 		$d1 = $this->input->get('d1');
 		$d2 = $this->input->get('d2');
 
-		$this->db->select('t.*, u.name as creator_name, u.email as creator_email, r.name as resolver_name, l.name as updater_name');
+		$this->db->select('t.*, COALESCE(u.name, u2.name) as creator_name, u.email as creator_email, r.name as resolver_name, l.name as updater_name');
 		$this->db->from('ci_tickets t');
 		$this->db->join('ci_user u', 'u.id = t.created_by', 'left');
+		$this->db->join('ci_user u2', 'u2.id = t.raised_by', 'left');
 		$this->db->join('ci_user r', 'r.id = t.resolved_by', 'left');
 		$this->db->join('ci_user l', 'l.id = t.last_updated_by', 'left');
 
@@ -146,10 +151,10 @@ class Ci_admin_tickets extends CI_Controller {
 			$this->db->or_where('t.assigned_to', (int)$assigned_user);
 			$this->db->group_end();
 		}
-		if (!empty($raised_by)) {
+		if (!empty($created_by)) {
 			$this->db->group_start();
-			$this->db->where('t.created_by', (int)$raised_by);
-			$this->db->or_where('t.raised_by', (int)$raised_by);
+			$this->db->where('t.created_by', (int)$created_by);
+			$this->db->or_where('t.raised_by', (int)$created_by);
 			$this->db->group_end();
 		}
 		if (!empty($department)) {
@@ -922,8 +927,8 @@ class Ci_admin_tickets extends CI_Controller {
 
 		$data = array();
 		$data['info'] = array(
-			'title' => 'Manager - Ticket Follow-up',
-			'page_heading' => 'Ticket Follow-up'
+			'title' => 'Manager - Open Tickets',
+			'page_heading' => 'Open Tickets'
 		);
 		$data['info2'] = $this->if_not_login();
 		$data['is_admin'] = ($role === 1);
@@ -939,14 +944,19 @@ class Ci_admin_tickets extends CI_Controller {
 		$category = $this->input->get('category');
 		$priority = $this->input->get('priority');
 		$assigned_user = $this->input->get('assigned_user');
+		$created_by = $this->input->get('created_by');
+		if (empty($created_by)) {
+			$created_by = $this->input->get('raised_by');
+		}
 		$department = $this->input->get('department');
 		$search = $this->input->get('search');
 		$d1 = $this->input->get('d1');
 		$d2 = $this->input->get('d2');
 
-		$this->db->select('t.*, u.name as creator_name, u.email as creator_email, r.name as resolver_name, l.name as updater_name');
+		$this->db->select('t.*, COALESCE(u.name, u2.name) as creator_name, u.email as creator_email, r.name as resolver_name, l.name as updater_name');
 		$this->db->from('ci_tickets t');
 		$this->db->join('ci_user u', 'u.id = t.created_by', 'left');
+		$this->db->join('ci_user u2', 'u2.id = t.raised_by', 'left');
 		$this->db->join('ci_user r', 'r.id = t.resolved_by', 'left');
 		$this->db->join('ci_user l', 'l.id = t.last_updated_by', 'left');
 
@@ -987,6 +997,12 @@ class Ci_admin_tickets extends CI_Controller {
 			$this->db->group_start();
 			$this->db->where("FIND_IN_SET('$assigned_user', t.assigned_users) >", 0);
 			$this->db->or_where('t.assigned_to', $assigned_user);
+			$this->db->group_end();
+		}
+		if (!empty($created_by)) {
+			$this->db->group_start();
+			$this->db->where('t.created_by', (int)$created_by);
+			$this->db->or_where('t.raised_by', (int)$created_by);
 			$this->db->group_end();
 		}
 		if (!empty($d1)) {

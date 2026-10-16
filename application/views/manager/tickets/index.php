@@ -110,12 +110,24 @@
                 </div>
 
                 <div class="form-group">
+                  <select class="form-control select2" name="created_by" style="min-width: 140px;">
+                    <option value="">Created By</option>
+                    <?php if(isset($users_list) && !empty($users_list)){
+                      foreach($users_list as $u){ ?>
+                        <option value="<?php echo $u['id']; ?>" <?php if((isset($_GET['created_by']) && $_GET['created_by']==$u['id']) || (isset($_GET['raised_by']) && $_GET['raised_by']==$u['id'])){ echo 'selected'; } ?>>
+                          <?php echo htmlspecialchars($u['name']); ?>
+                        </option>
+                    <?php } } ?>
+                  </select>
+                </div>
+
+                <div class="form-group">
                   <input type="text" class="input-md form-control" name="search" placeholder="Search Tickets" value="<?php if(isset($_GET['search'])&&(!empty($_GET['search']))){ echo htmlspecialchars($_GET['search']);}?>" autocomplete="off" />
                 </div>
 
                 <div class="form-group">
                   <button type="submit" class="btn btn-success">Search</button>
-                  <a href="<?php echo base_url(); ?>manager/tickets" class="btn btn-danger"> Reset</a>
+                  <a href="<?php echo current_url(); ?>" class="btn btn-danger"> Reset</a>
                 </div>
 
               </form>
@@ -134,7 +146,6 @@
             <?php echo get_message($this->session->flashdata('message'),'message'); ?>
 
             <?php 
-            // Fast user id => name lookup map
             $user_map = array();
             if(!empty($users_list)){
               foreach($users_list as $ul){
@@ -157,13 +168,15 @@
                     <th>Priority</th>
                     <th>Assigned To</th>
                     <th>Deadline</th>
-                    <th>Created</th>
+                    <th>Date</th>
+                    <th>Created By</th>
                     <th>Status</th>
                     <th width="150">Action</th>
                   </tr>
                 </thead>
                 <tfoot>
                   <tr>
+                    <th></th>
                     <th></th>
                     <th></th>
                     <th></th>
@@ -213,6 +226,7 @@
                       <span class="no_show"><?php echo date('Ymd', strtotime(!empty($t['created_date']) ? $t['created_date'] : $t['created_at'])); ?></span>
                       <?php echo simple_date(!empty($t['created_date']) ? $t['created_date'] : $t['created_at']); ?>
                     </td>
+                    <td><?php echo htmlspecialchars(!empty($t['creator_name']) ? $t['creator_name'] : '-'); ?></td>
                     <td><?php echo htmlspecialchars($t['status']); ?></td>
                     <td>
                       <div class="btn-group">
@@ -249,7 +263,7 @@ $(document).ready(function() {
     "pageLength": 50,
     responsive: true,
     initComplete: function () {
-      this.api().columns([2, 4, 5, 9]).every(function () {
+      this.api().columns([2, 4, 5, 9, 10]).every(function () {
         var column = this;
         var select = $('<select><option value="">Select </option></select>')
           .appendTo($(column.footer()).empty())
@@ -264,7 +278,7 @@ $(document).ready(function() {
       });
     },
     columnDefs: [
-      { targets: [7, 8, 10], className: "dt-nowrap" }
+      { targets: [7, 8, 11], className: "dt-nowrap" }
     ]
   });
 });

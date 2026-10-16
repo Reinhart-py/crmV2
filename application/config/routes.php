@@ -96,6 +96,9 @@ $route['manager/tickets/close/(:any)'] = "ci_admin_tickets/close/$1";
 $route['manager/tickets/status/(:any)/(:any)'] = "ci_admin_tickets/status/$1/$2";
 $route['manager/tickets/delete/(:any)'] = "ci_admin_tickets/delete/$1";
 $route['manager/tickets/followups'] = "ci_admin_tickets/followups";
+$route['manager/tickets/open'] = "ci_admin_tickets/followups";
+$route['manager/team/tickets'] = "ci_admin_tickets/index";
+$route['manager/team/tickets/(:any)'] = "ci_admin_tickets/index/$1";
 
 // Tasks
 $route['manager/tasks'] = "ci_admin_tasks/index";
