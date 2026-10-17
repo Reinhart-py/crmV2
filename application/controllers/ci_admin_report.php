@@ -5,7 +5,7 @@ class Ci_admin_report extends CI_Controller {
     parent::__construct();
 	$this->load->library(array('Session'));
 	$this->load->helper(array('form','url','directory','text','date'));
-	$this->load->model(array('comman_model','ci_admin_model','report_model'));
+	$this->load->model(array('comman_model','ci_admin_model','report_model','admin_reports_model'));
 	 header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT"); 
 		 header("Cache-Control: no-store, no-cache, must-revalidate"); 
 		 header("Cache-Control: post-check=0, pre-check=0", false);
@@ -274,28 +274,115 @@ class Ci_admin_report extends CI_Controller {
 		$this->load->view('manager/report/download_report', $data);
 	}
 
-	public function adminReports()
+	public function adminReports($dept = '', $report = '')
 	{
 		$data = array();
-		$data['info'] = array(
-			'title' => 'Admin Reports',
-			'page_heading' => 'Admin Reports'
-		);
 		$data['info2'] = $this->if_not_login();
 
-		// Restricted to Admin
 		if ($this->session->userdata('manager_role') != 1) {
 			$this->session->set_flashdata('error_message', 'Access denied. Admin access required.');
 			redirect('manager/dashboard');
 			return;
 		}
 
-		$data['users'] = $this->comman_model->getAll(array('status' => 1), array('name', 'ASC'), 'ci_user');
+		$dept = strtolower(trim($dept));
+		$report = strtolower(trim($report));
 
+		if (empty($dept)) {
+			$data['info'] = array(
+				'title' => 'Admin Reports',
+				'page_heading' => 'Admin Reports'
+			);
+			$data['departments'] = $this->admin_reports_model->getAdminReportsOverview();
+			$this->load->view('manager/report/admin/index', $data);
+			return;
+		}
+
+		$valid_depts = array('sales', 'operations', 'support', 'hr', 'it');
+		if (!in_array($dept, $valid_depts)) {
+			redirect('manager/admin-reports');
+			return;
+		}
+
+		if (empty($report)) {
+			$dept_meta = $this->admin_reports_model->getDepartmentReportsMeta($dept);
+			if (empty($dept_meta)) {
+				redirect('manager/admin-reports');
+				return;
+			}
+			$data['info'] = array(
+				'title' => $dept_meta['dept_title'] . ' Reports',
+				'page_heading' => $dept_meta['dept_title'] . ' Reports'
+			);
+			$data['dept_meta'] = $dept_meta;
+			$data['dept'] = $dept;
+			$this->load->view('manager/report/admin/department', $data);
+			return;
+		}
+
+		$aliases = array(
+			'ct-vat-registration' => 'tax-registration',
+			'vat-registration' => 'tax-registration',
+			'registration' => 'tax-registration',
+			'ct-vat' => 'tax-registration',
+			'trade_license' => 'trade-license',
+			'daily-operations' => 'daily',
+			'daily_operations' => 'daily',
+			'task-completion' => 'tasks',
+			'work-task-completion' => 'tasks',
+			'task_completion' => 'tasks',
+			'client-service-delivery' => 'service-delivery',
+			'service_delivery' => 'service-delivery',
+			'pending-work' => 'pending-work',
+			'pending_work' => 'pending-work',
+			'billing-invoice' => 'billing',
+			'billing_invoice' => 'billing',
+			'invoice' => 'billing',
+			'payment-collection' => 'collections',
+			'payment_collection' => 'collections',
+			'payment' => 'collections',
+			'payments' => 'collections',
+			'expense' => 'expenses',
+			'support-activity' => 'activity',
+			'support_activity' => 'activity',
+			'ticket_status' => 'ticket-status',
+			'ticket_resolution' => 'ticket-resolution',
+			'follow-up' => 'followups',
+			'followup' => 'followups',
+			'follow_up' => 'followups',
+			'client-query' => 'client-queries',
+			'client_query' => 'client-queries',
+			'queries' => 'client-queries',
+			'pending-request' => 'pending-requests',
+			'pending_requests' => 'pending-requests',
+			'employee-attendance' => 'attendance',
+			'employee_attendance' => 'attendance',
+			'employee-performance' => 'performance',
+			'employee_performance' => 'performance',
+			'leave' => 'leaves',
+			'employee-task' => 'tasks',
+			'employee_task' => 'tasks',
+			'employee-activity' => 'activity',
+			'employee_activity' => 'activity',
+			'user_activity' => 'user-activity',
+			'system_access' => 'system-access',
+			'audit-log' => 'audit-logs',
+			'audit_log' => 'audit-logs',
+			'audit_logs' => 'audit-logs',
+			'system-activity' => 'audit-logs',
+			'technical-issue' => 'technical-issues',
+			'technical_issue' => 'technical-issues',
+			'technical_issues' => 'technical-issues',
+			'system_maintenance' => 'system-maintenance',
+			'maintenance' => 'system-maintenance'
+		);
+		if (isset($aliases[$report])) {
+			$report = $aliases[$report];
+		}
+
+		$period = $this->input->get('period');
 		$d1 = '';
 		$d2 = '';
-		$dept_name = '';
-		$period = $this->input->get('period');
 
 		if ($period == 'daily') {
 			$d1 = date('Y-m-d');
@@ -308,34 +395,61 @@ class Ci_admin_report extends CI_Controller {
 			$d2 = date('Y-m-t');
 		} else {
 			if ($this->input->get('d1') && $this->input->get('d2')) {
-				$d1 = date("Y-m-d", strtotime($this->input->get('d1')));
-				$d2 = date("Y-m-d", strtotime($this->input->get('d2')));
+				$d1 = date('Y-m-d', strtotime($this->input->get('d1')));
+				$d2 = date('Y-m-d', strtotime($this->input->get('d2')));
 			}
 		}
 
-		$department = $this->input->get('department');
-		$dept_map = array(
-			'2' => 'Administration',
-			'3' => 'Operations',
-			'4' => 'IT',
-			'5' => 'Human Resource',
-			'6' => 'Back Office',
-			'7' => 'Sales',
-			'8' => 'Business Development',
-			'9' => 'Field Staff',
-			'10' => 'Other'
+		$emp = $this->input->get('employee_id');
+		$emp_multi = $this->input->get('employee_ids');
+		if (!empty($emp_multi)) {
+			$emp = $emp_multi;
+		}
+
+		$filters = array(
+			'period' => $period,
+			'd1' => $d1,
+			'd2' => $d2,
+			'employee_id' => $emp,
+			'employee_ids' => is_array($emp) ? $emp : array(),
+			'status' => $this->input->get('status'),
+			'search' => $this->input->get('search'),
+			'expiry' => $this->input->get('expiry'),
+			'category' => $this->input->get('category'),
+			'department' => $this->input->get('department'),
 		);
-		if (!empty($department) && isset($dept_map[$department])) {
-			$dept_name = $dept_map[$department];
+
+		$report_data = $this->admin_reports_model->getReportData($dept, $report, $filters);
+
+		if ($this->input->get('export') == 'csv') {
+			$filename = 'admin_report_' . $dept . '_' . $report . '_' . date('Ymd_His') . '.csv';
+			header('Content-Type: text/csv; charset=utf-8');
+			header('Content-Disposition: attachment; filename="' . $filename . '"');
+			$out = fopen('php://output', 'w');
+			fputcsv($out, $report_data['headers']);
+			foreach ($report_data['rows'] as $row) {
+				$row_csv = array();
+				foreach ($report_data['fields'] as $fld) {
+					$val = isset($row[$fld]) ? $row[$fld] : '';
+					$row_csv[] = trim(strip_tags(str_replace('&nbsp;', ' ', $val)));
+				}
+				fputcsv($out, $row_csv);
+			}
+			fclose($out);
+			exit();
 		}
 
-		if (($this->input->server('REQUEST_METHOD') === 'GET') && ($this->input->get('search') === 'report' || !empty($period) || !empty($department))) {
-			$data['list'] = $this->report_model->getPerformanceReportByDepartment($d1, $d2, $dept_name);
-		}
+		$data['report_data'] = $report_data;
+		$data['dept'] = $dept;
+		$data['report'] = $report;
+		$data['filters'] = $filters;
+		$data['users'] = $this->comman_model->getAll(array('status' => 1), array('name', 'ASC'), 'ci_user');
+		$data['statuses'] = $this->comman_model->getAll(array('active' => 1), '', 'ci_status');
+		$data['info'] = array(
+			'title' => $report_data['title'],
+			'page_heading' => $report_data['title']
+		);
 
-		$this->load->view('manager/report/admin_report', $data);
+		$this->load->view('manager/report/admin/view', $data);
 	}
-	 
 }
-/* End of file ci_admin_report.php */
-/* Location: ./application/controllers/ci_admin_report.php */

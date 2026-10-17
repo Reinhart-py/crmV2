@@ -116,6 +116,11 @@ $route['manager/kam/report'] = "ci_admin_kam/report";
 // Reports & Admin Reports
 $route['manager/download-report'] = "ci_admin_report/downloadReport";
 $route['manager/admin-reports'] = "ci_admin_report/adminReports";
+$route['manager/admin-reports/(:any)'] = "ci_admin_report/adminReports/$1";
+$route['manager/admin-reports/(:any)/(:any)'] = "ci_admin_report/adminReports/$1/$2";
+$route['manager/reports/admin'] = "ci_admin_report/adminReports";
+$route['manager/reports/admin/(:any)'] = "ci_admin_report/adminReports/$1";
+$route['manager/reports/admin/(:any)/(:any)'] = "ci_admin_report/adminReports/$1/$2";
 
 // System > Assigned Leads & Bulk Move
 $route['manager/assigned-leads'] = "ci_admin_leads/assigned_leads";
