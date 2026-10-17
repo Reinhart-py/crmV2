@@ -540,14 +540,20 @@ class Ci_admin_report extends CI_Controller {
 
 	public function drilldown()
 	{
-		$manager_id = $this->session->userdata('manager_id');
-		$m_role = $this->session->userdata('m_role');
-		$user_name = $this->session->userdata('user_name');
-		if (empty($manager_id)) {
-			redirect('manager/login');
+		$data = array();
+		$data['info2'] = $this->if_not_login();
+
+		$m_role = (int)$this->session->userdata('manager_role');
+		$manager_id = (int)$this->session->userdata('manager_id');
+		if (empty($m_role) && $manager_id == 1) {
+			$m_role = 1;
 		}
 
-		$is_admin_or_support = ($m_role == 1 || $m_role == 4);
+		$is_admin_or_support = ($m_role == 1 || $m_role == 4 || $manager_id == 1);
+
+		$user_row = $this->db->select('name, department, user_type')->where('id', $manager_id)->get('ci_user')->row_array();
+		$user_name = isset($user_row['name']) ? $user_row['name'] : '';
+
 		$report = $this->input->get('report');
 		$metric = $this->input->get('metric');
 		$uid = (int)$this->input->get('uid');

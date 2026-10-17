@@ -21,6 +21,7 @@
 | If you need to allow multiple domains, remember that this file is still
 | a PHP script and you can easily do that on your own.
 |
+*/
 if (!empty($_SERVER['HTTP_HOST'])) {
 	$protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https://" : "http://";
 	$config['base_url'] = $protocol . $_SERVER['HTTP_HOST'] . '/';
