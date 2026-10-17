@@ -7,7 +7,7 @@
         </h1>
         <ol class="breadcrumb" style="background: transparent; padding: 0; margin: 0;">
             <li><a href="<?php echo base_url(); ?>manager/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
-            <li class="active">Admin Reports</li>
+            <li class="active">Download Report</li>
         </ol>
     </section>
 
@@ -18,7 +18,7 @@
             foreach ($dept_list as $key => $dept) { 
             ?>
             <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12" style="margin-bottom: 24px;">
-                <div class="crm-modern-stat-card" style="border-top: 3px solid #d4f938 !important; cursor: pointer; height: 100%; display: flex; flex-direction: column; justify-content: space-between;" onclick="window.location.href='<?php echo base_url(); ?>manager/admin-reports/<?php echo $dept['slug']; ?>';">
+                <div class="crm-modern-stat-card" style="border-top: 3px solid #d4f938 !important; cursor: pointer; height: 100%; display: flex; flex-direction: column; justify-content: space-between;" onclick="window.location.href='<?php echo base_url(); ?>manager/download-report/<?php echo $dept['slug']; ?>';">
                     <div>
                         <div class="card-top" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
                             <h3 class="card-title" style="font-size: 16px !important; font-weight: 700; margin: 0; color: var(--crm-text);">
@@ -51,7 +51,7 @@
                         <span style="font-size: 12px; color: var(--crm-text-muted); font-weight: 500;">
                             Access all department reports
                         </span>
-                        <a href="<?php echo base_url(); ?>manager/admin-reports/<?php echo $dept['slug']; ?>" class="btn btn-sm btn-default" style="font-weight: 600; border-radius: 4px; padding: 4px 12px; color: var(--crm-text);">
+                        <a href="<?php echo base_url(); ?>manager/download-report/<?php echo $dept['slug']; ?>" class="btn btn-sm btn-default" style="font-weight: 600; border-radius: 4px; padding: 4px 12px; color: var(--crm-text);">
                             Open <i class="fa fa-arrow-right" style="margin-left: 4px;"></i>
                         </a>
                     </div>

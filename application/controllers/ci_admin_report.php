@@ -248,79 +248,100 @@ class Ci_admin_report extends CI_Controller {
 		$this->load->view('manager/report/performance_individual',$data);
 	}
 
-	public function downloadReport()
-	{
-		$data = array();
-		$data['info'] = array(
-			'title' => 'Download Report',
-			'page_heading' => 'Download Report'
-		);
-		$data['info2'] = $this->if_not_login();
-		$manager_id = (int)$this->session->userdata('manager_id');
-
-		if (($this->input->server('REQUEST_METHOD') === 'GET') && ($this->input->get('search') === 'report')) {
-			$d1 = '';
-			$d2 = '';
-
-			if ($this->input->get('d1') && $this->input->get('d2')) {
-				$d1 = date("Y-m-d", strtotime($this->input->get('d1')));
-				$d2 = date("Y-m-d", strtotime($this->input->get('d2')));
-			}
-
-			// Enforce strictly individual user's own data at the backend level
-			$data['list'] = $this->report_model->getPerformanceReportForUser($d1, $d2, $manager_id);
-		}
-
-		$this->load->view('manager/report/download_report', $data);
-	}
-
-	public function adminReports($dept = '', $report = '')
+	public function downloadReport($dept = '', $report = '')
 	{
 		$data = array();
 		$data['info2'] = $this->if_not_login();
 
 		$m_role = (int)$this->session->userdata('manager_role');
-		if (empty($m_role) && $this->session->userdata('manager_id') == 1) {
+		$manager_id = (int)$this->session->userdata('manager_id');
+		if (empty($m_role) && $manager_id == 1) {
 			$m_role = 1;
 		}
-		if ($m_role != 1 && $m_role != 4) {
-			$this->session->set_flashdata('error_message', 'Access denied. Admin or Support access required.');
-			redirect('manager/dashboard');
-			return;
-		}
+
+		$is_admin_or_support = ($m_role == 1 || $m_role == 4 || $manager_id == 1);
+
+		$user_row = $this->db->select('name, department, user_type')->where('id', $manager_id)->get('ci_user')->row_array();
+		$user_name = isset($user_row['name']) ? $user_row['name'] : '';
+		$user_dept = !empty($user_row['department']) ? strtolower(trim($user_row['department'])) : '';
 
 		$dept = strtolower(trim($dept));
 		$report = strtolower(trim($report));
 
 		if (empty($dept)) {
+			$all_depts = array('sales', 'operations', 'support', 'hr', 'it');
+			$visible_dept_slugs = array();
+
+			if ($is_admin_or_support) {
+				$visible_dept_slugs = $all_depts;
+			} else {
+				if (strpos($user_dept, 'operat') !== false) {
+					$visible_dept_slugs = array('operations');
+				} else if (strpos($user_dept, 'support') !== false || strpos($user_dept, 'back') !== false) {
+					$visible_dept_slugs = array('support');
+				} else if (strpos($user_dept, 'hr') !== false) {
+					$visible_dept_slugs = array('hr');
+				} else if (strpos($user_dept, 'it') !== false) {
+					$visible_dept_slugs = array('it');
+				} else {
+					$visible_dept_slugs = array('sales');
+				}
+			}
+
+			$sections = array();
+			foreach ($visible_dept_slugs as $d_slug) {
+				$meta = $this->admin_reports_model->getDepartmentReportsMeta($d_slug);
+				if (!empty($meta)) {
+					$sections[$d_slug] = $meta;
+				}
+			}
+
+			$data['sections'] = $sections;
+			$data['is_admin_or_support'] = $is_admin_or_support;
+			$data['user_name'] = $user_name;
+			$data['manager_id'] = $manager_id;
 			$data['info'] = array(
-				'title' => 'Admin Reports',
-				'page_heading' => 'Admin Reports'
+				'title' => 'Download Report',
+				'page_heading' => 'Download Report'
 			);
-			$data['departments'] = $this->admin_reports_model->getAdminReportsOverview();
-			$this->load->view('manager/report/admin/index', $data);
+
+			$this->load->view('manager/report/download_report', $data);
 			return;
 		}
 
 		$valid_depts = array('sales', 'operations', 'support', 'hr', 'it');
 		if (!in_array($dept, $valid_depts)) {
-			redirect('manager/admin-reports');
+			redirect('manager/download-report');
 			return;
+		}
+
+		if (!$is_admin_or_support) {
+			$allowed = false;
+			if (strpos($user_dept, 'operat') !== false && $dept == 'operations') {
+				$allowed = true;
+			} else if ((strpos($user_dept, 'support') !== false || strpos($user_dept, 'back') !== false) && $dept == 'support') {
+				$allowed = true;
+			} else if (strpos($user_dept, 'hr') !== false && $dept == 'hr') {
+				$allowed = true;
+			} else if (strpos($user_dept, 'it') !== false && $dept == 'it') {
+				$allowed = true;
+			} else if ($dept == 'sales') {
+				$allowed = true;
+			}
+			if (!$allowed) {
+				redirect('manager/download-report');
+				return;
+			}
 		}
 
 		if (empty($report)) {
 			$dept_meta = $this->admin_reports_model->getDepartmentReportsMeta($dept);
-			if (empty($dept_meta)) {
-				redirect('manager/admin-reports');
+			if (!empty($dept_meta['reports'])) {
+				$first_report = key($dept_meta['reports']);
+				redirect('manager/download-report/' . $dept . '/' . $first_report);
 				return;
 			}
-			$data['info'] = array(
-				'title' => $dept_meta['dept_title'] . ' Reports',
-				'page_heading' => $dept_meta['dept_title'] . ' Reports'
-			);
-			$data['dept_meta'] = $dept_meta;
-			$data['dept'] = $dept;
-			$this->load->view('manager/report/admin/department', $data);
+			redirect('manager/download-report');
 			return;
 		}
 
@@ -404,10 +425,15 @@ class Ci_admin_report extends CI_Controller {
 			}
 		}
 
-		$emp = $this->input->get('employee_id');
-		$emp_multi = $this->input->get('employee_ids');
-		if (!empty($emp_multi)) {
-			$emp = $emp_multi;
+		$emp = '';
+		if ($is_admin_or_support) {
+			$emp = $this->input->get('employee_id');
+			$emp_multi = $this->input->get('employee_ids');
+			if (!empty($emp_multi)) {
+				$emp = $emp_multi;
+			}
+		} else {
+			$emp = $manager_id;
 		}
 
 		$filters = array(
@@ -415,7 +441,7 @@ class Ci_admin_report extends CI_Controller {
 			'd1' => $d1,
 			'd2' => $d2,
 			'employee_id' => $emp,
-			'employee_ids' => is_array($emp) ? $emp : array(),
+			'employee_ids' => is_array($emp) ? $emp : array($emp),
 			'status' => $this->input->get('status'),
 			'search' => $this->input->get('search'),
 			'expiry' => $this->input->get('expiry'),
@@ -426,7 +452,7 @@ class Ci_admin_report extends CI_Controller {
 		$report_data = $this->admin_reports_model->getReportData($dept, $report, $filters);
 
 		if ($this->input->get('export') == 'csv') {
-			$filename = 'admin_report_' . $dept . '_' . $report . '_' . date('Ymd_His') . '.csv';
+			$filename = 'report_' . $dept . '_' . $report . '_' . date('Ymd_His') . '.csv';
 			header('Content-Type: text/csv; charset=utf-8');
 			header('Content-Disposition: attachment; filename="' . $filename . '"');
 			$out = fopen('php://output', 'w');
@@ -449,11 +475,25 @@ class Ci_admin_report extends CI_Controller {
 		$data['filters'] = $filters;
 		$data['users'] = $this->comman_model->getAll(array('status' => 1), array('name', 'ASC'), 'ci_user');
 		$data['statuses'] = $this->comman_model->getAll(array('active' => 1), '', 'ci_status');
+		$data['is_admin_or_support'] = $is_admin_or_support;
+		$data['current_user_name'] = $user_name;
+		$data['manager_id'] = $manager_id;
 		$data['info'] = array(
 			'title' => $report_data['title'],
 			'page_heading' => $report_data['title']
 		);
 
 		$this->load->view('manager/report/admin/view', $data);
+	}
+
+	public function adminReports($dept = '', $report = '')
+	{
+		if (!empty($dept) && !empty($report)) {
+			redirect('manager/download-report/' . $dept . '/' . $report);
+		} else if (!empty($dept)) {
+			redirect('manager/download-report/' . $dept);
+		} else {
+			redirect('manager/download-report');
+		}
 	}
 }

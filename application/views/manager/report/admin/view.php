@@ -9,16 +9,16 @@
                 </h1>
                 <ol class="breadcrumb" style="background: transparent; padding: 0; margin: 0;">
                     <li><a href="<?php echo base_url(); ?>manager/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
-                    <li><a href="<?php echo base_url(); ?>manager/admin-reports">Admin Reports</a></li>
-                    <li><a href="<?php echo base_url(); ?>manager/admin-reports/<?php echo $dept; ?>"><?php echo htmlspecialchars($report_data['department_title']); ?></a></li>
+                    <li><a href="<?php echo base_url(); ?>manager/download-report">Download Report</a></li>
+                    <li><a href="<?php echo base_url(); ?>manager/download-report/<?php echo $dept; ?>"><?php echo htmlspecialchars($report_data['department_title']); ?></a></li>
                     <li class="active"><?php echo htmlspecialchars($report_data['title']); ?></li>
                 </ol>
             </div>
             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <a href="<?php echo base_url(); ?>manager/admin-reports/<?php echo $dept; ?>" class="btn btn-default" style="font-weight: 600; border-radius: 4px; padding: 6px 14px; color: var(--crm-text);">
-                    <i class="fa fa-arrow-left" style="margin-right: 5px;"></i> Back to <?php echo htmlspecialchars($report_data['department_title']); ?>
+                <a href="<?php echo base_url(); ?>manager/download-report" class="btn btn-default" style="font-weight: 600; border-radius: 4px; padding: 6px 14px; color: var(--crm-text);">
+                    <i class="fa fa-arrow-left" style="margin-right: 5px;"></i> Back to Download Report
                 </a>
-                <a href="<?php echo base_url(); ?>manager/admin-reports/<?php echo $dept; ?>/<?php echo $report; ?>?<?php echo http_build_query(array_merge($_GET, array('export' => 'csv'))); ?>" class="btn btn-success" style="font-weight: 600; border-radius: 4px; padding: 6px 14px;">
+                <a href="<?php echo base_url(); ?>manager/download-report/<?php echo $dept; ?>/<?php echo $report; ?>?<?php echo http_build_query(array_merge($_GET, array('export' => 'csv'))); ?>" class="btn btn-success" style="font-weight: 600; border-radius: 4px; padding: 6px 14px;">
                     <i class="fa fa-file-excel-o" style="margin-right: 5px;"></i> Export CSV
                 </a>
             </div>
@@ -65,7 +65,7 @@
 
         <div class="box" style="margin-bottom: 16px; border-radius: 6px; border: 1px solid var(--crm-border); background: #ffffff;">
             <div class="box-body" style="padding: 14px;">
-                <form class="form-inline" action="<?php echo base_url(); ?>manager/admin-reports/<?php echo $dept; ?>/<?php echo $report; ?>" method="get" style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+                <form class="form-inline" action="<?php echo base_url(); ?>manager/download-report/<?php echo $dept; ?>/<?php echo $report; ?>" method="get" style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
 
                     <div class="form-group" style="margin: 0;">
                         <select class="form-control input-sm" name="period" id="adminReportPeriod" onchange="toggleCustomDates(this.value);" style="border-radius: 4px; font-size: 12px;">
@@ -94,27 +94,36 @@
                         $selected_emps = is_array($filters['employee_id']) ? $filters['employee_id'] : array($filters['employee_id']);
                     }
                     ?>
-                    <?php if ($is_perf) { ?>
-                    <div class="form-group" style="margin: 0; min-width: 220px;">
-                        <select class="form-control input-sm select2" name="employee_ids[]" multiple="multiple" data-placeholder="Filter Employees (Multiple)" style="width: 100%; border-radius: 4px; font-size: 12px;">
-                            <?php foreach ($users as $u) { ?>
-                            <option value="<?php echo $u['id']; ?>" <?php if(in_array($u['id'], $selected_emps)) echo 'selected'; ?>>
-                                <?php echo htmlspecialchars($u['name']); ?> (<?php echo htmlspecialchars($u['department']); ?>)
-                            </option>
-                            <?php } ?>
-                        </select>
-                    </div>
+                    <?php if (isset($is_admin_or_support) && $is_admin_or_support) { ?>
+                        <?php if ($is_perf) { ?>
+                        <div class="form-group" style="margin: 0; min-width: 220px;">
+                            <select class="form-control input-sm select2" name="employee_ids[]" multiple="multiple" data-placeholder="Filter Employees (Multiple)" style="width: 100%; border-radius: 4px; font-size: 12px;">
+                                <?php foreach ($users as $u) { ?>
+                                <option value="<?php echo $u['id']; ?>" <?php if(in_array($u['id'], $selected_emps)) echo 'selected'; ?>>
+                                    <?php echo htmlspecialchars($u['name']); ?> (<?php echo htmlspecialchars($u['department']); ?>)
+                                </option>
+                                <?php } ?>
+                            </select>
+                        </div>
+                        <?php } else { ?>
+                        <div class="form-group" style="margin: 0;">
+                            <select class="form-control input-sm" name="employee_id" style="border-radius: 4px; font-size: 12px; max-width: 180px;">
+                                <option value="">All Employees / Users</option>
+                                <?php foreach ($users as $u) { ?>
+                                <option value="<?php echo $u['id']; ?>" <?php if(isset($filters['employee_id']) && $filters['employee_id'] == $u['id']) echo 'selected'; ?>>
+                                    <?php echo htmlspecialchars($u['name']); ?>
+                                </option>
+                                <?php } ?>
+                            </select>
+                        </div>
+                        <?php } ?>
                     <?php } else { ?>
-                    <div class="form-group" style="margin: 0;">
-                        <select class="form-control input-sm" name="employee_id" style="border-radius: 4px; font-size: 12px; max-width: 180px;">
-                            <option value="">All Employees / Users</option>
-                            <?php foreach ($users as $u) { ?>
-                            <option value="<?php echo $u['id']; ?>" <?php if(isset($filters['employee_id']) && $filters['employee_id'] == $u['id']) echo 'selected'; ?>>
-                                <?php echo htmlspecialchars($u['name']); ?>
-                            </option>
-                            <?php } ?>
-                        </select>
-                    </div>
+                        <div class="form-group" style="margin: 0;">
+                            <span style="display: inline-flex; align-items: center; gap: 5px; background: #f1f5f9; color: #111827; border: 1px solid #cbd5e1; border-radius: 4px; padding: 5px 10px; font-size: 12px; font-weight: 600;">
+                                <i class="fa fa-user"></i> Staff: <?php echo htmlspecialchars(isset($current_user_name) && !empty($current_user_name) ? $current_user_name : 'Me'); ?>
+                            </span>
+                            <input type="hidden" name="employee_id" value="<?php echo isset($manager_id) ? $manager_id : ''; ?>">
+                        </div>
                     <?php } ?>
 
                     <?php if ($report == 'trade-license') { ?>
@@ -162,7 +171,7 @@
                         <button type="submit" class="btn btn-sm btn-primary" style="background: #09090b; border-color: #09090b; color: #ffffff; font-weight: 600; border-radius: 4px; padding: 5px 14px;">
                             <i class="fa fa-filter"></i> Apply Filters
                         </button>
-                        <a href="<?php echo base_url(); ?>manager/admin-reports/<?php echo $dept; ?>/<?php echo $report; ?>" class="btn btn-sm btn-default" style="font-weight: 600; border-radius: 4px; padding: 5px 12px; color: var(--crm-text);">
+                        <a href="<?php echo base_url(); ?>manager/download-report/<?php echo $dept; ?>/<?php echo $report; ?>" class="btn btn-sm btn-default" style="font-weight: 600; border-radius: 4px; padding: 5px 12px; color: var(--crm-text);">
                             Reset
                         </a>
                     </div>

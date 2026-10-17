@@ -116,6 +116,8 @@ $route['manager/kam/report'] = "ci_admin_kam/report";
 
 // Reports & Admin Reports
 $route['manager/download-report'] = "ci_admin_report/downloadReport";
+$route['manager/download-report/(:any)'] = "ci_admin_report/downloadReport/$1";
+$route['manager/download-report/(:any)/(:any)'] = "ci_admin_report/downloadReport/$1/$2";
 $route['manager/admin-reports'] = "ci_admin_report/adminReports";
 $route['manager/admin-reports/(:any)'] = "ci_admin_report/adminReports/$1";
 $route['manager/admin-reports/(:any)/(:any)'] = "ci_admin_report/adminReports/$1/$2";
