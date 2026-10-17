@@ -85,37 +85,26 @@
 </style>
 
 <div class="content-wrapper px-4">
-    <section class="content-header" style="margin-bottom: 18px;">
-        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-            <div>
-                <h1 style="font-weight: 700; color: #111827; margin: 0 0 5px 0; font-size: 24px;">
-                    Download Report
-                </h1>
-                <p style="color: #64748b; margin: 0; font-size: 13px;">
-                    <?php if ($is_admin_or_support) { ?>
-                    Browse all department reports, view data metrics, or download CSV files for any staff member.
-                    <?php } else { ?>
-                    Access your personal performance and activity reports. Click any report to view and download your records.
-                    <?php } ?>
-                </p>
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <button type="button" class="btn btn-sm btn-default" id="toggleAllSectionsBtn" style="font-weight: 600; border-radius: 4px; padding: 6px 14px; color: #111827;">
-                    <i class="fa fa-expand" id="toggleAllIcon"></i> <span id="toggleAllText">Expand All</span>
-                </button>
-            </div>
-        </div>
+    <section class="content-header" style="margin-bottom: 20px; text-align: center; padding-top: 14px;">
+        <h1 style="font-weight: 700; color: #111827; margin: 0; font-size: 26px; text-align: center;">
+            Reports
+        </h1>
     </section>
 
     <section class="content" style="padding-top: 0;">
-        <div class="row" style="margin-bottom: 18px;">
-            <div class="col-md-6 col-sm-8 col-xs-12">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
+            <div style="flex: 1; max-width: 480px;">
                 <div class="input-group" style="box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
                     <span class="input-group-addon" style="background: #ffffff; border-right: none; color: #64748b;">
                         <i class="fa fa-search"></i>
                     </span>
-                    <input type="text" id="reportSearchFilter" class="form-control" placeholder="Search reports (e.g. Lead, Performance, Quote, VAT)..." style="border-left: none; height: 38px; font-size: 13.5px; border-radius: 0 4px 4px 0;">
+                    <input type="text" id="reportSearchFilter" class="form-control" placeholder="Search reports..." style="border-left: none; height: 38px; font-size: 13.5px; border-radius: 0 4px 4px 0;">
                 </div>
+            </div>
+            <div>
+                <button type="button" class="btn btn-sm btn-default" id="toggleAllSectionsBtn" style="font-weight: 600; border-radius: 4px; padding: 6px 14px; color: #111827;">
+                    <i class="fa fa-expand" id="toggleAllIcon"></i> <span id="toggleAllText">Expand All</span>
+                </button>
             </div>
         </div>
 

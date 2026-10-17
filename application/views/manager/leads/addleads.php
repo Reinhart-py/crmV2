@@ -26,9 +26,12 @@
       <form role="form" action="<?php echo base_url(); ?>manager/leads/add" method="post" name="add_form">
       
        <div class="box box-default">
-      <div class="box-header with-border" style="position: relative;">
+      <div class="box-header with-border" style="display: flex; align-items: center; justify-content: space-between;">
         <h3 class="box-title">Initial Category Fields</h3>
-        <span class="dncr-indicator-badge label label-danger" style="position: absolute; right: 20px; top: 10px; background: #dc2626; color: #ffffff; font-weight: 700; padding: 4px 14px; border-radius: 4px; font-size: 13px; letter-spacing: 0.5px; display: none;">DNCR</span>
+        <div style="display: inline-flex; align-items: center; gap: 8px;">
+          <span id="topDncrIndicator" class="label label-danger" style="background: #dc2626; color: #ffffff; font-weight: 700; padding: 4px 12px; border-radius: 4px; font-size: 12px; letter-spacing: 0.5px; display: none;">DNCR</span>
+          <span id="topClosedIndicator" class="label label-primary" style="background: #2563eb; color: #ffffff; font-weight: 700; padding: 4px 12px; border-radius: 4px; font-size: 12px; letter-spacing: 0.5px; display: none;">Closed</span>
+        </div>
       </div>
       
       <!-- /.box-header -->
@@ -111,6 +114,17 @@
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
+                <label>Company Status</label>
+                <select class="form-control" style="width: 100%;" name="company_status" id="company_status_select">
+                  <option value="Active" selected="selected">Active</option>
+                  <option value="Inactive">Inactive</option>
+                  <option value="Closed">Closed</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
                 <label>Industry Category</label>
                 <select class="form-control" style="width: 100%;" name="industry_category">
                   <option value="">Select Industry Category</option>
@@ -156,7 +170,7 @@
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>DNCR Date <span class="dncr-indicator-badge" style="background:#dc2626; color:#ffffff; font-weight:700; padding:2px 8px; border-radius:3px; font-size:11px; float:right; display:none; letter-spacing:0.5px;">DNCR</span></label>
+                <label>DNCR Date</label>
                 <input type="text" class="form-control datepicker" name="dnd_check_date" placeholder="DD-MM-YYYY">
               </div>
             </div>
@@ -1131,17 +1145,24 @@ $(document).ready(function() {
     $('#hidden_lost_reason').val($(this).val());
   });
 
-  function updateDncrBadge(val) {
-    if (val === 'Yes') {
-      $('.dncr-indicator-badge').show();
+  function updateTopHeaderBadges() {
+    var dndVal = $('select[name="dnd_status"]').val();
+    if (dndVal === 'Yes') {
+      $('#topDncrIndicator').show();
     } else {
-      $('.dncr-indicator-badge').hide();
+      $('#topDncrIndicator').hide();
+    }
+    var csVal = $('#company_status_select').val();
+    if (csVal === 'Closed') {
+      $('#topClosedIndicator').show();
+    } else {
+      $('#topClosedIndicator').hide();
     }
   }
-  $('select[name="dnd_status"]').on('change', function() {
-    updateDncrBadge($(this).val());
+  $('select[name="dnd_status"], #company_status_select').on('change', function() {
+    updateTopHeaderBadges();
   });
-  updateDncrBadge($('select[name="dnd_status"]').val());
+  updateTopHeaderBadges();
 
   updateStatusCategoryOptions($('#lead_status_select').val(), '');
 });

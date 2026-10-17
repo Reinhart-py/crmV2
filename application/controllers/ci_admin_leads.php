@@ -416,6 +416,7 @@ function __construct()
 				'database_category'=>!empty($database_category) ? trim($database_category) : '',
 				'status_category'=>$stat_cat,
 				'status_remarks'=>!empty($status_remarks) ? trim($status_remarks) : '',
+				'company_status'=>!empty($company_status) ? trim($company_status) : 'Active',
 				'dnd_status'=>isset($dnd_status) ? $dnd_status : 'No',
 				'dnd_check_date'=>!empty($dnd_check_date) ? db_date($dnd_check_date) : '',
 				'location'=>$location,
@@ -655,6 +656,7 @@ function __construct()
 				'database_category'=>!empty($database_category) ? trim($database_category) : '',
 				'status_category'=>$stat_cat,
 				'status_remarks'=>!empty($status_remarks) ? trim($status_remarks) : '',
+				'company_status'=>!empty($company_status) ? trim($company_status) : 'Active',
 				'dnd_status'=>isset($dnd_status) ? $dnd_status : 'No',
 				'dnd_check_date'=>!empty($dnd_check_date) ? db_date($dnd_check_date) : '',
 
@@ -1362,6 +1364,15 @@ $data['info2']=$this->if_not_login();
 			$m_date = $get_val($row, array('nextmeetingdate', 'mdate', 'meetingdate'));
 			$m_time = $get_val($row, array('nextmeetingtime', 'mtime', 'meetingtime'));
 
+			$company_status_raw = strtolower(trim($get_val($row, array('companystatus', 'company_status', 'cstatus'))));
+			if (in_array($company_status_raw, array('closed', 'close'))) {
+				$company_status = 'Closed';
+			} elseif (in_array($company_status_raw, array('inactive', 'in-active', 'deactive'))) {
+				$company_status = 'Inactive';
+			} else {
+				$company_status = 'Active';
+			}
+
 			$insert_data = array(
 				'lead_id' => 100000000,
 				'customer' => $customer,
@@ -1375,6 +1386,7 @@ $data['info2']=$this->if_not_login();
 				'r_amount' => $r_amount,
 				'r_date' => !empty($r_date) ? db_date($r_date) : '',
 				'category' => $category,
+				'company_status' => $company_status,
 				'industry_category' => $industry_category,
 				'business_category' => $business_category,
 				'quote_status' => !empty($quote_status) ? $quote_status : null,
@@ -1484,6 +1496,7 @@ $data['info2']=$this->if_not_login();
 			'Current Monthly Revenue Amount',
 			'Current Monthly Revenue Date',
 			'Category',
+			'Company Status',
 			'Industry Category',
 			'Quote Status',
 			'Quote Mode',
@@ -1536,6 +1549,7 @@ $data['info2']=$this->if_not_login();
 			'1500',
 			date('d-m-Y'),
 			'New',
+			'Active',
 			'Trading',
 			'Quote Given',
 			'Email',

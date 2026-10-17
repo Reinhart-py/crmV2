@@ -301,8 +301,8 @@ class Ci_admin_report extends CI_Controller {
 			$data['user_name'] = $user_name;
 			$data['manager_id'] = $manager_id;
 			$data['info'] = array(
-				'title' => 'Download Report',
-				'page_heading' => 'Download Report'
+				'title' => 'Reports',
+				'page_heading' => 'Reports'
 			);
 
 			$this->load->view('manager/report/download_report', $data);
@@ -453,6 +453,8 @@ class Ci_admin_report extends CI_Controller {
 			'expiry' => $this->input->get('expiry'),
 			'category' => $this->input->get('category'),
 			'department' => $this->input->get('department'),
+			'manager_id' => $manager_id,
+			'is_admin_or_support' => $is_admin_or_support
 		);
 
 		$report_data = $this->admin_reports_model->getReportData($dept, $report, $filters);
@@ -470,22 +472,38 @@ class Ci_admin_report extends CI_Controller {
 					}
 					if (!empty($grp['rows'])) {
 						foreach ($grp['rows'] as $r) {
-							fputcsv($out, $r);
+							$clean_r = array();
+							foreach ($r as $cell) {
+								$clean_r[] = is_array($cell) ? (isset($cell['val']) ? $cell['val'] : '') : $cell;
+							}
+							fputcsv($out, $clean_r);
 						}
 					}
 					if (!empty($grp['subtotal'])) {
-						fputcsv($out, $grp['subtotal']);
+						$clean_sub = array();
+						foreach ($grp['subtotal'] as $cell) {
+							$clean_sub[] = is_array($cell) ? (isset($cell['val']) ? $cell['val'] : '') : $cell;
+						}
+						fputcsv($out, $clean_sub);
 					}
 				}
 			}
 			if (!empty($report_data['pivot_data']['grand_total'])) {
-				fputcsv($out, $report_data['pivot_data']['grand_total']);
+				$clean_gt = array();
+				foreach ($report_data['pivot_data']['grand_total'] as $cell) {
+					$clean_gt[] = is_array($cell) ? (isset($cell['val']) ? $cell['val'] : '') : $cell;
+				}
+				fputcsv($out, $clean_gt);
 			}
 			fclose($out);
 			exit();
 		}
 
 		if ($this->input->get('export') == 'csv') {
+			if (!$is_admin_or_support) {
+				show_error('Access Denied: Detailed CSV exports are restricted to Administrators.', 403);
+				exit();
+			}
 			$filename = 'report_' . $dept . '_' . $report . '_' . date('Ymd_His') . '.csv';
 			header('Content-Type: text/csv; charset=utf-8');
 			header('Content-Disposition: attachment; filename="' . $filename . '"');
@@ -518,6 +536,41 @@ class Ci_admin_report extends CI_Controller {
 		);
 
 		$this->load->view('manager/report/admin/view', $data);
+	}
+
+	public function drilldown()
+	{
+		$manager_id = $this->session->userdata('manager_id');
+		$m_role = $this->session->userdata('m_role');
+		$user_name = $this->session->userdata('user_name');
+		if (empty($manager_id)) {
+			redirect('manager/login');
+		}
+
+		$is_admin_or_support = ($m_role == 1 || $m_role == 4);
+		$report = $this->input->get('report');
+		$metric = $this->input->get('metric');
+		$uid = (int)$this->input->get('uid');
+		$auth = $this->input->get('auth');
+		$window = $this->input->get('window');
+		$d1 = $this->input->get('d1');
+		$d2 = $this->input->get('d2');
+
+		$this->load->model('admin_reports_model');
+		$drilldown_data = $this->admin_reports_model->getDrilldownRecords($report, $metric, $uid, $auth, $window, $d1, $d2, $manager_id, $is_admin_or_support);
+
+		$data['drilldown_data'] = $drilldown_data;
+		$data['report'] = $report;
+		$data['metric'] = $metric;
+		$data['is_admin_or_support'] = $is_admin_or_support;
+		$data['current_user_name'] = $user_name;
+		$data['manager_id'] = $manager_id;
+		$data['info'] = array(
+			'title' => $drilldown_data['title'],
+			'page_heading' => $drilldown_data['title']
+		);
+
+		$this->load->view('manager/report/admin/drilldown', $data);
 	}
 
 	public function adminReports($dept = '', $report = '')

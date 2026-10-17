@@ -435,7 +435,7 @@ class Admin_reports_model extends CI_Model {
 		} elseif ($dept == 'it') {
 			$res = $this->_queryItReport($report, $filters);
 		} else {
-			$res = array(
+			return array(
 				'title' => 'Report Not Found',
 				'department_title' => 'Admin Reports',
 				'headers' => array(),
@@ -493,12 +493,15 @@ class Admin_reports_model extends CI_Model {
 		$status = isset($filters['status']) ? $filters['status'] : '';
 
 		if ($report == 'performance') {
-			$this->db->select('id, name, email, department');
+			$this->db->select('id, name, email, department, manager');
 			$this->db->from('ci_user');
 			$this->db->where('status', 1);
 			$this->_applyEmployee($this->db, 'id', $emp);
 			if (!empty($filters['department'])) {
 				$this->db->where('department', $filters['department']);
+			}
+			if (!empty($search)) {
+				$this->db->where("(name LIKE '%$search%' OR email LIKE '%$search%' OR department LIKE '%$search%')");
 			}
 			$users = $this->db->get()->result_array();
 
@@ -509,6 +512,8 @@ class Admin_reports_model extends CI_Model {
 			$tot_lost = 0;
 			$tot_quoted = 0.0;
 			$tot_mrr = 0.0;
+			$tot_lost_mrr = 0.0;
+			$tot_closed_mrr = 0.0;
 			$tot_followups = 0;
 			$idx = 1;
 
@@ -522,19 +527,19 @@ class Admin_reports_model extends CI_Model {
 
 				$this->db->from('ci_leads');
 				$this->db->where("(lead_assign = $uid OR created_by = $uid)");
-				$this->db->where_not_in('status', array(42, 43, 44));
+				$this->db->where_in('status', array(36, 37, 38, 40, 41));
 				$this->_applyDate($this->db, 'created', $d1, $d2);
 				$active_count = (int)$this->db->count_all_results();
 
 				$this->db->from('ci_leads');
 				$this->db->where("(lead_assign = $uid OR created_by = $uid)");
-				$this->db->where_in('status', array(42, 43, 44));
+				$this->db->where_in('status', array(39, 42));
 				$this->_applyDate($this->db, 'created', $d1, $d2);
 				$closed_count = (int)$this->db->count_all_results();
 
 				$this->db->from('ci_leads');
 				$this->db->where("(lead_assign = $uid OR created_by = $uid)");
-				$this->db->where("(status IN (42, 43, 44) OR LOWER(status_category) LIKE '%lost%' OR LOWER(lost_reason) LIKE '%lost%')");
+				$this->db->where("(status IN (43, 44) OR LOWER(status_category) LIKE '%lost%' OR LOWER(lost_reason) LIKE '%lost%')");
 				$this->_applyDate($this->db, 'created', $d1, $d2);
 				$lost_count = (int)$this->db->count_all_results();
 
@@ -552,6 +557,22 @@ class Admin_reports_model extends CI_Model {
 				$m_row = $this->db->get()->row_array();
 				$u_mrr = isset($m_row['mrr']) ? (float)$m_row['mrr'] : 0.0;
 
+				$this->db->select_sum('mrr');
+				$this->db->from('ci_leads');
+				$this->db->where("(lead_assign = $uid OR created_by = $uid)");
+				$this->db->where("(status IN (43, 44) OR LOWER(status_category) LIKE '%lost%' OR LOWER(lost_reason) LIKE '%lost%')");
+				$this->_applyDate($this->db, 'created', $d1, $d2);
+				$lm_row = $this->db->get()->row_array();
+				$u_lost_mrr = isset($lm_row['mrr']) ? (float)$lm_row['mrr'] : 0.0;
+
+				$this->db->select_sum('mrr');
+				$this->db->from('ci_leads');
+				$this->db->where("(lead_assign = $uid OR created_by = $uid)");
+				$this->db->where_in('status', array(39, 42));
+				$this->_applyDate($this->db, 'created', $d1, $d2);
+				$cm_row = $this->db->get()->row_array();
+				$u_closed_mrr = isset($cm_row['mrr']) ? (float)$cm_row['mrr'] : 0.0;
+
 				$this->db->from('ci_followup');
 				$this->db->where('user_id', $uid);
 				$this->db->where('followup_remark != ""');
@@ -564,35 +585,50 @@ class Admin_reports_model extends CI_Model {
 				$tot_lost += $lost_count;
 				$tot_quoted += $u_quoted;
 				$tot_mrr += $u_mrr;
+				$tot_lost_mrr += $u_lost_mrr;
+				$tot_closed_mrr += $u_closed_mrr;
 				$tot_followups += $u_att;
 
 				$rows[] = array(
 					'index' => $idx++,
+					'id' => $uid,
 					'name' => $u['name'],
 					'department' => !empty($u['department']) ? $u['department'] : 'Sales',
 					'email' => $u['email'],
+					'manager' => (int)$u['manager'],
 					'total_leads' => $leads_count,
 					'active_leads' => $active_count,
 					'closed_leads' => $closed_count,
 					'lost_leads' => $lost_count,
+					'attended_followups' => $u_att,
+					'total_quoted' => $u_quoted,
+					'total_mrr' => $u_mrr,
+					'total_lost_mrr' => $u_lost_mrr,
+					'total_closed_mrr' => $u_closed_mrr,
 					'total_quoted_fmt' => 'AED ' . number_format($u_quoted, 2),
 					'total_mrr_fmt' => 'AED ' . number_format($u_mrr, 2),
-					'attended_followups' => $u_att
+					'total_lost_mrr_fmt' => 'AED ' . number_format($u_lost_mrr, 2),
+					'total_closed_mrr_fmt' => 'AED ' . number_format($u_closed_mrr, 2)
 				);
 			}
 
 			return array(
 				'title' => 'Sales Performance Report',
 				'department_title' => 'Sales Department',
-				'headers' => array('#', 'Employee Name', 'Department', 'Email', 'Assigned Leads', 'Active Deals', 'Closed Deals', 'Lost Deals', 'Total Quoted (AED)', 'Total MRR (AED)', 'Attended Followups'),
-				'fields' => array('index', 'name', 'department', 'email', 'total_leads', 'active_leads', 'closed_leads', 'lost_leads', 'total_quoted_fmt', 'total_mrr_fmt', 'attended_followups'),
+				'headers' => array('Name', 'Department', 'Assigned Leads', 'Active Deals', 'Closed Deals', 'Lost Deals', 'Followups Attended', 'Total Quoted (AED)', 'Total MRR', 'Total Lost MRR', 'Total Closed MRR'),
+				'fields' => array('name', 'department', 'total_leads', 'active_leads', 'closed_leads', 'lost_leads', 'attended_followups', 'total_quoted_fmt', 'total_mrr_fmt', 'total_lost_mrr_fmt', 'total_closed_mrr_fmt'),
 				'rows' => $rows,
 				'summary' => array(
-					array('label' => 'Total Sales Staff', 'value' => count($rows), 'icon' => 'fa-users', 'color' => 'bg-aqua'),
-					array('label' => 'Total Leads Assigned', 'value' => number_format($tot_leads), 'icon' => 'fa-database', 'color' => 'bg-blue'),
-					array('label' => 'Total Closed Deals', 'value' => number_format($tot_closed), 'icon' => 'fa-check-circle', 'color' => 'bg-green'),
+					array('label' => 'Sales Staff', 'value' => count($rows), 'icon' => 'fa-users', 'color' => 'bg-aqua'),
+					array('label' => 'Assigned Leads', 'value' => number_format($tot_leads), 'icon' => 'fa-database', 'color' => 'bg-blue'),
+					array('label' => 'Active Deals', 'value' => number_format($tot_active), 'icon' => 'fa-refresh', 'color' => 'bg-teal'),
+					array('label' => 'Closed Deals', 'value' => number_format($tot_closed), 'icon' => 'fa-check-circle', 'color' => 'bg-green'),
+					array('label' => 'Lost Deals', 'value' => number_format($tot_lost), 'icon' => 'fa-times-circle', 'color' => 'bg-red'),
+					array('label' => 'Followups Attended', 'value' => number_format($tot_followups), 'icon' => 'fa-calendar-check-o', 'color' => 'bg-purple'),
 					array('label' => 'Total Quoted Value', 'value' => 'AED ' . number_format($tot_quoted, 2), 'icon' => 'fa-file-text-o', 'color' => 'bg-yellow'),
-					array('label' => 'Total Contract MRR', 'value' => 'AED ' . number_format($tot_mrr, 2), 'icon' => 'fa-money', 'color' => 'bg-red')
+					array('label' => 'Total MRR', 'value' => 'AED ' . number_format($tot_mrr, 2), 'icon' => 'fa-money', 'color' => 'bg-navy'),
+					array('label' => 'Total Lost MRR', 'value' => 'AED ' . number_format($tot_lost_mrr, 2), 'icon' => 'fa-minus-circle', 'color' => 'bg-maroon'),
+					array('label' => 'Total Closed MRR', 'value' => 'AED ' . number_format($tot_closed_mrr, 2), 'icon' => 'fa-plus-circle', 'color' => 'bg-olive')
 				)
 			);
 		}
@@ -602,6 +638,7 @@ class Admin_reports_model extends CI_Model {
 			$this->db->from('ci_leads as A');
 			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'LEFT');
 			$this->db->join('ci_status as C', 'A.status = C.id', 'LEFT');
+			$this->db->where('(A.database_category != "" OR A.data_source != "" OR A.data_batch_referral_no != "")');
 			if (!empty($filters['database_category'])) {
 				$this->db->where('A.database_category', $filters['database_category']);
 			}
@@ -725,6 +762,7 @@ class Admin_reports_model extends CI_Model {
 			$this->db->from('ci_leads as A');
 			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'LEFT');
 			$this->db->join('ci_status as C', 'A.status = C.id', 'LEFT');
+			$this->db->where('((A.quote_status IS NOT NULL AND A.quote_status != "" AND A.quote_status != "Not Given") OR A.quote_amount > 0)');
 			if (!empty($filters['quote_status'])) {
 				$this->db->where('A.quote_status', $filters['quote_status']);
 			}
@@ -786,6 +824,7 @@ class Admin_reports_model extends CI_Model {
 			$this->db->from('ci_leads as A');
 			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'LEFT');
 			$this->db->join('ci_status as C', 'A.status = C.id', 'LEFT');
+			$this->db->where('(A.corporate_tax_status != "" OR A.vat_status != "")');
 			if (!empty($filters['corporate_tax_status'])) {
 				$this->db->where('A.corporate_tax_status', $filters['corporate_tax_status']);
 			}
@@ -903,6 +942,7 @@ class Admin_reports_model extends CI_Model {
 			$this->db->select('A.*, B.name as assigned_name');
 			$this->db->from('ci_leads as A');
 			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'LEFT');
+			$this->db->where('(A.tl_number != "" OR A.tl_authority != "" OR (A.tl_expire_date != "" AND A.tl_expire_date != "0000-00-00"))');
 			$this->_applyEmployee($this->db, 'A.lead_assign', $emp);
 			$this->_applyDate($this->db, 'A.created', $d1, $d2);
 			if (!empty($search)) {
@@ -914,66 +954,74 @@ class Admin_reports_model extends CI_Model {
 			$today = date('Y-m-d');
 			$in_30 = date('Y-m-d', strtotime('+30 days'));
 			$in_60 = date('Y-m-d', strtotime('+60 days'));
+			$in_90 = date('Y-m-d', strtotime('+90 days'));
 
 			$rows = array();
 			$exp_cnt = 0;
-			$soon_cnt = 0;
-			$valid_cnt = 0;
-			$exp_filter = isset($filters['expiry_filter']) ? $filters['expiry_filter'] : 'all';
+			$cnt_0_30 = 0;
+			$cnt_30_60 = 0;
+			$cnt_60_90 = 0;
+			$exp_filter = isset($filters['expiry']) ? $filters['expiry'] : '';
 
 			foreach ($leads as $l) {
 				$exp_d = $l['tl_expire_date'];
 				$badge = 'Valid';
 				$badge_class = 'label-success';
+				$window_type = 'valid';
 
-				if (empty($exp_d) || $exp_d == '0000-00-00') {
-					$badge = 'Undated';
-					$badge_class = 'label-default';
-				} elseif ($exp_d < $today) {
+				if (empty($exp_d) || $exp_d == '0000-00-00' || $exp_d < $today) {
 					$badge = 'Expired';
 					$badge_class = 'label-danger';
+					$window_type = 'expiry';
 					$exp_cnt++;
 				} elseif ($exp_d <= $in_30) {
-					$badge = 'Expiring in 30d';
+					$badge = '0–30 Days';
 					$badge_class = 'label-warning';
-					$soon_cnt++;
+					$window_type = '0-30';
+					$cnt_0_30++;
 				} elseif ($exp_d <= $in_60) {
-					$badge = 'Expiring in 60d';
+					$badge = '30–60 Days';
 					$badge_class = 'label-info';
-					$soon_cnt++;
-				} else {
-					$valid_cnt++;
+					$window_type = '30-60';
+					$cnt_30_60++;
+				} elseif ($exp_d <= $in_90) {
+					$badge = '60–90 Days';
+					$badge_class = 'label-primary';
+					$window_type = '60-90';
+					$cnt_60_90++;
 				}
 
-				if ($exp_filter == 'expired' && $badge != 'Expired') continue;
-				if ($exp_filter == '30days' && $badge != 'Expiring in 30d') continue;
-				if ($exp_filter == '60days' && $badge != 'Expiring in 60d' && $badge != 'Expiring in 30d') continue;
-				if ($exp_filter == 'valid' && ($badge == 'Expired' || $badge == 'Undated')) continue;
+				if ($exp_filter == 'expired' && $window_type != 'expiry') continue;
+				if ($exp_filter == '30days' && $window_type != '0-30') continue;
+				if ($exp_filter == '60days' && $window_type != '30-60') continue;
+				if ($exp_filter == '90days' && $window_type != '60-90') continue;
 
 				$rows[] = array(
 					'lead_id' => !empty($l['lead_id']) ? $l['lead_id'] : $l['id'],
 					'customer' => $l['customer'],
 					'tl_number' => !empty($l['tl_number']) ? $l['tl_number'] : '-',
-					'tl_authority' => !empty($l['tl_authority']) ? $l['tl_authority'] : '-',
+					'tl_authority' => !empty($l['tl_authority']) ? $l['tl_authority'] : 'General Licensing',
 					'tl_issue_date' => (!empty($l['tl_issue_date']) && $l['tl_issue_date'] != '0000-00-00') ? simple_date($l['tl_issue_date']) : '-',
 					'tl_expire_date' => (!empty($l['tl_expire_date']) && $l['tl_expire_date'] != '0000-00-00') ? simple_date($l['tl_expire_date']) : '-',
 					'validity_badge' => '<span class="label '.$badge_class.'">'.$badge.'</span>',
 					'city' => !empty($l['city']) ? $l['city'] : '-',
-					'assigned_name' => !empty($l['assigned_name']) ? $l['assigned_name'] : 'Unassigned'
+					'assigned_name' => !empty($l['assigned_name']) ? $l['assigned_name'] : 'Unassigned',
+					'window_type' => $window_type
 				);
 			}
 
 			return array(
 				'title' => 'Trade License Report',
 				'department_title' => 'Sales Department',
-				'headers' => array('Lead ID', 'Customer Name', 'Trade License No', 'Authority', 'Issue Date', 'Expiry Date', 'Status / Validity', 'City', 'Assigned To'),
-				'fields' => array('lead_id', 'customer', 'tl_number', 'tl_authority', 'tl_issue_date', 'tl_expire_date', 'validity_badge', 'city', 'assigned_name'),
+				'headers' => array('Licensing Authority', 'Expiry', '60–90 Days', '30–60 Days', '0–30 Days'),
+				'fields' => array('tl_authority', 'expiry_cnt', 'cnt_60_90', 'cnt_30_60', 'cnt_0_30'),
 				'rows' => $rows,
 				'summary' => array(
-					array('label' => 'Total Licenses on File', 'value' => number_format(count($rows)), 'icon' => 'fa-id-card-o', 'color' => 'bg-blue'),
+					array('label' => 'Trade Licenses', 'value' => number_format(count($rows)), 'icon' => 'fa-id-card-o', 'color' => 'bg-blue'),
 					array('label' => 'Expired Licenses', 'value' => number_format($exp_cnt), 'icon' => 'fa-times-circle', 'color' => 'bg-red'),
-					array('label' => 'Expiring Within 30d', 'value' => number_format($soon_cnt), 'icon' => 'fa-clock-o', 'color' => 'bg-yellow'),
-					array('label' => 'Active & Valid', 'value' => number_format($valid_cnt), 'icon' => 'fa-check-circle', 'color' => 'bg-green')
+					array('label' => 'Expiring 60–90 Days', 'value' => number_format($cnt_60_90), 'icon' => 'fa-clock-o', 'color' => 'bg-purple'),
+					array('label' => 'Expiring 30–60 Days', 'value' => number_format($cnt_30_60), 'icon' => 'fa-clock-o', 'color' => 'bg-aqua'),
+					array('label' => 'Expiring 0–30 Days', 'value' => number_format($cnt_0_30), 'icon' => 'fa-clock-o', 'color' => 'bg-yellow')
 				)
 			);
 		}
@@ -2170,6 +2218,9 @@ class Admin_reports_model extends CI_Model {
 	private function _buildPivotData($dept, $report, $filters, $report_res)
 	{
 		$rows = isset($report_res['rows']) ? $report_res['rows'] : array();
+		$d1 = isset($filters['d1']) ? $filters['d1'] : '';
+		$d2 = isset($filters['d2']) ? $filters['d2'] : '';
+
 		if (empty($rows)) {
 			return array(
 				'headers' => array('Category', 'Item', 'Count'),
@@ -2178,8 +2229,162 @@ class Admin_reports_model extends CI_Model {
 			);
 		}
 
+		if ($dept == 'sales' && $report == 'performance') {
+			$headers = array('Name', 'Department', 'Assigned Leads', 'Active Deals', 'Closed Deals', 'Lost Deals', 'Followups Attended', 'Total Quoted (AED)', 'Total MRR', 'Total Lost MRR', 'Total Closed MRR');
+			$current_user_id = isset($filters['manager_id']) ? (int)$filters['manager_id'] : 0;
+			$is_admin = !empty($filters['is_admin_or_support']);
+
+			$my_rows = array();
+			$team_rows = array();
+
+			$my_sub = array('leads' => 0, 'active' => 0, 'closed' => 0, 'lost' => 0, 'followups' => 0, 'quoted' => 0.0, 'mrr' => 0.0, 'lost_mrr' => 0.0, 'closed_mrr' => 0.0);
+			$team_sub = array('leads' => 0, 'active' => 0, 'closed' => 0, 'lost' => 0, 'followups' => 0, 'quoted' => 0.0, 'mrr' => 0.0, 'lost_mrr' => 0.0, 'closed_mrr' => 0.0);
+			$grand = array('leads' => 0, 'active' => 0, 'closed' => 0, 'lost' => 0, 'followups' => 0, 'quoted' => 0.0, 'mrr' => 0.0, 'lost_mrr' => 0.0, 'closed_mrr' => 0.0);
+
+			foreach ($rows as $r) {
+				$uid = isset($r['id']) ? (int)$r['id'] : 0;
+				$mgr = isset($r['manager']) ? (int)$r['manager'] : 0;
+				$u_name = isset($r['name']) ? $r['name'] : 'Staff';
+				$u_dept = isset($r['department']) ? $r['department'] : 'Sales';
+
+				$l_cnt = isset($r['total_leads']) ? (int)$r['total_leads'] : 0;
+				$a_cnt = isset($r['active_leads']) ? (int)$r['active_leads'] : 0;
+				$c_cnt = isset($r['closed_leads']) ? (int)$r['closed_leads'] : 0;
+				$lost_cnt = isset($r['lost_leads']) ? (int)$r['lost_leads'] : 0;
+				$f_cnt = isset($r['attended_followups']) ? (int)$r['attended_followups'] : 0;
+				$q_val = isset($r['total_quoted']) ? (float)$r['total_quoted'] : 0.0;
+				$m_val = isset($r['total_mrr']) ? (float)$r['total_mrr'] : 0.0;
+				$lm_val = isset($r['total_lost_mrr']) ? (float)$r['total_lost_mrr'] : 0.0;
+				$cm_val = isset($r['total_closed_mrr']) ? (float)$r['total_closed_mrr'] : 0.0;
+
+				$row_item = array(
+					$u_name,
+					$u_dept,
+					array('val' => number_format($l_cnt), 'url' => base_url().'manager/download-report/drilldown?report=performance&metric=assigned&uid='.$uid.'&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($a_cnt), 'url' => base_url().'manager/download-report/drilldown?report=performance&metric=active&uid='.$uid.'&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($c_cnt), 'url' => base_url().'manager/download-report/drilldown?report=performance&metric=closed&uid='.$uid.'&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($lost_cnt), 'url' => base_url().'manager/download-report/drilldown?report=performance&metric=lost&uid='.$uid.'&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($f_cnt), 'url' => base_url().'manager/download-report/drilldown?report=performance&metric=followup&uid='.$uid.'&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($q_val, 2), 'url' => base_url().'manager/download-report/drilldown?report=performance&metric=quoted&uid='.$uid.'&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($m_val, 2), 'url' => base_url().'manager/download-report/drilldown?report=performance&metric=mrr&uid='.$uid.'&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($lm_val, 2), 'url' => base_url().'manager/download-report/drilldown?report=performance&metric=lost_mrr&uid='.$uid.'&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($cm_val, 2), 'url' => base_url().'manager/download-report/drilldown?report=performance&metric=closed_mrr&uid='.$uid.'&d1='.$d1.'&d2='.$d2)
+				);
+
+				if ($uid == $current_user_id) {
+					$my_rows[] = $row_item;
+					$my_sub['leads'] += $l_cnt;
+					$my_sub['active'] += $a_cnt;
+					$my_sub['closed'] += $c_cnt;
+					$my_sub['lost'] += $lost_cnt;
+					$my_sub['followups'] += $f_cnt;
+					$my_sub['quoted'] += $q_val;
+					$my_sub['mrr'] += $m_val;
+					$my_sub['lost_mrr'] += $lm_val;
+					$my_sub['closed_mrr'] += $cm_val;
+				} else {
+					if ($is_admin || $mgr == $current_user_id) {
+						$team_rows[] = $row_item;
+						$team_sub['leads'] += $l_cnt;
+						$team_sub['active'] += $a_cnt;
+						$team_sub['closed'] += $c_cnt;
+						$team_sub['lost'] += $lost_cnt;
+						$team_sub['followups'] += $f_cnt;
+						$team_sub['quoted'] += $q_val;
+						$team_sub['mrr'] += $m_val;
+						$team_sub['lost_mrr'] += $lm_val;
+						$team_sub['closed_mrr'] += $cm_val;
+					}
+				}
+
+				$grand['leads'] += $l_cnt;
+				$grand['active'] += $a_cnt;
+				$grand['closed'] += $c_cnt;
+				$grand['lost'] += $lost_cnt;
+				$grand['followups'] += $f_cnt;
+				$grand['quoted'] += $q_val;
+				$grand['mrr'] += $m_val;
+				$grand['lost_mrr'] += $lm_val;
+				$grand['closed_mrr'] += $cm_val;
+			}
+
+			$groups = array();
+
+			$groups[] = array(
+				'category' => 'My Report',
+				'rows' => $my_rows,
+				'subtotal' => array('My Report Total', '', number_format($my_sub['leads']), number_format($my_sub['active']), number_format($my_sub['closed']), number_format($my_sub['lost']), number_format($my_sub['followups']), number_format($my_sub['quoted'], 2), number_format($my_sub['mrr'], 2), number_format($my_sub['lost_mrr'], 2), number_format($my_sub['closed_mrr'], 2))
+			);
+
+			$groups[] = array(
+				'category' => 'Team Report',
+				'rows' => $team_rows,
+				'subtotal' => array('Team Report Total', '', number_format($team_sub['leads']), number_format($team_sub['active']), number_format($team_sub['closed']), number_format($team_sub['lost']), number_format($team_sub['followups']), number_format($team_sub['quoted'], 2), number_format($team_sub['mrr'], 2), number_format($team_sub['lost_mrr'], 2), number_format($team_sub['closed_mrr'], 2))
+			);
+
+			return array(
+				'headers' => $headers,
+				'groups' => $groups,
+				'grand_total' => array('Grand Total', '', number_format($grand['leads']), number_format($grand['active']), number_format($grand['closed']), number_format($grand['lost']), number_format($grand['followups']), number_format($grand['quoted'], 2), number_format($grand['mrr'], 2), number_format($grand['lost_mrr'], 2), number_format($grand['closed_mrr'], 2))
+			);
+		}
+
+		if ($dept == 'sales' && $report == 'trade-license') {
+			$headers = array('Licensing Authority', 'Expiry', '60–90 Days', '30–60 Days', '0–30 Days');
+			$groups_map = array();
+			$grand = array('expiry' => 0, '60_90' => 0, '30_60' => 0, '0_30' => 0);
+
+			foreach ($rows as $r) {
+				$auth = !empty($r['tl_authority']) && $r['tl_authority'] !== '-' ? $r['tl_authority'] : 'General Licensing';
+				$win = isset($r['window_type']) ? $r['window_type'] : 'valid';
+
+				if (!isset($groups_map[$auth])) {
+					$groups_map[$auth] = array('expiry' => 0, '60_90' => 0, '30_60' => 0, '0_30' => 0);
+				}
+
+				if ($win == 'expiry') {
+					$groups_map[$auth]['expiry'] += 1;
+					$grand['expiry'] += 1;
+				} elseif ($win == '60-90') {
+					$groups_map[$auth]['60_90'] += 1;
+					$grand['60_90'] += 1;
+				} elseif ($win == '30-60') {
+					$groups_map[$auth]['30_60'] += 1;
+					$grand['30_60'] += 1;
+				} elseif ($win == '0-30') {
+					$groups_map[$auth]['0_30'] += 1;
+					$grand['0_30'] += 1;
+				}
+			}
+
+			$r_list = array();
+			foreach ($groups_map as $auth => $m) {
+				$r_list[] = array(
+					$auth,
+					array('val' => number_format($m['expiry']), 'url' => base_url().'manager/download-report/drilldown?report=trade-license&auth='.urlencode($auth).'&window=expiry&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($m['60_90']), 'url' => base_url().'manager/download-report/drilldown?report=trade-license&auth='.urlencode($auth).'&window=60-90&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($m['30_60']), 'url' => base_url().'manager/download-report/drilldown?report=trade-license&auth='.urlencode($auth).'&window=30-60&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($m['0_30']), 'url' => base_url().'manager/download-report/drilldown?report=trade-license&auth='.urlencode($auth).'&window=0-30&d1='.$d1.'&d2='.$d2)
+				);
+			}
+
+			$groups = array(
+				array(
+					'category' => 'Licensing Authorities',
+					'rows' => $r_list,
+					'subtotal' => array('Authorities Total', number_format($grand['expiry']), number_format($grand['60_90']), number_format($grand['30_60']), number_format($grand['0_30']))
+				)
+			);
+
+			return array(
+				'headers' => $headers,
+				'groups' => $groups,
+				'grand_total' => array('Grand Total', number_format($grand['expiry']), number_format($grand['60_90']), number_format($grand['30_60']), number_format($grand['0_30']))
+			);
+		}
+
 		if ($dept == 'sales' && $report == 'database') {
-			$headers = array('Database Category', 'Database Status', 'COUNTA of DB Ref', 'COUNTA of Database Status', 'COUNTA of Lead Status');
+			$headers = array('Database Category', 'Database Status', 'DB Referrals', 'Database Status Records', 'Lead Status Records');
 			$groups_map = array();
 			$grand = array('ref' => 0, 'status' => 0, 'lead' => 0);
 
@@ -2241,7 +2446,7 @@ class Admin_reports_model extends CI_Model {
 		}
 
 		if ($dept == 'sales' && $report == 'lost') {
-			$headers = array('Lost Category', 'Lead Status', 'COUNTA of Lead Status', 'COUNTA of Lost Deals', 'SUM of Quoted Value (AED)');
+			$headers = array('Lost Category', 'Lead Status', 'Total Leads', 'Lost Deals', 'Quoted Value (AED)');
 			$groups_map = array();
 			$grand = array('leads' => 0, 'lost' => 0, 'amt' => 0.0);
 
@@ -2295,7 +2500,7 @@ class Admin_reports_model extends CI_Model {
 		}
 
 		if ($dept == 'sales' && $report == 'quote') {
-			$headers = array('Quote Status', 'Lost / Status Category', 'COUNTA of Lead Status', 'COUNTA of Services Category', 'COUNTA of Lost Category', 'COUNTA of Amount', 'SUM of Amount (AED)');
+			$headers = array('Quote Status', 'Category', 'Lead Status Records', 'Service Category Records', 'Lost Deals', 'Quote Count', 'Total Quoted (AED)');
 			$groups_map = array();
 			$grand = array('leads' => 0, 'service' => 0, 'lost' => 0, 'cnt_amt' => 0, 'sum_amt' => 0.0);
 
@@ -2353,76 +2558,8 @@ class Admin_reports_model extends CI_Model {
 			);
 		}
 
-		if ($dept == 'sales' && $report == 'performance') {
-			$headers = array('Department', 'Employee Name', 'Assigned Leads', 'Active Deals', 'Closed Deals', 'Lost Deals', 'Followups Attended', 'Total Quoted (AED)', 'Total MRR (AED)');
-			$groups_map = array();
-			$grand = array('leads' => 0, 'active' => 0, 'closed' => 0, 'lost' => 0, 'followups' => 0, 'quoted' => 0.0, 'mrr' => 0.0);
-
-			foreach ($rows as $r) {
-				$cat = !empty($r['department']) && $r['department'] !== '-' ? $r['department'] : 'Sales';
-				$sub = !empty($r['name']) ? $r['name'] : 'Staff';
-
-				if (!isset($groups_map[$cat])) {
-					$groups_map[$cat] = array('category' => $cat, 'items' => array(), 'sub' => array('leads' => 0, 'active' => 0, 'closed' => 0, 'lost' => 0, 'followups' => 0, 'quoted' => 0.0, 'mrr' => 0.0));
-				}
-
-				$l_cnt = isset($r['total_leads']) ? (int)$r['total_leads'] : 0;
-				$a_cnt = isset($r['active_leads']) ? (int)$r['active_leads'] : 0;
-				$c_cnt = isset($r['closed_leads']) ? (int)$r['closed_leads'] : 0;
-				$lost_cnt = isset($r['lost_leads']) ? (int)$r['lost_leads'] : 0;
-				$f_cnt = isset($r['attended_followups']) ? (int)$r['attended_followups'] : 0;
-				$q_val = isset($r['total_quoted_fmt']) ? (float)str_replace(array('AED', ',', ' '), '', $r['total_quoted_fmt']) : 0.0;
-				$m_val = isset($r['total_mrr_fmt']) ? (float)str_replace(array('AED', ',', ' '), '', $r['total_mrr_fmt']) : 0.0;
-
-				$groups_map[$cat]['items'][$sub] = array(
-					'leads' => $l_cnt,
-					'active' => $a_cnt,
-					'closed' => $c_cnt,
-					'lost' => $lost_cnt,
-					'followups' => $f_cnt,
-					'quoted' => $q_val,
-					'mrr' => $m_val
-				);
-
-				$groups_map[$cat]['sub']['leads'] += $l_cnt;
-				$groups_map[$cat]['sub']['active'] += $a_cnt;
-				$groups_map[$cat]['sub']['closed'] += $c_cnt;
-				$groups_map[$cat]['sub']['lost'] += $lost_cnt;
-				$groups_map[$cat]['sub']['followups'] += $f_cnt;
-				$groups_map[$cat]['sub']['quoted'] += $q_val;
-				$groups_map[$cat]['sub']['mrr'] += $m_val;
-
-				$grand['leads'] += $l_cnt;
-				$grand['active'] += $a_cnt;
-				$grand['closed'] += $c_cnt;
-				$grand['lost'] += $lost_cnt;
-				$grand['followups'] += $f_cnt;
-				$grand['quoted'] += $q_val;
-				$grand['mrr'] += $m_val;
-			}
-
-			$groups = array();
-			foreach ($groups_map as $c => $data) {
-				$r_list = array();
-				foreach ($data['items'] as $s => $m) {
-					$r_list[] = array($c, $s, number_format($m['leads']), number_format($m['active']), number_format($m['closed']), number_format($m['lost']), number_format($m['followups']), number_format($m['quoted'], 2), number_format($m['mrr'], 2));
-				}
-				$groups[] = array(
-					'category' => $c,
-					'rows' => $r_list,
-					'subtotal' => array($c . ' Total', '', number_format($data['sub']['leads']), number_format($data['sub']['active']), number_format($data['sub']['closed']), number_format($data['sub']['lost']), number_format($data['sub']['followups']), number_format($data['sub']['quoted'], 2), number_format($data['sub']['mrr'], 2))
-				);
-			}
-
-			return array(
-				'headers' => $headers,
-				'groups' => $groups,
-				'grand_total' => array('Grand Total', '', number_format($grand['leads']), number_format($grand['active']), number_format($grand['closed']), number_format($grand['lost']), number_format($grand['followups']), number_format($grand['quoted'], 2), number_format($grand['mrr'], 2))
-			);
-		}
-
 		if ($dept == 'sales' && $report == 'lead') {
-			$headers = array('Lead Status', 'Industry / Service Category', 'COUNTA of Leads', 'COUNTA of Closed Deals', 'SUM of MRR (AED)');
+			$headers = array('Lead Status', 'Industry / Service Category', 'Total Leads', 'Closed Deals', 'Total MRR (AED)');
 			$groups_map = array();
 			$grand = array('leads' => 0, 'closed' => 0, 'mrr' => 0.0);
 
@@ -2474,7 +2611,7 @@ class Admin_reports_model extends CI_Model {
 		}
 
 		if ($dept == 'sales' && $report == 'tax-registration') {
-			$headers = array('Corporate Tax Status', 'VAT Status', 'COUNTA of Companies', 'COUNTA of Trade Licenses', 'COUNTA of Cities');
+			$headers = array('Corporate Tax Status', 'VAT Status', 'Companies', 'Trade Licenses', 'Cities');
 			$groups_map = array();
 			$grand = array('companies' => 0, 'tl' => 0, 'cities' => 0);
 
@@ -2525,65 +2662,11 @@ class Admin_reports_model extends CI_Model {
 			);
 		}
 
-		if ($dept == 'sales' && $report == 'trade-license') {
-			$headers = array('Licensing Authority', 'Expiry / Validity Status', 'COUNTA of Trade Licenses', 'COUNTA of Cities', 'COUNTA of Companies');
-			$groups_map = array();
-			$grand = array('tl' => 0, 'cities' => 0, 'companies' => 0);
-
-			foreach ($rows as $r) {
-				$cat = !empty($r['tl_authority']) && $r['tl_authority'] !== '-' ? $r['tl_authority'] : 'General Licensing';
-				$sub = strip_tags(isset($r['validity_badge']) ? $r['validity_badge'] : 'Valid');
-				if (empty($sub)) $sub = 'Valid';
-
-				if (!isset($groups_map[$cat])) {
-					$groups_map[$cat] = array('category' => $cat, 'items' => array(), 'sub' => array('tl' => 0, 'cities' => 0, 'companies' => 0));
-				}
-				if (!isset($groups_map[$cat]['items'][$sub])) {
-					$groups_map[$cat]['items'][$sub] = array('tl' => 0, 'cities' => 0, 'companies' => 0);
-				}
-
-				$has_tl = (!empty($r['tl_number']) && $r['tl_number'] !== '-') ? 1 : 0;
-				$has_city = (!empty($r['city']) && $r['city'] !== '-') ? 1 : 0;
-
-				$groups_map[$cat]['items'][$sub]['tl'] += $has_tl;
-				$groups_map[$cat]['items'][$sub]['cities'] += $has_city;
-				$groups_map[$cat]['items'][$sub]['companies'] += 1;
-
-				$groups_map[$cat]['sub']['tl'] += $has_tl;
-				$groups_map[$cat]['sub']['cities'] += $has_city;
-				$groups_map[$cat]['sub']['companies'] += 1;
-
-				$grand['tl'] += $has_tl;
-				$grand['cities'] += $has_city;
-				$grand['companies'] += 1;
-			}
-
-			$groups = array();
-			foreach ($groups_map as $c => $data) {
-				$r_list = array();
-				foreach ($data['items'] as $s => $m) {
-					$r_list[] = array($c, $s, number_format($m['tl']), number_format($m['cities']), number_format($m['companies']));
-				}
-				$groups[] = array(
-					'category' => $c,
-					'rows' => $r_list,
-					'subtotal' => array($c . ' Total', '', number_format($data['sub']['tl']), number_format($data['sub']['cities']), number_format($data['sub']['companies']))
-				);
-			}
-
-			return array(
-				'headers' => $headers,
-				'groups' => $groups,
-				'grand_total' => array('Grand Total', '', number_format($grand['tl']), number_format($grand['cities']), number_format($grand['companies']))
-			);
-		}
-
 		$fields = isset($report_res['fields']) ? $report_res['fields'] : array();
 		$cat_field = isset($fields[1]) ? $fields[1] : (isset($fields[0]) ? $fields[0] : '');
 		$sub_field = isset($fields[2]) ? $fields[2] : (isset($fields[1]) ? $fields[1] : '');
 
 		$groups_map = array();
-		$grand_count = count($rows);
 
 		foreach ($rows as $r) {
 			$cat = (!empty($cat_field) && !empty($r[$cat_field])) ? trim(strip_tags($r[$cat_field])) : 'General';
@@ -2600,10 +2683,12 @@ class Admin_reports_model extends CI_Model {
 		}
 
 		$groups = array();
+		$grand_total_count = 0;
 		foreach ($groups_map as $c => $data) {
 			$r_list = array();
 			foreach ($data['items'] as $s => $cnt) {
 				$r_list[] = array($c, $s, number_format($cnt));
+				$grand_total_count += $cnt;
 			}
 			$groups[] = array(
 				'category' => $c,
@@ -2613,9 +2698,178 @@ class Admin_reports_model extends CI_Model {
 		}
 
 		return array(
-			'headers' => array('Category Group', 'Sub Item', 'Total Count'),
+			'headers' => array('Category', 'Subcategory', 'Record Count'),
 			'groups' => $groups,
-			'grand_total' => array('Grand Total', '', number_format($grand_count))
+			'grand_total' => array('Grand Total', '', number_format($grand_total_count))
 		);
 	}
+
+	public function getDrilldownRecords($report, $metric, $uid, $auth, $window, $d1, $d2, $manager_id, $is_admin_or_support)
+	{
+		$user_name = '';
+		if ($uid > 0) {
+			$user_row = $this->db->select('name')->where('id', $uid)->get('ci_user')->row_array();
+			if (!empty($user_row['name'])) {
+				$user_name = $user_row['name'];
+			}
+		}
+
+		if ($report == 'performance') {
+			if ($metric == 'followup') {
+				$this->db->select('F.id, F.lead_id, F.followup_date, F.followup_remark, L.customer, L.mobile, L.email, L.category, L.status');
+				$this->db->from('ci_followup as F');
+				$this->db->join('ci_leads as L', 'F.lead_id = L.id', 'LEFT');
+				$this->db->where('F.user_id', $uid);
+				$this->db->where('F.followup_remark != ""');
+				$this->_applyDate($this->db, 'F.followup_date', $d1, $d2);
+				$this->db->order_by('F.followup_date', 'DESC');
+				$records = $this->db->get()->result_array();
+
+				$rows = array();
+				foreach ($records as $r) {
+					$rows[] = array(
+						'lead_id' => !empty($r['lead_id']) ? $r['lead_id'] : '-',
+						'customer' => !empty($r['customer']) ? $r['customer'] : '-',
+						'mobile' => !empty($r['mobile']) ? $r['mobile'] : '-',
+						'email' => !empty($r['email']) ? $r['email'] : '-',
+						'category' => !empty($r['category']) ? $r['category'] : '-',
+						'followup_date' => !empty($r['followup_date']) ? simple_date($r['followup_date']) : '-',
+						'followup_remark' => !empty($r['followup_remark']) ? $r['followup_remark'] : '-',
+						'action' => '<a href="'.base_url().'manager/leads/view/'.$r['lead_id'].'" class="btn btn-xs btn-primary" target="_blank"><i class="fa fa-eye"></i> View Lead</a>'
+					);
+				}
+
+				return array(
+					'title' => 'Followups Attended - ' . ($user_name ? $user_name : 'Staff #'.$uid),
+					'headers' => array('Lead ID', 'Customer / Company', 'Mobile', 'Email', 'Service Category', 'Followup Date', 'Remark', 'Action'),
+					'fields' => array('lead_id', 'customer', 'mobile', 'email', 'category', 'followup_date', 'followup_remark', 'action'),
+					'rows' => $rows,
+					'count' => count($rows)
+				);
+			}
+
+			$this->db->select('A.*, B.name as assigned_name, C.status as status_name');
+			$this->db->from('ci_leads as A');
+			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'LEFT');
+			$this->db->join('ci_status as C', 'A.status = C.id', 'LEFT');
+			$this->db->where("(A.lead_assign = $uid OR A.created_by = $uid)");
+			$this->_applyDate($this->db, 'A.created', $d1, $d2);
+
+			$metric_title = 'Assigned Leads';
+			if ($metric == 'active') {
+				$this->db->where_in('A.status', array(36, 37, 38, 40, 41));
+				$metric_title = 'Active Deals';
+			} elseif ($metric == 'closed') {
+				$this->db->where_in('A.status', array(39, 42));
+				$metric_title = 'Closed Deals';
+			} elseif ($metric == 'lost') {
+				$this->db->where("(A.status IN (43, 44) OR LOWER(A.status_category) LIKE '%lost%' OR LOWER(A.lost_reason) LIKE '%lost%')");
+				$metric_title = 'Lost Deals';
+			} elseif ($metric == 'quoted') {
+				$this->db->where('A.quote_amount >', 0);
+				$metric_title = 'Quoted Deals';
+			} elseif ($metric == 'mrr') {
+				$this->db->where('A.mrr >', 0);
+				$metric_title = 'Total MRR Deals';
+			} elseif ($metric == 'lost_mrr') {
+				$this->db->where('A.mrr >', 0);
+				$this->db->where("(A.status IN (43, 44) OR LOWER(A.status_category) LIKE '%lost%' OR LOWER(A.lost_reason) LIKE '%lost%')");
+				$metric_title = 'Lost MRR Deals';
+			} elseif ($metric == 'closed_mrr') {
+				$this->db->where('A.mrr >', 0);
+				$this->db->where_in('A.status', array(39, 42));
+				$metric_title = 'Closed MRR Deals';
+			}
+
+			$this->db->order_by('A.id', 'DESC');
+			$leads = $this->db->get()->result_array();
+
+			$rows = array();
+			foreach ($leads as $l) {
+				$lead_num = !empty($l['lead_id']) ? $l['lead_id'] : $l['id'];
+				$st_name = !empty($l['status_name']) ? $l['status_name'] : 'Lead #'.$l['status'];
+				$rows[] = array(
+					'lead_id' => $lead_num,
+					'customer' => $l['customer'],
+					'mobile' => !empty($l['mobile']) ? $l['mobile'] : '-',
+					'email' => !empty($l['email']) ? $l['email'] : '-',
+					'category' => !empty($l['category']) ? $l['category'] : '-',
+					'status' => '<span class="label label-info">'.$st_name.'</span>',
+					'quote_amount' => 'AED ' . number_format((float)$l['quote_amount'], 2),
+					'mrr' => 'AED ' . number_format((float)$l['mrr'], 2),
+					'created' => simple_date($l['created']),
+					'action' => '<a href="'.base_url().'manager/leads/view/'.$l['id'].'" class="btn btn-xs btn-primary" target="_blank"><i class="fa fa-eye"></i> View Lead</a>'
+				);
+			}
+
+			return array(
+				'title' => $metric_title . ' - ' . ($user_name ? $user_name : 'Staff #'.$uid),
+				'headers' => array('Lead ID', 'Customer / Company', 'Mobile', 'Email', 'Service Category', 'Status', 'Quote Amount', 'MRR', 'Created Date', 'Action'),
+				'fields' => array('lead_id', 'customer', 'mobile', 'email', 'category', 'status', 'quote_amount', 'mrr', 'created', 'action'),
+				'rows' => $rows,
+				'count' => count($rows)
+			);
+		}
+
+		if ($report == 'trade-license') {
+			$this->db->select('A.*, B.name as assigned_name');
+			$this->db->from('ci_leads as A');
+			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'LEFT');
+			$this->db->where('(A.tl_number != "" OR A.tl_authority != "" OR (A.tl_expire_date != "" AND A.tl_expire_date != "0000-00-00"))');
+			$this->_applyDate($this->db, 'A.created', $d1, $d2);
+
+			if (!empty($auth) && $auth !== 'General Licensing' && $auth !== 'All') {
+				$this->db->where('A.tl_authority', $auth);
+			} elseif ($auth === 'General Licensing') {
+				$this->db->where("(A.tl_authority = '' OR A.tl_authority IS NULL OR A.tl_authority = 'General Licensing')");
+			}
+
+			$window_title = 'Trade Licenses';
+			if ($window == 'expiry') {
+				$this->db->where("(A.tl_expire_date < CURDATE() OR A.tl_expire_date IS NULL OR A.tl_expire_date = '' OR A.tl_expire_date = '0000-00-00')");
+				$window_title = 'Expired Licenses';
+			} elseif ($window == '60-90') {
+				$this->db->where("A.tl_expire_date BETWEEN DATE_ADD(CURDATE(), INTERVAL 61 DAY) AND DATE_ADD(CURDATE(), INTERVAL 90 DAY)");
+				$window_title = 'Licenses Expiring in 60–90 Days';
+			} elseif ($window == '30-60') {
+				$this->db->where("A.tl_expire_date BETWEEN DATE_ADD(CURDATE(), INTERVAL 31 DAY) AND DATE_ADD(CURDATE(), INTERVAL 60 DAY)");
+				$window_title = 'Licenses Expiring in 30–60 Days';
+			} elseif ($window == '0-30') {
+				$this->db->where("A.tl_expire_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)");
+				$window_title = 'Licenses Expiring in 0–30 Days';
+			}
+
+			$this->db->order_by('A.id', 'DESC');
+			$leads = $this->db->get()->result_array();
+
+			$rows = array();
+			foreach ($leads as $l) {
+				$rows[] = array(
+					'customer' => !empty($l['customer']) ? $l['customer'] : '-',
+					'tl_number' => !empty($l['tl_number']) ? $l['tl_number'] : '-',
+					'tl_authority' => !empty($l['tl_authority']) ? $l['tl_authority'] : 'General Licensing',
+					'tl_issue_date' => (!empty($l['tl_issue_date']) && $l['tl_issue_date'] != '0000-00-00') ? simple_date($l['tl_issue_date']) : '-',
+					'tl_expire_date' => (!empty($l['tl_expire_date']) && $l['tl_expire_date'] != '0000-00-00') ? simple_date($l['tl_expire_date']) : '-',
+					'action' => '<a href="'.base_url().'manager/leads/view/'.$l['id'].'" class="btn btn-xs btn-primary" target="_blank"><i class="fa fa-eye"></i> View Lead</a>'
+				);
+			}
+
+			return array(
+				'title' => $window_title . (!empty($auth) ? ' (' . $auth . ')' : ''),
+				'headers' => array('Company Name', 'License Number', 'Licensing Authority', 'Trade License Issue Date', 'Trade License Expiry Date', 'Action'),
+				'fields' => array('customer', 'tl_number', 'tl_authority', 'tl_issue_date', 'tl_expire_date', 'action'),
+				'rows' => $rows,
+				'count' => count($rows)
+			);
+		}
+
+		return array(
+			'title' => 'Drill-Down Records',
+			'headers' => array(),
+			'fields' => array(),
+			'rows' => array(),
+			'count' => 0
+		);
+	}
+
 }

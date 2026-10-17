@@ -65,6 +65,9 @@
           <?php if(!empty($p_info['dnd_status']) && strtolower($p_info['dnd_status']) == 'yes'){ ?>
             <span class="label label-danger" style="background:#dc2626; color:#ffffff; font-weight:700; padding:2px 7px; border-radius:3px; font-size:12px; margin-left:6px; letter-spacing:0.5px;">DNCR</span>
           <?php } ?>
+          <?php if(!empty($p_info['company_status']) && strtolower($p_info['company_status']) == 'closed'){ ?>
+            <span class="label label-primary" style="background:#2563eb; color:#ffffff; font-weight:700; padding:2px 7px; border-radius:3px; font-size:12px; margin-left:6px; letter-spacing:0.5px;">Closed</span>
+          <?php } ?>
         </h3>    
           </div>
           </div>
@@ -78,15 +81,16 @@
               <tr>
                 <th scope="col">Lead No.</th>
                 <td><?php echo $p_info['lead_id']; ?></td>
-
-                
               </tr>
    
-            
+              <tr>
+                <th scope="col">Company Status</th>
+                <td scope="col"><?php echo !empty($p_info['company_status']) ? htmlspecialchars($p_info['company_status']) : 'Active'; ?></td>
+              </tr>
+
               <tr>
               <th scope="col">Category</th>
                 <td scope="col"><?php echo $p_info['category']; ?></td>
-            
               </tr>
          
           

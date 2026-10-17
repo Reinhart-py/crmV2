@@ -114,7 +114,7 @@ $route['manager/kam/schedule'] = "ci_admin_kam/schedule";
 $route['manager/kam/pitch-schedule'] = "ci_admin_kam/schedule";
 $route['manager/kam/report'] = "ci_admin_kam/report";
 
-// Reports & Admin Reports
+$route['manager/download-report/drilldown'] = "ci_admin_report/drilldown";
 $route['manager/download-report'] = "ci_admin_report/downloadReport";
 $route['manager/download-report/(:any)'] = "ci_admin_report/downloadReport/$1";
 $route['manager/download-report/(:any)/(:any)'] = "ci_admin_report/downloadReport/$1/$2";
