@@ -91,8 +91,9 @@
       <form role="form" action="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($list['id']); ?>/<?php echo $action; ?>" method="post" name="add_form">
       
        <div class="box box-default">
-      <div class="box-header with-border pt-3">
+      <div class="box-header with-border pt-3" style="position: relative;">
         <h3 class="box-title">Initial Category Fields</h3>
+        <span class="dncr-indicator-badge label label-danger" style="position: absolute; right: 20px; top: 12px; background: #dc2626; color: #ffffff; font-weight: 700; padding: 4px 14px; border-radius: 4px; font-size: 13px; letter-spacing: 0.5px; <?php echo (isset($list['dnd_status']) && strtolower($list['dnd_status']) == 'yes') ? '' : 'display:none;'; ?>">DNCR</span>
       </div>
       
       <!-- /.box-header -->

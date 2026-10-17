@@ -101,7 +101,7 @@
             </div>
             <div style="display: flex; align-items: center; gap: 10px;">
                 <button type="button" class="btn btn-sm btn-default" id="toggleAllSectionsBtn" style="font-weight: 600; border-radius: 4px; padding: 6px 14px; color: #111827;">
-                    <i class="fa fa-compress" id="toggleAllIcon"></i> <span id="toggleAllText">Collapse All</span>
+                    <i class="fa fa-expand" id="toggleAllIcon"></i> <span id="toggleAllText">Expand All</span>
                 </button>
             </div>
         </div>
@@ -121,7 +121,7 @@
 
         <div id="reportsContainer">
             <?php foreach ($sections as $dept_slug => $dept_data) { ?>
-            <div class="report-section-card" data-dept="<?php echo $dept_slug; ?>">
+            <div class="report-section-card collapsed" data-dept="<?php echo $dept_slug; ?>">
                 <div class="report-section-header" onclick="toggleSection(this);">
                     <div class="report-section-title-wrap">
                         <i class="fa fa-chevron-down report-section-chevron"></i>
@@ -155,7 +155,21 @@
 <script>
 function toggleSection(headerElem) {
     var card = headerElem.closest('.report-section-card');
-    card.classList.toggle('collapsed');
+    var isCurrentlyCollapsed = card.classList.contains('collapsed');
+    var allCards = document.querySelectorAll('.report-section-card');
+    allCards.forEach(function(c) {
+        c.classList.add('collapsed');
+    });
+    if (isCurrentlyCollapsed) {
+        card.classList.remove('collapsed');
+    }
+    var toggleIcon = document.getElementById('toggleAllIcon');
+    var toggleText = document.getElementById('toggleAllText');
+    if (toggleIcon && toggleText) {
+        var anyOpen = document.querySelectorAll('.report-section-card:not(.collapsed)').length > 0;
+        toggleIcon.className = anyOpen ? 'fa fa-compress' : 'fa fa-expand';
+        toggleText.textContent = anyOpen ? 'Collapse All' : 'Expand All';
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -163,20 +177,19 @@ document.addEventListener('DOMContentLoaded', function() {
     var toggleBtn = document.getElementById('toggleAllSectionsBtn');
     var toggleIcon = document.getElementById('toggleAllIcon');
     var toggleText = document.getElementById('toggleAllText');
-    var allCollapsed = false;
 
     if (toggleBtn) {
         toggleBtn.addEventListener('click', function() {
-            allCollapsed = !allCollapsed;
             var cards = document.querySelectorAll('.report-section-card');
+            var anyOpen = document.querySelectorAll('.report-section-card:not(.collapsed)').length > 0;
             cards.forEach(function(c) {
-                if (allCollapsed) {
+                if (anyOpen) {
                     c.classList.add('collapsed');
                 } else {
                     c.classList.remove('collapsed');
                 }
             });
-            if (allCollapsed) {
+            if (anyOpen) {
                 toggleIcon.className = 'fa fa-expand';
                 toggleText.textContent = 'Expand All';
             } else {

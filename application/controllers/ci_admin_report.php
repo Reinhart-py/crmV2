@@ -409,15 +409,21 @@ class Ci_admin_report extends CI_Controller {
 		$d1 = '';
 		$d2 = '';
 
-		if ($period == 'daily') {
+		if ($period == 'daily' || $period == 'today') {
 			$d1 = date('Y-m-d');
 			$d2 = date('Y-m-d');
-		} else if ($period == 'weekly') {
+		} else if ($period == 'weekly' || $period == '7days') {
 			$d1 = date('Y-m-d', strtotime('-7 days'));
 			$d2 = date('Y-m-d');
-		} else if ($period == 'monthly') {
+		} else if ($period == 'monthly' || $period == 'month') {
 			$d1 = date('Y-m-01');
 			$d2 = date('Y-m-t');
+		} else if ($period == 'yearly' || $period == 'year') {
+			$d1 = date('Y-01-01');
+			$d2 = date('Y-12-31');
+		} else if ($period == 'all') {
+			$d1 = '';
+			$d2 = '';
 		} else {
 			if ($this->input->get('d1') && $this->input->get('d2')) {
 				$d1 = date('Y-m-d', strtotime($this->input->get('d1')));
@@ -450,6 +456,34 @@ class Ci_admin_report extends CI_Controller {
 		);
 
 		$report_data = $this->admin_reports_model->getReportData($dept, $report, $filters);
+
+		if ($this->input->get('export') == 'pivot' && !empty($report_data['pivot_data'])) {
+			$filename = 'pivot_sheet_' . $dept . '_' . $report . '_' . date('Ymd_His') . '.csv';
+			header('Content-Type: text/csv; charset=utf-8');
+			header('Content-Disposition: attachment; filename="' . $filename . '"');
+			$out = fopen('php://output', 'w');
+			fputcsv($out, $report_data['pivot_data']['headers']);
+			if (!empty($report_data['pivot_data']['groups'])) {
+				foreach ($report_data['pivot_data']['groups'] as $grp) {
+					if (!empty($grp['category'])) {
+						fputcsv($out, array('[-] ' . $grp['category']));
+					}
+					if (!empty($grp['rows'])) {
+						foreach ($grp['rows'] as $r) {
+							fputcsv($out, $r);
+						}
+					}
+					if (!empty($grp['subtotal'])) {
+						fputcsv($out, $grp['subtotal']);
+					}
+				}
+			}
+			if (!empty($report_data['pivot_data']['grand_total'])) {
+				fputcsv($out, $report_data['pivot_data']['grand_total']);
+			}
+			fclose($out);
+			exit();
+		}
 
 		if ($this->input->get('export') == 'csv') {
 			$filename = 'report_' . $dept . '_' . $report . '_' . date('Ymd_His') . '.csv';

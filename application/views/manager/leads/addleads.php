@@ -26,8 +26,9 @@
       <form role="form" action="<?php echo base_url(); ?>manager/leads/add" method="post" name="add_form">
       
        <div class="box box-default">
-      <div class="box-header with-border">
+      <div class="box-header with-border" style="position: relative;">
         <h3 class="box-title">Initial Category Fields</h3>
+        <span class="dncr-indicator-badge label label-danger" style="position: absolute; right: 20px; top: 10px; background: #dc2626; color: #ffffff; font-weight: 700; padding: 4px 14px; border-radius: 4px; font-size: 13px; letter-spacing: 0.5px; display: none;">DNCR</span>
       </div>
       
       <!-- /.box-header -->

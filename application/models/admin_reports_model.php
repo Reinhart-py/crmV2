@@ -425,25 +425,31 @@ class Admin_reports_model extends CI_Model {
 		}
 
 		if ($dept == 'sales') {
-			return $this->_querySalesReport($report, $filters);
+			$res = $this->_querySalesReport($report, $filters);
 		} elseif ($dept == 'operations') {
-			return $this->_queryOperationsReport($report, $filters);
+			$res = $this->_queryOperationsReport($report, $filters);
 		} elseif ($dept == 'support') {
-			return $this->_querySupportReport($report, $filters);
+			$res = $this->_querySupportReport($report, $filters);
 		} elseif ($dept == 'hr') {
-			return $this->_queryHrReport($report, $filters);
+			$res = $this->_queryHrReport($report, $filters);
 		} elseif ($dept == 'it') {
-			return $this->_queryItReport($report, $filters);
+			$res = $this->_queryItReport($report, $filters);
+		} else {
+			$res = array(
+				'title' => 'Report Not Found',
+				'department_title' => 'Admin Reports',
+				'headers' => array(),
+				'fields' => array(),
+				'rows' => array(),
+				'summary' => array()
+			);
 		}
 
-		return array(
-			'title' => 'Report Not Found',
-			'department_title' => 'Admin Reports',
-			'headers' => array(),
-			'fields' => array(),
-			'rows' => array(),
-			'summary' => array()
-		);
+		if (!empty($res) && empty($res['pivot_data'])) {
+			$res['pivot_data'] = $this->_buildPivotData($dept, $report, $filters, $res);
+		}
+
+		return $res;
 	}
 
 	private function _applyDate(&$db, $column, $d1, $d2)
@@ -596,7 +602,6 @@ class Admin_reports_model extends CI_Model {
 			$this->db->from('ci_leads as A');
 			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'LEFT');
 			$this->db->join('ci_status as C', 'A.status = C.id', 'LEFT');
-			$this->db->where('(A.database_category != "" OR A.data_source != "" OR A.data_batch_referral_no != "")');
 			if (!empty($filters['database_category'])) {
 				$this->db->where('A.database_category', $filters['database_category']);
 			}
@@ -720,7 +725,6 @@ class Admin_reports_model extends CI_Model {
 			$this->db->from('ci_leads as A');
 			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'LEFT');
 			$this->db->join('ci_status as C', 'A.status = C.id', 'LEFT');
-			$this->db->where('((A.quote_status IS NOT NULL AND A.quote_status != "" AND A.quote_status != "Not Given") OR A.quote_amount > 0)');
 			if (!empty($filters['quote_status'])) {
 				$this->db->where('A.quote_status', $filters['quote_status']);
 			}
@@ -782,7 +786,6 @@ class Admin_reports_model extends CI_Model {
 			$this->db->from('ci_leads as A');
 			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'LEFT');
 			$this->db->join('ci_status as C', 'A.status = C.id', 'LEFT');
-			$this->db->where('(A.corporate_tax_status != "" OR A.vat_status != "")');
 			if (!empty($filters['corporate_tax_status'])) {
 				$this->db->where('A.corporate_tax_status', $filters['corporate_tax_status']);
 			}
@@ -900,7 +903,6 @@ class Admin_reports_model extends CI_Model {
 			$this->db->select('A.*, B.name as assigned_name');
 			$this->db->from('ci_leads as A');
 			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'LEFT');
-			$this->db->where('(A.tl_number != "" OR (A.tl_expire_date != "" AND A.tl_expire_date != "0000-00-00"))');
 			$this->_applyEmployee($this->db, 'A.lead_assign', $emp);
 			$this->_applyDate($this->db, 'A.created', $d1, $d2);
 			if (!empty($search)) {
@@ -2165,4 +2167,455 @@ class Admin_reports_model extends CI_Model {
 		return array();
 	}
 
+	private function _buildPivotData($dept, $report, $filters, $report_res)
+	{
+		$rows = isset($report_res['rows']) ? $report_res['rows'] : array();
+		if (empty($rows)) {
+			return array(
+				'headers' => array('Category', 'Item', 'Count'),
+				'groups' => array(),
+				'grand_total' => array('Grand Total', '', 0)
+			);
+		}
+
+		if ($dept == 'sales' && $report == 'database') {
+			$headers = array('Database Category', 'Database Status', 'COUNTA of DB Ref', 'COUNTA of Database Status', 'COUNTA of Lead Status');
+			$groups_map = array();
+			$grand = array('ref' => 0, 'status' => 0, 'lead' => 0);
+
+			foreach ($rows as $r) {
+				$cat = !empty($r['database_category']) && $r['database_category'] !== '-' ? $r['database_category'] : '';
+				if (empty($cat)) {
+					$st = isset($r['status_name']) ? strtolower($r['status_name']) : '';
+					if (strpos($st, 'lost') !== false || strpos($st, 'invalid') !== false) {
+						$cat = 'Not Relevant';
+					} elseif (strpos($st, 'expected') !== false || strpos($st, 'process') !== false) {
+						$cat = 'Potential';
+					} else {
+						$cat = 'Relevant';
+					}
+				}
+				$sub = !empty($r['status_name']) ? $r['status_name'] : 'General';
+
+				if (!isset($groups_map[$cat])) {
+					$groups_map[$cat] = array('category' => $cat, 'items' => array(), 'sub' => array('ref' => 0, 'status' => 0, 'lead' => 0));
+				}
+				if (!isset($groups_map[$cat]['items'][$sub])) {
+					$groups_map[$cat]['items'][$sub] = array('ref' => 0, 'status' => 0, 'lead' => 0);
+				}
+
+				$has_ref = (!empty($r['data_batch_referral_no']) && $r['data_batch_referral_no'] !== '-') ? 1 : 0;
+				$has_lead = (!empty($r['status_name']) && in_array($r['status_name'], array('Activated', 'Database', 'Expected', 'In Process', 'Lead'))) ? 1 : 0;
+
+				$groups_map[$cat]['items'][$sub]['ref'] += $has_ref;
+				$groups_map[$cat]['items'][$sub]['status'] += 1;
+				$groups_map[$cat]['items'][$sub]['lead'] += $has_lead;
+
+				$groups_map[$cat]['sub']['ref'] += $has_ref;
+				$groups_map[$cat]['sub']['status'] += 1;
+				$groups_map[$cat]['sub']['lead'] += $has_lead;
+
+				$grand['ref'] += $has_ref;
+				$grand['status'] += 1;
+				$grand['lead'] += $has_lead;
+			}
+
+			$groups = array();
+			foreach ($groups_map as $c => $data) {
+				$r_list = array();
+				foreach ($data['items'] as $s => $m) {
+					$r_list[] = array($c, $s, number_format($m['ref']), number_format($m['status']), number_format($m['lead']));
+				}
+				$groups[] = array(
+					'category' => $c,
+					'rows' => $r_list,
+					'subtotal' => array($c . ' Total', '', number_format($data['sub']['ref']), number_format($data['sub']['status']), number_format($data['sub']['lead']))
+				);
+			}
+
+			return array(
+				'headers' => $headers,
+				'groups' => $groups,
+				'grand_total' => array('Grand Total', '', number_format($grand['ref']), number_format($grand['status']), number_format($grand['lead']))
+			);
+		}
+
+		if ($dept == 'sales' && $report == 'lost') {
+			$headers = array('Lost Category', 'Lead Status', 'COUNTA of Lead Status', 'COUNTA of Lost Deals', 'SUM of Quoted Value (AED)');
+			$groups_map = array();
+			$grand = array('leads' => 0, 'lost' => 0, 'amt' => 0.0);
+
+			foreach ($rows as $r) {
+				$cat = !empty($r['status_category']) && $r['status_category'] !== '-' ? $r['status_category'] : (!empty($r['status_remarks']) && $r['status_remarks'] !== '-' ? $r['status_remarks'] : 'Not Interested');
+				$sub = !empty($r['status_name']) ? $r['status_name'] : 'Lost';
+
+				if (!isset($groups_map[$cat])) {
+					$groups_map[$cat] = array('category' => $cat, 'items' => array(), 'sub' => array('leads' => 0, 'lost' => 0, 'amt' => 0.0));
+				}
+				if (!isset($groups_map[$cat]['items'][$sub])) {
+					$groups_map[$cat]['items'][$sub] = array('leads' => 0, 'lost' => 0, 'amt' => 0.0);
+				}
+
+				$amt_clean = isset($r['quote_amount_fmt']) ? (float)str_replace(array('AED', ',', ' '), '', $r['quote_amount_fmt']) : 0.0;
+				if ($amt_clean <= 0 && isset($r['mrr_fmt'])) {
+					$amt_clean = (float)str_replace(array('AED', ',', ' '), '', $r['mrr_fmt']);
+				}
+
+				$groups_map[$cat]['items'][$sub]['leads'] += 1;
+				$groups_map[$cat]['items'][$sub]['lost'] += 1;
+				$groups_map[$cat]['items'][$sub]['amt'] += $amt_clean;
+
+				$groups_map[$cat]['sub']['leads'] += 1;
+				$groups_map[$cat]['sub']['lost'] += 1;
+				$groups_map[$cat]['sub']['amt'] += $amt_clean;
+
+				$grand['leads'] += 1;
+				$grand['lost'] += 1;
+				$grand['amt'] += $amt_clean;
+			}
+
+			$groups = array();
+			foreach ($groups_map as $c => $data) {
+				$r_list = array();
+				foreach ($data['items'] as $s => $m) {
+					$r_list[] = array($c, $s, number_format($m['leads']), number_format($m['lost']), number_format($m['amt'], 2));
+				}
+				$groups[] = array(
+					'category' => $c,
+					'rows' => $r_list,
+					'subtotal' => array($c . ' Total', '', number_format($data['sub']['leads']), number_format($data['sub']['lost']), number_format($data['sub']['amt'], 2))
+				);
+			}
+
+			return array(
+				'headers' => $headers,
+				'groups' => $groups,
+				'grand_total' => array('Grand Total', '', number_format($grand['leads']), number_format($grand['lost']), number_format($grand['amt'], 2))
+			);
+		}
+
+		if ($dept == 'sales' && $report == 'quote') {
+			$headers = array('Quote Status', 'Lost / Status Category', 'COUNTA of Lead Status', 'COUNTA of Services Category', 'COUNTA of Lost Category', 'COUNTA of Amount', 'SUM of Amount (AED)');
+			$groups_map = array();
+			$grand = array('leads' => 0, 'service' => 0, 'lost' => 0, 'cnt_amt' => 0, 'sum_amt' => 0.0);
+
+			foreach ($rows as $r) {
+				$cat = !empty($r['quote_status']) && $r['quote_status'] !== '-' ? $r['quote_status'] : 'Sent';
+				$sub = !empty($r['status_name']) ? $r['status_name'] : 'General';
+
+				if (!isset($groups_map[$cat])) {
+					$groups_map[$cat] = array('category' => $cat, 'items' => array(), 'sub' => array('leads' => 0, 'service' => 0, 'lost' => 0, 'cnt_amt' => 0, 'sum_amt' => 0.0));
+				}
+				if (!isset($groups_map[$cat]['items'][$sub])) {
+					$groups_map[$cat]['items'][$sub] = array('leads' => 0, 'service' => 0, 'lost' => 0, 'cnt_amt' => 0, 'sum_amt' => 0.0);
+				}
+
+				$amt_clean = isset($r['quote_amount_fmt']) ? (float)str_replace(array('AED', ',', ' '), '', $r['quote_amount_fmt']) : 0.0;
+				$has_amt = ($amt_clean > 0) ? 1 : 0;
+				$is_lost = (strpos(strtolower($sub), 'lost') !== false || strpos(strtolower($cat), 'lost') !== false) ? 1 : 0;
+
+				$groups_map[$cat]['items'][$sub]['leads'] += 1;
+				$groups_map[$cat]['items'][$sub]['service'] += 1;
+				$groups_map[$cat]['items'][$sub]['lost'] += $is_lost;
+				$groups_map[$cat]['items'][$sub]['cnt_amt'] += $has_amt;
+				$groups_map[$cat]['items'][$sub]['sum_amt'] += $amt_clean;
+
+				$groups_map[$cat]['sub']['leads'] += 1;
+				$groups_map[$cat]['sub']['service'] += 1;
+				$groups_map[$cat]['sub']['lost'] += $is_lost;
+				$groups_map[$cat]['sub']['cnt_amt'] += $has_amt;
+				$groups_map[$cat]['sub']['sum_amt'] += $amt_clean;
+
+				$grand['leads'] += 1;
+				$grand['service'] += 1;
+				$grand['lost'] += $is_lost;
+				$grand['cnt_amt'] += $has_amt;
+				$grand['sum_amt'] += $amt_clean;
+			}
+
+			$groups = array();
+			foreach ($groups_map as $c => $data) {
+				$r_list = array();
+				foreach ($data['items'] as $s => $m) {
+					$r_list[] = array($c, $s, number_format($m['leads']), number_format($m['service']), number_format($m['lost']), number_format($m['cnt_amt']), number_format($m['sum_amt'], 2));
+				}
+				$groups[] = array(
+					'category' => $c,
+					'rows' => $r_list,
+					'subtotal' => array($c . ' Total', '', number_format($data['sub']['leads']), number_format($data['sub']['service']), number_format($data['sub']['lost']), number_format($data['sub']['cnt_amt']), number_format($data['sub']['sum_amt'], 2))
+				);
+			}
+
+			return array(
+				'headers' => $headers,
+				'groups' => $groups,
+				'grand_total' => array('Grand Total', '', number_format($grand['leads']), number_format($grand['service']), number_format($grand['lost']), number_format($grand['cnt_amt']), number_format($grand['sum_amt'], 2))
+			);
+		}
+
+		if ($dept == 'sales' && $report == 'performance') {
+			$headers = array('Department', 'Employee Name', 'Assigned Leads', 'Active Deals', 'Closed Deals', 'Lost Deals', 'Followups Attended', 'Total Quoted (AED)', 'Total MRR (AED)');
+			$groups_map = array();
+			$grand = array('leads' => 0, 'active' => 0, 'closed' => 0, 'lost' => 0, 'followups' => 0, 'quoted' => 0.0, 'mrr' => 0.0);
+
+			foreach ($rows as $r) {
+				$cat = !empty($r['department']) && $r['department'] !== '-' ? $r['department'] : 'Sales';
+				$sub = !empty($r['name']) ? $r['name'] : 'Staff';
+
+				if (!isset($groups_map[$cat])) {
+					$groups_map[$cat] = array('category' => $cat, 'items' => array(), 'sub' => array('leads' => 0, 'active' => 0, 'closed' => 0, 'lost' => 0, 'followups' => 0, 'quoted' => 0.0, 'mrr' => 0.0));
+				}
+
+				$l_cnt = isset($r['total_leads']) ? (int)$r['total_leads'] : 0;
+				$a_cnt = isset($r['active_leads']) ? (int)$r['active_leads'] : 0;
+				$c_cnt = isset($r['closed_leads']) ? (int)$r['closed_leads'] : 0;
+				$lost_cnt = isset($r['lost_leads']) ? (int)$r['lost_leads'] : 0;
+				$f_cnt = isset($r['attended_followups']) ? (int)$r['attended_followups'] : 0;
+				$q_val = isset($r['total_quoted_fmt']) ? (float)str_replace(array('AED', ',', ' '), '', $r['total_quoted_fmt']) : 0.0;
+				$m_val = isset($r['total_mrr_fmt']) ? (float)str_replace(array('AED', ',', ' '), '', $r['total_mrr_fmt']) : 0.0;
+
+				$groups_map[$cat]['items'][$sub] = array(
+					'leads' => $l_cnt,
+					'active' => $a_cnt,
+					'closed' => $c_cnt,
+					'lost' => $lost_cnt,
+					'followups' => $f_cnt,
+					'quoted' => $q_val,
+					'mrr' => $m_val
+				);
+
+				$groups_map[$cat]['sub']['leads'] += $l_cnt;
+				$groups_map[$cat]['sub']['active'] += $a_cnt;
+				$groups_map[$cat]['sub']['closed'] += $c_cnt;
+				$groups_map[$cat]['sub']['lost'] += $lost_cnt;
+				$groups_map[$cat]['sub']['followups'] += $f_cnt;
+				$groups_map[$cat]['sub']['quoted'] += $q_val;
+				$groups_map[$cat]['sub']['mrr'] += $m_val;
+
+				$grand['leads'] += $l_cnt;
+				$grand['active'] += $a_cnt;
+				$grand['closed'] += $c_cnt;
+				$grand['lost'] += $lost_cnt;
+				$grand['followups'] += $f_cnt;
+				$grand['quoted'] += $q_val;
+				$grand['mrr'] += $m_val;
+			}
+
+			$groups = array();
+			foreach ($groups_map as $c => $data) {
+				$r_list = array();
+				foreach ($data['items'] as $s => $m) {
+					$r_list[] = array($c, $s, number_format($m['leads']), number_format($m['active']), number_format($m['closed']), number_format($m['lost']), number_format($m['followups']), number_format($m['quoted'], 2), number_format($m['mrr'], 2));
+				}
+				$groups[] = array(
+					'category' => $c,
+					'rows' => $r_list,
+					'subtotal' => array($c . ' Total', '', number_format($data['sub']['leads']), number_format($data['sub']['active']), number_format($data['sub']['closed']), number_format($data['sub']['lost']), number_format($data['sub']['followups']), number_format($data['sub']['quoted'], 2), number_format($data['sub']['mrr'], 2))
+				);
+			}
+
+			return array(
+				'headers' => $headers,
+				'groups' => $groups,
+				'grand_total' => array('Grand Total', '', number_format($grand['leads']), number_format($grand['active']), number_format($grand['closed']), number_format($grand['lost']), number_format($grand['followups']), number_format($grand['quoted'], 2), number_format($grand['mrr'], 2))
+			);
+		}
+
+		if ($dept == 'sales' && $report == 'lead') {
+			$headers = array('Lead Status', 'Industry / Service Category', 'COUNTA of Leads', 'COUNTA of Closed Deals', 'SUM of MRR (AED)');
+			$groups_map = array();
+			$grand = array('leads' => 0, 'closed' => 0, 'mrr' => 0.0);
+
+			foreach ($rows as $r) {
+				$cat = !empty($r['status_name']) && $r['status_name'] !== '-' ? $r['status_name'] : 'Lead';
+				$sub = !empty($r['industry_category']) && $r['industry_category'] !== '-' ? $r['industry_category'] : (!empty($r['service_name']) && $r['service_name'] !== '-' ? $r['service_name'] : 'General Category');
+
+				if (!isset($groups_map[$cat])) {
+					$groups_map[$cat] = array('category' => $cat, 'items' => array(), 'sub' => array('leads' => 0, 'closed' => 0, 'mrr' => 0.0));
+				}
+				if (!isset($groups_map[$cat]['items'][$sub])) {
+					$groups_map[$cat]['items'][$sub] = array('leads' => 0, 'closed' => 0, 'mrr' => 0.0);
+				}
+
+				$mrr_clean = isset($r['mrr_fmt']) ? (float)str_replace(array('AED', ',', ' '), '', $r['mrr_fmt']) : 0.0;
+				$is_closed = (strpos(strtolower($cat), 'closed') !== false || strpos(strtolower($cat), 'activated') !== false) ? 1 : 0;
+
+				$groups_map[$cat]['items'][$sub]['leads'] += 1;
+				$groups_map[$cat]['items'][$sub]['closed'] += $is_closed;
+				$groups_map[$cat]['items'][$sub]['mrr'] += $mrr_clean;
+
+				$groups_map[$cat]['sub']['leads'] += 1;
+				$groups_map[$cat]['sub']['closed'] += $is_closed;
+				$groups_map[$cat]['sub']['mrr'] += $mrr_clean;
+
+				$grand['leads'] += 1;
+				$grand['closed'] += $is_closed;
+				$grand['mrr'] += $mrr_clean;
+			}
+
+			$groups = array();
+			foreach ($groups_map as $c => $data) {
+				$r_list = array();
+				foreach ($data['items'] as $s => $m) {
+					$r_list[] = array($c, $s, number_format($m['leads']), number_format($m['closed']), number_format($m['mrr'], 2));
+				}
+				$groups[] = array(
+					'category' => $c,
+					'rows' => $r_list,
+					'subtotal' => array($c . ' Total', '', number_format($data['sub']['leads']), number_format($data['sub']['closed']), number_format($data['sub']['mrr'], 2))
+				);
+			}
+
+			return array(
+				'headers' => $headers,
+				'groups' => $groups,
+				'grand_total' => array('Grand Total', '', number_format($grand['leads']), number_format($grand['closed']), number_format($grand['mrr'], 2))
+			);
+		}
+
+		if ($dept == 'sales' && $report == 'tax-registration') {
+			$headers = array('Corporate Tax Status', 'VAT Status', 'COUNTA of Companies', 'COUNTA of Trade Licenses', 'COUNTA of Cities');
+			$groups_map = array();
+			$grand = array('companies' => 0, 'tl' => 0, 'cities' => 0);
+
+			foreach ($rows as $r) {
+				$cat = !empty($r['corporate_tax_status']) && $r['corporate_tax_status'] !== '-' ? $r['corporate_tax_status'] : 'Not Registered';
+				$sub = !empty($r['vat_status']) && $r['vat_status'] !== '-' ? $r['vat_status'] : 'Not Registered';
+
+				if (!isset($groups_map[$cat])) {
+					$groups_map[$cat] = array('category' => $cat, 'items' => array(), 'sub' => array('companies' => 0, 'tl' => 0, 'cities' => 0));
+				}
+				if (!isset($groups_map[$cat]['items'][$sub])) {
+					$groups_map[$cat]['items'][$sub] = array('companies' => 0, 'tl' => 0, 'cities' => 0);
+				}
+
+				$has_tl = (!empty($r['tl_number']) && $r['tl_number'] !== '-') ? 1 : 0;
+				$has_city = (!empty($r['city']) && $r['city'] !== '-') ? 1 : 0;
+
+				$groups_map[$cat]['items'][$sub]['companies'] += 1;
+				$groups_map[$cat]['items'][$sub]['tl'] += $has_tl;
+				$groups_map[$cat]['items'][$sub]['cities'] += $has_city;
+
+				$groups_map[$cat]['sub']['companies'] += 1;
+				$groups_map[$cat]['sub']['tl'] += $has_tl;
+				$groups_map[$cat]['sub']['cities'] += $has_city;
+
+				$grand['companies'] += 1;
+				$grand['tl'] += $has_tl;
+				$grand['cities'] += $has_city;
+			}
+
+			$groups = array();
+			foreach ($groups_map as $c => $data) {
+				$r_list = array();
+				foreach ($data['items'] as $s => $m) {
+					$r_list[] = array($c, $s, number_format($m['companies']), number_format($m['tl']), number_format($m['cities']));
+				}
+				$groups[] = array(
+					'category' => $c,
+					'rows' => $r_list,
+					'subtotal' => array($c . ' Total', '', number_format($data['sub']['companies']), number_format($data['sub']['tl']), number_format($data['sub']['cities']))
+				);
+			}
+
+			return array(
+				'headers' => $headers,
+				'groups' => $groups,
+				'grand_total' => array('Grand Total', '', number_format($grand['companies']), number_format($grand['tl']), number_format($grand['cities']))
+			);
+		}
+
+		if ($dept == 'sales' && $report == 'trade-license') {
+			$headers = array('Licensing Authority', 'Expiry / Validity Status', 'COUNTA of Trade Licenses', 'COUNTA of Cities', 'COUNTA of Companies');
+			$groups_map = array();
+			$grand = array('tl' => 0, 'cities' => 0, 'companies' => 0);
+
+			foreach ($rows as $r) {
+				$cat = !empty($r['tl_authority']) && $r['tl_authority'] !== '-' ? $r['tl_authority'] : 'General Licensing';
+				$sub = strip_tags(isset($r['validity_badge']) ? $r['validity_badge'] : 'Valid');
+				if (empty($sub)) $sub = 'Valid';
+
+				if (!isset($groups_map[$cat])) {
+					$groups_map[$cat] = array('category' => $cat, 'items' => array(), 'sub' => array('tl' => 0, 'cities' => 0, 'companies' => 0));
+				}
+				if (!isset($groups_map[$cat]['items'][$sub])) {
+					$groups_map[$cat]['items'][$sub] = array('tl' => 0, 'cities' => 0, 'companies' => 0);
+				}
+
+				$has_tl = (!empty($r['tl_number']) && $r['tl_number'] !== '-') ? 1 : 0;
+				$has_city = (!empty($r['city']) && $r['city'] !== '-') ? 1 : 0;
+
+				$groups_map[$cat]['items'][$sub]['tl'] += $has_tl;
+				$groups_map[$cat]['items'][$sub]['cities'] += $has_city;
+				$groups_map[$cat]['items'][$sub]['companies'] += 1;
+
+				$groups_map[$cat]['sub']['tl'] += $has_tl;
+				$groups_map[$cat]['sub']['cities'] += $has_city;
+				$groups_map[$cat]['sub']['companies'] += 1;
+
+				$grand['tl'] += $has_tl;
+				$grand['cities'] += $has_city;
+				$grand['companies'] += 1;
+			}
+
+			$groups = array();
+			foreach ($groups_map as $c => $data) {
+				$r_list = array();
+				foreach ($data['items'] as $s => $m) {
+					$r_list[] = array($c, $s, number_format($m['tl']), number_format($m['cities']), number_format($m['companies']));
+				}
+				$groups[] = array(
+					'category' => $c,
+					'rows' => $r_list,
+					'subtotal' => array($c . ' Total', '', number_format($data['sub']['tl']), number_format($data['sub']['cities']), number_format($data['sub']['companies']))
+				);
+			}
+
+			return array(
+				'headers' => $headers,
+				'groups' => $groups,
+				'grand_total' => array('Grand Total', '', number_format($grand['tl']), number_format($grand['cities']), number_format($grand['companies']))
+			);
+		}
+
+		$fields = isset($report_res['fields']) ? $report_res['fields'] : array();
+		$cat_field = isset($fields[1]) ? $fields[1] : (isset($fields[0]) ? $fields[0] : '');
+		$sub_field = isset($fields[2]) ? $fields[2] : (isset($fields[1]) ? $fields[1] : '');
+
+		$groups_map = array();
+		$grand_count = count($rows);
+
+		foreach ($rows as $r) {
+			$cat = (!empty($cat_field) && !empty($r[$cat_field])) ? trim(strip_tags($r[$cat_field])) : 'General';
+			$sub = (!empty($sub_field) && !empty($r[$sub_field])) ? trim(strip_tags($r[$sub_field])) : 'Record';
+
+			if (!isset($groups_map[$cat])) {
+				$groups_map[$cat] = array('category' => $cat, 'items' => array(), 'count' => 0);
+			}
+			if (!isset($groups_map[$cat]['items'][$sub])) {
+				$groups_map[$cat]['items'][$sub] = 0;
+			}
+			$groups_map[$cat]['items'][$sub] += 1;
+			$groups_map[$cat]['count'] += 1;
+		}
+
+		$groups = array();
+		foreach ($groups_map as $c => $data) {
+			$r_list = array();
+			foreach ($data['items'] as $s => $cnt) {
+				$r_list[] = array($c, $s, number_format($cnt));
+			}
+			$groups[] = array(
+				'category' => $c,
+				'rows' => $r_list,
+				'subtotal' => array($c . ' Total', '', number_format($data['count']))
+			);
+		}
+
+		return array(
+			'headers' => array('Category Group', 'Sub Item', 'Total Count'),
+			'groups' => $groups,
+			'grand_total' => array('Grand Total', '', number_format($grand_count))
+		);
+	}
 }
