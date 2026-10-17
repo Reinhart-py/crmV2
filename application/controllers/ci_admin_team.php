@@ -93,11 +93,15 @@ class Ci_admin_team extends CI_Controller {
 		$state = isset($_GET['state']) ? $_GET['state'] : '';	
 		
 		if(!empty($country)){
-			$country= implode(',', $country); 
+			if(is_array($country)){
+				$country= implode(',', $country); 
+			}
 			$data['state_list']= $this->comman_model->getAll(array('country_id'=>$country),'','states');
 	   }
 		if(!empty($state)){
-			 $state= implode(',', $state); 
+			if(is_array($state)){
+				$state= implode(',', $state); 
+			}
 		}
 
 		$status = isset($_GET['status']) ? $_GET['status'] : '';		
@@ -105,15 +109,21 @@ class Ci_admin_team extends CI_Controller {
 		$lCat = isset($_GET['lCat']) ? $_GET['lCat'] : '';
 		
 		if(!empty($lCat)){
-	         $lCat= implode(',', $lCat); 
+			if(is_array($lCat)){
+				$lCat= implode(',', $lCat); 
+			}
 	     }		
 
         if(!empty($category)){
-	         $category= implode(',', $category); 
+			if(is_array($category)){
+				$category= implode(',', $category); 
+			}
 	     }
 
         if(!empty($status)){
-	         $status= implode(',', $status); 
+			if(is_array($status)){
+				$status= implode(',', $status); 
+			}
 		 }
 		 $closure = isset($_GET['closure']) ? $_GET['closure'] : '';
 

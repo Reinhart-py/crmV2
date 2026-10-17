@@ -139,12 +139,9 @@
 
       <li class="<?php if($route1=="leads"){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/leads"><i class="fa fa-list"></i> <span>Leads</span> </a>
         <ul>
-          <li><a href="<?php echo base_url();?>manager/leads/add"><i class="fa fa-plus"></i>Add </a></li>
-          <li><a href="<?php echo base_url();?>manager/leads"><i class="fa fa-list"></i>View</a></li>
-          <?php /* <li><a href="<?php echo base_url();?>manager/leads/report"><i class="fa fa-list"></i>Report</a></li> */ ?>
-          <li><a href="<?php echo base_url();?>manager/leads/followups"><i class="fa fa-list"></i>Follow up</a></li>
-          <li><a href="<?php echo base_url();?>manager/leads/meetings"><i class="fa fa-list"></i>Meetings</a></li>
-          <li><a href="<?php echo base_url();?>manager/performance-report/individual"><i class="fa fa-list"></i>Performance Report</a></li>          
+          <li><a href="<?php echo base_url();?>manager/leads/add"><i class="fa fa-plus"></i>Add Lead</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads"><i class="fa fa-list"></i>View Leads</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/followups"><i class="fa fa-calendar-check-o"></i>Follow-up Meetings</a></li>
         </ul>
       </li>
 
@@ -155,7 +152,6 @@
           <li><a href="<?php echo base_url();?>manager/verticals/add"><i class="fa fa-plus"></i>Add </a></li>
           <li><a href="<?php echo base_url();?>manager/verticals"><i class="fa fa-list"></i>View</a></li>
           <li><a href="<?php echo base_url();?>manager/verticals"><i class="fa fa-list"></i>Follow up</a></li>
-          <?php /*<li><a href="<?php echo base_url();?>manager/verticals/report"><i class="fa fa-list"></i>Report</a></li> */ ?>
         </ul>
       </li>
 
@@ -172,7 +168,6 @@
           <li><a href="<?php echo base_url();?>manager/team/assignleads"><i class="fa fa-list"></i>Assigned Leads</a></li>
           <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-tasks"></i>Task</a></li>
           <li><a href="<?php echo base_url();?>manager/team/tickets"><i class="fa fa-ticket"></i>Tickets</a></li>
-          <li><a href="<?php echo base_url();?>manager/performance-report"><i class="fa fa-list"></i>Performance Report</a></li>
         </ul>
       </li>
 
@@ -190,7 +185,7 @@
      <?php 
        if($m_role == 1 || $m_role == 4){ 
      ?>
-      <li class="<?php if($route1=="roles" || $route1=="terms" || $route1=="users" || $route1=="admin-reports" || $route1=="assigned-leads" || $route1=="admin-logs" || ($route1=="leads" && in_array($route2, array("import", "export")))){ echo "active";}else{ echo "";}?>"> 
+      <li class="<?php if($route1=="roles" || $route1=="terms" || $route1=="users" || $route1=="assigned-leads" || $route1=="admin-logs" || ($route1=="leads" && in_array($route2, array("import", "export")))){ echo "active";}else{ echo "";}?>"> 
         <a href="<?php echo ($m_role == 1)? base_url().'manager/roles' : base_url().'manager/leads/import'; ?>"><i class="fa fa-paperclip"></i> <span>System</span> </a>
         <ul>        
           <?php if($m_role == 1){ ?>
@@ -203,7 +198,6 @@
           <?php if($m_role == 1){ ?>
             <li><a href="<?php echo base_url();?>manager/leads/export"><i class="fa fa-download"></i>Export Leads</a></li>
             <li><a href="<?php echo base_url();?>manager/assigned-leads"><i class="fa fa-tasks"></i>Assigned Leads</a></li>
-            <li><a href="<?php echo base_url();?>manager/admin-reports"><i class="fa fa-file-text-o"></i>Admin Reports</a></li>
             <li><a href="<?php echo base_url();?>manager/admin-logs"><i class="fa fa-history"></i>Admin Logs</a></li>
           <?php } ?>
         </ul>
@@ -328,11 +322,9 @@ $(function() {
       <li class="<?php if($route1=="leads"){ echo "active";}else{ echo "";}?> treeview"> 
         <a href="javascript:void(0);"><i class="fa fa-database"></i> <span>Leads</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu">
-          <li><a href="<?php echo base_url();?>manager/leads/add"><i class="fa fa-plus"></i>Add </a></li>
-          <li><a href="<?php echo base_url();?>manager/leads"><i class="fa fa-list"></i>View</a></li>
-          <li><a href="<?php echo base_url();?>manager/leads/followups"><i class="fa fa-list"></i>Follow up</a></li>
-          <li><a href="<?php echo base_url();?>manager/leads/meetings"><i class="fa fa-list"></i>Meetings</a></li>
-          <li><a href="<?php echo base_url();?>manager/performance-report/individual"><i class="fa fa-list"></i>Performance Report</a></li>          
+          <li><a href="<?php echo base_url();?>manager/leads/add"><i class="fa fa-plus"></i>Add Lead</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads"><i class="fa fa-list"></i>View Leads</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/followups"><i class="fa fa-calendar-check-o"></i>Follow-up Meetings</a></li>
         </ul>
       </li>
 
@@ -358,7 +350,6 @@ $(function() {
           <li><a href="<?php echo base_url();?>manager/team/assignleads"><i class="fa fa-list"></i>Assigned Leads</a></li>
           <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-tasks"></i>Task</a></li>
           <li><a href="<?php echo base_url();?>manager/team/tickets"><i class="fa fa-ticket"></i>Tickets</a></li>
-          <li><a href="<?php echo base_url();?>manager/performance-report"><i class="fa fa-list"></i>Performance Report</a></li>
         </ul>
       </li>
 
@@ -374,7 +365,7 @@ $(function() {
       </li>
 
      <?php if($m_role == 1 || $m_role == 4){ ?>
-      <li class="<?php if($route1=="roles" || $route1=="terms" || $route1=="users" || $route1=="admin-reports" || $route1=="assigned-leads" || $route1=="admin-logs" || ($route1=="leads" && in_array($route2, array("import", "export")))){ echo "active";}else{ echo "";}?> treeview"> 
+      <li class="<?php if($route1=="roles" || $route1=="terms" || $route1=="users" || $route1=="assigned-leads" || $route1=="admin-logs" || ($route1=="leads" && in_array($route2, array("import", "export")))){ echo "active";}else{ echo "";}?> treeview"> 
         <a href="javascript:void(0);"><i class="fa fa-paperclip"></i> <span>System</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu">        
           <?php if($m_role == 1){ ?>
@@ -387,7 +378,6 @@ $(function() {
           <?php if($m_role == 1){ ?>
             <li><a href="<?php echo base_url();?>manager/leads/export"><i class="fa fa-download"></i>Export Leads</a></li>
             <li><a href="<?php echo base_url();?>manager/assigned-leads"><i class="fa fa-tasks"></i>Assigned Leads</a></li>
-            <li><a href="<?php echo base_url();?>manager/admin-reports"><i class="fa fa-file-text-o"></i>Admin Reports</a></li>
             <li><a href="<?php echo base_url();?>manager/admin-logs"><i class="fa fa-history"></i>Admin Logs</a></li>
           <?php } ?>
         </ul>

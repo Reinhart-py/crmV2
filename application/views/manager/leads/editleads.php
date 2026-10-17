@@ -226,7 +226,7 @@
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>DNCR Date</label>
+                <label>DNCR Date <span class="dncr-indicator-badge" style="background:#dc2626; color:#ffffff; font-weight:700; padding:2px 8px; border-radius:3px; font-size:11px; float:right; <?php echo (isset($list['dnd_status']) && strtolower($list['dnd_status']) == 'yes') ? '' : 'display:none;'; ?> letter-spacing:0.5px;">DNCR</span></label>
                 <input type="text" class="form-control datepicker" name="dnd_check_date" value="<?php echo (!empty($list['dnd_check_date']) && $list['dnd_check_date'] != '0000-00-00') ? date('d-m-Y', strtotime($list['dnd_check_date'])) : ''; ?>" placeholder="DD-MM-YYYY">
               </div>
             </div>
@@ -1338,6 +1338,18 @@ $(document).ready(function() {
   $('#status_category_input').on('input change', function() {
     $('#hidden_lost_reason').val($(this).val());
   });
+
+  function updateDncrBadge(val) {
+    if (val === 'Yes') {
+      $('.dncr-indicator-badge').show();
+    } else {
+      $('.dncr-indicator-badge').hide();
+    }
+  }
+  $('select[name="dnd_status"]').on('change', function() {
+    updateDncrBadge($(this).val());
+  });
+  updateDncrBadge($('select[name="dnd_status"]').val());
 
   var initialVal = $('#status_category_input').val();
   updateStatusCategoryOptions($('#lead_status_select').val(), initialVal);

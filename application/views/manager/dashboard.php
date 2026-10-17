@@ -858,14 +858,13 @@ $(function () {
                     var barLabel = activeBars[0].label;
                     var idx = months.indexOf(barLabel);
                     if (idx !== -1 && monthDates[idx]) {
-                        window.location.href = '<?php echo base_url(); ?>manager/leads?d1=' + encodeURIComponent(monthDates[idx].d1) + '&d2=' + encodeURIComponent(monthDates[idx].d2);
+                        window.location.href = '<?php echo base_url(); ?>manager/leads?exp_d1=' + encodeURIComponent(monthDates[idx].d1) + '&exp_d2=' + encodeURIComponent(monthDates[idx].d2);
                     }
                 }
             }
         };
     }
 
-    // Initialize Team Projection Chart
     var canvas4 = document.getElementById('barChart4');
     if (canvas4) {
         canvas4.style.cursor = 'pointer';
@@ -874,7 +873,7 @@ $(function () {
             labels: months,
             datasets: [{
                 label: 'Team Projection',
-                fillColor: '#991b1b', // Exact deep crimson bars matching screenshot
+                fillColor: '#991b1b',
                 strokeColor: '#7f1d1d',
                 highlightFill: '#b91c1c',
                 highlightStroke: '#7f1d1d',
@@ -889,14 +888,13 @@ $(function () {
                     var barLabel = activeBars[0].label;
                     var idx = months.indexOf(barLabel);
                     if (idx !== -1 && teamMonthDates[idx]) {
-                        window.location.href = '<?php echo base_url(); ?>manager/team/leads?d1=' + encodeURIComponent(teamMonthDates[idx].d1) + '&d2=' + encodeURIComponent(teamMonthDates[idx].d2);
+                        window.location.href = '<?php echo base_url(); ?>manager/team/leads?exp_d1=' + encodeURIComponent(teamMonthDates[idx].d1) + '&exp_d2=' + encodeURIComponent(teamMonthDates[idx].d2);
                     }
                 }
             }
         };
     }
 
-    // 3. Stat chips and cards navigate cleanly
     $('.crm-modern-stat-chip').on('click', function(e) {
         var targetUrl = $(this).attr('href');
         if (targetUrl && targetUrl !== '#' && targetUrl.indexOf('javascript') === -1) {

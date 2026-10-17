@@ -61,11 +61,25 @@ class Ci_admin_model extends CI_model {
 		}
 
 		public function dashboard_leaddataT(){
-			$team_array = $this->fetchTeamList($this->session->userdata('manager_id'),'');
-			$team_str = !empty($team_array) ? implode(',',$team_array) : $this->session->userdata('manager_id');
-			if (empty($team_str)) { $team_str = '0'; }
+			$manager_id = (int)$this->session->userdata('manager_id');
+			$user_role = (int)$this->session->userdata('user_role');
+			if ($user_role === 1 || $user_role === 4) {
+				$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(id) FROM ci_leads WHERE status = A.id) as lead_count FROM ci_status as A ORDER BY A.id ASC";
+			} else {
+				$team_array = $this->fetchTeamList($manager_id, '');
+				if (!is_array($team_array)) {
+					$team_array = array();
+				}
+				if (!in_array($manager_id, $team_array)) {
+					$team_array[] = $manager_id;
+				}
+				$team_str = implode(',', $team_array);
+				if (empty($team_str)) {
+					$team_str = (string)$manager_id;
+				}
+				$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(id) FROM ci_leads WHERE (FIND_IN_SET(created_by,'".$team_str."')>0 OR (lead_assign > 0 AND FIND_IN_SET(lead_assign,'".$team_str."')>0)) AND status = A.id) as lead_count FROM ci_status as A ORDER BY A.id ASC";
+			}
 			$data = array();
-			$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(id) FROM ci_leads WHERE (FIND_IN_SET(created_by,'".$team_str."')>0 OR (lead_assign > 0 AND FIND_IN_SET(lead_assign,'".$team_str."')>0)) AND status = A.id) as lead_count FROM ci_status as A ORDER BY A.id ASC";
 			$rows = $this->db->query($sql);	
 			if($rows && is_object($rows) && $rows->num_rows()>=1){
 				foreach($rows->result_array() as $row){
@@ -154,10 +168,18 @@ class Ci_admin_model extends CI_model {
 }
 
 public function dashboard_TeamPro($table='ci_leads'){
-	$team_array = $this->fetchTeamList($this->session->userdata('manager_id'),'');
-	$team_str = !empty($team_array) ? implode(',',$team_array) : $this->session->userdata('manager_id');
+	$manager_id = (int)$this->session->userdata('manager_id');
+	$user_role = (int)$this->session->userdata('user_role');
+	$team_array = $this->fetchTeamList($manager_id, '');
+	if (!is_array($team_array)) {
+		$team_array = array();
+	}
+	if (!in_array($manager_id, $team_array)) {
+		$team_array[] = $manager_id;
+	}
+	$team_str = implode(',', $team_array);
 	if (empty($team_str)) {
-		$team_str = '0';
+		$team_str = (string)$manager_id;
 	}
 			
 	$loop = array();	
@@ -175,10 +197,18 @@ public function dashboard_TeamPro($table='ci_leads'){
 		$d1 = date("Y-m-01", strtotime("+$i month"));
 		$d2 = date("Y-m-t", strtotime("+$i month"));
 		$month_dates[] = array('d1' => $d1, 'd2' => $d2);
-		$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ".$table." a WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND a.status NOT IN (42,43,44) AND FIND_IN_SET(a.created_by,'".$team_str."')>0) AS pt_".$i;
+		if ($user_role === 1 || $user_role === 4) {
+			$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ".$table." a WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND a.status NOT IN (42,43,44)) AS pt_".$i;
+		} else {
+			$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ".$table." a WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND a.status NOT IN (42,43,44) AND (FIND_IN_SET(a.created_by,'".$team_str."')>0 OR (a.lead_assign > 0 AND FIND_IN_SET(a.lead_assign,'".$team_str."')>0))) AS pt_".$i;
+		}
 	}
 
-	$sql = "SELECT " . implode(", ", $select_parts) . " FROM " . $table . " WHERE status NOT IN (42,43,44) AND FIND_IN_SET(created_by,'".$team_str."')>0"; 
+	if ($user_role === 1 || $user_role === 4) {
+		$sql = "SELECT " . implode(", ", $select_parts) . " FROM " . $table . " WHERE status NOT IN (42,43,44)"; 
+	} else {
+		$sql = "SELECT " . implode(", ", $select_parts) . " FROM " . $table . " WHERE status NOT IN (42,43,44) AND (FIND_IN_SET(created_by,'".$team_str."')>0 OR (lead_assign > 0 AND FIND_IN_SET(lead_assign,'".$team_str."')>0))"; 
+	}
 	$data = array();
 	$rows = $this->db->query($sql);
 	if($rows && is_object($rows) && $rows->num_rows()>=1){				
@@ -310,12 +340,26 @@ public function dashboard_MyPro($table='ci_leads'){
 		$last_date = date('Y-m-d', strtotime("-7 day"));
 		$next_date = date('Y-m-d', strtotime("+7 day"));
 
+		$user_role = (int)$this->session->userdata('user_role');
 		if($type == 0){
 			$user_cond = "(created_by = ".$manager_id." OR assigned_to = ".$manager_id.")";
 		}else{
-			$team_array = $this->fetchTeamList($manager_id, '');
-			$team_str = !empty($team_array) ? implode(',', $team_array) : $manager_id;
-			$user_cond = "(FIND_IN_SET(created_by, '".$team_str."') > 0 OR FIND_IN_SET(assigned_to, '".$team_str."') > 0)";
+			if($user_role === 1 || $user_role === 4){
+				$user_cond = "(created_by > 0 OR assigned_to > 0)";
+			}else{
+				$team_array = $this->fetchTeamList($manager_id, '');
+				if(!is_array($team_array)){
+					$team_array = array();
+				}
+				if(!in_array($manager_id, $team_array)){
+					$team_array[] = $manager_id;
+				}
+				$team_str = implode(',', $team_array);
+				if(empty($team_str)){
+					$team_str = (string)$manager_id;
+				}
+				$user_cond = "(FIND_IN_SET(created_by, '".$team_str."') > 0 OR FIND_IN_SET(assigned_to, '".$team_str."') > 0)";
+			}
 		}
 
 		$data = array(
@@ -843,11 +887,21 @@ public function dashboard_MyPro($table='ci_leads'){
 
 	
 
-	  // get the parent category for select box values 
 	  public function getTeamLeads($d1='', $d2='', $mrr1='', $mrr2='', $limit_per_page='', $page_index='', $order_by='',$sort_by='', $search='', $status='', $category='', $lCat='',$user_name='',$country='',$state='', $closure='')
 	  {			 
-		$team_array= $this->fetchTeamList($this->session->userdata('manager_id'),'');
-		$team_str= implode(',',$team_array);
+		$manager_id = (int)$this->session->userdata('manager_id');
+		$user_role = (int)$this->session->userdata('user_role');
+		$team_array = $this->fetchTeamList($manager_id, '');
+		if (!is_array($team_array)) {
+			$team_array = array();
+		}
+		if (!in_array($manager_id, $team_array)) {
+			$team_array[] = $manager_id;
+		}
+		$team_str = implode(',', $team_array);
+		if (empty($team_str)) {
+			$team_str = (string)$manager_id;
+		}
 
 				  $date1=date("Y-m-d",strtotime($d1) );
 				  $date2=date("Y-m-d",strtotime($d2) );
@@ -935,9 +989,12 @@ public function dashboard_MyPro($table='ci_leads'){
 				 $where = '(A.lead_id LIKE "%'.$search.'%" OR A.mrr LIKE "%'.$search.'%"  OR A.contact1 LIKE "%'.$search.'%" OR A.id LIKE "%'.$search.'%")';	
 				$this->db->where($where);
 			   }	
-			   $where1="FIND_IN_SET(A.created_by,'".$team_str."')>0";	
-				//$where1="A.status NOT IN (42,43,44) AND FIND_IN_SET(A.created_by,'".$team_str."')>0";	
-				$this->db->where($where1);
+			   if ($user_role === 1 || $user_role === 4) {
+				   $where1 = "(A.created_by > 0 OR A.lead_assign > 0)";
+			   } else {
+				   $where1 = "(FIND_IN_SET(A.created_by,'".$team_str."')>0 OR (A.lead_assign > 0 AND FIND_IN_SET(A.lead_assign,'".$team_str."')>0))";
+			   }
+			   $this->db->where($where1);
 			 	
 				if(!empty($order_by) && !empty($sort_by)){
 				  $this->db->order_by($order_by,$sort_by);

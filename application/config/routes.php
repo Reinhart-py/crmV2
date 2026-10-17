@@ -100,9 +100,10 @@ $route['manager/tickets/open'] = "ci_admin_tickets/followups";
 $route['manager/team/tickets'] = "ci_admin_tickets/index";
 $route['manager/team/tickets/(:any)'] = "ci_admin_tickets/index/$1";
 
-// Tasks
 $route['manager/tasks'] = "ci_admin_tasks/index";
 $route['manager/tasks/add'] = "ci_admin_tasks/add";
+$route['manager/tasks/view/(:any)'] = "ci_admin_tasks/view/$1";
+$route['manager/tasks/edit/(:any)'] = "ci_admin_tasks/edit/$1";
 $route['manager/tasks/followups'] = "ci_admin_tasks/followups";
 
 $route['manager/kam'] = "ci_admin_kam/index";

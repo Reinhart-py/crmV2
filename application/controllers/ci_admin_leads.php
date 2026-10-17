@@ -62,11 +62,15 @@ function __construct()
 		$state = isset($_GET['state']) ? $_GET['state'] : '';	
 		
 		if(!empty($country)){
-			$country= implode(',', $country); 
+			if(is_array($country)){
+				$country= implode(',', $country); 
+			}
 			$data['state_list']= $this->comman_model->getAll(array('country_id'=>$country),'','states');
 	   }
 		if(!empty($state)){
-			 $state= implode(',', $state); 
+			if(is_array($state)){
+				$state= implode(',', $state); 
+			}
 		}
 
 		$d1 = isset($_GET['d1']) ? $_GET['d1'] : '';
@@ -80,15 +84,21 @@ function __construct()
 		$lCat = isset($_GET['lCat']) ? $_GET['lCat'] : '';
 		
 		if(!empty($lCat)){
-	         $lCat= implode(',', $lCat); 
+			if(is_array($lCat)){
+				$lCat= implode(',', $lCat); 
+			}
 	     }	
 
         if(!empty($category)){
-	         $category= implode(',', $category); 
+			if(is_array($category)){
+				$category= implode(',', $category); 
+			}
 	     }
 
 		 if(!empty($status)){
-			$status= implode(',', $status); 
+			if(is_array($status)){
+				$status= implode(',', $status); 
+			}
 		}
 
 		$closure = isset($_GET['closure']) ? $_GET['closure'] : '';
@@ -550,14 +560,17 @@ function __construct()
 			}
 		}  
 		
-			if($data['slist']['user_level']<$this->session->userdata('manager_level')){
+		$cur_role = (int)$this->session->userdata('manager_role');
+		if ($cur_role !== 1 && $cur_role !== 4) {
+			if (!empty($data['slist']['user_level']) && $data['slist']['user_level'] < $this->session->userdata('manager_level')) {
 				$this->session->set_flashdata('error_message', 'Not allowed');
-				if($action=='tm'){
+				if ($action == 'tm') {
 					redirect('/manager/team/leads');
-				}else{
+				} else {
 					redirect('/manager/leads');
 				}
 			}
+		}
 			
 			if(!empty($data['list']['country'])){
 				$data['state_list']= $this->comman_model->getAll(array('country_id'=>$data['list']['country']),'','states');
@@ -1297,11 +1310,11 @@ $data['info2']=$this->if_not_login();
 			$status_category = $get_val($row, array('statuscategory', 'statuscat', 'lostreason'));
 			$status_remarks = $get_val($row, array('statusremarks', 'statusremark'));
 
-			$dnd_status = $get_val($row, array('dncrdnd', 'dncr', 'dnd', 'dndstatus', 'tncrtnd', 'tncr'));
-			if (empty($dnd_status) || !in_array(strtolower($dnd_status), array('yes', 'no'))) {
-				$dnd_status = 'No';
+			$dnd_raw = strtolower(trim($get_val($row, array('dncrdnd', 'dncr', 'dnd', 'dndstatus', 'tncrtnd', 'tncr'))));
+			if (in_array($dnd_raw, array('yes', 'y', '1', 'true', 'dnd', 'dncr'))) {
+				$dnd_status = 'Yes';
 			} else {
-				$dnd_status = ucfirst(strtolower($dnd_status));
+				$dnd_status = 'No';
 			}
 			$dnd_check_date = $get_val($row, array('dncrdate', 'dncrcheckdate', 'dndcheckdate', 'checkdate', 'tncrcheckdate'));
 

@@ -66,14 +66,15 @@
                                     <?php if(isset($list) && !empty($list)) { 
                                         foreach($list as $li) { ?>
                                     <tr>
-                                        <td><?php echo isset($li['id']) ? $li['id'] : ''; ?></td>
-                                        <td><?php echo isset($li['customer']) ? htmlspecialchars($li['customer']) : ''; ?></td>
+                                        <td><a href="<?php echo base_url(); ?>manager/tasks/view/<?php echo $li['id']; ?>"><strong><?php echo !empty($li['task_id']) ? htmlspecialchars($li['task_id']) : $li['id']; ?></strong></a></td>
+                                        <td><a href="<?php echo base_url(); ?>manager/tasks/view/<?php echo $li['id']; ?>"><?php echo isset($li['customer']) ? htmlspecialchars($li['customer']) : ''; ?></a></td>
                                         <td><?php echo isset($li['followup_date']) ? simple_date($li['followup_date']) : '-'; ?></td>
                                         <td><?php echo isset($li['followup_time']) ? htmlspecialchars($li['followup_time']) : '-'; ?></td>
                                         <td><?php echo isset($li['remark']) ? htmlspecialchars($li['remark']) : ''; ?></td>
                                         <td><span class="label label-info"><?php echo isset($li['status']) ? htmlspecialchars($li['status']) : 'Pending'; ?></span></td>
                                         <td>
-                                            <a href="#" class="btn btn-xs btn-primary"><i class="fa fa-eye"></i> View</a>
+                                            <a href="<?php echo base_url(); ?>manager/tasks/view/<?php echo $li['id']; ?>" class="btn btn-xs btn-primary"><i class="fa fa-eye"></i> View</a>
+                                            <a href="<?php echo base_url(); ?>manager/tasks/edit/<?php echo $li['id']; ?>" class="btn btn-xs btn-warning"><i class="fa fa-edit"></i> Edit</a>
                                         </td>
                                     </tr>
                                     <?php } } else { ?>

@@ -61,7 +61,11 @@
 		<div class="col-sm-12">
         <h3 class="box-title" style="text-transform:capitalize"><b>
           <?php if((isset($p_info['customer']))&&(!empty($p_info['customer']))){echo $p_info['customer'];}else echo ""; ?>
-          </b></h3>    
+          </b>
+          <?php if(!empty($p_info['dnd_status']) && strtolower($p_info['dnd_status']) == 'yes'){ ?>
+            <span class="label label-danger" style="background:#dc2626; color:#ffffff; font-weight:700; padding:2px 7px; border-radius:3px; font-size:12px; margin-left:6px; letter-spacing:0.5px;">DNCR</span>
+          <?php } ?>
+        </h3>    
           </div>
           </div>
 <div class="box-body" >
@@ -337,7 +341,7 @@
 
               <tr>
               <th scope="col">DNCR/DND</th>
-              <td scope="col"><?php echo !empty($p_info['dnd_status']) ? $p_info['dnd_status'] : 'No'; ?></td>
+              <td scope="col"><?php echo !empty($p_info['dnd_status']) ? $p_info['dnd_status'] : 'No'; ?> <?php if(!empty($p_info['dnd_status']) && strtolower($p_info['dnd_status']) == 'yes'){ ?><span class="label label-danger" style="background:#dc2626; color:#ffffff; font-weight:700; padding:2px 7px; border-radius:3px; font-size:11px; margin-left:6px; letter-spacing:0.5px;">DNCR</span><?php } ?></td>
               </tr>
 
               <tr>

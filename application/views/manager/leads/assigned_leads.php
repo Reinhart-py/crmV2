@@ -128,8 +128,13 @@
                                         <td style="text-align: center;">
                                             <input type="checkbox" name="lead_ids[]" value="<?php echo $li['id']; ?>" class="lead-check">
                                         </td>
-                                        <td><?php echo $li['lead_id']; ?></td>
-                                        <td><?php echo $li['customer']; ?></td>
+                                        <td><a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>"><strong><?php echo $li['lead_id']; ?></strong></a></td>
+                                        <td>
+                                            <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>"><?php echo $li['customer']; ?></a>
+                                            <?php if(!empty($li['dnd_status']) && strtolower($li['dnd_status']) == 'yes'){ ?>
+                                                <span class="label label-danger" style="background:#dc2626; color:#ffffff; font-weight:700; padding:1px 5px; border-radius:3px; font-size:10px; margin-left:4px; letter-spacing:0.5px;">DNCR</span>
+                                            <?php } ?>
+                                        </td>
                                         <td><?php echo $li['servicecat']; ?></td>
                                         <td><?php echo $li['mrr']; ?></td>
                                         <td><?php echo $li['poc']; ?></td>
