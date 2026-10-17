@@ -164,14 +164,14 @@ class Admin_reports_model extends CI_Model {
 				'dept_slug' => 'operations',
 				'reports' => array(
 					'daily' => array(
-						'title' => 'Daily Operations Report',
+						'title' => 'Day-to-Day Operations Execution Log',
 						'slug' => 'daily',
 						'icon' => 'fa-calendar-o',
 						'desc' => 'Day-to-day operational execution log across tasks, tickets, and work items.',
 						'badge' => $this->db->count_all('ci_tasks') . ' Tasks'
 					),
 					'tasks' => array(
-						'title' => 'Work / Task Completion Report',
+						'title' => 'Task Completion Analyzer',
 						'slug' => 'tasks',
 						'icon' => 'fa-check-square-o',
 						'desc' => 'Task completion analysis, ongoing assignments, pending milestones, and overdue tasks.',
@@ -641,7 +641,7 @@ class Admin_reports_model extends CI_Model {
 				'fields' => array('lead_id', 'customer', 'poc', 'contact1', 'email', 'database_category', 'data_source', 'data_batch_referral_no', 'status_name', 'assigned_name', 'created'),
 				'rows' => $rows,
 				'summary' => array(
-					array('label' => 'Total Database Leads', 'value' => number_format(count($rows)), 'icon' => 'fa-database', 'color' => 'bg-green'),
+					array('label' => 'Total Database', 'value' => number_format(count($rows)), 'icon' => 'fa-database', 'color' => 'bg-green'),
 					array('label' => 'Primary Category', 'value' => $top_cat, 'icon' => 'fa-tags', 'color' => 'bg-aqua'),
 					array('label' => 'Unique Categories', 'value' => count($cat_counts), 'icon' => 'fa-folder-open', 'color' => 'bg-yellow')
 				)
@@ -1039,7 +1039,7 @@ class Admin_reports_model extends CI_Model {
 			}
 
 			return array(
-				'title' => 'Daily Operations Report',
+				'title' => 'Day-to-Day Operations Execution Log',
 				'department_title' => 'Operations Department',
 				'headers' => array('Date / Time', 'Type', 'Reference ID', 'Customer / Entity', 'Service / Title', 'Department', 'Assigned To', 'Priority', 'Status', 'Remarks'),
 				'fields' => array('activity_time', 'item_type', 'ref_id', 'customer', 'title', 'department', 'assigned_name', 'priority_badge', 'status_badge', 'remarks'),
@@ -1094,7 +1094,7 @@ class Admin_reports_model extends CI_Model {
 			}
 
 			return array(
-				'title' => 'Work / Task Completion Report',
+				'title' => 'Task Completion Analyzer',
 				'department_title' => 'Operations Department',
 				'headers' => array('Task ID', 'Customer Name', 'POC', 'Contact', 'Category', 'Assigned To', 'Due / Followup Date', 'Status', 'Remarks', 'Created Date'),
 				'fields' => array('task_id', 'customer', 'poc', 'contact1', 'category', 'assigned_name', 'followup_date', 'status_badge', 'remark', 'created'),

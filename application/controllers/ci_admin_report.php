@@ -279,8 +279,12 @@ class Ci_admin_report extends CI_Controller {
 		$data = array();
 		$data['info2'] = $this->if_not_login();
 
-		if ($this->session->userdata('manager_role') != 1) {
-			$this->session->set_flashdata('error_message', 'Access denied. Admin access required.');
+		$m_role = (int)$this->session->userdata('manager_role');
+		if (empty($m_role) && $this->session->userdata('manager_id') == 1) {
+			$m_role = 1;
+		}
+		if ($m_role != 1 && $m_role != 4) {
+			$this->session->set_flashdata('error_message', 'Access denied. Admin or Support access required.');
 			redirect('manager/dashboard');
 			return;
 		}

@@ -5,7 +5,7 @@
         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
             <div>
                 <h1 style="font-weight: 700; color: var(--crm-text); margin: 0 0 5px 0;">
-                    <i class="fa fa-bar-chart" style="color: #b91c1c; margin-right: 8px;"></i><?php echo htmlspecialchars($report_data['title']); ?>
+                    <?php echo htmlspecialchars($report_data['title']); ?>
                 </h1>
                 <ol class="breadcrumb" style="background: transparent; padding: 0; margin: 0;">
                     <li><a href="<?php echo base_url(); ?>manager/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
@@ -27,29 +27,43 @@
 
     <section class="content" style="padding-top: 0;">
         <?php if (!empty($report_data['summary'])) { ?>
-        <div class="row" style="margin-bottom: 16px;">
-            <?php 
-            $count_summary = count($report_data['summary']);
-            $col_size = ($count_summary <= 4) ? 12 / max(1, $count_summary) : 3;
-            foreach ($report_data['summary'] as $sum_key => $sum_val) { 
-                $label = is_array($sum_val) ? (isset($sum_val['label']) ? $sum_val['label'] : (isset($sum_val['name']) ? $sum_val['name'] : '')) : $sum_key;
-                $value = is_array($sum_val) ? (isset($sum_val['value']) ? $sum_val['value'] : '') : $sum_val;
-            ?>
-            <div class="col-lg-<?php echo $col_size; ?> col-md-6 col-sm-6 col-xs-12" style="margin-bottom: 10px;">
-                <div style="background: var(--crm-card-bg); border: 1px solid var(--crm-border); border-top: 2px solid #b91c1c; border-radius: 6px; padding: 12px 14px; box-shadow: var(--crm-shadow-sm);">
-                    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--crm-text-muted); font-weight: 600; margin-bottom: 4px;">
-                        <?php echo htmlspecialchars($label); ?>
-                    </div>
-                    <div style="font-size: 17px; font-weight: 800; color: var(--crm-text);">
-                        <?php echo htmlspecialchars($value); ?>
+            <?php if ($report == 'database') { ?>
+            <div style="background: #ffffff; border: 1px solid var(--crm-border); border-top: 3px solid #d4f938; border-radius: 6px; padding: 10px 18px; margin-bottom: 16px; display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 36px; font-size: 13px; white-space: nowrap; overflow-x: auto;">
+                <?php foreach ($report_data['summary'] as $sum_key => $sum_val) { 
+                    $label = is_array($sum_val) ? (isset($sum_val['label']) ? $sum_val['label'] : (isset($sum_val['name']) ? $sum_val['name'] : '')) : $sum_key;
+                    $value = is_array($sum_val) ? (isset($sum_val['value']) ? $sum_val['value'] : '') : $sum_val;
+                ?>
+                <div style="display: inline-flex; align-items: center; gap: 8px;">
+                    <span style="color: var(--crm-text-muted); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.4px;"><?php echo htmlspecialchars($label); ?>:</span>
+                    <span style="color: #000000; font-weight: 700; font-size: 14px;"><?php echo htmlspecialchars($value); ?></span>
+                </div>
+                <?php } ?>
+            </div>
+            <?php } else { ?>
+            <div class="row" style="margin-bottom: 16px;">
+                <?php 
+                $count_summary = count($report_data['summary']);
+                $col_size = ($count_summary <= 4) ? 12 / max(1, $count_summary) : 3;
+                foreach ($report_data['summary'] as $sum_key => $sum_val) { 
+                    $label = is_array($sum_val) ? (isset($sum_val['label']) ? $sum_val['label'] : (isset($sum_val['name']) ? $sum_val['name'] : '')) : $sum_key;
+                    $value = is_array($sum_val) ? (isset($sum_val['value']) ? $sum_val['value'] : '') : $sum_val;
+                ?>
+                <div class="col-lg-<?php echo $col_size; ?> col-md-6 col-sm-6 col-xs-12" style="margin-bottom: 10px;">
+                    <div style="background: #ffffff; border: 1px solid var(--crm-border); border-top: 3px solid #d4f938; border-radius: 6px; padding: 12px 14px;">
+                        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--crm-text-muted); font-weight: 600; margin-bottom: 4px;">
+                            <?php echo htmlspecialchars($label); ?>
+                        </div>
+                        <div style="font-size: 17px; font-weight: 700; color: #000000;">
+                            <?php echo htmlspecialchars($value); ?>
+                        </div>
                     </div>
                 </div>
+                <?php } ?>
             </div>
             <?php } ?>
-        </div>
         <?php } ?>
 
-        <div class="box" style="margin-bottom: 16px; border-radius: 6px; border: 1px solid var(--crm-border); background: var(--crm-card-bg); box-shadow: var(--crm-shadow-sm);">
+        <div class="box" style="margin-bottom: 16px; border-radius: 6px; border: 1px solid var(--crm-border); background: #ffffff;">
             <div class="box-body" style="padding: 14px;">
                 <form class="form-inline" action="<?php echo base_url(); ?>manager/admin-reports/<?php echo $dept; ?>/<?php echo $report; ?>" method="get" style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
 
@@ -145,7 +159,7 @@
                     </div>
 
                     <div class="form-group" style="margin: 0; display: flex; gap: 6px;">
-                        <button type="submit" class="btn btn-sm btn-primary" style="background: #b91c1c; border-color: #991b1b; font-weight: 600; border-radius: 4px; padding: 5px 12px;">
+                        <button type="submit" class="btn btn-sm btn-primary" style="background: #09090b; border-color: #09090b; color: #ffffff; font-weight: 600; border-radius: 4px; padding: 5px 14px;">
                             <i class="fa fa-filter"></i> Apply Filters
                         </button>
                         <a href="<?php echo base_url(); ?>manager/admin-reports/<?php echo $dept; ?>/<?php echo $report; ?>" class="btn btn-sm btn-default" style="font-weight: 600; border-radius: 4px; padding: 5px 12px; color: var(--crm-text);">
@@ -157,14 +171,11 @@
             </div>
         </div>
 
-        <div class="box" style="border-radius: 6px; border: 1px solid var(--crm-border); background: var(--crm-card-bg); box-shadow: var(--crm-shadow-sm);">
-            <div class="box-header with-border" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px;">
-                <h3 class="box-title" style="font-size: 14px; font-weight: 700; color: var(--crm-text);">
-                    <i class="fa fa-table" style="color: #b91c1c; margin-right: 6px;"></i> Report Records
+        <div class="box" style="border-radius: 6px; border: 1px solid var(--crm-border); background: #ffffff;">
+            <div class="box-header with-border" style="padding: 12px 16px;">
+                <h3 class="box-title" style="font-size: 14px; font-weight: 700; color: var(--crm-text); margin: 0;">
+                    Report Records
                 </h3>
-                <span class="badge" style="background: #b91c1c; font-size: 11px;">
-                    <?php echo count($report_data['rows']); ?> Records Found
-                </span>
             </div>
 
             <div class="box-body no-padding">
@@ -174,7 +185,7 @@
                         <thead style="background: var(--crm-bg); color: var(--crm-text);">
                             <tr>
                                 <?php foreach ($report_data['headers'] as $hdr) { ?>
-                                <th style="white-space: nowrap; font-weight: 700; padding: 10px 12px; border-bottom: 2px solid var(--crm-border);">
+                                <th style="white-space: nowrap; font-weight: 700; padding: 10px 12px; border-bottom: 2px solid var(--crm-border); text-align: left;">
                                     <?php echo htmlspecialchars($hdr); ?>
                                 </th>
                                 <?php } ?>
@@ -186,7 +197,7 @@
                                 <?php foreach ($report_data['fields'] as $fld) { 
                                     $val = isset($row[$fld]) ? $row[$fld] : '';
                                 ?>
-                                <td style="padding: 9px 12px; vertical-align: middle;">
+                                <td style="padding: 9px 12px; vertical-align: middle; text-align: left;">
                                     <?php echo $val; ?>
                                 </td>
                                 <?php } ?>
@@ -196,10 +207,8 @@
                     </table>
                 </div>
                 <?php } else { ?>
-                <div style="padding: 40px 20px; text-align: center;">
-                    <div class="alert alert-info" style="display: inline-block; margin: 0; border-radius: 6px; font-size: 13px;">
-                        <i class="fa fa-info-circle" style="margin-right: 6px;"></i> No Data Found for the selected filters.
-                    </div>
+                <div style="padding: 30px 20px; text-align: center; color: var(--crm-text-muted); font-size: 13px;">
+                    No records available for the selected filters.
                 </div>
                 <?php } ?>
             </div>
