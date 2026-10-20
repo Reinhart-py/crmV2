@@ -14,7 +14,7 @@
 					$this->db->order_by($order[0], $order[1]); 
 				}	
 				$data = $this->db->get($table);
-				if($data && is_object($data) && $data->num_rows()>=1){
+				if($data->num_rows()>=1){
 					foreach($data->result_array() as  $row){
 						$ret[] = $row;	
 					}
@@ -33,7 +33,7 @@
 					$this->db->order_by($order[0], $order[1]); 
 				}
 				$data = $this->db->get($table);
-				if($data && is_object($data) && $data->num_rows()>=1){
+				if($data->num_rows()>=1){
 					foreach($data->result_array() as  $row){
 						$ret[] = $row[$field];	
 					}
@@ -50,7 +50,7 @@
 					$this->db->order_by($order[0], $order[1]); 
 				}	
 				$data = $this->db->get($table);
-				if($data && is_object($data) && $data->num_rows()>=1){
+				if($data->num_rows()>=1){
 					foreach($data->result_array() as  $k=>$row){
 						$ret[] = $row[$fields[0]];	
 						$ret[] = $row[$fields[1]];	
@@ -62,6 +62,10 @@
 			$this->db->delete($table,$cond);
 		}
 		public function updateData($key,$id,$data,$table){
+			$fields = $this->db->list_fields($table);
+			if (!empty($fields) && is_array($data)) {
+				$data = array_intersect_key($data, array_flip($fields));
+			}
 			$this->db->where($key,$id);
 			$this->db->update($table,$data);
 			return true;
@@ -73,6 +77,10 @@
 			return true;
 		}
 		public function saveData($table,$data){
+			$fields = $this->db->list_fields($table);
+			if (!empty($fields) && is_array($data)) {
+				$data = array_intersect_key($data, array_flip($fields));
+			}
 			$this->db->insert($table,$data);
 			return $this->db->insert_id();
 		}
@@ -117,9 +125,8 @@
 			return $data;
 		}
 		
-		 public function getpostdata2($con,$order=array(),$table)
+		 public function getpostdata2($con,$order=array(),$table='')
 			{
-				// print_r($con);
 				$result= array();
 				if(!empty($con))
 				{
@@ -130,12 +137,9 @@
 					$this->db->order_by($order[0],$order[1]);
 				}
 				$data = $this->db->get($table);
-				if($data && is_object($data))
+				foreach($data->result_array() as $row)
 				{
-					foreach($data->result_array() as $row)
-					{
-						$result[]= $row;
-					}
+					$result[]= $row;
 				}
 				if(!empty($result)){
 				return $result[0];
@@ -146,7 +150,7 @@
 				}
 			}
 		
-		public function deletePost($key='id',$value,$table=''){
+		public function deletePost($key='id',$value='',$table=''){
 			$this->db->where($key,$value);
 			$this->db->delete($table); 
 			return true;
@@ -171,12 +175,9 @@
 				$this->db->order_by($order[0], $order[1]); 
 			}				
 			$data = $this->db->get();
-			if($data && is_object($data))
+			foreach($data->result_array() as $row)
 			{
-				foreach($data->result_array() as $row)
-				{
-					$result[]= $row;
-				}
+				$result[]= $row;
 			}
 		   return $result;
 		}

@@ -91,9 +91,10 @@
       <form role="form" action="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($list['id']); ?>/<?php echo $action; ?>" method="post" name="add_form">
       
        <div class="box box-default">
-      <div class="box-header with-border pt-3" style="display: flex; align-items: center; justify-content: space-between;">
-        <h3 class="box-title">Initial Category Fields</h3>
-        <div style="display: inline-flex; align-items: center; gap: 8px;">
+      <div class="box-header with-border pt-3" style="position: relative; text-align: center; padding: 14px 15px; min-height: 48px;">
+        <h3 class="box-title" style="float: none; display: inline-block; font-weight: 600; font-size: 18px; margin: 0; line-height: 24px;">Initial Category Fields</h3>
+        <div style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 8px;">
+          <span id="topZoneIndicator" class="label" style="background: #000000; color: #ffffff; font-weight: 700; padding: 4px 12px; border-radius: 4px; font-size: 12px; letter-spacing: 0.5px; display: none;"></span>
           <span id="topDncrIndicator" class="label label-danger" style="background: #dc2626; color: #ffffff; font-weight: 700; padding: 4px 12px; border-radius: 4px; font-size: 12px; letter-spacing: 0.5px; <?php echo (isset($list['dnd_status']) && strtolower($list['dnd_status']) == 'yes') ? '' : 'display:none;'; ?>">DNCR</span>
           <span id="topClosedIndicator" class="label label-primary" style="background: #2563eb; color: #ffffff; font-weight: 700; padding: 4px 12px; border-radius: 4px; font-size: 12px; letter-spacing: 0.5px; <?php echo (isset($list['company_status']) && strtolower($list['company_status']) == 'closed') ? '' : 'display:none;'; ?>">Closed</span>
         </div>
@@ -282,17 +283,151 @@
               </div>
             </div>
 
+            <?php
+            $curr_auth = isset($list['tl_authority']) ? $list['tl_authority'] : '';
+            $curr_emirate = isset($list['tl_emirate']) ? $list['tl_emirate'] : '';
+            $curr_zone = isset($list['tl_zone']) ? $list['tl_zone'] : '';
+            ?>
+
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
                 <label>Trade License Number</label>
-                <input type="text" class="form-control" name="tl_number" value="<?php echo isset($list['tl_number']) ? $list['tl_number'] : ''; ?>" placeholder="Enter Trade License Number">
+                <input type="text" class="form-control" name="tl_number" value="<?php echo isset($list['tl_number']) ? htmlspecialchars($list['tl_number']) : ''; ?>" placeholder="Enter Trade License Number">
               </div>
             </div>
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>Trade License Authority</label>
-                <input type="text" class="form-control" name="tl_authority" value="<?php echo isset($list['tl_authority']) ? $list['tl_authority'] : ''; ?>" placeholder="Enter Trade License Authority">
+                <label>Trade License Emirates</label>
+                <select class="form-control" name="tl_emirate" id="tl_emirate_select">
+                  <option value="">Select Emirate</option>
+                  <option value="Abu Dhabi" <?php if($curr_emirate=='Abu Dhabi') echo 'selected'; ?>>Abu Dhabi</option>
+                  <option value="Dubai" <?php if($curr_emirate=='Dubai') echo 'selected'; ?>>Dubai</option>
+                  <option value="Sharjah" <?php if($curr_emirate=='Sharjah') echo 'selected'; ?>>Sharjah</option>
+                  <option value="Ajman" <?php if($curr_emirate=='Ajman') echo 'selected'; ?>>Ajman</option>
+                  <option value="Umm Al Quwain" <?php if($curr_emirate=='Umm Al Quwain') echo 'selected'; ?>>Umm Al Quwain</option>
+                  <option value="Ras Al Khaimah" <?php if($curr_emirate=='Ras Al Khaimah') echo 'selected'; ?>>Ras Al Khaimah</option>
+                  <option value="Fujairah" <?php if($curr_emirate=='Fujairah') echo 'selected'; ?>>Fujairah</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Trade License Zone</label>
+                <select class="form-control" name="tl_zone" id="tl_zone_select">
+                  <option value="">Select Zone</option>
+                  <option value="Mainland" <?php if($curr_zone=='Mainland') echo 'selected'; ?>>Mainland</option>
+                  <option value="Freezone" <?php if($curr_zone=='Freezone') echo 'selected'; ?>>Freezone</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Licensing Authorities</label>
+                <select class="form-control select2" name="tl_authority" id="tl_authority_select" style="width: 100%;">
+                  <option value="">Select Authority</option>
+                  <?php if (!empty($curr_auth)) { ?>
+                    <option value="<?php echo htmlspecialchars($curr_auth); ?>" selected data-emirate="<?php echo htmlspecialchars($curr_emirate); ?>" data-zone="<?php echo htmlspecialchars($curr_zone); ?>"><?php echo htmlspecialchars($curr_auth); ?></option>
+                  <?php } ?>
+                  <optgroup label="Mainland">
+                    <option value="Abu Dhabi DED" data-emirate="Abu Dhabi" data-zone="Mainland" <?php if($curr_auth=='Abu Dhabi DED') echo 'selected'; ?>>Abu Dhabi DED</option>
+                    <option value="Abu Dhabi Department of Economic Development — ADDED" data-emirate="Abu Dhabi" data-zone="Mainland" <?php if($curr_auth=='Abu Dhabi Department of Economic Development — ADDED') echo 'selected'; ?>>Abu Dhabi Department of Economic Development — ADDED</option>
+                    <option value="Dubai Economy (DED / DET)" data-zone="Mainland" data-emirate="Dubai" <?php if($curr_auth=='Dubai Economy (DED / DET)') echo 'selected'; ?>>Dubai Economy (DED / DET)</option>
+                    <option value="Dubai Economy (DED)" data-zone="Mainland" data-emirate="Dubai" <?php if($curr_auth=='Dubai Economy (DED)') echo 'selected'; ?>>Dubai Economy (DED)</option>
+                    <option value="Dubai Department of Economy and Tourism — DET" data-zone="Mainland" data-emirate="Dubai" <?php if($curr_auth=='Dubai Department of Economy and Tourism — DET') echo 'selected'; ?>>Dubai Department of Economy and Tourism — DET</option>
+                    <option value="Sharjah SEDD" data-zone="Mainland" data-emirate="Sharjah" <?php if($curr_auth=='Sharjah SEDD') echo 'selected'; ?>>Sharjah SEDD</option>
+                    <option value="Sharjah Economic Development Department — SEDD" data-zone="Mainland" data-emirate="Sharjah" <?php if($curr_auth=='Sharjah Economic Development Department — SEDD') echo 'selected'; ?>>Sharjah Economic Development Department — SEDD</option>
+                    <option value="Ajman DED" data-zone="Mainland" data-emirate="Ajman" <?php if($curr_auth=='Ajman DED') echo 'selected'; ?>>Ajman DED</option>
+                    <option value="Ajman Department of Economic Development — Ajman DED" data-zone="Mainland" data-emirate="Ajman" <?php if($curr_auth=='Ajman Department of Economic Development — Ajman DED') echo 'selected'; ?>>Ajman Department of Economic Development — Ajman DED</option>
+                    <option value="RAK DED" data-zone="Mainland" data-emirate="Ras Al Khaimah" <?php if($curr_auth=='RAK DED') echo 'selected'; ?>>RAK DED</option>
+                    <option value="Ras Al Khaimah Department of Economic Development — RAK DED" data-zone="Mainland" data-emirate="Ras Al Khaimah" <?php if($curr_auth=='Ras Al Khaimah Department of Economic Development — RAK DED') echo 'selected'; ?>>Ras Al Khaimah Department of Economic Development — RAK DED</option>
+                    <option value="Fujairah Municipality" data-zone="Mainland" data-emirate="Fujairah" <?php if($curr_auth=='Fujairah Municipality') echo 'selected'; ?>>Fujairah Municipality</option>
+                    <option value="Fujairah Municipality — FM" data-zone="Mainland" data-emirate="Fujairah" <?php if($curr_auth=='Fujairah Municipality — FM') echo 'selected'; ?>>Fujairah Municipality — FM</option>
+                    <option value="Dibba Municipality — DM" data-zone="Mainland" data-emirate="Fujairah" <?php if($curr_auth=='Dibba Municipality — DM') echo 'selected'; ?>>Dibba Municipality — DM</option>
+                    <option value="UAQ DED" data-zone="Mainland" data-emirate="Umm Al Quwain" <?php if($curr_auth=='UAQ DED') echo 'selected'; ?>>UAQ DED</option>
+                    <option value="Umm Al Quwain Department of Economic Development — UAQ DED" data-zone="Mainland" data-emirate="Umm Al Quwain" <?php if($curr_auth=='Umm Al Quwain Department of Economic Development — UAQ DED') echo 'selected'; ?>>Umm Al Quwain Department of Economic Development — UAQ DED</option>
+                  </optgroup>
+                  <optgroup label="Free zones">
+                    <option value="ADGM (Abu Dhabi Global Market)" data-zone="Freezone" data-emirate="Abu Dhabi" <?php if($curr_auth=='ADGM (Abu Dhabi Global Market)') echo 'selected'; ?>>ADGM (Abu Dhabi Global Market)</option>
+                    <option value="Abu Dhabi Global Market — ADGM" data-zone="Freezone" data-emirate="Abu Dhabi" <?php if($curr_auth=='Abu Dhabi Global Market — ADGM') echo 'selected'; ?>>Abu Dhabi Global Market — ADGM</option>
+                    <option value="Masdar City Free Zone" data-zone="Freezone" data-emirate="Abu Dhabi" <?php if($curr_auth=='Masdar City Free Zone') echo 'selected'; ?>>Masdar City Free Zone</option>
+                    <option value="Masdar City Free Zone — Masdar" data-zone="Freezone" data-emirate="Abu Dhabi" <?php if($curr_auth=='Masdar City Free Zone — Masdar') echo 'selected'; ?>>Masdar City Free Zone — Masdar</option>
+                    <option value="KIZAD / KEZAD" data-zone="Freezone" data-emirate="Abu Dhabi" <?php if($curr_auth=='KIZAD / KEZAD') echo 'selected'; ?>>KIZAD / KEZAD</option>
+                    <option value="Khalifa Economic Zones Abu Dhabi — KEZAD" data-zone="Freezone" data-emirate="Abu Dhabi" <?php if($curr_auth=='Khalifa Economic Zones Abu Dhabi — KEZAD') echo 'selected'; ?>>Khalifa Economic Zones Abu Dhabi — KEZAD</option>
+                    <option value="twofour54" data-zone="Freezone" data-emirate="Abu Dhabi" <?php if($curr_auth=='twofour54') echo 'selected'; ?>>twofour54</option>
+                    <option value="Media Zone Authority – twofour54 — TCA" data-zone="Freezone" data-emirate="Abu Dhabi" <?php if($curr_auth=='Media Zone Authority – twofour54 — TCA') echo 'selected'; ?>>Media Zone Authority – twofour54 — TCA</option>
+                    <option value="Abu Dhabi Airports Free Zone — ADAFZ" data-zone="Freezone" data-emirate="Abu Dhabi" <?php if($curr_auth=='Abu Dhabi Airports Free Zone — ADAFZ') echo 'selected'; ?>>Abu Dhabi Airports Free Zone — ADAFZ</option>
+                    <option value="Tawazun Industrial Park — TIP" data-zone="Freezone" data-emirate="Abu Dhabi" <?php if($curr_auth=='Tawazun Industrial Park — TIP') echo 'selected'; ?>>Tawazun Industrial Park — TIP</option>
+                    <option value="DMCC (Dubai Multi Commodities Centre)" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='DMCC (Dubai Multi Commodities Centre)') echo 'selected'; ?>>DMCC (Dubai Multi Commodities Centre)</option>
+                    <option value="Dubai Multi Commodities Centre — DMCC" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='Dubai Multi Commodities Centre — DMCC') echo 'selected'; ?>>Dubai Multi Commodities Centre — DMCC</option>
+                    <option value="IFZA (International Free Zone Authority)" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='IFZA (International Free Zone Authority)') echo 'selected'; ?>>IFZA (International Free Zone Authority)</option>
+                    <option value="IFZA Dubai" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='IFZA Dubai') echo 'selected'; ?>>IFZA Dubai</option>
+                    <option value="International Free Zone Authority — IFZA" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='International Free Zone Authority — IFZA') echo 'selected'; ?>>International Free Zone Authority — IFZA</option>
+                    <option value="DIFC (Dubai International Financial Centre)" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='DIFC (Dubai International Financial Centre)') echo 'selected'; ?>>DIFC (Dubai International Financial Centre)</option>
+                    <option value="Dubai International Financial Centre — DIFC" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='Dubai International Financial Centre — DIFC') echo 'selected'; ?>>Dubai International Financial Centre — DIFC</option>
+                    <option value="DAFZA (Dubai Airport Freezone)" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='DAFZA (Dubai Airport Freezone)') echo 'selected'; ?>>DAFZA (Dubai Airport Freezone)</option>
+                    <option value="Dubai Airport Free Zone Authority — DAFZA" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='Dubai Airport Free Zone Authority — DAFZA') echo 'selected'; ?>>Dubai Airport Free Zone Authority — DAFZA</option>
+                    <option value="JAFZA (Jebel Ali Free Zone)" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='JAFZA (Jebel Ali Free Zone)') echo 'selected'; ?>>JAFZA (Jebel Ali Free Zone)</option>
+                    <option value="Jebel Ali Free Zone Authority — JAFZA" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='Jebel Ali Free Zone Authority — JAFZA') echo 'selected'; ?>>Jebel Ali Free Zone Authority — JAFZA</option>
+                    <option value="DSOA / Dubai Silicon Oasis" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='DSOA / Dubai Silicon Oasis') echo 'selected'; ?>>DSOA / Dubai Silicon Oasis</option>
+                    <option value="Dubai Silicon Oasis — DSO" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='Dubai Silicon Oasis — DSO') echo 'selected'; ?>>Dubai Silicon Oasis — DSO</option>
+                    <option value="DWTC (Dubai World Trade Centre)" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='DWTC (Dubai World Trade Centre)') echo 'selected'; ?>>DWTC (Dubai World Trade Centre)</option>
+                    <option value="Dubai World Trade Centre Authority — DWTC" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='Dubai World Trade Centre Authority — DWTC') echo 'selected'; ?>>Dubai World Trade Centre Authority — DWTC</option>
+                    <option value="Meydan Free Zone" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='Meydan Free Zone') echo 'selected'; ?>>Meydan Free Zone</option>
+                    <option value="Meydan Free Zone — MFZ" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='Meydan Free Zone — MFZ') echo 'selected'; ?>>Meydan Free Zone — MFZ</option>
+                    <option value="Dubai South (DWC)" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='Dubai South (DWC)') echo 'selected'; ?>>Dubai South (DWC)</option>
+                    <option value="Dubai South — DS" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='Dubai South — DS') echo 'selected'; ?>>Dubai South — DS</option>
+                    <option value="Dubai Internet City (TECOM)" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='Dubai Internet City (TECOM)') echo 'selected'; ?>>Dubai Internet City (TECOM)</option>
+                    <option value="Dubai Media City (TECOM)" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='Dubai Media City (TECOM)') echo 'selected'; ?>>Dubai Media City (TECOM)</option>
+                    <option value="Dubai Knowledge Park (TECOM)" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='Dubai Knowledge Park (TECOM)') echo 'selected'; ?>>Dubai Knowledge Park (TECOM)</option>
+                    <option value="Dubai Production City (TECOM)" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='Dubai Production City (TECOM)') echo 'selected'; ?>>Dubai Production City (TECOM)</option>
+                    <option value="Dubai Studio City (TECOM)" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='Dubai Studio City (TECOM)') echo 'selected'; ?>>Dubai Studio City (TECOM)</option>
+                    <option value="Dubai Outsource City (TECOM)" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='Dubai Outsource City (TECOM)') echo 'selected'; ?>>Dubai Outsource City (TECOM)</option>
+                    <option value="Dubai Science Park (TECOM)" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='Dubai Science Park (TECOM)') echo 'selected'; ?>>Dubai Science Park (TECOM)</option>
+                    <option value="Dubai Design District (d3)" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='Dubai Design District (d3)') echo 'selected'; ?>>Dubai Design District (d3)</option>
+                    <option value="Dubai Maritime City" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='Dubai Maritime City') echo 'selected'; ?>>Dubai Maritime City</option>
+                    <option value="Dubai Maritime City Authority — DMCA" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='Dubai Maritime City Authority — DMCA') echo 'selected'; ?>>Dubai Maritime City Authority — DMCA</option>
+                    <option value="Dubai Healthcare City (DHCC)" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='Dubai Healthcare City (DHCC)') echo 'selected'; ?>>Dubai Healthcare City (DHCC)</option>
+                    <option value="Dubai Healthcare City Authority — DHCC" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='Dubai Healthcare City Authority — DHCC') echo 'selected'; ?>>Dubai Healthcare City Authority — DHCC</option>
+                    <option value="Dubai CommerCity" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='Dubai CommerCity') echo 'selected'; ?>>Dubai CommerCity</option>
+                    <option value="Dubai Development Authority — DDA" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='Dubai Development Authority — DDA') echo 'selected'; ?>>Dubai Development Authority — DDA</option>
+                    <option value="Dubai Humanitarian — DH" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='Dubai Humanitarian — DH') echo 'selected'; ?>>Dubai Humanitarian — DH</option>
+                    <option value="Trakhees — Trakhees" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='Trakhees — Trakhees') echo 'selected'; ?>>Trakhees — Trakhees</option>
+                    <option value="National Industries Park — NIP" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='National Industries Park — NIP') echo 'selected'; ?>>National Industries Park — NIP</option>
+                    <option value="Expo City Dubai — Expo City" data-zone="Freezone" data-emirate="Dubai" <?php if($curr_auth=='Expo City Dubai — Expo City') echo 'selected'; ?>>Expo City Dubai — Expo City</option>
+                    <option value="SHAMS (Sharjah Media City)" data-zone="Freezone" data-emirate="Sharjah" <?php if($curr_auth=='SHAMS (Sharjah Media City)') echo 'selected'; ?>>SHAMS (Sharjah Media City)</option>
+                    <option value="Sharjah Media City (SHAMS)" data-zone="Freezone" data-emirate="Sharjah" <?php if($curr_auth=='Sharjah Media City (SHAMS)') echo 'selected'; ?>>Sharjah Media City (SHAMS)</option>
+                    <option value="Sharjah Media City — SHAMS" data-zone="Freezone" data-emirate="Sharjah" <?php if($curr_auth=='Sharjah Media City — SHAMS') echo 'selected'; ?>>Sharjah Media City — SHAMS</option>
+                    <option value="SAIF Zone (Sharjah Airport International Free Zone)" data-zone="Freezone" data-emirate="Sharjah" <?php if($curr_auth=='SAIF Zone (Sharjah Airport International Free Zone)') echo 'selected'; ?>>SAIF Zone (Sharjah Airport International Free Zone)</option>
+                    <option value="Sharjah Airport International Free Zone — SAIF Zone" data-zone="Freezone" data-emirate="Sharjah" <?php if($curr_auth=='Sharjah Airport International Free Zone — SAIF Zone') echo 'selected'; ?>>Sharjah Airport International Free Zone — SAIF Zone</option>
+                    <option value="HFZA (Hamriyah Free Zone)" data-zone="Freezone" data-emirate="Sharjah" <?php if($curr_auth=='HFZA (Hamriyah Free Zone)') echo 'selected'; ?>>HFZA (Hamriyah Free Zone)</option>
+                    <option value="Hamriyah Free Zone Authority — HFZA" data-zone="Freezone" data-emirate="Sharjah" <?php if($curr_auth=='Hamriyah Free Zone Authority — HFZA') echo 'selected'; ?>>Hamriyah Free Zone Authority — HFZA</option>
+                    <option value="SPCFZ (Sharjah Publishing City Free Zone)" data-zone="Freezone" data-emirate="Sharjah" <?php if($curr_auth=='SPCFZ (Sharjah Publishing City Free Zone)') echo 'selected'; ?>>SPCFZ (Sharjah Publishing City Free Zone)</option>
+                    <option value="Sharjah Publishing City Free Zone — SPC" data-zone="Freezone" data-emirate="Sharjah" <?php if($curr_auth=='Sharjah Publishing City Free Zone — SPC') echo 'selected'; ?>>Sharjah Publishing City Free Zone — SPC</option>
+                    <option value="SRTI Park (Sharjah Research Tech & Innovation)" data-zone="Freezone" data-emirate="Sharjah" <?php if($curr_auth=='SRTI Park (Sharjah Research Tech & Innovation)') echo 'selected'; ?>>SRTI Park (Sharjah Research Tech & Innovation)</option>
+                    <option value="Sharjah Research, Technology and Innovation Park — SRTIP" data-zone="Freezone" data-emirate="Sharjah" <?php if($curr_auth=='Sharjah Research, Technology and Innovation Park — SRTIP') echo 'selected'; ?>>Sharjah Research, Technology and Innovation Park — SRTIP</option>
+                    <option value="Sharjah Healthcare City — SHCC" data-zone="Freezone" data-emirate="Sharjah" <?php if($curr_auth=='Sharjah Healthcare City — SHCC') echo 'selected'; ?>>Sharjah Healthcare City — SHCC</option>
+                    <option value="Sharjah Oasis for Technology and Innovation — SOTI" data-zone="Freezone" data-emirate="Sharjah" <?php if($curr_auth=='Sharjah Oasis for Technology and Innovation — SOTI') echo 'selected'; ?>>Sharjah Oasis for Technology and Innovation — SOTI</option>
+                    <option value="AFZA (Ajman Free Zone)" data-zone="Freezone" data-emirate="Ajman" <?php if($curr_auth=='AFZA (Ajman Free Zone)') echo 'selected'; ?>>AFZA (Ajman Free Zone)</option>
+                    <option value="Ajman Free Zone — AFZ" data-zone="Freezone" data-emirate="Ajman" <?php if($curr_auth=='Ajman Free Zone — AFZ') echo 'selected'; ?>>Ajman Free Zone — AFZ</option>
+                    <option value="Ajman Media City Free Zone (AMCFZ)" data-zone="Freezone" data-emirate="Ajman" <?php if($curr_auth=='Ajman Media City Free Zone (AMCFZ)') echo 'selected'; ?>>Ajman Media City Free Zone (AMCFZ)</option>
+                    <option value="Ajman Media City Free Zone — AMCFZ" data-zone="Freezone" data-emirate="Ajman" <?php if($curr_auth=='Ajman Media City Free Zone — AMCFZ') echo 'selected'; ?>>Ajman Media City Free Zone — AMCFZ</option>
+                    <option value="RAKEZ (Ras Al Khaimah Economic Zone)" data-zone="Freezone" data-emirate="Ras Al Khaimah" <?php if($curr_auth=='RAKEZ (Ras Al Khaimah Economic Zone)') echo 'selected'; ?>>RAKEZ (Ras Al Khaimah Economic Zone)</option>
+                    <option value="Ras Al Khaimah Economic Zone — RAKEZ" data-zone="Freezone" data-emirate="Ras Al Khaimah" <?php if($curr_auth=='Ras Al Khaimah Economic Zone — RAKEZ') echo 'selected'; ?>>Ras Al Khaimah Economic Zone — RAKEZ</option>
+                    <option value="RAK Maritime City" data-zone="Freezone" data-emirate="Ras Al Khaimah" <?php if($curr_auth=='RAK Maritime City') echo 'selected'; ?>>RAK Maritime City</option>
+                    <option value="Ras Al Khaimah Maritime City — RAKMC" data-zone="Freezone" data-emirate="Ras Al Khaimah" <?php if($curr_auth=='Ras Al Khaimah Maritime City — RAKMC') echo 'selected'; ?>>Ras Al Khaimah Maritime City — RAKMC</option>
+                    <option value="Innovation City — IC" data-zone="Freezone" data-emirate="Ras Al Khaimah" <?php if($curr_auth=='Innovation City — IC') echo 'selected'; ?>>Innovation City — IC</option>
+                    <option value="RAK Digital Assets Oasis — RAK DAO" data-zone="Freezone" data-emirate="Ras Al Khaimah" <?php if($curr_auth=='RAK Digital Assets Oasis — RAK DAO') echo 'selected'; ?>>RAK Digital Assets Oasis — RAK DAO</option>
+                    <option value="Fujairah Free Zone (FFZ)" data-zone="Freezone" data-emirate="Fujairah" <?php if($curr_auth=='Fujairah Free Zone (FFZ)') echo 'selected'; ?>>Fujairah Free Zone (FFZ)</option>
+                    <option value="Fujairah Free Zone — FFZ" data-zone="Freezone" data-emirate="Fujairah" <?php if($curr_auth=='Fujairah Free Zone — FFZ') echo 'selected'; ?>>Fujairah Free Zone — FFZ</option>
+                    <option value="Creative City Fujairah" data-zone="Freezone" data-emirate="Fujairah" <?php if($curr_auth=='Creative City Fujairah') echo 'selected'; ?>>Creative City Fujairah</option>
+                    <option value="Creative City Fujairah — CCF" data-zone="Freezone" data-emirate="Fujairah" <?php if($curr_auth=='Creative City Fujairah — CCF') echo 'selected'; ?>>Creative City Fujairah — CCF</option>
+                    <option value="UAQ FTZ (Umm Al Quwain Free Trade Zone)" data-zone="Freezone" data-emirate="Umm Al Quwain" <?php if($curr_auth=='UAQ FTZ (Umm Al Quwain Free Trade Zone)') echo 'selected'; ?>>UAQ FTZ (Umm Al Quwain Free Trade Zone)</option>
+                    <option value="Umm Al Quwain Free Trade Zone — UAQ FTZ" data-zone="Freezone" data-emirate="Umm Al Quwain" <?php if($curr_auth=='Umm Al Quwain Free Trade Zone — UAQ FTZ') echo 'selected'; ?>>Umm Al Quwain Free Trade Zone — UAQ FTZ</option>
+                  </optgroup>
+                </select>
               </div>
             </div>
 
@@ -554,29 +689,25 @@
             </div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Lead Assigned To</label>
+                <label>Lead Assigned To / Collaborators</label>
                 <?php 
-                  $cur_role = $this->session->userdata('manager_role');
-                  if ($cur_role == 1 || $cur_role == 4) { 
-                ?>               
-                  <select class="form-control select2" name="lead_assign" style="width: 100%;">
-                    <option value="0">Unassigned (Not Assigned to Anyone)</option>
-                    <?php if(isset($u_list) && !empty($u_list)) { 
-                      foreach($u_list as $li){
-                    ?>
-                      <option <?php if($list['lead_assign']==$li['id']){ echo "selected"; } ?> value="<?php echo $li['id']; ?>"><?php echo $li['name']; ?></option>          
-                    <?php } } ?>
-                  </select>
-                <?php } else { 
-                  $assigned_person_name = 'Unassigned';
-                  if (!empty($list['lead_assign'])) {
-                    $ap_row = $this->db->select('name')->get_where('ci_user', array('id' => $list['lead_assign']))->row_array();
-                    if (!empty($ap_row['name'])) $assigned_person_name = $ap_row['name'];
+                  $current_agents = array();
+                  if (!empty($list['agents'])) {
+                    $current_agents = array_map('trim', explode(',', $list['agents']));
                   }
+                  if (!empty($list['lead_assign'])) {
+                    $current_agents[] = (string)$list['lead_assign'];
+                  }
+                  $current_agents = array_unique(array_filter($current_agents));
                 ?>
-                  <input type="text" class="form-control" value="<?php echo htmlspecialchars($assigned_person_name); ?>" readonly style="background: #f8fafc; font-weight: 600;">
-                  <input type="hidden" name="lead_assign" value="<?php echo (int)$list['lead_assign']; ?>">
-                <?php } ?>
+                <select class="form-control select2" name="lead_assign[]" multiple="multiple" data-placeholder="Select Assignee(s)" style="width: 100%;">
+                  <?php if(isset($u_list) && !empty($u_list)) { 
+                    foreach($u_list as $li){
+                      $is_sel = in_array((string)$li['id'], $current_agents);
+                  ?>
+                    <option <?php if($is_sel){ echo "selected"; } ?> value="<?php echo $li['id']; ?>"><?php echo htmlspecialchars($li['name']); ?></option>          
+                  <?php } } ?>
+                </select>
               </div>
             </div>
 
@@ -1368,10 +1499,114 @@ $(document).ready(function() {
     } else {
       $('#topClosedIndicator').hide();
     }
+
+    var zoneVal = $('#tl_zone_select').val();
+    var selectedOpt = $('#tl_authority_select option:selected');
+    var detectedZone = selectedOpt.attr('data-zone') || '';
+
+    if (!zoneVal && detectedZone) {
+      $('#tl_zone_select').val(detectedZone);
+      zoneVal = detectedZone;
+    }
+
+    var finalZone = zoneVal || detectedZone;
+    if (finalZone && (finalZone.toLowerCase() === 'mainland' || finalZone.toLowerCase() === 'freezone')) {
+      var badgeText = finalZone.toLowerCase() === 'freezone' ? 'Freezone' : 'Mainland';
+      $('#topZoneIndicator').text(badgeText).show();
+    } else {
+      $('#topZoneIndicator').hide();
+    }
   }
+
+  var originalAuthorityHtml = $('#tl_authority_select').html();
+
+  function applyTradeLicenseDependencies(initialLoad) {
+    var selEmirate = $('#tl_emirate_select').val() || '';
+    var selZone = $('#tl_zone_select').val() || '';
+    var currentAuth = $('#tl_authority_select').val() || '';
+
+    if (!selEmirate) {
+      $('#tl_zone_select').prop('disabled', true);
+      if (!initialLoad) {
+        $('#tl_zone_select').val('');
+      }
+      selZone = '';
+      $('#tl_authority_select').prop('disabled', true);
+      if (!initialLoad) {
+        $('#tl_authority_select').val('');
+      }
+      currentAuth = '';
+    } else {
+      $('#tl_zone_select').prop('disabled', false);
+      if (!selZone) {
+        $('#tl_authority_select').prop('disabled', true);
+        if (!initialLoad) {
+          $('#tl_authority_select').val('');
+        }
+        currentAuth = '';
+      } else {
+        $('#tl_authority_select').prop('disabled', false);
+      }
+    }
+
+    var tempDiv = $('<div>').html(originalAuthorityHtml);
+    tempDiv.find('option').each(function() {
+      var opt = $(this);
+      var optVal = opt.val();
+      if (!optVal) return;
+      var optEm = opt.attr('data-emirate') || '';
+      var optZn = opt.attr('data-zone') || '';
+
+      var matchEm = !selEmirate || (optEm.toLowerCase() === selEmirate.toLowerCase());
+      var matchZn = !selZone || (optZn.toLowerCase() === selZone.toLowerCase());
+
+      if (!matchEm || !matchZn) {
+        opt.remove();
+      }
+    });
+
+    tempDiv.find('optgroup').each(function() {
+      if ($(this).find('option').length === 0) {
+        $(this).remove();
+      }
+    });
+
+    $('#tl_authority_select').html(tempDiv.html());
+
+    if (currentAuth && $('#tl_authority_select').find('option[value="' + currentAuth.replace(/"/g, '\\"') + '"]').length > 0) {
+      $('#tl_authority_select').val(currentAuth);
+    } else {
+      $('#tl_authority_select').val('');
+    }
+
+    if ($.fn.select2 && $('#tl_authority_select').data('select2')) {
+      $('#tl_authority_select').select2();
+    }
+  }
+
+  $('#tl_emirate_select').on('change', function() {
+    applyTradeLicenseDependencies(false);
+    updateTopHeaderBadges();
+  });
+
+  $('#tl_zone_select').on('change', function() {
+    applyTradeLicenseDependencies(false);
+    updateTopHeaderBadges();
+  });
+
+  $('#tl_authority_select').on('change select2:select', function() {
+    updateTopHeaderBadges();
+  });
+
+  $('form').on('submit', function() {
+    $('#tl_zone_select, #tl_authority_select').prop('disabled', false);
+  });
+
   $('select[name="dnd_status"], #company_status_select').on('change', function() {
     updateTopHeaderBadges();
   });
+
+  applyTradeLicenseDependencies(true);
   updateTopHeaderBadges();
 
   var initialVal = $('#status_category_input').val();

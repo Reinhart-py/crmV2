@@ -68,25 +68,16 @@ class CI_DB_mysqli_driver extends CI_DB {
 	 */
 	function db_connect()
 	{
-		$host = ($this->hostname === 'localhost') ? '127.0.0.1' : $this->hostname;
-		$port = !empty($this->port) ? (int)$this->port : 3306;
-
-		// Fast-fail socket probe so Windows does not freeze for 5+ seconds on offline local database
-		$socket = @stream_socket_client("tcp://{$host}:{$port}", $errno, $errstr, 0.05);
-		if (!$socket)
-		{
-			return FALSE;
-		}
-		fclose($socket);
-
+		mysqli_report(MYSQLI_REPORT_OFF);
 		if ($this->port != '')
 		{
-			return @mysqli_connect($host, $this->username, $this->password, $this->database, $this->port);
+			return @mysqli_connect($this->hostname, $this->username, $this->password, $this->database, $this->port);
 		}
 		else
 		{
-			return @mysqli_connect($host, $this->username, $this->password, $this->database);
+			return @mysqli_connect($this->hostname, $this->username, $this->password, $this->database);
 		}
+
 	}
 
 	// --------------------------------------------------------------------
@@ -186,10 +177,6 @@ class CI_DB_mysqli_driver extends CI_DB {
 	 */
 	function _execute($sql)
 	{
-		if (!is_object($this->conn_id))
-		{
-			return FALSE;
-		}
 		$sql = $this->_prep_query($sql);
 		$result = @mysqli_query($this->conn_id, $sql);
 		return $result;
@@ -326,14 +313,8 @@ class CI_DB_mysqli_driver extends CI_DB {
 			return $str;
 		}
 
-		if (is_object($this->conn_id))
-		{
-			$str = mysqli_real_escape_string($this->conn_id, $str);
-		}
-		else
-		{
-			$str = addslashes($str);
-		}
+
+		$str = mysqli_real_escape_string($this->conn_id, $str);
 
 		// escape LIKE condition wildcards
 		if ($like === TRUE)

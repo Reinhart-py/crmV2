@@ -1,203 +1,186 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
-<div class="content-wrapper px-4">
-  <section class="content-header">
-    <h1> <?php echo $info['page_heading']; ?> </h1>
-  </section>
+<div class="content-wrapper">
+    <section class="content-header">
+        <h1>
+            <i class="fa fa-history" style="color:#b91c1c;"></i> Admin Logs
+            <small>System Security & Activity Audit Trail</small>
+        </h1>
+        <ol class="breadcrumb">
+            <li><a href="<?php echo base_url(); ?>manager/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
+            <li>System</li>
+            <li class="active">Admin Logs</li>
+        </ol>
+    </section>
 
-  <section class="content">
-    <div class="row">
-      <div class="col-xs-12">
-
-      <div class="box p-4">
-      <div class="x_row">
-      <div class="x_col">      
-          <form class="form-inline head_filter form-inline-mob" method="get" action="<?php echo base_url(); ?>manager/admin-logs">
-
-              <div class="form-group">
-                <div class="input-daterange input-group" id="datepicker" style="width: 100%;">             
-                  <input type="text" class="input-md form-control datepicker" name="d1" placeholder="Create From" value="<?php if(isset($_GET['d1'])&&(!empty($_GET['d1']))){ echo htmlspecialchars($_GET['d1']);}?>" autocomplete="off"/>
-                  <span class="input-group-addon">To</span>
-                  <input type="text" class="input-md form-control datepicker" name="d2" placeholder="Create To" value="<?php if(isset($_GET['d2'])&&(!empty($_GET['d2']))){ echo htmlspecialchars($_GET['d2']);}?>" autocomplete="off"/>
+    <section class="content">
+        <!-- Filter Card -->
+        <div class="box box-info" style="border-top-color: #b91c1c;">
+            <div class="box-header with-border">
+                <h3 class="box-title" style="font-weight: 600; font-size: 15px;">
+                    <i class="fa fa-filter" style="color: #b91c1c;"></i> Filter Logs
+                </h3>
+                <div class="box-tools pull-right">
+                    <span class="label" style="background:#0f172a; color:#fff; padding:4px 10px; border-radius:4px; font-size:12px; font-weight:600;">
+                        Total: <?php echo isset($total_logs) ? (int)$total_logs : 0; ?>
+                    </span>
                 </div>
-              </div>
+            </div>
+            <div class="box-body">
+                <form method="get" action="<?php echo base_url(); ?>manager/admin-logs" class="row">
+                    <div class="col-md-3 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label style="font-size:12px; font-weight:600; color:#475569;">User</label>
+                            <select name="user_id" class="form-control select2" style="width:100%;" onchange="this.form.submit();">
+                                <option value="">-- All Users --</option>
+                                <?php if (!empty($users_list)) {
+                                    foreach ($users_list as $u) {
+                                        $sel = ($this->input->get('user_id') == $u['id']) ? 'selected' : '';
+                                        echo '<option value="'.$u['id'].'" '.$sel.'>'.htmlspecialchars($u['name']).' ('.htmlspecialchars($u['email']).')</option>';
+                                    }
+                                } ?>
+                            </select>
+                        </div>
+                    </div>
 
-              <div class="form-group">
-                <select class="multiselect-ui form-control" multiple="multiple" name="activity[]" data-placeholder="Activity">
-                  <?php if(isset($activities) && !empty($activities)){
-                    foreach($activities as $act){
-                  ?>
-                    <option <?php if(isset($_GET['activity']) && !empty($_GET['activity']) && in_array($act, (array)$_GET['activity'])){ echo "selected"; } ?> value="<?php echo $act; ?>" ><?php echo ucwords(str_replace('_', ' ', $act)); ?></option>
-                  <?php } } ?>
-                </select>
-              </div>
+                    <div class="col-md-2 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label style="font-size:12px; font-weight:600; color:#475569;">Activity</label>
+                            <select name="activity" class="form-control" onchange="this.form.submit();">
+                                <option value="">-- All Activities --</option>
+                                <?php if (!empty($activities)) {
+                                    foreach ($activities as $act) {
+                                        $sel = ($this->input->get('activity') == $act) ? 'selected' : '';
+                                        echo '<option value="'.$act.'" '.$sel.'>'.ucwords(str_replace('_', ' ', $act)).'</option>';
+                                    }
+                                } ?>
+                            </select>
+                        </div>
+                    </div>
 
-              <div class="form-group">
-                <?php 
-                  $selected_status = isset($_GET['status']) ? (array)$_GET['status'] : array();
-                  if (isset($_GET['online_status']) && !empty($_GET['online_status'])) {
-                    $selected_status[] = $_GET['online_status'];
-                  }
-                ?>
-                <select class="form-control select2" name="status" style="min-width: 130px;">
-                  <option value="">Status</option>
-                  <option value="online" <?php if(in_array('online', $selected_status)) echo 'selected'; ?>>Online</option>
-                  <option value="offline" <?php if(in_array('offline', $selected_status)) echo 'selected'; ?>>Offline</option>
-                  <option value="SUCCESS" <?php if(in_array('SUCCESS', $selected_status)) echo 'selected'; ?>>SUCCESS</option>
-                  <option value="FAILED" <?php if(in_array('FAILED', $selected_status)) echo 'selected'; ?>>FAILED</option>
-                </select>
-              </div>
+                    <div class="col-md-2 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label style="font-size:12px; font-weight:600; color:#475569;">Status</label>
+                            <select name="status" class="form-control" onchange="this.form.submit();">
+                                <option value="">-- All Statuses --</option>
+                                <option value="SUCCESS" <?php echo ($this->input->get('status') == 'SUCCESS') ? 'selected' : ''; ?>>SUCCESS</option>
+                                <option value="FAILED" <?php echo ($this->input->get('status') == 'FAILED') ? 'selected' : ''; ?>>FAILED</option>
+                                <option value="TIMEOUT" <?php echo ($this->input->get('status') == 'TIMEOUT') ? 'selected' : ''; ?>>TIMEOUT</option>
+                                <option value="TERMINATED" <?php echo ($this->input->get('status') == 'TERMINATED') ? 'selected' : ''; ?>>TERMINATED</option>
+                            </select>
+                        </div>
+                    </div>
 
-              <div class="form-group">
-                <select class="form-control select2" name="user_id" data-placeholder="Select User" id="select_val" style="min-width: 160px;">
-                  <option value="">Select User</option>
-                  <?php if(isset($users_list) && !empty($users_list)){
-                    foreach($users_list as $u){
-                  ?>
-                    <option <?php if(isset($_GET['user_id']) && $_GET['user_id'] == $u['id']){ echo "selected"; } ?> value="<?php echo $u['id']; ?>"><?php echo htmlspecialchars($u['name']); ?><?php if(!empty($u['email'])){ echo ' ('.htmlspecialchars($u['email']).')'; } ?></option>
-                  <?php } } ?>
-                </select>
-              </div>
+                    <div class="col-md-2 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label style="font-size:12px; font-weight:600; color:#475569;">From Date</label>
+                            <input type="date" name="d1" value="<?php echo htmlspecialchars($this->input->get('d1')); ?>" class="form-control">
+                        </div>
+                    </div>
 
-              <div class="form-group">
-                <input type="text" class="input-md form-control" name="user_name" placeholder="User Name" value="<?php if(isset($_GET['user_name'])&&(!empty($_GET['user_name']))){ echo htmlspecialchars($_GET['user_name']);}?>" autocomplete="off" />
-              </div>
+                    <div class="col-md-2 col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label style="font-size:12px; font-weight:600; color:#475569;">To Date</label>
+                            <input type="date" name="d2" value="<?php echo htmlspecialchars($this->input->get('d2')); ?>" class="form-control">
+                        </div>
+                    </div>
 
-              <div class="form-group">
-                <button type="submit" class="btn btn-success">Search</button>
-                <a href="<?php echo base_url(); ?>manager/admin-logs" class="btn btn-danger"> Reset</a>
-              </div>
-
-          </form>
-      </div>
-      </div>
-      </div>
-
-      <div class="box">
-        <div class="box-body">
-          <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?>
-          <?php echo get_message($this->session->flashdata('message'),'message'); ?>
-          <?php if(isset($logs) && !empty($logs)) { ?>
-          <div>
-            <table id="example_lead" class="table table-hover table-bordered table-striped" style="width:100%">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>User</th>
-                  <th>Activity</th>
-                  <th>Status</th>
-                  <th>IP Address</th>
-                  <th>Logs</th>
-                  <th>Date & Time</th>
-                </tr>
-              </thead>
-              <tfoot>
-                <tr>
-                  <th></th>
-                  <th></th>
-                  <th></th>
-                  <th></th>
-                  <th></th>
-                  <th></th>
-                  <th></th>
-                </tr>
-              </tfoot>
-              <tbody>
-                <?php foreach($logs as $k=>$li){ 
-                  $u_id = isset($li['user_id']) ? (int)$li['user_id'] : 0;
-                  $is_user_online = (isset($user_status_map[$u_id]) && !empty($user_status_map[$u_id]['is_online']));
-                ?>
-                <tr>
-                  <td><?php echo $li['id']; ?></td>
-                  <td>
-                    <strong><?php echo !empty($li['username']) ? htmlspecialchars($li['username']) : (!empty($li['user_name']) ? htmlspecialchars($li['user_name']) : 'System'); ?></strong>
-                  </td>
-                  <td><?php echo ucwords(str_replace('_', ' ', $li['activity'])); ?></td>
-                  <td>
-                    <?php if($u_id > 0) { ?>
-                      <span class="label <?php echo $is_user_online ? 'label-success' : 'label-default'; ?>"><?php echo $is_user_online ? 'Online' : 'Offline'; ?></span>
-                    <?php } ?>
-                    <span class="label <?php echo ($li['status'] == 'SUCCESS') ? 'label-info' : 'label-danger'; ?>" style="margin-left: 3px;"><?php echo htmlspecialchars($li['status']); ?></span>
-                  </td>
-                  <td><?php echo htmlspecialchars($li['ip_address']); ?></td>
-                  <td>
-                    <?php echo htmlspecialchars($li['details']); ?>
-                    <?php if (!empty($li['logout_time'])) { ?>
-                      <span class="text-muted" style="font-size:11px; display:block;">Logout: <?php echo date('d M Y, h:i A', strtotime($li['logout_time'])); ?></span>
-                    <?php } ?>
-                  </td>
-                  <td>
-                    <span class="no_show"><?php echo date('YmdHis', strtotime($li['created_at'])); ?></span>
-                    <?php echo date('d M Y, h:i A', strtotime($li['created_at'])); ?>
-                  </td>
-                </tr>
-                <?php } ?>
-              </tbody>
-            </table>
-            <?php if (isset($links)) { echo $links; } ?>
-          </div>
-          <?php } else { ?>
-            <div class="alert alert-info"> No Data Found </div>
-          <?php } ?>
+                    <div class="col-md-1 col-sm-6 col-xs-12" style="margin-top: 25px;">
+                        <button type="submit" class="btn btn-danger btn-block" style="background:#b91c1c; border-color:#b91c1c;">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-      </div>
 
-      </div>
-    </div>
-  </section>
+        <!-- Logs Table Card -->
+        <div class="box" style="border-top: 3px solid #b91c1c; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+            <div class="box-body table-responsive no-padding">
+                <?php if (!empty($logs)) { ?>
+                    <table class="table table-hover table-striped" style="margin-bottom:0; font-size:13px;">
+                        <thead>
+                            <tr style="background:#f8fafc; color:#334155; border-bottom: 2px solid #e2e8f0;">
+                                <th style="width: 50px; text-align:center;">#</th>
+                                <th style="width: 160px;">Date & Time</th>
+                                <th style="width: 150px;">User</th>
+                                <th style="width: 140px;">Activity</th>
+                                <th style="width: 90px; text-align:center;">Status</th>
+                                <th style="width: 130px;">IP Address</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($logs as $log) { 
+                                $st = strtoupper(trim($log['status']));
+                                if ($st === 'SUCCESS') {
+                                    $statusBadge = '<span class="badge" style="background:#10b981; color:#fff; font-size:11px; font-weight:600; padding:3px 8px;">SUCCESS</span>';
+                                } elseif ($st === 'FAILED') {
+                                    $statusBadge = '<span class="badge" style="background:#ef4444; color:#fff; font-size:11px; font-weight:600; padding:3px 8px;">FAILED</span>';
+                                } elseif ($st === 'TIMEOUT') {
+                                    $statusBadge = '<span class="badge" style="background:#f59e0b; color:#fff; font-size:11px; font-weight:600; padding:3px 8px;">TIMEOUT</span>';
+                                } elseif ($st === 'TERMINATED') {
+                                    $statusBadge = '<span class="badge" style="background:#8b5cf6; color:#fff; font-size:11px; font-weight:600; padding:3px 8px;">TERMINATED</span>';
+                                } else {
+                                    $statusBadge = '<span class="badge" style="background:#64748b; color:#fff; font-size:11px; font-weight:600; padding:3px 8px;">' . htmlspecialchars($st) . '</span>';
+                                }
+                            ?>
+                                <tr>
+                                    <td style="text-align:center; color:#94a3b8; font-weight:600;"><?php echo $log['id']; ?></td>
+                                    <td style="color:#475569; white-space:nowrap;">
+                                        <i class="fa fa-clock-o" style="color:#94a3b8; margin-right:4px;"></i>
+                                        <?php echo !empty($log['created_at']) ? date('d M Y, h:i A', strtotime($log['created_at'])) : '-'; ?>
+                                    </td>
+                                    <td>
+                                        <strong style="color:#0f172a;"><?php echo htmlspecialchars(!empty($log['username']) ? $log['username'] : 'System'); ?></strong>
+                                        <?php if (!empty($log['user_id'])) { ?>
+                                            <span style="font-size:11px; color:#94a3b8; display:block;">ID: <?php echo $log['user_id']; ?></span>
+                                        <?php } ?>
+                                    </td>
+                                    <td>
+                                        <span class="label" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; font-weight:600; font-size:11px; padding:3px 8px;">
+                                            <?php echo htmlspecialchars(ucwords(str_replace('_', ' ', $log['activity']))); ?>
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;"><?php echo $statusBadge; ?></td>
+                                    <td style="color:#64748b; font-family:monospace;"><?php echo htmlspecialchars($log['ip_address']); ?></td>
+                                    <td style="color:#334155;">
+                                        <?php echo htmlspecialchars($log['details']); ?>
+                                        <?php if (!empty($log['logout_time'])) { ?>
+                                            <span style="font-size:11px; color:#64748b; display:block; margin-top:2px;">
+                                                Logout: <?php echo date('d M Y, h:i A', strtotime($log['logout_time'])); ?>
+                                            </span>
+                                        <?php } ?>
+                                    </td>
+                                </tr>
+                            <?php } ?>
+                        </tbody>
+                    </table>
+                <?php } else { ?>
+                    <div style="padding: 40px 20px; text-align: center; background: #ffffff;">
+                        <i class="fa fa-history" style="font-size: 42px; color: #cbd5e1; margin-bottom: 15px; display:block;"></i>
+                        <h4 style="font-weight: 600; color: #334155; margin-bottom: 6px;">No logs found</h4>
+                        <p style="color: #64748b; font-size: 13px; max-width: 400px; margin: 0 auto;">
+                            There are currently no system activity or audit log records matching the selected criteria.
+                        </p>
+                        <?php if ($this->input->get('user_id') || $this->input->get('activity') || $this->input->get('status') || $this->input->get('d1') || $this->input->get('d2')) { ?>
+                            <div style="margin-top: 15px;">
+                                <a href="<?php echo base_url(); ?>manager/admin-logs" class="btn btn-default btn-sm" style="border-radius:4px;">
+                                    <i class="fa fa-times"></i> Clear Filters
+                                </a>
+                            </div>
+                        <?php } ?>
+                    </div>
+                <?php } ?>
+            </div>
+
+            <?php if (!empty($pagination)) { ?>
+                <div class="box-footer clearfix" style="border-top: 1px solid #f1f5f9; background:#fff;">
+                    <?php echo $pagination; ?>
+                </div>
+            <?php } ?>
+        </div>
+    </section>
 </div>
-
-<script type="text/javascript">
-$(document).ready(function() {
-    if ($.fn.select2) {
-        $('.select2').select2();
-    }
-    if ($.fn.multiselect) {
-        $('.multiselect-ui').multiselect({
-            includeSelectAllOption: true,
-            numberDisplayed: 1
-        });
-    }
-    if ($.fn.datepicker) {
-        $('.datepicker').datepicker({
-            format: 'yyyy-mm-dd',
-            autoclose: true
-        });
-    }
-
-    if ($.fn.DataTable) {
-        $('#example_lead').DataTable( {
-            "pageLength": 50,
-            "order": [[0, "desc"]],
-            responsive: true,
-            initComplete: function () {
-                this.api().columns([1, 2, 3]).every( function () {
-                    var column = this;
-                    var select = $('<select><option value="">Select </option></select>')
-                        .appendTo( $(column.footer()).empty() )
-                        .on( 'change', function () {
-                            var val = $.fn.dataTable.util.escapeRegex(
-                                $(this).val()
-                            );
-                            column
-                                .search( val ? '^'+val+'$' : '', true, false )
-                                .draw();
-                        } );
-
-                    column.data().unique().sort().each( function ( d, j ) {
-                        var text = $('<div>').html(d).text().trim();
-                        if (text != '') {
-                            select.append( '<option value="'+text+'">'+text+'</option>' );
-                        }
-                    } );
-                } );
-            },
-            columnDefs: [
-                { targets: [4, 6], className:"dt-nowrap" }
-            ]
-        } );
-    }
-});
-</script>
 
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

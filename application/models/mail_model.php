@@ -5,7 +5,7 @@
 		parent::__construct();	
 	}
 
-	 public function sendmail($to = '', $subject = '', $data = array(), $message)
+	 public function sendmail($to = '', $subject = '', $data = array(), $message = '')
     {
 		$from = 'no-reply@storeyourcode.com';
 		$fromname = 'SRJ CRM';

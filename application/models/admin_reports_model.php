@@ -37,7 +37,7 @@ class Admin_reports_model extends CI_Model {
 			'sales' => array(
 				'title' => 'Sales Department',
 				'slug' => 'sales',
-				'reports_count' => 7,
+				'reports_count' => 8,
 				'icon' => 'fa-line-chart',
 				'color' => 'bg-green',
 				'stats' => array(
@@ -49,7 +49,7 @@ class Admin_reports_model extends CI_Model {
 			'operations' => array(
 				'title' => 'Operations Department',
 				'slug' => 'operations',
-				'reports_count' => 8,
+				'reports_count' => 9,
 				'icon' => 'fa-cogs',
 				'color' => 'bg-aqua',
 				'stats' => array(
@@ -61,7 +61,7 @@ class Admin_reports_model extends CI_Model {
 			'support' => array(
 				'title' => 'Support / Backoffice Department',
 				'slug' => 'support',
-				'reports_count' => 6,
+				'reports_count' => 7,
 				'icon' => 'fa-life-ring',
 				'color' => 'bg-yellow',
 				'stats' => array(
@@ -73,7 +73,7 @@ class Admin_reports_model extends CI_Model {
 			'hr' => array(
 				'title' => 'HR & Admin Department',
 				'slug' => 'hr',
-				'reports_count' => 5,
+				'reports_count' => 6,
 				'icon' => 'fa-users',
 				'color' => 'bg-purple',
 				'stats' => array(
@@ -85,7 +85,7 @@ class Admin_reports_model extends CI_Model {
 			'it' => array(
 				'title' => 'IT & Administration Department',
 				'slug' => 'it',
-				'reports_count' => 5,
+				'reports_count' => 6,
 				'icon' => 'fa-server',
 				'color' => 'bg-red',
 				'stats' => array(
@@ -155,6 +155,13 @@ class Admin_reports_model extends CI_Model {
 						'icon' => 'fa-id-card-o',
 						'desc' => 'Trade license records, licensing authorities, expiry schedules, and renewals.',
 						'badge' => $this->db->where('tl_number != ""')->count_all_results('ci_leads') . ' Licenses'
+					),
+					'custom' => array(
+						'title' => 'Custom Report',
+						'slug' => 'custom',
+						'icon' => 'fa-sliders',
+						'desc' => 'Dynamic custom report builder with selectable columns, filters, and export.',
+						'badge' => 'Builder'
 					)
 				)
 			);
@@ -218,6 +225,13 @@ class Admin_reports_model extends CI_Model {
 						'icon' => 'fa-bar-chart',
 						'desc' => 'Revenue recognized, recurring MRR contracts, billed totals, and collection rates.',
 						'badge' => 'Summary'
+					),
+					'custom' => array(
+						'title' => 'Custom Report',
+						'slug' => 'custom',
+						'icon' => 'fa-sliders',
+						'desc' => 'Dynamic custom report builder with selectable columns, filters, and export.',
+						'badge' => 'Builder'
 					)
 				)
 			);
@@ -267,6 +281,13 @@ class Admin_reports_model extends CI_Model {
 						'icon' => 'fa-hourglass-half',
 						'desc' => 'Critical unresolved requests, escalated cases, and tickets pending client replies.',
 						'badge' => $this->db->where_not_in('status', array('Resolved', 'Closed'))->count_all_results('ci_tickets') . ' Pending'
+					),
+					'custom' => array(
+						'title' => 'Custom Report',
+						'slug' => 'custom',
+						'icon' => 'fa-sliders',
+						'desc' => 'Dynamic custom report builder with selectable columns, filters, and export.',
+						'badge' => 'Builder'
 					)
 				)
 			);
@@ -309,6 +330,13 @@ class Admin_reports_model extends CI_Model {
 						'icon' => 'fa-user-secret',
 						'desc' => 'Staff operational logs, system actions performed, and workflow tracking.',
 						'badge' => $this->db->count_all('ci_admin_logs') . ' Logs'
+					),
+					'custom' => array(
+						'title' => 'Custom Report',
+						'slug' => 'custom',
+						'icon' => 'fa-sliders',
+						'desc' => 'Dynamic custom report builder with selectable columns, filters, and export.',
+						'badge' => 'Builder'
 					)
 				)
 			);
@@ -351,6 +379,13 @@ class Admin_reports_model extends CI_Model {
 						'icon' => 'fa-shield',
 						'desc' => 'Scheduled server maintenance, database backups, security patches, and uptime.',
 						'badge' => $this->db->count_all('ci_system_maintenance') . ' Tasks'
+					),
+					'custom' => array(
+						'title' => 'Custom Report',
+						'slug' => 'custom',
+						'icon' => 'fa-sliders',
+						'desc' => 'Dynamic custom report builder with selectable columns, filters, and export.',
+						'badge' => 'Builder'
 					)
 				)
 			);
@@ -615,20 +650,20 @@ class Admin_reports_model extends CI_Model {
 			return array(
 				'title' => 'Sales Performance Report',
 				'department_title' => 'Sales Department',
-				'headers' => array('Name', 'Department', 'Assigned Leads', 'Active Deals', 'Closed Deals', 'Lost Deals', 'Followups Attended', 'Total Quoted (AED)', 'Total MRR', 'Total Lost MRR', 'Total Closed MRR'),
+				'headers' => array('Name', 'Department', 'Database', 'Active Deals', 'Closed Deals', 'Lost Deals', 'Followups Attended', 'Total Quoted (AED)', 'Total MRR', 'Total Lost MRR', 'Total Closed MRR'),
 				'fields' => array('name', 'department', 'total_leads', 'active_leads', 'closed_leads', 'lost_leads', 'attended_followups', 'total_quoted_fmt', 'total_mrr_fmt', 'total_lost_mrr_fmt', 'total_closed_mrr_fmt'),
 				'rows' => $rows,
 				'summary' => array(
 					array('label' => 'Sales Staff', 'value' => count($rows), 'icon' => 'fa-users', 'color' => 'bg-aqua'),
-					array('label' => 'Assigned Leads', 'value' => number_format($tot_leads), 'icon' => 'fa-database', 'color' => 'bg-blue'),
-					array('label' => 'Active Deals', 'value' => number_format($tot_active), 'icon' => 'fa-refresh', 'color' => 'bg-teal'),
-					array('label' => 'Closed Deals', 'value' => number_format($tot_closed), 'icon' => 'fa-check-circle', 'color' => 'bg-green'),
-					array('label' => 'Lost Deals', 'value' => number_format($tot_lost), 'icon' => 'fa-times-circle', 'color' => 'bg-red'),
-					array('label' => 'Followups Attended', 'value' => number_format($tot_followups), 'icon' => 'fa-calendar-check-o', 'color' => 'bg-purple'),
-					array('label' => 'Total Quoted Value', 'value' => 'AED ' . number_format($tot_quoted, 2), 'icon' => 'fa-file-text-o', 'color' => 'bg-yellow'),
-					array('label' => 'Total MRR', 'value' => 'AED ' . number_format($tot_mrr, 2), 'icon' => 'fa-money', 'color' => 'bg-navy'),
-					array('label' => 'Total Lost MRR', 'value' => 'AED ' . number_format($tot_lost_mrr, 2), 'icon' => 'fa-minus-circle', 'color' => 'bg-maroon'),
-					array('label' => 'Total Closed MRR', 'value' => 'AED ' . number_format($tot_closed_mrr, 2), 'icon' => 'fa-plus-circle', 'color' => 'bg-olive')
+					array('label' => 'Database', 'value' => number_format($tot_leads), 'icon' => 'fa-database', 'color' => 'bg-blue', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=assigned&uid=all&d1='.$d1.'&d2='.$d2),
+					array('label' => 'Active Deals', 'value' => number_format($tot_active), 'icon' => 'fa-refresh', 'color' => 'bg-teal', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=active&uid=all&d1='.$d1.'&d2='.$d2),
+					array('label' => 'Closed Deals', 'value' => number_format($tot_closed), 'icon' => 'fa-check-circle', 'color' => 'bg-green', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=closed&uid=all&d1='.$d1.'&d2='.$d2),
+					array('label' => 'Lost Deals', 'value' => number_format($tot_lost), 'icon' => 'fa-times-circle', 'color' => 'bg-red', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=lost&uid=all&d1='.$d1.'&d2='.$d2),
+					array('label' => 'Followups Attended', 'value' => number_format($tot_followups), 'icon' => 'fa-calendar-check-o', 'color' => 'bg-purple', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=followup&uid=all&d1='.$d1.'&d2='.$d2),
+					array('label' => 'Total Quoted Value', 'value' => 'AED ' . number_format($tot_quoted, 2), 'icon' => 'fa-file-text-o', 'color' => 'bg-yellow', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=quoted&uid=all&d1='.$d1.'&d2='.$d2),
+					array('label' => 'Total MRR', 'value' => 'AED ' . number_format($tot_mrr, 2), 'icon' => 'fa-money', 'color' => 'bg-navy', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=mrr&uid=all&d1='.$d1.'&d2='.$d2),
+					array('label' => 'Total Lost MRR', 'value' => 'AED ' . number_format($tot_lost_mrr, 2), 'icon' => 'fa-minus-circle', 'color' => 'bg-maroon', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=lost_mrr&uid=all&d1='.$d1.'&d2='.$d2),
+					array('label' => 'Total Closed MRR', 'value' => 'AED ' . number_format($tot_closed_mrr, 2), 'icon' => 'fa-plus-circle', 'color' => 'bg-olive', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=closed_mrr&uid=all&d1='.$d1.'&d2='.$d2)
 				)
 			);
 		}
@@ -638,9 +673,14 @@ class Admin_reports_model extends CI_Model {
 			$this->db->from('ci_leads as A');
 			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'LEFT');
 			$this->db->join('ci_status as C', 'A.status = C.id', 'LEFT');
-			$this->db->where('(A.database_category != "" OR A.data_source != "" OR A.data_batch_referral_no != "")');
 			if (!empty($filters['database_category'])) {
-				$this->db->where('A.database_category', $filters['database_category']);
+				if ($filters['database_category'] == 'Allotted Database') {
+					$this->db->where('(A.database_category = "Allotted Database" OR (A.database_category = "" AND A.lead_assign > 0))');
+				} elseif ($filters['database_category'] == 'Non-Allotted Database') {
+					$this->db->where('(A.database_category = "Non-Allotted Database" OR (A.database_category = "" AND (A.lead_assign = 0 OR A.lead_assign IS NULL)))');
+				} else {
+					$this->db->where('A.database_category', $filters['database_category']);
+				}
 			}
 			if (!empty($filters['data_source'])) {
 				$this->db->where('A.data_source', $filters['data_source']);
@@ -656,20 +696,22 @@ class Admin_reports_model extends CI_Model {
 			$rows = array();
 			$cat_counts = array();
 			foreach ($leads as $l) {
-				$c_cat = !empty($l['database_category']) ? $l['database_category'] : 'Uncategorized';
+				$c_cat = !empty($l['database_category']) ? $l['database_category'] : ((!empty($l['lead_assign']) && (int)$l['lead_assign'] > 0) ? 'Allotted Database' : 'Non-Allotted Database');
 				$cat_counts[$c_cat] = isset($cat_counts[$c_cat]) ? $cat_counts[$c_cat] + 1 : 1;
+				$lead_enc = base64_encode($l['id']);
 				$rows[] = array(
-					'lead_id' => !empty($l['lead_id']) ? $l['lead_id'] : $l['id'],
-					'customer' => $l['customer'],
+					'lead_id' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . (!empty($l['lead_id']) ? $l['lead_id'] : $l['id']) . '</a>',
+					'customer' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $l['customer'] . '</a>',
 					'poc' => $l['poc'],
 					'contact1' => $l['contact1'],
 					'email' => $l['email'],
-					'database_category' => !empty($l['database_category']) ? $l['database_category'] : '-',
+					'database_category' => $c_cat,
 					'data_source' => !empty($l['data_source']) ? $l['data_source'] : '-',
 					'data_batch_referral_no' => !empty($l['data_batch_referral_no']) ? $l['data_batch_referral_no'] : '-',
 					'status_name' => !empty($l['status_name']) ? $l['status_name'] : $l['status'],
 					'assigned_name' => !empty($l['assigned_name']) ? $l['assigned_name'] : 'Unassigned',
-					'created' => simple_date($l['created'])
+					'created' => simple_date($l['created']),
+					'action' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" class="btn btn-xs btn-primary" target="_blank"><i class="fa fa-eye"></i> Preview</a>'
 				);
 			}
 
@@ -679,13 +721,128 @@ class Admin_reports_model extends CI_Model {
 			return array(
 				'title' => 'Sales Database Report',
 				'department_title' => 'Sales Department',
-				'headers' => array('Lead ID', 'Customer Name', 'POC', 'Contact', 'Email', 'Database Category', 'Data Source', 'Batch Ref No', 'Status', 'Assigned To', 'Created Date'),
-				'fields' => array('lead_id', 'customer', 'poc', 'contact1', 'email', 'database_category', 'data_source', 'data_batch_referral_no', 'status_name', 'assigned_name', 'created'),
+				'headers' => array('Lead ID', 'Customer Name', 'POC', 'Contact', 'Email', 'Database Category', 'Data Source', 'Batch Ref No', 'Status', 'Assigned To', 'Created Date', 'Action'),
+				'fields' => array('lead_id', 'customer', 'poc', 'contact1', 'email', 'database_category', 'data_source', 'data_batch_referral_no', 'status_name', 'assigned_name', 'created', 'action'),
 				'rows' => $rows,
 				'summary' => array(
-					array('label' => 'Total Database', 'value' => number_format(count($rows)), 'icon' => 'fa-database', 'color' => 'bg-green'),
-					array('label' => 'Primary Category', 'value' => $top_cat, 'icon' => 'fa-tags', 'color' => 'bg-aqua'),
+					array('label' => 'Total Database', 'value' => number_format(count($rows)), 'icon' => 'fa-database', 'color' => 'bg-green', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat=All&sub=All&metric=status&d1='.$d1.'&d2='.$d2),
+					array('label' => 'Primary Category', 'value' => $top_cat, 'icon' => 'fa-tags', 'color' => 'bg-aqua', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($top_cat).'&sub=All&metric=status&d1='.$d1.'&d2='.$d2),
 					array('label' => 'Unique Categories', 'value' => count($cat_counts), 'icon' => 'fa-folder-open', 'color' => 'bg-yellow')
+				)
+			);
+		}
+
+		if ($report == 'custom') {
+			$available_fields = array(
+				'lead_id' => 'Lead ID',
+				'customer' => 'Customer Name',
+				'poc' => 'POC Name',
+				'contact1' => 'Contact Number 1',
+				'contact2' => 'Contact Number 2',
+				'email' => 'Email Address',
+				'servicecat' => 'Service Type',
+				'lead_status' => 'Status',
+				'status_category' => 'Status Category / Lost Reason',
+				'assigned_name' => 'Assigned User',
+				'mrr' => 'MRR (AED)',
+				'quote_amount' => 'Quote Amount (AED)',
+				'quote_status' => 'Quote Status',
+				'database_category' => 'Database Category',
+				'data_source' => 'Data Source',
+				'data_batch_referral_no' => 'Batch / Referral No',
+				'tl_number' => 'Trade License Number',
+				'tl_emirate' => 'Trade License Emirates',
+				'tl_zone' => 'Trade License Zone',
+				'tl_authority' => 'Licensing Authority',
+				'tl_issue_date' => 'Trade License Issue Date',
+				'tl_expire_date' => 'Trade License Expiry Date',
+				'corporate_tax_status' => 'Corporate Tax Status',
+				'vat_status' => 'VAT Status',
+				'company_status' => 'Company Status',
+				'city' => 'City',
+				'created' => 'Created Date'
+			);
+
+			$selected_columns = array();
+			if (!empty($filters['columns'])) {
+				$selected_columns = is_array($filters['columns']) ? $filters['columns'] : explode(',', $filters['columns']);
+			} elseif (isset($_GET['columns'])) {
+				$selected_columns = is_array($_GET['columns']) ? $_GET['columns'] : explode(',', $_GET['columns']);
+			}
+
+			$selected_columns = array_filter(array_map('trim', $selected_columns));
+			if (empty($selected_columns)) {
+				$selected_columns = array('lead_id', 'customer', 'poc', 'contact1', 'email', 'servicecat', 'mrr', 'lead_status', 'assigned_name', 'created');
+			}
+
+			$final_cols = array();
+			foreach ($selected_columns as $col) {
+				if (isset($available_fields[$col])) {
+					$final_cols[] = $col;
+				}
+			}
+			if (empty($final_cols)) {
+				$final_cols = array('lead_id', 'customer', 'poc', 'contact1', 'email', 'servicecat', 'mrr', 'lead_status', 'assigned_name', 'created');
+			}
+
+			$headers = array();
+			foreach ($final_cols as $fc) {
+				$headers[] = $available_fields[$fc];
+			}
+
+			$this->db->select('A.*, B.name as assigned_name, C.status as lead_status, T.title as servicecat');
+			$this->db->from('ci_leads as A');
+			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'LEFT');
+			$this->db->join('ci_status as C', 'A.status = C.id', 'LEFT');
+			$this->db->join('ci_terms as T', 'A.s_cat = T.id', 'LEFT');
+			$this->_applyEmployee($this->db, 'A.lead_assign', $emp);
+			$this->_applyDate($this->db, 'A.created', $d1, $d2);
+			if (!empty($search)) {
+				$this->db->where("(A.customer LIKE '%$search%' OR A.poc LIKE '%$search%' OR A.contact1 LIKE '%$search%' OR A.email LIKE '%$search%')");
+			}
+			$this->db->order_by('A.id', 'DESC');
+			$this->db->limit(1000);
+			$leads = $this->db->get()->result_array();
+
+			$rows = array();
+			$total_mrr = 0.0;
+			foreach ($leads as $l) {
+				$lead_enc = base64_encode($l['id']);
+				$r = array();
+				foreach ($final_cols as $fc) {
+					if ($fc == 'lead_id') {
+						$r[$fc] = '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . (!empty($l['lead_id']) ? $l['lead_id'] : $l['id']) . '</a>';
+					} elseif ($fc == 'customer') {
+						$r[$fc] = '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $l['customer'] . '</a>';
+					} elseif ($fc == 'created') {
+						$r[$fc] = simple_date($l['created']);
+					} elseif ($fc == 'mrr') {
+						$val_mrr = isset($l['mrr']) ? (float)$l['mrr'] : 0.0;
+						$total_mrr += $val_mrr;
+						$r[$fc] = number_format($val_mrr, 2);
+					} elseif ($fc == 'quote_amount') {
+						$r[$fc] = isset($l['quote_amount']) ? number_format((float)$l['quote_amount'], 2) : '0.00';
+					} elseif ($fc == 'database_category') {
+						$r[$fc] = !empty($l['database_category']) ? $l['database_category'] : ((!empty($l['lead_assign']) && (int)$l['lead_assign'] > 0) ? 'Allotted Database' : 'Non-Allotted Database');
+					} else {
+						$r[$fc] = isset($l[$fc]) && $l[$fc] !== '' ? $l[$fc] : '-';
+					}
+				}
+				$rows[] = $r;
+			}
+
+			return array(
+				'title' => 'Custom Report Builder',
+				'department_title' => 'Sales Department',
+				'headers' => $headers,
+				'fields' => $final_cols,
+				'available_fields' => $available_fields,
+				'rows' => $rows,
+				'summary' => array(
+					array('label' => 'Total Records', 'value' => number_format(count($rows)), 'icon' => 'fa-database', 'color' => 'bg-green'),
+					array('label' => 'Selected Columns', 'value' => count($final_cols), 'icon' => 'fa-columns', 'color' => 'bg-blue'),
+					array('label' => 'Available Columns', 'value' => count($available_fields), 'icon' => 'fa-list', 'color' => 'bg-purple'),
+					array('label' => 'Total MRR', 'value' => 'AED ' . number_format($total_mrr, 2), 'icon' => 'fa-money', 'color' => 'bg-navy')
 				)
 			);
 		}
@@ -726,9 +883,10 @@ class Admin_reports_model extends CI_Model {
 				}
 				$ind = !empty($l['industry_category']) ? $l['industry_category'] : (!empty($l['business_category']) ? $l['business_category'] : '-');
 				$stat_cat = !empty($l['status_category']) ? $l['status_category'] : (!empty($l['lost_reason']) ? $l['lost_reason'] : '-');
+				$lead_enc = base64_encode($l['id']);
 				$rows[] = array(
-					'lead_id' => !empty($l['lead_id']) ? $l['lead_id'] : $l['id'],
-					'customer' => $l['customer'],
+					'lead_id' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . (!empty($l['lead_id']) ? $l['lead_id'] : $l['id']) . '</a>',
+					'customer' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $l['customer'] . '</a>',
 					'poc' => $l['poc'],
 					'contact1' => $l['contact1'],
 					'email' => $l['email'],
@@ -738,21 +896,22 @@ class Admin_reports_model extends CI_Model {
 					'status_name' => !empty($l['status_name']) ? $l['status_name'] : $l['status'],
 					'status_category' => $stat_cat,
 					'assigned_name' => !empty($l['assigned_name']) ? $l['assigned_name'] : 'Unassigned',
-					'created' => simple_date($l['created'])
+					'created' => simple_date($l['created']),
+					'action' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" class="btn btn-xs btn-primary" target="_blank"><i class="fa fa-eye"></i> Preview</a>'
 				);
 			}
 
 			return array(
 				'title' => 'Sales Lead Report',
 				'department_title' => 'Sales Department',
-				'headers' => array('Lead ID', 'Customer Name', 'POC', 'Contact', 'Email', 'Industry Category', 'Service Category', 'MRR (AED)', 'Status', 'Status Category', 'Assigned To', 'Created Date'),
-				'fields' => array('lead_id', 'customer', 'poc', 'contact1', 'email', 'industry_category', 'service_name', 'mrr_fmt', 'status_name', 'status_category', 'assigned_name', 'created'),
+				'headers' => array('Lead ID', 'Customer Name', 'POC', 'Contact', 'Email', 'Industry Category', 'Service Category', 'MRR (AED)', 'Status', 'Status Category', 'Assigned To', 'Created Date', 'Action'),
+				'fields' => array('lead_id', 'customer', 'poc', 'contact1', 'email', 'industry_category', 'service_name', 'mrr_fmt', 'status_name', 'status_category', 'assigned_name', 'created', 'action'),
 				'rows' => $rows,
 				'summary' => array(
-					array('label' => 'Total Leads', 'value' => number_format(count($rows)), 'icon' => 'fa-database', 'color' => 'bg-blue'),
-					array('label' => 'Active Deals', 'value' => number_format($active_cnt), 'icon' => 'fa-spinner', 'color' => 'bg-aqua'),
-					array('label' => 'Closed Deals', 'value' => number_format($closed_cnt), 'icon' => 'fa-check-circle', 'color' => 'bg-green'),
-					array('label' => 'Total MRR', 'value' => 'AED ' . number_format($tot_mrr, 2), 'icon' => 'fa-money', 'color' => 'bg-purple')
+					array('label' => 'Total Leads', 'value' => number_format(count($rows)), 'icon' => 'fa-database', 'color' => 'bg-blue', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat=All&sub=All&metric=total_leads&d1='.$d1.'&d2='.$d2),
+					array('label' => 'Active Deals', 'value' => number_format($active_cnt), 'icon' => 'fa-spinner', 'color' => 'bg-aqua', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat=All&sub=All&metric=active&d1='.$d1.'&d2='.$d2),
+					array('label' => 'Closed Deals', 'value' => number_format($closed_cnt), 'icon' => 'fa-check-circle', 'color' => 'bg-green', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat=All&sub=All&metric=closed&d1='.$d1.'&d2='.$d2),
+					array('label' => 'Total MRR', 'value' => 'AED ' . number_format($tot_mrr, 2), 'icon' => 'fa-money', 'color' => 'bg-purple', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat=All&sub=All&metric=mrr&d1='.$d1.'&d2='.$d2)
 				)
 			);
 		}
@@ -787,9 +946,10 @@ class Admin_reports_model extends CI_Model {
 				if (strtolower(trim($l['quote_status'])) == 'accepted') {
 					$accepted_cnt++;
 				}
+				$lead_enc = base64_encode($l['id']);
 				$rows[] = array(
-					'lead_id' => !empty($l['lead_id']) ? $l['lead_id'] : $l['id'],
-					'customer' => $l['customer'],
+					'lead_id' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . (!empty($l['lead_id']) ? $l['lead_id'] : $l['id']) . '</a>',
+					'customer' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $l['customer'] . '</a>',
 					'poc' => $l['poc'],
 					'contact1' => $l['contact1'],
 					'quote_status' => !empty($l['quote_status']) ? $l['quote_status'] : 'Quote Given',
@@ -797,7 +957,8 @@ class Admin_reports_model extends CI_Model {
 					'quote_amount_fmt' => 'AED ' . number_format($amt, 2),
 					'status_name' => !empty($l['status_name']) ? $l['status_name'] : $l['status'],
 					'assigned_name' => !empty($l['assigned_name']) ? $l['assigned_name'] : 'Unassigned',
-					'created' => simple_date($l['created'])
+					'created' => simple_date($l['created']),
+					'action' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" class="btn btn-xs btn-primary" target="_blank"><i class="fa fa-eye"></i> Preview</a>'
 				);
 			}
 
@@ -807,13 +968,13 @@ class Admin_reports_model extends CI_Model {
 			return array(
 				'title' => 'Sales Quote Report',
 				'department_title' => 'Sales Department',
-				'headers' => array('Lead ID', 'Customer Name', 'POC', 'Contact', 'Quote Status', 'Quote Mode', 'Quote Amount (AED)', 'Lead Status', 'Assigned To', 'Created Date'),
-				'fields' => array('lead_id', 'customer', 'poc', 'contact1', 'quote_status', 'quote_mode', 'quote_amount_fmt', 'status_name', 'assigned_name', 'created'),
+				'headers' => array('Lead ID', 'Customer Name', 'POC', 'Contact', 'Quote Status', 'Quote Mode', 'Quote Amount (AED)', 'Lead Status', 'Assigned To', 'Created Date', 'Action'),
+				'fields' => array('lead_id', 'customer', 'poc', 'contact1', 'quote_status', 'quote_mode', 'quote_amount_fmt', 'status_name', 'assigned_name', 'created', 'action'),
 				'rows' => $rows,
 				'summary' => array(
-					array('label' => 'Total Quotes', 'value' => number_format($total_cnt), 'icon' => 'fa-file-text-o', 'color' => 'bg-aqua'),
-					array('label' => 'Total Quoted Value', 'value' => 'AED ' . number_format($tot_quote_amt, 2), 'icon' => 'fa-calculator', 'color' => 'bg-green'),
-					array('label' => 'Accepted Deals', 'value' => number_format($accepted_cnt), 'icon' => 'fa-check-circle', 'color' => 'bg-purple'),
+					array('label' => 'Total Quotes', 'value' => number_format($total_cnt), 'icon' => 'fa-file-text-o', 'color' => 'bg-aqua', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=quote_count&d1='.$d1.'&d2='.$d2),
+					array('label' => 'Total Quoted Value', 'value' => 'AED ' . number_format($tot_quote_amt, 2), 'icon' => 'fa-calculator', 'color' => 'bg-green', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=quote_sum&d1='.$d1.'&d2='.$d2),
+					array('label' => 'Accepted Deals', 'value' => number_format($accepted_cnt), 'icon' => 'fa-check-circle', 'color' => 'bg-purple', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=Accepted&sub=All&metric=lead_records&d1='.$d1.'&d2='.$d2),
 					array('label' => 'Acceptance Rate', 'value' => $conv_rate . '%', 'icon' => 'fa-pie-chart', 'color' => 'bg-yellow')
 				)
 			);
@@ -849,9 +1010,10 @@ class Admin_reports_model extends CI_Model {
 				if ($l['vat_status'] == 'Registered') $vat_reg++;
 				if ($l['corporate_tax_status'] == 'Not Registered' || $l['vat_status'] == 'Not Registered') $not_reg++;
 
+				$lead_enc = base64_encode($l['id']);
 				$rows[] = array(
-					'lead_id' => !empty($l['lead_id']) ? $l['lead_id'] : $l['id'],
-					'customer' => $l['customer'],
+					'lead_id' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . (!empty($l['lead_id']) ? $l['lead_id'] : $l['id']) . '</a>',
+					'customer' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $l['customer'] . '</a>',
 					'poc' => $l['poc'],
 					'contact1' => $l['contact1'],
 					'tl_number' => !empty($l['tl_number']) ? $l['tl_number'] : '-',
@@ -860,21 +1022,22 @@ class Admin_reports_model extends CI_Model {
 					'city' => !empty($l['city']) ? $l['city'] : '-',
 					'assigned_name' => !empty($l['assigned_name']) ? $l['assigned_name'] : 'Unassigned',
 					'status_name' => !empty($l['status_name']) ? $l['status_name'] : $l['status'],
-					'created' => simple_date($l['created'])
+					'created' => simple_date($l['created']),
+					'action' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" class="btn btn-xs btn-primary" target="_blank"><i class="fa fa-eye"></i> Preview</a>'
 				);
 			}
 
 			return array(
 				'title' => 'CT / VAT Registration Report',
 				'department_title' => 'Sales Department',
-				'headers' => array('Lead ID', 'Customer Name', 'POC', 'Contact', 'Trade License No', 'Corporate Tax Status', 'VAT Status', 'City', 'Assigned To', 'Status', 'Created Date'),
-				'fields' => array('lead_id', 'customer', 'poc', 'contact1', 'tl_number', 'corporate_tax_status', 'vat_status', 'city', 'assigned_name', 'status_name', 'created'),
+				'headers' => array('Lead ID', 'Customer Name', 'POC', 'Contact', 'Trade License No', 'Corporate Tax Status', 'VAT Status', 'City', 'Assigned To', 'Status', 'Created Date', 'Action'),
+				'fields' => array('lead_id', 'customer', 'poc', 'contact1', 'tl_number', 'corporate_tax_status', 'vat_status', 'city', 'assigned_name', 'status_name', 'created', 'action'),
 				'rows' => $rows,
 				'summary' => array(
-					array('label' => 'Total Assessed', 'value' => number_format(count($rows)), 'icon' => 'fa-shield', 'color' => 'bg-blue'),
-					array('label' => 'CT Registered', 'value' => number_format($ct_reg), 'icon' => 'fa-check', 'color' => 'bg-green'),
-					array('label' => 'VAT Registered', 'value' => number_format($vat_reg), 'icon' => 'fa-check-square', 'color' => 'bg-aqua'),
-					array('label' => 'Not Registered', 'value' => number_format($not_reg), 'icon' => 'fa-exclamation-triangle', 'color' => 'bg-yellow')
+					array('label' => 'Total Assessed', 'value' => number_format(count($rows)), 'icon' => 'fa-shield', 'color' => 'bg-blue', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat=All&sub=All&metric=companies&d1='.$d1.'&d2='.$d2),
+					array('label' => 'CT Registered', 'value' => number_format($ct_reg), 'icon' => 'fa-check', 'color' => 'bg-green', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat=Registered&sub=All&metric=companies&d1='.$d1.'&d2='.$d2),
+					array('label' => 'VAT Registered', 'value' => number_format($vat_reg), 'icon' => 'fa-check-square', 'color' => 'bg-aqua', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat=All&sub=Registered&metric=companies&d1='.$d1.'&d2='.$d2),
+					array('label' => 'Not Registered', 'value' => number_format($not_reg), 'icon' => 'fa-exclamation-triangle', 'color' => 'bg-yellow', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat=Not Registered&sub=All&metric=companies&d1='.$d1.'&d2='.$d2)
 				)
 			);
 		}
@@ -906,9 +1069,10 @@ class Admin_reports_model extends CI_Model {
 				$cat = !empty($l['status_category']) ? $l['status_category'] : (!empty($l['lost_reason']) ? $l['lost_reason'] : 'Unspecified');
 				$reasons[$cat] = isset($reasons[$cat]) ? $reasons[$cat] + 1 : 1;
 
+				$lead_enc = base64_encode($l['id']);
 				$rows[] = array(
-					'lead_id' => !empty($l['lead_id']) ? $l['lead_id'] : $l['id'],
-					'customer' => $l['customer'],
+					'lead_id' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . (!empty($l['lead_id']) ? $l['lead_id'] : $l['id']) . '</a>',
+					'customer' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $l['customer'] . '</a>',
 					'poc' => $l['poc'],
 					'contact1' => $l['contact1'],
 					'status_name' => !empty($l['status_name']) ? $l['status_name'] : $l['status'],
@@ -917,7 +1081,8 @@ class Admin_reports_model extends CI_Model {
 					'quote_amount_fmt' => 'AED ' . number_format((float)$l['quote_amount'], 2),
 					'mrr_fmt' => 'AED ' . number_format((float)$l['mrr'], 2),
 					'assigned_name' => !empty($l['assigned_name']) ? $l['assigned_name'] : 'Unassigned',
-					'created' => simple_date($l['created'])
+					'created' => simple_date($l['created']),
+					'action' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" class="btn btn-xs btn-primary" target="_blank"><i class="fa fa-eye"></i> Preview</a>'
 				);
 			}
 
@@ -927,13 +1092,13 @@ class Admin_reports_model extends CI_Model {
 			return array(
 				'title' => 'Sales Lost Report',
 				'department_title' => 'Sales Department',
-				'headers' => array('Lead ID', 'Customer Name', 'POC', 'Contact', 'Status', 'Status Category', 'Status Remarks', 'Quoted Value (AED)', 'MRR (AED)', 'Assigned To', 'Date'),
-				'fields' => array('lead_id', 'customer', 'poc', 'contact1', 'status_name', 'status_category', 'status_remarks', 'quote_amount_fmt', 'mrr_fmt', 'assigned_name', 'created'),
+				'headers' => array('Lead ID', 'Customer Name', 'POC', 'Contact', 'Status', 'Status Category', 'Status Remarks', 'Quoted Value (AED)', 'MRR (AED)', 'Assigned To', 'Date', 'Action'),
+				'fields' => array('lead_id', 'customer', 'poc', 'contact1', 'status_name', 'status_category', 'status_remarks', 'quote_amount_fmt', 'mrr_fmt', 'assigned_name', 'created', 'action'),
 				'rows' => $rows,
 				'summary' => array(
-					array('label' => 'Total Lost Deals', 'value' => number_format(count($rows)), 'icon' => 'fa-times-circle', 'color' => 'bg-red'),
-					array('label' => 'Estimated Lost Value', 'value' => 'AED ' . number_format($lost_val, 2), 'icon' => 'fa-money', 'color' => 'bg-yellow'),
-					array('label' => 'Top Lost Reason', 'value' => $top_reason, 'icon' => 'fa-exclamation-circle', 'color' => 'bg-purple')
+					array('label' => 'Total Lost Deals', 'value' => number_format(count($rows)), 'icon' => 'fa-times-circle', 'color' => 'bg-red', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat=All&sub=All&metric=lost&d1='.$d1.'&d2='.$d2),
+					array('label' => 'Estimated Lost Value', 'value' => 'AED ' . number_format($lost_val, 2), 'icon' => 'fa-money', 'color' => 'bg-yellow', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat=All&sub=All&metric=quoted&d1='.$d1.'&d2='.$d2),
+					array('label' => 'Top Lost Reason', 'value' => $top_reason, 'icon' => 'fa-exclamation-circle', 'color' => 'bg-purple', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($top_reason).'&sub=All&metric=lost&d1='.$d1.'&d2='.$d2)
 				)
 			);
 		}
@@ -942,11 +1107,30 @@ class Admin_reports_model extends CI_Model {
 			$this->db->select('A.*, B.name as assigned_name');
 			$this->db->from('ci_leads as A');
 			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'LEFT');
+			$this->db->where('(A.company_status IS NULL OR LOWER(A.company_status) != "closed")');
 			$this->db->where('(A.tl_number != "" OR A.tl_authority != "" OR (A.tl_expire_date != "" AND A.tl_expire_date != "0000-00-00"))');
+			if (!empty($filters['tl_emirate'])) {
+				$em = $filters['tl_emirate'];
+				$this->db->where("(A.tl_emirate = '$em' OR ((A.tl_emirate = '' OR A.tl_emirate IS NULL) AND A.city = '$em'))");
+			}
+			if (!empty($filters['tl_zone'])) {
+				$zn = strtolower($filters['tl_zone']);
+				if ($zn == 'freezone') {
+					$this->db->where("(LOWER(A.tl_zone) = 'freezone' OR ((A.tl_zone = '' OR A.tl_zone IS NULL) AND (A.tl_authority LIKE '%Free Zone%' OR A.tl_authority LIKE '%Freezone%' OR A.tl_authority LIKE '%DIFC%' OR A.tl_authority LIKE '%ADGM%')))");
+				} elseif ($zn == 'mainland') {
+					$this->db->where("(LOWER(A.tl_zone) = 'mainland' OR ((A.tl_zone = '' OR A.tl_zone IS NULL) AND (A.tl_authority LIKE '%Department of Economic%' OR A.tl_authority LIKE '%Municipality%' OR A.tl_authority LIKE '%DED%' OR A.tl_authority LIKE '%DET%' OR A.tl_authority LIKE '%SEDD%')))");
+				} else {
+					$this->db->where('A.tl_zone', $filters['tl_zone']);
+				}
+			}
+			if (!empty($filters['tl_authority'])) {
+				$auth_flt = $filters['tl_authority'];
+				$this->db->where("(A.tl_authority = '$auth_flt' OR A.tl_authority LIKE '%$auth_flt%')");
+			}
 			$this->_applyEmployee($this->db, 'A.lead_assign', $emp);
 			$this->_applyDate($this->db, 'A.created', $d1, $d2);
 			if (!empty($search)) {
-				$this->db->where("(A.customer LIKE '%$search%' OR A.tl_number LIKE '%$search%' OR A.tl_authority LIKE '%$search%')");
+				$this->db->where("(A.customer LIKE '%$search%' OR A.tl_number LIKE '%$search%' OR A.tl_authority LIKE '%$search%' OR A.tl_emirate LIKE '%$search%')");
 			}
 			$this->db->order_by('A.id', 'DESC');
 			$leads = $this->db->get()->result_array();
@@ -961,6 +1145,7 @@ class Admin_reports_model extends CI_Model {
 			$cnt_0_30 = 0;
 			$cnt_30_60 = 0;
 			$cnt_60_90 = 0;
+			$cnt_future = 0;
 			$exp_filter = isset($filters['expiry']) ? $filters['expiry'] : '';
 
 			foreach ($leads as $l) {
@@ -989,23 +1174,44 @@ class Admin_reports_model extends CI_Model {
 					$badge_class = 'label-primary';
 					$window_type = '60-90';
 					$cnt_60_90++;
+				} else {
+					$badge = 'All Future';
+					$badge_class = 'label-success';
+					$window_type = 'future';
+					$cnt_future++;
 				}
 
 				if ($exp_filter == 'expired' && $window_type != 'expiry') continue;
-				if ($exp_filter == '30days' && $window_type != '0-30') continue;
-				if ($exp_filter == '60days' && $window_type != '30-60') continue;
-				if ($exp_filter == '90days' && $window_type != '60-90') continue;
+				if (($exp_filter == '0-30' || $exp_filter == '30days') && $window_type != '0-30') continue;
+				if (($exp_filter == '30-60' || $exp_filter == '60days') && $window_type != '30-60') continue;
+				if (($exp_filter == '60-90' || $exp_filter == '90days') && $window_type != '60-90') continue;
+				if ($exp_filter == 'future' && $window_type != 'future') continue;
 
+				$auth = !empty($l['tl_authority']) ? $l['tl_authority'] : 'General Licensing';
+				$zone = !empty($l['tl_zone']) ? $l['tl_zone'] : '';
+				if (empty($zone)) {
+					if (stripos($auth, 'Free Zone') !== false || stripos($auth, 'Freezone') !== false || stripos($auth, 'DIFC') !== false || stripos($auth, 'ADGM') !== false) {
+						$zone = 'Freezone';
+					} elseif (stripos($auth, 'Department of Economic') !== false || stripos($auth, 'Municipality') !== false || stripos($auth, 'DED') !== false || stripos($auth, 'DET') !== false) {
+						$zone = 'Mainland';
+					}
+				}
+				$emirate = !empty($l['tl_emirate']) ? $l['tl_emirate'] : (!empty($l['city']) ? $l['city'] : '-');
+				$zone_badge = (!empty($zone) && in_array(strtolower($zone), array('mainland', 'freezone'))) ? '<span class="label" style="background:#000000; color:#ffffff; font-weight:700;">' . ucfirst(strtolower($zone)) . '</span>' : (!empty($zone) ? $zone : '-');
+
+				$lead_enc = base64_encode($l['id']);
 				$rows[] = array(
-					'lead_id' => !empty($l['lead_id']) ? $l['lead_id'] : $l['id'],
-					'customer' => $l['customer'],
+					'lead_id' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . (!empty($l['lead_id']) ? $l['lead_id'] : $l['id']) . '</a>',
+					'customer' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $l['customer'] . '</a>',
+					'tl_authority' => $auth,
+					'tl_emirate' => $emirate,
+					'tl_zone' => $zone_badge,
 					'tl_number' => !empty($l['tl_number']) ? $l['tl_number'] : '-',
-					'tl_authority' => !empty($l['tl_authority']) ? $l['tl_authority'] : 'General Licensing',
 					'tl_issue_date' => (!empty($l['tl_issue_date']) && $l['tl_issue_date'] != '0000-00-00') ? simple_date($l['tl_issue_date']) : '-',
 					'tl_expire_date' => (!empty($l['tl_expire_date']) && $l['tl_expire_date'] != '0000-00-00') ? simple_date($l['tl_expire_date']) : '-',
 					'validity_badge' => '<span class="label '.$badge_class.'">'.$badge.'</span>',
-					'city' => !empty($l['city']) ? $l['city'] : '-',
 					'assigned_name' => !empty($l['assigned_name']) ? $l['assigned_name'] : 'Unassigned',
+					'action' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" class="btn btn-xs btn-primary" target="_blank"><i class="fa fa-eye"></i> Preview</a>',
 					'window_type' => $window_type
 				);
 			}
@@ -1013,15 +1219,16 @@ class Admin_reports_model extends CI_Model {
 			return array(
 				'title' => 'Trade License Report',
 				'department_title' => 'Sales Department',
-				'headers' => array('Licensing Authority', 'Expiry', '60–90 Days', '30–60 Days', '0–30 Days'),
-				'fields' => array('tl_authority', 'expiry_cnt', 'cnt_60_90', 'cnt_30_60', 'cnt_0_30'),
+				'headers' => array('Lead ID', 'Company Name', 'Licensing Authority', 'Emirate', 'Zone', 'License Number', 'Issue Date', 'Expired', 'Validity', 'Assigned To', 'Action'),
+				'fields' => array('lead_id', 'customer', 'tl_authority', 'tl_emirate', 'tl_zone', 'tl_number', 'tl_issue_date', 'tl_expire_date', 'validity_badge', 'assigned_name', 'action'),
 				'rows' => $rows,
 				'summary' => array(
-					array('label' => 'Trade Licenses', 'value' => number_format(count($rows)), 'icon' => 'fa-id-card-o', 'color' => 'bg-blue'),
-					array('label' => 'Expired Licenses', 'value' => number_format($exp_cnt), 'icon' => 'fa-times-circle', 'color' => 'bg-red'),
-					array('label' => 'Expiring 60–90 Days', 'value' => number_format($cnt_60_90), 'icon' => 'fa-clock-o', 'color' => 'bg-purple'),
-					array('label' => 'Expiring 30–60 Days', 'value' => number_format($cnt_30_60), 'icon' => 'fa-clock-o', 'color' => 'bg-aqua'),
-					array('label' => 'Expiring 0–30 Days', 'value' => number_format($cnt_0_30), 'icon' => 'fa-clock-o', 'color' => 'bg-yellow')
+					array('label' => 'Expired Licenses', 'value' => number_format($exp_cnt), 'icon' => 'fa-times-circle', 'color' => 'bg-red', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=expiry&d1='.$d1.'&d2='.$d2),
+					array('label' => 'Expiring 0–30 Days', 'value' => number_format($cnt_0_30), 'icon' => 'fa-clock-o', 'color' => 'bg-yellow', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=0-30&d1='.$d1.'&d2='.$d2),
+					array('label' => 'Expiring 30–60 Days', 'value' => number_format($cnt_30_60), 'icon' => 'fa-clock-o', 'color' => 'bg-aqua', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=30-60&d1='.$d1.'&d2='.$d2),
+					array('label' => 'Expiring 60–90 Days', 'value' => number_format($cnt_60_90), 'icon' => 'fa-clock-o', 'color' => 'bg-purple', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=60-90&d1='.$d1.'&d2='.$d2),
+					array('label' => 'All Future Licenses', 'value' => number_format($cnt_future), 'icon' => 'fa-check-circle', 'color' => 'bg-green', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=future&d1='.$d1.'&d2='.$d2),
+					array('label' => 'Total Trade Licenses', 'value' => number_format(count($rows)), 'icon' => 'fa-id-card-o', 'color' => 'bg-blue', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=all&d1='.$d1.'&d2='.$d2)
 				)
 			);
 		}
@@ -2230,7 +2437,7 @@ class Admin_reports_model extends CI_Model {
 		}
 
 		if ($dept == 'sales' && $report == 'performance') {
-			$headers = array('Name', 'Department', 'Assigned Leads', 'Active Deals', 'Closed Deals', 'Lost Deals', 'Followups Attended', 'Total Quoted (AED)', 'Total MRR', 'Total Lost MRR', 'Total Closed MRR');
+			$headers = array('Name', 'Department', 'Database', 'Active Deals', 'Closed Deals', 'Lost Deals', 'Followups Attended', 'Total Quoted (AED)', 'Total MRR', 'Total Lost MRR', 'Total Closed MRR');
 			$current_user_id = isset($filters['manager_id']) ? (int)$filters['manager_id'] : 0;
 			$is_admin = !empty($filters['is_admin_or_support']);
 
@@ -2258,8 +2465,8 @@ class Admin_reports_model extends CI_Model {
 				$cm_val = isset($r['total_closed_mrr']) ? (float)$r['total_closed_mrr'] : 0.0;
 
 				$row_item = array(
-					$u_name,
-					$u_dept,
+					array('val' => $u_name),
+					array('val' => $u_dept),
 					array('val' => number_format($l_cnt), 'url' => base_url().'manager/download-report/drilldown?report=performance&metric=assigned&uid='.$uid.'&d1='.$d1.'&d2='.$d2),
 					array('val' => number_format($a_cnt), 'url' => base_url().'manager/download-report/drilldown?report=performance&metric=active&uid='.$uid.'&d1='.$d1.'&d2='.$d2),
 					array('val' => number_format($c_cnt), 'url' => base_url().'manager/download-report/drilldown?report=performance&metric=closed&uid='.$uid.'&d1='.$d1.'&d2='.$d2),
@@ -2312,74 +2519,131 @@ class Admin_reports_model extends CI_Model {
 
 			$groups[] = array(
 				'category' => 'My Report',
+				'category_url' => '',
 				'rows' => $my_rows,
-				'subtotal' => array('My Report Total', '', number_format($my_sub['leads']), number_format($my_sub['active']), number_format($my_sub['closed']), number_format($my_sub['lost']), number_format($my_sub['followups']), number_format($my_sub['quoted'], 2), number_format($my_sub['mrr'], 2), number_format($my_sub['lost_mrr'], 2), number_format($my_sub['closed_mrr'], 2))
+				'subtotal' => array(
+					array('val' => 'My Report Total'),
+					'',
+					array('val' => number_format($my_sub['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=assigned&uid='.$current_user_id.'&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($my_sub['active']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=active&uid='.$current_user_id.'&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($my_sub['closed']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=closed&uid='.$current_user_id.'&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($my_sub['lost']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=lost&uid='.$current_user_id.'&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($my_sub['followups']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=followup&uid='.$current_user_id.'&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($my_sub['quoted'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=quoted&uid='.$current_user_id.'&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($my_sub['mrr'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=mrr&uid='.$current_user_id.'&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($my_sub['lost_mrr'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=lost_mrr&uid='.$current_user_id.'&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($my_sub['closed_mrr'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=closed_mrr&uid='.$current_user_id.'&d1='.$d1.'&d2='.$d2)
+				)
 			);
 
 			$groups[] = array(
 				'category' => 'Team Report',
+				'category_url' => '',
 				'rows' => $team_rows,
-				'subtotal' => array('Team Report Total', '', number_format($team_sub['leads']), number_format($team_sub['active']), number_format($team_sub['closed']), number_format($team_sub['lost']), number_format($team_sub['followups']), number_format($team_sub['quoted'], 2), number_format($team_sub['mrr'], 2), number_format($team_sub['lost_mrr'], 2), number_format($team_sub['closed_mrr'], 2))
-			);
-
-			return array(
-				'headers' => $headers,
-				'groups' => $groups,
-				'grand_total' => array('Grand Total', '', number_format($grand['leads']), number_format($grand['active']), number_format($grand['closed']), number_format($grand['lost']), number_format($grand['followups']), number_format($grand['quoted'], 2), number_format($grand['mrr'], 2), number_format($grand['lost_mrr'], 2), number_format($grand['closed_mrr'], 2))
-			);
-		}
-
-		if ($dept == 'sales' && $report == 'trade-license') {
-			$headers = array('Licensing Authority', 'Expiry', '60–90 Days', '30–60 Days', '0–30 Days');
-			$groups_map = array();
-			$grand = array('expiry' => 0, '60_90' => 0, '30_60' => 0, '0_30' => 0);
-
-			foreach ($rows as $r) {
-				$auth = !empty($r['tl_authority']) && $r['tl_authority'] !== '-' ? $r['tl_authority'] : 'General Licensing';
-				$win = isset($r['window_type']) ? $r['window_type'] : 'valid';
-
-				if (!isset($groups_map[$auth])) {
-					$groups_map[$auth] = array('expiry' => 0, '60_90' => 0, '30_60' => 0, '0_30' => 0);
-				}
-
-				if ($win == 'expiry') {
-					$groups_map[$auth]['expiry'] += 1;
-					$grand['expiry'] += 1;
-				} elseif ($win == '60-90') {
-					$groups_map[$auth]['60_90'] += 1;
-					$grand['60_90'] += 1;
-				} elseif ($win == '30-60') {
-					$groups_map[$auth]['30_60'] += 1;
-					$grand['30_60'] += 1;
-				} elseif ($win == '0-30') {
-					$groups_map[$auth]['0_30'] += 1;
-					$grand['0_30'] += 1;
-				}
-			}
-
-			$r_list = array();
-			foreach ($groups_map as $auth => $m) {
-				$r_list[] = array(
-					$auth,
-					array('val' => number_format($m['expiry']), 'url' => base_url().'manager/download-report/drilldown?report=trade-license&auth='.urlencode($auth).'&window=expiry&d1='.$d1.'&d2='.$d2),
-					array('val' => number_format($m['60_90']), 'url' => base_url().'manager/download-report/drilldown?report=trade-license&auth='.urlencode($auth).'&window=60-90&d1='.$d1.'&d2='.$d2),
-					array('val' => number_format($m['30_60']), 'url' => base_url().'manager/download-report/drilldown?report=trade-license&auth='.urlencode($auth).'&window=30-60&d1='.$d1.'&d2='.$d2),
-					array('val' => number_format($m['0_30']), 'url' => base_url().'manager/download-report/drilldown?report=trade-license&auth='.urlencode($auth).'&window=0-30&d1='.$d1.'&d2='.$d2)
-				);
-			}
-
-			$groups = array(
-				array(
-					'category' => 'Licensing Authorities',
-					'rows' => $r_list,
-					'subtotal' => array('Authorities Total', number_format($grand['expiry']), number_format($grand['60_90']), number_format($grand['30_60']), number_format($grand['0_30']))
+				'subtotal' => array(
+					array('val' => 'Team Report Total'),
+					'',
+					array('val' => number_format($team_sub['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=assigned&uid=team&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($team_sub['active']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=active&uid=team&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($team_sub['closed']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=closed&uid=team&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($team_sub['lost']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=lost&uid=team&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($team_sub['followups']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=followup&uid=team&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($team_sub['quoted'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=quoted&uid=team&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($team_sub['mrr'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=mrr&uid=team&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($team_sub['lost_mrr'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=lost_mrr&uid=team&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($team_sub['closed_mrr'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=closed_mrr&uid=team&d1='.$d1.'&d2='.$d2)
 				)
 			);
 
 			return array(
 				'headers' => $headers,
 				'groups' => $groups,
-				'grand_total' => array('Grand Total', number_format($grand['expiry']), number_format($grand['60_90']), number_format($grand['30_60']), number_format($grand['0_30']))
+				'grand_total' => array(
+					array('val' => 'Grand Total'),
+					'',
+					array('val' => number_format($grand['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=assigned&uid=all&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($grand['active']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=active&uid=all&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($grand['closed']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=closed&uid=all&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($grand['lost']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=lost&uid=all&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($grand['followups']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=followup&uid=all&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($grand['quoted'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=quoted&uid=all&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($grand['mrr'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=mrr&uid=all&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($grand['lost_mrr'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=lost_mrr&uid=all&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($grand['closed_mrr'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=performance&metric=closed_mrr&uid=all&d1='.$d1.'&d2='.$d2)
+				)
+			);
+		}
+
+		if ($dept == 'sales' && $report == 'trade-license') {
+			$headers = array('Licensing Authority', 'Expired', '0–30 Days', '30–60 Days', '60–90 Days', 'All Future');
+			$groups_map = array();
+			$grand = array('expiry' => 0, '0_30' => 0, '30_60' => 0, '60_90' => 0, 'future' => 0);
+
+			foreach ($rows as $r) {
+				$auth = !empty($r['tl_authority']) && $r['tl_authority'] !== '-' ? $r['tl_authority'] : 'General Licensing';
+				$win = isset($r['window_type']) ? $r['window_type'] : 'valid';
+
+				if (!isset($groups_map[$auth])) {
+					$groups_map[$auth] = array('expiry' => 0, '0_30' => 0, '30_60' => 0, '60_90' => 0, 'future' => 0);
+				}
+
+				if ($win == 'expiry') {
+					$groups_map[$auth]['expiry'] += 1;
+					$grand['expiry'] += 1;
+				} elseif ($win == '0-30') {
+					$groups_map[$auth]['0_30'] += 1;
+					$grand['0_30'] += 1;
+				} elseif ($win == '30-60') {
+					$groups_map[$auth]['30_60'] += 1;
+					$grand['30_60'] += 1;
+				} elseif ($win == '60-90') {
+					$groups_map[$auth]['60_90'] += 1;
+					$grand['60_90'] += 1;
+				} elseif ($win == 'future') {
+					$groups_map[$auth]['future'] += 1;
+					$grand['future'] += 1;
+				}
+			}
+
+			$r_list = array();
+			foreach ($groups_map as $auth => $m) {
+				$r_list[] = array(
+					array('val' => $auth, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth='.urlencode($auth).'&window=all&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($m['expiry']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth='.urlencode($auth).'&window=expiry&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($m['0_30']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth='.urlencode($auth).'&window=0-30&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($m['30_60']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth='.urlencode($auth).'&window=30-60&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($m['60_90']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth='.urlencode($auth).'&window=60-90&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($m['future']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth='.urlencode($auth).'&window=future&d1='.$d1.'&d2='.$d2)
+				);
+			}
+
+			$groups = array(
+				array(
+					'category' => 'Licensing Authorities',
+					'category_url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=all&d1='.$d1.'&d2='.$d2,
+					'rows' => $r_list,
+					'subtotal' => array(
+						array('val' => 'Authorities Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=all&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($grand['expiry']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=expiry&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($grand['0_30']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=0-30&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($grand['30_60']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=30-60&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($grand['60_90']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=60-90&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($grand['future']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=future&d1='.$d1.'&d2='.$d2)
+					)
+				)
+			);
+
+			return array(
+				'headers' => $headers,
+				'groups' => $groups,
+				'grand_total' => array(
+					array('val' => 'Grand Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=all&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($grand['expiry']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=expiry&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($grand['0_30']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=0-30&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($grand['30_60']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=30-60&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($grand['60_90']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=60-90&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($grand['future']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=future&d1='.$d1.'&d2='.$d2)
+				)
 			);
 		}
 
@@ -2429,19 +2693,38 @@ class Admin_reports_model extends CI_Model {
 			foreach ($groups_map as $c => $data) {
 				$r_list = array();
 				foreach ($data['items'] as $s => $m) {
-					$r_list[] = array($c, $s, number_format($m['ref']), number_format($m['status']), number_format($m['lead']));
+					$r_list[] = array(
+						array('val' => $c, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub=All&metric=status&d1='.$d1.'&d2='.$d2),
+						array('val' => $s, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=status&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['ref']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=referrals&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['status']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=status&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['lead']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=lead&d1='.$d1.'&d2='.$d2)
+					);
 				}
 				$groups[] = array(
 					'category' => $c,
+					'category_url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub=All&metric=status&d1='.$d1.'&d2='.$d2,
 					'rows' => $r_list,
-					'subtotal' => array($c . ' Total', '', number_format($data['sub']['ref']), number_format($data['sub']['status']), number_format($data['sub']['lead']))
+					'subtotal' => array(
+						array('val' => $c . ' Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub=All&metric=status&d1='.$d1.'&d2='.$d2),
+						'',
+						array('val' => number_format($data['sub']['ref']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub=All&metric=referrals&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($data['sub']['status']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub=All&metric=status&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($data['sub']['lead']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub=All&metric=lead&d1='.$d1.'&d2='.$d2)
+					)
 				);
 			}
 
 			return array(
 				'headers' => $headers,
 				'groups' => $groups,
-				'grand_total' => array('Grand Total', '', number_format($grand['ref']), number_format($grand['status']), number_format($grand['lead']))
+				'grand_total' => array(
+					array('val' => 'Grand Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat=All&sub=All&metric=status&d1='.$d1.'&d2='.$d2),
+					'',
+					array('val' => number_format($grand['ref']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat=All&sub=All&metric=referrals&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($grand['status']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat=All&sub=All&metric=status&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($grand['lead']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat=All&sub=All&metric=lead&d1='.$d1.'&d2='.$d2)
+				)
 			);
 		}
 
@@ -2483,19 +2766,38 @@ class Admin_reports_model extends CI_Model {
 			foreach ($groups_map as $c => $data) {
 				$r_list = array();
 				foreach ($data['items'] as $s => $m) {
-					$r_list[] = array($c, $s, number_format($m['leads']), number_format($m['lost']), number_format($m['amt'], 2));
+					$r_list[] = array(
+						array('val' => $c, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub=All&metric=leads&d1='.$d1.'&d2='.$d2),
+						array('val' => $s, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=leads&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=leads&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['lost']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=lost&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['amt'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=quoted&d1='.$d1.'&d2='.$d2)
+					);
 				}
 				$groups[] = array(
 					'category' => $c,
+					'category_url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub=All&metric=leads&d1='.$d1.'&d2='.$d2,
 					'rows' => $r_list,
-					'subtotal' => array($c . ' Total', '', number_format($data['sub']['leads']), number_format($data['sub']['lost']), number_format($data['sub']['amt'], 2))
+					'subtotal' => array(
+						array('val' => $c . ' Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub=All&metric=leads&d1='.$d1.'&d2='.$d2),
+						'',
+						array('val' => number_format($data['sub']['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub=All&metric=leads&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($data['sub']['lost']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub=All&metric=lost&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($data['sub']['amt'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub=All&metric=quoted&d1='.$d1.'&d2='.$d2)
+					)
 				);
 			}
 
 			return array(
 				'headers' => $headers,
 				'groups' => $groups,
-				'grand_total' => array('Grand Total', '', number_format($grand['leads']), number_format($grand['lost']), number_format($grand['amt'], 2))
+				'grand_total' => array(
+					array('val' => 'Grand Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat=All&sub=All&metric=leads&d1='.$d1.'&d2='.$d2),
+					'',
+					array('val' => number_format($grand['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat=All&sub=All&metric=leads&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($grand['lost']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat=All&sub=All&metric=lost&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($grand['amt'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat=All&sub=All&metric=quoted&d1='.$d1.'&d2='.$d2)
+				)
 			);
 		}
 
@@ -2542,19 +2844,44 @@ class Admin_reports_model extends CI_Model {
 			foreach ($groups_map as $c => $data) {
 				$r_list = array();
 				foreach ($data['items'] as $s => $m) {
-					$r_list[] = array($c, $s, number_format($m['leads']), number_format($m['service']), number_format($m['lost']), number_format($m['cnt_amt']), number_format($m['sum_amt'], 2));
+					$r_list[] = array(
+						array('val' => $c, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub=All&metric=lead_records&d1='.$d1.'&d2='.$d2),
+						array('val' => $s, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=lead_records&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=lead_records&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['service']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=service_records&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['lost']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=lost&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['cnt_amt']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=quote_count&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['sum_amt'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=quote_sum&d1='.$d1.'&d2='.$d2)
+					);
 				}
 				$groups[] = array(
 					'category' => $c,
+					'category_url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub=All&metric=lead_records&d1='.$d1.'&d2='.$d2,
 					'rows' => $r_list,
-					'subtotal' => array($c . ' Total', '', number_format($data['sub']['leads']), number_format($data['sub']['service']), number_format($data['sub']['lost']), number_format($data['sub']['cnt_amt']), number_format($data['sub']['sum_amt'], 2))
+					'subtotal' => array(
+						array('val' => $c . ' Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub=All&metric=lead_records&d1='.$d1.'&d2='.$d2),
+						'',
+						array('val' => number_format($data['sub']['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub=All&metric=lead_records&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($data['sub']['service']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub=All&metric=service_records&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($data['sub']['lost']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub=All&metric=lost&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($data['sub']['cnt_amt']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub=All&metric=quote_count&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($data['sub']['sum_amt'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub=All&metric=quote_sum&d1='.$d1.'&d2='.$d2)
+					)
 				);
 			}
 
 			return array(
 				'headers' => $headers,
 				'groups' => $groups,
-				'grand_total' => array('Grand Total', '', number_format($grand['leads']), number_format($grand['service']), number_format($grand['lost']), number_format($grand['cnt_amt']), number_format($grand['sum_amt'], 2))
+				'grand_total' => array(
+					array('val' => 'Grand Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=lead_records&d1='.$d1.'&d2='.$d2),
+					'',
+					array('val' => number_format($grand['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=lead_records&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($grand['service']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=service_records&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($grand['lost']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=lost&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($grand['cnt_amt']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=quote_count&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($grand['sum_amt'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=quote_sum&d1='.$d1.'&d2='.$d2)
+				)
 			);
 		}
 
@@ -2594,19 +2921,38 @@ class Admin_reports_model extends CI_Model {
 			foreach ($groups_map as $c => $data) {
 				$r_list = array();
 				foreach ($data['items'] as $s => $m) {
-					$r_list[] = array($c, $s, number_format($m['leads']), number_format($m['closed']), number_format($m['mrr'], 2));
+					$r_list[] = array(
+						array('val' => $c, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub=All&metric=total_leads&d1='.$d1.'&d2='.$d2),
+						array('val' => $s, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=total_leads&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=total_leads&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['closed']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=closed&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['mrr'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=mrr&d1='.$d1.'&d2='.$d2)
+					);
 				}
 				$groups[] = array(
 					'category' => $c,
+					'category_url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub=All&metric=total_leads&d1='.$d1.'&d2='.$d2,
 					'rows' => $r_list,
-					'subtotal' => array($c . ' Total', '', number_format($data['sub']['leads']), number_format($data['sub']['closed']), number_format($data['sub']['mrr'], 2))
+					'subtotal' => array(
+						array('val' => $c . ' Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub=All&metric=total_leads&d1='.$d1.'&d2='.$d2),
+						'',
+						array('val' => number_format($data['sub']['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub=All&metric=total_leads&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($data['sub']['closed']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub=All&metric=closed&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($data['sub']['mrr'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub=All&metric=mrr&d1='.$d1.'&d2='.$d2)
+					)
 				);
 			}
 
 			return array(
 				'headers' => $headers,
 				'groups' => $groups,
-				'grand_total' => array('Grand Total', '', number_format($grand['leads']), number_format($grand['closed']), number_format($grand['mrr'], 2))
+				'grand_total' => array(
+					array('val' => 'Grand Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat=All&sub=All&metric=total_leads&d1='.$d1.'&d2='.$d2),
+					'',
+					array('val' => number_format($grand['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat=All&sub=All&metric=total_leads&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($grand['closed']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat=All&sub=All&metric=closed&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($grand['mrr'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat=All&sub=All&metric=mrr&d1='.$d1.'&d2='.$d2)
+				)
 			);
 		}
 
@@ -2646,19 +2992,38 @@ class Admin_reports_model extends CI_Model {
 			foreach ($groups_map as $c => $data) {
 				$r_list = array();
 				foreach ($data['items'] as $s => $m) {
-					$r_list[] = array($c, $s, number_format($m['companies']), number_format($m['tl']), number_format($m['cities']));
+					$r_list[] = array(
+						array('val' => $c, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub=All&metric=companies&d1='.$d1.'&d2='.$d2),
+						array('val' => $s, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=companies&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['companies']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=companies&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['tl']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=trade_licenses&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['cities']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=cities&d1='.$d1.'&d2='.$d2)
+					);
 				}
 				$groups[] = array(
 					'category' => $c,
+					'category_url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub=All&metric=companies&d1='.$d1.'&d2='.$d2,
 					'rows' => $r_list,
-					'subtotal' => array($c . ' Total', '', number_format($data['sub']['companies']), number_format($data['sub']['tl']), number_format($data['sub']['cities']))
+					'subtotal' => array(
+						array('val' => $c . ' Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub=All&metric=companies&d1='.$d1.'&d2='.$d2),
+						'',
+						array('val' => number_format($data['sub']['companies']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub=All&metric=companies&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($data['sub']['tl']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub=All&metric=trade_licenses&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($data['sub']['cities']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub=All&metric=cities&d1='.$d1.'&d2='.$d2)
+					)
 				);
 			}
 
 			return array(
 				'headers' => $headers,
 				'groups' => $groups,
-				'grand_total' => array('Grand Total', '', number_format($grand['companies']), number_format($grand['tl']), number_format($grand['cities']))
+				'grand_total' => array(
+					array('val' => 'Grand Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat=All&sub=All&metric=companies&d1='.$d1.'&d2='.$d2),
+					'',
+					array('val' => number_format($grand['companies']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat=All&sub=All&metric=companies&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($grand['tl']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat=All&sub=All&metric=trade_licenses&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($grand['cities']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat=All&sub=All&metric=cities&d1='.$d1.'&d2='.$d2)
+				)
 			);
 		}
 
@@ -2687,28 +3052,56 @@ class Admin_reports_model extends CI_Model {
 		foreach ($groups_map as $c => $data) {
 			$r_list = array();
 			foreach ($data['items'] as $s => $cnt) {
-				$r_list[] = array($c, $s, number_format($cnt));
+				$r_list[] = array(
+					array('val' => $c, 'url' => base_url().'manager/download-report/drilldown?dept='.$dept.'&report='.$report.'&cat='.urlencode($c).'&sub=All&metric=count&d1='.$d1.'&d2='.$d2),
+					array('val' => $s, 'url' => base_url().'manager/download-report/drilldown?dept='.$dept.'&report='.$report.'&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=count&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($cnt), 'url' => base_url().'manager/download-report/drilldown?dept='.$dept.'&report='.$report.'&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=count&d1='.$d1.'&d2='.$d2)
+				);
 				$grand_total_count += $cnt;
 			}
 			$groups[] = array(
 				'category' => $c,
+				'category_url' => base_url().'manager/download-report/drilldown?dept='.$dept.'&report='.$report.'&cat='.urlencode($c).'&sub=All&metric=count&d1='.$d1.'&d2='.$d2,
 				'rows' => $r_list,
-				'subtotal' => array($c . ' Total', '', number_format($data['count']))
+				'subtotal' => array(
+					array('val' => $c . ' Total', 'url' => base_url().'manager/download-report/drilldown?dept='.$dept.'&report='.$report.'&cat='.urlencode($c).'&sub=All&metric=count&d1='.$d1.'&d2='.$d2),
+					'',
+					array('val' => number_format($data['count']), 'url' => base_url().'manager/download-report/drilldown?dept='.$dept.'&report='.$report.'&cat='.urlencode($c).'&sub=All&metric=count&d1='.$d1.'&d2='.$d2)
+				)
 			);
 		}
 
 		return array(
 			'headers' => array('Category', 'Subcategory', 'Record Count'),
 			'groups' => $groups,
-			'grand_total' => array('Grand Total', '', number_format($grand_total_count))
+			'grand_total' => array(
+				array('val' => 'Grand Total', 'url' => base_url().'manager/download-report/drilldown?dept='.$dept.'&report='.$report.'&cat=All&sub=All&metric=count&d1='.$d1.'&d2='.$d2),
+				'',
+				array('val' => number_format($grand_total_count), 'url' => base_url().'manager/download-report/drilldown?dept='.$dept.'&report='.$report.'&cat=All&sub=All&metric=count&d1='.$d1.'&d2='.$d2)
+			)
 		);
 	}
 
-	public function getDrilldownRecords($report, $metric, $uid, $auth, $window, $d1, $d2, $manager_id, $is_admin_or_support)
+	public function getDrilldownRecords($dept, $report, $metric, $uid, $auth, $window, $cat, $sub, $d1, $d2, $manager_id, $is_admin_or_support)
 	{
+		if (empty($report) && !empty($dept)) {
+			$report = $dept;
+			$dept = 'sales';
+		}
+		if (in_array($dept, array('performance', 'trade-license', 'database', 'lost', 'quote', 'lead', 'tax-registration'))) {
+			$sub = $cat;
+			$cat = $window;
+			$window = $auth;
+			$auth = $uid;
+			$uid = $metric;
+			$metric = $report;
+			$report = $dept;
+			$dept = 'sales';
+		}
+
 		$user_name = '';
-		if ($uid > 0) {
-			$user_row = $this->db->select('name')->where('id', $uid)->get('ci_user')->row_array();
+		if (is_numeric($uid) && (int)$uid > 0) {
+			$user_row = $this->db->select('name')->where('id', (int)$uid)->get('ci_user')->row_array();
 			if (!empty($user_row['name'])) {
 				$user_name = $user_row['name'];
 			}
@@ -2719,7 +3112,20 @@ class Admin_reports_model extends CI_Model {
 				$this->db->select('F.id, F.lead_id, F.followup_date, F.followup_remark, L.customer, L.mobile, L.email, L.category, L.status');
 				$this->db->from('ci_followup as F');
 				$this->db->join('ci_leads as L', 'F.lead_id = L.id', 'LEFT');
-				$this->db->where('F.user_id', $uid);
+
+				if ($uid === 'team') {
+					$team_users = $this->db->select('id')->where('manager', $manager_id)->get('ci_user')->result_array();
+					$tuids = array();
+					foreach ($team_users as $tu) {
+						$tuids[] = (int)$tu['id'];
+					}
+					if (!empty($tuids)) {
+						$this->db->where_in('F.user_id', $tuids);
+					}
+				} elseif ($uid !== 'all' && is_numeric($uid) && (int)$uid > 0) {
+					$this->db->where('F.user_id', (int)$uid);
+				}
+
 				$this->db->where('F.followup_remark != ""');
 				$this->_applyDate($this->db, 'F.followup_date', $d1, $d2);
 				$this->db->order_by('F.followup_date', 'DESC');
@@ -2727,20 +3133,27 @@ class Admin_reports_model extends CI_Model {
 
 				$rows = array();
 				foreach ($records as $r) {
+					$lead_enc = !empty($r['lead_id']) ? base64_encode($r['lead_id']) : '';
+					$lead_link = !empty($lead_enc) ? '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $r['lead_id'] . '</a>' : '-';
+					$cust_link = !empty($lead_enc) ? '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . (!empty($r['customer']) ? $r['customer'] : '-') . '</a>' : (!empty($r['customer']) ? $r['customer'] : '-');
+					$action_btn = !empty($lead_enc) ? '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" class="btn btn-xs btn-primary" target="_blank"><i class="fa fa-eye"></i> Preview</a>' : '-';
+
 					$rows[] = array(
-						'lead_id' => !empty($r['lead_id']) ? $r['lead_id'] : '-',
-						'customer' => !empty($r['customer']) ? $r['customer'] : '-',
+						'raw_id' => !empty($r['lead_id']) ? $r['lead_id'] : 0,
+						'lead_id' => $lead_link,
+						'customer' => $cust_link,
 						'mobile' => !empty($r['mobile']) ? $r['mobile'] : '-',
 						'email' => !empty($r['email']) ? $r['email'] : '-',
 						'category' => !empty($r['category']) ? $r['category'] : '-',
 						'followup_date' => !empty($r['followup_date']) ? simple_date($r['followup_date']) : '-',
 						'followup_remark' => !empty($r['followup_remark']) ? $r['followup_remark'] : '-',
-						'action' => '<a href="'.base_url().'manager/leads/view/'.$r['lead_id'].'" class="btn btn-xs btn-primary" target="_blank"><i class="fa fa-eye"></i> View Lead</a>'
+						'action' => $action_btn
 					);
 				}
 
+				$title_suffix = ($user_name ? $user_name : ($uid === 'team' ? 'Team' : ($uid === 'all' ? 'All Staff' : 'Staff #'.$uid)));
 				return array(
-					'title' => 'Followups Attended - ' . ($user_name ? $user_name : 'Staff #'.$uid),
+					'title' => 'Followups Attended - ' . $title_suffix,
 					'headers' => array('Lead ID', 'Customer / Company', 'Mobile', 'Email', 'Service Category', 'Followup Date', 'Remark', 'Action'),
 					'fields' => array('lead_id', 'customer', 'mobile', 'email', 'category', 'followup_date', 'followup_remark', 'action'),
 					'rows' => $rows,
@@ -2752,7 +3165,23 @@ class Admin_reports_model extends CI_Model {
 			$this->db->from('ci_leads as A');
 			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'LEFT');
 			$this->db->join('ci_status as C', 'A.status = C.id', 'LEFT');
-			$this->db->where("(A.lead_assign = $uid OR A.created_by = $uid)");
+
+			if ($uid === 'team') {
+				$team_users = $this->db->select('id')->where('manager', $manager_id)->get('ci_user')->result_array();
+				$tuids = array();
+				foreach ($team_users as $tu) {
+					$tuids[] = (int)$tu['id'];
+				}
+				if (!empty($tuids)) {
+					$this->db->where_in('A.lead_assign', $tuids);
+				}
+			} elseif ($uid !== 'all' && is_numeric($uid) && (int)$uid > 0) {
+				$u_int = (int)$uid;
+				$this->db->where("(A.lead_assign = $u_int OR A.created_by = $u_int)");
+			} elseif (!$is_admin_or_support) {
+				$this->db->where("(A.lead_assign = $manager_id OR A.created_by = $manager_id)");
+			}
+
 			$this->_applyDate($this->db, 'A.created', $d1, $d2);
 
 			$metric_title = 'Assigned Leads';
@@ -2786,11 +3215,13 @@ class Admin_reports_model extends CI_Model {
 
 			$rows = array();
 			foreach ($leads as $l) {
+				$lead_enc = base64_encode($l['id']);
 				$lead_num = !empty($l['lead_id']) ? $l['lead_id'] : $l['id'];
 				$st_name = !empty($l['status_name']) ? $l['status_name'] : 'Lead #'.$l['status'];
 				$rows[] = array(
-					'lead_id' => $lead_num,
-					'customer' => $l['customer'],
+					'raw_id' => $l['id'],
+					'lead_id' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $lead_num . '</a>',
+					'customer' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $l['customer'] . '</a>',
 					'mobile' => !empty($l['mobile']) ? $l['mobile'] : '-',
 					'email' => !empty($l['email']) ? $l['email'] : '-',
 					'category' => !empty($l['category']) ? $l['category'] : '-',
@@ -2798,12 +3229,13 @@ class Admin_reports_model extends CI_Model {
 					'quote_amount' => 'AED ' . number_format((float)$l['quote_amount'], 2),
 					'mrr' => 'AED ' . number_format((float)$l['mrr'], 2),
 					'created' => simple_date($l['created']),
-					'action' => '<a href="'.base_url().'manager/leads/view/'.$l['id'].'" class="btn btn-xs btn-primary" target="_blank"><i class="fa fa-eye"></i> View Lead</a>'
+					'action' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" class="btn btn-xs btn-primary" target="_blank"><i class="fa fa-eye"></i> Preview</a>'
 				);
 			}
 
+			$title_suffix = ($user_name ? $user_name : ($uid === 'team' ? 'Team' : ($uid === 'all' ? 'All Staff' : 'Staff #'.$uid)));
 			return array(
-				'title' => $metric_title . ' - ' . ($user_name ? $user_name : 'Staff #'.$uid),
+				'title' => $metric_title . ' - ' . $title_suffix,
 				'headers' => array('Lead ID', 'Customer / Company', 'Mobile', 'Email', 'Service Category', 'Status', 'Quote Amount', 'MRR', 'Created Date', 'Action'),
 				'fields' => array('lead_id', 'customer', 'mobile', 'email', 'category', 'status', 'quote_amount', 'mrr', 'created', 'action'),
 				'rows' => $rows,
@@ -2815,6 +3247,7 @@ class Admin_reports_model extends CI_Model {
 			$this->db->select('A.*, B.name as assigned_name');
 			$this->db->from('ci_leads as A');
 			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'LEFT');
+			$this->db->where('(A.company_status IS NULL OR LOWER(A.company_status) != "closed")');
 			$this->db->where('(A.tl_number != "" OR A.tl_authority != "" OR (A.tl_expire_date != "" AND A.tl_expire_date != "0000-00-00"))');
 			$this->_applyDate($this->db, 'A.created', $d1, $d2);
 
@@ -2828,15 +3261,18 @@ class Admin_reports_model extends CI_Model {
 			if ($window == 'expiry') {
 				$this->db->where("(A.tl_expire_date < CURDATE() OR A.tl_expire_date IS NULL OR A.tl_expire_date = '' OR A.tl_expire_date = '0000-00-00')");
 				$window_title = 'Expired Licenses';
-			} elseif ($window == '60-90') {
-				$this->db->where("A.tl_expire_date BETWEEN DATE_ADD(CURDATE(), INTERVAL 61 DAY) AND DATE_ADD(CURDATE(), INTERVAL 90 DAY)");
-				$window_title = 'Licenses Expiring in 60–90 Days';
-			} elseif ($window == '30-60') {
-				$this->db->where("A.tl_expire_date BETWEEN DATE_ADD(CURDATE(), INTERVAL 31 DAY) AND DATE_ADD(CURDATE(), INTERVAL 60 DAY)");
-				$window_title = 'Licenses Expiring in 30–60 Days';
 			} elseif ($window == '0-30') {
 				$this->db->where("A.tl_expire_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)");
 				$window_title = 'Licenses Expiring in 0–30 Days';
+			} elseif ($window == '30-60') {
+				$this->db->where("A.tl_expire_date BETWEEN DATE_ADD(CURDATE(), INTERVAL 31 DAY) AND DATE_ADD(CURDATE(), INTERVAL 60 DAY)");
+				$window_title = 'Licenses Expiring in 30–60 Days';
+			} elseif ($window == '60-90') {
+				$this->db->where("A.tl_expire_date BETWEEN DATE_ADD(CURDATE(), INTERVAL 61 DAY) AND DATE_ADD(CURDATE(), INTERVAL 90 DAY)");
+				$window_title = 'Licenses Expiring in 60–90 Days';
+			} elseif ($window == 'future') {
+				$this->db->where("A.tl_expire_date > DATE_ADD(CURDATE(), INTERVAL 90 DAY)");
+				$window_title = 'All Future Valid Licenses';
 			}
 
 			$this->db->order_by('A.id', 'DESC');
@@ -2844,31 +3280,340 @@ class Admin_reports_model extends CI_Model {
 
 			$rows = array();
 			foreach ($leads as $l) {
+				$lead_enc = base64_encode($l['id']);
+				$lead_num = !empty($l['lead_id']) ? $l['lead_id'] : $l['id'];
+				$auth_val = !empty($l['tl_authority']) ? $l['tl_authority'] : 'General Licensing';
+				$zone = !empty($l['tl_zone']) ? $l['tl_zone'] : '';
+				if (empty($zone)) {
+					if (stripos($auth_val, 'Free Zone') !== false || stripos($auth_val, 'Freezone') !== false || stripos($auth_val, 'DIFC') !== false || stripos($auth_val, 'ADGM') !== false) {
+						$zone = 'Freezone';
+					} elseif (stripos($auth_val, 'Department of Economic') !== false || stripos($auth_val, 'Municipality') !== false || stripos($auth_val, 'DED') !== false || stripos($auth_val, 'DET') !== false) {
+						$zone = 'Mainland';
+					}
+				}
+				$zone_badge = (!empty($zone) && in_array(strtolower($zone), array('mainland', 'freezone'))) ? '<span class="label" style="background:#000000; color:#ffffff; font-weight:700;">' . ucfirst(strtolower($zone)) . '</span>' : (!empty($zone) ? $zone : '-');
+				$emirate = !empty($l['tl_emirate']) ? $l['tl_emirate'] : (!empty($l['city']) ? $l['city'] : '-');
+
 				$rows[] = array(
-					'customer' => !empty($l['customer']) ? $l['customer'] : '-',
+					'raw_id' => $l['id'],
+					'lead_id' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $lead_num . '</a>',
+					'customer' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $l['customer'] . '</a>',
+					'tl_authority' => $auth_val,
+					'tl_emirate' => $emirate,
+					'tl_zone' => $zone_badge,
 					'tl_number' => !empty($l['tl_number']) ? $l['tl_number'] : '-',
-					'tl_authority' => !empty($l['tl_authority']) ? $l['tl_authority'] : 'General Licensing',
 					'tl_issue_date' => (!empty($l['tl_issue_date']) && $l['tl_issue_date'] != '0000-00-00') ? simple_date($l['tl_issue_date']) : '-',
 					'tl_expire_date' => (!empty($l['tl_expire_date']) && $l['tl_expire_date'] != '0000-00-00') ? simple_date($l['tl_expire_date']) : '-',
-					'action' => '<a href="'.base_url().'manager/leads/view/'.$l['id'].'" class="btn btn-xs btn-primary" target="_blank"><i class="fa fa-eye"></i> View Lead</a>'
+					'assigned_name' => !empty($l['assigned_name']) ? $l['assigned_name'] : 'Unassigned',
+					'action' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" class="btn btn-xs btn-primary" target="_blank"><i class="fa fa-eye"></i> Preview</a>'
 				);
 			}
 
 			return array(
-				'title' => $window_title . (!empty($auth) ? ' (' . $auth . ')' : ''),
-				'headers' => array('Company Name', 'License Number', 'Licensing Authority', 'Trade License Issue Date', 'Trade License Expiry Date', 'Action'),
-				'fields' => array('customer', 'tl_number', 'tl_authority', 'tl_issue_date', 'tl_expire_date', 'action'),
+				'title' => $window_title . (!empty($auth) && $auth !== 'All' ? ' (' . $auth . ')' : ''),
+				'headers' => array('Lead ID', 'Company Name', 'Licensing Authority', 'Emirate', 'Zone', 'License Number', 'Issue Date', 'Expired', 'Assigned To', 'Action'),
+				'fields' => array('lead_id', 'customer', 'tl_authority', 'tl_emirate', 'tl_zone', 'tl_number', 'tl_issue_date', 'tl_expire_date', 'assigned_name', 'action'),
 				'rows' => $rows,
 				'count' => count($rows)
 			);
 		}
 
+		if ($report == 'database') {
+			$this->db->select('A.*, B.name as assigned_name, C.status as status_name');
+			$this->db->from('ci_leads as A');
+			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'LEFT');
+			$this->db->join('ci_status as C', 'A.status = C.id', 'LEFT');
+			$this->_applyDate($this->db, 'A.created', $d1, $d2);
+
+			if (!empty($cat) && $cat !== 'All') {
+				$this->db->where('A.database_category', $cat);
+			}
+			if (!empty($sub) && $sub !== 'All' && $sub !== 'General') {
+				$this->db->where('C.status', $sub);
+			}
+
+			if ($metric == 'referrals') {
+				$this->db->where('A.data_batch_referral_no !=', '');
+				$this->db->where('A.data_batch_referral_no IS NOT NULL', null, false);
+			} elseif ($metric == 'lead') {
+				$this->db->where_in('C.status', array('Activated', 'Database', 'Expected', 'In Process', 'Lead'));
+			}
+
+			$this->db->order_by('A.id', 'DESC');
+			$leads = $this->db->get()->result_array();
+
+			$rows = array();
+			foreach ($leads as $l) {
+				$lead_enc = base64_encode($l['id']);
+				$lead_num = !empty($l['lead_id']) ? $l['lead_id'] : $l['id'];
+				$st_name = !empty($l['status_name']) ? $l['status_name'] : '-';
+
+				$rows[] = array(
+					'raw_id' => $l['id'],
+					'lead_id' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $lead_num . '</a>',
+					'customer' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $l['customer'] . '</a>',
+					'database_category' => !empty($l['database_category']) ? $l['database_category'] : '-',
+					'data_batch_referral_no' => !empty($l['data_batch_referral_no']) ? $l['data_batch_referral_no'] : '-',
+					'status_name' => '<span class="label label-info">' . $st_name . '</span>',
+					'assigned_name' => !empty($l['assigned_name']) ? $l['assigned_name'] : 'Unassigned',
+					'created' => simple_date($l['created']),
+					'action' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" class="btn btn-xs btn-primary" target="_blank"><i class="fa fa-eye"></i> Preview</a>'
+				);
+			}
+
+			return array(
+				'title' => 'Database Report Details' . (!empty($cat) && $cat !== 'All' ? ' - ' . $cat : '') . (!empty($sub) && $sub !== 'All' ? ' (' . $sub . ')' : ''),
+				'headers' => array('Lead ID', 'Company Name', 'Database Category', 'Batch / Referral', 'Status', 'Assigned To', 'Created Date', 'Action'),
+				'fields' => array('lead_id', 'customer', 'database_category', 'data_batch_referral_no', 'status_name', 'assigned_name', 'created', 'action'),
+				'rows' => $rows,
+				'count' => count($rows)
+			);
+		}
+
+		if ($report == 'lost') {
+			$this->db->select('A.*, B.name as assigned_name, C.status as status_name');
+			$this->db->from('ci_leads as A');
+			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'LEFT');
+			$this->db->join('ci_status as C', 'A.status = C.id', 'LEFT');
+			$this->db->where("(A.status IN (43, 44) OR LOWER(A.status_category) LIKE '%lost%' OR LOWER(A.lost_reason) LIKE '%lost%')");
+			$this->_applyDate($this->db, 'A.created', $d1, $d2);
+
+			if (!empty($cat) && $cat !== 'All') {
+				$this->db->where("(A.status_category = " . $this->db->escape($cat) . " OR A.lost_reason = " . $this->db->escape($cat) . ")");
+			}
+			if (!empty($sub) && $sub !== 'All') {
+				$this->db->where('C.status', $sub);
+			}
+
+			if ($metric == 'quoted') {
+				$this->db->where('(A.quote_amount > 0 OR A.mrr > 0)');
+			}
+
+			$this->db->order_by('A.id', 'DESC');
+			$leads = $this->db->get()->result_array();
+
+			$rows = array();
+			foreach ($leads as $l) {
+				$lead_enc = base64_encode($l['id']);
+				$lead_num = !empty($l['lead_id']) ? $l['lead_id'] : $l['id'];
+				$st_name = !empty($l['status_name']) ? $l['status_name'] : 'Lost';
+
+				$rows[] = array(
+					'raw_id' => $l['id'],
+					'lead_id' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $lead_num . '</a>',
+					'customer' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $l['customer'] . '</a>',
+					'poc' => !empty($l['poc']) ? $l['poc'] : '-',
+					'contact1' => !empty($l['contact1']) ? $l['contact1'] : (!empty($l['mobile']) ? $l['mobile'] : '-'),
+					'status_name' => '<span class="label label-danger">' . $st_name . '</span>',
+					'status_category' => !empty($l['status_category']) ? $l['status_category'] : (!empty($l['lost_reason']) ? $l['lost_reason'] : '-'),
+					'quote_amount_fmt' => 'AED ' . number_format((float)$l['quote_amount'], 2),
+					'mrr_fmt' => 'AED ' . number_format((float)$l['mrr'], 2),
+					'assigned_name' => !empty($l['assigned_name']) ? $l['assigned_name'] : 'Unassigned',
+					'created' => simple_date($l['created']),
+					'action' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" class="btn btn-xs btn-primary" target="_blank"><i class="fa fa-eye"></i> Preview</a>'
+				);
+			}
+
+			return array(
+				'title' => 'Lost Leads Details' . (!empty($cat) && $cat !== 'All' ? ' - ' . $cat : '') . (!empty($sub) && $sub !== 'All' ? ' (' . $sub . ')' : ''),
+				'headers' => array('Lead ID', 'Company Name', 'POC', 'Contact', 'Status', 'Lost Category', 'Quoted Value (AED)', 'MRR (AED)', 'Assigned To', 'Created Date', 'Action'),
+				'fields' => array('lead_id', 'customer', 'poc', 'contact1', 'status_name', 'status_category', 'quote_amount_fmt', 'mrr_fmt', 'assigned_name', 'created', 'action'),
+				'rows' => $rows,
+				'count' => count($rows)
+			);
+		}
+
+		if ($report == 'quote') {
+			$this->db->select('A.*, B.name as assigned_name, C.status as status_name');
+			$this->db->from('ci_leads as A');
+			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'LEFT');
+			$this->db->join('ci_status as C', 'A.status = C.id', 'LEFT');
+			$this->_applyDate($this->db, 'A.created', $d1, $d2);
+
+			if (!empty($cat) && $cat !== 'All') {
+				$this->db->where('A.quote_status', $cat);
+			}
+			if (!empty($sub) && $sub !== 'All' && $sub !== 'General') {
+				$this->db->where('C.status', $sub);
+			}
+
+			if ($metric == 'lost') {
+				$this->db->where("(A.status IN (43, 44) OR LOWER(A.status_category) LIKE '%lost%' OR LOWER(A.lost_reason) LIKE '%lost%')");
+			} elseif ($metric == 'quote_count' || $metric == 'quote_sum') {
+				$this->db->where('A.quote_amount >', 0);
+			}
+
+			$this->db->order_by('A.id', 'DESC');
+			$leads = $this->db->get()->result_array();
+
+			$rows = array();
+			foreach ($leads as $l) {
+				$lead_enc = base64_encode($l['id']);
+				$lead_num = !empty($l['lead_id']) ? $l['lead_id'] : $l['id'];
+				$st_name = !empty($l['status_name']) ? $l['status_name'] : '-';
+
+				$rows[] = array(
+					'raw_id' => $l['id'],
+					'lead_id' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $lead_num . '</a>',
+					'customer' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $l['customer'] . '</a>',
+					'quote_status' => !empty($l['quote_status']) ? $l['quote_status'] : '-',
+					'quote_mode' => !empty($l['quote_mode']) ? $l['quote_mode'] : '-',
+					'quote_amount_fmt' => 'AED ' . number_format((float)$l['quote_amount'], 2),
+					'status_name' => '<span class="label label-info">' . $st_name . '</span>',
+					'assigned_name' => !empty($l['assigned_name']) ? $l['assigned_name'] : 'Unassigned',
+					'created' => simple_date($l['created']),
+					'action' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" class="btn btn-xs btn-primary" target="_blank"><i class="fa fa-eye"></i> Preview</a>'
+				);
+			}
+
+			return array(
+				'title' => 'Quotes Details' . (!empty($cat) && $cat !== 'All' ? ' - ' . $cat : '') . (!empty($sub) && $sub !== 'All' ? ' (' . $sub . ')' : ''),
+				'headers' => array('Lead ID', 'Company Name', 'Quote Status', 'Quote Mode', 'Quote Amount', 'Status', 'Assigned To', 'Created Date', 'Action'),
+				'fields' => array('lead_id', 'customer', 'quote_status', 'quote_mode', 'quote_amount_fmt', 'status_name', 'assigned_name', 'created', 'action'),
+				'rows' => $rows,
+				'count' => count($rows)
+			);
+		}
+
+		if ($report == 'lead') {
+			$this->db->select('A.*, B.name as assigned_name, C.status as status_name');
+			$this->db->from('ci_leads as A');
+			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'LEFT');
+			$this->db->join('ci_status as C', 'A.status = C.id', 'LEFT');
+			$this->_applyDate($this->db, 'A.created', $d1, $d2);
+
+			if (!empty($cat) && $cat !== 'All') {
+				$this->db->where('C.status', $cat);
+			}
+			if (!empty($sub) && $sub !== 'All' && $sub !== 'General Category') {
+				$this->db->where("(A.industry_category = " . $this->db->escape($sub) . " OR A.category = " . $this->db->escape($sub) . ")");
+			}
+
+			if ($metric == 'closed') {
+				$this->db->where_in('A.status', array(39, 42, 43, 44));
+			} elseif ($metric == 'active') {
+				$this->db->where_not_in('A.status', array(42, 43, 44));
+			} elseif ($metric == 'mrr') {
+				$this->db->where('A.mrr >', 0);
+			}
+
+			$this->db->order_by('A.id', 'DESC');
+			$leads = $this->db->get()->result_array();
+
+			$rows = array();
+			foreach ($leads as $l) {
+				$lead_enc = base64_encode($l['id']);
+				$lead_num = !empty($l['lead_id']) ? $l['lead_id'] : $l['id'];
+				$st_name = !empty($l['status_name']) ? $l['status_name'] : '-';
+
+				$rows[] = array(
+					'raw_id' => $l['id'],
+					'lead_id' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $lead_num . '</a>',
+					'customer' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $l['customer'] . '</a>',
+					'category' => !empty($l['category']) ? $l['category'] : '-',
+					'industry_category' => !empty($l['industry_category']) ? $l['industry_category'] : '-',
+					'status_name' => '<span class="label label-info">' . $st_name . '</span>',
+					'mrr_fmt' => 'AED ' . number_format((float)$l['mrr'], 2),
+					'assigned_name' => !empty($l['assigned_name']) ? $l['assigned_name'] : 'Unassigned',
+					'created' => simple_date($l['created']),
+					'action' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" class="btn btn-xs btn-primary" target="_blank"><i class="fa fa-eye"></i> Preview</a>'
+				);
+			}
+
+			return array(
+				'title' => 'Leads Details' . (!empty($cat) && $cat !== 'All' ? ' - ' . $cat : '') . (!empty($sub) && $sub !== 'All' ? ' (' . $sub . ')' : ''),
+				'headers' => array('Lead ID', 'Company Name', 'Service Category', 'Industry Category', 'Status', 'MRR (AED)', 'Assigned To', 'Created Date', 'Action'),
+				'fields' => array('lead_id', 'customer', 'category', 'industry_category', 'status_name', 'mrr_fmt', 'assigned_name', 'created', 'action'),
+				'rows' => $rows,
+				'count' => count($rows)
+			);
+		}
+
+		if ($report == 'tax-registration') {
+			$this->db->select('A.*, B.name as assigned_name');
+			$this->db->from('ci_leads as A');
+			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'LEFT');
+			$this->_applyDate($this->db, 'A.created', $d1, $d2);
+
+			if (!empty($cat) && $cat !== 'All') {
+				$this->db->where('A.corporate_tax_status', $cat);
+			}
+			if (!empty($sub) && $sub !== 'All') {
+				$this->db->where('A.vat_status', $sub);
+			}
+
+			if ($metric == 'trade_licenses') {
+				$this->db->where('A.tl_number !=', '');
+				$this->db->where('A.tl_number IS NOT NULL', null, false);
+			} elseif ($metric == 'cities') {
+				$this->db->where('A.city !=', '');
+				$this->db->where('A.city IS NOT NULL', null, false);
+			}
+
+			$this->db->order_by('A.id', 'DESC');
+			$leads = $this->db->get()->result_array();
+
+			$rows = array();
+			foreach ($leads as $l) {
+				$lead_enc = base64_encode($l['id']);
+				$lead_num = !empty($l['lead_id']) ? $l['lead_id'] : $l['id'];
+
+				$rows[] = array(
+					'raw_id' => $l['id'],
+					'lead_id' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $lead_num . '</a>',
+					'customer' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $l['customer'] . '</a>',
+					'corporate_tax_status' => !empty($l['corporate_tax_status']) ? $l['corporate_tax_status'] : 'Not Registered',
+					'vat_status' => !empty($l['vat_status']) ? $l['vat_status'] : 'Not Registered',
+					'tl_number' => !empty($l['tl_number']) ? $l['tl_number'] : '-',
+					'city' => !empty($l['city']) ? $l['city'] : '-',
+					'assigned_name' => !empty($l['assigned_name']) ? $l['assigned_name'] : 'Unassigned',
+					'created' => simple_date($l['created']),
+					'action' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" class="btn btn-xs btn-primary" target="_blank"><i class="fa fa-eye"></i> Preview</a>'
+				);
+			}
+
+			return array(
+				'title' => 'Tax Registration Details' . (!empty($cat) && $cat !== 'All' ? ' - ' . $cat : '') . (!empty($sub) && $sub !== 'All' ? ' (' . $sub . ')' : ''),
+				'headers' => array('Lead ID', 'Company Name', 'Corporate Tax', 'VAT Status', 'Trade License Number', 'City', 'Assigned To', 'Created Date', 'Action'),
+				'fields' => array('lead_id', 'customer', 'corporate_tax_status', 'vat_status', 'tl_number', 'city', 'assigned_name', 'created', 'action'),
+				'rows' => $rows,
+				'count' => count($rows)
+			);
+		}
+
+		$rep_res = $this->getReportData($dept, $report, array('d1' => $d1, 'd2' => $d2, 'manager_id' => $manager_id, 'is_admin_or_support' => $is_admin_or_support));
+		$rep_rows = isset($rep_res['rows']) ? $rep_res['rows'] : array();
+		$filtered = array();
+		foreach ($rep_rows as $r) {
+			if (!empty($cat) && $cat !== 'All') {
+				$match_cat = false;
+				foreach ($r as $val) {
+					if (is_string($val) && trim(strip_tags($val)) === $cat) {
+						$match_cat = true;
+						break;
+					}
+				}
+				if (!$match_cat) continue;
+			}
+			if (!empty($sub) && $sub !== 'All') {
+				$match_sub = false;
+				foreach ($r as $val) {
+					if (is_string($val) && trim(strip_tags($val)) === $sub) {
+						$match_sub = true;
+						break;
+					}
+				}
+				if (!$match_sub) continue;
+			}
+			$filtered[] = $r;
+		}
+
 		return array(
-			'title' => 'Drill-Down Records',
-			'headers' => array(),
-			'fields' => array(),
-			'rows' => array(),
-			'count' => 0
+			'title' => (!empty($rep_res['title']) ? $rep_res['title'] : 'Report') . ' Details' . (!empty($cat) && $cat !== 'All' ? ' - ' . $cat : ''),
+			'headers' => isset($rep_res['headers']) ? $rep_res['headers'] : array(),
+			'fields' => isset($rep_res['fields']) ? $rep_res['fields'] : array(),
+			'rows' => $filtered,
+			'count' => count($filtered)
 		);
 	}
 

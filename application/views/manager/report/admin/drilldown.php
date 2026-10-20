@@ -82,6 +82,30 @@
                 <span class="badge" style="background: #2563eb; color: #ffffff; padding: 7px 12px; font-size: 12.5px; font-weight: 600; border-radius: 4px;">
                     <i class="fa fa-list" style="margin-right: 5px;"></i> <?php echo number_format($drilldown_data['count']); ?> Records
                 </span>
+                <?php if (isset($is_admin_or_support) && $is_admin_or_support) { ?>
+                <button type="button" id="btnDeleteSelected" class="btn btn-danger" style="display: none; font-weight: 600; border-radius: 4px; padding: 6px 12px; font-size: 12.5px; background: #dc2626; border-color: #b91c1c; color: #ffffff;">
+                    <i class="fa fa-trash"></i> Delete Selected (<span id="selectedCount">0</span>)
+                </button>
+                <?php } ?>
+                <?php if (isset($is_admin_or_support) && $is_admin_or_support) { ?>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-weight: 600; border-radius: 4px; padding: 6px 12px; font-size: 12.5px; background: #ffffff; border-color: #d1d5db; color: #1e293b; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fa fa-download"></i> Export <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-right" style="border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,0.1); min-width: 170px; padding: 6px 0; margin-top: 4px; border: 1px solid #e2e8f0;">
+                        <li>
+                            <a href="<?php echo current_url() . '?' . http_build_query(array_merge($_GET, array('export' => 'excel'))); ?>" style="padding: 8px 16px; font-size: 12.5px; font-weight: 500; color: #1e293b;">
+                                <i class="fa fa-file-excel-o text-success" style="margin-right: 8px; width: 14px;"></i> Export Excel
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo current_url() . '?' . http_build_query(array_merge($_GET, array('export' => 'csv'))); ?>" style="padding: 8px 16px; font-size: 12.5px; font-weight: 500; color: #1e293b;">
+                                <i class="fa fa-file-text-o text-info" style="margin-right: 8px; width: 14px;"></i> Export CSV
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <?php } ?>
                 <button type="button" onclick="window.print();" class="btn btn-default" style="font-weight: 600; border-radius: 4px; padding: 6px 12px; font-size: 12.5px; background: #ffffff; border-color: #d1d5db; color: #374151;">
                     <i class="fa fa-print"></i> Print
                 </button>
@@ -96,6 +120,9 @@
                 <thead>
                     <tr>
                         <th style="width: 40px; text-align: center;">#</th>
+                        <?php if (isset($is_admin_or_support) && $is_admin_or_support) { ?>
+                        <th style="width: 35px; text-align: center;"><input type="checkbox" id="selectAllLeadCb" style="cursor: pointer;"></th>
+                        <?php } ?>
                         <?php foreach ($drilldown_data['headers'] as $header) { ?>
                         <th><?php echo htmlspecialchars($header); ?></th>
                         <?php } ?>
@@ -108,10 +135,17 @@
                     ?>
                     <tr>
                         <td style="text-align: center; color: #64748b; font-weight: 600;"><?php echo $row_idx++; ?></td>
+                        <?php if (isset($is_admin_or_support) && $is_admin_or_support) { ?>
+                        <td style="text-align: center;">
+                            <?php if (!empty($r['raw_id'])) { ?>
+                            <input type="checkbox" class="drilldown-lead-cb" value="<?php echo $r['raw_id']; ?>" style="cursor: pointer;">
+                            <?php } ?>
+                        </td>
+                        <?php } ?>
                         <?php foreach ($drilldown_data['fields'] as $f) { ?>
                         <td>
                             <?php 
-                            if ($f == 'action' || $f == 'status') {
+                            if ($f == 'action' || $f == 'status' || $f == 'status_name' || (isset($r[$f]) && strpos($r[$f], '<') !== false)) {
                                 echo isset($r[$f]) ? $r[$f] : '';
                             } else {
                                 echo isset($r[$f]) ? htmlspecialchars($r[$f]) : '-';
@@ -136,6 +170,67 @@
 
 <script>
 $(document).ready(function() {
+    <?php if (isset($is_admin_or_support) && $is_admin_or_support) { ?>
+    $('#selectAllLeadCb').on('change', function() {
+        var checked = $(this).is(':checked');
+        $('.drilldown-lead-cb').prop('checked', checked);
+        updateDeleteBtn();
+    });
+
+    $(document).on('change', '.drilldown-lead-cb', function() {
+        var allChecked = ($('.drilldown-lead-cb:checked').length === $('.drilldown-lead-cb').length) && ($('.drilldown-lead-cb').length > 0);
+        $('#selectAllLeadCb').prop('checked', allChecked);
+        updateDeleteBtn();
+    });
+
+    function updateDeleteBtn() {
+        var count = $('.drilldown-lead-cb:checked').length;
+        $('#selectedCount').text(count);
+        if (count > 0) {
+            $('#btnDeleteSelected').show();
+        } else {
+            $('#btnDeleteSelected').hide();
+        }
+    }
+
+    $('#btnDeleteSelected').on('click', function() {
+        var selectedIds = [];
+        $('.drilldown-lead-cb:checked').each(function() {
+            selectedIds.push($(this).val());
+        });
+        if (selectedIds.length === 0) {
+            alert('Please select at least one lead to delete.');
+            return;
+        }
+        if (!confirm('Are you sure you want to permanently delete ' + selectedIds.length + ' selected lead(s)? This will also delete associated followups.')) {
+            return;
+        }
+
+        var $btn = $(this);
+        $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Deleting...');
+
+        $.ajax({
+            url: '<?php echo base_url(); ?>manager/deleteleads',
+            type: 'POST',
+            data: { ids: selectedIds },
+            dataType: 'json',
+            success: function(resp) {
+                if (resp && resp.status) {
+                    alert(resp.message || 'Leads deleted successfully');
+                    window.location.reload();
+                } else {
+                    alert((resp && resp.message) ? resp.message : 'Failed to delete leads');
+                    $btn.prop('disabled', false).html('<i class="fa fa-trash"></i> Delete Selected (<span id="selectedCount">' + selectedIds.length + '</span>)');
+                }
+            },
+            error: function() {
+                alert('An error occurred while deleting leads. Please try again.');
+                $btn.prop('disabled', false).html('<i class="fa fa-trash"></i> Delete Selected (<span id="selectedCount">' + selectedIds.length + '</span>)');
+            }
+        });
+    });
+    <?php } ?>
+
     <?php if (!isset($is_admin_or_support) || !$is_admin_or_support) { ?>
     document.addEventListener('copy', function(e) {
         var target = e.target;

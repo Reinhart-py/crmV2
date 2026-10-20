@@ -13,7 +13,7 @@ class Ci_admin_model extends CI_model {
 			$data = array();
 			$today= date('Y-m-d');
 		 $sql="select t1.count_leads,t2.count_vetricals from 
-		 (SELECT count(id) as count_leads FROM ci_leads WHERE created_by=".$manager_id.") as t1,		 
+		 (SELECT count(id) as count_leads FROM ci_leads WHERE created_by=".$manager_id." AND (company_status IS NULL OR LOWER(company_status) != 'closed')) as t1,		 
 		 (SELECT count(id) as count_vetricals FROM ci_verticals WHERE created_by=".$manager_id.") as t2";
 		
 		 $rows = $this->db->query($sql);	
@@ -35,7 +35,7 @@ class Ci_admin_model extends CI_model {
 			 $sql="select t1.count_user,t2.count_today_birth,t3.count_leads,t4.count_vetricals from 
 			 (SELECT count(id) as count_user FROM ci_user WHERE FIND_IN_SET(id,'".$team_str."')>0) as t1,		
 			 (SELECT count(id) as count_today_birth FROM ci_user WHERE FIND_IN_SET(id,'".$team_str."')>0 AND dob='".$today."') as t2,
-			 (SELECT count(id) as count_leads FROM ci_leads WHERE FIND_IN_SET(created_by,'".$team_str."')>0) as t3,
+			 (SELECT count(id) as count_leads FROM ci_leads WHERE FIND_IN_SET(created_by,'".$team_str."')>0 AND (company_status IS NULL OR LOWER(company_status) != 'closed')) as t3,
 			 (SELECT count(id) as count_vetricals FROM ci_verticals WHERE FIND_IN_SET(created_by,'".$team_str."')>0) as t4";
 			
 			 $rows = $this->db->query($sql);	
@@ -50,7 +50,7 @@ class Ci_admin_model extends CI_model {
 			$manager_id = $this->session->userdata('manager_id');
 			if (empty($manager_id)) { $manager_id = 0; }
 			$data = array();
-			$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(id) FROM ci_leads WHERE status = A.id AND (created_by = ".$manager_id." OR lead_assign = ".$manager_id.")) as lead_count FROM ci_status as A ORDER BY A.id ASC";
+			$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(id) FROM ci_leads WHERE status = A.id AND (created_by = ".$manager_id." OR lead_assign = ".$manager_id.") AND (company_status IS NULL OR LOWER(company_status) != 'closed')) as lead_count FROM ci_status as A ORDER BY A.id ASC";
 			$rows = $this->db->query($sql);	
 			if($rows && is_object($rows) && $rows->num_rows()>=1){
 				foreach($rows->result_array() as $row){
@@ -64,7 +64,7 @@ class Ci_admin_model extends CI_model {
 			$manager_id = (int)$this->session->userdata('manager_id');
 			$user_role = (int)$this->session->userdata('user_role');
 			if ($user_role === 1 || $user_role === 4) {
-				$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(id) FROM ci_leads WHERE status = A.id) as lead_count FROM ci_status as A ORDER BY A.id ASC";
+				$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(id) FROM ci_leads WHERE status = A.id AND (company_status IS NULL OR LOWER(company_status) != 'closed')) as lead_count FROM ci_status as A ORDER BY A.id ASC";
 			} else {
 				$team_array = $this->fetchTeamList($manager_id, '');
 				if (!is_array($team_array)) {
@@ -77,7 +77,7 @@ class Ci_admin_model extends CI_model {
 				if (empty($team_str)) {
 					$team_str = (string)$manager_id;
 				}
-				$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(id) FROM ci_leads WHERE (FIND_IN_SET(created_by,'".$team_str."')>0 OR (lead_assign > 0 AND FIND_IN_SET(lead_assign,'".$team_str."')>0)) AND status = A.id) as lead_count FROM ci_status as A ORDER BY A.id ASC";
+				$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(id) FROM ci_leads WHERE (FIND_IN_SET(created_by,'".$team_str."')>0 OR (lead_assign > 0 AND FIND_IN_SET(lead_assign,'".$team_str."')>0)) AND status = A.id AND (company_status IS NULL OR LOWER(company_status) != 'closed')) as lead_count FROM ci_status as A ORDER BY A.id ASC";
 			}
 			$data = array();
 			$rows = $this->db->query($sql);	
@@ -98,22 +98,22 @@ class Ci_admin_model extends CI_model {
 
 			if($type==0){
 
-				$sql = "SELECT ( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.followup_date<'$today' AND a.status NOT IN (42,43,44) AND a.followup_date!='' and a.created_by=".$manager_id.") AS total_missed,
-				( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.followup_date<'$today' AND a.status NOT IN (42,43,44) AND a.followup_date>='$last_date' AND a.followup_date!='' and a.created_by=".$manager_id.") AS total_lastweek,
-				( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.followup_date='$today' AND a.status NOT IN (42,43,44) AND a.followup_date!='' and a.created_by=".$manager_id.") AS total_today,
-				( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.followup_date>'$today' AND a.status NOT IN (42,43,44) AND a.followup_date!='' AND a.followup_date<='$next_date' and a.created_by=".$manager_id.") AS total_nextweek,
-				( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.followup_date>'$today' AND a.status NOT IN (42,43,44) AND a.followup_date!='' and a.created_by=".$manager_id.") AS total_future"; 
+				$sql = "SELECT ( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.followup_date<'$today' AND a.status NOT IN (42,43,44) AND a.followup_date!='' and a.created_by=".$manager_id." AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS total_missed,
+				( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.followup_date<'$today' AND a.status NOT IN (42,43,44) AND a.followup_date>='$last_date' AND a.followup_date!='' and a.created_by=".$manager_id." AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS total_lastweek,
+				( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.followup_date='$today' AND a.status NOT IN (42,43,44) AND a.followup_date!='' and a.created_by=".$manager_id." AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS total_today,
+				( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.followup_date>'$today' AND a.status NOT IN (42,43,44) AND a.followup_date!='' AND a.followup_date<='$next_date' and a.created_by=".$manager_id." AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS total_nextweek,
+				( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.followup_date>'$today' AND a.status NOT IN (42,43,44) AND a.followup_date!='' and a.created_by=".$manager_id." AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS total_future"; 
 
 			}else{
 
 				$team_array= $this->fetchTeamList($this->session->userdata('manager_id'),'');
 				$team_str= !empty($team_array) ? implode(',',$team_array) : '0';
 
-				$sql = "SELECT ( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.followup_date<'$today' AND a.status NOT IN (42,43,44) AND a.followup_date!='' AND FIND_IN_SET(a.created_by,'".$team_str."')>0) AS total_missed,
-				( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.followup_date<'$today' AND a.followup_date>='$last_date' AND a.status NOT IN (42,43,44) AND a.followup_date!='' and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS total_lastweek,
-				( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.followup_date='$today' AND a.followup_date!='' AND a.status NOT IN (42,43,44)  and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS total_today,
-				( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.followup_date>'$today'  AND a.status NOT IN (42,43,44)  AND a.followup_date!='' AND a.followup_date<='$next_date' and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS total_nextweek,
-				( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.followup_date>'$today'  AND a.status NOT IN (42,43,44)  AND a.followup_date!='' and FIND_IN_SET(a.created_by,'".$team_str."')>0) AS total_future"; 
+				$sql = "SELECT ( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.followup_date<'$today' AND a.status NOT IN (42,43,44) AND a.followup_date!='' AND FIND_IN_SET(a.created_by,'".$team_str."')>0 AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS total_missed,
+				( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.followup_date<'$today' AND a.followup_date>='$last_date' AND a.status NOT IN (42,43,44) AND a.followup_date!='' and FIND_IN_SET(a.created_by,'".$team_str."')>0 AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS total_lastweek,
+				( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.followup_date='$today' AND a.followup_date!='' AND a.status NOT IN (42,43,44)  and FIND_IN_SET(a.created_by,'".$team_str."')>0 AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS total_today,
+				( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.followup_date>'$today'  AND a.status NOT IN (42,43,44)  AND a.followup_date!='' AND a.followup_date<='$next_date' and FIND_IN_SET(a.created_by,'".$team_str."')>0 AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS total_nextweek,
+				( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.followup_date>'$today'  AND a.status NOT IN (42,43,44)  AND a.followup_date!='' and FIND_IN_SET(a.created_by,'".$team_str."')>0 AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS total_future"; 
 			}
 						
 		
@@ -137,22 +137,22 @@ class Ci_admin_model extends CI_model {
 
 		if($type==0){
 
-			$sql = "SELECT ( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.m_date<'$today' AND a.status NOT IN (42,43,44)  AND a.m_date!='' and a.created_by=".$manager_id.") AS total_missed,
-		( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.m_date<'$today' AND a.status NOT IN (42,43,44)  AND a.m_date>='$last_date' AND a.m_date!='' and a.created_by=".$manager_id.") AS total_lastweek,
-		( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.m_date='$today' AND a.status NOT IN (42,43,44)  AND a.m_date!='' and a.created_by=".$manager_id.") AS total_today,
-		( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.m_date>'$today' AND a.status NOT IN (42,43,44)  AND a.m_date!='' AND a.m_date<='$next_date' and a.created_by=".$manager_id.") AS total_nextweek,
-		( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.m_date>'$today' AND a.status NOT IN (42,43,44)  AND a.m_date!='' and a.created_by=".$manager_id.") AS total_future"; 
+			$sql = "SELECT ( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.m_date<'$today' AND a.status NOT IN (42,43,44)  AND a.m_date!='' and a.created_by=".$manager_id." AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS total_missed,
+		( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.m_date<'$today' AND a.status NOT IN (42,43,44)  AND a.m_date>='$last_date' AND a.m_date!='' and a.created_by=".$manager_id." AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS total_lastweek,
+		( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.m_date='$today' AND a.status NOT IN (42,43,44)  AND a.m_date!='' and a.created_by=".$manager_id." AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS total_today,
+		( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.m_date>'$today' AND a.status NOT IN (42,43,44)  AND a.m_date!='' AND a.m_date<='$next_date' and a.created_by=".$manager_id." AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS total_nextweek,
+		( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.m_date>'$today' AND a.status NOT IN (42,43,44)  AND a.m_date!='' and a.created_by=".$manager_id." AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS total_future"; 
 
 		}else{
 
 			$team_array= $this->fetchTeamList($this->session->userdata('manager_id'),'');
 			$team_str= !empty($team_array) ? implode(',',$team_array) : '0';
 
-			$sql = "SELECT ( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.m_date<'$today' AND a.status NOT IN (42,43,44)  AND a.m_date!='' and  FIND_IN_SET(a.created_by,'".$team_str."')>0) AS total_missed,
-		( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.m_date<'$today' AND a.status NOT IN (42,43,44)  AND a.m_date>='$last_date' AND a.m_date!='' and  FIND_IN_SET(a.created_by,'".$team_str."')>0) AS total_lastweek,
-		( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.m_date='$today' AND a.status NOT IN (42,43,44)  AND a.m_date!='' and  FIND_IN_SET(a.created_by,'".$team_str."')>0) AS total_today,
-		( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.m_date>'$today' AND a.status NOT IN (42,43,44)  AND a.m_date!='' AND a.m_date<='$next_date' and  FIND_IN_SET(a.created_by,'".$team_str."')>0) AS total_nextweek,
-		( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.m_date>'$today' AND a.status NOT IN (42,43,44)  AND a.m_date!='' and  FIND_IN_SET(a.created_by,'".$team_str."')>0) AS total_future"; 
+			$sql = "SELECT ( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.m_date<'$today' AND a.status NOT IN (42,43,44)  AND a.m_date!='' and  FIND_IN_SET(a.created_by,'".$team_str."')>0 AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS total_missed,
+		( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.m_date<'$today' AND a.status NOT IN (42,43,44)  AND a.m_date>='$last_date' AND a.m_date!='' and  FIND_IN_SET(a.created_by,'".$team_str."')>0 AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS total_lastweek,
+		( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.m_date='$today' AND a.status NOT IN (42,43,44)  AND a.m_date!='' and  FIND_IN_SET(a.created_by,'".$team_str."')>0 AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS total_today,
+		( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.m_date>'$today' AND a.status NOT IN (42,43,44)  AND a.m_date!='' AND a.m_date<='$next_date' and  FIND_IN_SET(a.created_by,'".$team_str."')>0 AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS total_nextweek,
+		( SELECT COUNT(DISTINCT id) FROM ci_leads as a WHERE a.m_date>'$today' AND a.status NOT IN (42,43,44)  AND a.m_date!='' and  FIND_IN_SET(a.created_by,'".$team_str."')>0 AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS total_future"; 
 		}
 					
 		
@@ -191,23 +191,23 @@ public function dashboard_TeamPro($table='ci_leads'){
 	for ($i = 0; $i < 12; $i++) {
 		$m_date = date("Y-m-01", strtotime("+$i month"));
 		$loop[] = $m_date;
-		$label = strtoupper(date("M-y", strtotime("+$i month")));
+		$label = strtoupper(date("M y", strtotime("+$i month")));
 		$loop1[] = $label;
 		$loop_labels[] = $label;
 		$d1 = date("Y-m-01", strtotime("+$i month"));
 		$d2 = date("Y-m-t", strtotime("+$i month"));
 		$month_dates[] = array('d1' => $d1, 'd2' => $d2);
 		if ($user_role === 1 || $user_role === 4) {
-			$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ".$table." a WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND a.status NOT IN (42,43,44)) AS pt_".$i;
+			$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ".$table." a WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND a.status NOT IN (42,43,44)" . ($table == 'ci_leads' ? " AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')" : "") . ") AS pt_".$i;
 		} else {
-			$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ".$table." a WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND a.status NOT IN (42,43,44) AND (FIND_IN_SET(a.created_by,'".$team_str."')>0 OR (a.lead_assign > 0 AND FIND_IN_SET(a.lead_assign,'".$team_str."')>0))) AS pt_".$i;
+			$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ".$table." a WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND a.status NOT IN (42,43,44) AND (FIND_IN_SET(a.created_by,'".$team_str."')>0 OR (a.lead_assign > 0 AND FIND_IN_SET(a.lead_assign,'".$team_str."')>0))" . ($table == 'ci_leads' ? " AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')" : "") . ") AS pt_".$i;
 		}
 	}
 
 	if ($user_role === 1 || $user_role === 4) {
-		$sql = "SELECT " . implode(", ", $select_parts) . " FROM " . $table . " WHERE status NOT IN (42,43,44)"; 
+		$sql = "SELECT " . implode(", ", $select_parts) . " FROM " . $table . " WHERE status NOT IN (42,43,44)" . ($table == 'ci_leads' ? " AND (company_status IS NULL OR LOWER(company_status) != 'closed')" : ""); 
 	} else {
-		$sql = "SELECT " . implode(", ", $select_parts) . " FROM " . $table . " WHERE status NOT IN (42,43,44) AND (FIND_IN_SET(created_by,'".$team_str."')>0 OR (lead_assign > 0 AND FIND_IN_SET(lead_assign,'".$team_str."')>0))"; 
+		$sql = "SELECT " . implode(", ", $select_parts) . " FROM " . $table . " WHERE status NOT IN (42,43,44) AND (FIND_IN_SET(created_by,'".$team_str."')>0 OR (lead_assign > 0 AND FIND_IN_SET(lead_assign,'".$team_str."')>0))" . ($table == 'ci_leads' ? " AND (company_status IS NULL OR LOWER(company_status) != 'closed')" : ""); 
 	}
 	$data = array();
 	$rows = $this->db->query($sql);
@@ -235,16 +235,16 @@ public function dashboard_MyPro($table='ci_leads'){
 	for ($i = 0; $i < 12; $i++) {
 		$m_date = date("Y-m-01", strtotime("+$i month"));
 		$loop[] = $m_date;
-		$label = strtoupper(date("M-y", strtotime("+$i month")));
+		$label = strtoupper(date("M y", strtotime("+$i month")));
 		$loop1[] = $label;
 		$loop_labels[] = $label;
 		$d1 = date("Y-m-01", strtotime("+$i month"));
 		$d2 = date("Y-m-t", strtotime("+$i month"));
 		$month_dates[] = array('d1' => $d1, 'd2' => $d2);
-		$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ".$table." a WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND a.status NOT IN (42,43,44) AND a.created_by = ".$user_id.") AS pt_".$i;
+		$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ".$table." a WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND a.status NOT IN (42,43,44) AND a.created_by = ".$user_id . ($table == 'ci_leads' ? " AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')" : "") . ") AS pt_".$i;
 	}
 
-	$sql = "SELECT " . implode(", ", $select_parts) . " FROM " . $table . " WHERE status NOT IN (42,43,44) AND created_by = ".$user_id; 
+	$sql = "SELECT " . implode(", ", $select_parts) . " FROM " . $table . " WHERE status NOT IN (42,43,44) AND created_by = ".$user_id . ($table == 'ci_leads' ? " AND (company_status IS NULL OR LOWER(company_status) != 'closed')" : ""); 
 	$data = array();
 	$rows = $this->db->query($sql);
 	if($rows && is_object($rows) && $rows->num_rows()>=1){				
@@ -279,13 +279,14 @@ public function dashboard_MyPro($table='ci_leads'){
 			'total_all' => 0
 		);
 		$effective_close = "(CASE WHEN close_date != '' AND close_date != '0000-00-00' AND followup_date != '' AND followup_date != '0000-00-00' AND close_date < followup_date THEN followup_date WHEN close_date != '' AND close_date != '0000-00-00' THEN close_date WHEN followup_date != '' AND followup_date != '0000-00-00' THEN followup_date ELSE NULL END)";
+		$closed_cond = " AND (company_status IS NULL OR LOWER(company_status) != 'closed')";
 		$sql = "SELECT 
-			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE $effective_close < '$today' AND $effective_close IS NOT NULL AND $effective_close != '' AND $effective_close != '0000-00-00' AND status NOT IN (42,43,44) AND ".$user_cond.") AS total_missed,
-			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE $effective_close < '$today' AND $effective_close >= '$last_date' AND $effective_close IS NOT NULL AND $effective_close != '' AND $effective_close != '0000-00-00' AND status NOT IN (42,43,44) AND ".$user_cond.") AS total_lastweek,
-			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE $effective_close = '$today' AND status NOT IN (42,43,44) AND ".$user_cond.") AS total_today,
-			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE $effective_close > '$today' AND $effective_close <= '$next_date' AND $effective_close IS NOT NULL AND status NOT IN (42,43,44) AND ".$user_cond.") AS total_nextweek,
-			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE $effective_close > '$today' AND $effective_close IS NOT NULL AND status NOT IN (42,43,44) AND ".$user_cond.") AS total_future,
-			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE ".$user_cond." AND status NOT IN (42,43,44) AND ($effective_close IS NOT NULL AND $effective_close != '' AND $effective_close != '0000-00-00')) AS total_all";
+			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE $effective_close < '$today' AND $effective_close IS NOT NULL AND $effective_close != '' AND $effective_close != '0000-00-00' AND status NOT IN (42,43,44) AND ".$user_cond.$closed_cond.") AS total_missed,
+			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE $effective_close < '$today' AND $effective_close >= '$last_date' AND $effective_close IS NOT NULL AND $effective_close != '' AND $effective_close != '0000-00-00' AND status NOT IN (42,43,44) AND ".$user_cond.$closed_cond.") AS total_lastweek,
+			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE $effective_close = '$today' AND status NOT IN (42,43,44) AND ".$user_cond.$closed_cond.") AS total_today,
+			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE $effective_close > '$today' AND $effective_close <= '$next_date' AND $effective_close IS NOT NULL AND status NOT IN (42,43,44) AND ".$user_cond.$closed_cond.") AS total_nextweek,
+			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE $effective_close > '$today' AND $effective_close IS NOT NULL AND status NOT IN (42,43,44) AND ".$user_cond.$closed_cond.") AS total_future,
+			(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE ".$user_cond.$closed_cond." AND status NOT IN (42,43,44) AND ($effective_close IS NOT NULL AND $effective_close != '' AND $effective_close != '0000-00-00')) AS total_all";
 		$rows = $this->db->query($sql);
 		if($rows && $rows->num_rows() >= 1){
 			$data = $rows->row_array();
@@ -307,7 +308,7 @@ public function dashboard_MyPro($table='ci_leads'){
 		);
 		if($type==0){
 			$manager_id = $this->session->userdata('manager_id');
-			$user_cond = "created_by=".$manager_id." AND status NOT IN (42,43,44) AND (vertical_id != '' AND vertical_id != '0' AND vertical_id IS NOT NULL)";
+			$user_cond = "created_by=".$manager_id." AND status NOT IN (42,43,44) AND (vertical_id != '' AND vertical_id != '0' AND vertical_id IS NOT NULL) AND (company_status IS NULL OR LOWER(company_status) != 'closed')";
 			$sql = "SELECT 
 				(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE followup_date < '$today' AND followup_date != '' AND followup_date != '0000-00-00' AND ".$user_cond.") AS total_missed,
 				(SELECT COUNT(DISTINCT id) FROM ci_leads WHERE followup_date < '$today' AND followup_date >= '$last_date' AND followup_date != '' AND followup_date != '0000-00-00' AND ".$user_cond.") AS total_lastweek,
@@ -585,7 +586,8 @@ public function dashboard_MyPro($table='ci_leads'){
 			    $where = '(A.lead_id LIKE "%'.$search.'%" OR A.mrr LIKE "%'.$search.'%"  OR A.contact1 LIKE "%'.$search.'%" OR A.id LIKE "%'.$search.'%")';	
                $this->db->where($where);
 			  }	
-			   $where1="(A.created_by = ".$this->session->userdata('manager_id')." OR A.lead_assign = ".$this->session->userdata('manager_id').")";	
+			   $uid = (int)$this->session->userdata('manager_id');
+			   $where1 = "(A.created_by = $uid OR A.lead_assign = $uid OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET($uid, A.agents) > 0))";	
 			   $this->db->where($where1);
 			 // }		
 			   if(!empty($order_by) && !empty($sort_by)){
@@ -736,10 +738,9 @@ public function dashboard_MyPro($table='ci_leads'){
 			    $where = '(A.lead_id LIKE "%'.$search.'%" OR A.mrr LIKE "%'.$search.'%"  OR A.contact1 LIKE "%'.$search.'%" OR A.id LIKE "%'.$search.'%")';	
                $this->db->where($where);
 			  }	
-			  //if ($this->session->userdata('manager_id') !=1) {
-			   $where1="A.created_by = ".$this->session->userdata('manager_id');	
-			   $this->db->where($where1);
-			  //}		
+			   $uid_fu = (int)$this->session->userdata('manager_id');
+			   $where1 = "(A.created_by = $uid_fu OR A.lead_assign = $uid_fu OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET($uid_fu, A.agents) > 0))";	
+			   $this->db->where($where1);		
 			   if(!empty($order_by) && !empty($sort_by)){
 			     $this->db->order_by($order_by,$sort_by);
 			   }else{
@@ -857,10 +858,9 @@ public function dashboard_MyPro($table='ci_leads'){
 			    $where = '(A.lead_id LIKE "%'.$search.'%" OR A.mrr LIKE "%'.$search.'%"  OR A.contact1 LIKE "%'.$search.'%" OR A.id LIKE "%'.$search.'%")';	
                $this->db->where($where);
 			  }	
-			  //if ($this->session->userdata('manager_id') !=1) {
-			   $where1="A.created_by = ".$this->session->userdata('manager_id');	
-			   $this->db->where($where1);
-			  //}	
+			   $uid_mtg = (int)$this->session->userdata('manager_id');
+			   $where1 = "(A.created_by = $uid_mtg OR A.lead_assign = $uid_mtg OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET($uid_mtg, A.agents) > 0))";	
+			   $this->db->where($where1);	
 		   if(!empty($order_by) && !empty($sort_by)){
 		     $this->db->order_by($order_by,$sort_by);
 		   }else{
@@ -885,7 +885,79 @@ public function dashboard_MyPro($table='ci_leads'){
 		return $result;
 	 }	
 
-	
+	public function getAllocationLeads($d1='', $d2='', $mrr1='', $mrr2='', $limit_per_page='', $page_index='', $order_by='', $sort_by='', $search='', $status='', $category='', $lCat='', $user_name='', $country='', $state='', $alloc_filter='')
+	{
+		$result = array();
+		$this->db->select(array('A.*', 'B.name as owner_name', 'U2.name as assigned_to_name', 'C.status as lead_status', 'B.user_level', 'E.title as servicecat'));
+		$this->db->from('ci_leads as A');
+		$this->db->join('ci_user as B', 'A.created_by=B.id', 'LEFT');
+		$this->db->join('ci_user as U2', 'A.lead_assign=U2.id', 'LEFT');
+		$this->db->join('ci_status as C', 'A.status=C.id', 'LEFT');
+		$this->db->join('ci_terms as E', 'A.s_cat=E.id', 'LEFT');
+
+		if (!empty($alloc_filter)) {
+			if ($alloc_filter == 'non_allotted') {
+				$this->db->where("(A.created_by = 0 OR A.created_by IS NULL OR A.created_by = '')");
+			} elseif ($alloc_filter == 'allotted') {
+				$this->db->where("(A.created_by > 0 AND B.id IS NOT NULL)");
+			}
+		}
+
+		if (!empty($d1) && !empty($d2)) {
+			$date1 = date("Y-m-d", strtotime($d1));
+			$date2 = date("Y-m-d", strtotime($d2));
+			$this->db->where('(A.created BETWEEN "'.$date1.'" AND "'.$date2.'")');
+		}
+
+		if ((!empty($mrr1) || ($mrr1 == '0')) && !empty($mrr2)) {
+			$this->db->where('(A.mrr BETWEEN '.$mrr1.' AND '.$mrr2.')');
+		}
+
+		if (!empty($category)) {
+			$this->db->where('FIND_IN_SET(A.s_cat, "'.$category.'")>0');
+		}
+
+		if (!empty($lCat)) {
+			$this->db->where('FIND_IN_SET(A.lead_cat, "'.$lCat.'")>0');
+		}
+
+		if (!empty($user_name)) {
+			$this->db->where('(B.name LIKE "%'.$user_name.'%" OR U2.name LIKE "%'.$user_name.'%")');
+		}
+
+		if (!empty($country)) {
+			$this->db->where('FIND_IN_SET(A.country, "'.$country.'")>0');
+		}
+
+		if (!empty($state)) {
+			$this->db->where('FIND_IN_SET(A.state, "'.$state.'")>0');
+		}
+
+		if (!empty($status)) {
+			$this->db->where('FIND_IN_SET(A.status, "'.$status.'")>0');
+		}
+
+		if (!empty($search)) {
+			$where = '(A.lead_id LIKE "%'.$search.'%" OR A.customer LIKE "%'.$search.'%" OR A.mrr LIKE "%'.$search.'%" OR A.contact1 LIKE "%'.$search.'%" OR A.id LIKE "%'.$search.'%")';
+			$this->db->where($where);
+		}
+
+		if (!empty($order_by) && !empty($sort_by)) {
+			$this->db->order_by($order_by, $sort_by);
+		} else {
+			$this->db->order_by('A.id', 'DESC');
+		}
+
+		if (!empty($limit_per_page)) {
+			$this->db->limit($limit_per_page, $page_index);
+		}
+
+		$data = $this->db->get();
+		foreach ($data->result_array() as $row) {
+			$result[] = $row;
+		}
+		return $result;
+	}
 
 	  public function getTeamLeads($d1='', $d2='', $mrr1='', $mrr2='', $limit_per_page='', $page_index='', $order_by='',$sort_by='', $search='', $status='', $category='', $lCat='',$user_name='',$country='',$state='', $closure='')
 	  {			 
@@ -1939,4 +2011,64 @@ public function dashboard_MyPro($table='ci_leads'){
 		return $companies;
 	}
 
+	public function getMyTransferLeads($user_id, $d1='', $d2='', $mrr1='', $mrr2='', $limit_per_page='', $page_index='', $order_by='', $sort_by='', $search='', $status='', $category='', $lCat='')
+	{
+		$result = array();
+		$this->db->select(array('A.*', 'B.name as owner_name', 'C.status as lead_status', 'B.user_level', 'E.title as servicecat'));
+		$this->db->from('ci_leads as A');
+		$this->db->join('ci_user as B', 'A.created_by=B.id', 'LEFT');
+		$this->db->join('ci_status as C', 'A.status=C.id', 'LEFT');
+		$this->db->join('ci_terms as E', 'A.s_cat=E.id', 'LEFT');
+
+		$m_role = (int)$this->session->userdata('manager_role');
+		if ($m_role != 1 && $m_role != 4) {
+			$this->db->where("(A.lead_assign = $user_id OR (A.created_by = $user_id AND (A.lead_assign = 0 OR A.lead_assign IS NULL)) OR (A.agents IS NOT NULL AND FIND_IN_SET($user_id, A.agents) > 0))");
+		} else {
+			$this->db->where("(A.lead_assign = $user_id OR A.created_by = $user_id OR (A.agents IS NOT NULL AND FIND_IN_SET($user_id, A.agents) > 0))");
+		}
+		$this->db->where('(A.company_status IS NULL OR LOWER(A.company_status) != "closed")');
+
+		if (!empty($d1) && !empty($d2)) {
+			$date1 = date("Y-m-d", strtotime($d1));
+			$date2 = date("Y-m-d", strtotime($d2));
+			$this->db->where('(A.created BETWEEN "'.$date1.'" AND "'.$date2.'")');
+		}
+
+		if ((!empty($mrr1) || ($mrr1 == '0')) && !empty($mrr2)) {
+			$this->db->where('(A.mrr BETWEEN '.$mrr1.' AND '.$mrr2.')');
+		}
+
+		if (!empty($category)) {
+			$this->db->where('FIND_IN_SET(A.s_cat, "'.$category.'")>0');
+		}
+
+		if (!empty($lCat)) {
+			$this->db->where('FIND_IN_SET(A.lead_cat, "'.$lCat.'")>0');
+		}
+
+		if (!empty($status)) {
+			$this->db->where('FIND_IN_SET(A.status, "'.$status.'")>0');
+		}
+
+		if (!empty($search)) {
+			$where = '(A.lead_id LIKE "%'.$search.'%" OR A.customer LIKE "%'.$search.'%" OR A.mrr LIKE "%'.$search.'%" OR A.contact1 LIKE "%'.$search.'%" OR A.id LIKE "%'.$search.'%")';
+			$this->db->where($where);
+		}
+
+		if (!empty($order_by) && !empty($sort_by)) {
+			$this->db->order_by($order_by, $sort_by);
+		} else {
+			$this->db->order_by('A.id', 'DESC');
+		}
+
+		if (!empty($limit_per_page)) {
+			$this->db->limit($limit_per_page, $page_index);
+		}
+
+		$data = $this->db->get();
+		foreach ($data->result_array() as $row) {
+			$result[] = $row;
+		}
+		return $result;
+	}
 }

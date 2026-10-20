@@ -32,7 +32,12 @@ $route['manager/leads/add'] = "ci_admin_leads/add";
 $route['manager/leads/edit/(:any)'] = 'ci_admin_leads/edit/$1';
 $route['manager/leads/editLimited/(:any)'] = 'ci_admin_leads/editLimited/$1';
 $route['manager/leads/view/(:any)'] = 'ci_admin_leads/view/$1';
-$route['manager/deleteleads/(:any)']['delete'] = "ci_admin_leads/leadDeleteAjax/$1";
+$route['manager/deleteleads'] = "ci_admin_leads/leadDeleteAjax";
+$route['manager/deleteleads/(:any)'] = "ci_admin_leads/leadDeleteAjax/$1";
+$route['manager/calls'] = "ci_admin_calls/index";
+$route['manager/calls/ajax_save_call'] = "ci_admin_calls/ajax_save_call";
+$route['manager/calls/ajax_get_lead'] = "ci_admin_calls/ajax_get_lead";
+$route['manager/calls/(:any)'] = "ci_admin_calls/$1";
 
 //My Followups
 $route['manager/leads/followups'] = "ci_admin_leads/followups/";
@@ -52,6 +57,12 @@ $route['manager/verticals/(:num)'] = 'ci_admin_verticals/index/$1';
 $route['manager/verticals/add'] = "ci_admin_verticals/add";
 $route['manager/verticals/edit/(:any)'] = 'ci_admin_verticals/edit/$1';
 $route['manager/verticals/view/(:any)'] = 'ci_admin_verticals/view/$1';
+$route['manager/verticals/followups'] = "ci_admin_verticals/followups";
+$route['manager/verticals/followups/(:num)'] = "ci_admin_verticals/followups/$1";
+
+$route['manager/database-transfer'] = "ci_admin_leads/database_transfer";
+$route['manager/database-transfer/(:num)'] = "ci_admin_leads/database_transfer/$1";
+$route['manager/leads/bulk-transfer'] = "ci_admin_leads/bulk_transfer";
 
 $route['manager/team/verticals'] = "ci_admin_verticals/teams/$1";
 $route['manager/team/verticals/(:any)'] = 'ci_admin_verticals/teams/$1';

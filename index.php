@@ -1,11 +1,9 @@
 <?php
-
 if (php_sapi_name() === 'cli-server') {
-    $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-    if ($path !== '/' && is_file(__DIR__ . $path)) {
-        return false;
-    }
-    $_SERVER['SCRIPT_NAME'] = '/index.php';
+	$file = __DIR__ . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+	if (is_file($file)) {
+		return false;
+	}
 }
 
 /*
@@ -41,7 +39,7 @@ if (defined('ENVIRONMENT'))
 	switch (ENVIRONMENT)
 	{
 		case 'development':
-			error_reporting(E_ALL & ~E_DEPRECATED & ~E_NOTICE & ~E_WARNING);
+			error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_USER_DEPRECATED & ~E_STRICT);
 		break;
 
 		case 'testing':
@@ -52,10 +50,6 @@ if (defined('ENVIRONMENT'))
 		default:
 			exit('The application environment is not set correctly.');
 	}
-}
-
-if (function_exists('mysqli_report')) {
-	@mysqli_report(MYSQLI_REPORT_OFF);
 }
 
 /*

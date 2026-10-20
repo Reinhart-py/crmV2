@@ -780,11 +780,10 @@ $(function () {
         if (!empty($dashboard_MyPro['month_labels'])) {
             echo json_encode($dashboard_MyPro['month_labels']);
         } else {
-            echo json_encode(array('Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'));
+            echo json_encode(array('OCT 26', 'NOV 26', 'DEC 26', 'JAN 27', 'FEB 27', 'MAR 27'));
         }
     ?>;
     
-    // My Projection Data (Jan - Dec)
     var myProData = [
         <?php echo isset($dashboard_MyPro['lead_number']['pt_0']) ? (int)$dashboard_MyPro['lead_number']['pt_0'] : 0; ?>,
         <?php echo isset($dashboard_MyPro['lead_number']['pt_1']) ? (int)$dashboard_MyPro['lead_number']['pt_1'] : 0; ?>,
@@ -800,7 +799,6 @@ $(function () {
         <?php echo isset($dashboard_MyPro['lead_number']['pt_11']) ? (int)$dashboard_MyPro['lead_number']['pt_11'] : 0; ?>
     ];
 
-    // Team Projection Data (Jan - Dec)
     var teamProData = [
         <?php echo isset($dashboard_TeamPro['lead_number']['pt_0']) ? (int)$dashboard_TeamPro['lead_number']['pt_0'] : 0; ?>,
         <?php echo isset($dashboard_TeamPro['lead_number']['pt_1']) ? (int)$dashboard_TeamPro['lead_number']['pt_1'] : 0; ?>,
@@ -816,6 +814,14 @@ $(function () {
         <?php echo isset($dashboard_TeamPro['lead_number']['pt_11']) ? (int)$dashboard_TeamPro['lead_number']['pt_11'] : 0; ?>
     ];
 
+    if (typeof Chart !== 'undefined' && Chart.Scale) {
+        var origCalcXRotation = Chart.Scale.prototype.calculateXLabelRotation;
+        Chart.Scale.prototype.calculateXLabelRotation = function() {
+            origCalcXRotation.apply(this, arguments);
+            this.xLabelRotation = 0;
+        };
+    }
+
     var chartOptions = {
         scaleBeginAtZero: true,
         scaleShowGridLines: true,
@@ -825,10 +831,14 @@ $(function () {
         scaleShowVerticalLines: false,
         barShowStroke: true,
         barStrokeWidth: 1,
-        barValueSpacing: 8,
-        barDatasetSpacing: 2,
+        barValueSpacing: 4,
+        barDatasetSpacing: 1,
         responsive: true,
-        maintainAspectRatio: false
+        maintainAspectRatio: false,
+        scaleFontSize: 9,
+        scaleFontStyle: '600',
+        scaleFontColor: '#475569',
+        scaleFontFamily: "'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif"
     };
 
     var monthDates = <?php echo json_encode(!empty($dashboard_MyPro['month_dates']) ? $dashboard_MyPro['month_dates'] : array()); ?>;

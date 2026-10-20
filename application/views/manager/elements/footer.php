@@ -177,6 +177,12 @@ $('.datepicker2').datepicker({
       "info": true,
       "autoWidth": false
     });
+    if ($("#example_lead").length && !$.fn.DataTable.isDataTable('#example_lead')) {
+      $('#example_lead').DataTable({
+        "pageLength": 50,
+        responsive: true
+      });
+    }
   });
   
  
@@ -253,13 +259,47 @@ $(document).on("click", ".logout, a[href*='manager/logout']", function(e){
     </script>
     
 <script>
-$(window).scroll(function(){
-if ($(window).scrollTop() >= 150) {
-$('header').addClass('fixed-header');
-}
-else {
-$('header').removeClass('fixed-header');
-}
+$(document).ready(function() {
+    $(document).on('click', '#crmMobileHamburger', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $('body').toggleClass('sidebar-open');
+    });
+
+    $(document).on('click', '#crmSidebarClose', function(e) {
+        e.preventDefault();
+        $('body').removeClass('sidebar-open');
+    });
+
+    $(document).on('click', function(e) {
+        if ($('body').hasClass('sidebar-open')) {
+            if (!$(e.target).closest('.main-sidebar').length && !$(e.target).closest('#crmMobileHamburger').length) {
+                $('body').removeClass('sidebar-open');
+            }
+        }
+    });
+
+    $(document).on('click', '.main-sidebar .sidebar-menu > li.treeview > a', function(e) {
+        e.preventDefault();
+        var $li = $(this).parent('li.treeview');
+        var isOpen = $li.hasClass('menu-open') || $li.hasClass('is-expanded');
+        $('.main-sidebar .sidebar-menu > li.treeview').removeClass('menu-open is-expanded').find('> .treeview-menu').slideUp(200);
+        if (!isOpen) {
+            $li.addClass('menu-open is-expanded').find('> .treeview-menu').slideDown(200);
+        }
+    });
+
+    // Universal Back Button handler
+    $(document).on('click', 'a.btn:contains("Back"), a:has(i.fa-arrow-left)', function(e) {
+        if ($(this).attr('href') === 'javascript:window.history.back();' || $(this).data('action') === 'back') {
+            e.preventDefault();
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = '<?php echo base_url(); ?>manager/dashboard';
+            }
+        }
+    });
 });
 </script>
 

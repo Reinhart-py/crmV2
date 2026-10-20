@@ -26,9 +26,10 @@
       <form role="form" action="<?php echo base_url(); ?>manager/leads/add" method="post" name="add_form">
       
        <div class="box box-default">
-      <div class="box-header with-border" style="display: flex; align-items: center; justify-content: space-between;">
-        <h3 class="box-title">Initial Category Fields</h3>
-        <div style="display: inline-flex; align-items: center; gap: 8px;">
+      <div class="box-header with-border" style="position: relative; text-align: center; padding: 14px 15px; min-height: 48px;">
+        <h3 class="box-title" style="float: none; display: inline-block; font-weight: 600; font-size: 18px; margin: 0; line-height: 24px;">Initial Category Fields</h3>
+        <div style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 8px;">
+          <span id="topZoneIndicator" class="label" style="background: #000000; color: #ffffff; font-weight: 700; padding: 4px 12px; border-radius: 4px; font-size: 12px; letter-spacing: 0.5px; display: none;"></span>
           <span id="topDncrIndicator" class="label label-danger" style="background: #dc2626; color: #ffffff; font-weight: 700; padding: 4px 12px; border-radius: 4px; font-size: 12px; letter-spacing: 0.5px; display: none;">DNCR</span>
           <span id="topClosedIndicator" class="label label-primary" style="background: #2563eb; color: #ffffff; font-weight: 700; padding: 4px 12px; border-radius: 4px; font-size: 12px; letter-spacing: 0.5px; display: none;">Closed</span>
         </div>
@@ -215,8 +216,133 @@
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>Trade License Authority</label>
-                <input type="text" class="form-control" name="tl_authority" placeholder="Enter Trade License Authority">
+                <label>Trade License Emirates</label>
+                <select class="form-control" name="tl_emirate" id="tl_emirate_select">
+                  <option value="">Select Emirate</option>
+                  <option value="Abu Dhabi">Abu Dhabi</option>
+                  <option value="Dubai">Dubai</option>
+                  <option value="Sharjah">Sharjah</option>
+                  <option value="Ajman">Ajman</option>
+                  <option value="Umm Al Quwain">Umm Al Quwain</option>
+                  <option value="Ras Al Khaimah">Ras Al Khaimah</option>
+                  <option value="Fujairah">Fujairah</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Trade License Zone</label>
+                <select class="form-control" name="tl_zone" id="tl_zone_select" disabled>
+                  <option value="">Select Zone</option>
+                  <option value="Mainland">Mainland</option>
+                  <option value="Freezone">Freezone</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Licensing Authorities</label>
+                <select class="form-control select2" name="tl_authority" id="tl_authority_select" style="width: 100%;" disabled>
+                  <option value="">Select Authority</option>
+                  <optgroup label="Mainland">
+                    <option value="Abu Dhabi DED" data-emirate="Abu Dhabi" data-zone="Mainland">Abu Dhabi DED</option>
+                    <option value="Abu Dhabi Department of Economic Development — ADDED" data-emirate="Abu Dhabi" data-zone="Mainland">Abu Dhabi Department of Economic Development — ADDED</option>
+                    <option value="Dubai Economy (DED / DET)" data-emirate="Dubai" data-zone="Mainland">Dubai Economy (DED / DET)</option>
+                    <option value="Dubai Economy (DED)" data-emirate="Dubai" data-zone="Mainland">Dubai Economy (DED)</option>
+                    <option value="Dubai Department of Economy and Tourism — DET" data-emirate="Dubai" data-zone="Mainland">Dubai Department of Economy and Tourism — DET</option>
+                    <option value="Sharjah SEDD" data-emirate="Sharjah" data-zone="Mainland">Sharjah SEDD</option>
+                    <option value="Sharjah Economic Development Department — SEDD" data-emirate="Sharjah" data-zone="Mainland">Sharjah Economic Development Department — SEDD</option>
+                    <option value="Ajman DED" data-emirate="Ajman" data-zone="Mainland">Ajman DED</option>
+                    <option value="Ajman Department of Economic Development — Ajman DED" data-emirate="Ajman" data-zone="Mainland">Ajman Department of Economic Development — Ajman DED</option>
+                    <option value="RAK DED" data-emirate="Ras Al Khaimah" data-zone="Mainland">RAK DED</option>
+                    <option value="Ras Al Khaimah Department of Economic Development — RAK DED" data-emirate="Ras Al Khaimah" data-zone="Mainland">Ras Al Khaimah Department of Economic Development — RAK DED</option>
+                    <option value="Fujairah Municipality" data-emirate="Fujairah" data-zone="Mainland">Fujairah Municipality</option>
+                    <option value="Fujairah Municipality — FM" data-emirate="Fujairah" data-zone="Mainland">Fujairah Municipality — FM</option>
+                    <option value="Dibba Municipality — DM" data-emirate="Fujairah" data-zone="Mainland">Dibba Municipality — DM</option>
+                    <option value="UAQ DED" data-emirate="Umm Al Quwain" data-zone="Mainland">UAQ DED</option>
+                    <option value="Umm Al Quwain Department of Economic Development — UAQ DED" data-emirate="Umm Al Quwain" data-zone="Mainland">Umm Al Quwain Department of Economic Development — UAQ DED</option>
+                  </optgroup>
+                  <optgroup label="Free zones">
+                    <option value="ADGM (Abu Dhabi Global Market)" data-emirate="Abu Dhabi" data-zone="Freezone">ADGM (Abu Dhabi Global Market)</option>
+                    <option value="Abu Dhabi Global Market — ADGM" data-emirate="Abu Dhabi" data-zone="Freezone">Abu Dhabi Global Market — ADGM</option>
+                    <option value="Masdar City Free Zone" data-emirate="Abu Dhabi" data-zone="Freezone">Masdar City Free Zone</option>
+                    <option value="Masdar City Free Zone — Masdar" data-emirate="Abu Dhabi" data-zone="Freezone">Masdar City Free Zone — Masdar</option>
+                    <option value="KIZAD / KEZAD" data-emirate="Abu Dhabi" data-zone="Freezone">KIZAD / KEZAD</option>
+                    <option value="Khalifa Economic Zones Abu Dhabi — KEZAD" data-emirate="Abu Dhabi" data-zone="Freezone">Khalifa Economic Zones Abu Dhabi — KEZAD</option>
+                    <option value="twofour54" data-emirate="Abu Dhabi" data-zone="Freezone">twofour54</option>
+                    <option value="Media Zone Authority – twofour54 — TCA" data-emirate="Abu Dhabi" data-zone="Freezone">Media Zone Authority – twofour54 — TCA</option>
+                    <option value="Abu Dhabi Airports Free Zone — ADAFZ" data-emirate="Abu Dhabi" data-zone="Freezone">Abu Dhabi Airports Free Zone — ADAFZ</option>
+                    <option value="Tawazun Industrial Park — TIP" data-emirate="Abu Dhabi" data-zone="Freezone">Tawazun Industrial Park — TIP</option>
+                    <option value="DMCC (Dubai Multi Commodities Centre)" data-emirate="Dubai" data-zone="Freezone">DMCC (Dubai Multi Commodities Centre)</option>
+                    <option value="Dubai Multi Commodities Centre — DMCC" data-emirate="Dubai" data-zone="Freezone">Dubai Multi Commodities Centre — DMCC</option>
+                    <option value="IFZA (International Free Zone Authority)" data-emirate="Dubai" data-zone="Freezone">IFZA (International Free Zone Authority)</option>
+                    <option value="IFZA Dubai" data-emirate="Dubai" data-zone="Freezone">IFZA Dubai</option>
+                    <option value="International Free Zone Authority — IFZA" data-emirate="Dubai" data-zone="Freezone">International Free Zone Authority — IFZA</option>
+                    <option value="DIFC (Dubai International Financial Centre)" data-emirate="Dubai" data-zone="Freezone">DIFC (Dubai International Financial Centre)</option>
+                    <option value="Dubai International Financial Centre — DIFC" data-emirate="Dubai" data-zone="Freezone">Dubai International Financial Centre — DIFC</option>
+                    <option value="DAFZA (Dubai Airport Freezone)" data-emirate="Dubai" data-zone="Freezone">DAFZA (Dubai Airport Freezone)</option>
+                    <option value="Dubai Airport Free Zone Authority — DAFZA" data-emirate="Dubai" data-zone="Freezone">Dubai Airport Free Zone Authority — DAFZA</option>
+                    <option value="JAFZA (Jebel Ali Free Zone)" data-emirate="Dubai" data-zone="Freezone">JAFZA (Jebel Ali Free Zone)</option>
+                    <option value="Jebel Ali Free Zone Authority — JAFZA" data-emirate="Dubai" data-zone="Freezone">Jebel Ali Free Zone Authority — JAFZA</option>
+                    <option value="DSOA / Dubai Silicon Oasis" data-emirate="Dubai" data-zone="Freezone">DSOA / Dubai Silicon Oasis</option>
+                    <option value="Dubai Silicon Oasis — DSO" data-emirate="Dubai" data-zone="Freezone">Dubai Silicon Oasis — DSO</option>
+                    <option value="DWTC (Dubai World Trade Centre)" data-emirate="Dubai" data-zone="Freezone">DWTC (Dubai World Trade Centre)</option>
+                    <option value="Dubai World Trade Centre Authority — DWTC" data-emirate="Dubai" data-zone="Freezone">Dubai World Trade Centre Authority — DWTC</option>
+                    <option value="Meydan Free Zone" data-emirate="Dubai" data-zone="Freezone">Meydan Free Zone</option>
+                    <option value="Meydan Free Zone — MFZ" data-emirate="Dubai" data-zone="Freezone">Meydan Free Zone — MFZ</option>
+                    <option value="Dubai South (DWC)" data-emirate="Dubai" data-zone="Freezone">Dubai South (DWC)</option>
+                    <option value="Dubai South — DS" data-emirate="Dubai" data-zone="Freezone">Dubai South — DS</option>
+                    <option value="Dubai Internet City (TECOM)" data-emirate="Dubai" data-zone="Freezone">Dubai Internet City (TECOM)</option>
+                    <option value="Dubai Media City (TECOM)" data-emirate="Dubai" data-zone="Freezone">Dubai Media City (TECOM)</option>
+                    <option value="Dubai Knowledge Park (TECOM)" data-emirate="Dubai" data-zone="Freezone">Dubai Knowledge Park (TECOM)</option>
+                    <option value="Dubai Production City (TECOM)" data-emirate="Dubai" data-zone="Freezone">Dubai Production City (TECOM)</option>
+                    <option value="Dubai Studio City (TECOM)" data-emirate="Dubai" data-zone="Freezone">Dubai Studio City (TECOM)</option>
+                    <option value="Dubai Outsource City (TECOM)" data-emirate="Dubai" data-zone="Freezone">Dubai Outsource City (TECOM)</option>
+                    <option value="Dubai Science Park (TECOM)" data-emirate="Dubai" data-zone="Freezone">Dubai Science Park (TECOM)</option>
+                    <option value="Dubai Design District (d3)" data-emirate="Dubai" data-zone="Freezone">Dubai Design District (d3)</option>
+                    <option value="Dubai Maritime City" data-emirate="Dubai" data-zone="Freezone">Dubai Maritime City</option>
+                    <option value="Dubai Maritime City Authority — DMCA" data-emirate="Dubai" data-zone="Freezone">Dubai Maritime City Authority — DMCA</option>
+                    <option value="Dubai Healthcare City (DHCC)" data-emirate="Dubai" data-zone="Freezone">Dubai Healthcare City (DHCC)</option>
+                    <option value="Dubai Healthcare City Authority — DHCC" data-emirate="Dubai" data-zone="Freezone">Dubai Healthcare City Authority — DHCC</option>
+                    <option value="Dubai CommerCity" data-emirate="Dubai" data-zone="Freezone">Dubai CommerCity</option>
+                    <option value="Dubai Development Authority — DDA" data-emirate="Dubai" data-zone="Freezone">Dubai Development Authority — DDA</option>
+                    <option value="Dubai Humanitarian — DH" data-emirate="Dubai" data-zone="Freezone">Dubai Humanitarian — DH</option>
+                    <option value="Trakhees — Trakhees" data-emirate="Dubai" data-zone="Freezone">Trakhees — Trakhees</option>
+                    <option value="National Industries Park — NIP" data-emirate="Dubai" data-zone="Freezone">National Industries Park — NIP</option>
+                    <option value="Expo City Dubai — Expo City" data-emirate="Dubai" data-zone="Freezone">Expo City Dubai — Expo City</option>
+                    <option value="SHAMS (Sharjah Media City)" data-emirate="Sharjah" data-zone="Freezone">SHAMS (Sharjah Media City)</option>
+                    <option value="Sharjah Media City (SHAMS)" data-emirate="Sharjah" data-zone="Freezone">Sharjah Media City (SHAMS)</option>
+                    <option value="Sharjah Media City — SHAMS" data-emirate="Sharjah" data-zone="Freezone">Sharjah Media City — SHAMS</option>
+                    <option value="SAIF Zone (Sharjah Airport International Free Zone)" data-emirate="Sharjah" data-zone="Freezone">SAIF Zone (Sharjah Airport International Free Zone)</option>
+                    <option value="Sharjah Airport International Free Zone — SAIF Zone" data-emirate="Sharjah" data-zone="Freezone">Sharjah Airport International Free Zone — SAIF Zone</option>
+                    <option value="HFZA (Hamriyah Free Zone)" data-emirate="Sharjah" data-zone="Freezone">HFZA (Hamriyah Free Zone)</option>
+                    <option value="Hamriyah Free Zone Authority — HFZA" data-emirate="Sharjah" data-zone="Freezone">Hamriyah Free Zone Authority — HFZA</option>
+                    <option value="SPCFZ (Sharjah Publishing City Free Zone)" data-emirate="Sharjah" data-zone="Freezone">SPCFZ (Sharjah Publishing City Free Zone)</option>
+                    <option value="Sharjah Publishing City Free Zone — SPC" data-emirate="Sharjah" data-zone="Freezone">Sharjah Publishing City Free Zone — SPC</option>
+                    <option value="SRTI Park (Sharjah Research Tech & Innovation)" data-emirate="Sharjah" data-zone="Freezone">SRTI Park (Sharjah Research Tech & Innovation)</option>
+                    <option value="Sharjah Research, Technology and Innovation Park — SRTIP" data-emirate="Sharjah" data-zone="Freezone">Sharjah Research, Technology and Innovation Park — SRTIP</option>
+                    <option value="Sharjah Healthcare City — SHCC" data-emirate="Sharjah" data-zone="Freezone">Sharjah Healthcare City — SHCC</option>
+                    <option value="Sharjah Oasis for Technology and Innovation — SOTI" data-emirate="Sharjah" data-zone="Freezone">Sharjah Oasis for Technology and Innovation — SOTI</option>
+                    <option value="AFZA (Ajman Free Zone)" data-emirate="Ajman" data-zone="Freezone">AFZA (Ajman Free Zone)</option>
+                    <option value="Ajman Free Zone — AFZ" data-emirate="Ajman" data-zone="Freezone">Ajman Free Zone — AFZ</option>
+                    <option value="Ajman Media City Free Zone (AMCFZ)" data-emirate="Ajman" data-zone="Freezone">Ajman Media City Free Zone (AMCFZ)</option>
+                    <option value="Ajman Media City Free Zone — AMCFZ" data-emirate="Ajman" data-zone="Freezone">Ajman Media City Free Zone — AMCFZ</option>
+                    <option value="RAKEZ (Ras Al Khaimah Economic Zone)" data-emirate="Ras Al Khaimah" data-zone="Freezone">RAKEZ (Ras Al Khaimah Economic Zone)</option>
+                    <option value="Ras Al Khaimah Economic Zone — RAKEZ" data-emirate="Ras Al Khaimah" data-zone="Freezone">Ras Al Khaimah Economic Zone — RAKEZ</option>
+                    <option value="RAK Maritime City" data-emirate="Ras Al Khaimah" data-zone="Freezone">RAK Maritime City</option>
+                    <option value="Ras Al Khaimah Maritime City — RAKMC" data-emirate="Ras Al Khaimah" data-zone="Freezone">Ras Al Khaimah Maritime City — RAKMC</option>
+                    <option value="Innovation City — IC" data-emirate="Ras Al Khaimah" data-zone="Freezone">Innovation City — IC</option>
+                    <option value="RAK Digital Assets Oasis — RAK DAO" data-emirate="Ras Al Khaimah" data-zone="Freezone">RAK Digital Assets Oasis — RAK DAO</option>
+                    <option value="Fujairah Free Zone (FFZ)" data-emirate="Fujairah" data-zone="Freezone">Fujairah Free Zone (FFZ)</option>
+                    <option value="Fujairah Free Zone — FFZ" data-emirate="Fujairah" data-zone="Freezone">Fujairah Free Zone — FFZ</option>
+                    <option value="Creative City Fujairah" data-emirate="Fujairah" data-zone="Freezone">Creative City Fujairah</option>
+                    <option value="Creative City Fujairah — CCF" data-emirate="Fujairah" data-zone="Freezone">Creative City Fujairah — CCF</option>
+                    <option value="UAQ FTZ (Umm Al Quwain Free Trade Zone)" data-emirate="Umm Al Quwain" data-zone="Freezone">UAQ FTZ (Umm Al Quwain Free Trade Zone)</option>
+                    <option value="Umm Al Quwain Free Trade Zone — UAQ FTZ" data-emirate="Umm Al Quwain" data-zone="Freezone">Umm Al Quwain Free Trade Zone — UAQ FTZ</option>
+                  </optgroup>
+                </select>
               </div>
             </div>
 
@@ -452,23 +578,15 @@
             </div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Lead Assigned To</label>
-                <?php 
-                  $cur_role = $this->session->userdata('manager_role');
-                  if ($cur_role == 1 || $cur_role == 4) { 
-                ?>               
-                  <select class="form-control select2" name="lead_assign" style="width: 100%;">
-                    <option value="0">Unassigned (Distribute Later)</option>
-                    <?php if(isset($u_list) && !empty($u_list)) { 
-                      foreach($u_list as $li){
-                    ?>
-                      <option value="<?php echo $li['id']; ?>" <?php if($li['id'] == $this->session->userdata('manager_id')){ echo 'selected'; } ?>><?php echo $li['name']; ?></option>          
-                    <?php } } ?>
-                  </select>
-                <?php } else { ?>
-                  <input type="text" class="form-control" value="<?php echo htmlspecialchars($this->session->userdata('manager_name')); ?>" readonly style="background: #f8fafc; font-weight: 600;">
-                  <input type="hidden" name="lead_assign" value="<?php echo (int)$this->session->userdata('manager_id'); ?>">
-                <?php } ?>
+                <label>Lead Assigned To / Collaborators</label>
+                <select class="form-control select2" name="lead_assign[]" multiple="multiple" data-placeholder="Select Assignee(s)" style="width: 100%;">
+                  <?php if(isset($u_list) && !empty($u_list)) { 
+                    $my_id = (int)$this->session->userdata('manager_id');
+                    foreach($u_list as $li){
+                  ?>
+                    <option value="<?php echo $li['id']; ?>" <?php if($li['id'] == $my_id){ echo 'selected'; } ?>><?php echo htmlspecialchars($li['name']); ?></option>          
+                  <?php } } ?>
+                </select>
               </div>
             </div>
 
@@ -1158,10 +1276,114 @@ $(document).ready(function() {
     } else {
       $('#topClosedIndicator').hide();
     }
+
+    var zoneVal = $('#tl_zone_select').val();
+    var selectedOpt = $('#tl_authority_select option:selected');
+    var detectedZone = selectedOpt.attr('data-zone') || '';
+
+    if (!zoneVal && detectedZone) {
+      $('#tl_zone_select').val(detectedZone);
+      zoneVal = detectedZone;
+    }
+
+    var finalZone = zoneVal || detectedZone;
+    if (finalZone && (finalZone.toLowerCase() === 'mainland' || finalZone.toLowerCase() === 'freezone')) {
+      var badgeText = finalZone.toLowerCase() === 'freezone' ? 'Freezone' : 'Mainland';
+      $('#topZoneIndicator').text(badgeText).show();
+    } else {
+      $('#topZoneIndicator').hide();
+    }
   }
+
+  var originalAuthorityHtml = $('#tl_authority_select').html();
+
+  function applyTradeLicenseDependencies(initialLoad) {
+    var selEmirate = $('#tl_emirate_select').val() || '';
+    var selZone = $('#tl_zone_select').val() || '';
+    var currentAuth = $('#tl_authority_select').val() || '';
+
+    if (!selEmirate) {
+      $('#tl_zone_select').prop('disabled', true);
+      if (!initialLoad) {
+        $('#tl_zone_select').val('');
+      }
+      selZone = '';
+      $('#tl_authority_select').prop('disabled', true);
+      if (!initialLoad) {
+        $('#tl_authority_select').val('');
+      }
+      currentAuth = '';
+    } else {
+      $('#tl_zone_select').prop('disabled', false);
+      if (!selZone) {
+        $('#tl_authority_select').prop('disabled', true);
+        if (!initialLoad) {
+          $('#tl_authority_select').val('');
+        }
+        currentAuth = '';
+      } else {
+        $('#tl_authority_select').prop('disabled', false);
+      }
+    }
+
+    var tempDiv = $('<div>').html(originalAuthorityHtml);
+    tempDiv.find('option').each(function() {
+      var opt = $(this);
+      var optVal = opt.val();
+      if (!optVal) return;
+      var optEm = opt.attr('data-emirate') || '';
+      var optZn = opt.attr('data-zone') || '';
+
+      var matchEm = !selEmirate || (optEm.toLowerCase() === selEmirate.toLowerCase());
+      var matchZn = !selZone || (optZn.toLowerCase() === selZone.toLowerCase());
+
+      if (!matchEm || !matchZn) {
+        opt.remove();
+      }
+    });
+
+    tempDiv.find('optgroup').each(function() {
+      if ($(this).find('option').length === 0) {
+        $(this).remove();
+      }
+    });
+
+    $('#tl_authority_select').html(tempDiv.html());
+
+    if (currentAuth && $('#tl_authority_select').find('option[value="' + currentAuth.replace(/"/g, '\\"') + '"]').length > 0) {
+      $('#tl_authority_select').val(currentAuth);
+    } else {
+      $('#tl_authority_select').val('');
+    }
+
+    if ($.fn.select2 && $('#tl_authority_select').data('select2')) {
+      $('#tl_authority_select').select2();
+    }
+  }
+
+  $('#tl_emirate_select').on('change', function() {
+    applyTradeLicenseDependencies(false);
+    updateTopHeaderBadges();
+  });
+
+  $('#tl_zone_select').on('change', function() {
+    applyTradeLicenseDependencies(false);
+    updateTopHeaderBadges();
+  });
+
+  $('#tl_authority_select').on('change select2:select', function() {
+    updateTopHeaderBadges();
+  });
+
+  $('form').on('submit', function() {
+    $('#tl_zone_select, #tl_authority_select').prop('disabled', false);
+  });
+
   $('select[name="dnd_status"], #company_status_select').on('change', function() {
     updateTopHeaderBadges();
   });
+
+  applyTradeLicenseDependencies(true);
   updateTopHeaderBadges();
 
   updateStatusCategoryOptions($('#lead_status_select').val(), '');

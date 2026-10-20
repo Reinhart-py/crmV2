@@ -67,107 +67,70 @@ class Ci_admin_system extends CI_Controller {
 		}
 
 		$user_id = $this->input->get('user_id');
-		$user_name = $this->input->get('user_name');
 		$activity = $this->input->get('activity');
-		$status_input = $this->input->get('status');
-		$online_status_input = $this->input->get('online_status');
+		$status = $this->input->get('status');
 		$d1 = $this->input->get('d1');
 		$d2 = $this->input->get('d2');
 
-		$status_list = is_array($status_input) ? $status_input : (!empty($status_input) ? array($status_input) : array());
-		if (!empty($online_status_input)) {
-			$status_list[] = $online_status_input;
-		}
-
-		$is_filter_online = in_array('online', $status_list);
-		$is_filter_offline = in_array('offline', $status_list);
-
-		$db_status = array();
-		foreach ($status_list as $st) {
-			if ($st !== 'online' && $st !== 'offline' && !empty($st)) {
-				$db_status[] = $st;
-			}
-		}
-
-		$users_with_status = $this->db->select('id, name, email, is_online, last_active_at, last_ip')
-			->order_by('name', 'ASC')
-			->get('ci_user')
-			->result_array();
-
-		$user_status_map = array();
-		$online_count = 0;
-		$threshold_time = time() - 600;
-		$online_uids = array();
-		$offline_uids = array();
-
-		foreach ($users_with_status as $u) {
-			$is_active_recently = (!empty($u['last_active_at']) && strtotime($u['last_active_at']) >= $threshold_time);
-			$is_online = ($u['is_online'] == 1 && $is_active_recently);
-			if ($is_online) {
-				$online_count++;
-				$online_uids[] = (int)$u['id'];
-			} else {
-				$offline_uids[] = (int)$u['id'];
-			}
-			$user_status_map[$u['id']] = array(
-				'name' => $u['name'],
-				'email' => $u['email'],
-				'is_online' => $is_online,
-				'last_active_at' => $u['last_active_at'],
-				'last_ip' => $u['last_ip']
-			);
-		}
-		$data['users_with_status'] = $users_with_status;
-		$data['user_status_map'] = $user_status_map;
-		$data['online_users_count'] = $online_count;
-		$data['total_users_count'] = count($users_with_status);
-
 		$this->db->start_cache();
 		if (!empty($user_id)) {
-			$this->db->where('ci_admin_logs.user_id', (int)$user_id);
-		}
-		if (!empty($user_name)) {
-			$this->db->like('ci_admin_logs.username', $user_name);
-		}
-		if ($is_filter_online) {
-			if (!empty($online_uids)) {
-				$this->db->where_in('ci_admin_logs.user_id', $online_uids);
-			} else {
-				$this->db->where('ci_admin_logs.user_id', -1);
-			}
-		} elseif ($is_filter_offline) {
-			if (!empty($offline_uids)) {
-				$this->db->where_in('ci_admin_logs.user_id', $offline_uids);
-			}
+			$this->db->where('user_id', (int)$user_id);
 		}
 		if (!empty($activity)) {
-			if (is_array($activity)) {
-				$this->db->where_in('ci_admin_logs.activity', $activity);
-			} else {
-				$this->db->where('ci_admin_logs.activity', $activity);
-			}
+			$this->db->where('activity', trim($activity));
 		}
-		if (!empty($db_status)) {
-			$this->db->where_in('ci_admin_logs.status', $db_status);
+		if (!empty($status)) {
+			$this->db->where('status', trim($status));
 		}
 		if (!empty($d1)) {
-			$this->db->where('DATE(ci_admin_logs.created_at) >=', date('Y-m-d', strtotime($d1)));
+			$this->db->where('DATE(created_at) >=', date('Y-m-d', strtotime($d1)));
 		}
 		if (!empty($d2)) {
-			$this->db->where('DATE(ci_admin_logs.created_at) <=', date('Y-m-d', strtotime($d2)));
+			$this->db->where('DATE(created_at) <=', date('Y-m-d', strtotime($d2)));
 		}
 		$this->db->stop_cache();
 
 		$total_rows = $this->db->count_all_results('ci_admin_logs');
 
-		$this->db->order_by('ci_admin_logs.id', 'DESC');
-		$this->db->limit(1000);
+		$per_page = 25;
+		$page = (int)$page;
+		if ($page < 0) $page = 0;
+
+		$config['base_url'] = base_url() . 'manager/admin-logs';
+		$config['total_rows'] = $total_rows;
+		$config['per_page'] = $per_page;
+		$config['uri_segment'] = 3;
+		$config['reuse_query_string'] = TRUE;
+		$config['full_tag_open'] = '<ul class="pagination pagination-sm no-margin pull-right">';
+		$config['full_tag_close'] = '</ul>';
+		$config['first_link'] = 'First';
+		$config['first_tag_open'] = '<li>';
+		$config['first_tag_close'] = '</li>';
+		$config['last_link'] = 'Last';
+		$config['last_tag_open'] = '<li>';
+		$config['last_tag_close'] = '</li>';
+		$config['next_link'] = '&raquo;';
+		$config['next_tag_open'] = '<li>';
+		$config['next_tag_close'] = '</li>';
+		$config['prev_link'] = '&laquo;';
+		$config['prev_tag_open'] = '<li>';
+		$config['prev_tag_close'] = '</li>';
+		$config['cur_tag_open'] = '<li class="active"><a href="#">';
+		$config['cur_tag_close'] = '</a></li>';
+		$config['num_tag_open'] = '<li>';
+		$config['num_tag_close'] = '</li>';
+
+		$this->pagination->initialize($config);
+
+		$this->db->order_by('id', 'DESC');
+		$this->db->limit($per_page, $page);
 		$query = $this->db->get('ci_admin_logs');
 		$data['logs'] = ($query && is_object($query)) ? $query->result_array() : array();
 		$this->db->flush_cache();
 
+		$data['pagination'] = $this->pagination->create_links();
 		$data['total_logs'] = $total_rows;
-		$data['users_list'] = $users_with_status;
+		$data['users_list'] = $this->db->select('id, name, email')->get('ci_user')->result_array();
 		$data['activities'] = array('login', 'login_failed', 'logout', 'session_timeout', 'lead_create', 'lead_update', 'lead_delete', 'lead_import', 'lead_export', 'lead_reassign', 'user_create', 'user_update');
 
 		$this->load->view('manager/system/admin_logs', $data);

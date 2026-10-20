@@ -132,15 +132,37 @@
                 </h1>
             </div>
             <div style="z-index: 2; display: flex; align-items: center; gap: 8px;">
-                <?php if (!empty($report_data['pivot_data'])) { ?>
-                <a href="<?php echo base_url(); ?>manager/download-report/<?php echo $dept; ?>/<?php echo $report; ?>?<?php echo http_build_query(array_merge($_GET, array('export' => 'pivot'))); ?>" class="btn btn-primary" style="font-weight: 600; border-radius: 4px; padding: 6px 14px; font-size: 12.5px; background: #2563eb; border-color: #1d4ed8; color: #ffffff;">
-                    <i class="fa fa-table" style="margin-right: 5px;"></i> Export Summary CSV
-                </a>
-                <?php } ?>
                 <?php if (isset($is_admin_or_support) && $is_admin_or_support) { ?>
-                <a href="<?php echo base_url(); ?>manager/download-report/<?php echo $dept; ?>/<?php echo $report; ?>?<?php echo http_build_query(array_merge($_GET, array('export' => 'csv'))); ?>" class="btn btn-success" style="font-weight: 600; border-radius: 4px; padding: 6px 14px; font-size: 12.5px; background: #10b981; border-color: #059669; color: #ffffff;">
-                    <i class="fa fa-list-alt" style="margin-right: 5px;"></i> Detailed Records CSV
-                </a>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-weight: 600; border-radius: 4px; padding: 6px 14px; font-size: 12.5px; background: #ffffff; border-color: #d1d5db; color: #1e293b; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fa fa-download"></i> Export <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-right" style="border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,0.1); min-width: 210px; padding: 6px 0; margin-top: 4px; border: 1px solid #e2e8f0;">
+                        <?php if (!empty($report_data['pivot_data'])) { ?>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/download-report/<?php echo $dept; ?>/<?php echo $report; ?>?<?php echo http_build_query(array_merge($_GET, array('export' => 'pivot_excel'))); ?>" style="padding: 8px 16px; font-size: 12.5px; font-weight: 500; color: #1e293b;">
+                                <i class="fa fa-file-excel-o text-success" style="margin-right: 8px; width: 14px;"></i> Export Summary Excel
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/download-report/<?php echo $dept; ?>/<?php echo $report; ?>?<?php echo http_build_query(array_merge($_GET, array('export' => 'pivot'))); ?>" style="padding: 8px 16px; font-size: 12.5px; font-weight: 500; color: #1e293b;">
+                                <i class="fa fa-table text-primary" style="margin-right: 8px; width: 14px;"></i> Export Summary CSV
+                            </a>
+                        </li>
+                        <li role="separator" class="divider" style="margin: 4px 0;"></li>
+                        <?php } ?>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/download-report/<?php echo $dept; ?>/<?php echo $report; ?>?<?php echo http_build_query(array_merge($_GET, array('export' => 'excel'))); ?>" style="padding: 8px 16px; font-size: 12.5px; font-weight: 500; color: #1e293b;">
+                                <i class="fa fa-file-excel-o text-success" style="margin-right: 8px; width: 14px;"></i> Detailed Records Excel
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>manager/download-report/<?php echo $dept; ?>/<?php echo $report; ?>?<?php echo http_build_query(array_merge($_GET, array('export' => 'csv'))); ?>" style="padding: 8px 16px; font-size: 12.5px; font-weight: 500; color: #1e293b;">
+                                <i class="fa fa-list-alt text-info" style="margin-right: 8px; width: 14px;"></i> Detailed Records CSV
+                            </a>
+                        </li>
+                    </ul>
+                </div>
                 <?php } ?>
             </div>
         </div>
@@ -240,6 +262,84 @@
                             <option value="0-30" <?php if(isset($filters['expiry']) && $filters['expiry']=='0-30') echo 'selected'; ?>>0–30 Days</option>
                             <option value="30-60" <?php if(isset($filters['expiry']) && $filters['expiry']=='30-60') echo 'selected'; ?>>30–60 Days</option>
                             <option value="60-90" <?php if(isset($filters['expiry']) && $filters['expiry']=='60-90') echo 'selected'; ?>>60–90 Days</option>
+                            <option value="future" <?php if(isset($filters['expiry']) && $filters['expiry']=='future') echo 'selected'; ?>>All Future</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <select class="form-control input-sm" name="tl_emirate" id="filter_tl_emirate" style="border-radius: 4px; font-size: 12px;">
+                            <option value="">All Emirates</option>
+                            <?php 
+                            $uae_emirates = array('Abu Dhabi', 'Dubai', 'Sharjah', 'Ajman', 'Umm Al Quwain', 'Ras Al Khaimah', 'Fujairah');
+                            foreach ($uae_emirates as $em) {
+                            ?>
+                            <option value="<?php echo $em; ?>" <?php if(isset($filters['tl_emirate']) && $filters['tl_emirate'] == $em) echo 'selected'; ?>><?php echo $em; ?></option>
+                            <?php } ?>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <select class="form-control input-sm" name="tl_zone" id="filter_tl_zone" style="border-radius: 4px; font-size: 12px;">
+                            <option value="">All Zones</option>
+                            <?php 
+                            $tl_zones = array('Mainland', 'Freezone', 'Offshore', 'Other');
+                            foreach ($tl_zones as $zn) {
+                            ?>
+                            <option value="<?php echo $zn; ?>" <?php if(isset($filters['tl_zone']) && $filters['tl_zone'] == $zn) echo 'selected'; ?>><?php echo $zn; ?></option>
+                            <?php } ?>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <select class="form-control input-sm select2" name="tl_authority" id="filter_tl_authority" style="border-radius: 4px; font-size: 12px; min-width: 170px;">
+                            <option value="">All Licensing Authorities</option>
+                            <optgroup label="Mainland">
+                                <option value="ADDED" data-emirate="Abu Dhabi" data-zone="Mainland" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'ADDED') echo 'selected'; ?>>ADDED</option>
+                                <option value="DET" data-emirate="Dubai" data-zone="Mainland" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'DET') echo 'selected'; ?>>DET</option>
+                                <option value="SEDD" data-emirate="Sharjah" data-zone="Mainland" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'SEDD') echo 'selected'; ?>>SEDD</option>
+                                <option value="Ajman DED" data-emirate="Ajman" data-zone="Mainland" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'Ajman DED') echo 'selected'; ?>>Ajman DED</option>
+                                <option value="UAQ DED" data-emirate="Umm Al Quwain" data-zone="Mainland" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'UAQ DED') echo 'selected'; ?>>UAQ DED</option>
+                                <option value="RAK DED" data-emirate="Ras Al Khaimah" data-zone="Mainland" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'RAK DED') echo 'selected'; ?>>RAK DED</option>
+                                <option value="FM" data-emirate="Fujairah" data-zone="Mainland" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'FM') echo 'selected'; ?>>FM</option>
+                                <option value="DM" data-emirate="Fujairah" data-zone="Mainland" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'DM') echo 'selected'; ?>>DM</option>
+                            </optgroup>
+                            <optgroup label="Freezone">
+                                <option value="Masdar" data-emirate="Abu Dhabi" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'Masdar') echo 'selected'; ?>>Masdar</option>
+                                <option value="TCA" data-emirate="Abu Dhabi" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'TCA') echo 'selected'; ?>>TCA</option>
+                                <option value="ADAFZ" data-emirate="Abu Dhabi" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'ADAFZ') echo 'selected'; ?>>ADAFZ</option>
+                                <option value="KEZAD" data-emirate="Abu Dhabi" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'KEZAD') echo 'selected'; ?>>KEZAD</option>
+                                <option value="ADGM" data-emirate="Abu Dhabi" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'ADGM') echo 'selected'; ?>>ADGM</option>
+                                <option value="TIP" data-emirate="Abu Dhabi" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'TIP') echo 'selected'; ?>>TIP</option>
+                                <option value="DDA" data-emirate="Dubai" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'DDA') echo 'selected'; ?>>DDA</option>
+                                <option value="DAFZA" data-emirate="Dubai" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'DAFZA') echo 'selected'; ?>>DAFZA</option>
+                                <option value="JAFZA" data-emirate="Dubai" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'JAFZA') echo 'selected'; ?>>JAFZA</option>
+                                <option value="DMCC" data-emirate="Dubai" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'DMCC') echo 'selected'; ?>>DMCC</option>
+                                <option value="DIFC" data-emirate="Dubai" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'DIFC') echo 'selected'; ?>>DIFC</option>
+                                <option value="DSO" data-emirate="Dubai" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'DSO') echo 'selected'; ?>>DSO</option>
+                                <option value="DHCC" data-emirate="Dubai" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'DHCC') echo 'selected'; ?>>DHCC</option>
+                                <option value="DMCA" data-emirate="Dubai" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'DMCA') echo 'selected'; ?>>DMCA</option>
+                                <option value="DS" data-emirate="Dubai" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'DS') echo 'selected'; ?>>DS</option>
+                                <option value="MFZ" data-emirate="Dubai" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'MFZ') echo 'selected'; ?>>MFZ</option>
+                                <option value="DWTC" data-emirate="Dubai" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'DWTC') echo 'selected'; ?>>DWTC</option>
+                                <option value="DH" data-emirate="Dubai" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'DH') echo 'selected'; ?>>DH</option>
+                                <option value="Trakhees" data-emirate="Dubai" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'Trakhees') echo 'selected'; ?>>Trakhees</option>
+                                <option value="NIP" data-emirate="Dubai" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'NIP') echo 'selected'; ?>>NIP</option>
+                                <option value="Expo City" data-emirate="Dubai" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'Expo City') echo 'selected'; ?>>Expo City</option>
+                                <option value="SAIF Zone" data-emirate="Sharjah" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'SAIF Zone') echo 'selected'; ?>>SAIF Zone</option>
+                                <option value="HFZA" data-emirate="Sharjah" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'HFZA') echo 'selected'; ?>>HFZA</option>
+                                <option value="SPC" data-emirate="Sharjah" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'SPC') echo 'selected'; ?>>SPC</option>
+                                <option value="SHAMS" data-emirate="Sharjah" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'SHAMS') echo 'selected'; ?>>SHAMS</option>
+                                <option value="SRTIP" data-emirate="Sharjah" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'SRTIP') echo 'selected'; ?>>SRTIP</option>
+                                <option value="SHCC" data-emirate="Sharjah" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'SHCC') echo 'selected'; ?>>SHCC</option>
+                                <option value="SOTI" data-emirate="Sharjah" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'SOTI') echo 'selected'; ?>>SOTI</option>
+                                <option value="AFZ" data-emirate="Ajman" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'AFZ') echo 'selected'; ?>>AFZ</option>
+                                <option value="AMCFZ" data-emirate="Ajman" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'AMCFZ') echo 'selected'; ?>>AMCFZ</option>
+                                <option value="UAQ FTZ" data-emirate="Umm Al Quwain" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'UAQ FTZ') echo 'selected'; ?>>UAQ FTZ</option>
+                                <option value="RAKEZ" data-emirate="Ras Al Khaimah" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'RAKEZ') echo 'selected'; ?>>RAKEZ</option>
+                                <option value="RAKMC" data-emirate="Ras Al Khaimah" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'RAKMC') echo 'selected'; ?>>RAKMC</option>
+                                <option value="IC" data-emirate="Ras Al Khaimah" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'IC') echo 'selected'; ?>>IC</option>
+                                <option value="RAK DAO" data-emirate="Ras Al Khaimah" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'RAK DAO') echo 'selected'; ?>>RAK DAO</option>
+                                <option value="FFZ" data-emirate="Fujairah" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'FFZ') echo 'selected'; ?>>FFZ</option>
+                                <option value="CCF" data-emirate="Fujairah" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'CCF') echo 'selected'; ?>>CCF</option>
+                                <option value="IFZA" data-emirate="Dubai" data-zone="Freezone" <?php if(isset($filters['tl_authority']) && $filters['tl_authority'] == 'IFZA') echo 'selected'; ?>>IFZA</option>
+                            </optgroup>
                         </select>
                     </div>
                     <?php } ?>
@@ -303,6 +403,7 @@
                     foreach ($report_data['pivot_data']['groups'] as $grp) { 
                         $grp_idx++;
                         $cat_name = !empty($grp['category']) ? $grp['category'] : 'Group';
+                        $cat_url = !empty($grp['category_url']) ? $grp['category_url'] : '';
                     ?>
                     <tr class="pivot-group-row" onclick="togglePivotGroup('grp_<?php echo $grp_idx; ?>', this);">
                         <td colspan="<?php echo $col_count; ?>" style="padding-left: 12px;">
@@ -321,9 +422,10 @@
                             $indent = ($cell_idx == 0) ? 'padding-left: 28px;' : '';
                             $cell_val = is_array($cell) ? (isset($cell['val']) ? $cell['val'] : '') : $cell;
                             $cell_url = is_array($cell) && isset($cell['url']) ? $cell['url'] : '';
+                            $is_numeric = (bool)preg_match('/[0-9]/', (string)$cell_val) && !preg_match('/[a-zA-Z]{3,}/', (string)$cell_val);
                         ?>
                         <td style="text-align: <?php echo $align; ?>; <?php echo $indent; ?>">
-                            <?php if (!empty($cell_url)) { ?>
+                            <?php if (!empty($cell_url) && $is_numeric) { ?>
                             <a href="<?php echo $cell_url; ?>" style="color: #2563eb; font-weight: 700; text-decoration: underline;">
                                 <?php echo htmlspecialchars($cell_val); ?>
                             </a>
@@ -350,9 +452,17 @@
                         foreach ($grp['subtotal'] as $cell) { 
                             $align = ($cell_idx < 2) ? 'left' : 'right';
                             $cell_val = is_array($cell) ? (isset($cell['val']) ? $cell['val'] : '') : $cell;
+                            $cell_url = is_array($cell) && isset($cell['url']) ? $cell['url'] : '';
+                            $is_numeric = (bool)preg_match('/[0-9]/', (string)$cell_val) && !preg_match('/[a-zA-Z]{3,}/', (string)$cell_val);
                         ?>
                         <td style="text-align: <?php echo $align; ?>;">
+                            <?php if (!empty($cell_url) && $is_numeric) { ?>
+                            <a href="<?php echo $cell_url; ?>" style="color: #2563eb; font-weight: 700; text-decoration: underline;">
+                                <?php echo htmlspecialchars($cell_val); ?>
+                            </a>
+                            <?php } else { ?>
                             <?php echo htmlspecialchars($cell_val); ?>
+                            <?php } ?>
                         </td>
                         <?php 
                             $cell_idx++;
@@ -369,9 +479,17 @@
                         foreach ($report_data['pivot_data']['grand_total'] as $cell) { 
                             $align = ($cell_idx < 2) ? 'left' : 'right';
                             $cell_val = is_array($cell) ? (isset($cell['val']) ? $cell['val'] : '') : $cell;
+                            $cell_url = is_array($cell) && isset($cell['url']) ? $cell['url'] : '';
+                            $is_numeric = (bool)preg_match('/[0-9]/', (string)$cell_val) && !preg_match('/[a-zA-Z]{3,}/', (string)$cell_val);
                         ?>
                         <td style="text-align: <?php echo $align; ?>;">
+                            <?php if (!empty($cell_url) && $is_numeric) { ?>
+                            <a href="<?php echo $cell_url; ?>" style="color: #2563eb; font-weight: 800; text-decoration: underline;">
+                                <?php echo htmlspecialchars($cell_val); ?>
+                            </a>
+                            <?php } else { ?>
                             <?php echo htmlspecialchars($cell_val); ?>
+                            <?php } ?>
                         </td>
                         <?php 
                             $cell_idx++;
@@ -466,6 +584,46 @@ $(document).ready(function() {
             width: '100%'
         });
     }
+
+    function filterTradeLicenseAuthorities() {
+        var em = $('#filter_tl_emirate').val();
+        var zn = $('#filter_tl_zone').val();
+        var currentAuth = $('#filter_tl_authority').val();
+        var matchFound = false;
+
+        $('#filter_tl_authority option').each(function() {
+            var optEm = $(this).attr('data-emirate');
+            var optZn = $(this).attr('data-zone');
+            if (!optEm && !optZn) return;
+
+            var show = true;
+            if (em && optEm && optEm !== em) {
+                show = false;
+            }
+            if (zn && optZn && optZn.toLowerCase() !== zn.toLowerCase()) {
+                show = false;
+            }
+
+            if (show) {
+                $(this).prop('disabled', false).show();
+                if ($(this).val() === currentAuth) matchFound = true;
+            } else {
+                $(this).prop('disabled', true).hide();
+            }
+        });
+
+        if (currentAuth && !matchFound) {
+            $('#filter_tl_authority').val('');
+        }
+        if ($.fn.select2 && $('#filter_tl_authority').hasClass('select2')) {
+            $('#filter_tl_authority').trigger('change.select2');
+        }
+    }
+
+    $('#filter_tl_emirate, #filter_tl_zone').on('change', function() {
+        filterTradeLicenseAuthorities();
+    });
+    filterTradeLicenseAuthorities();
 
     <?php if (!isset($is_admin_or_support) || !$is_admin_or_support) { ?>
     document.addEventListener('copy', function(e) {

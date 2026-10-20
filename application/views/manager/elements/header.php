@@ -113,7 +113,7 @@
       <li class="<?php if($route1=="dashboard"){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/dashboard"> <i class="fa fa-tachometer"></i> <span>Dashboard</span>  </a> </li>
 
 
-      <li class="<?php if(in_array($route1, array('tasks', 'tickets', 'operations'))){ echo "active";}else{ echo "";}?>"> <a href="javascript:void(0);"><i class="fa fa-cogs"></i> <span>Operations</span> </a>
+      <li class="<?php if(in_array($route1, array('tasks', 'tickets', 'operations', 'calls'))){ echo "active";}else{ echo "";}?>"> <a href="javascript:void(0);"><i class="fa fa-cogs"></i> <span>Operations</span> </a>
         <ul>
           <li><a href="<?php echo base_url();?>manager/tasks/add"><i class="fa fa-plus"></i>Add Task</a></li>
           <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-list"></i>Task View</a></li>
@@ -121,6 +121,7 @@
           <li><a href="<?php echo base_url();?>manager/tickets/add"><i class="fa fa-plus"></i>Raise Ticket</a></li>
           <li><a href="<?php echo base_url();?>manager/tickets"><i class="fa fa-ticket"></i>Ticket View</a></li>
           <li><a href="<?php echo base_url();?>manager/tickets/followups"><i class="fa fa-calendar-check-o"></i>Open Tickets</a></li>
+          <li><a href="<?php echo base_url();?>manager/calls"><i class="fa fa-phone"></i>Calls</a></li>
         </ul>
       </li>
 
@@ -137,21 +138,17 @@
       </li>
       <?php } ?>
 
-      <li class="<?php if($route1=="leads"){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/leads"><i class="fa fa-list"></i> <span>Leads</span> </a>
+      <li class="<?php if($route1=="leads" || $route1=="verticals" || $route1=="database-transfer"){ echo "active";}else{ echo "";}?>"> 
+        <a href="javascript:void(0);"><i class="fa fa-th-large"></i> <span>My Zone</span> </a>
         <ul>
-          <li><a href="<?php echo base_url();?>manager/leads/add"><i class="fa fa-plus"></i>Add Lead</a></li>
-          <li><a href="<?php echo base_url();?>manager/leads"><i class="fa fa-list"></i>View Leads</a></li>
-          <li><a href="<?php echo base_url();?>manager/leads/followups"><i class="fa fa-calendar-check-o"></i>Follow-up Meetings</a></li>
-        </ul>
-      </li>
-
-
-      
-    <li class="<?php if($route1=="verticals"){ echo "active";}else{ echo "";}?> "> <a href="<?php echo base_url();?>manager/verticals"><i class="fa fa-users"></i> <span>Verticals</span> </a>
-        <ul>
-          <li><a href="<?php echo base_url();?>manager/verticals/add"><i class="fa fa-plus"></i>Add </a></li>
-          <li><a href="<?php echo base_url();?>manager/verticals"><i class="fa fa-list"></i>View</a></li>
-          <li><a href="<?php echo base_url();?>manager/verticals"><i class="fa fa-list"></i>Follow up</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/add"><i class="fa fa-plus"></i>Database Add</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads"><i class="fa fa-list"></i>Database View</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/followups"><i class="fa fa-clock-o"></i>Database Follow-up</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/meetings"><i class="fa fa-calendar"></i>Database Meetings</a></li>
+          <li><a href="<?php echo base_url();?>manager/verticals/add"><i class="fa fa-plus"></i>Vertical Add</a></li>
+          <li><a href="<?php echo base_url();?>manager/verticals"><i class="fa fa-list"></i>Vertical View</a></li>
+          <li><a href="<?php echo base_url();?>manager/verticals/followups"><i class="fa fa-list"></i>Vertical Follow-up</a></li>
+          <li><a href="<?php echo base_url();?>manager/database-transfer"><i class="fa fa-exchange"></i>Database Transfer</a></li>
         </ul>
       </li>
 
@@ -194,7 +191,8 @@
           <li><a href="<?php echo base_url();?>manager/leads/import"><i class="fa fa-upload"></i>Import Leads</a></li>
           <?php if($m_role == 1){ ?>
             <li><a href="<?php echo base_url();?>manager/leads/export"><i class="fa fa-download"></i>Export Leads</a></li>
-            <li><a href="<?php echo base_url();?>manager/assigned-leads"><i class="fa fa-tasks"></i>Assigned Leads</a></li>
+            <li><a href="<?php echo base_url();?>manager/assigned-leads"><i class="fa fa-tasks"></i>Allotted Database</a></li>
+            <li><a href="<?php echo base_url();?>manager/assigned-leads?alloc_filter=non_allotted"><i class="fa fa-folder-open-o"></i>Non-Allotted Database</a></li>
             <li><a href="<?php echo base_url();?>manager/admin-logs"><i class="fa fa-history"></i>Admin Logs</a></li>
           <?php } ?>
         </ul>
@@ -290,7 +288,7 @@ $(function() {
       </li>
 
 
-      <li class="<?php if(in_array($route1, array('tasks', 'tickets', 'operations'))){ echo "active";}else{ echo "";}?> treeview"> 
+      <li class="<?php if(in_array($route1, array('tasks', 'tickets', 'operations', 'calls'))){ echo "active";}else{ echo "";}?> treeview"> 
         <a href="javascript:void(0);"><i class="fa fa-cogs"></i> <span>Operations</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu">
           <li><a href="<?php echo base_url();?>manager/tasks/add"><i class="fa fa-plus"></i>Add Task</a></li>
@@ -299,6 +297,7 @@ $(function() {
           <li><a href="<?php echo base_url();?>manager/tickets/add"><i class="fa fa-plus"></i>Raise Ticket</a></li>
           <li><a href="<?php echo base_url();?>manager/tickets"><i class="fa fa-ticket"></i>Ticket View</a></li>
           <li><a href="<?php echo base_url();?>manager/tickets/followups"><i class="fa fa-calendar-check-o"></i>Open Tickets</a></li>
+          <li><a href="<?php echo base_url();?>manager/calls"><i class="fa fa-phone"></i>Calls</a></li>
         </ul>
       </li>
 
@@ -316,21 +315,17 @@ $(function() {
       </li>
       <?php } ?>
 
-      <li class="<?php if($route1=="leads"){ echo "active";}else{ echo "";}?> treeview"> 
-        <a href="javascript:void(0);"><i class="fa fa-database"></i> <span>Leads</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
+      <li class="<?php if($route1=="leads" || $route1=="verticals" || $route1=="database-transfer"){ echo "active";}else{ echo "";}?> treeview"> 
+        <a href="javascript:void(0);"><i class="fa fa-th-large"></i> <span>My Zone</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu">
-          <li><a href="<?php echo base_url();?>manager/leads/add"><i class="fa fa-plus"></i>Add Lead</a></li>
-          <li><a href="<?php echo base_url();?>manager/leads"><i class="fa fa-list"></i>View Leads</a></li>
-          <li><a href="<?php echo base_url();?>manager/leads/followups"><i class="fa fa-calendar-check-o"></i>Follow-up Meetings</a></li>
-        </ul>
-      </li>
-
-      <li class="<?php if($route1=="verticals"){ echo "active";}else{ echo "";}?> treeview"> 
-        <a href="javascript:void(0);"><i class="fa fa-users"></i> <span>Verticals</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
-        <ul class="treeview-menu">
-          <li><a href="<?php echo base_url();?>manager/verticals/add"><i class="fa fa-plus"></i>Add </a></li>
-          <li><a href="<?php echo base_url();?>manager/verticals"><i class="fa fa-list"></i>View</a></li>
-          <li><a href="<?php echo base_url();?>manager/verticals"><i class="fa fa-list"></i>Follow up</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/add"><i class="fa fa-plus"></i>Database Add</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads"><i class="fa fa-list"></i>Database View</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/followups"><i class="fa fa-clock-o"></i>Database Follow-up</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/meetings"><i class="fa fa-calendar"></i>Database Meetings</a></li>
+          <li><a href="<?php echo base_url();?>manager/verticals/add"><i class="fa fa-plus"></i>Vertical Add</a></li>
+          <li><a href="<?php echo base_url();?>manager/verticals"><i class="fa fa-list"></i>Vertical View</a></li>
+          <li><a href="<?php echo base_url();?>manager/verticals/followups"><i class="fa fa-list"></i>Vertical Follow-up</a></li>
+          <li><a href="<?php echo base_url();?>manager/database-transfer"><i class="fa fa-exchange"></i>Database Transfer</a></li>
         </ul>
       </li>
 
@@ -371,7 +366,8 @@ $(function() {
           <li><a href="<?php echo base_url();?>manager/leads/import"><i class="fa fa-upload"></i>Import Leads</a></li>
           <?php if($m_role == 1){ ?>
             <li><a href="<?php echo base_url();?>manager/leads/export"><i class="fa fa-download"></i>Export Leads</a></li>
-            <li><a href="<?php echo base_url();?>manager/assigned-leads"><i class="fa fa-tasks"></i>Assigned Leads</a></li>
+            <li><a href="<?php echo base_url();?>manager/assigned-leads"><i class="fa fa-tasks"></i>Allotted Database</a></li>
+            <li><a href="<?php echo base_url();?>manager/assigned-leads?alloc_filter=non_allotted"><i class="fa fa-folder-open-o"></i>Non-Allotted Database</a></li>
             <li><a href="<?php echo base_url();?>manager/admin-logs"><i class="fa fa-history"></i>Admin Logs</a></li>
           <?php } ?>
         </ul>

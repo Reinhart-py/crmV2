@@ -7,9 +7,8 @@ class Ci_report_model extends CI_model {
 	$this->load->database();
 	
 	}
-	 public function getAll($con,$order=array(),$table)
+	 public function getAll($con,$order=array(),$table='')
 	 {
-		// print_r($con);
 		 $result= array();
 		if(!empty($con))
 		{
@@ -29,7 +28,7 @@ class Ci_report_model extends CI_model {
 		
 	 }
 	 
-	 public function getpostdata($con,$order=array(),$table)
+	 public function getpostdata($con,$order=array(),$table='')
 	 {
 		// print_r($con);
 		 $result= array();

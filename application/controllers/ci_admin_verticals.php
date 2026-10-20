@@ -94,6 +94,42 @@ function __construct()
 		$this->load->view('manager/verticals/index',$data);
 	}
 
+	public function followups()
+	{
+		$data = array();
+		$data['info'] = array(
+			'title' => 'Manager - Vertical Follow-ups',
+			'page_heading' => 'Vertical Follow-ups'
+		);
+		$data['info2'] = $this->if_not_login();
+
+		$order_by = isset($_GET['order_by']) ? $_GET['order_by'] : 'A.id';
+		$sort_by = isset($_GET['sort_by']) ? $_GET['sort_by'] : 'DESC';
+		$search = isset($_GET['search']) ? $_GET['search'] : '';
+		$d1 = isset($_GET['d1']) ? $_GET['d1'] : '';
+		$d2 = isset($_GET['d2']) ? $_GET['d2'] : '';
+		$status = isset($_GET['status']) ? $_GET['status'] : '';
+		$category = isset($_GET['category']) ? $_GET['category'] : '';
+		$type = isset($_GET['type']) ? $_GET['type'] : 0;
+
+		if (!empty($category)) {
+			$category = implode(',', $category);
+		}
+		if (!empty($status)) {
+			$status = implode(',', $status);
+		}
+
+		$data['st_list'] = $this->comman_model->getAll(array('status' => 1, 'cat_type' => 'v_status'), '', 'ci_terms');
+		$data['pc_list'] = $this->comman_model->getAll(array('cat_type' => 'p_cat', 'parent_id' => 0), '', 'ci_terms');
+		$data['product_list'] = $this->ci_admin_model->getMyVerticals($d1, $d2, '', '', $order_by, $sort_by, $search, $status, $category, $type);
+
+		$con_q = (!empty($_SERVER['QUERY_STRING'])) ? '?' . $_SERVER['QUERY_STRING'] : '';
+		$page_url = $this->uri->segment(2) . "/" . $this->uri->segment(3);
+		$this->session->set_userdata('manager_return_string', urlencode($page_url . $con_q));
+
+		$this->load->view('manager/verticals/index', $data);
+	}
+
 
 
 

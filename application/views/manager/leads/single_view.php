@@ -62,6 +62,18 @@
         <h3 class="box-title" style="text-transform:capitalize"><b>
           <?php if((isset($p_info['customer']))&&(!empty($p_info['customer']))){echo $p_info['customer'];}else echo ""; ?>
           </b>
+          <?php 
+          $disp_zone = !empty($p_info['tl_zone']) ? $p_info['tl_zone'] : '';
+          if (empty($disp_zone) && !empty($p_info['tl_authority'])) {
+              if (stripos($p_info['tl_authority'], 'Free Zone') !== false || stripos($p_info['tl_authority'], 'Freezone') !== false || stripos($p_info['tl_authority'], 'DIFC') !== false || stripos($p_info['tl_authority'], 'ADGM') !== false) {
+                  $disp_zone = 'Freezone';
+              } elseif (stripos($p_info['tl_authority'], 'Department of Economic') !== false || stripos($p_info['tl_authority'], 'Municipality') !== false || stripos($p_info['tl_authority'], 'DED') !== false || stripos($p_info['tl_authority'], 'DET') !== false) {
+                  $disp_zone = 'Mainland';
+              }
+          }
+          if (!empty($disp_zone) && in_array(strtolower($disp_zone), array('mainland', 'freezone'))) { ?>
+            <span class="label" style="background:#000000; color:#ffffff; font-weight:700; padding:2px 7px; border-radius:3px; font-size:12px; margin-left:6px; letter-spacing:0.5px;"><?php echo ucfirst(strtolower($disp_zone)); ?></span>
+          <?php } ?>
           <?php if(!empty($p_info['dnd_status']) && strtolower($p_info['dnd_status']) == 'yes'){ ?>
             <span class="label label-danger" style="background:#dc2626; color:#ffffff; font-weight:700; padding:2px 7px; border-radius:3px; font-size:12px; margin-left:6px; letter-spacing:0.5px;">DNCR</span>
           <?php } ?>
@@ -221,6 +233,22 @@
               <tr>
               <th scope="col">Trade License Authority</th>
               <td scope="col"><?php echo !empty($p_info['tl_authority']) ? $p_info['tl_authority'] : '-'; ?></td>              
+              </tr>
+
+              <tr>
+              <th scope="col">Trade License Emirates</th>
+              <td scope="col"><?php echo !empty($p_info['tl_emirate']) ? $p_info['tl_emirate'] : '-'; ?></td>              
+              </tr>
+
+              <tr>
+              <th scope="col">Trade License Zone</th>
+              <td scope="col">
+                <?php if(!empty($disp_zone)){ ?>
+                  <span class="label <?php echo (strtolower($disp_zone)=='mainland'||strtolower($disp_zone)=='freezone') ? '' : 'label-default'; ?>" style="<?php echo (strtolower($disp_zone)=='mainland'||strtolower($disp_zone)=='freezone') ? 'background:#000000; color:#ffffff; font-weight:700;' : ''; ?> padding: 3px 8px; border-radius: 3px; font-size: 11.5px;">
+                    <?php echo htmlspecialchars($disp_zone); ?>
+                  </span>
+                <?php } else { echo '-'; } ?>
+              </td>              
               </tr>
 
               <tr>

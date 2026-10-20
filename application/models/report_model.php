@@ -58,7 +58,7 @@ class Report_model extends CI_model {
 	}
 
 
-	public function getPerformanceReportByIndividual($d1='',$d2='',$manager_id)
+	public function getPerformanceReportByIndividual($d1='',$d2='',$manager_id=0)
 	{
 		$data = array();
 		$cond = array();
@@ -159,35 +159,6 @@ class Report_model extends CI_model {
 			return $data;
 			
 		  }	
-	
-	public function getPerformanceReportForUser($d1='', $d2='', $user_id=0)
-	{
-		$data = array();
-		$today = date('Y-m-d');
-		$user_id = (int)$user_id;
-		if ($user_id <= 0) return $data;
-
-		$cond = array("A.created_by = $user_id");
-		if (!empty($d1) && !empty($d2)) {
-			$cond[] = "A.created BETWEEN '$d1' AND '$d2'";
-		}
-		$con = "WHERE " . implode(' AND ', $cond);
-
-		$sql = "SELECT A.*, COUNT(A.id) as totalLead, SUM(CAST(A.mrr AS DECIMAL(10,2))) as amount, B.name, B.id as user_id, B.department,
-			(SELECT COUNT(id) FROM ci_leads a WHERE FIND_IN_SET(a.status, 42)>0 AND a.created_by = B.id) AS activeLead,
-			(SELECT COUNT(DISTINCT id) FROM ci_leads a WHERE a.status = 39 AND a.created_by = B.id) AS closedLead,
-			(SELECT COUNT(DISTINCT id) FROM ci_followup a WHERE a.followup_date < '$today' AND a.followup_date != '' AND a.lead_id = A.id) AS total_missed,
-			(SELECT COUNT(DISTINCT id) FROM ci_followup a WHERE a.followup_remark != '' AND a.lead_id = A.id) AS attendedFollowups
-			FROM ci_leads as A
-			LEFT JOIN ci_user as B ON A.created_by = B.id
-			$con
-			GROUP BY B.id";
-		$rows = $this->db->query($sql);
-		if ($rows && $rows->num_rows() >= 1) {
-			return $rows->result_array();
-		}
-		return $data;
-	}	
 	
 
 	 

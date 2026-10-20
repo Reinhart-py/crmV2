@@ -310,7 +310,12 @@ function __construct()
 			);
 			$data['info2']=$this->if_not_login();
 
-			$id= base64_decode($id);
+			if (!is_numeric($id)) {
+				$decoded = base64_decode($id, true);
+				if ($decoded !== false && is_numeric($decoded)) {
+					$id = $decoded;
+				}
+			}
 			$data['p_info']=$this->ci_admin_model->getSingleLead($id);
 			$data['p_team']= $this->ci_admin_model->fetchTeamList($this->session->userdata('manager_id'),'');
 			if(!empty($data['p_info'])){
@@ -364,12 +369,7 @@ function __construct()
 
 				extract($_POST);
 
-				$cur_role = $this->session->userdata('manager_role');
-				if ($cur_role != 1 && $cur_role != 4) {
-					$lead_assign = (int)$this->session->userdata('manager_id');
-				} else {
-					$lead_assign = isset($lead_assign) ? (int)$lead_assign : 0;
-				}
+				$lead_assign = $this->input->post('lead_assign');
 
 				$f_date = !empty($followup_date) ? db_date($followup_date) : '';
 				$c_date = !empty($close_date) ? db_date($close_date) : '';
@@ -382,6 +382,29 @@ function __construct()
 				$ind_cat = !empty($industry_category) ? trim($industry_category) : (isset($business_category) ? trim($business_category) : '');
 				$stat_cat = !empty($status_category) ? trim($status_category) : (isset($lost_reason) ? trim($lost_reason) : '');
 				$q_amt = (isset($quote_amount) && is_numeric($quote_amount) && $quote_amount !== '') ? floatval($quote_amount) : null;
+
+				if (empty($tl_emirate)) {
+					$tl_zone = '';
+					$tl_authority = '';
+				} elseif (empty($tl_zone)) {
+					$tl_authority = '';
+				}
+
+				$assigned_primary = 0;
+				$assigned_agents = '';
+				if (!empty($lead_assign)) {
+					if (is_array($lead_assign)) {
+						$clean_assigns = array_unique(array_filter(array_map('intval', $lead_assign)));
+						$assigned_primary = !empty($clean_assigns) ? reset($clean_assigns) : 0;
+						$assigned_agents = implode(',', $clean_assigns);
+					} else {
+						$assigned_primary = (int)$lead_assign;
+						$assigned_agents = (string)$lead_assign;
+					}
+				} else {
+					$assigned_primary = (int)$this->session->userdata('manager_id');
+					$assigned_agents = (string)$assigned_primary;
+				}
 
 				$list= array(				
 				'lead_id'=> 100000000,
@@ -441,36 +464,36 @@ function __construct()
 				'c_partner'=>$c_partner,
 				'otc'=>$otc,
 				'lead_cat'=>$lead_cat,
-				'lead_assign'=>$lead_assign,
+				'lead_assign'=>$assigned_primary,
+				'agents'=>$assigned_agents,
 				'lead_source'=>$lead_source,
 
 				'tl_number'=>isset($tl_number) ? $tl_number : '',
 				'tl_authority'=>isset($tl_authority) ? $tl_authority : '',
+				'tl_emirate'=>isset($tl_emirate) ? $tl_emirate : '',
+				'tl_zone'=>isset($tl_zone) ? $tl_zone : '',
 				'tl_issue_date'=>!empty($tl_issue_date) ? db_date($tl_issue_date) : '',
 				'tl_expire_date'=>!empty($tl_expire_date) ? db_date($tl_expire_date) : '',
 
 				'v_amount'=>$v_amount,
 				'v_remark'=>$v_remark,
 
-
-				//'c_code'=>$c_code,				
-				//'region'=>$region,
-				//'acc_mgr'=>$acc_mgr,				 
-				//'p_name'=>$p_name,				
-				//'contact_details'=>$contact_details,				
-				//'meetings'=>$meetings,
-				//'reference'=>$reference,
-				//'followup_by'=>$followup_by,
-				
 				'created_by'=>$this->session->userdata('manager_id'),
 				'admin_status'=>1,
 				'created'=>date('Y-m-d')			
 
 				);		
 				$this->session->set_flashdata('message', 'Lead has been added successfully!');
-				 $lead_id = $this->comman_model->saveData('ci_leads',$list);
+				$lead_id = $this->comman_model->saveData('ci_leads',$list);
 				 
 				$this->comman_model->updateData('id',$lead_id,array('lead_id'=>100000000+$lead_id),'ci_leads');
+				$this->ci_admin_model->log_admin_action(
+					'lead_create',
+					"Created lead #$lead_id ($customer)",
+					'SUCCESS',
+					$this->session->userdata('manager_id'),
+					$this->session->userdata('manager_name')
+				);
 
 		     	if(!empty($bo_cat)){
 
@@ -595,11 +618,23 @@ function __construct()
 		if($this->input->server('REQUEST_METHOD')==='POST'){
 			extract($_POST);
 
-			$cur_role = $this->session->userdata('manager_role');
-			if ($cur_role != 1 && $cur_role != 4) {
-				$lead_assign = isset($data['list']['lead_assign']) ? (int)$data['list']['lead_assign'] : (int)$this->session->userdata('manager_id');
+			$assigned_primary = 0;
+			$assigned_agents = '';
+			if (!empty($lead_assign)) {
+				if (is_array($lead_assign)) {
+					$clean_assigns = array_unique(array_filter(array_map('intval', $lead_assign)));
+					$assigned_primary = !empty($clean_assigns) ? reset($clean_assigns) : 0;
+					$assigned_agents = implode(',', $clean_assigns);
+				} else {
+					$assigned_primary = (int)$lead_assign;
+					$assigned_agents = (string)$lead_assign;
+				}
+			} elseif (isset($data['list']['lead_assign'])) {
+				$assigned_primary = (int)$data['list']['lead_assign'];
+				$assigned_agents = !empty($data['list']['agents']) ? $data['list']['agents'] : (string)$assigned_primary;
 			} else {
-				$lead_assign = isset($lead_assign) ? (int)$lead_assign : 0;
+				$assigned_primary = (int)$this->session->userdata('manager_id');
+				$assigned_agents = (string)$assigned_primary;
 			}
 
 			$c_date = !empty($close_date) ? db_date($close_date) : '';
@@ -623,6 +658,13 @@ function __construct()
 			$ind_cat = !empty($industry_category) ? trim($industry_category) : (isset($business_category) ? trim($business_category) : '');
 			$stat_cat = !empty($status_category) ? trim($status_category) : (isset($lost_reason) ? trim($lost_reason) : '');
 			$q_amt = (isset($quote_amount) && is_numeric($quote_amount) && $quote_amount !== '') ? floatval($quote_amount) : null;
+
+			if (empty($tl_emirate)) {
+				$tl_zone = '';
+				$tl_authority = '';
+			} elseif (empty($tl_zone)) {
+				$tl_authority = '';
+			}
 
 			$list= array(
 				'customer'=>$customer,
@@ -674,11 +716,14 @@ function __construct()
 				'c_partner'=>$c_partner,
 				'otc'=>$otc,
 				'lead_cat'=>$lead_cat,
-				'lead_assign'=>$lead_assign,
+				'lead_assign'=>$assigned_primary,
+				'agents'=>$assigned_agents,
 				'lead_source'=>$lead_source,
 
 				'tl_number'=>isset($tl_number) ? $tl_number : '',
 				'tl_authority'=>isset($tl_authority) ? $tl_authority : '',
+				'tl_emirate'=>isset($tl_emirate) ? $tl_emirate : '',
+				'tl_zone'=>isset($tl_zone) ? $tl_zone : '',
 				'tl_issue_date'=>!empty($tl_issue_date) ? db_date($tl_issue_date) : '',
 				'tl_expire_date'=>!empty($tl_expire_date) ? db_date($tl_expire_date) : '',
 
@@ -690,6 +735,13 @@ function __construct()
 				'modified'=>date('Y-m-d')
 				);
 			$response= $this->comman_model->updateData('id',$id,$list,'ci_leads');	
+			$this->ci_admin_model->log_admin_action(
+				'lead_update',
+				"Updated lead #$id ($customer)",
+				'SUCCESS',
+				$this->session->userdata('manager_id'),
+				$this->session->userdata('manager_name')
+			);	
 			if(!empty($bo_id)){
 
 		     		for($i=0;$i<=6;$i++){
@@ -904,20 +956,70 @@ $data['info2']=$this->if_not_login();
 
     }  
 
-    // delete category of news using category id 	
+    public function leadDeleteAjax($id = '')
+	{
+		$manager_id = (int)$this->session->userdata('manager_id');
+		$m_role = (int)$this->session->userdata('manager_role');
+		if (empty($m_role) && $manager_id == 1) {
+			$m_role = 1;
+		}
+		if ($m_role != 1 && $m_role != 4 && $manager_id != 1) {
+			echo json_encode(array('status' => false, 'message' => 'Unauthorized access'));
+			return;
+		}
 
-    public function leadDeleteAjax($id)
+		$ids = array();
+		if (!empty($id)) {
+			if (!is_numeric($id)) {
+				$decoded = base64_decode($id, true);
+				if ($decoded !== false && is_numeric($decoded)) {
+					$id = $decoded;
+				}
+			}
+			$ids[] = (int)$id;
+		}
 
-	{		 
+		$post_ids = $this->input->post('ids');
+		if (!empty($post_ids)) {
+			if (is_array($post_ids)) {
+				foreach ($post_ids as $pid) {
+					$ids[] = (int)$pid;
+				}
+			} else {
+				$parts = explode(',', $post_ids);
+				foreach ($parts as $pid) {
+					if (is_numeric(trim($pid))) {
+						$ids[] = (int)trim($pid);
+					}
+				}
+			}
+		}
 
-		
-		//$data['info2']=$this->if_not_login();
-		//extract($_POST);	
-		$this->ci_admin_model->deleteData('id',$id,'ci_leads');
-		$this->ci_admin_model->deleteData('lead_id',$id,'ci_boleads');
+		$ids = array_unique(array_filter($ids));
+		if (empty($ids)) {
+			echo json_encode(array('status' => false, 'message' => 'No valid lead IDs provided'));
+			return;
+		}
 
-		echo "done";
+		$this->db->where_in('id', $ids);
+		$this->db->delete('ci_leads');
 
+		$this->db->where_in('lead_id', $ids);
+		$this->db->delete('ci_boleads');
+
+		$this->db->where_in('lead_id', $ids);
+		$this->db->delete('ci_followup');
+
+		$del_count = count($ids);
+		$this->ci_admin_model->log_admin_action(
+			'lead_delete',
+			"Deleted $del_count leads (IDs: " . implode(',', $ids) . ")",
+			'SUCCESS',
+			$manager_id,
+			$this->session->userdata('manager_name')
+		);
+
+		echo json_encode(array('status' => true, 'count' => $del_count, 'message' => "$del_count lead(s) deleted successfully"));
     }
 
 	/**
@@ -1309,6 +1411,9 @@ $data['info2']=$this->if_not_login();
 			$data_source = $get_val($row, array('datasource', 'sourcecategory'));
 			$data_batch_referral_no = $get_val($row, array('databatchreferralnumber', 'databatchreferralno', 'batchreferralno', 'batchno', 'referralno'));
 			$database_category = $get_val($row, array('databasecategory', 'databasecat'));
+			if ($assigned_user_id == 0 && empty($database_category)) {
+				$database_category = 'Non-Allotted Database';
+			}
 			$status_category = $get_val($row, array('statuscategory', 'statuscat', 'lostreason'));
 			$status_remarks = $get_val($row, array('statusremarks', 'statusremark'));
 
@@ -1597,12 +1702,11 @@ $data['info2']=$this->if_not_login();
 	{
 		$data = array();
 		$data['info'] = array(
-			'title' => 'Assigned Leads',
-			'page_heading' => 'Assigned Leads'
+			'title' => 'Allocate Database',
+			'page_heading' => 'Allocate Database'
 		);
 		$data['info2'] = $this->if_not_login();
 
-		// Restricted to Admin (role 1) and Support (role 4)
 		$role = $this->session->userdata('manager_role');
 		if ($role != 1 && $role != 4) {
 			$this->session->set_flashdata('error_message', 'Access denied.');
@@ -1623,6 +1727,7 @@ $data['info2']=$this->if_not_login();
 		$user_name = isset($_GET['user_name']) ? $_GET['user_name'] : '';
 		$country = isset($_GET['country']) ? $_GET['country'] : '';
 		$state = isset($_GET['state']) ? $_GET['state'] : '';
+		$alloc_filter = isset($_GET['alloc_filter']) ? $_GET['alloc_filter'] : '';
 
 		if (!empty($country)) {
 			$country = implode(',', $country);
@@ -1634,7 +1739,6 @@ $data['info2']=$this->if_not_login();
 
 		$status = isset($_GET['status']) ? $_GET['status'] : '';
 		$category = isset($_GET['category']) ? $_GET['category'] : '';
-		$type = isset($_GET['type']) ? $_GET['type'] : 0;
 		$lCat = isset($_GET['lCat']) ? $_GET['lCat'] : '';
 
 		if (!empty($lCat)) {
@@ -1647,13 +1751,18 @@ $data['info2']=$this->if_not_login();
 			$status = implode(',', $status);
 		}
 
+		if (!empty($country)) {
+			$country_str = is_array($country) ? implode(',', $country) : $country;
+			$data['state_list'] = $this->comman_model->getAll(array('country_id' => $country_str), '', 'states');
+		}
+
 		$data['st_list'] = $this->comman_model->getAll(array('active' => 1), '', 'ci_status');
 		$data['c_list'] = $this->comman_model->getAll('', array('id', 'ASC'), 'countries');
 		$data['pc_list'] = $this->comman_model->getAll(array('cat_type' => 'p_cat', 'parent_id' => 0), '', 'ci_terms');
 		$data['lc_list'] = $this->comman_model->getAll(array('cat_type' => 'lead_cat', 'parent_id' => 0), '', 'ci_terms');
 		$data['users_list'] = $this->db->select('id, name, email')->get('ci_user')->result_array();
 
-		$data['product_list'] = $this->ci_admin_model->getLeadsFollowups($d1, $d2, $mrr1, $mrr2, '', '', $order_by, $sort_by, $search, $status, $category, $type, $lCat, $user_name, $country, $state);
+		$data['product_list'] = $this->ci_admin_model->getAllocationLeads($d1, $d2, $mrr1, $mrr2, '', '', $order_by, $sort_by, $search, $status, $category, $lCat, $user_name, $country, $state, $alloc_filter);
 
 		$this->load->view('manager/leads/assigned_leads', $data);
 	}
@@ -1672,7 +1781,7 @@ $data['info2']=$this->if_not_login();
 		$target_user = $this->input->post('target_user');
 
 		if (empty($lead_ids) || !is_array($lead_ids)) {
-			$this->session->set_flashdata('error_message', 'No leads selected for reassignment.');
+			$this->session->set_flashdata('error_message', 'No records selected for allocation.');
 			redirect('manager/assigned-leads');
 			return;
 		}
@@ -1683,27 +1792,124 @@ $data['info2']=$this->if_not_login();
 
 		$sanitized_ids = array_map('intval', $lead_ids);
 		$this->db->where_in('id', $sanitized_ids);
-		$this->db->update('ci_leads', array(
-			'lead_assign' => $target_user_id,
+		$update_payload = array(
+			'created_by' => $target_user_id,
 			'edited_by' => $this->session->userdata('manager_id'),
 			'modified' => date('Y-m-d')
-		));
+		);
+		if ($target_user_id > 0) {
+			$this->db->set('database_category', "CASE WHEN database_category = 'Non-Allotted Database' THEN 'Allotted Database' ELSE database_category END", FALSE);
+		} else {
+			$this->db->set('database_category', "'Non-Allotted Database'", FALSE);
+		}
+		$this->db->update('ci_leads', $update_payload);
 
 		$count = count($sanitized_ids);
 		$uid = $this->session->userdata('manager_id');
 		$uname = $this->session->userdata('manager_name');
 		$this->ci_admin_model->log_admin_action(
-			'lead_reassign',
-			"Bulk reassigned $count leads to $target_name (ID: $target_user_id)",
+			'lead_allocate',
+			"Allocated $count database leads to $target_name (ID: $target_user_id)",
 			'SUCCESS',
 			$uid,
 			$uname
 		);
 
-		$this->session->set_flashdata('success_message', "Successfully reassigned $count leads to $target_name.");
+		$this->session->set_flashdata('success_message', "Successfully allocated $count database leads to $target_name.");
 		redirect('manager/assigned-leads');
 	}
 
+	public function database_transfer($page = 0)
+	{
+		$data = array();
+		$data['info'] = array(
+			'title' => 'Manager - Database Transfer',
+			'page_heading' => 'Database Transfer'
+		);
+		$data['info2'] = $this->if_not_login();
+
+		$manager_id = (int)$this->session->userdata('manager_id');
+		$d1 = $this->input->get('d1');
+		$d2 = $this->input->get('d2');
+		$search = $this->input->get('search');
+		$status = $this->input->get('status');
+		$status_str = is_array($status) ? implode(',', array_filter($status)) : (string)$status;
+
+		$data['product_list'] = $this->ci_admin_model->getMyTransferLeads(
+			$manager_id,
+			$d1,
+			$d2,
+			'',
+			'',
+			'',
+			'',
+			'',
+			'',
+			$search,
+			$status_str,
+			'',
+			''
+		);
+
+		$data['st_list'] = $this->db->order_by('id', 'ASC')->get('ci_status')->result_array();
+		$data['users_list'] = $this->db->select('id, name, email')->where('status', 1)->where('id !=', $manager_id)->order_by('name', 'ASC')->get('ci_user')->result_array();
+
+		$this->load->view('manager/leads/database_transfer', $data);
+	}
+
+	public function bulk_transfer()
+	{
+		$this->if_not_login();
+
+		$lead_ids = $this->input->post('lead_ids');
+		$target_user = $this->input->post('target_user');
+		$manager_id = (int)$this->session->userdata('manager_id');
+		$manager_name = $this->session->userdata('manager_name');
+		$manager_role = (int)$this->session->userdata('manager_role');
+
+		if (empty($lead_ids) || !is_array($lead_ids)) {
+			$this->session->set_flashdata('error_message', 'No records selected for transfer.');
+			redirect('manager/database-transfer');
+			return;
+		}
+
+		$target_user_id = (int)$target_user;
+		if ($target_user_id <= 0) {
+			$this->session->set_flashdata('error_message', 'Please select a valid target user to transfer the leads to.');
+			redirect('manager/database-transfer');
+			return;
+		}
+
+		$target_user_row = $this->db->get_where('ci_user', array('id' => $target_user_id))->row_array();
+		$target_name = !empty($target_user_row['name']) ? $target_user_row['name'] : 'User #' . $target_user_id;
+
+		$sanitized_ids = array_unique(array_filter(array_map('intval', $lead_ids)));
+
+		$this->db->where_in('id', $sanitized_ids);
+		if ($manager_role != 1 && $manager_role != 4) {
+			$this->db->where("(lead_assign = $manager_id OR created_by = $manager_id OR (agents IS NOT NULL AND FIND_IN_SET($manager_id, agents) > 0))");
+		}
+		$update_payload = array(
+			'created_by' => $target_user_id,
+			'lead_assign' => $target_user_id,
+			'edited_by' => $manager_id,
+			'modified' => date('Y-m-d')
+		);
+		$this->db->update('ci_leads', $update_payload);
+
+		$transferred_count = $this->db->affected_rows();
+
+		$this->ci_admin_model->log_admin_action(
+			'lead_transfer',
+			"Transferred $transferred_count leads to $target_name (User ID: $target_user_id)",
+			'SUCCESS',
+			$manager_id,
+			$manager_name
+		);
+
+		$this->session->set_flashdata('success_message', "Successfully transferred $transferred_count lead(s) to $target_name.");
+		redirect('manager/database-transfer');
+	}
 }
 
 

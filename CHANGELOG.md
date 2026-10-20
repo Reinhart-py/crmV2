@@ -4,6 +4,69 @@ All notable changes, features, bug fixes, and refinements for the Rolexto CRM re
 
 ---
 
+### Lead Allotment, Assignment & Transfer Logic, Assigned Leads UI Alignment, Mobile Drawer & Reports Drilldown
+- **Date & Time**: `2026-10-20 13:20:00 +0530`
+
+#### Changes & Additions:
+- **Lead Allotment, Assignment & Transfer Logic**:
+  - Enforced strict separation between Allotment, Assignment, and Transfer operations.
+  - **Allotment (Admin Only)**: Admin assigns unallotted records (`created_by = 0`) to owners by setting `created_by = $target_user_id` in `Ci_admin_leads::bulk_move_assign()`. The `created_by` field is the single canonical ownership field.
+  - **Assignment (Collaborators)**: Lead owners share access with team members via `lead_assign` / `agents` without modifying original owner (`created_by`).
+  - **Transfer (Ownership Handover)**: Handover changes ownership by updating both `created_by` and `lead_assign` to the target user in `Ci_admin_leads::bulk_transfer()`, recorded in administrative audit logs.
+- **System > Allotted Database (`manager/assigned-leads`)**:
+  - Replaced the view layout with the exact structure and styling of `Team > Leads` (`manager/team/leads`).
+  - Added bulk select checkboxes, `Date` (`simple_date($li['created'])`), and `Created` column.
+  - Leads without an allotted owner display a clean `Non-Allotted` label, while allotted leads display the owner's name with column-footer dropdown filtering.
+  - Preserved identical DataTables export buttons and responsive table behavior.
+- **Vertical Follow-up Route & Method**:
+  - Added route `manager/verticals/followups` and controller method `Ci_admin_verticals::followups()`.
+  - Fixed 404 Not Found error when clicking Vertical Follow-up under My Zone in top and mobile navigation.
+- **KAM > My Client View**:
+  - Created standardized view `application/views/manager/kam/my_client.php` matching the core CRM table layout and headers with an empty-state fallback.
+- **Android & Mobile Navigation Drawer**:
+  - Attached touch/click handlers in `application/views/manager/elements/footer.php` for `#crmMobileHamburger` and `#crmSidebarClose`.
+  - Tapping the 3-line hamburger menu toggles `sidebar-open` on `body`, with backdrop dismiss and nested treeview accordion expansion.
+- **Universal Back Buttons**:
+  - Added global click handler in `footer.php` intercepting back buttons (`a.btn` containing "Back", `i.fa-arrow-left`) and invoking `window.history.back()`.
+- **Reports Drilldown Precision**:
+  - In `application/views/manager/report/admin/view.php`, restricted `<a>` drilldown links exclusively to numeric digits and currency amounts.
+  - Department names, agent names, category titles, and total labels are rendered as unlinked plain text.
+- **Dashboard Projections**:
+  - Formatted month labels as `OCT 26`, `NOV 26` aligned directly beneath their respective bars with consistent sizing.
+
+---
+
+### Database Transfer Management, Calling Center Dashboard & Lead Field Additions
+- **Date & Time**: `2026-10-19 15:30:00 +0530`
+
+#### Changes & Additions:
+- **Lead Management > Database Transfer**:
+  - Created `manager/database-transfer` route, view, and bulk transfer action (`Ci_admin_leads::database_transfer()` and `Ci_admin_leads::bulk_transfer()`).
+  - Added target user selection, batch record checkboxes, and action logging in `ci_admin_logs`.
+- **Calling Center Dashboard**:
+  - Added `manager/calls/dashboard` with call volume statistics, agent talk-time metrics, call disposition breakdowns, and recording player (`Ci_admin_calls`).
+- **Trade License & Filter Options**:
+  - Added Trade License filtering and expiration date range filters to lead search queries in `ci_admin_model.php`.
+- **CRM Value Catalog**:
+  - Created `value.md` cataloging term IDs, user role permissions, quote statuses, and database category constants.
+
+---
+
+### Reports Dynamic Drilldown, Admin Logs Status Filter & Route Stability
+- **Date & Time**: `2026-10-17 18:30:00 +0530`
+
+#### Changes & Additions:
+- **Reports Pivot Table & Drilldowns**:
+  - Updated `admin_reports_model.php` with dynamic drilldown filtering by month, department, vertical, and sales status.
+  - Connected report cell values directly to `/manager/reports/drilldown` session queries.
+  - Maintained CSV and Excel exports with complete column layouts.
+- **Admin Logs Filtering**:
+  - Added status filtering (`SUCCESS`, `FAILED`) and pagination to `manager/system/admin-logs`.
+- **Route Error Handlers**:
+  - Resolved fatal routing conflicts in CodeIgniter route definitions.
+
+---
+
 ### CRM Update Checklist: Dashboard, Leads Add/Edit, Backend, Database & Workflow Overhaul
 - **Date & Time**: `2026-10-16 15:55:00 +0530`
 

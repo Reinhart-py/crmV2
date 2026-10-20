@@ -345,7 +345,7 @@ if ( ! function_exists('show_404'))
 */
 if ( ! function_exists('log_message'))
 {
-	function log_message($level = 'error', $message, $php_error = FALSE)
+	function log_message($level = 'error', $message = '', $php_error = FALSE)
 	{
 		static $_log;
 
@@ -467,9 +467,7 @@ if ( ! function_exists('_exception_handler'))
 {
 	function _exception_handler($severity, $message, $filepath, $line)
 	{
-		 // We don't bother with "strict" notices since they tend to fill up
-		 // the log file with excess information that isn't normally very helpful.
-		if ($severity == E_STRICT)
+		if ($severity == E_STRICT || (defined('E_DEPRECATED') && $severity == E_DEPRECATED) || (defined('E_USER_DEPRECATED') && $severity == E_USER_DEPRECATED))
 		{
 			return;
 		}
