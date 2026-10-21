@@ -115,8 +115,18 @@
                                         </td>
                                         <td>
                                             <div class="btn-group" style="min-width: 85px;">
-                                                <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>" class="btn btn-sm btn-info" data-toggle="tooltip" title="View"><i class="fa fa-eye"></i></a>
-                                                <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($li['id']); ?>" class="btn btn-sm btn-warning" data-toggle="tooltip" title="Edit"><i class="fa fa-pencil"></i></a>
+                                                <button type="button" class="btn btn-sm btn-warning">Action</button>
+                                                <button type="button" class="btn btn-sm btn-warning dropdown-toggle"
+                                                    data-toggle="dropdown" aria-expanded="false">
+                                                    <span class="caret"></span>
+                                                    <span class="sr-only">Toggle Dropdown</span>
+                                                </button>
+                                                <ul class="dropdown-menu" role="menu">
+                                                    <li> <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>"
+                                                            data-toggle="tooltip" title="View">Preview</a> </li>
+                                                    <li> <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($li['id']); ?>"
+                                                            data-toggle="tooltip" title="Edit">Edit</a> </li>
+                                                </ul>
                                             </div>
                                         </td>
                                     </tr>

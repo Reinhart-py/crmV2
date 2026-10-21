@@ -96,9 +96,21 @@
                                     </td>
                                     <td><span class="label label-info"><?php echo !empty($c['status_name']) ? htmlspecialchars($c['status_name']) : 'New'; ?></span></td>
                                     <td><?php echo !empty($c['owner_name']) ? htmlspecialchars($c['owner_name']) : 'Unassigned'; ?></td>
-                                    <td style="text-align: right;">
-                                        <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo $c['id']; ?>" class="btn btn-xs btn-default" title="View Details"><i class="fa fa-eye"></i></a>
-                                        <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo $c['id']; ?>" class="btn btn-xs btn-primary" style="background: #b91c1c; border-color: #b91c1c;" title="Edit Client"><i class="fa fa-pencil"></i></a>
+                                    <td>
+                                        <div class="btn-group" style="min-width: 85px;">
+                                            <button type="button" class="btn btn-sm btn-warning">Action</button>
+                                            <button type="button" class="btn btn-sm btn-warning dropdown-toggle"
+                                                data-toggle="dropdown" aria-expanded="false">
+                                                <span class="caret"></span>
+                                                <span class="sr-only">Toggle Dropdown</span>
+                                            </button>
+                                            <ul class="dropdown-menu" role="menu">
+                                                <li> <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($c['id']); ?>"
+                                                        data-toggle="tooltip" title="View">Preview</a> </li>
+                                                <li> <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($c['id']); ?>"
+                                                        data-toggle="tooltip" title="Edit">Edit</a> </li>
+                                            </ul>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

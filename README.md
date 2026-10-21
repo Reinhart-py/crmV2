@@ -43,23 +43,31 @@ Managing enterprise sales teams requires clean boundaries between ownership and 
 ### Features
 
 - **Lead Allocation**:
-  - Filter unallotted and allotted database records.
+  - Filter unallotted and allotted database records (`manager/assigned-leads?alloc_filter=non_allotted`).
+  - Dynamic page headings and filter persistence on Search and Reset.
   - Bulk allocate leads to users with one click.
   - Transfer leads between team members with automatic logging.
 - **Sales Dashboard**:
   - Monthly projections (`OCT 26`, `NOV 26`, etc.) with aligned bar charts.
   - Operational breakdown cards for follow-ups, meetings, and closures.
-- **Interactive Pivot Reports**:
-  - Sales performance by department, manager, and vertical.
+- **Two-Section Interactive Pivot Reports (My Report & Team Report)**:
+  - All 8 sales reports feature two collapsible sections: **My Report** and **Team Report**.
+  - Covers Performance, Database, Lead, Quote, Tax Registration, Lost Deals, Trade License, and Custom.
+  - Subtotals per group and overall grand totals.
+  - Detailed records table below pivot summary with instant client-side tabs: `All Records`, `My Records`, `Team Records`.
   - Only numeric counts and monetary amounts are clickable drilldowns.
-  - Export reports to CSV and Excel.
+  - Export reports to CSV and Excel (both Pivot summaries and raw detailed datasets).
+- **PowerSheet Configurable Column Selector**:
+  - Custom reports (`manager/download-report/sales/custom`) feature an interactive column selector.
+  - Pick fields on-demand with "Select All", "Clear All", and "Default Columns" buttons.
 - **Operations & Help Desk**:
   - Ticket queues, priority flags, deadlines, and open ticket follow-ups.
 - **Calling Center Dashboard**:
   - Track calls, talk time, and dispositions by agent.
 - **KAM (Key Account Management)**:
   - Role-gated client management and onboarding views.
-- **Audit Logging**:
+- **System Admin Logs**:
+  - Unified UI matching the clean Leads View table styling, filters, and status badges.
   - Full audit trail of admin actions, login attempts, and lead transfers.
 
 ### Installation
@@ -191,9 +199,14 @@ These three operations have distinct rules in the CRM:
 
 #### Interactive Reports & Drilldowns
 
-- Located under **Reports > Sales Performance**.
-- Only numeric counts and amounts are clickable links. Clicking a number takes you to `/manager/reports/drilldown` showing the exact matching records.
-- Names, departments, category titles, and total labels are displayed as plain text.
+- Located under **Reports > Download Reports** (`manager/download-report`).
+- **Two-Section Layout**: Every sales report organizes data into **My Report** (records you own or collaborate on) and **Team Report** (records handled by your direct reports or peers).
+- **Drilldown Precision**: Only numeric counts and amounts are clickable links. Clicking a number takes you to `/manager/download-report/drilldown` showing the exact matching records.
+- **Detailed Records Tab**: Non-performance reports feature an instant client-side tab switcher below the pivot summary:
+  - `All Records`
+  - `My Records`
+  - `Team Records`
+- **Configurable Columns**: Custom reports (`manager/download-report/sales/custom`) include a multi-field picker to select, clear, or restore default columns dynamically.
 
 #### Mobile Navigation Drawer
 
@@ -209,15 +222,23 @@ These three operations have distinct rules in the CRM:
 |---|---|
 | `manager/login` | User authentication |
 | `manager/dashboard` | Main sales & operational performance overview |
-| `manager/assigned-leads` | Allotted database records (mirrors team leads layout) |
+| `manager/assigned-leads` | Allotted database records (supports `?alloc_filter=non_allotted`) |
 | `manager/database-transfer` | Lead ownership transfer interface |
 | `manager/team/leads` | Team lead pipeline |
 | `manager/verticals/followups` | Vertical follow-up queue |
 | `manager/kam/my-client` | Key account client view |
 | `manager/calls/dashboard` | Calling center metrics & records |
 | `manager/tickets/open` | Open support tickets |
-| `manager/reports/view/sales_performance` | Sales performance pivot report |
-| `manager/system/admin-logs` | Administrative audit trail |
+| `manager/download-report` | Unified reports catalog |
+| `manager/download-report/sales/performance` | Sales performance pivot report (My & Team sections) |
+| `manager/download-report/sales/database` | Database category report (My & Team sections) |
+| `manager/download-report/sales/lead` | Lead pipeline report (My & Team sections) |
+| `manager/download-report/sales/quote` | Quote & proposal report (My & Team sections) |
+| `manager/download-report/sales/tax-registration` | Corporate tax & VAT status report (My & Team sections) |
+| `manager/download-report/sales/lost` | Lost deals report (My & Team sections) |
+| `manager/download-report/sales/trade-license` | Trade license expiry report (My & Team sections) |
+| `manager/download-report/sales/custom` | Configurable multi-column custom report (My & Team sections) |
+| `manager/system/admin-logs` | Administrative audit trail (styled matching Leads View) |
 
 ### User Roles & Permissions
 

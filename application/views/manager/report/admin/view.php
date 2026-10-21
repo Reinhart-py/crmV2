@@ -361,7 +361,7 @@
                             <?php } elseif (!empty($statuses)) { ?>
                             <?php foreach ($statuses as $st) { ?>
                             <option value="<?php echo $st['id']; ?>" <?php if(isset($filters['status']) && $filters['status']==$st['id']) echo 'selected'; ?>>
-                                <?php echo htmlspecialchars($st['name']); ?>
+                                <?php echo htmlspecialchars(isset($st['status']) ? $st['status'] : (isset($st['name']) ? $st['name'] : (isset($st['title']) ? $st['title'] : ''))); ?>
                             </option>
                             <?php } ?>
                             <?php } ?>
@@ -385,6 +385,50 @@
                 </form>
             </div>
         </div>
+
+        <?php if ($report == 'custom' && !empty($report_data['available_fields'])) { ?>
+        <div class="box" style="border-radius: 6px; border: 1px solid var(--crm-border); background: #ffffff; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+            <div class="box-header with-border" style="padding: 10px 16px; background: #f8fafc; border-bottom: 1px solid var(--crm-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <h4 class="box-title" style="font-size: 13px; font-weight: 700; color: #1e293b; margin: 0;">
+                    <i class="fa fa-columns" style="color: #2563eb; margin-right: 6px;"></i> Configurable Column Selector (PowerSheet)
+                </h4>
+                <div style="display: flex; gap: 6px;">
+                    <button type="button" class="btn btn-xs btn-default" onclick="selectAllCols(true)" style="font-weight: 600; font-size: 11px;">Select All</button>
+                    <button type="button" class="btn btn-xs btn-default" onclick="selectAllCols(false)" style="font-weight: 600; font-size: 11px;">Clear All</button>
+                    <button type="button" class="btn btn-xs btn-default" onclick="resetDefaultCols()" style="font-weight: 600; font-size: 11px;">Default Columns</button>
+                </div>
+            </div>
+            <div class="box-body" style="padding: 14px 16px;">
+                <form method="get" action="<?php echo base_url(); ?>manager/download-report/<?php echo $dept; ?>/<?php echo $report; ?>" id="customColForm">
+                    <input type="hidden" name="period" value="<?php echo isset($filters['period']) ? htmlspecialchars($filters['period']) : ''; ?>" />
+                    <input type="hidden" name="d1" value="<?php echo isset($filters['d1']) ? htmlspecialchars($filters['d1']) : ''; ?>" />
+                    <input type="hidden" name="d2" value="<?php echo isset($filters['d2']) ? htmlspecialchars($filters['d2']) : ''; ?>" />
+                    <input type="hidden" name="search" value="<?php echo isset($filters['search']) ? htmlspecialchars($filters['search']) : ''; ?>" />
+                    <?php if (!empty($filters['employee_id'])) { ?>
+                        <input type="hidden" name="employee_id" value="<?php echo htmlspecialchars(is_array($filters['employee_id']) ? implode(',', $filters['employee_id']) : $filters['employee_id']); ?>" />
+                    <?php } ?>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px 14px; margin-bottom: 12px;">
+                        <?php 
+                        $active_cols = !empty($report_data['fields']) ? $report_data['fields'] : array();
+                        foreach ($report_data['available_fields'] as $col_key => $col_label) { 
+                            $is_checked = in_array($col_key, $active_cols);
+                        ?>
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: normal; color: #334155; margin: 0; cursor: pointer; padding: 5px 8px; border-radius: 4px; background: <?php echo $is_checked ? '#f0fdf4' : '#ffffff'; ?>; border: 1px solid <?php echo $is_checked ? '#86efac' : '#e2e8f0'; ?>;">
+                            <input type="checkbox" name="columns[]" value="<?php echo $col_key; ?>" class="custom-col-cb" <?php echo $is_checked ? 'checked' : ''; ?> onchange="this.parentElement.style.background = this.checked ? '#f0fdf4' : '#ffffff'; this.parentElement.style.borderColor = this.checked ? '#86efac' : '#e2e8f0';" />
+                            <span><?php echo htmlspecialchars($col_label); ?></span>
+                        </label>
+                        <?php } ?>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--crm-border); padding-top: 10px;">
+                        <button type="submit" class="btn btn-sm btn-primary" style="background: #2563eb; border-color: #2563eb; font-weight: 600; font-size: 12px; border-radius: 4px; padding: 5px 16px;">
+                            <i class="fa fa-check"></i> Apply Selected Columns
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <?php } ?>
 
         <?php if (!empty($report_data['pivot_data']) && !empty($report_data['pivot_data']['groups'])) { ?>
         <div class="pivot-table-wrap protected-crm-data">
@@ -499,11 +543,43 @@
                 <?php } ?>
             </table>
         </div>
-        <?php } elseif (!empty($report_data['rows'])) { ?>
-        <div class="box protected-crm-data" style="border-radius: 6px; border: 1px solid var(--crm-border); background: #ffffff;">
+        <?php } ?>
+
+        <?php if (!empty($report_data['rows']) && $report != 'performance') { 
+            $cur_uid = isset($manager_id) ? (int)$manager_id : (int)$this->session->userdata('admin_id');
+            $my_rows_cnt = 0;
+            $team_rows_cnt = 0;
+            foreach ($report_data['rows'] as $r_chk) {
+                $is_mine = false;
+                if ($cur_uid > 0) {
+                    if (isset($r_chk['lead_assign_id']) && (int)$r_chk['lead_assign_id'] === $cur_uid) $is_mine = true;
+                    elseif (isset($r_chk['created_by_id']) && (int)$r_chk['created_by_id'] === $cur_uid) $is_mine = true;
+                    elseif (!empty($r_chk['agents']) && in_array((string)$cur_uid, explode(',', (string)$r_chk['agents']))) $is_mine = true;
+                }
+                if ($is_mine) $my_rows_cnt++;
+                else $team_rows_cnt++;
+            }
+        ?>
+        <div class="box protected-crm-data" style="border-radius: 6px; border: 1px solid var(--crm-border); background: #ffffff; margin-top: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+            <div class="box-header with-border" style="padding: 12px 16px; background: #f8fafc; border-bottom: 1px solid var(--crm-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <h4 class="box-title" style="font-size: 13.5px; font-weight: 700; color: #1e293b; margin: 0;">
+                    <i class="fa fa-list-alt" style="color: #64748b; margin-right: 6px;"></i> Detailed Records
+                </h4>
+                <div class="btn-group btn-group-sm" id="detailedRecordsFilter">
+                    <button type="button" class="btn btn-sm btn-primary active" onclick="filterDetailedRows('all', this)" style="font-weight: 600; font-size: 11.5px; border-radius: 4px 0 0 4px;">
+                        All Records (<?php echo count($report_data['rows']); ?>)
+                    </button>
+                    <button type="button" class="btn btn-sm btn-default" onclick="filterDetailedRows('my', this)" style="font-weight: 600; font-size: 11.5px;">
+                        My Records (<?php echo $my_rows_cnt; ?>)
+                    </button>
+                    <button type="button" class="btn btn-sm btn-default" onclick="filterDetailedRows('team', this)" style="font-weight: 600; font-size: 11.5px; border-radius: 0 4px 4px 0;">
+                        Team Records (<?php echo $team_rows_cnt; ?>)
+                    </button>
+                </div>
+            </div>
             <div class="box-body no-padding">
                 <div class="table-responsive">
-                    <table class="table table-bordered table-hover" style="margin-bottom: 0; font-size: 12.5px;">
+                    <table class="table table-bordered table-hover" id="detailedRecordsTable" style="margin-bottom: 0; font-size: 12.5px;">
                         <thead style="background: var(--crm-bg); color: var(--crm-text);">
                             <tr>
                                 <?php foreach ($report_data['headers'] as $hdr) { ?>
@@ -514,8 +590,15 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($report_data['rows'] as $row) { ?>
-                            <tr>
+                            <?php foreach ($report_data['rows'] as $row) { 
+                                $is_my_row = 0;
+                                if ($cur_uid > 0) {
+                                    if (isset($row['lead_assign_id']) && (int)$row['lead_assign_id'] === $cur_uid) $is_my_row = 1;
+                                    elseif (isset($row['created_by_id']) && (int)$row['created_by_id'] === $cur_uid) $is_my_row = 1;
+                                    elseif (!empty($row['agents']) && in_array((string)$cur_uid, explode(',', (string)$row['agents']))) $is_my_row = 1;
+                                }
+                            ?>
+                            <tr class="record-row" data-my="<?php echo $is_my_row; ?>">
                                 <?php foreach ($report_data['fields'] as $fld) { 
                                     $val = isset($row[$fld]) ? $row[$fld] : '';
                                 ?>
@@ -530,7 +613,7 @@
                 </div>
             </div>
         </div>
-        <?php } else { ?>
+        <?php } elseif (empty($report_data['pivot_data']) && empty($report_data['rows'])) { ?>
         <div style="background: #ffffff; border: 1px solid var(--crm-border); border-radius: 6px; padding: 36px 20px; text-align: center; color: var(--crm-text-muted); font-size: 13px;">
             <i class="fa fa-info-circle" style="font-size: 24px; color: #94a3b8; margin-bottom: 8px;"></i>
             <div style="font-weight: 600; color: #1e293b;">No records available for the selected filters.</div>
@@ -541,6 +624,45 @@
 </div>
 
 <script>
+function filterDetailedRows(type, btn) {
+    var btns = document.querySelectorAll('#detailedRecordsFilter .btn');
+    btns.forEach(function(b) {
+        b.classList.remove('active', 'btn-primary');
+        b.classList.add('btn-default');
+    });
+    btn.classList.remove('btn-default');
+    btn.classList.add('active', 'btn-primary');
+
+    var rows = document.querySelectorAll('#detailedRecordsTable tbody tr.record-row');
+    rows.forEach(function(tr) {
+        if (type === 'all') {
+            tr.style.display = '';
+        } else if (type === 'my') {
+            tr.style.display = (tr.getAttribute('data-my') === '1') ? '' : 'none';
+        } else if (type === 'team') {
+            tr.style.display = (tr.getAttribute('data-my') === '0') ? '' : 'none';
+        }
+    });
+}
+
+function selectAllCols(check) {
+    document.querySelectorAll('.custom-col-cb').forEach(function(cb) {
+        cb.checked = check;
+        cb.parentElement.style.background = check ? '#f0fdf4' : '#ffffff';
+        cb.parentElement.style.borderColor = check ? '#86efac' : '#e2e8f0';
+    });
+}
+
+function resetDefaultCols() {
+    var defs = ['lead_id', 'customer', 'poc', 'contact1', 'email', 'servicecat', 'mrr', 'lead_status', 'assigned_name', 'created'];
+    document.querySelectorAll('.custom-col-cb').forEach(function(cb) {
+        var isDef = defs.indexOf(cb.value) !== -1;
+        cb.checked = isDef;
+        cb.parentElement.style.background = isDef ? '#f0fdf4' : '#ffffff';
+        cb.parentElement.style.borderColor = isDef ? '#86efac' : '#e2e8f0';
+    });
+}
+
 function toggleCustomDates(val) {
     var elem = document.getElementById('adminDateRangeWrap');
     if (elem) {

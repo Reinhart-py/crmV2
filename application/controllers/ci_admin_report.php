@@ -431,6 +431,21 @@ class Ci_admin_report extends CI_Controller {
 			}
 		}
 
+		$user_team_ids = array($manager_id);
+		if (!$is_admin_or_support) {
+			$subordinates = $this->ci_admin_model->fetchTeamList($manager_id);
+			if (!empty($subordinates) && is_array($subordinates)) {
+				$user_team_ids = array_unique(array_merge($user_team_ids, $subordinates));
+			}
+			$direct_reports = $this->db->select('id')->where('manager', $manager_id)->get('ci_user')->result_array();
+			if (!empty($direct_reports)) {
+				foreach ($direct_reports as $dr) {
+					$user_team_ids[] = (int)$dr['id'];
+				}
+				$user_team_ids = array_unique($user_team_ids);
+			}
+		}
+
 		$emp = '';
 		if ($is_admin_or_support) {
 			$emp = $this->input->get('employee_id');
@@ -439,7 +454,12 @@ class Ci_admin_report extends CI_Controller {
 				$emp = $emp_multi;
 			}
 		} else {
-			$emp = $manager_id;
+			$selected_emp = $this->input->get('employee_id');
+			if (!empty($selected_emp) && in_array((int)$selected_emp, $user_team_ids)) {
+				$emp = (int)$selected_emp;
+			} else {
+				$emp = $user_team_ids;
+			}
 		}
 
 		$filters = array(
@@ -456,7 +476,9 @@ class Ci_admin_report extends CI_Controller {
 			'tl_emirate' => $this->input->get('tl_emirate'),
 			'tl_zone' => $this->input->get('tl_zone'),
 			'tl_authority' => $this->input->get('tl_authority'),
+			'columns' => $this->input->get('columns'),
 			'manager_id' => $manager_id,
+			'user_team_ids' => $user_team_ids,
 			'is_admin_or_support' => $is_admin_or_support
 		);
 
@@ -619,11 +641,24 @@ class Ci_admin_report extends CI_Controller {
 		$data['dept'] = $dept;
 		$data['report'] = $report;
 		$data['filters'] = $filters;
-		$data['users'] = $this->comman_model->getAll(array('status' => 1), array('name', 'ASC'), 'ci_user');
+		if ($is_admin_or_support) {
+			$data['users'] = $this->comman_model->getAll(array('status' => 1), array('name', 'ASC'), 'ci_user');
+		} else {
+			$this->db->select('id, name, email, department, manager');
+			if (!empty($user_team_ids)) {
+				$this->db->where_in('id', $user_team_ids);
+			} else {
+				$this->db->where('id', $manager_id);
+			}
+			$this->db->where('status', 1);
+			$this->db->order_by('name', 'ASC');
+			$data['users'] = $this->db->get('ci_user')->result_array();
+		}
 		$data['statuses'] = $this->comman_model->getAll(array('active' => 1), '', 'ci_status');
 		$data['is_admin_or_support'] = $is_admin_or_support;
 		$data['current_user_name'] = $user_name;
 		$data['manager_id'] = $manager_id;
+		$data['user_team_ids'] = $user_team_ids;
 		$data['info'] = array(
 			'title' => $report_data['title'],
 			'page_heading' => $report_data['title']

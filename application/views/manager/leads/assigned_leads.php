@@ -18,6 +18,9 @@
                     <div class="x_row">
                         <div class="x_col">
                             <form class="form-inline head_filter form-inline-mob" method="get" action="<?php echo base_url(); ?>manager/assigned-leads">
+                                <?php if(!empty($alloc_filter)){ ?>
+                                    <input type="hidden" name="alloc_filter" value="<?php echo htmlspecialchars($alloc_filter); ?>" />
+                                <?php } ?>
 
                                 <div class="form-group">
                                     <div class="input-daterange input-group" id="datepicker" style="width: 100%;">
@@ -93,7 +96,7 @@
 
                                 <div class="form-group">
                                     <button type="submit" class="btn btn-success">Search</button>
-                                    <a href="<?php echo base_url(); ?>manager/assigned-leads" class="btn btn-danger">Reset</a>
+                                    <a href="<?php echo base_url(); ?>manager/assigned-leads<?php echo !empty($alloc_filter) ? '?alloc_filter='.urlencode($alloc_filter) : ''; ?>" class="btn btn-danger">Reset</a>
                                 </div>
 
                             </form>

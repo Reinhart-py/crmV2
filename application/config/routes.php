@@ -144,6 +144,10 @@ $route['manager/leads/bulk-move'] = "ci_admin_leads/bulk_move_assign";
 // System > Admin Logs
 $route['manager/admin-logs'] = "ci_admin_system/logs";
 $route['manager/admin-logs/(:num)'] = "ci_admin_system/logs/$1";
+$route['manager/system/admin-logs'] = "ci_admin_system/logs";
+$route['manager/system/admin-logs/(:num)'] = "ci_admin_system/logs/$1";
+$route['manager/system/admin_logs'] = "ci_admin_system/logs";
+$route['manager/system/admin_logs/(:num)'] = "ci_admin_system/logs/$1";
 
 // 5-minute inactivity session keepalive/ping
 $route['manager/ping'] = "ci_admin/ping";

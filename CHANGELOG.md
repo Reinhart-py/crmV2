@@ -4,6 +4,47 @@ All notable changes, features, bug fixes, and refinements for the Rolexto CRM re
 
 ---
 
+### Two-Section Report Architecture (My Report & Team Report), Configurable Column Selector, Non-Allotted Leads Filter & Admin Logs UI Standard
+- **Date & Time**: `2026-10-21 11:10:00 +0530`
+
+#### Changes & Additions:
+- **Two-Section Sales Report Architecture ("My Report" & "Team Report")**:
+  - Implemented unified two-section collapsible pivot summaries (`My Report` and `Team Report`) across all 8 Sales reports:
+    - **Performance Report** (`manager/download-report/sales/performance`)
+    - **Database Report** (`manager/download-report/sales/database`)
+    - **Lead Report** (`manager/download-report/sales/lead`)
+    - **Quote Report** (`manager/download-report/sales/quote`)
+    - **CT / VAT Registration Report** (`manager/download-report/sales/tax-registration`)
+    - **Lost Deals Report** (`manager/download-report/sales/lost`)
+    - **Trade License Report** (`manager/download-report/sales/trade-license`)
+    - **Custom Report** (`manager/download-report/sales/custom`)
+  - Added `_isMyRecord()` helper in `admin_reports_model.php` to accurately partition records by ownership (`created_by`), assignment (`lead_assign`), and collaboration (`agents`).
+  - Added collapsible pivot tables with group-level subtotals and overall grand totals.
+  - Enhanced detailed records table for all non-performance reports with instant client-side tabs: `All Records (count)`, `My Records (count)`, and `Team Records (count)`.
+- **Standardized Report Headers & Field Alignments**:
+  - **Performance**: Name, Department, Database, Active Deals, Closed Deals, Lost Deals, Followups Attended, Total Quoted (AED), Total MRR, Total Lost MRR, Total Closed MRR.
+  - **Leads**: Lead ID, Customer Name, POC, Contact, Email, Service Type, MRR, Status, Owner, Created Date, Action.
+  - **Quote**: Lead ID, Customer Name, Quote Status, Quote Mode, Quote Amount, Status, Quoted Date, Owner, Action. Included status 40 (Submitted) as quotes with fallback to MRR value.
+  - **Database**: Lead ID, Customer Name, POC, Contact, Email, Database Category, Data Source, Batch Ref No, Status, Assigned To, Created Date, Action.
+- **PowerSheet Configurable Column Selector for Custom Reports**:
+  - Added interactive field selector toolbar in `sales/custom` report allowing users to pick and reorder columns dynamically.
+  - Added quick action buttons: "Select All", "Clear All", and "Default Columns".
+  - Selected columns persist across pagination and exports.
+- **Non-Allotted Database View Fix (`manager/assigned-leads`)**:
+  - Fixed `alloc_filter=non_allotted` returning empty due to imported leads (`created_by = 1` and `lead_assign = 0`).
+  - Broadened query criteria in `ci_admin_model.php`: `(lead_assign = 0 OR lead_assign IS NULL) AND (created_by = 0 OR created_by = 1)`.
+  - Added dynamic page heading (`Non-Allotted Database` vs `Allotted Database`).
+  - Preserved `alloc_filter` in search filter form via hidden input and in the Reset button URL.
+- **System Admin Logs UI Alignment (`manager/system/admin-logs`)**:
+  - Re-architected `application/views/manager/system/admin_logs.php` to match the exact table layout, typography, filters, and spacing of `Leads -> View` (`leadsview.php`).
+  - Removed redundant headers and banner clutter.
+  - Standardized status badges (`Success`, `Timeout`, `Failed`) using matching Leads View badge styling.
+  - Added clean routing aliases in `routes.php` for `manager/system/admin-logs` and `manager/system/admin_logs`.
+- **Standardized Action Buttons**:
+  - Standardized action buttons in `manager/database-transfer` and `manager/kam` to match the standard CRM split dropdown pattern.
+
+---
+
 ### Lead Allotment, Assignment & Transfer Logic, Assigned Leads UI Alignment, Mobile Drawer & Reports Drilldown
 - **Date & Time**: `2026-10-20 13:20:00 +0530`
 

@@ -1700,11 +1700,20 @@ $data['info2']=$this->if_not_login();
 
 	public function assigned_leads($page = 0)
 	{
-		$data = array();
+		$alloc_filter = isset($_GET['alloc_filter']) ? trim($_GET['alloc_filter']) : '';
+
+		$heading = 'Allocate Database';
+		if ($alloc_filter == 'non_allotted') {
+			$heading = 'Non-Allotted Database';
+		} elseif ($alloc_filter == 'allotted') {
+			$heading = 'Allotted Database';
+		}
+
 		$data['info'] = array(
-			'title' => 'Allocate Database',
-			'page_heading' => 'Allocate Database'
+			'title' => $heading,
+			'page_heading' => $heading
 		);
+		$data['alloc_filter'] = $alloc_filter;
 		$data['info2'] = $this->if_not_login();
 
 		$role = $this->session->userdata('manager_role');
@@ -1727,7 +1736,6 @@ $data['info2']=$this->if_not_login();
 		$user_name = isset($_GET['user_name']) ? $_GET['user_name'] : '';
 		$country = isset($_GET['country']) ? $_GET['country'] : '';
 		$state = isset($_GET['state']) ? $_GET['state'] : '';
-		$alloc_filter = isset($_GET['alloc_filter']) ? $_GET['alloc_filter'] : '';
 
 		if (!empty($country)) {
 			$country = implode(',', $country);

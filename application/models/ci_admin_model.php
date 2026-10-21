@@ -897,9 +897,9 @@ public function dashboard_MyPro($table='ci_leads'){
 
 		if (!empty($alloc_filter)) {
 			if ($alloc_filter == 'non_allotted') {
-				$this->db->where("(A.created_by = 0 OR A.created_by IS NULL OR A.created_by = '')");
+				$this->db->where("(A.created_by = 0 OR A.created_by IS NULL OR A.created_by = '' OR A.database_category = 'Non-Allotted Database' OR (A.created_by = 1 AND (A.lead_assign = 0 OR A.lead_assign IS NULL)))");
 			} elseif ($alloc_filter == 'allotted') {
-				$this->db->where("(A.created_by > 0 AND B.id IS NOT NULL)");
+				$this->db->where("((A.created_by > 1 OR (A.created_by = 1 AND A.lead_assign > 0)) AND (A.database_category != 'Non-Allotted Database' OR A.database_category IS NULL))");
 			}
 		}
 

@@ -700,6 +700,9 @@ class Admin_reports_model extends CI_Model {
 				$cat_counts[$c_cat] = isset($cat_counts[$c_cat]) ? $cat_counts[$c_cat] + 1 : 1;
 				$lead_enc = base64_encode($l['id']);
 				$rows[] = array(
+					'lead_assign_id' => (int)$l['lead_assign'],
+					'created_by_id' => (int)$l['created_by'],
+					'agents' => !empty($l['agents']) ? $l['agents'] : '',
 					'lead_id' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . (!empty($l['lead_id']) ? $l['lead_id'] : $l['id']) . '</a>',
 					'customer' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $l['customer'] . '</a>',
 					'poc' => $l['poc'],
@@ -828,6 +831,9 @@ class Admin_reports_model extends CI_Model {
 						$r[$fc] = isset($l[$fc]) && $l[$fc] !== '' ? $l[$fc] : '-';
 					}
 				}
+				$r['lead_assign_id'] = (int)$l['lead_assign'];
+				$r['created_by_id'] = (int)$l['created_by'];
+				$r['agents'] = !empty($l['agents']) ? $l['agents'] : '';
 				$rows[] = $r;
 			}
 
@@ -885,6 +891,9 @@ class Admin_reports_model extends CI_Model {
 				$stat_cat = !empty($l['status_category']) ? $l['status_category'] : (!empty($l['lost_reason']) ? $l['lost_reason'] : '-');
 				$lead_enc = base64_encode($l['id']);
 				$rows[] = array(
+					'lead_assign_id' => (int)$l['lead_assign'],
+					'created_by_id' => (int)$l['created_by'],
+					'agents' => !empty($l['agents']) ? $l['agents'] : '',
 					'lead_id' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . (!empty($l['lead_id']) ? $l['lead_id'] : $l['id']) . '</a>',
 					'customer' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $l['customer'] . '</a>',
 					'poc' => $l['poc'],
@@ -904,8 +913,8 @@ class Admin_reports_model extends CI_Model {
 			return array(
 				'title' => 'Sales Lead Report',
 				'department_title' => 'Sales Department',
-				'headers' => array('Lead ID', 'Customer Name', 'POC', 'Contact', 'Email', 'Industry Category', 'Service Category', 'MRR (AED)', 'Status', 'Status Category', 'Assigned To', 'Created Date', 'Action'),
-				'fields' => array('lead_id', 'customer', 'poc', 'contact1', 'email', 'industry_category', 'service_name', 'mrr_fmt', 'status_name', 'status_category', 'assigned_name', 'created', 'action'),
+				'headers' => array('Lead ID', 'Customer Name', 'POC', 'Contact', 'Email', 'Service Type', 'MRR', 'Status', 'Owner', 'Created Date', 'Action'),
+				'fields' => array('lead_id', 'customer', 'poc', 'contact1', 'email', 'service_name', 'mrr_fmt', 'status_name', 'assigned_name', 'created', 'action'),
 				'rows' => $rows,
 				'summary' => array(
 					array('label' => 'Total Leads', 'value' => number_format(count($rows)), 'icon' => 'fa-database', 'color' => 'bg-blue', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat=All&sub=All&metric=total_leads&d1='.$d1.'&d2='.$d2),
@@ -921,7 +930,7 @@ class Admin_reports_model extends CI_Model {
 			$this->db->from('ci_leads as A');
 			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'LEFT');
 			$this->db->join('ci_status as C', 'A.status = C.id', 'LEFT');
-			$this->db->where('((A.quote_status IS NOT NULL AND A.quote_status != "" AND A.quote_status != "Not Given") OR A.quote_amount > 0)');
+			$this->db->where('((A.quote_status IS NOT NULL AND A.quote_status != "" AND A.quote_status != "Not Given") OR A.quote_amount > 0 OR A.status = 40)');
 			if (!empty($filters['quote_status'])) {
 				$this->db->where('A.quote_status', $filters['quote_status']);
 			}
@@ -941,21 +950,27 @@ class Admin_reports_model extends CI_Model {
 			$accepted_cnt = 0;
 
 			foreach ($leads as $l) {
-				$amt = (float)$l['quote_amount'];
+				$amt = !empty($l['quote_amount']) && (float)$l['quote_amount'] > 0 ? (float)$l['quote_amount'] : (float)$l['mrr'];
 				$tot_quote_amt += $amt;
-				if (strtolower(trim($l['quote_status'])) == 'accepted') {
+				$q_status = !empty($l['quote_status']) && $l['quote_status'] != 'Not Given' ? $l['quote_status'] : ($l['status'] == 40 ? 'Proposal Sent' : 'Quote Given');
+				if (strtolower(trim($q_status)) == 'accepted') {
 					$accepted_cnt++;
 				}
 				$lead_enc = base64_encode($l['id']);
+				$q_date = (!empty($l['quote_date']) && $l['quote_date'] != '0000-00-00') ? simple_date($l['quote_date']) : simple_date($l['created']);
 				$rows[] = array(
+					'lead_assign_id' => (int)$l['lead_assign'],
+					'created_by_id' => (int)$l['created_by'],
+					'agents' => !empty($l['agents']) ? $l['agents'] : '',
 					'lead_id' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . (!empty($l['lead_id']) ? $l['lead_id'] : $l['id']) . '</a>',
 					'customer' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $l['customer'] . '</a>',
 					'poc' => $l['poc'],
 					'contact1' => $l['contact1'],
-					'quote_status' => !empty($l['quote_status']) ? $l['quote_status'] : 'Quote Given',
+					'quote_status' => $q_status,
 					'quote_mode' => !empty($l['quote_mode']) ? $l['quote_mode'] : '-',
 					'quote_amount_fmt' => 'AED ' . number_format($amt, 2),
 					'status_name' => !empty($l['status_name']) ? $l['status_name'] : $l['status'],
+					'quoted_date' => $q_date,
 					'assigned_name' => !empty($l['assigned_name']) ? $l['assigned_name'] : 'Unassigned',
 					'created' => simple_date($l['created']),
 					'action' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" class="btn btn-xs btn-primary" target="_blank"><i class="fa fa-eye"></i> Preview</a>'
@@ -968,8 +983,8 @@ class Admin_reports_model extends CI_Model {
 			return array(
 				'title' => 'Sales Quote Report',
 				'department_title' => 'Sales Department',
-				'headers' => array('Lead ID', 'Customer Name', 'POC', 'Contact', 'Quote Status', 'Quote Mode', 'Quote Amount (AED)', 'Lead Status', 'Assigned To', 'Created Date', 'Action'),
-				'fields' => array('lead_id', 'customer', 'poc', 'contact1', 'quote_status', 'quote_mode', 'quote_amount_fmt', 'status_name', 'assigned_name', 'created', 'action'),
+				'headers' => array('Lead ID', 'Customer Name', 'Quote Status', 'Quote Mode', 'Quote Amount', 'Status', 'Quoted Date', 'Owner', 'Action'),
+				'fields' => array('lead_id', 'customer', 'quote_status', 'quote_mode', 'quote_amount_fmt', 'status_name', 'quoted_date', 'assigned_name', 'action'),
 				'rows' => $rows,
 				'summary' => array(
 					array('label' => 'Total Quotes', 'value' => number_format($total_cnt), 'icon' => 'fa-file-text-o', 'color' => 'bg-aqua', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=quote_count&d1='.$d1.'&d2='.$d2),
@@ -1012,6 +1027,9 @@ class Admin_reports_model extends CI_Model {
 
 				$lead_enc = base64_encode($l['id']);
 				$rows[] = array(
+					'lead_assign_id' => (int)$l['lead_assign'],
+					'created_by_id' => (int)$l['created_by'],
+					'agents' => !empty($l['agents']) ? $l['agents'] : '',
 					'lead_id' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . (!empty($l['lead_id']) ? $l['lead_id'] : $l['id']) . '</a>',
 					'customer' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $l['customer'] . '</a>',
 					'poc' => $l['poc'],
@@ -1071,6 +1089,9 @@ class Admin_reports_model extends CI_Model {
 
 				$lead_enc = base64_encode($l['id']);
 				$rows[] = array(
+					'lead_assign_id' => (int)$l['lead_assign'],
+					'created_by_id' => (int)$l['created_by'],
+					'agents' => !empty($l['agents']) ? $l['agents'] : '',
 					'lead_id' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . (!empty($l['lead_id']) ? $l['lead_id'] : $l['id']) . '</a>',
 					'customer' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $l['customer'] . '</a>',
 					'poc' => $l['poc'],
@@ -1201,6 +1222,9 @@ class Admin_reports_model extends CI_Model {
 
 				$lead_enc = base64_encode($l['id']);
 				$rows[] = array(
+					'lead_assign_id' => (int)$l['lead_assign'],
+					'created_by_id' => (int)$l['created_by'],
+					'agents' => !empty($l['agents']) ? $l['agents'] : '',
 					'lead_id' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . (!empty($l['lead_id']) ? $l['lead_id'] : $l['id']) . '</a>',
 					'customer' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" target="_blank" style="color: #2563eb; font-weight: 600;">' . $l['customer'] . '</a>',
 					'tl_authority' => $auth,
@@ -2422,6 +2446,27 @@ class Admin_reports_model extends CI_Model {
 		return array();
 	}
 
+	private function _isMyRecord($r, $current_user_id)
+	{
+		$current_user_id = (int)$current_user_id;
+		if ($current_user_id <= 0) {
+			return false;
+		}
+		if (isset($r['lead_assign_id']) && (int)$r['lead_assign_id'] === $current_user_id) {
+			return true;
+		}
+		if (isset($r['created_by_id']) && (int)$r['created_by_id'] === $current_user_id) {
+			return true;
+		}
+		if (!empty($r['agents'])) {
+			$ag = is_array($r['agents']) ? $r['agents'] : explode(',', (string)$r['agents']);
+			if (in_array((string)$current_user_id, array_map('trim', $ag))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private function _buildPivotData($dept, $report, $filters, $report_res)
 	{
 		$rows = isset($report_res['rows']) ? $report_res['rows'] : array();
@@ -2576,59 +2621,92 @@ class Admin_reports_model extends CI_Model {
 
 		if ($dept == 'sales' && $report == 'trade-license') {
 			$headers = array('Licensing Authority', 'Expired', '0–30 Days', '30–60 Days', '60–90 Days', 'All Future');
-			$groups_map = array();
+			$current_user_id = isset($filters['manager_id']) ? (int)$filters['manager_id'] : 0;
+			$my_map = array();
+			$team_map = array();
+			$my_sub = array('expiry' => 0, '0_30' => 0, '30_60' => 0, '60_90' => 0, 'future' => 0);
+			$team_sub = array('expiry' => 0, '0_30' => 0, '30_60' => 0, '60_90' => 0, 'future' => 0);
 			$grand = array('expiry' => 0, '0_30' => 0, '30_60' => 0, '60_90' => 0, 'future' => 0);
 
 			foreach ($rows as $r) {
 				$auth = !empty($r['tl_authority']) && $r['tl_authority'] !== '-' ? $r['tl_authority'] : 'General Licensing';
 				$win = isset($r['window_type']) ? $r['window_type'] : 'valid';
+				$is_my = $this->_isMyRecord($r, $current_user_id);
 
-				if (!isset($groups_map[$auth])) {
-					$groups_map[$auth] = array('expiry' => 0, '0_30' => 0, '30_60' => 0, '60_90' => 0, 'future' => 0);
+				if ($is_my) {
+					if (!isset($my_map[$auth])) {
+						$my_map[$auth] = array('expiry' => 0, '0_30' => 0, '30_60' => 0, '60_90' => 0, 'future' => 0);
+					}
+					if ($win == 'expiry') { $my_map[$auth]['expiry'] += 1; $my_sub['expiry'] += 1; }
+					elseif ($win == '0-30') { $my_map[$auth]['0_30'] += 1; $my_sub['0_30'] += 1; }
+					elseif ($win == '30-60') { $my_map[$auth]['30_60'] += 1; $my_sub['30_60'] += 1; }
+					elseif ($win == '60-90') { $my_map[$auth]['60_90'] += 1; $my_sub['60_90'] += 1; }
+					elseif ($win == 'future') { $my_map[$auth]['future'] += 1; $my_sub['future'] += 1; }
+				} else {
+					if (!isset($team_map[$auth])) {
+						$team_map[$auth] = array('expiry' => 0, '0_30' => 0, '30_60' => 0, '60_90' => 0, 'future' => 0);
+					}
+					if ($win == 'expiry') { $team_map[$auth]['expiry'] += 1; $team_sub['expiry'] += 1; }
+					elseif ($win == '0-30') { $team_map[$auth]['0_30'] += 1; $team_sub['0_30'] += 1; }
+					elseif ($win == '30-60') { $team_map[$auth]['30_60'] += 1; $team_sub['30_60'] += 1; }
+					elseif ($win == '60-90') { $team_map[$auth]['60_90'] += 1; $team_sub['60_90'] += 1; }
+					elseif ($win == 'future') { $team_map[$auth]['future'] += 1; $team_sub['future'] += 1; }
 				}
 
-				if ($win == 'expiry') {
-					$groups_map[$auth]['expiry'] += 1;
-					$grand['expiry'] += 1;
-				} elseif ($win == '0-30') {
-					$groups_map[$auth]['0_30'] += 1;
-					$grand['0_30'] += 1;
-				} elseif ($win == '30-60') {
-					$groups_map[$auth]['30_60'] += 1;
-					$grand['30_60'] += 1;
-				} elseif ($win == '60-90') {
-					$groups_map[$auth]['60_90'] += 1;
-					$grand['60_90'] += 1;
-				} elseif ($win == 'future') {
-					$groups_map[$auth]['future'] += 1;
-					$grand['future'] += 1;
-				}
+				if ($win == 'expiry') { $grand['expiry'] += 1; }
+				elseif ($win == '0-30') { $grand['0_30'] += 1; }
+				elseif ($win == '30-60') { $grand['30_60'] += 1; }
+				elseif ($win == '60-90') { $grand['60_90'] += 1; }
+				elseif ($win == 'future') { $grand['future'] += 1; }
 			}
 
-			$r_list = array();
-			foreach ($groups_map as $auth => $m) {
-				$r_list[] = array(
-					array('val' => $auth, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth='.urlencode($auth).'&window=all&d1='.$d1.'&d2='.$d2),
-					array('val' => number_format($m['expiry']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth='.urlencode($auth).'&window=expiry&d1='.$d1.'&d2='.$d2),
-					array('val' => number_format($m['0_30']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth='.urlencode($auth).'&window=0-30&d1='.$d1.'&d2='.$d2),
-					array('val' => number_format($m['30_60']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth='.urlencode($auth).'&window=30-60&d1='.$d1.'&d2='.$d2),
-					array('val' => number_format($m['60_90']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth='.urlencode($auth).'&window=60-90&d1='.$d1.'&d2='.$d2),
-					array('val' => number_format($m['future']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth='.urlencode($auth).'&window=future&d1='.$d1.'&d2='.$d2)
+			$my_list = array();
+			foreach ($my_map as $auth => $m) {
+				$my_list[] = array(
+					array('val' => $auth, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth='.urlencode($auth).'&window=all&scope=my&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($m['expiry']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth='.urlencode($auth).'&window=expiry&scope=my&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($m['0_30']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth='.urlencode($auth).'&window=0-30&scope=my&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($m['30_60']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth='.urlencode($auth).'&window=30-60&scope=my&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($m['60_90']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth='.urlencode($auth).'&window=60-90&scope=my&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($m['future']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth='.urlencode($auth).'&window=future&scope=my&d1='.$d1.'&d2='.$d2)
+				);
+			}
+
+			$team_list = array();
+			foreach ($team_map as $auth => $m) {
+				$team_list[] = array(
+					array('val' => $auth, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth='.urlencode($auth).'&window=all&scope=team&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($m['expiry']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth='.urlencode($auth).'&window=expiry&scope=team&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($m['0_30']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth='.urlencode($auth).'&window=0-30&scope=team&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($m['30_60']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth='.urlencode($auth).'&window=30-60&scope=team&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($m['60_90']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth='.urlencode($auth).'&window=60-90&scope=team&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($m['future']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth='.urlencode($auth).'&window=future&scope=team&d1='.$d1.'&d2='.$d2)
 				);
 			}
 
 			$groups = array(
 				array(
-					'category' => 'Licensing Authorities',
-					'category_url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=all&d1='.$d1.'&d2='.$d2,
-					'rows' => $r_list,
+					'category' => 'My Report',
+					'rows' => $my_list,
 					'subtotal' => array(
-						array('val' => 'Authorities Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=all&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($grand['expiry']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=expiry&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($grand['0_30']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=0-30&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($grand['30_60']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=30-60&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($grand['60_90']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=60-90&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($grand['future']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=future&d1='.$d1.'&d2='.$d2)
+						array('val' => 'My Report Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=all&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($my_sub['expiry']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=expiry&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($my_sub['0_30']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=0-30&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($my_sub['30_60']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=30-60&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($my_sub['60_90']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=60-90&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($my_sub['future']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=future&scope=my&d1='.$d1.'&d2='.$d2)
+					)
+				),
+				array(
+					'category' => 'Team Report',
+					'rows' => $team_list,
+					'subtotal' => array(
+						array('val' => 'Team Report Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=all&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($team_sub['expiry']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=expiry&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($team_sub['0_30']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=0-30&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($team_sub['30_60']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=30-60&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($team_sub['60_90']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=60-90&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($team_sub['future']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=trade-license&auth=All&window=future&scope=team&d1='.$d1.'&d2='.$d2)
 					)
 				)
 			);
@@ -2649,7 +2727,11 @@ class Admin_reports_model extends CI_Model {
 
 		if ($dept == 'sales' && $report == 'database') {
 			$headers = array('Database Category', 'Database Status', 'DB Referrals', 'Database Status Records', 'Lead Status Records');
-			$groups_map = array();
+			$current_user_id = isset($filters['manager_id']) ? (int)$filters['manager_id'] : 0;
+			$my_map = array();
+			$team_map = array();
+			$my_sub = array('ref' => 0, 'status' => 0, 'lead' => 0);
+			$team_sub = array('ref' => 0, 'status' => 0, 'lead' => 0);
 			$grand = array('ref' => 0, 'status' => 0, 'lead' => 0);
 
 			foreach ($rows as $r) {
@@ -2665,55 +2747,87 @@ class Admin_reports_model extends CI_Model {
 					}
 				}
 				$sub = !empty($r['status_name']) ? $r['status_name'] : 'General';
-
-				if (!isset($groups_map[$cat])) {
-					$groups_map[$cat] = array('category' => $cat, 'items' => array(), 'sub' => array('ref' => 0, 'status' => 0, 'lead' => 0));
-				}
-				if (!isset($groups_map[$cat]['items'][$sub])) {
-					$groups_map[$cat]['items'][$sub] = array('ref' => 0, 'status' => 0, 'lead' => 0);
-				}
-
 				$has_ref = (!empty($r['data_batch_referral_no']) && $r['data_batch_referral_no'] !== '-') ? 1 : 0;
 				$has_lead = (!empty($r['status_name']) && in_array($r['status_name'], array('Activated', 'Database', 'Expected', 'In Process', 'Lead'))) ? 1 : 0;
 
-				$groups_map[$cat]['items'][$sub]['ref'] += $has_ref;
-				$groups_map[$cat]['items'][$sub]['status'] += 1;
-				$groups_map[$cat]['items'][$sub]['lead'] += $has_lead;
+				$is_my = $this->_isMyRecord($r, $current_user_id);
+				$target_map = &$team_map;
+				$target_sub = &$team_sub;
+				if ($is_my) {
+					$target_map = &$my_map;
+					$target_sub = &$my_sub;
+				}
 
-				$groups_map[$cat]['sub']['ref'] += $has_ref;
-				$groups_map[$cat]['sub']['status'] += 1;
-				$groups_map[$cat]['sub']['lead'] += $has_lead;
+				if (!isset($target_map[$cat])) {
+					$target_map[$cat] = array();
+				}
+				if (!isset($target_map[$cat][$sub])) {
+					$target_map[$cat][$sub] = array('ref' => 0, 'status' => 0, 'lead' => 0);
+				}
+
+				$target_map[$cat][$sub]['ref'] += $has_ref;
+				$target_map[$cat][$sub]['status'] += 1;
+				$target_map[$cat][$sub]['lead'] += $has_lead;
+
+				$target_sub['ref'] += $has_ref;
+				$target_sub['status'] += 1;
+				$target_sub['lead'] += $has_lead;
 
 				$grand['ref'] += $has_ref;
 				$grand['status'] += 1;
 				$grand['lead'] += $has_lead;
 			}
 
-			$groups = array();
-			foreach ($groups_map as $c => $data) {
-				$r_list = array();
-				foreach ($data['items'] as $s => $m) {
-					$r_list[] = array(
-						array('val' => $c, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub=All&metric=status&d1='.$d1.'&d2='.$d2),
-						array('val' => $s, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=status&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($m['ref']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=referrals&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($m['status']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=status&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($m['lead']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=lead&d1='.$d1.'&d2='.$d2)
+			$my_list = array();
+			foreach ($my_map as $c => $items) {
+				foreach ($items as $s => $m) {
+					$my_list[] = array(
+						array('val' => $c, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub=All&metric=status&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => $s, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=status&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['ref']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=referrals&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['status']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=status&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['lead']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=lead&scope=my&d1='.$d1.'&d2='.$d2)
 					);
 				}
-				$groups[] = array(
-					'category' => $c,
-					'category_url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub=All&metric=status&d1='.$d1.'&d2='.$d2,
-					'rows' => $r_list,
-					'subtotal' => array(
-						array('val' => $c . ' Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub=All&metric=status&d1='.$d1.'&d2='.$d2),
-						'',
-						array('val' => number_format($data['sub']['ref']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub=All&metric=referrals&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($data['sub']['status']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub=All&metric=status&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($data['sub']['lead']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub=All&metric=lead&d1='.$d1.'&d2='.$d2)
-					)
-				);
 			}
+
+			$team_list = array();
+			foreach ($team_map as $c => $items) {
+				foreach ($items as $s => $m) {
+					$team_list[] = array(
+						array('val' => $c, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub=All&metric=status&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => $s, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=status&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['ref']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=referrals&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['status']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=status&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['lead']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=lead&scope=team&d1='.$d1.'&d2='.$d2)
+					);
+				}
+			}
+
+			$groups = array(
+				array(
+					'category' => 'My Report',
+					'rows' => $my_list,
+					'subtotal' => array(
+						array('val' => 'My Report Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat=All&sub=All&metric=status&scope=my&d1='.$d1.'&d2='.$d2),
+						'',
+						array('val' => number_format($my_sub['ref']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat=All&sub=All&metric=referrals&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($my_sub['status']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat=All&sub=All&metric=status&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($my_sub['lead']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat=All&sub=All&metric=lead&scope=my&d1='.$d1.'&d2='.$d2)
+					)
+				),
+				array(
+					'category' => 'Team Report',
+					'rows' => $team_list,
+					'subtotal' => array(
+						array('val' => 'Team Report Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat=All&sub=All&metric=status&scope=team&d1='.$d1.'&d2='.$d2),
+						'',
+						array('val' => number_format($team_sub['ref']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat=All&sub=All&metric=referrals&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($team_sub['status']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat=All&sub=All&metric=status&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($team_sub['lead']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&cat=All&sub=All&metric=lead&scope=team&d1='.$d1.'&d2='.$d2)
+					)
+				)
+			);
 
 			return array(
 				'headers' => $headers,
@@ -2730,63 +2844,100 @@ class Admin_reports_model extends CI_Model {
 
 		if ($dept == 'sales' && $report == 'lost') {
 			$headers = array('Lost Category', 'Lead Status', 'Total Leads', 'Lost Deals', 'Quoted Value (AED)');
-			$groups_map = array();
+			$current_user_id = isset($filters['manager_id']) ? (int)$filters['manager_id'] : 0;
+			$my_map = array();
+			$team_map = array();
+			$my_sub = array('leads' => 0, 'lost' => 0, 'amt' => 0.0);
+			$team_sub = array('leads' => 0, 'lost' => 0, 'amt' => 0.0);
 			$grand = array('leads' => 0, 'lost' => 0, 'amt' => 0.0);
 
 			foreach ($rows as $r) {
 				$cat = !empty($r['status_category']) && $r['status_category'] !== '-' ? $r['status_category'] : (!empty($r['status_remarks']) && $r['status_remarks'] !== '-' ? $r['status_remarks'] : 'Not Interested');
 				$sub = !empty($r['status_name']) ? $r['status_name'] : 'Lost';
 
-				if (!isset($groups_map[$cat])) {
-					$groups_map[$cat] = array('category' => $cat, 'items' => array(), 'sub' => array('leads' => 0, 'lost' => 0, 'amt' => 0.0));
-				}
-				if (!isset($groups_map[$cat]['items'][$sub])) {
-					$groups_map[$cat]['items'][$sub] = array('leads' => 0, 'lost' => 0, 'amt' => 0.0);
-				}
-
 				$amt_clean = isset($r['quote_amount_fmt']) ? (float)str_replace(array('AED', ',', ' '), '', $r['quote_amount_fmt']) : 0.0;
 				if ($amt_clean <= 0 && isset($r['mrr_fmt'])) {
 					$amt_clean = (float)str_replace(array('AED', ',', ' '), '', $r['mrr_fmt']);
 				}
 
-				$groups_map[$cat]['items'][$sub]['leads'] += 1;
-				$groups_map[$cat]['items'][$sub]['lost'] += 1;
-				$groups_map[$cat]['items'][$sub]['amt'] += $amt_clean;
+				$is_my = $this->_isMyRecord($r, $current_user_id);
+				$target_map = &$team_map;
+				$target_sub = &$team_sub;
+				if ($is_my) {
+					$target_map = &$my_map;
+					$target_sub = &$my_sub;
+				}
 
-				$groups_map[$cat]['sub']['leads'] += 1;
-				$groups_map[$cat]['sub']['lost'] += 1;
-				$groups_map[$cat]['sub']['amt'] += $amt_clean;
+				if (!isset($target_map[$cat])) {
+					$target_map[$cat] = array();
+				}
+				if (!isset($target_map[$cat][$sub])) {
+					$target_map[$cat][$sub] = array('leads' => 0, 'lost' => 0, 'amt' => 0.0);
+				}
+
+				$target_map[$cat][$sub]['leads'] += 1;
+				$target_map[$cat][$sub]['lost'] += 1;
+				$target_map[$cat][$sub]['amt'] += $amt_clean;
+
+				$target_sub['leads'] += 1;
+				$target_sub['lost'] += 1;
+				$target_sub['amt'] += $amt_clean;
 
 				$grand['leads'] += 1;
 				$grand['lost'] += 1;
 				$grand['amt'] += $amt_clean;
 			}
 
-			$groups = array();
-			foreach ($groups_map as $c => $data) {
-				$r_list = array();
-				foreach ($data['items'] as $s => $m) {
-					$r_list[] = array(
-						array('val' => $c, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub=All&metric=leads&d1='.$d1.'&d2='.$d2),
-						array('val' => $s, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=leads&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($m['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=leads&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($m['lost']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=lost&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($m['amt'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=quoted&d1='.$d1.'&d2='.$d2)
+			$my_list = array();
+			foreach ($my_map as $c => $items) {
+				foreach ($items as $s => $m) {
+					$my_list[] = array(
+						array('val' => $c, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub=All&metric=leads&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => $s, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=leads&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=leads&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['lost']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=lost&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['amt'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=quoted&scope=my&d1='.$d1.'&d2='.$d2)
 					);
 				}
-				$groups[] = array(
-					'category' => $c,
-					'category_url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub=All&metric=leads&d1='.$d1.'&d2='.$d2,
-					'rows' => $r_list,
-					'subtotal' => array(
-						array('val' => $c . ' Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub=All&metric=leads&d1='.$d1.'&d2='.$d2),
-						'',
-						array('val' => number_format($data['sub']['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub=All&metric=leads&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($data['sub']['lost']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub=All&metric=lost&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($data['sub']['amt'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub=All&metric=quoted&d1='.$d1.'&d2='.$d2)
-					)
-				);
 			}
+
+			$team_list = array();
+			foreach ($team_map as $c => $items) {
+				foreach ($items as $s => $m) {
+					$team_list[] = array(
+						array('val' => $c, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub=All&metric=leads&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => $s, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=leads&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=leads&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['lost']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=lost&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['amt'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=quoted&scope=team&d1='.$d1.'&d2='.$d2)
+					);
+				}
+			}
+
+			$groups = array(
+				array(
+					'category' => 'My Report',
+					'rows' => $my_list,
+					'subtotal' => array(
+						array('val' => 'My Report Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat=All&sub=All&metric=leads&scope=my&d1='.$d1.'&d2='.$d2),
+						'',
+						array('val' => number_format($my_sub['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat=All&sub=All&metric=leads&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($my_sub['lost']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat=All&sub=All&metric=lost&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($my_sub['amt'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat=All&sub=All&metric=quoted&scope=my&d1='.$d1.'&d2='.$d2)
+					)
+				),
+				array(
+					'category' => 'Team Report',
+					'rows' => $team_list,
+					'subtotal' => array(
+						array('val' => 'Team Report Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat=All&sub=All&metric=leads&scope=team&d1='.$d1.'&d2='.$d2),
+						'',
+						array('val' => number_format($team_sub['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat=All&sub=All&metric=leads&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($team_sub['lost']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat=All&sub=All&metric=lost&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($team_sub['amt'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lost&cat=All&sub=All&metric=quoted&scope=team&d1='.$d1.'&d2='.$d2)
+					)
+				)
+			);
 
 			return array(
 				'headers' => $headers,
@@ -2803,35 +2954,47 @@ class Admin_reports_model extends CI_Model {
 
 		if ($dept == 'sales' && $report == 'quote') {
 			$headers = array('Quote Status', 'Category', 'Lead Status Records', 'Service Category Records', 'Lost Deals', 'Quote Count', 'Total Quoted (AED)');
-			$groups_map = array();
+			$current_user_id = isset($filters['manager_id']) ? (int)$filters['manager_id'] : 0;
+			$my_map = array();
+			$team_map = array();
+			$my_sub = array('leads' => 0, 'service' => 0, 'lost' => 0, 'cnt_amt' => 0, 'sum_amt' => 0.0);
+			$team_sub = array('leads' => 0, 'service' => 0, 'lost' => 0, 'cnt_amt' => 0, 'sum_amt' => 0.0);
 			$grand = array('leads' => 0, 'service' => 0, 'lost' => 0, 'cnt_amt' => 0, 'sum_amt' => 0.0);
 
 			foreach ($rows as $r) {
 				$cat = !empty($r['quote_status']) && $r['quote_status'] !== '-' ? $r['quote_status'] : 'Sent';
 				$sub = !empty($r['status_name']) ? $r['status_name'] : 'General';
 
-				if (!isset($groups_map[$cat])) {
-					$groups_map[$cat] = array('category' => $cat, 'items' => array(), 'sub' => array('leads' => 0, 'service' => 0, 'lost' => 0, 'cnt_amt' => 0, 'sum_amt' => 0.0));
-				}
-				if (!isset($groups_map[$cat]['items'][$sub])) {
-					$groups_map[$cat]['items'][$sub] = array('leads' => 0, 'service' => 0, 'lost' => 0, 'cnt_amt' => 0, 'sum_amt' => 0.0);
-				}
-
 				$amt_clean = isset($r['quote_amount_fmt']) ? (float)str_replace(array('AED', ',', ' '), '', $r['quote_amount_fmt']) : 0.0;
 				$has_amt = ($amt_clean > 0) ? 1 : 0;
 				$is_lost = (strpos(strtolower($sub), 'lost') !== false || strpos(strtolower($cat), 'lost') !== false) ? 1 : 0;
 
-				$groups_map[$cat]['items'][$sub]['leads'] += 1;
-				$groups_map[$cat]['items'][$sub]['service'] += 1;
-				$groups_map[$cat]['items'][$sub]['lost'] += $is_lost;
-				$groups_map[$cat]['items'][$sub]['cnt_amt'] += $has_amt;
-				$groups_map[$cat]['items'][$sub]['sum_amt'] += $amt_clean;
+				$is_my = $this->_isMyRecord($r, $current_user_id);
+				$target_map = &$team_map;
+				$target_sub = &$team_sub;
+				if ($is_my) {
+					$target_map = &$my_map;
+					$target_sub = &$my_sub;
+				}
 
-				$groups_map[$cat]['sub']['leads'] += 1;
-				$groups_map[$cat]['sub']['service'] += 1;
-				$groups_map[$cat]['sub']['lost'] += $is_lost;
-				$groups_map[$cat]['sub']['cnt_amt'] += $has_amt;
-				$groups_map[$cat]['sub']['sum_amt'] += $amt_clean;
+				if (!isset($target_map[$cat])) {
+					$target_map[$cat] = array();
+				}
+				if (!isset($target_map[$cat][$sub])) {
+					$target_map[$cat][$sub] = array('leads' => 0, 'service' => 0, 'lost' => 0, 'cnt_amt' => 0, 'sum_amt' => 0.0);
+				}
+
+				$target_map[$cat][$sub]['leads'] += 1;
+				$target_map[$cat][$sub]['service'] += 1;
+				$target_map[$cat][$sub]['lost'] += $is_lost;
+				$target_map[$cat][$sub]['cnt_amt'] += $has_amt;
+				$target_map[$cat][$sub]['sum_amt'] += $amt_clean;
+
+				$target_sub['leads'] += 1;
+				$target_sub['service'] += 1;
+				$target_sub['lost'] += $is_lost;
+				$target_sub['cnt_amt'] += $has_amt;
+				$target_sub['sum_amt'] += $amt_clean;
 
 				$grand['leads'] += 1;
 				$grand['service'] += 1;
@@ -2840,35 +3003,64 @@ class Admin_reports_model extends CI_Model {
 				$grand['sum_amt'] += $amt_clean;
 			}
 
-			$groups = array();
-			foreach ($groups_map as $c => $data) {
-				$r_list = array();
-				foreach ($data['items'] as $s => $m) {
-					$r_list[] = array(
-						array('val' => $c, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub=All&metric=lead_records&d1='.$d1.'&d2='.$d2),
-						array('val' => $s, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=lead_records&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($m['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=lead_records&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($m['service']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=service_records&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($m['lost']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=lost&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($m['cnt_amt']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=quote_count&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($m['sum_amt'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=quote_sum&d1='.$d1.'&d2='.$d2)
+			$my_list = array();
+			foreach ($my_map as $c => $items) {
+				foreach ($items as $s => $m) {
+					$my_list[] = array(
+						array('val' => $c, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub=All&metric=lead_records&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => $s, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=lead_records&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=lead_records&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['service']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=service_records&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['lost']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=lost&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['cnt_amt']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=quote_count&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['sum_amt'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=quote_sum&scope=my&d1='.$d1.'&d2='.$d2)
 					);
 				}
-				$groups[] = array(
-					'category' => $c,
-					'category_url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub=All&metric=lead_records&d1='.$d1.'&d2='.$d2,
-					'rows' => $r_list,
-					'subtotal' => array(
-						array('val' => $c . ' Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub=All&metric=lead_records&d1='.$d1.'&d2='.$d2),
-						'',
-						array('val' => number_format($data['sub']['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub=All&metric=lead_records&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($data['sub']['service']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub=All&metric=service_records&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($data['sub']['lost']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub=All&metric=lost&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($data['sub']['cnt_amt']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub=All&metric=quote_count&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($data['sub']['sum_amt'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub=All&metric=quote_sum&d1='.$d1.'&d2='.$d2)
-					)
-				);
 			}
+
+			$team_list = array();
+			foreach ($team_map as $c => $items) {
+				foreach ($items as $s => $m) {
+					$team_list[] = array(
+						array('val' => $c, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub=All&metric=lead_records&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => $s, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=lead_records&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=lead_records&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['service']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=service_records&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['lost']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=lost&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['cnt_amt']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=quote_count&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['sum_amt'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=quote_sum&scope=team&d1='.$d1.'&d2='.$d2)
+					);
+				}
+			}
+
+			$groups = array(
+				array(
+					'category' => 'My Report',
+					'rows' => $my_list,
+					'subtotal' => array(
+						array('val' => 'My Report Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=lead_records&scope=my&d1='.$d1.'&d2='.$d2),
+						'',
+						array('val' => number_format($my_sub['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=lead_records&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($my_sub['service']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=service_records&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($my_sub['lost']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=lost&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($my_sub['cnt_amt']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=quote_count&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($my_sub['sum_amt'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=quote_sum&scope=my&d1='.$d1.'&d2='.$d2)
+					)
+				),
+				array(
+					'category' => 'Team Report',
+					'rows' => $team_list,
+					'subtotal' => array(
+						array('val' => 'Team Report Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=lead_records&scope=team&d1='.$d1.'&d2='.$d2),
+						'',
+						array('val' => number_format($team_sub['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=lead_records&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($team_sub['service']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=service_records&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($team_sub['lost']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=lost&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($team_sub['cnt_amt']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=quote_count&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($team_sub['sum_amt'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=quote_sum&scope=team&d1='.$d1.'&d2='.$d2)
+					)
+				)
+			);
 
 			return array(
 				'headers' => $headers,
@@ -2887,61 +3079,98 @@ class Admin_reports_model extends CI_Model {
 
 		if ($dept == 'sales' && $report == 'lead') {
 			$headers = array('Lead Status', 'Industry / Service Category', 'Total Leads', 'Closed Deals', 'Total MRR (AED)');
-			$groups_map = array();
+			$current_user_id = isset($filters['manager_id']) ? (int)$filters['manager_id'] : 0;
+			$my_map = array();
+			$team_map = array();
+			$my_sub = array('leads' => 0, 'closed' => 0, 'mrr' => 0.0);
+			$team_sub = array('leads' => 0, 'closed' => 0, 'mrr' => 0.0);
 			$grand = array('leads' => 0, 'closed' => 0, 'mrr' => 0.0);
 
 			foreach ($rows as $r) {
 				$cat = !empty($r['status_name']) && $r['status_name'] !== '-' ? $r['status_name'] : 'Lead';
 				$sub = !empty($r['industry_category']) && $r['industry_category'] !== '-' ? $r['industry_category'] : (!empty($r['service_name']) && $r['service_name'] !== '-' ? $r['service_name'] : 'General Category');
 
-				if (!isset($groups_map[$cat])) {
-					$groups_map[$cat] = array('category' => $cat, 'items' => array(), 'sub' => array('leads' => 0, 'closed' => 0, 'mrr' => 0.0));
-				}
-				if (!isset($groups_map[$cat]['items'][$sub])) {
-					$groups_map[$cat]['items'][$sub] = array('leads' => 0, 'closed' => 0, 'mrr' => 0.0);
-				}
-
 				$mrr_clean = isset($r['mrr_fmt']) ? (float)str_replace(array('AED', ',', ' '), '', $r['mrr_fmt']) : 0.0;
 				$is_closed = (strpos(strtolower($cat), 'closed') !== false || strpos(strtolower($cat), 'activated') !== false) ? 1 : 0;
 
-				$groups_map[$cat]['items'][$sub]['leads'] += 1;
-				$groups_map[$cat]['items'][$sub]['closed'] += $is_closed;
-				$groups_map[$cat]['items'][$sub]['mrr'] += $mrr_clean;
+				$is_my = $this->_isMyRecord($r, $current_user_id);
+				$target_map = &$team_map;
+				$target_sub = &$team_sub;
+				if ($is_my) {
+					$target_map = &$my_map;
+					$target_sub = &$my_sub;
+				}
 
-				$groups_map[$cat]['sub']['leads'] += 1;
-				$groups_map[$cat]['sub']['closed'] += $is_closed;
-				$groups_map[$cat]['sub']['mrr'] += $mrr_clean;
+				if (!isset($target_map[$cat])) {
+					$target_map[$cat] = array();
+				}
+				if (!isset($target_map[$cat][$sub])) {
+					$target_map[$cat][$sub] = array('leads' => 0, 'closed' => 0, 'mrr' => 0.0);
+				}
+
+				$target_map[$cat][$sub]['leads'] += 1;
+				$target_map[$cat][$sub]['closed'] += $is_closed;
+				$target_map[$cat][$sub]['mrr'] += $mrr_clean;
+
+				$target_sub['leads'] += 1;
+				$target_sub['closed'] += $is_closed;
+				$target_sub['mrr'] += $mrr_clean;
 
 				$grand['leads'] += 1;
 				$grand['closed'] += $is_closed;
 				$grand['mrr'] += $mrr_clean;
 			}
 
-			$groups = array();
-			foreach ($groups_map as $c => $data) {
-				$r_list = array();
-				foreach ($data['items'] as $s => $m) {
-					$r_list[] = array(
-						array('val' => $c, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub=All&metric=total_leads&d1='.$d1.'&d2='.$d2),
-						array('val' => $s, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=total_leads&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($m['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=total_leads&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($m['closed']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=closed&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($m['mrr'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=mrr&d1='.$d1.'&d2='.$d2)
+			$my_list = array();
+			foreach ($my_map as $c => $items) {
+				foreach ($items as $s => $m) {
+					$my_list[] = array(
+						array('val' => $c, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub=All&metric=total_leads&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => $s, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=total_leads&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=total_leads&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['closed']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=closed&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['mrr'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=mrr&scope=my&d1='.$d1.'&d2='.$d2)
 					);
 				}
-				$groups[] = array(
-					'category' => $c,
-					'category_url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub=All&metric=total_leads&d1='.$d1.'&d2='.$d2,
-					'rows' => $r_list,
-					'subtotal' => array(
-						array('val' => $c . ' Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub=All&metric=total_leads&d1='.$d1.'&d2='.$d2),
-						'',
-						array('val' => number_format($data['sub']['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub=All&metric=total_leads&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($data['sub']['closed']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub=All&metric=closed&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($data['sub']['mrr'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub=All&metric=mrr&d1='.$d1.'&d2='.$d2)
-					)
-				);
 			}
+
+			$team_list = array();
+			foreach ($team_map as $c => $items) {
+				foreach ($items as $s => $m) {
+					$team_list[] = array(
+						array('val' => $c, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub=All&metric=total_leads&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => $s, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=total_leads&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=total_leads&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['closed']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=closed&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['mrr'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=mrr&scope=team&d1='.$d1.'&d2='.$d2)
+					);
+				}
+			}
+
+			$groups = array(
+				array(
+					'category' => 'My Report',
+					'rows' => $my_list,
+					'subtotal' => array(
+						array('val' => 'My Report Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat=All&sub=All&metric=total_leads&scope=my&d1='.$d1.'&d2='.$d2),
+						'',
+						array('val' => number_format($my_sub['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat=All&sub=All&metric=total_leads&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($my_sub['closed']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat=All&sub=All&metric=closed&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($my_sub['mrr'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat=All&sub=All&metric=mrr&scope=my&d1='.$d1.'&d2='.$d2)
+					)
+				),
+				array(
+					'category' => 'Team Report',
+					'rows' => $team_list,
+					'subtotal' => array(
+						array('val' => 'Team Report Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat=All&sub=All&metric=total_leads&scope=team&d1='.$d1.'&d2='.$d2),
+						'',
+						array('val' => number_format($team_sub['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat=All&sub=All&metric=total_leads&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($team_sub['closed']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat=All&sub=All&metric=closed&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($team_sub['mrr'], 2), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=lead&cat=All&sub=All&metric=mrr&scope=team&d1='.$d1.'&d2='.$d2)
+					)
+				)
+			);
 
 			return array(
 				'headers' => $headers,
@@ -2958,61 +3187,97 @@ class Admin_reports_model extends CI_Model {
 
 		if ($dept == 'sales' && $report == 'tax-registration') {
 			$headers = array('Corporate Tax Status', 'VAT Status', 'Companies', 'Trade Licenses', 'Cities');
-			$groups_map = array();
+			$current_user_id = isset($filters['manager_id']) ? (int)$filters['manager_id'] : 0;
+			$my_map = array();
+			$team_map = array();
+			$my_sub = array('companies' => 0, 'tl' => 0, 'cities' => 0);
+			$team_sub = array('companies' => 0, 'tl' => 0, 'cities' => 0);
 			$grand = array('companies' => 0, 'tl' => 0, 'cities' => 0);
 
 			foreach ($rows as $r) {
 				$cat = !empty($r['corporate_tax_status']) && $r['corporate_tax_status'] !== '-' ? $r['corporate_tax_status'] : 'Not Registered';
 				$sub = !empty($r['vat_status']) && $r['vat_status'] !== '-' ? $r['vat_status'] : 'Not Registered';
-
-				if (!isset($groups_map[$cat])) {
-					$groups_map[$cat] = array('category' => $cat, 'items' => array(), 'sub' => array('companies' => 0, 'tl' => 0, 'cities' => 0));
-				}
-				if (!isset($groups_map[$cat]['items'][$sub])) {
-					$groups_map[$cat]['items'][$sub] = array('companies' => 0, 'tl' => 0, 'cities' => 0);
-				}
-
 				$has_tl = (!empty($r['tl_number']) && $r['tl_number'] !== '-') ? 1 : 0;
 				$has_city = (!empty($r['city']) && $r['city'] !== '-') ? 1 : 0;
 
-				$groups_map[$cat]['items'][$sub]['companies'] += 1;
-				$groups_map[$cat]['items'][$sub]['tl'] += $has_tl;
-				$groups_map[$cat]['items'][$sub]['cities'] += $has_city;
+				$is_my = $this->_isMyRecord($r, $current_user_id);
+				$target_map = &$team_map;
+				$target_sub = &$team_sub;
+				if ($is_my) {
+					$target_map = &$my_map;
+					$target_sub = &$my_sub;
+				}
 
-				$groups_map[$cat]['sub']['companies'] += 1;
-				$groups_map[$cat]['sub']['tl'] += $has_tl;
-				$groups_map[$cat]['sub']['cities'] += $has_city;
+				if (!isset($target_map[$cat])) {
+					$target_map[$cat] = array();
+				}
+				if (!isset($target_map[$cat][$sub])) {
+					$target_map[$cat][$sub] = array('companies' => 0, 'tl' => 0, 'cities' => 0);
+				}
+
+				$target_map[$cat][$sub]['companies'] += 1;
+				$target_map[$cat][$sub]['tl'] += $has_tl;
+				$target_map[$cat][$sub]['cities'] += $has_city;
+
+				$target_sub['companies'] += 1;
+				$target_sub['tl'] += $has_tl;
+				$target_sub['cities'] += $has_city;
 
 				$grand['companies'] += 1;
 				$grand['tl'] += $has_tl;
 				$grand['cities'] += $has_city;
 			}
 
-			$groups = array();
-			foreach ($groups_map as $c => $data) {
-				$r_list = array();
-				foreach ($data['items'] as $s => $m) {
-					$r_list[] = array(
-						array('val' => $c, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub=All&metric=companies&d1='.$d1.'&d2='.$d2),
-						array('val' => $s, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=companies&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($m['companies']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=companies&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($m['tl']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=trade_licenses&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($m['cities']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=cities&d1='.$d1.'&d2='.$d2)
+			$my_list = array();
+			foreach ($my_map as $c => $items) {
+				foreach ($items as $s => $m) {
+					$my_list[] = array(
+						array('val' => $c, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub=All&metric=companies&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => $s, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=companies&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['companies']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=companies&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['tl']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=trade_licenses&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['cities']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=cities&scope=my&d1='.$d1.'&d2='.$d2)
 					);
 				}
-				$groups[] = array(
-					'category' => $c,
-					'category_url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub=All&metric=companies&d1='.$d1.'&d2='.$d2,
-					'rows' => $r_list,
-					'subtotal' => array(
-						array('val' => $c . ' Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub=All&metric=companies&d1='.$d1.'&d2='.$d2),
-						'',
-						array('val' => number_format($data['sub']['companies']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub=All&metric=companies&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($data['sub']['tl']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub=All&metric=trade_licenses&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($data['sub']['cities']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub=All&metric=cities&d1='.$d1.'&d2='.$d2)
-					)
-				);
 			}
+
+			$team_list = array();
+			foreach ($team_map as $c => $items) {
+				foreach ($items as $s => $m) {
+					$team_list[] = array(
+						array('val' => $c, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub=All&metric=companies&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => $s, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=companies&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['companies']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=companies&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['tl']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=trade_licenses&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($m['cities']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat='.urlencode($c).'&sub='.urlencode($s).'&metric=cities&scope=team&d1='.$d1.'&d2='.$d2)
+					);
+				}
+			}
+
+			$groups = array(
+				array(
+					'category' => 'My Report',
+					'rows' => $my_list,
+					'subtotal' => array(
+						array('val' => 'My Report Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat=All&sub=All&metric=companies&scope=my&d1='.$d1.'&d2='.$d2),
+						'',
+						array('val' => number_format($my_sub['companies']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat=All&sub=All&metric=companies&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($my_sub['tl']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat=All&sub=All&metric=trade_licenses&scope=my&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($my_sub['cities']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat=All&sub=All&metric=cities&scope=my&d1='.$d1.'&d2='.$d2)
+					)
+				),
+				array(
+					'category' => 'Team Report',
+					'rows' => $team_list,
+					'subtotal' => array(
+						array('val' => 'Team Report Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat=All&sub=All&metric=companies&scope=team&d1='.$d1.'&d2='.$d2),
+						'',
+						array('val' => number_format($team_sub['companies']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat=All&sub=All&metric=companies&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($team_sub['tl']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat=All&sub=All&metric=trade_licenses&scope=team&d1='.$d1.'&d2='.$d2),
+						array('val' => number_format($team_sub['cities']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat=All&sub=All&metric=cities&scope=team&d1='.$d1.'&d2='.$d2)
+					)
+				)
+			);
 
 			return array(
 				'headers' => $headers,
@@ -3023,6 +3288,114 @@ class Admin_reports_model extends CI_Model {
 					array('val' => number_format($grand['companies']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat=All&sub=All&metric=companies&d1='.$d1.'&d2='.$d2),
 					array('val' => number_format($grand['tl']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat=All&sub=All&metric=trade_licenses&d1='.$d1.'&d2='.$d2),
 					array('val' => number_format($grand['cities']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=tax-registration&cat=All&sub=All&metric=cities&d1='.$d1.'&d2='.$d2)
+				)
+			);
+		}
+
+		if ($dept == 'sales' && $report == 'custom') {
+			$headers = array('Category / Service', 'Lead Status', 'Total Records', 'Total Quoted (AED)', 'Total MRR (AED)');
+			$current_user_id = isset($filters['manager_id']) ? (int)$filters['manager_id'] : 0;
+			$my_map = array();
+			$team_map = array();
+			$my_sub = array('records' => 0, 'quoted' => 0.0, 'mrr' => 0.0);
+			$team_sub = array('records' => 0, 'quoted' => 0.0, 'mrr' => 0.0);
+			$grand = array('records' => 0, 'quoted' => 0.0, 'mrr' => 0.0);
+
+			foreach ($rows as $r) {
+				$cat = !empty($r['servicecat']) && $r['servicecat'] !== '-' ? $r['servicecat'] : (!empty($r['database_category']) && $r['database_category'] !== '-' ? $r['database_category'] : 'General Service');
+				$sub = !empty($r['lead_status']) ? $r['lead_status'] : 'Active';
+
+				$mrr_clean = isset($r['mrr']) ? (float)str_replace(array('AED', ',', ' '), '', $r['mrr']) : 0.0;
+				$q_clean = isset($r['quote_amount']) ? (float)str_replace(array('AED', ',', ' '), '', $r['quote_amount']) : 0.0;
+
+				$is_my = $this->_isMyRecord($r, $current_user_id);
+				$target_map = &$team_map;
+				$target_sub = &$team_sub;
+				if ($is_my) {
+					$target_map = &$my_map;
+					$target_sub = &$my_sub;
+				}
+
+				if (!isset($target_map[$cat])) {
+					$target_map[$cat] = array();
+				}
+				if (!isset($target_map[$cat][$sub])) {
+					$target_map[$cat][$sub] = array('records' => 0, 'quoted' => 0.0, 'mrr' => 0.0);
+				}
+
+				$target_map[$cat][$sub]['records'] += 1;
+				$target_map[$cat][$sub]['quoted'] += $q_clean;
+				$target_map[$cat][$sub]['mrr'] += $mrr_clean;
+
+				$target_sub['records'] += 1;
+				$target_sub['quoted'] += $q_clean;
+				$target_sub['mrr'] += $mrr_clean;
+
+				$grand['records'] += 1;
+				$grand['quoted'] += $q_clean;
+				$grand['mrr'] += $mrr_clean;
+			}
+
+			$my_list = array();
+			foreach ($my_map as $c => $items) {
+				foreach ($items as $s => $m) {
+					$my_list[] = array(
+						array('val' => $c),
+						array('val' => $s),
+						array('val' => number_format($m['records'])),
+						array('val' => number_format($m['quoted'], 2)),
+						array('val' => number_format($m['mrr'], 2))
+					);
+				}
+			}
+
+			$team_list = array();
+			foreach ($team_map as $c => $items) {
+				foreach ($items as $s => $m) {
+					$team_list[] = array(
+						array('val' => $c),
+						array('val' => $s),
+						array('val' => number_format($m['records'])),
+						array('val' => number_format($m['quoted'], 2)),
+						array('val' => number_format($m['mrr'], 2))
+					);
+				}
+			}
+
+			$groups = array(
+				array(
+					'category' => 'My Report',
+					'rows' => $my_list,
+					'subtotal' => array(
+						array('val' => 'My Report Total'),
+						'',
+						array('val' => number_format($my_sub['records'])),
+						array('val' => number_format($my_sub['quoted'], 2)),
+						array('val' => number_format($my_sub['mrr'], 2))
+					)
+				),
+				array(
+					'category' => 'Team Report',
+					'rows' => $team_list,
+					'subtotal' => array(
+						array('val' => 'Team Report Total'),
+						'',
+						array('val' => number_format($team_sub['records'])),
+						array('val' => number_format($team_sub['quoted'], 2)),
+						array('val' => number_format($team_sub['mrr'], 2))
+					)
+				)
+			);
+
+			return array(
+				'headers' => $headers,
+				'groups' => $groups,
+				'grand_total' => array(
+					array('val' => 'Grand Total'),
+					'',
+					array('val' => number_format($grand['records'])),
+					array('val' => number_format($grand['quoted'], 2)),
+					array('val' => number_format($grand['mrr'], 2))
 				)
 			);
 		}
