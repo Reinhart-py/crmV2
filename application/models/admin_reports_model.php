@@ -792,6 +792,17 @@ class Admin_reports_model extends CI_Model {
 					'status_name' => !empty($l['status_name']) ? $l['status_name'] : $l['status'],
 					'assigned_name' => !empty($l['assigned_name']) ? $l['assigned_name'] : 'Unassigned',
 					'created' => simple_date($l['created']),
+					'created_raw' => !empty($l['created']) ? $l['created'] : '',
+					'status' => (int)$l['status'],
+					'remark' => !empty($l['remark']) ? $l['remark'] : '',
+					'status_category' => !empty($l['status_category']) ? $l['status_category'] : '',
+					'status_remarks' => !empty($l['status_remarks']) ? $l['status_remarks'] : '',
+					'dnd_status' => !empty($l['dnd_status']) ? $l['dnd_status'] : '',
+					'corporate_tax_status' => !empty($l['corporate_tax_status']) ? $l['corporate_tax_status'] : '',
+					'vat_status' => !empty($l['vat_status']) ? $l['vat_status'] : '',
+					'category' => !empty($l['category']) ? $l['category'] : '',
+					'p_cat' => !empty($l['p_cat']) ? $l['p_cat'] : '',
+					'lead_cat' => !empty($l['lead_cat']) ? $l['lead_cat'] : '',
 					'action' => '<a href="' . base_url() . 'manager/leads/view/' . $lead_enc . '" class="btn btn-xs btn-primary" target="_blank"><i class="fa fa-eye"></i> Preview</a>'
 				);
 			}
@@ -2859,100 +2870,173 @@ class Admin_reports_model extends CI_Model {
 		}
 
 		if ($dept == 'sales' && $report == 'database') {
-			$headers = array('Source', 'Batch Ref', 'Database Status', 'COUNTA of Database Status', 'COUNTA of Corp Tax');
-			$allotted_map = array();
-			$not_allotted_map = array();
+			$headers = array('Name', 'Source', 'Batch Ref', 'Busy', 'Not Responding', 'DNC/RDND', 'Duplicate', 'Follow-up', 'Corporate Tags Count');
+			$current_user_id = isset($filters['manager_id']) ? (int)$filters['manager_id'] : 0;
+			$current_user_name = 'My Report';
+			if ($current_user_id > 0) {
+				$u_row = $this->db->select('name')->where('id', $current_user_id)->get('ci_user')->row_array();
+				if (!empty($u_row['name'])) {
+					$current_user_name = $u_row['name'];
+				}
+			}
 
-			$allotted_sub = array('status' => 0, 'corp_tax' => 0);
-			$not_allotted_sub = array('status' => 0, 'corp_tax' => 0);
-			$grand = array('status' => 0, 'corp_tax' => 0);
+			$my_recs = array();
+			$team_recs = array();
+			$grand = array('busy' => 0, 'not_responding' => 0, 'dnc' => 0, 'duplicate' => 0, 'follow_up' => 0, 'corp_tax' => 0);
 
 			foreach ($rows as $r) {
-				$source = !empty($r['source']) ? $r['source'] : 'Other';
-				$batch = !empty($r['batch_ref']) ? $r['batch_ref'] : 'General';
-				$db_status = !empty($r['db_status']) ? $r['db_status'] : 'Database';
-				$has_tax = !empty($r['has_corp_tax']) ? 1 : 0;
-				$is_allotted = !empty($r['is_allotted']);
-
-				$target_map = &$not_allotted_map;
-				$target_sub = &$not_allotted_sub;
-				if ($is_allotted) {
-					$target_map = &$allotted_map;
-					$target_sub = &$allotted_sub;
+				$is_my = $this->_isMyRecord($r, $current_user_id);
+				if ($is_my) {
+					$my_recs[] = $r;
+				} else {
+					$team_recs[] = $r;
 				}
-
-				if (!isset($target_map[$source])) {
-					$target_map[$source] = array();
-				}
-				if (!isset($target_map[$source][$batch])) {
-					$target_map[$source][$batch] = array();
-				}
-				if (!isset($target_map[$source][$batch][$db_status])) {
-					$target_map[$source][$batch][$db_status] = array('cnt' => 0, 'corp_tax' => 0);
-				}
-
-				$target_map[$source][$batch][$db_status]['cnt'] += 1;
-				$target_map[$source][$batch][$db_status]['corp_tax'] += $has_tax;
-
-				$target_sub['status'] += 1;
-				$target_sub['corp_tax'] += $has_tax;
-
-				$grand['status'] += 1;
-				$grand['corp_tax'] += $has_tax;
 			}
 
-			$allotted_rows = array();
-			foreach ($allotted_map as $src => $batches) {
-				foreach ($batches as $bat => $statuses) {
-					foreach ($statuses as $st => $m) {
-						$allotted_rows[] = array(
-							array('val' => $src, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=allotted&cat='.urlencode($src).'&sub=All&metric=all&d1='.$d1.'&d2='.$d2),
-							array('val' => $bat, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=allotted&cat='.urlencode($src).'&sub='.urlencode($bat).'&metric=all&d1='.$d1.'&d2='.$d2),
-							array('val' => $st, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=allotted&cat='.urlencode($src).'&sub='.urlencode($bat).'&metric='.urlencode($st).'&d1='.$d1.'&d2='.$d2),
-							array('val' => number_format($m['cnt']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=allotted&cat='.urlencode($src).'&sub='.urlencode($bat).'&metric='.urlencode($st).'&d1='.$d1.'&d2='.$d2),
-							array('val' => number_format($m['corp_tax']), 'url' => ($m['corp_tax'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=allotted&cat='.urlencode($src).'&sub='.urlencode($bat).'&metric='.urlencode($st).'&tax=1&d1='.$d1.'&d2='.$d2 : ''))
+			$build_database_section = function($recs, $scope, $default_person_name = '') use ($d1, $d2, &$grand) {
+				$map = array();
+				$sub = array('busy' => 0, 'not_responding' => 0, 'dnc' => 0, 'duplicate' => 0, 'follow_up' => 0, 'corp_tax' => 0);
+
+				foreach ($recs as $r) {
+					if ($scope == 'my') {
+						$person_name = $default_person_name;
+					} else {
+						$person_name = (!empty($r['assigned_name']) && $r['assigned_name'] !== '-') ? $r['assigned_name'] : 'Unassigned';
+					}
+
+					$source = !empty($r['source']) ? $r['source'] : (!empty($r['data_source']) ? $r['data_source'] : 'Other');
+					$batch_id = !empty($r['batch_ref']) ? $r['batch_ref'] : (!empty($r['data_batch_referral_no']) ? $r['data_batch_referral_no'] : 'General');
+					$date_added = !empty($r['created_raw']) ? date('d-M-Y', strtotime($r['created_raw'])) : (!empty($r['created']) ? $r['created'] : '');
+					$batch_display = (!empty($date_added) && strpos($batch_id, $date_added) === false) ? ($batch_id . ' (' . $date_added . ')') : $batch_id;
+
+					$rem = !empty($r['remark']) ? strtolower($r['remark']) : '';
+					$st_cat = !empty($r['status_category']) ? strtolower($r['status_category']) : '';
+					$st_rem = !empty($r['status_remarks']) ? strtolower($r['status_remarks']) : '';
+					$dnd_st = !empty($r['dnd_status']) ? strtolower($r['dnd_status']) : '';
+					$corp_tax_st = !empty($r['corporate_tax_status']) ? strtolower($r['corporate_tax_status']) : '';
+					$vat_st = !empty($r['vat_status']) ? strtolower($r['vat_status']) : '';
+					$cat_val = !empty($r['category']) ? strtolower($r['category']) : '';
+					$p_cat_val = !empty($r['p_cat']) ? strtolower($r['p_cat']) : '';
+					$lead_cat_val = !empty($r['lead_cat']) ? strtolower($r['lead_cat']) : '';
+					$cust_val = !empty($r['customer']) ? strtolower($r['customer']) : '';
+					$status_id = isset($r['status']) ? (int)$r['status'] : 0;
+
+					$is_busy = (strpos($rem, 'busy') !== false || strpos($st_cat, 'busy') !== false || strpos($st_rem, 'busy') !== false);
+					$is_not_responding = (strpos($rem, 'not responding') !== false || strpos($rem, 'no answer') !== false || strpos($rem, 'not answering') !== false || strpos($rem, 'not picking') !== false || strpos($rem, 'no response') !== false || strpos($st_cat, 'not responding') !== false || strpos($st_cat, 'no answer') !== false);
+					$is_dnc = (!empty($r['dnd_status']) && ($r['dnd_status'] == 1 || $dnd_st == 'yes' || $dnd_st == 'y' || strpos($dnd_st, 'dnd') !== false || strpos($dnd_st, 'dncr') !== false) || strpos($rem, 'dnd') !== false || strpos($rem, 'dncr') !== false || strpos($st_cat, 'dnd') !== false || strpos($st_cat, 'dncr') !== false);
+					$is_duplicate = (strpos($rem, 'duplicate') !== false || strpos($st_cat, 'duplicate') !== false || strpos($st_rem, 'duplicate') !== false);
+					$is_followup = ($status_id == 38 || strpos($rem, 'follow up') !== false || strpos($rem, 'followup') !== false || strpos($rem, 'callback') !== false || strpos($rem, 'call back') !== false || strpos($rem, 'fu ') !== false || strpos($st_cat, 'follow up') !== false || strpos($st_cat, 'followup') !== false);
+					$has_corp_tax = (!empty($r['has_corp_tax']) || (!empty($corp_tax_st) && $corp_tax_st != 'not applicable' && $corp_tax_st != 'not registered') || (!empty($vat_st) && $vat_st != 'not registered') || strpos($rem, 'corporate') !== false || strpos($rem, 'tax') !== false || strpos($cat_val, 'corporate') !== false || strpos($p_cat_val, 'corporate') !== false || strpos($lead_cat_val, 'corporate') !== false || strpos($cust_val, 'corporate') !== false) ? 1 : 0;
+
+					$group_key = $person_name . '||' . $source . '||' . $batch_display;
+
+					if (!isset($map[$group_key])) {
+						$map[$group_key] = array(
+							'person_name' => $person_name,
+							'source' => $source,
+							'batch_display' => $batch_display,
+							'raw_batch' => $batch_id,
+							'busy' => 0,
+							'not_responding' => 0,
+							'dnc' => 0,
+							'duplicate' => 0,
+							'follow_up' => 0,
+							'corp_tax' => 0
 						);
 					}
-				}
-			}
 
-			$not_allotted_rows = array();
-			foreach ($not_allotted_map as $src => $batches) {
-				foreach ($batches as $bat => $statuses) {
-					foreach ($statuses as $st => $m) {
-						$not_allotted_rows[] = array(
-							array('val' => $src, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=not_allotted&cat='.urlencode($src).'&sub=All&metric=all&d1='.$d1.'&d2='.$d2),
-							array('val' => $bat, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=not_allotted&cat='.urlencode($src).'&sub='.urlencode($bat).'&metric=all&d1='.$d1.'&d2='.$d2),
-							array('val' => $st, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=not_allotted&cat='.urlencode($src).'&sub='.urlencode($bat).'&metric='.urlencode($st).'&d1='.$d1.'&d2='.$d2),
-							array('val' => number_format($m['cnt']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=not_allotted&cat='.urlencode($src).'&sub='.urlencode($bat).'&metric='.urlencode($st).'&d1='.$d1.'&d2='.$d2),
-							array('val' => number_format($m['corp_tax']), 'url' => ($m['corp_tax'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=not_allotted&cat='.urlencode($src).'&sub='.urlencode($bat).'&metric='.urlencode($st).'&tax=1&d1='.$d1.'&d2='.$d2 : ''))
-						);
+					if ($is_busy) {
+						$map[$group_key]['busy'] += 1;
+						$sub['busy'] += 1;
+						$grand['busy'] += 1;
+					}
+					if ($is_not_responding) {
+						$map[$group_key]['not_responding'] += 1;
+						$sub['not_responding'] += 1;
+						$grand['not_responding'] += 1;
+					}
+					if ($is_dnc) {
+						$map[$group_key]['dnc'] += 1;
+						$sub['dnc'] += 1;
+						$grand['dnc'] += 1;
+					}
+					if ($is_duplicate) {
+						$map[$group_key]['duplicate'] += 1;
+						$sub['duplicate'] += 1;
+						$grand['duplicate'] += 1;
+					}
+					if ($is_followup) {
+						$map[$group_key]['follow_up'] += 1;
+						$sub['follow_up'] += 1;
+						$grand['follow_up'] += 1;
+					}
+					if ($has_corp_tax) {
+						$map[$group_key]['corp_tax'] += 1;
+						$sub['corp_tax'] += 1;
+						$grand['corp_tax'] += 1;
 					}
 				}
-			}
 
-			$groups = array(
-				array(
-					'category' => 'Allotted Database',
-					'rows' => $allotted_rows,
-					'subtotal' => array(
-						array('val' => 'Allotted Database Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=allotted&cat=All&sub=All&metric=all&d1='.$d1.'&d2='.$d2),
-						'',
-						'',
-						array('val' => number_format($allotted_sub['status']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=allotted&cat=All&sub=All&metric=all&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($allotted_sub['corp_tax']), 'url' => ($allotted_sub['corp_tax'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=allotted&cat=All&sub=All&metric=all&tax=1&d1='.$d1.'&d2='.$d2 : ''))
-					)
-				),
-				array(
-					'category' => 'Not Allotted Database',
-					'rows' => $not_allotted_rows,
-					'subtotal' => array(
-						array('val' => 'Not Allotted Database Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=not_allotted&cat=All&sub=All&metric=all&d1='.$d1.'&d2='.$d2),
-						'',
-						'',
-						array('val' => number_format($not_allotted_sub['status']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=not_allotted&cat=All&sub=All&metric=all&d1='.$d1.'&d2='.$d2),
-						array('val' => number_format($not_allotted_sub['corp_tax']), 'url' => ($not_allotted_sub['corp_tax'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=not_allotted&cat=All&sub=All&metric=all&tax=1&d1='.$d1.'&d2='.$d2 : ''))
-					)
+				$r_list = array();
+				foreach ($map as $k => $m) {
+					$p_name = $m['person_name'];
+					$src = $m['source'];
+					$bat = $m['batch_display'];
+					$raw_bat = $m['raw_batch'];
+
+					$url_base = base_url().'manager/download-report/drilldown?dept=sales&report=database&scope='.$scope.'&cat='.urlencode($src).'&sub='.urlencode($raw_bat).'&d1='.$d1.'&d2='.$d2;
+					if ($scope == 'team' && $p_name !== 'Unassigned') {
+						$url_base .= '&emp='.urlencode($p_name);
+					}
+
+					$r_list[] = array(
+						array('val' => $p_name, 'url' => ''),
+						array('val' => $src, 'url' => $url_base.'&metric=all'),
+						array('val' => $bat, 'url' => $url_base.'&metric=all'),
+						array('val' => number_format($m['busy']), 'url' => ($m['busy'] > 0 ? $url_base.'&metric=busy' : '')),
+						array('val' => number_format($m['not_responding']), 'url' => ($m['not_responding'] > 0 ? $url_base.'&metric=not_responding' : '')),
+						array('val' => number_format($m['dnc']), 'url' => ($m['dnc'] > 0 ? $url_base.'&metric=dnc' : '')),
+						array('val' => number_format($m['duplicate']), 'url' => ($m['duplicate'] > 0 ? $url_base.'&metric=duplicate' : '')),
+						array('val' => number_format($m['follow_up']), 'url' => ($m['follow_up'] > 0 ? $url_base.'&metric=follow_up' : '')),
+						array('val' => number_format($m['corp_tax']), 'url' => ($m['corp_tax'] > 0 ? $url_base.'&metric=corp_tax&tax=1' : ''))
+					);
+				}
+
+				return array('rows' => $r_list, 'sub' => $sub);
+			};
+
+			$groups = array();
+			$my_data = $build_database_section($my_recs, 'my', $current_user_name);
+			$groups[] = array(
+				'category' => 'My Report',
+				'rows' => $my_data['rows'],
+				'subtotal' => array(
+					array('val' => 'My Report Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=my&cat=All&sub=All&metric=all&d1='.$d1.'&d2='.$d2),
+					'',
+					'',
+					array('val' => number_format($my_data['sub']['busy']), 'url' => ($my_data['sub']['busy'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=my&cat=All&sub=All&metric=busy&d1='.$d1.'&d2='.$d2 : '')),
+					array('val' => number_format($my_data['sub']['not_responding']), 'url' => ($my_data['sub']['not_responding'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=my&cat=All&sub=All&metric=not_responding&d1='.$d1.'&d2='.$d2 : '')),
+					array('val' => number_format($my_data['sub']['dnc']), 'url' => ($my_data['sub']['dnc'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=my&cat=All&sub=All&metric=dnc&d1='.$d1.'&d2='.$d2 : '')),
+					array('val' => number_format($my_data['sub']['duplicate']), 'url' => ($my_data['sub']['duplicate'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=my&cat=All&sub=All&metric=duplicate&d1='.$d1.'&d2='.$d2 : '')),
+					array('val' => number_format($my_data['sub']['follow_up']), 'url' => ($my_data['sub']['follow_up'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=my&cat=All&sub=All&metric=follow_up&d1='.$d1.'&d2='.$d2 : '')),
+					array('val' => number_format($my_data['sub']['corp_tax']), 'url' => ($my_data['sub']['corp_tax'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=my&cat=All&sub=All&metric=corp_tax&tax=1&d1='.$d1.'&d2='.$d2 : ''))
+				)
+			);
+
+			$team_data = $build_database_section($team_recs, 'team', '');
+			$groups[] = array(
+				'category' => 'Team Report',
+				'rows' => $team_data['rows'],
+				'subtotal' => array(
+					array('val' => 'Team Report Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=team&cat=All&sub=All&metric=all&d1='.$d1.'&d2='.$d2),
+					'',
+					'',
+					array('val' => number_format($team_data['sub']['busy']), 'url' => ($team_data['sub']['busy'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=team&cat=All&sub=All&metric=busy&d1='.$d1.'&d2='.$d2 : '')),
+					array('val' => number_format($team_data['sub']['not_responding']), 'url' => ($team_data['sub']['not_responding'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=team&cat=All&sub=All&metric=not_responding&d1='.$d1.'&d2='.$d2 : '')),
+					array('val' => number_format($team_data['sub']['dnc']), 'url' => ($team_data['sub']['dnc'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=team&cat=All&sub=All&metric=dnc&d1='.$d1.'&d2='.$d2 : '')),
+					array('val' => number_format($team_data['sub']['duplicate']), 'url' => ($team_data['sub']['duplicate'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=team&cat=All&sub=All&metric=duplicate&d1='.$d1.'&d2='.$d2 : '')),
+					array('val' => number_format($team_data['sub']['follow_up']), 'url' => ($team_data['sub']['follow_up'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=team&cat=All&sub=All&metric=follow_up&d1='.$d1.'&d2='.$d2 : '')),
+					array('val' => number_format($team_data['sub']['corp_tax']), 'url' => ($team_data['sub']['corp_tax'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=team&cat=All&sub=All&metric=corp_tax&tax=1&d1='.$d1.'&d2='.$d2 : ''))
 				)
 			);
 
@@ -2963,8 +3047,12 @@ class Admin_reports_model extends CI_Model {
 					array('val' => 'Grand Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=all&cat=All&sub=All&metric=all&d1='.$d1.'&d2='.$d2),
 					'',
 					'',
-					array('val' => number_format($grand['status']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=all&cat=All&sub=All&metric=all&d1='.$d1.'&d2='.$d2),
-					array('val' => number_format($grand['corp_tax']), 'url' => ($grand['corp_tax'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=all&cat=All&sub=All&metric=all&tax=1&d1='.$d1.'&d2='.$d2 : ''))
+					array('val' => number_format($grand['busy']), 'url' => ($grand['busy'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=all&cat=All&sub=All&metric=busy&d1='.$d1.'&d2='.$d2 : '')),
+					array('val' => number_format($grand['not_responding']), 'url' => ($grand['not_responding'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=all&cat=All&sub=All&metric=not_responding&d1='.$d1.'&d2='.$d2 : '')),
+					array('val' => number_format($grand['dnc']), 'url' => ($grand['dnc'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=all&cat=All&sub=All&metric=dnc&d1='.$d1.'&d2='.$d2 : '')),
+					array('val' => number_format($grand['duplicate']), 'url' => ($grand['duplicate'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=all&cat=All&sub=All&metric=duplicate&d1='.$d1.'&d2='.$d2 : '')),
+					array('val' => number_format($grand['follow_up']), 'url' => ($grand['follow_up'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=all&cat=All&sub=All&metric=follow_up&d1='.$d1.'&d2='.$d2 : '')),
+					array('val' => number_format($grand['corp_tax']), 'url' => ($grand['corp_tax'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=all&cat=All&sub=All&metric=corp_tax&tax=1&d1='.$d1.'&d2='.$d2 : ''))
 				)
 			);
 		}
@@ -3083,8 +3171,15 @@ class Admin_reports_model extends CI_Model {
 		}
 
 		if ($dept == 'sales' && $report == 'quote') {
-			$headers = array('Lead Status', 'Quote Status', 'Lost Category', 'COUNTA of Lead Status', 'COUNTA of Services Category', 'COUNTA of Lost Category', 'COUNTA of Amount', 'SUM of Amount');
+			$headers = array('Name', 'Lead Status', 'Quote Status', 'Lost Category', 'Lead Count', 'Services Category', 'Lost Count', 'Quote Count', 'Total Amount (AED)');
 			$current_user_id = isset($filters['manager_id']) ? (int)$filters['manager_id'] : 0;
+			$current_user_name = 'My Report';
+			if ($current_user_id > 0) {
+				$u_row = $this->db->select('name')->where('id', $current_user_id)->get('ci_user')->row_array();
+				if (!empty($u_row['name'])) {
+					$current_user_name = $u_row['name'];
+				}
+			}
 			$my_recs = array();
 			$team_by_member = array();
 			$grand = array('leads' => 0, 'service' => 0, 'lost' => 0, 'cnt_amt' => 0, 'sum_amt' => 0.0);
@@ -3102,7 +3197,7 @@ class Admin_reports_model extends CI_Model {
 				}
 			}
 
-			$build_quote_section = function($recs, $scope, $emp_param = '') use ($d1, $d2, &$grand) {
+			$build_quote_section = function($recs, $scope, $emp_param = '', $name_label = '') use ($d1, $d2, &$grand) {
 				$map = array();
 				$sub = array('leads' => 0, 'service' => 0, 'lost' => 0, 'cnt_amt' => 0, 'sum_amt' => 0.0);
 
@@ -3155,6 +3250,7 @@ class Admin_reports_model extends CI_Model {
 					}
 
 					$r_list[] = array(
+						array('val' => $name_label, 'url' => $url_base.'&metric=lead_records'),
 						array('val' => $m['lead_st'], 'url' => $url_base.'&metric=lead_records'),
 						array('val' => $m['quote_st'], 'url' => $url_base.'&metric=quote_records'),
 						array('val' => $m['lost_cat'], 'url' => $url_base.'&metric=lost_category'),
@@ -3171,12 +3267,13 @@ class Admin_reports_model extends CI_Model {
 
 			$groups = array();
 
-			$my_data = $build_quote_section($my_recs, 'my');
+			$my_data = $build_quote_section($my_recs, 'my', '', $current_user_name);
 			$groups[] = array(
-				'category' => 'My Report',
+				'category' => 'My Report: ' . $current_user_name,
 				'rows' => $my_data['rows'],
 				'subtotal' => array(
-					array('val' => 'My Report Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=lead_records&scope=my&d1='.$d1.'&d2='.$d2),
+					array('val' => 'Total - ' . $current_user_name, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=lead_records&scope=my&d1='.$d1.'&d2='.$d2),
+					'',
 					'',
 					'',
 					array('val' => number_format($my_data['sub']['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=lead_records&scope=my&d1='.$d1.'&d2='.$d2),
@@ -3189,12 +3286,13 @@ class Admin_reports_model extends CI_Model {
 
 			ksort($team_by_member);
 			foreach ($team_by_member as $mem_name => $mem_recs) {
-				$mem_data = $build_quote_section($mem_recs, 'team', $mem_name);
+				$mem_data = $build_quote_section($mem_recs, 'team', $mem_name, $mem_name);
 				$groups[] = array(
 					'category' => 'Team: ' . $mem_name,
 					'rows' => $mem_data['rows'],
 					'subtotal' => array(
 						array('val' => 'Total - ' . $mem_name, 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=lead_records&scope=team&emp='.urlencode($mem_name).'&d1='.$d1.'&d2='.$d2),
+						'',
 						'',
 						'',
 						array('val' => number_format($mem_data['sub']['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=lead_records&scope=team&emp='.urlencode($mem_name).'&d1='.$d1.'&d2='.$d2),
@@ -3211,6 +3309,7 @@ class Admin_reports_model extends CI_Model {
 				'groups' => $groups,
 				'grand_total' => array(
 					array('val' => 'Grand Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=lead_records&d1='.$d1.'&d2='.$d2),
+					'',
 					'',
 					'',
 					array('val' => number_format($grand['leads']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=quote&cat=All&sub=All&metric=lead_records&d1='.$d1.'&d2='.$d2),
@@ -3852,14 +3951,26 @@ class Admin_reports_model extends CI_Model {
 			$this->_applyDate($this->db, 'A.created', $d1, $d2);
 
 			$scope = $this->input->get('scope');
-			if ($scope == 'allotted') {
+			$emp = $this->input->get('emp');
+			if ($scope == 'my') {
+				$this->db->where('A.lead_assign', (int)$manager_id);
+			} elseif ($scope == 'team') {
+				if (!empty($emp) && $emp !== 'All') {
+					$this->db->where('B.name', $emp);
+				} else {
+					$team_ids = $this->_getTeamMemberIds();
+					if (!empty($team_ids)) {
+						$this->db->where_in('A.lead_assign', $team_ids);
+					}
+				}
+			} elseif ($scope == 'allotted') {
 				$this->db->where('(A.lead_assign > 0 OR A.created_by > 1)');
 			} elseif ($scope == 'not_allotted') {
 				$this->db->where('(A.lead_assign = 0 OR A.lead_assign IS NULL) AND (A.created_by = 0 OR A.created_by = 1)');
 			}
 
 			if ($this->input->get('tax') == '1' || $metric == 'corp_tax') {
-				$this->db->where("A.corporate_tax_status != '' AND LOWER(A.corporate_tax_status) != 'not applicable' AND LOWER(A.corporate_tax_status) != 'not registered'");
+				$this->db->where("((A.corporate_tax_status != '' AND LOWER(A.corporate_tax_status) != 'not applicable' AND LOWER(A.corporate_tax_status) != 'not registered') OR (A.vat_status != '' AND LOWER(A.vat_status) != 'not registered') OR LOWER(A.remark) LIKE '%corporate%' OR LOWER(A.category) LIKE '%corporate%')");
 			}
 
 			if (!empty($cat) && $cat !== 'All') {
@@ -3884,7 +3995,17 @@ class Admin_reports_model extends CI_Model {
 			}
 
 			if (!empty($metric) && $metric !== 'all' && $metric !== 'status' && $metric !== 'corp_tax') {
-				if ($metric == 'Not Interested') {
+				if ($metric == 'busy') {
+					$this->db->where("(LOWER(A.status_category) LIKE '%busy%' OR LOWER(A.remark) LIKE '%busy%' OR A.status = 38)");
+				} elseif ($metric == 'not_responding') {
+					$this->db->where("(LOWER(A.status_category) LIKE '%not responding%' OR LOWER(A.remark) LIKE '%not responding%' OR LOWER(A.remark) LIKE '%no answer%' OR LOWER(A.remark) LIKE '%ringing%')");
+				} elseif ($metric == 'dnc') {
+					$this->db->where("(A.dnd_status = 1 OR LOWER(A.dnd_status) LIKE '%dncr%' OR LOWER(A.dnd_status) LIKE '%dnd%' OR LOWER(A.status_category) LIKE '%dnc%' OR LOWER(A.remark) LIKE '%dnc%')");
+				} elseif ($metric == 'duplicate') {
+					$this->db->where("(LOWER(A.status_category) LIKE '%duplicate%' OR LOWER(A.remark) LIKE '%duplicate%')");
+				} elseif ($metric == 'follow_up') {
+					$this->db->where("(A.status = 38 OR LOWER(A.status_category) LIKE '%follow%' OR LOWER(A.remark) LIKE '%follow%')");
+				} elseif ($metric == 'Not Interested') {
 					$this->db->where("(LOWER(A.status_category) LIKE '%not interested%' OR LOWER(A.remark) LIKE '%not interested%')");
 				} elseif ($metric == 'Busy / Not Responding') {
 					$this->db->where("(LOWER(A.status_category) LIKE '%busy%' OR LOWER(A.remark) LIKE '%busy%' OR LOWER(A.remark) LIKE '%not responding%' OR LOWER(A.remark) LIKE '%no answer%')");
