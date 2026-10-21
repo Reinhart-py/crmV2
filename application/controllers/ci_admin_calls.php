@@ -163,7 +163,7 @@ class Ci_admin_calls extends CI_Controller
 		$this->db->limit(40);
 		$recent_logs = $this->db->get()->result_array();
 
-		$allowed_statuses = $this->db->where_not_in('id', array(39, 42, 43, 44))
+		$allowed_statuses = $this->db->where_not_in('id', array(39, 42, 44))
 			->order_by('id', 'ASC')
 			->get('ci_status')
 			->result_array();
@@ -341,10 +341,24 @@ class Ci_admin_calls extends CI_Controller
 		$customer_name = trim($this->input->post('customer_name'));
 		$phone = trim($this->input->post('phone'));
 
+		$status_id = (int)$this->input->post('status');
 		$outcome = trim($this->input->post('call_disposition'));
 		if (empty($outcome)) {
 			$outcome = trim($this->input->post('outcome'));
 		}
+
+		if ($status_id > 0) {
+			$st_obj = $this->db->select('status')->where('id', $status_id)->get('ci_status')->row_array();
+			if (!empty($st_obj['status'])) {
+				$outcome = $st_obj['status'];
+			}
+		} elseif (!empty($outcome)) {
+			$st_obj = $this->db->select('id')->where('status', $outcome)->get('ci_status')->row_array();
+			if (!empty($st_obj['id'])) {
+				$status_id = (int)$st_obj['id'];
+			}
+		}
+
 		if (empty($outcome)) {
 			$outcome = 'Connected';
 		}
@@ -353,7 +367,6 @@ class Ci_admin_calls extends CI_Controller
 		$next_date = trim($this->input->post('next_followup'));
 		$next_time = trim($this->input->post('next_followup_time'));
 		$duration = (int)$this->input->post('call_duration');
-		$status_id = (int)$this->input->post('status');
 
 		if ($call_log_id > 0) {
 			$this->db->where('id', $call_log_id);
@@ -403,9 +416,10 @@ class Ci_admin_calls extends CI_Controller
 			if (!empty($next_time)) {
 				$lead_update['followup_time'] = $next_time;
 			}
-			if ($status_id > 0 && !in_array($status_id, array(39, 42, 43, 44))) {
+			if ($status_id > 0 && !in_array($status_id, array(39, 42, 44))) {
 				$lead_update['status'] = $status_id;
 			}
+			$lead_update['call_status'] = $outcome;
 			$this->db->where('id', $lead_id);
 			$this->db->update('ci_leads', $lead_update);
 
@@ -458,10 +472,29 @@ class Ci_admin_calls extends CI_Controller
 			'client_id' => trim($this->input->post('client_id')),
 			'client_secret' => trim($this->input->post('client_secret')),
 			'default_extension' => trim($this->input->post('default_extension')),
+			'multiple_lines' => trim($this->input->post('multiple_lines')),
 			'auto_open_webclient' => $this->input->post('auto_open_webclient') ? 1 : 0
 		);
 
 		$result = $this->threecx->save_config($data);
 		echo json_encode($result);
 	}
+
+	public function calling_api()
+	{
+		$role = (int)$this->session->userdata('manager_role');
+		if ($role != 1 && $role != 4) {
+			redirect('manager/dashboard');
+			return;
+		}
+
+		$data = array();
+		$data['info'] = array('title' => 'System - Calling API Settings', 'page_heading' => 'Calling API Integration');
+		$data['threecx_config'] = $this->threecx->get_config();
+		$data['manager_role'] = $role;
+		$data['manager_name'] = $this->session->userdata('manager_name');
+
+		$this->load->view('manager/system/calling_api', $data);
+	}
 }
+

@@ -103,8 +103,8 @@ foreach($lc_list as $cli){
             ?>
               <div class="form-group">
                 <select class="form-control" name="assign_scope" style="font-weight: 600;">
-                  <option value="" <?php if(empty($scope)){ echo 'selected'; } ?>>All Leads (Assigned & Unassigned)</option>
-                  <option value="unassigned" <?php if($scope === 'unassigned'){ echo 'selected'; } ?>>⚡ Unassigned Leads Only</option>
+                  <option value="" <?php if(empty($scope)){ echo 'selected'; } ?>>All Database (Assigned & Unassigned)</option>
+                  <option value="unassigned" <?php if($scope === 'unassigned'){ echo 'selected'; } ?>>⚡ Unassigned Database Only</option>
                   <?php 
                     $all_users = $this->db->select('id, name')->get_where('ci_user', array('status' => 1))->result_array();
                     foreach($all_users as $au){
@@ -181,6 +181,23 @@ foreach($lc_list as $cli){
                       <?php } else { ?>
                         <span class="label label-danger" style="font-size: 11.5px; font-weight: bold; background-color: #dc2626 !important;">Unassigned</span>
                       <?php } ?>
+                      <?php
+                      if (!empty($li['agents'])) {
+                        $collab_ids = array_filter(array_map('intval', explode(',', $li['agents'])));
+                        if (!empty($collab_ids)) {
+                          $collab_users = $this->db->select('name')->where_in('id', $collab_ids)->get('ci_user')->result_array();
+                          if (!empty($collab_users)) {
+                            echo '<div style="margin-top: 4px; font-size: 11px; color: #475569;"><strong>Collaborators:</strong> ';
+                            $c_names = array();
+                            foreach($collab_users as $cu){
+                              $c_names[] = htmlspecialchars($cu['name']);
+                            }
+                            echo implode(', ', $c_names);
+                            echo '</div>';
+                          }
+                        }
+                      }
+                      ?>
                     </td>
                     <td><?php echo $li['servicecat']; ?></td>
                     <td><?php echo $li['mrr']; ?></td>

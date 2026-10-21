@@ -214,6 +214,57 @@ These three operations have distinct rules in the CRM:
 - Tap outside or tap the `X` button (`#crmSidebarClose`) to close the drawer.
 - Submenu accordions expand and collapse smoothly.
 
+#### 3CX Calling Station & PBX Integration (`manager/calls`)
+
+The CRM includes a unified, responsive calling center integrated with the **3CX v20 XAPI** specification. It works seamlessly on both **Desktop** computers and **Android** mobile devices.
+
+##### 1. Setup 3CX Connection (Easy Steps)
+1. Go to **Operations > Calls** in the top navigation bar.
+2. Click the **3CX Settings** button on the top right.
+3. Fill in your 4 PBX details:
+   - **3CX PBX Domain / FQDN**: Your 3CX server address (for example: `company.3cx.ae` or `pbx.yourdomain.com`). Do not include `https://`.
+   - **Client ID**: Your Server Principal Client ID from the 3CX Management Console.
+   - **Client Secret**: Your 3CX API Secret Key.
+   - **Default Extension**: Your extension number (for example: `100` or `101`).
+4. Click **Test 3CX Connection**. If credentials are valid, a green checkmark will appear displaying your 3CX PBX version.
+5. Click **Save Settings**. Your settings are saved and ready to use immediately.
+
+> Settings are saved in `application/config/3cx_config.json` or can be supplied as environment variables: `THREECX_PBX_FQDN`, `THREECX_CLIENT_ID`, `THREECX_CLIENT_SECRET`, `THREECX_EXTENSION`.
+
+##### 2. How to Call Your Allotted Database Leads
+- **Own Database Isolation**: Sales agents only see and call their own allotted database leads.
+- **Select Whom to Call by Status**: Use the status dropdown to quickly filter leads by:
+  - `Follow up / Call Back`
+  - `Prospective`
+  - `In Process`
+  - `Database Leads`
+  - `Expected`
+  - `Proposal / Interested`
+  - `Submitted`
+  - `Pending Activation`
+  *(Note: `Lost`, `Won/Closed`, and `DNCR/DND` records are strictly excluded from the calling queue automatically).*
+- **Choosing Which Number to Call (Dual Numbers)**:
+  - If a client has two phone numbers (Primary and Alternate), the dialer displays two clickable buttons:
+    `[ 📞 Primary: 050xxxxxxx ]` and `[ 📱 Alternate: 055xxxxxxx ]`.
+  - Simply tap or click either button to choose which number to call.
+- **Click Call via 3CX**:
+  - The call is placed through 3CX (opens 3CX Web Client on Desktop or native 3CX dialer on Android).
+  - The live call timer automatically begins tracking call duration.
+  - When the call finishes, click **End Call**.
+  - Select the outcome (Connected, No Answer, Busy, Follow-up Required, etc.), type your notes, and click **Save & Load Next** to jump straight to the next contact.
+
+##### 3. How to Call Someone Manually (Type Any Number)
+- You can call any custom number directly from the same screen at any time:
+  - Type the phone number using your computer keyboard directly into the phone input bar.
+  - Or click the dial pad icon to open the on-screen numeric keypad (1–9, 0, *, #) and tap the digits.
+  - Or click the **Type Number** button above the list to enter manual dial mode.
+- Click **Call via 3CX**. The call connects and starts the live timer.
+- After ending the call, you can type notes and click **Save Log Only** to store the record in your Call Logs.
+
+##### 4. Android vs. Desktop Experience
+- **Desktop (Laptops & Monitors)**: Side-by-side layout with your database queue on the left and the active dialer, keypad, and call logs on the right.
+- **Android / Mobile (Smartphones)**: Thumb-friendly stacked interface with dedicated mode switches (`[ 📞 Phone & Dialer ]`, `[ 👥 Database ]`, `[ 📋 Recent Logs ]`), large 20px+ number fonts, and full-width touch buttons. Selecting any contact from the database automatically switches to the dialer with their numbers ready to call in one tap.
+
 ### Key Routes
 
 ---

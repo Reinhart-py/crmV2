@@ -390,20 +390,19 @@ function __construct()
 					$tl_authority = '';
 				}
 
-				$assigned_primary = 0;
+				$creator_id = (int)$this->session->userdata('manager_id');
+				$assigned_primary = $creator_id;
 				$assigned_agents = '';
 				if (!empty($lead_assign)) {
 					if (is_array($lead_assign)) {
-						$clean_assigns = array_unique(array_filter(array_map('intval', $lead_assign)));
-						$assigned_primary = !empty($clean_assigns) ? reset($clean_assigns) : 0;
+						$clean_assigns = array_values(array_diff(array_unique(array_filter(array_map('intval', $lead_assign))), array($creator_id)));
 						$assigned_agents = implode(',', $clean_assigns);
 					} else {
-						$assigned_primary = (int)$lead_assign;
-						$assigned_agents = (string)$lead_assign;
+						$single_val = (int)$lead_assign;
+						if ($single_val > 0 && $single_val !== $creator_id) {
+							$assigned_agents = (string)$single_val;
+						}
 					}
-				} else {
-					$assigned_primary = (int)$this->session->userdata('manager_id');
-					$assigned_agents = (string)$assigned_primary;
 				}
 
 				$list= array(				
@@ -432,6 +431,7 @@ function __construct()
 				'quote_status'=>!empty($quote_status) ? trim($quote_status) : null,
 				'quote_mode'=>!empty($quote_mode) ? trim($quote_mode) : null,
 				'quote_amount'=>$q_amt,
+				'call_status'=>!empty($call_status) ? trim($call_status) : null,
 				'corporate_tax_status'=>!empty($corporate_tax_status) ? trim($corporate_tax_status) : 'Not Registered',
 				'vat_status'=>!empty($vat_status) ? trim($vat_status) : 'Not Registered',
 				'data_source'=>!empty($data_source) ? trim($data_source) : '',
@@ -618,23 +618,19 @@ function __construct()
 		if($this->input->server('REQUEST_METHOD')==='POST'){
 			extract($_POST);
 
-			$assigned_primary = 0;
+			$existing_owner = !empty($data['list']['lead_assign']) ? (int)$data['list']['lead_assign'] : (!empty($data['list']['created_by']) ? (int)$data['list']['created_by'] : (int)$this->session->userdata('manager_id'));
+			$assigned_primary = $existing_owner;
 			$assigned_agents = '';
 			if (!empty($lead_assign)) {
 				if (is_array($lead_assign)) {
-					$clean_assigns = array_unique(array_filter(array_map('intval', $lead_assign)));
-					$assigned_primary = !empty($clean_assigns) ? reset($clean_assigns) : 0;
+					$clean_assigns = array_values(array_diff(array_unique(array_filter(array_map('intval', $lead_assign))), array($existing_owner)));
 					$assigned_agents = implode(',', $clean_assigns);
 				} else {
-					$assigned_primary = (int)$lead_assign;
-					$assigned_agents = (string)$lead_assign;
+					$single_val = (int)$lead_assign;
+					if ($single_val > 0 && $single_val !== $existing_owner) {
+						$assigned_agents = (string)$single_val;
+					}
 				}
-			} elseif (isset($data['list']['lead_assign'])) {
-				$assigned_primary = (int)$data['list']['lead_assign'];
-				$assigned_agents = !empty($data['list']['agents']) ? $data['list']['agents'] : (string)$assigned_primary;
-			} else {
-				$assigned_primary = (int)$this->session->userdata('manager_id');
-				$assigned_agents = (string)$assigned_primary;
 			}
 
 			$c_date = !empty($close_date) ? db_date($close_date) : '';
@@ -691,6 +687,7 @@ function __construct()
 				'quote_status'=>!empty($quote_status) ? trim($quote_status) : null,
 				'quote_mode'=>!empty($quote_mode) ? trim($quote_mode) : null,
 				'quote_amount'=>$q_amt,
+				'call_status'=>!empty($call_status) ? trim($call_status) : null,
 				'corporate_tax_status'=>!empty($corporate_tax_status) ? trim($corporate_tax_status) : 'Not Registered',
 				'vat_status'=>!empty($vat_status) ? trim($vat_status) : 'Not Registered',
 				'data_source'=>!empty($data_source) ? trim($data_source) : '',

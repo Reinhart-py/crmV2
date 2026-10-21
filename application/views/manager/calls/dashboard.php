@@ -1,1318 +1,1477 @@
 <?php require_once(APPPATH . "views/manager/elements/header.php"); ?>
 
 <style>
-.calling-dashboard {
-    padding: 10px 0 35px 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+:root {
+  --crm-bg: #f8fafc;
+  --crm-card-bg: #ffffff;
+  --crm-border: #e2e8f0;
+  --crm-border-dark: #cbd5e1;
+  --crm-text: #0f172a;
+  --crm-text-muted: #64748b;
+  --crm-primary: #2563eb;
+  --crm-primary-hover: #1d4ed8;
+  --crm-call: #16a34a;
+  --crm-call-hover: #15803d;
+  --crm-endcall: #dc2626;
+  --crm-endcall-hover: #b91c1c;
+  --crm-pill-bg: #f1f5f9;
 }
-.calling-topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 15px;
+
+[data-theme="dark"] {
+  --crm-bg: #090e17;
+  --crm-card-bg: #111827;
+  --crm-border: #1f2937;
+  --crm-border-dark: #374151;
+  --crm-text: #f3f4f6;
+  --crm-text-muted: #9ca3af;
+  --crm-primary: #3b82f6;
+  --crm-primary-hover: #2563eb;
+  --crm-call: #22c55e;
+  --crm-call-hover: #16a34a;
+  --crm-endcall: #ef4444;
+  --crm-endcall-hover: #dc2626;
+  --crm-pill-bg: #1f2937;
 }
-.calling-stat-box {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 10px 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-    margin-bottom: 15px;
+
+.calling-screen-wrapper {
+  background: var(--crm-bg);
+  height: calc(100vh - 75px);
+  padding: 8px 16px 10px 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: var(--crm-text);
 }
-.calling-stat-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-}
-.calling-stat-icon.blue { background: #eff6ff; color: #2563eb; }
-.calling-stat-icon.purple { background: #faf5ff; color: #9333ea; }
-.calling-stat-icon.green { background: #f0fdf4; color: #16a34a; }
-.calling-stat-num {
-    font-size: 18px;
-    font-weight: 700;
-    color: #0f172a;
-    line-height: 1.1;
-}
-.calling-stat-txt {
-    font-size: 11px;
-    color: #64748b;
-    text-transform: uppercase;
-    font-weight: 600;
-}
-.c-card {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-    margin-bottom: 20px;
-}
-.c-card-header {
-    padding: 12px 16px;
-    border-bottom: 1px solid #f1f5f9;
-    background: #ffffff;
-    border-radius: 8px 8px 0 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.c-card-title {
-    font-size: 14.5px;
-    font-weight: 700;
-    color: #0f172a;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.c-card-body {
-    padding: 16px;
-}
-.queue-scroll {
-    max-height: 520px;
+
+@media (max-height: 720px) {
+  .calling-screen-wrapper {
     overflow-y: auto;
+    height: auto;
+    min-height: calc(100vh - 75px);
+  }
 }
-.lead-item-row {
-    padding: 11px 13px;
-    border-bottom: 1px solid #f1f5f9;
-    cursor: pointer;
-    transition: background 0.15s;
-    border-left: 3px solid transparent;
+
+.cw-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  flex-shrink: 0;
 }
-.lead-item-row:hover {
-    background: #f8fafc;
+
+.cw-search-box {
+  position: relative;
+  flex: 1;
+  max-width: 420px;
 }
-.lead-item-row.active {
-    background: #eff6ff;
-    border-left-color: #2563eb;
+
+.cw-search-box i {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--crm-text-muted);
+  font-size: 13px;
+  pointer-events: none;
 }
-.lead-title-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 13.5px;
-    font-weight: 600;
-    color: #0f172a;
+
+.cw-search-input-field {
+  width: 100%;
+  padding: 6px 12px 6px 32px;
+  background: var(--crm-card-bg);
+  border: 1px solid var(--crm-border);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--crm-text);
+  outline: none;
+  transition: all 0.15s ease;
 }
-.lead-meta-row {
-    font-size: 12px;
-    color: #64748b;
-    margin-top: 4px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
+
+.cw-search-input-field:focus {
+  border-color: var(--crm-primary);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
 }
-.status-pill-badge {
-    font-size: 10.5px;
-    font-weight: 600;
-    padding: 2px 7px;
-    border-radius: 4px;
-    background: #e2e8f0;
-    color: #334155;
+
+.cw-topbar-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-.status-follow { background: #fef3c7; color: #92400e; }
-.status-prospect { background: #e0e7ff; color: #3730a3; }
-.status-lead { background: #dcfce7; color: #166534; }
-.number-selector-box {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-    flex-wrap: wrap;
+
+.cw-topbar-select {
+  padding: 6px 10px;
+  background: var(--crm-card-bg);
+  border: 1px solid var(--crm-border);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--crm-text);
+  outline: none;
+  cursor: pointer;
 }
-.btn-num-choice {
-    background: #f1f5f9;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    padding: 6px 14px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #334155;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.15s;
+
+.cw-btn-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--crm-border);
+  background: var(--crm-card-bg);
+  color: var(--crm-text);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
 }
-.btn-num-choice:hover {
-    background: #e2e8f0;
-    color: #0f172a;
+
+.cw-btn-top:hover {
+  background: var(--crm-pill-bg);
+  color: var(--crm-text);
 }
-.btn-num-choice.active {
-    background: #2563eb;
-    border-color: #1d4ed8;
-    color: #ffffff;
+
+.cw-btn-top.primary {
+  background: var(--crm-primary);
+  color: #ffffff;
+  border-color: var(--crm-primary);
 }
-.dialer-input-wrap {
-    position: relative;
-    margin-bottom: 12px;
+
+.cw-btn-top.primary:hover {
+  background: var(--crm-primary-hover);
+  color: #ffffff;
 }
-.dialer-phone-input {
-    width: 100%;
-    height: 48px;
-    font-size: 22px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    color: #0f172a;
-    padding: 8px 105px 8px 14px;
-    background: #ffffff;
-    border: 2px solid #cbd5e1;
-    border-radius: 8px;
-    outline: none;
-    transition: border-color 0.15s;
-    font-family: inherit;
+
+.cw-workstation-body {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
-.dialer-phone-input:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+
+@media (max-width: 900px) {
+  .calling-screen-wrapper {
+    height: auto;
+    overflow-y: auto;
+  }
+  .cw-workstation-body {
+    grid-template-columns: 1fr;
+    overflow: visible;
+  }
 }
-.dialer-input-actions {
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    gap: 4px;
+
+.cw-card {
+  background: var(--crm-card-bg);
+  border: 1px solid var(--crm-border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  box-sizing: border-box;
 }
-.dialer-action-btn {
-    border: none;
-    background: #f1f5f9;
-    color: #475569;
-    width: 34px;
-    height: 34px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.15s;
+
+.cw-left-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
 }
-.dialer-action-btn:hover {
-    background: #e2e8f0;
-    color: #0f172a;
+
+.cw-dialer-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px;
 }
-.dialpad-container {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    max-width: 270px;
-    margin: 10px auto 16px auto;
+
+.cw-tab-nav {
+  display: flex;
+  background: var(--crm-pill-bg);
+  border-radius: 8px;
+  padding: 3px;
+  margin-bottom: 8px;
 }
-.keypad-btn {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 10px 0;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.12s;
-    user-select: none;
+
+.cw-tab-btn {
+  flex: 1;
+  padding: 6px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: var(--crm-text-muted);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
 }
-.keypad-btn:hover {
-    background: #e2e8f0;
-    border-color: #cbd5e1;
+
+.cw-tab-btn.active {
+  background: var(--crm-card-bg);
+  color: var(--crm-text);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
-.keypad-btn:active {
-    background: #cbd5e1;
-    transform: scale(0.96);
+
+.cw-phone-input-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--crm-pill-bg);
+  border-radius: 8px;
+  padding: 6px 12px;
+  margin-bottom: 8px;
+  border: 1px solid var(--crm-border);
 }
-.keypad-btn-num {
-    font-size: 19px;
-    font-weight: 700;
-    color: #0f172a;
-    line-height: 1;
+
+.cw-phone-text {
+  width: 100%;
+  background: transparent;
+  border: none;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--crm-text);
+  outline: none;
+  letter-spacing: 0.5px;
 }
-.keypad-btn-sub {
-    font-size: 9px;
-    color: #94a3b8;
-    text-transform: uppercase;
-    font-weight: 600;
-    margin-top: 2px;
+
+.cw-backspace-btn {
+  background: transparent;
+  border: none;
+  color: var(--crm-text-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.call-btn-green {
-    background: #16a34a;
-    color: #ffffff;
-    border: none;
-    padding: 12px 28px;
-    font-size: 15px;
-    font-weight: 700;
-    border-radius: 8px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    cursor: pointer;
-    transition: background 0.15s;
-    box-shadow: 0 2px 6px rgba(22,163,74,0.3);
+
+.cw-backspace-btn:hover {
+  color: var(--crm-text);
 }
-.call-btn-green:hover {
-    background: #15803d;
-    color: #ffffff;
+
+.cw-dial-matrix {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 8px;
 }
-.call-btn-red {
-    background: #dc2626;
-    color: #ffffff;
-    border: none;
-    padding: 12px 28px;
-    font-size: 15px;
-    font-weight: 700;
-    border-radius: 8px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    cursor: pointer;
-    transition: background 0.15s;
-    box-shadow: 0 2px 6px rgba(220,38,38,0.3);
+
+.cw-num-btn {
+  height: 38px;
+  background: var(--crm-pill-bg);
+  border: 1px solid var(--crm-border);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s ease;
+  user-select: none;
 }
-.call-btn-red:hover {
-    background: #b91c1c;
-    color: #ffffff;
+
+.cw-num-btn:hover {
+  background: var(--crm-border);
+  transform: translateY(-1px);
 }
-.call-timer-badge {
-    background: #0f172a;
-    color: #38bdf8;
-    font-family: 'Consolas', 'Courier New', monospace;
-    font-size: 22px;
-    font-weight: 700;
-    padding: 4px 14px;
-    border-radius: 6px;
-    letter-spacing: 1.5px;
-    display: inline-block;
+
+.cw-num-btn:active {
+  transform: scale(0.97);
 }
-.live-pulse {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    margin-right: 6px;
+
+.cw-num-digit {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--crm-text);
+  line-height: 1;
 }
-.live-pulse.online { background: #16a34a; box-shadow: 0 0 6px rgba(22,163,74,0.6); }
-.live-pulse.offline { background: #94a3b8; }
-.live-pulse.active-call { background: #16a34a; animation: pulseCall 1.2s infinite; }
-@keyframes pulseCall {
-    0% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.3); opacity: 0.6; }
-    100% { transform: scale(1); opacity: 1; }
+
+.cw-num-letters {
+  font-size: 8px;
+  font-weight: 600;
+  color: var(--crm-text-muted);
+  text-transform: uppercase;
+  margin-top: 1px;
 }
-.logs-table th {
-    background: #f8fafc;
-    color: #475569;
-    font-size: 11.5px;
-    text-transform: uppercase;
-    font-weight: 600;
-    padding: 8px 10px;
-    border-bottom: 1px solid #e2e8f0;
+
+.cw-call-button {
+  width: 100%;
+  height: 38px;
+  background: var(--crm-call);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);
 }
-.logs-table td {
-    font-size: 12.5px;
-    color: #1e293b;
-    padding: 8px 10px;
-    border-bottom: 1px solid #f1f5f9;
-    vertical-align: middle;
+
+.cw-call-button:hover {
+  background: var(--crm-call-hover);
 }
-.mobile-view-nav {
-    display: none;
-    margin-bottom: 14px;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 4px;
+
+.cw-audio-status-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--crm-card-bg);
+  border: 1px solid var(--crm-border);
+  border-radius: 8px;
+  font-size: 11px;
+  color: var(--crm-text-muted);
 }
-.mobile-nav-btn {
-    flex: 1;
-    border: none;
-    background: transparent;
-    padding: 8px 6px;
-    font-size: 12.5px;
-    font-weight: 600;
-    color: #475569;
-    border-radius: 6px;
-    text-align: center;
-    cursor: pointer;
+
+.cw-audio-status-pill strong {
+  color: var(--crm-text);
 }
-.mobile-nav-btn.active {
-    background: #2563eb;
-    color: #ffffff;
+
+.cw-right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  overflow: hidden;
 }
-@media (max-width: 991px) {
-    .mobile-view-nav {
-        display: flex;
-    }
-    .col-calling-left, .col-calling-right {
-        width: 100% !important;
-    }
-    .dialer-phone-input {
-        font-size: 20px;
-        height: 46px;
-    }
-    .dialpad-container {
-        max-width: 100%;
-        gap: 10px;
-    }
-    .keypad-btn {
-        padding: 13px 0;
-    }
-    .keypad-btn-num {
-        font-size: 22px;
-    }
-    .call-btn-green, .call-btn-red {
-        width: 100%;
-        font-size: 16px;
-        padding: 14px 20px;
-    }
-    .calling-stat-box {
-        margin-bottom: 8px;
-    }
+
+.cw-active-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: var(--crm-card-bg);
+  border: 1px solid var(--crm-border);
+  flex-shrink: 0;
+  gap: 12px;
+  flex-wrap: wrap;
 }
-@media (min-width: 992px) {
-    .col-calling-left {
-        width: 40%;
-        float: left;
-        padding-right: 12px;
-    }
-    .col-calling-right {
-        width: 60%;
-        float: left;
-        padding-left: 12px;
-    }
-    .mobile-pane-hidden-desktop {
-        display: block !important;
-    }
+
+.cw-active-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cw-avatar-initials {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+  border: 1px solid #dbeafe;
+}
+
+.cw-active-info-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.cw-active-customer-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--crm-text);
+  line-height: 1.2;
+}
+
+.cw-active-status-line {
+  font-size: 11px;
+  color: var(--crm-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.cw-status-indicator-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+
+.cw-status-indicator-dot.pulsing {
+  background: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.25);
+  animation: cwIndicatorPulse 1.5s infinite;
+}
+
+@keyframes cwIndicatorPulse {
+  0% { transform: scale(0.95); opacity: 0.9; }
+  50% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.9; }
+}
+
+.cw-call-action-btns {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cw-ctrl-btn {
+  padding: 5px 10px;
+  background: var(--crm-pill-bg);
+  border: 1px solid var(--crm-border);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--crm-text);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.cw-ctrl-btn:hover {
+  background: var(--crm-border);
+}
+
+.cw-ctrl-btn.active {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
+.cw-btn-hangup {
+  padding: 5px 14px;
+  background: var(--crm-endcall);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.cw-btn-hangup:hover {
+  background: var(--crm-endcall-hover);
+}
+
+.cw-lead-meta-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cw-meta-box {
+  background: var(--crm-card-bg);
+  border: 1px solid var(--crm-border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.cw-meta-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--crm-text-muted);
+  letter-spacing: 0.3px;
+}
+
+.cw-meta-content {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--crm-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+
+.cw-meta-content a {
+  color: var(--crm-primary);
+  text-decoration: none;
+}
+
+.cw-meta-content a:hover {
+  text-decoration: underline;
+}
+
+.cw-form-and-history-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+}
+
+.cw-notes-container {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 14px;
+  justify-content: space-between;
+}
+
+.cw-form-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  gap: 10px;
+}
+
+.cw-card-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--crm-text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cw-disposition-dropdown {
+  padding: 5px 10px;
+  background: var(--crm-pill-bg);
+  border: 1px solid var(--crm-border-dark);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--crm-text);
+  outline: none;
+  cursor: pointer;
+}
+
+.cw-notes-textarea {
+  width: 100%;
+  height: 60px;
+  padding: 8px 10px;
+  background: var(--crm-pill-bg);
+  border: 1px solid var(--crm-border);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--crm-text);
+  outline: none;
+  resize: none;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.cw-notes-textarea:focus {
+  border-color: var(--crm-primary);
+  background: var(--crm-card-bg);
+}
+
+.cw-form-bottom-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 8px;
+  align-items: end;
+  margin-top: 8px;
+}
+
+.cw-inline-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cw-inline-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--crm-text-muted);
+  text-transform: uppercase;
+}
+
+.cw-inline-input {
+  padding: 5px 8px;
+  background: var(--crm-pill-bg);
+  border: 1px solid var(--crm-border);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--crm-text);
+  outline: none;
+}
+
+.cw-inline-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cw-btn-save {
+  padding: 6px 14px;
+  background: var(--crm-primary);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+}
+
+.cw-btn-save:hover {
+  background: var(--crm-primary-hover);
+}
+
+.cw-btn-next {
+  padding: 6px 10px;
+  background: var(--crm-pill-bg);
+  border: 1px solid var(--crm-border-dark);
+  color: var(--crm-text);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cw-btn-next:hover {
+  background: var(--crm-border);
+}
+
+.cw-activity-panel {
+  padding: 8px 12px;
+  overflow-y: auto;
+  max-height: 115px;
+}
+
+.cw-activity-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--crm-border);
+  font-size: 11px;
+}
+
+.cw-activity-row:last-child {
+  border-bottom: none;
+}
+
+.cw-activity-icon {
+  margin-right: 6px;
+  color: var(--crm-primary);
+}
+
+.cw-drawer-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(2px);
+  z-index: 99998;
+  display: none;
+}
+
+.cw-side-drawer {
+  position: fixed;
+  top: 0;
+  right: -440px;
+  width: 420px;
+  max-width: 90vw;
+  height: 100vh;
+  background: var(--crm-card-bg);
+  box-shadow: -6px 0 24px rgba(0, 0, 0, 0.15);
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  transition: right 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  border-left: 1px solid var(--crm-border);
+}
+
+.cw-side-drawer.open {
+  right: 0;
+}
+
+.cw-drawer-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--crm-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--crm-pill-bg);
+}
+
+.cw-drawer-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--crm-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cw-drawer-close {
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  color: var(--crm-text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.cw-drawer-close:hover {
+  color: var(--crm-text);
+  background: var(--crm-border);
+}
+
+.cw-drawer-body {
+  padding: 12px 16px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.cw-queue-card-item {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--crm-border);
+  margin-bottom: 8px;
+  cursor: pointer;
+  background: var(--crm-card-bg);
+  transition: all 0.12s ease;
+}
+
+.cw-queue-card-item:hover {
+  background: var(--crm-pill-bg);
+  border-color: var(--crm-primary);
+  transform: translateY(-1px);
+}
+
+.cw-queue-card-item.active-lead {
+  border-color: var(--crm-primary);
+  background: #eff6ff;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.cw-qcard-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.cw-qcard-top strong {
+  color: var(--crm-text);
+  font-size: 13px;
+}
+
+.cw-qcard-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.cw-qcard-mid {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--crm-text-muted);
+  margin-top: 4px;
+}
+
+.cw-qcard-phone {
+  font-weight: 600;
+  color: var(--crm-text);
 }
 </style>
 
-<div class="content-wrapper px-4">
-    <section class="content-header" style="padding-bottom: 0;">
-        <div class="calling-topbar">
-            <div>
-                <h1 style="font-size: 22px; font-weight: 700; color: #0f172a; margin: 0;">
-                    <i class="fa fa-phone" style="color: #2563eb; margin-right: 6px;"></i> Operations Calling & Dialer
-                </h1>
-                <p style="margin: 2px 0 0 0; color: #64748b; font-size: 13px;">
-                    Database Calling & Manual Dial Pad &bull; Integrated with 3CX PBX
-                </p>
+<div class="calling-screen-wrapper">
+  
+  <div class="cw-topbar">
+    <div class="cw-search-box">
+      <i class="fa fa-search"></i>
+      <input type="text" class="cw-search-input-field" id="cwSearchLeadsInput" placeholder="Search database records or phone numbers..." autocomplete="off" />
+    </div>
+
+    <div class="cw-topbar-controls">
+      <select class="cw-topbar-select" id="cwQueueFilterSelect">
+        <option value="all" <?php echo ($selected_status == 'all') ? 'selected' : ''; ?>>All Database (<?php echo $total_my_leads; ?>)</option>
+        <option value="follow_up" <?php echo ($selected_status == 'follow_up') ? 'selected' : ''; ?>>Follow-up / Call Back</option>
+        <option value="expected" <?php echo ($selected_status == 'expected') ? 'selected' : ''; ?>>Expected / Prospective</option>
+        <option value="database" <?php echo ($selected_status == 'database') ? 'selected' : ''; ?>>Database Only</option>
+        <option value="in_process" <?php echo ($selected_status == 'in_process') ? 'selected' : ''; ?>>In Process</option>
+        <option value="submitted" <?php echo ($selected_status == 'submitted') ? 'selected' : ''; ?>>Submitted</option>
+      </select>
+
+      <button type="button" class="cw-btn-top" id="btnToggleQueueDrawer" title="Toggle Next Calls Queue Info">
+        <i class="fa fa-list-ol" style="color: #2563eb;"></i>
+        <span>Next Calls (<span id="queueRemainingBadge"><?php echo count($queue); ?></span> left)</span>
+      </button>
+
+      <button type="button" class="cw-btn-top primary" id="btnQuickNewCall">
+        <i class="fa fa-plus"></i>
+        <span>New Call</span>
+      </button>
+    </div>
+  </div>
+
+  <?php
+    $cur_name = !empty($active_lead['customer']) ? $active_lead['customer'] : 'Ready to Dial';
+    $cur_phone = !empty($active_lead['phone_primary']) ? $active_lead['phone_primary'] : (!empty($active_lead['phone_alt']) ? $active_lead['phone_alt'] : '');
+    $cur_email = !empty($active_lead['email']) ? $active_lead['email'] : '—';
+    $cur_poc = !empty($active_lead['poc']) ? $active_lead['poc'] : 'POC / Manager';
+    $cur_lead_id = !empty($active_lead['id']) ? (int)$active_lead['id'] : 0;
+    $cur_lead_code = !empty($active_lead['lead_id']) ? $active_lead['lead_id'] : '—';
+    $cur_category = !empty($active_lead['category']) ? $active_lead['category'] : 'Corporate';
+    $cur_initial = strtoupper(substr($cur_name, 0, 1));
+  ?>
+
+  <div class="cw-workstation-body">
+    
+    <div class="cw-left-column">
+      <div class="cw-card cw-dialer-card">
+        <div>
+          <div class="cw-tab-nav">
+            <button type="button" class="cw-tab-btn active" id="tabKeypadView">Keypad</button>
+            <button type="button" class="cw-tab-btn" id="tabRecentView">Recent Calls</button>
+          </div>
+
+          <div id="panelKeypad">
+            <div class="cw-phone-input-bar">
+              <input type="text" class="cw-phone-text" id="cwDialerPhoneInput" value="<?php echo htmlspecialchars($cur_phone); ?>" placeholder="Enter number..." />
+              <button type="button" class="cw-backspace-btn" id="cwBtnBackspace" title="Backspace">
+                <i class="fa fa-arrow-left"></i>
+              </button>
             </div>
-            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <span class="calling-stat-box" style="margin: 0; padding: 6px 12px;">
-                    <span class="live-pulse <?php echo (!empty($threecx_config['pbx_fqdn']) && !empty($threecx_config['client_id'])) ? 'online' : 'offline'; ?>"></span>
-                    <strong style="color: #0f172a; font-size: 12px;">3CX:</strong>
-                    <span id="topPbxFqdn" style="color: #64748b; font-size: 12px; margin-left: 3px;">
-                        <?php echo (!empty($threecx_config['pbx_fqdn'])) ? htmlspecialchars($threecx_config['pbx_fqdn']) : 'Configure'; ?>
-                    </span>
-                </span>
-                <button type="button" class="btn btn-default btn-sm" id="btnOpenSettings" style="font-weight: 600;">
-                    <i class="fa fa-cog text-primary"></i> 3CX Settings
+
+            <div class="cw-dial-matrix">
+              <button type="button" class="cw-num-btn" data-val="1">
+                <span class="cw-num-digit">1</span>
+                <span class="cw-num-letters">&nbsp;</span>
+              </button>
+              <button type="button" class="cw-num-btn" data-val="2">
+                <span class="cw-num-digit">2</span>
+                <span class="cw-num-letters">ABC</span>
+              </button>
+              <button type="button" class="cw-num-btn" data-val="3">
+                <span class="cw-num-digit">3</span>
+                <span class="cw-num-letters">DEF</span>
+              </button>
+              <button type="button" class="cw-num-btn" data-val="4">
+                <span class="cw-num-digit">4</span>
+                <span class="cw-num-letters">GHI</span>
+              </button>
+              <button type="button" class="cw-num-btn" data-val="5">
+                <span class="cw-num-digit">5</span>
+                <span class="cw-num-letters">JKL</span>
+              </button>
+              <button type="button" class="cw-num-btn" data-val="6">
+                <span class="cw-num-digit">6</span>
+                <span class="cw-num-letters">MNO</span>
+              </button>
+              <button type="button" class="cw-num-btn" data-val="7">
+                <span class="cw-num-digit">7</span>
+                <span class="cw-num-letters">PQRS</span>
+              </button>
+              <button type="button" class="cw-num-btn" data-val="8">
+                <span class="cw-num-digit">8</span>
+                <span class="cw-num-letters">TUV</span>
+              </button>
+              <button type="button" class="cw-num-btn" data-val="9">
+                <span class="cw-num-digit">9</span>
+                <span class="cw-num-letters">WXYZ</span>
+              </button>
+              <button type="button" class="cw-num-btn" data-val="*">
+                <span class="cw-num-digit">*</span>
+                <span class="cw-num-letters">&nbsp;</span>
+              </button>
+              <button type="button" class="cw-num-btn" data-val="0">
+                <span class="cw-num-digit">0</span>
+                <span class="cw-num-letters">+</span>
+              </button>
+              <button type="button" class="cw-num-btn" data-val="#">
+                <span class="cw-num-digit">#</span>
+                <span class="cw-num-letters">&nbsp;</span>
+              </button>
+            </div>
+
+            <button type="button" class="cw-call-button" id="cwBtnStartCall">
+              <i class="fa fa-phone"></i>
+              <span>Call</span>
+            </button>
+          </div>
+
+          <div id="panelRecent" style="display: none; max-height: 240px; overflow-y: auto;">
+            <?php if (!empty($recent_logs)) { ?>
+              <?php foreach (array_slice($recent_logs, 0, 8) as $r_item) { 
+                $r_conn = ((int)$r_item['duration'] > 0);
+                $r_icon = $r_conn ? 'fa-phone text-success' : 'fa-phone text-danger';
+                $r_time = !empty($r_item['created_at']) ? date('h:i A', strtotime($r_item['created_at'])) : '';
+              ?>
+                <div class="cw-queue-card-item" data-phone="<?php echo htmlspecialchars($r_item['phone_number']); ?>" data-customer="<?php echo htmlspecialchars($r_item['customer_name']); ?>" data-lead-id="<?php echo (int)$r_item['lead_id']; ?>">
+                  <div class="cw-qcard-top">
+                    <strong><i class="fa <?php echo $r_icon; ?>" style="margin-right: 4px;"></i><?php echo htmlspecialchars($r_item['customer_name']); ?></strong>
+                    <span class="cw-qcard-badge"><?php echo htmlspecialchars(!empty($r_item['disposition']) ? $r_item['disposition'] : 'Call'); ?></span>
+                  </div>
+                  <div class="cw-qcard-mid">
+                    <span class="cw-qcard-phone"><?php echo htmlspecialchars($r_item['phone_number']); ?></span>
+                    <span><?php echo $r_time; ?></span>
+                  </div>
+                </div>
+              <?php } ?>
+            <?php } else { ?>
+              <div style="padding: 20px; text-align: center; color: var(--crm-text-muted); font-size: 11px;">
+                No recent calls recorded today.
+              </div>
+            <?php } ?>
+          </div>
+        </div>
+
+        <div class="cw-audio-status-pill">
+          <span><i class="fa fa-headphones" style="margin-right: 4px;"></i> Audio Line</span>
+          <strong>3CX Connected</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="cw-right-column">
+      
+      <div class="cw-active-banner">
+        <div class="cw-active-left">
+          <div class="cw-avatar-initials" id="cwAvatarBadge">
+            <?php echo $cur_initial; ?>
+          </div>
+          <div class="cw-active-info-col">
+            <span class="cw-active-customer-name" id="cwDisplayCustomerName"><?php echo htmlspecialchars($cur_name); ?></span>
+            <div class="cw-active-status-line">
+              <span class="cw-status-indicator-dot" id="cwIndicatorDot"></span>
+              <span id="cwDisplayCallStatus">Ready to Call</span>
+              <strong id="cwLiveTimerDisplay" style="margin-left: 4px; display: none; color: #16a34a;">00:00</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="cw-call-action-btns">
+          <button type="button" class="cw-ctrl-btn" id="btnActionMute" title="Mute Microphone">
+            <i class="fa fa-microphone"></i> <span>Mute</span>
+          </button>
+          <button type="button" class="cw-ctrl-btn" id="btnActionHold" title="Hold Call">
+            <i class="fa fa-pause"></i> <span>Hold</span>
+          </button>
+          <button type="button" class="cw-ctrl-btn" id="btnActionSpeaker" title="Speaker">
+            <i class="fa fa-volume-up"></i> <span>Speaker</span>
+          </button>
+          <button type="button" class="cw-btn-hangup" id="btnActionEndCall" style="display: none;">
+            <i class="fa fa-phone-slash"></i> <span>End Call</span>
+          </button>
+          <button type="button" class="cw-ctrl-btn" id="btnQueuePrev" title="Previous Database Lead">
+            <i class="fa fa-chevron-left"></i>
+          </button>
+          <button type="button" class="cw-ctrl-btn" id="btnQueueNext" title="Next Database Lead">
+            <i class="fa fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="cw-lead-meta-strip">
+        <div class="cw-meta-box">
+          <span class="cw-meta-label">Primary Phone</span>
+          <span class="cw-meta-content" id="cwMetaPhoneBox">
+            <a href="#" id="cwLinkDialNow"><?php echo htmlspecialchars(!empty($cur_phone) ? $cur_phone : '—'); ?></a>
+          </span>
+        </div>
+        <div class="cw-meta-box">
+          <span class="cw-meta-label">POC &amp; Email</span>
+          <span class="cw-meta-content" id="cwMetaPocBox"><?php echo htmlspecialchars($cur_poc); ?> &bull; <?php echo htmlspecialchars($cur_email); ?></span>
+        </div>
+        <div class="cw-meta-box">
+          <span class="cw-meta-label">Category / Tag</span>
+          <span class="cw-meta-content" id="cwMetaCatBox"><?php echo htmlspecialchars($cur_category); ?></span>
+        </div>
+        <div class="cw-meta-box">
+          <span class="cw-meta-label">Lead Code</span>
+          <span class="cw-meta-content" id="cwMetaCodeBox"><?php echo htmlspecialchars($cur_lead_code); ?></span>
+        </div>
+      </div>
+
+      <div class="cw-form-and-history-grid">
+        <div class="cw-card cw-notes-container" id="cwNotesOutcomeCard">
+          <form id="cwSaveCallForm">
+            <input type="hidden" name="lead_id" id="hiddenLeadId" value="<?php echo $cur_lead_id; ?>" />
+            <input type="hidden" name="call_log_id" id="hiddenCallLogId" value="0" />
+            <input type="hidden" name="customer_name" id="hiddenCustomerName" value="<?php echo htmlspecialchars($cur_name); ?>" />
+            <input type="hidden" name="call_duration" id="hiddenCallDuration" value="0" />
+
+            <div class="cw-form-top-row">
+              <span class="cw-card-title">
+                <i class="fa fa-pencil-square-o" style="color: #2563eb;"></i> Call Outcome &amp; Notes
+              </span>
+
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <label class="cw-inline-label" style="margin: 0;">Status:</label>
+                <select class="cw-disposition-dropdown" name="status" id="selectUnifiedStatus">
+                  <?php if (!empty($statuses)) { ?>
+                    <?php foreach ($statuses as $st_item) { ?>
+                      <option value="<?php echo (int)$st_item['id']; ?>" data-name="<?php echo htmlspecialchars($st_item['status']); ?>" <?php echo (!empty($active_lead['status']) && $active_lead['status'] == $st_item['id']) ? 'selected' : ''; ?>>
+                        <?php echo htmlspecialchars($st_item['status']); ?>
+                      </option>
+                    <?php } ?>
+                  <?php } ?>
+                </select>
+              </div>
+            </div>
+
+            <textarea class="cw-notes-textarea" name="remarks" id="textareaNotes" placeholder="Type notes or call summary here..."></textarea>
+
+            <div class="cw-form-bottom-row">
+              <div class="cw-inline-field">
+                <label class="cw-inline-label">Follow-up Date</label>
+                <input type="date" name="next_followup" class="cw-inline-input" id="inputFollowupDate" value="<?php echo date('Y-m-d', strtotime('+2 days')); ?>" />
+              </div>
+
+              <div class="cw-inline-field">
+                <label class="cw-inline-label">Time</label>
+                <input type="time" name="next_followup_time" class="cw-inline-input" id="inputFollowupTime" value="11:00" />
+              </div>
+
+              <div class="cw-inline-buttons">
+                <button type="submit" class="cw-btn-save" id="btnSubmitCallLog">
+                  <i class="fa fa-floppy-o"></i> <span>Save</span>
                 </button>
+                <button type="button" class="cw-btn-next" id="btnSaveAndAdvanceQueue" title="Save outcome and move to next lead">
+                  <i class="fa fa-step-forward"></i> <span>Next</span>
+                </button>
+              </div>
             </div>
-        </div>
-    </section>
-
-    <section class="content calling-dashboard">
-        <div class="row">
-            <div class="col-sm-4 col-xs-12">
-                <div class="calling-stat-box">
-                    <div class="calling-stat-icon blue"><i class="fa fa-database"></i></div>
-                    <div>
-                        <div class="calling-stat-num" id="statTotalLeads"><?php echo number_format($total_my_leads); ?></div>
-                        <div class="calling-stat-txt">My Database Leads</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-4 col-xs-12">
-                <div class="calling-stat-box">
-                    <div class="calling-stat-icon purple"><i class="fa fa-phone"></i></div>
-                    <div>
-                        <div class="calling-stat-num" id="statCallsToday"><?php echo number_format($calls_today); ?></div>
-                        <div class="calling-stat-txt">Calls Made Today</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-4 col-xs-12">
-                <div class="calling-stat-box">
-                    <div class="calling-stat-icon green"><i class="fa fa-check-circle"></i></div>
-                    <div>
-                        <div class="calling-stat-num" id="statCallsConnected"><?php echo number_format($calls_connected); ?></div>
-                        <div class="calling-stat-txt">Connected Calls</div>
-                    </div>
-                </div>
-            </div>
+          </form>
         </div>
 
-        <div class="mobile-view-nav">
-            <button type="button" class="mobile-nav-btn active" data-target="paneDialer">
-                <i class="fa fa-phone"></i> Phone & Dialer
-            </button>
-            <button type="button" class="mobile-nav-btn" data-target="paneQueue">
-                <i class="fa fa-list"></i> Database (<span id="mobileQueueCount"><?php echo $total_queue; ?></span>)
-            </button>
-            <button type="button" class="mobile-nav-btn" data-target="paneLogs">
-                <i class="fa fa-history"></i> Recent Logs
-            </button>
+        <div class="cw-card" style="padding: 10px 14px; flex-shrink: 0;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+            <span class="cw-card-title"><i class="fa fa-history" style="color: #64748b;"></i> Lead History &amp; Remarks</span>
+            <span style="font-size: 11px; color: var(--crm-text-muted);" id="cwHistoryLeadLabel">Lead #<?php echo htmlspecialchars($cur_lead_code); ?></span>
+          </div>
+
+          <div class="cw-activity-panel" id="cwHistoryPanel">
+            <?php if (!empty($active_lead['remark'])) { ?>
+              <div class="cw-activity-row">
+                <div>
+                  <i class="fa fa-comment-o cw-activity-icon"></i>
+                  <strong>Latest Remark:</strong> <?php echo htmlspecialchars($active_lead['remark']); ?>
+                </div>
+                <span style="color: var(--crm-text-muted); font-size: 10px;"><?php echo htmlspecialchars(!empty($active_lead['status_name']) ? $active_lead['status_name'] : 'Active'); ?></span>
+              </div>
+            <?php } else { ?>
+              <div style="color: var(--crm-text-muted); font-size: 11px; padding: 4px;">
+                No previous follow-up remarks recorded for this lead.
+              </div>
+            <?php } ?>
+          </div>
         </div>
+      </div>
 
-        <div class="row" style="margin: 0 -12px;">
-            <div class="col-calling-left" id="paneQueueWrap">
-                <div class="c-card">
-                    <div class="c-card-header" style="flex-wrap: wrap; gap: 8px;">
-                        <div style="flex: 1; min-width: 160px;">
-                            <label style="font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 600; margin-bottom: 2px; display: block;">Select Whom to Call</label>
-                            <select id="selectQueueStatus" class="form-control input-sm" style="font-weight: 600; color: #0f172a; border-radius: 4px;">
-                                <option value="all" <?php echo ($selected_status == 'all') ? 'selected' : ''; ?>>All Active Leads (Excl. Lost / Won / DNCR)</option>
-                                <option value="follow_up" <?php echo ($selected_status == 'follow_up') ? 'selected' : ''; ?>>Follow up / Call Back</option>
-                                <option value="prospective" <?php echo ($selected_status == 'prospective') ? 'selected' : ''; ?>>Prospective</option>
-                                <option value="in_process" <?php echo ($selected_status == 'in_process') ? 'selected' : ''; ?>>In Process</option>
-                                <option value="database" <?php echo ($selected_status == 'database') ? 'selected' : ''; ?>>Database Leads</option>
-                                <option value="expected" <?php echo ($selected_status == 'expected') ? 'selected' : ''; ?>>Expected</option>
-                                <option value="lead" <?php echo ($selected_status == 'lead') ? 'selected' : ''; ?>>Proposal / Interested</option>
-                                <option value="submitted" <?php echo ($selected_status == 'submitted') ? 'selected' : ''; ?>>Submitted</option>
-                                <option value="pending" <?php echo ($selected_status == 'pending') ? 'selected' : ''; ?>>Pending Activation</option>
-                            </select>
-                        </div>
-                        <div>
-                            <button type="button" class="btn btn-default btn-sm" id="btnManualDialMode" style="font-weight: 600; color: #2563eb; border-color: #93c5fd; background: #eff6ff;" title="Type number manually">
-                                <i class="fa fa-keyboard-o"></i> Type Number
-                            </button>
-                        </div>
-                    </div>
+    </div>
 
-                    <div style="padding: 10px 14px; border-bottom: 1px solid #f1f5f9; background: #fafafa;">
-                        <div class="input-group input-group-sm">
-                            <span class="input-group-addon" style="background: #ffffff; border-right: none;"><i class="fa fa-search text-muted"></i></span>
-                            <input type="text" id="inputQueueSearch" class="form-control" placeholder="Search my database..." style="border-left: none;">
-                            <span class="input-group-btn">
-                                <button class="btn btn-default" type="button" id="btnQueueRefresh" title="Refresh"><i class="fa fa-refresh"></i></button>
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="queue-scroll" id="queueListContainer">
-                        <?php if (!empty($queue)): ?>
-                            <?php foreach ($queue as $idx => $lead): ?>
-                                <?php 
-                                    $p1 = !empty($lead['contact1']) ? trim($lead['contact1']) : '';
-                                    $p2 = !empty($lead['alt_contact']) ? trim($lead['alt_contact']) : (!empty($lead['contact2']) ? trim($lead['contact2']) : (!empty($lead['mobile']) ? trim($lead['mobile']) : ''));
-                                    if ($p1 === $p2) { $p2 = ''; }
-                                    $disp_num = !empty($p1) ? $p1 : $p2;
-                                    $has_two = (!empty($p1) && !empty($p2));
-
-                                    $st_class = 'status-pill-badge';
-                                    $st_name = !empty($lead['status_name']) ? $lead['status_name'] : 'Database';
-                                    if (stripos($st_name, 'follow') !== false || (int)$lead['status'] == 38) {
-                                        $st_class .= ' status-follow';
-                                    } elseif (stripos($st_name, 'prospect') !== false || (int)$lead['status'] == 37) {
-                                        $st_class .= ' status-prospect';
-                                    }
-                                ?>
-                                <div class="lead-item-row <?php echo ($idx === 0) ? 'active' : ''; ?>" data-id="<?php echo $lead['id']; ?>" data-index="<?php echo $idx; ?>">
-                                    <div class="lead-title-row">
-                                        <span><?php echo htmlspecialchars($lead['customer']); ?></span>
-                                        <span class="<?php echo $st_class; ?>"><?php echo htmlspecialchars($st_name); ?></span>
-                                    </div>
-                                    <div class="lead-meta-row">
-                                        <span><i class="fa fa-user" style="color: #94a3b8;"></i> <?php echo !empty($lead['poc']) ? htmlspecialchars($lead['poc']) : 'No POC'; ?></span>
-                                        <?php if ($has_two): ?>
-                                            <span style="display: inline-flex; gap: 4px; align-items: center;">
-                                                <span class="badge" style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 10px; font-weight: 600; cursor: pointer; padding: 2px 6px;" onclick="event.stopPropagation(); pickQueueNumber('<?php echo addslashes($p1); ?>', '<?php echo addslashes($p2); ?>', 'primary', <?php echo $lead['id']; ?>);"><i class="fa fa-phone"></i> <?php echo htmlspecialchars($p1); ?></span>
-                                                <span class="badge" style="background: #f8fafc; color: #475569; border: 1px solid #cbd5e1; font-size: 10px; font-weight: 600; cursor: pointer; padding: 2px 6px;" onclick="event.stopPropagation(); pickQueueNumber('<?php echo addslashes($p1); ?>', '<?php echo addslashes($p2); ?>', 'alt', <?php echo $lead['id']; ?>);"><i class="fa fa-mobile"></i> <?php echo htmlspecialchars($p2); ?></span>
-                                            </span>
-                                        <?php else: ?>
-                                            <span><i class="fa fa-phone" style="color: #2563eb;"></i> <?php echo !empty($disp_num) ? htmlspecialchars($disp_num) : '—'; ?></span>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <div style="padding: 35px 20px; text-align: center; color: #94a3b8;">
-                                <i class="fa fa-inbox fa-3x" style="margin-bottom: 8px; display: block; opacity: 0.4;"></i>
-                                <p style="font-weight: 600; color: #64748b; margin-bottom: 4px;">No leads match this status</p>
-                                <p style="font-size: 12px; margin: 0;">Select another status above or click "Type Number" to dial manually.</p>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-calling-right" id="paneDialerWrap">
-                <div class="c-card">
-                    <div class="c-card-header">
-                        <div>
-                            <h3 class="c-card-title" id="cardClientTitle">
-                                <?php echo !empty($active_lead) ? htmlspecialchars($active_lead['customer']) : 'Manual Dial Pad'; ?>
-                            </h3>
-                            <span class="badge" style="background: #f1f5f9; color: #475569; font-size: 10.5px; margin-top: 3px;" id="cardClientCode">
-                                <?php echo !empty($active_lead) ? '#' . htmlspecialchars($active_lead['lead_id']) : 'Direct Number Input'; ?>
-                            </span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div class="call-timer-badge" id="callLiveTimer">00:00</div>
-                        </div>
-                    </div>
-
-                    <div class="c-card-body">
-                        <?php 
-                            $init_p1 = !empty($active_lead['contact1']) ? trim($active_lead['contact1']) : '';
-                            $init_p2 = !empty($active_lead['alt_contact']) ? trim($active_lead['alt_contact']) : (!empty($active_lead['contact2']) ? trim($active_lead['contact2']) : (!empty($active_lead['mobile']) ? trim($active_lead['mobile']) : ''));
-                            if ($init_p1 === $init_p2) { $init_p2 = ''; }
-                            $init_has_two = (!empty($init_p1) && !empty($init_p2));
-                        ?>
-                        <div id="dualNumberSelector" class="number-selector-box" style="<?php echo ($init_has_two) ? 'display: flex;' : 'display: none;'; ?>">
-                            <span style="font-size: 11.5px; color: #64748b; font-weight: 600; display: flex; align-items: center; margin-right: 4px;">Choose Number:</span>
-                            <button type="button" class="btn-num-choice active" id="btnPickPrimary" data-target="primary">
-                                <i class="fa fa-phone"></i> Primary: <span id="txtPrimaryNum"><?php echo htmlspecialchars($init_p1); ?></span>
-                            </button>
-                            <button type="button" class="btn-num-choice" id="btnPickAlt" data-target="alt">
-                                <i class="fa fa-mobile"></i> Alternate: <span id="txtAltNum"><?php echo htmlspecialchars($init_p2); ?></span>
-                            </button>
-                        </div>
-
-                        <div class="dialer-input-wrap">
-                            <input type="text" id="phoneDialerInput" class="dialer-phone-input" placeholder="Type phone number or select lead..." value="<?php echo htmlspecialchars(!empty($init_p1) ? $init_p1 : $init_p2); ?>">
-                            <div class="dialer-input-actions">
-                                <button type="button" class="dialer-action-btn" id="btnToggleKeypad" title="Show / Hide Keypad">
-                                    <i class="fa fa-th"></i>
-                                </button>
-                                <button type="button" class="dialer-action-btn" id="btnClearPhone" title="Clear Number">
-                                    <i class="fa fa-times"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div id="keypadDropdown" style="display: none; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; margin-bottom: 14px;">
-                            <div class="dialpad-container">
-                                <div class="keypad-btn" data-key="1"><div class="keypad-btn-num">1</div><div class="keypad-btn-sub">&nbsp;</div></div>
-                                <div class="keypad-btn" data-key="2"><div class="keypad-btn-num">2</div><div class="keypad-btn-sub">ABC</div></div>
-                                <div class="keypad-btn" data-key="3"><div class="keypad-btn-num">3</div><div class="keypad-btn-sub">DEF</div></div>
-                                <div class="keypad-btn" data-key="4"><div class="keypad-btn-num">4</div><div class="keypad-btn-sub">GHI</div></div>
-                                <div class="keypad-btn" data-key="5"><div class="keypad-btn-num">5</div><div class="keypad-btn-sub">JKL</div></div>
-                                <div class="keypad-btn" data-key="6"><div class="keypad-btn-num">6</div><div class="keypad-btn-sub">MNO</div></div>
-                                <div class="keypad-btn" data-key="7"><div class="keypad-btn-num">7</div><div class="keypad-btn-sub">PQRS</div></div>
-                                <div class="keypad-btn" data-key="8"><div class="keypad-btn-num">8</div><div class="keypad-btn-sub">TUV</div></div>
-                                <div class="keypad-btn" data-key="9"><div class="keypad-btn-num">9</div><div class="keypad-btn-sub">WXYZ</div></div>
-                                <div class="keypad-btn" data-key="*"><div class="keypad-btn-num">*</div><div class="keypad-btn-sub">&nbsp;</div></div>
-                                <div class="keypad-btn" data-key="0"><div class="keypad-btn-num">0</div><div class="keypad-btn-sub">+</div></div>
-                                <div class="keypad-btn" data-key="#"><div class="keypad-btn-num">#</div><div class="keypad-btn-sub">&nbsp;</div></div>
-                            </div>
-                        </div>
-
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
-                            <div>
-                                <span id="callStateBadge" style="font-size: 13px; font-weight: 600; color: #475569;">
-                                    <span class="live-pulse offline"></span> Ready to Call
-                                </span>
-                            </div>
-                            <div style="display: flex; gap: 8px;">
-                                <button type="button" id="btnCallNow" class="call-btn-green">
-                                    <i class="fa fa-phone"></i> Call via 3CX
-                                </button>
-                                <button type="button" id="btnEndNow" class="call-btn-red" style="display: none;">
-                                    <i class="fa fa-phone"></i> End Call
-                                </button>
-                                <a id="linkTelBackup" href="javascript:void(0);" class="btn btn-default btn-sm" title="Open Tel" style="display: inline-flex; align-items: center; gap: 4px;">
-                                    <i class="fa fa-external-link"></i> Tel
-                                </a>
-                            </div>
-                        </div>
-
-                        <div id="leadMetaSummary" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 14px; margin-bottom: 16px; font-size: 12.5px;">
-                            <div class="row">
-                                <div class="col-xs-6">
-                                    <span style="color: #64748b;">POC:</span> <strong id="lblPoc"><?php echo !empty($active_lead['poc']) ? htmlspecialchars($active_lead['poc']) : '—'; ?></strong>
-                                </div>
-                                <div class="col-xs-6">
-                                    <span style="color: #64748b;">Email:</span> <span id="lblEmail"><?php echo !empty($active_lead['email']) ? htmlspecialchars($active_lead['email']) : '—'; ?></span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <form id="callDispositionForm">
-                            <input type="hidden" id="formLeadId" name="lead_id" value="<?php echo !empty($active_lead) ? $active_lead['id'] : 0; ?>">
-                            <input type="hidden" id="formCustomerName" name="customer_name" value="<?php echo !empty($active_lead) ? htmlspecialchars($active_lead['customer']) : ''; ?>">
-                            <input type="hidden" id="formCallLogId" name="call_log_id" value="0">
-                            <input type="hidden" id="formDuration" name="call_duration" value="0">
-
-                            <div class="row">
-                                <div class="col-sm-6 form-group">
-                                    <label style="font-size: 12px; color: #334155; font-weight: 600;">Outcome / Disposition <span class="text-danger">*</span></label>
-                                    <select class="form-control input-sm" id="dispositionSelect" name="call_disposition" required>
-                                        <option value="Connected">Connected / Conversation Held</option>
-                                        <option value="No Answer">No Answer / Ringing</option>
-                                        <option value="Busy">Busy / Call Waiting</option>
-                                        <option value="Follow-up Required">Follow-up Required</option>
-                                        <option value="Meeting Scheduled">Meeting Scheduled</option>
-                                        <option value="Wrong Number">Wrong / Invalid Number</option>
-                                        <option value="Not Interested">Not Interested</option>
-                                    </select>
-                                </div>
-                                <div class="col-sm-6 form-group" id="groupStatusUpdate">
-                                    <label style="font-size: 12px; color: #334155; font-weight: 600;">Update Lead Status</label>
-                                    <select class="form-control input-sm" id="leadStatusSelect" name="status">
-                                        <?php foreach ($statuses as $st): ?>
-                                            <option value="<?php echo $st['id']; ?>" <?php echo (!empty($active_lead) && $active_lead['status'] == $st['id']) ? 'selected' : ''; ?>>
-                                                <?php echo htmlspecialchars($st['status']); ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="row" id="groupFollowupDateRow">
-                                <div class="col-sm-6 form-group">
-                                    <label style="font-size: 12px; color: #334155; font-weight: 600;">Next Follow-up Date</label>
-                                    <input type="date" class="form-control input-sm" id="nextDateInput" name="next_followup">
-                                </div>
-                                <div class="col-sm-6 form-group">
-                                    <label style="font-size: 12px; color: #334155; font-weight: 600;">Next Follow-up Time</label>
-                                    <input type="time" class="form-control input-sm" id="nextTimeInput" name="next_followup_time">
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label style="font-size: 12px; color: #334155; font-weight: 600;">Discussion Remarks & Notes <span class="text-danger">*</span></label>
-                                <textarea class="form-control" rows="2" id="remarksTextarea" name="remarks" placeholder="Enter conversation details, client requirements, next action items..." required></textarea>
-                            </div>
-
-                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                                <button type="submit" class="btn btn-primary" id="btnSaveSubmit" style="font-weight: 600;">
-                                    <i class="fa fa-arrow-right"></i> Save & Load Next
-                                </button>
-                                <button type="button" class="btn btn-default" id="btnSaveLogOnly" style="font-weight: 600;">
-                                    <i class="fa fa-save"></i> Save Log Only
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <div class="c-card" id="paneLogsWrap">
-                    <div class="c-card-header">
-                        <h4 class="c-card-title">
-                            <i class="fa fa-history text-primary"></i> Recent Call Logs
-                        </h4>
-                        <button type="button" class="btn btn-default btn-xs" id="btnRefreshLogsTable">
-                            <i class="fa fa-refresh"></i> Refresh
-                        </button>
-                    </div>
-                    <div class="table-responsive" style="max-height: 280px; overflow-y: auto;">
-                        <table class="table logs-table" style="margin: 0;">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Contact / Client</th>
-                                    <th>Number</th>
-                                    <th>Duration</th>
-                                    <th>Outcome</th>
-                                    <th>Notes</th>
-                                    <th style="text-align: right;">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="logsTableBody">
-                                <?php if (!empty($recent_logs)): ?>
-                                    <?php foreach ($recent_logs as $log): ?>
-                                        <tr>
-                                            <td><?php echo date('d M, h:i A', strtotime($log['created_at'])); ?></td>
-                                            <td>
-                                                <strong><?php echo htmlspecialchars(!empty($log['customer_name']) ? $log['customer_name'] : (!empty($log['lead_customer']) ? $log['lead_customer'] : '—')); ?></strong>
-                                            </td>
-                                            <td style="font-family: monospace; font-weight: 600; color: #2563eb;"><?php echo htmlspecialchars($log['phone_number']); ?></td>
-                                            <td><?php echo sprintf('%02d:%02d', floor($log['duration'] / 60), $log['duration'] % 60); ?></td>
-                                            <td>
-                                                <span class="badge" style="background: #e2e8f0; color: #1e293b; font-size: 10.5px;">
-                                                    <?php echo htmlspecialchars(!empty($log['disposition']) ? $log['disposition'] : 'Dialed'); ?>
-                                                </span>
-                                            </td>
-                                            <td style="max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                                <?php echo htmlspecialchars($log['notes']); ?>
-                                            </td>
-                                            <td style="text-align: right;">
-                                                <button type="button" class="btn btn-xs btn-default btn-quick-redial" data-phone="<?php echo htmlspecialchars($log['phone_number']); ?>" data-name="<?php echo htmlspecialchars($log['customer_name']); ?>" data-lead-id="<?php echo (int)$log['lead_id']; ?>">
-                                                    <i class="fa fa-phone text-success"></i> Redial
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <tr>
-                                        <td colspan="7" style="text-align: center; padding: 25px; color: #94a3b8;">
-                                            No calls logged yet. Start calling leads or type a number.
-                                        </td>
-                                    </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+  </div>
 </div>
 
-<div class="modal fade" id="modal3cxSettings" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content" style="border-radius: 8px;">
-            <div class="modal-header" style="background: #f8fafc; border-radius: 8px 8px 0 0; border-bottom: 1px solid #e2e8f0;">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title" style="font-size: 16px; font-weight: 700; color: #0f172a;">
-                    <i class="fa fa-cogs text-primary" style="margin-right: 6px;"></i> 3CX PBX Connection Settings
-                </h4>
-            </div>
-            <div class="modal-body" style="padding: 20px;">
-                <div id="settingsAlertBox"></div>
-                <form id="form3cxSettings">
-                    <div class="form-group">
-                        <label style="font-size: 12.5px; color: #334155; font-weight: 600;">3CX PBX Domain / FQDN <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="cfgPbxFqdn" name="pbx_fqdn" placeholder="e.g. rolex.3cx.ae or pbx.mycompany.com" value="<?php echo htmlspecialchars($threecx_config['pbx_fqdn']); ?>" required>
-                        <small class="text-muted">Enter your 3CX Fully Qualified Domain Name (without http/https).</small>
-                    </div>
+<div class="cw-drawer-backdrop" id="queueDrawerBackdrop"></div>
 
-                    <div class="form-group">
-                        <label style="font-size: 12.5px; color: #334155; font-weight: 600;">Client ID (Server Principal ID) <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="cfgClientId" name="client_id" placeholder="Server Principal Client ID" value="<?php echo htmlspecialchars($threecx_config['client_id']); ?>" required>
-                    </div>
+<div class="cw-side-drawer" id="nextCallsQueueDrawer">
+  <div class="cw-drawer-header">
+    <span class="cw-drawer-title">
+      <i class="fa fa-list-ol" style="color: #2563eb;"></i>
+      <span>Next Calls Queue (<span id="drawerRemainingCount"><?php echo count($queue); ?></span> Remaining)</span>
+    </span>
+    <button type="button" class="cw-drawer-close" id="btnCloseQueueDrawer">&times;</button>
+  </div>
 
-                    <div class="form-group">
-                        <label style="font-size: 12.5px; color: #334155; font-weight: 600;">Client Secret (Secret Key) <span class="text-danger">*</span></label>
-                        <input type="password" class="form-control" id="cfgClientSecret" name="client_secret" placeholder="3CX API Secret Key" value="<?php echo htmlspecialchars($threecx_config['client_secret']); ?>" required>
-                    </div>
+  <div style="padding: 10px 16px; border-bottom: 1px solid var(--crm-border);">
+    <input type="text" class="cw-search-input-field" id="inputQueueFilterSearch" placeholder="Filter queue leads..." />
+  </div>
 
-                    <div class="form-group">
-                        <label style="font-size: 12.5px; color: #334155; font-weight: 600;">Default Extension (Optional)</label>
-                        <input type="text" class="form-control" id="cfgDefaultExt" name="default_extension" placeholder="e.g. 100 or 101" value="<?php echo htmlspecialchars($threecx_config['default_extension']); ?>">
-                    </div>
-
-                    <div class="checkbox">
-                        <label style="font-weight: 600; color: #334155;">
-                            <input type="checkbox" id="cfgAutoOpen" name="auto_open_webclient" <?php echo (!empty($threecx_config['auto_open_webclient'])) ? 'checked' : ''; ?>> Automatically open 3CX Web Client on dialing
-                        </label>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer" style="background: #f8fafc; border-radius: 0 0 8px 8px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between;">
-                <button type="button" class="btn btn-default" id="btnTest3cxConn" style="font-weight: 600;">
-                    <i class="fa fa-plug text-primary"></i> Test 3CX Connection
-                </button>
-                <div>
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="btnSave3cxSettings" style="font-weight: 600;">Save Settings</button>
-                </div>
-            </div>
+  <div class="cw-drawer-body" id="queueCardsContainer">
+    <?php if (!empty($queue)) { ?>
+      <?php foreach ($queue as $idx => $q_lead) { 
+        $is_lead_active = ($idx === 0);
+        $lead_phone = !empty($q_lead['phone_primary']) ? $q_lead['phone_primary'] : (!empty($q_lead['phone_alt']) ? $q_lead['phone_alt'] : 'No Phone');
+        $lead_status_lbl = !empty($q_lead['status_name']) ? $q_lead['status_name'] : 'Database';
+      ?>
+        <div class="cw-queue-card-item <?php echo $is_lead_active ? 'active-lead' : ''; ?>" data-queue-idx="<?php echo $idx; ?>" data-lead-id="<?php echo (int)$q_lead['id']; ?>" data-phone="<?php echo htmlspecialchars($lead_phone); ?>" data-customer="<?php echo htmlspecialchars($q_lead['customer']); ?>">
+          <div class="cw-qcard-top">
+            <strong>#<?php echo ($idx + 1); ?> <?php echo htmlspecialchars($q_lead['customer']); ?></strong>
+            <span class="cw-qcard-badge"><?php echo htmlspecialchars($lead_status_lbl); ?></span>
+          </div>
+          <div class="cw-qcard-mid">
+            <span class="cw-qcard-phone"><i class="fa fa-phone" style="font-size: 10px; margin-right: 3px;"></i><?php echo htmlspecialchars($lead_phone); ?></span>
+            <span><?php echo htmlspecialchars(!empty($q_lead['category']) ? $q_lead['category'] : 'Corporate'); ?></span>
+          </div>
         </div>
-    </div>
+      <?php } ?>
+    <?php } else { ?>
+      <div style="padding: 30px; text-align: center; color: var(--crm-text-muted); font-size: 12px;">
+        No database records in current queue.
+      </div>
+    <?php } ?>
+  </div>
 </div>
 
 <script>
 $(document).ready(function() {
-    var callTimer = null;
-    var callSeconds = 0;
-    var currentQueueIdx = 0;
-    var activeCallLogId = 0;
-    var primaryNumber = '<?php echo !empty($init_p1) ? addslashes($init_p1) : ""; ?>';
-    var altNumber = '<?php echo !empty($init_p2) ? addslashes($init_p2) : ""; ?>';
+  var leadQueue = <?php echo json_encode(!empty($queue) ? $queue : array()); ?>;
+  var queueIndex = 0;
+  var timerInterval = null;
+  var totalSeconds = 0;
+  var activeLogId = 0;
 
-    function formatTime(s) {
-        var m = Math.floor(s / 60);
-        var sec = s % 60;
-        return (m < 10 ? '0' + m : m) + ':' + (sec < 10 ? '0' + sec : sec);
+  function updateQueueCountDisplays() {
+    var total = leadQueue.length;
+    var remaining = Math.max(0, total - queueIndex);
+    $('#queueRemainingBadge').text(remaining);
+    $('#drawerRemainingCount').text(remaining);
+  }
+
+  $('#tabKeypadView').on('click', function() {
+    $(this).addClass('active');
+    $('#tabRecentView').removeClass('active');
+    $('#panelKeypad').show();
+    $('#panelRecent').hide();
+  });
+
+  $('#tabRecentView').on('click', function() {
+    $(this).addClass('active');
+    $('#tabKeypadView').removeClass('active');
+    $('#panelKeypad').hide();
+    $('#panelRecent').show();
+  });
+
+  $('.cw-num-btn').on('click', function() {
+    var digit = $(this).attr('data-val');
+    if (digit) {
+      var curVal = $('#cwDialerPhoneInput').val();
+      $('#cwDialerPhoneInput').val(curVal + digit);
+    }
+  });
+
+  $('#cwBtnBackspace').on('click', function() {
+    var val = $('#cwDialerPhoneInput').val();
+    $('#cwDialerPhoneInput').val(val.slice(0, -1));
+  });
+
+  $('#btnActionMute').on('click', function() {
+    $(this).toggleClass('active');
+  });
+
+  $('#btnActionHold').on('click', function() {
+    $(this).toggleClass('active');
+  });
+
+  $('#btnActionSpeaker').on('click', function() {
+    $(this).toggleClass('active');
+  });
+
+  function startLiveTimer() {
+    clearInterval(timerInterval);
+    totalSeconds = 0;
+    $('#cwLiveTimerDisplay').text('00:00').show();
+    timerInterval = setInterval(function() {
+      totalSeconds++;
+      var m = Math.floor(totalSeconds / 60);
+      var s = totalSeconds % 60;
+      var str = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+      $('#cwLiveTimerDisplay').text(str);
+      $('#hiddenCallDuration').val(totalSeconds);
+    }, 1000);
+  }
+
+  function stopLiveTimer() {
+    clearInterval(timerInterval);
+  }
+
+  $('#cwBtnStartCall').on('click', function() {
+    var phone = $('#cwDialerPhoneInput').val().trim();
+    var leadId = $('#hiddenLeadId').val();
+    var custName = $('#hiddenCustomerName').val();
+
+    if (!phone) {
+      alert('Please enter or select a phone number to place a call.');
+      $('#cwDialerPhoneInput').focus();
+      return;
     }
 
-    $('.mobile-nav-btn').click(function() {
-        var target = $(this).data('target');
-        $('.mobile-nav-btn').removeClass('active');
-        $(this).addClass('active');
+    $('#cwIndicatorDot').addClass('pulsing');
+    $('#cwDisplayCallStatus').text('In call');
+    $('#btnActionEndCall').show();
+    $('#cwBtnStartCall').hide();
 
-        if (target === 'paneQueue') {
-            $('#paneQueueWrap').show();
-            $('#paneDialerWrap').hide();
-            $('#paneLogsWrap').hide();
-        } else if (target === 'paneLogs') {
-            $('#paneQueueWrap').hide();
-            $('#paneDialerWrap').show();
-            $('#paneLogsWrap').show();
-            loadCallLogsTable();
+    startLiveTimer();
+
+    $.ajax({
+      url: '<?php echo base_url(); ?>manager/calls/ajax_initiate_call',
+      type: 'POST',
+      data: { phone: phone, lead_id: leadId, customer_name: custName },
+      dataType: 'json',
+      success: function(res) {
+        if (res.status) {
+          activeLogId = res.call_log_id;
+          $('#hiddenCallLogId').val(activeLogId);
+          if (res.dispatch && res.dispatch.webclient_url) {
+            window.open(res.dispatch.webclient_url, '_blank');
+          } else if (res.dispatch && res.dispatch.tel_url) {
+            window.location.href = res.dispatch.tel_url;
+          }
+        }
+      }
+    });
+  });
+
+  $('#btnActionEndCall').on('click', function() {
+    stopLiveTimer();
+    $('#cwIndicatorDot').removeClass('pulsing');
+    $('#cwDisplayCallStatus').text('Call Ended · Save Outcome');
+    $('#btnActionEndCall').hide();
+    $('#cwBtnStartCall').show();
+    $('#textareaNotes').focus();
+  });
+
+  function loadLeadData(lead, idx) {
+    if (!lead) return;
+    if (typeof idx !== 'undefined') {
+      queueIndex = idx;
+    }
+    var name = lead.customer || 'Unknown Contact';
+    var phone = lead.phone_primary || lead.contact1 || lead.alt_contact || lead.mobile || '';
+    var email = lead.email || '—';
+    var poc = lead.poc || 'POC / Manager';
+    var code = lead.lead_id || '—';
+    var cat = lead.category || 'Corporate';
+
+    $('#cwAvatarBadge').text(name.charAt(0).toUpperCase());
+    $('#cwDisplayCustomerName').text(name);
+    $('#cwDialerPhoneInput').val(phone);
+    $('#cwLinkDialNow').text(phone ? phone : '—');
+    $('#cwMetaPocBox').text(poc + ' • ' + email);
+    $('#cwMetaCatBox').text(cat);
+    $('#cwMetaCodeBox').text(code);
+    $('#cwHistoryLeadLabel').text('Lead #' + code);
+
+    $('#hiddenLeadId').val(lead.id || 0);
+    $('#hiddenCustomerName').val(name);
+
+    if (lead.status) {
+      $('#selectUnifiedStatus').val(lead.status);
+    }
+
+    if (lead.remark) {
+      $('#cwHistoryPanel').html(
+        '<div class="cw-activity-row">' +
+          '<div><i class="fa fa-comment-o cw-activity-icon"></i><strong>Remark:</strong> ' + lead.remark + '</div>' +
+          '<span style="color: var(--crm-text-muted); font-size: 10px;">' + (lead.status_name ? lead.status_name : 'Active') + '</span>' +
+        '</div>'
+      );
+    } else {
+      $('#cwHistoryPanel').html(
+        '<div style="color: var(--crm-text-muted); font-size: 11px; padding: 4px;">No previous remarks for this lead.</div>'
+      );
+    }
+
+    $('.cw-queue-card-item').removeClass('active-lead');
+    $('.cw-queue-card-item[data-queue-idx="' + queueIndex + '"]').addClass('active-lead');
+    updateQueueCountDisplays();
+  }
+
+  $('#btnQueueNext').on('click', function() {
+    if (leadQueue.length > 0 && queueIndex < leadQueue.length - 1) {
+      queueIndex++;
+      loadLeadData(leadQueue[queueIndex], queueIndex);
+    } else {
+      alert('Reached end of database queue.');
+    }
+  });
+
+  $('#btnQueuePrev').on('click', function() {
+    if (queueIndex > 0) {
+      queueIndex--;
+      loadLeadData(leadQueue[queueIndex], queueIndex);
+    }
+  });
+
+  $('#cwLinkDialNow').on('click', function(e) {
+    e.preventDefault();
+    var p = $(this).text().trim();
+    if (p && p !== '—') {
+      $('#cwDialerPhoneInput').val(p);
+      $('#cwBtnStartCall').trigger('click');
+    }
+  });
+
+  $('#btnQuickNewCall').on('click', function() {
+    $('#cwDialerPhoneInput').val('').focus();
+    $('#cwAvatarBadge').text('+');
+    $('#cwDisplayCustomerName').text('Direct Outbound Call');
+    $('#cwLinkDialNow').text('—');
+    $('#cwMetaPocBox').text('Direct Dialing');
+    $('#hiddenLeadId').val('0');
+    $('#hiddenCustomerName').val('Direct Dialing');
+  });
+
+  function submitOutcome(advanceNext) {
+    var phone = $('#cwDialerPhoneInput').val().trim();
+    var outcomeName = $('#selectUnifiedStatus option:selected').text().trim();
+    var dataStr = $('#cwSaveCallForm').serialize() + '&phone=' + encodeURIComponent(phone) + '&call_disposition=' + encodeURIComponent(outcomeName);
+    var btn = $('#btnSubmitCallLog');
+    btn.prop('disabled', true);
+
+    $.ajax({
+      url: '<?php echo base_url(); ?>manager/calls/ajax_save_call',
+      type: 'POST',
+      data: dataStr,
+      dataType: 'json',
+      success: function(res) {
+        btn.prop('disabled', false);
+        if (res.status) {
+          stopLiveTimer();
+          $('#cwLiveTimerDisplay').hide();
+          $('#cwIndicatorDot').removeClass('pulsing');
+          $('#cwDisplayCallStatus').text('Ready to Call');
+          $('#textareaNotes').val('');
+          $('#hiddenCallLogId').val('0');
+          $('#hiddenCallDuration').val('0');
+          activeLogId = 0;
+
+          var outcomeStr = res.outcome || outcomeName;
+          var durStr = (res.duration > 0) ? res.duration + 's' : '0s';
+          var newRow = 
+            '<div class="cw-activity-row">' +
+              '<div><i class="fa fa-check-circle text-success cw-activity-icon"></i><strong>' + outcomeStr + ':</strong> ' + (res.duration > 0 ? durStr : 'Completed') + '</div>' +
+              '<span style="color: var(--crm-text-muted); font-size: 10px;">Just now</span>' +
+            '</div>';
+          $('#cwHistoryPanel').prepend(newRow);
+
+          if (advanceNext) {
+            $('#btnQueueNext').trigger('click');
+          } else {
+            alert('Call outcome and status saved successfully.');
+          }
         } else {
-            $('#paneQueueWrap').hide();
-            $('#paneDialerWrap').show();
-            $('#paneLogsWrap').hide();
+          alert('Failed to save outcome: ' + (res.message || 'Error'));
         }
+      },
+      error: function() {
+        btn.prop('disabled', false);
+        alert('Server communication error.');
+      }
     });
+  }
 
-    $(window).resize(function() {
-        if ($(window).width() >= 992) {
-            $('#paneQueueWrap').show();
-            $('#paneDialerWrap').show();
-            $('#paneLogsWrap').show();
+  $('#cwSaveCallForm').on('submit', function(e) {
+    e.preventDefault();
+    submitOutcome(false);
+  });
+
+  $('#btnSaveAndAdvanceQueue').on('click', function() {
+    submitOutcome(true);
+  });
+
+  $('#cwQueueFilterSelect').on('change', function() {
+    var filter = $(this).val();
+    window.location.href = '<?php echo base_url(); ?>manager/calls?status=' + filter;
+  });
+
+  $('#cwSearchLeadsInput').on('keyup', function() {
+    var term = $(this).val().toLowerCase();
+    if (term.length < 2) return;
+
+    $.ajax({
+      url: '<?php echo base_url(); ?>manager/calls/ajax_get_queue',
+      type: 'GET',
+      data: { search: term, status: $('#cwQueueFilterSelect').val() },
+      dataType: 'json',
+      success: function(res) {
+        if (res.status && res.leads && res.leads.length > 0) {
+          leadQueue = res.leads;
+          queueIndex = 0;
+          renderQueueDrawerList(leadQueue);
+          loadLeadData(leadQueue[0], 0);
         }
+      }
     });
+  });
 
-    $('#btnToggleKeypad').click(function() {
-        $('#keypadDropdown').slideToggle(120);
-    });
-
-    $('.keypad-btn').click(function() {
-        var key = $(this).data('key');
-        var cur = $('#phoneDialerInput').val();
-        $('#phoneDialerInput').val(cur + key);
-    });
-
-    $('#btnClearPhone').click(function() {
-        $('#phoneDialerInput').val('');
-    });
-
-    $('#btnManualDialMode').click(function() {
-        switchToManualDial();
-    });
-
-    function switchToManualDial() {
-        $('.lead-item-row').removeClass('active');
-        $('#cardClientTitle').text('Manual Direct Call');
-        $('#cardClientCode').text('Direct Dialing Mode');
-        $('#formLeadId').val('0');
-        $('#formCustomerName').val('Direct Dial');
-        $('#leadMetaSummary').hide();
-        $('#dualNumberSelector').hide();
-        $('#phoneDialerInput').val('').focus();
-        $('#linkTelBackup').hide();
-        primaryNumber = '';
-        altNumber = '';
-
-        if ($(window).width() < 992) {
-            $('.mobile-nav-btn[data-target="paneDialer"]').trigger('click');
-        }
+  function renderQueueDrawerList(list) {
+    var html = '';
+    for (var i = 0; i < list.length; i++) {
+      var item = list[i];
+      var p = item.phone_primary || item.contact1 || item.alt_contact || 'No Phone';
+      var st = item.status_name || 'Database';
+      var isAct = (i === queueIndex) ? 'active-lead' : '';
+      html += 
+        '<div class="cw-queue-card-item ' + isAct + '" data-queue-idx="' + i + '" data-lead-id="' + item.id + '" data-phone="' + p + '" data-customer="' + item.customer + '">' +
+          '<div class="cw-qcard-top">' +
+            '<strong>#' + (i + 1) + ' ' + item.customer + '</strong>' +
+            '<span class="cw-qcard-badge">' + st + '</span>' +
+          '</div>' +
+          '<div class="cw-qcard-mid">' +
+            '<span class="cw-qcard-phone"><i class="fa fa-phone" style="font-size: 10px; margin-right: 3px;"></i>' + p + '</span>' +
+            '<span>' + (item.category || 'Corporate') + '</span>' +
+          '</div>' +
+        '</div>';
     }
+    $('#queueCardsContainer').html(html);
+    updateQueueCountDisplays();
+  }
 
-    $('#btnOpenSettings').click(function() {
-        $('#settingsAlertBox').html('');
-        $('#modal3cxSettings').modal('show');
-    });
+  $('#btnToggleQueueDrawer').on('click', function() {
+    $('#nextCallsQueueDrawer').addClass('open');
+    $('#queueDrawerBackdrop').fadeIn(200);
+  });
 
-    $('#btnTest3cxConn').click(function() {
-        var btn = $(this);
-        btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Testing...');
-        $('#settingsAlertBox').html('');
+  $('#btnCloseQueueDrawer, #queueDrawerBackdrop').on('click', function() {
+    $('#nextCallsQueueDrawer').removeClass('open');
+    $('#queueDrawerBackdrop').fadeOut(200);
+  });
 
-        $.ajax({
-            url: '<?php echo base_url(); ?>manager/calls/ajax_test_3cx',
-            type: 'POST',
-            data: $('#form3cxSettings').serialize(),
-            dataType: 'json',
-            success: function(res) {
-                btn.prop('disabled', false).html('<i class="fa fa-plug text-primary"></i> Test 3CX Connection');
-                if (res.status) {
-                    $('#settingsAlertBox').html('<div class="alert alert-success" style="font-size: 13px; padding: 10px 14px;"><i class="fa fa-check-circle"></i> ' + res.message + '</div>');
-                    $('#topPbxFqdn').text($('#cfgPbxFqdn').val() || 'Connected');
-                } else {
-                    $('#settingsAlertBox').html('<div class="alert alert-danger" style="font-size: 13px; padding: 10px 14px;"><i class="fa fa-exclamation-triangle"></i> ' + (res.message || 'Connection failed') + '</div>');
-                }
-            },
-            error: function() {
-                btn.prop('disabled', false).html('<i class="fa fa-plug text-primary"></i> Test 3CX Connection');
-                $('#settingsAlertBox').html('<div class="alert alert-danger" style="font-size: 13px; padding: 10px 14px;">Error reaching 3CX test service.</div>');
-            }
-        });
-    });
-
-    $('#btnSave3cxSettings').click(function() {
-        var btn = $(this);
-        btn.prop('disabled', true).text('Saving...');
-        $.ajax({
-            url: '<?php echo base_url(); ?>manager/calls/ajax_save_3cx_config',
-            type: 'POST',
-            data: $('#form3cxSettings').serialize(),
-            dataType: 'json',
-            success: function(res) {
-                btn.prop('disabled', false).text('Save Settings');
-                if (res.status) {
-                    $('#settingsAlertBox').html('<div class="alert alert-success" style="font-size: 13px; padding: 10px 14px;"><i class="fa fa-check"></i> ' + res.message + '</div>');
-                    setTimeout(function() {
-                        $('#modal3cxSettings').modal('hide');
-                    }, 800);
-                } else {
-                    $('#settingsAlertBox').html('<div class="alert alert-danger" style="font-size: 13px; padding: 10px 14px;">' + res.message + '</div>');
-                }
-            },
-            error: function() {
-                btn.prop('disabled', false).text('Save Settings');
-                $('#settingsAlertBox').html('<div class="alert alert-danger" style="font-size: 13px; padding: 10px 14px;">Failed to save settings.</div>');
-            }
-        });
-    });
-
-    $('#selectQueueStatus').change(function() {
-        reloadQueue();
-    });
-
-    $('#btnQueueRefresh').click(function() {
-        reloadQueue();
-    });
-
-    $('#inputQueueSearch').on('keyup', function() {
-        var q = $(this).val().toLowerCase();
-        $('.lead-item-row').each(function() {
-            var txt = $(this).text().toLowerCase();
-            if (txt.indexOf(q) !== -1) {
-                $(this).show();
-            } else {
-                $(this).hide();
-            }
-        });
-    });
-
-    function reloadQueue() {
-        var st = $('#selectQueueStatus').val();
-        var search = $('#inputQueueSearch').val();
-        $('#queueListContainer').html('<div style="padding: 30px; text-align: center; color: #94a3b8;"><i class="fa fa-spinner fa-spin fa-2x"></i><p style="margin-top: 8px;">Loading database leads...</p></div>');
-
-        $.ajax({
-            url: '<?php echo base_url(); ?>manager/calls/ajax_get_queue',
-            type: 'GET',
-            data: { status: st, search: search },
-            dataType: 'json',
-            success: function(res) {
-                if (res.status && res.leads && res.leads.length > 0) {
-                    var html = '';
-                    $.each(res.leads, function(idx, l) {
-                        var p1 = l.contact1 || '';
-                        var p2 = l.alt_contact || l.contact2 || l.mobile || '';
-                        if (p1 === p2) { p2 = ''; }
-                        var disp = p1 || p2 || '—';
-                        var hasTwo = (p1 && p2);
-
-                        var stClass = 'status-pill-badge';
-                        var stName = l.status_name || 'Database';
-                        if (stName.toLowerCase().indexOf('follow') !== -1) {
-                            stClass += ' status-follow';
-                        } else if (stName.toLowerCase().indexOf('prospect') !== -1) {
-                            stClass += ' status-prospect';
-                        }
-
-                        html += '<div class="lead-item-row ' + (idx === 0 ? 'active' : '') + '" data-id="' + l.id + '" data-index="' + idx + '">';
-                        html += '  <div class="lead-title-row">';
-                        html += '    <span>' + escapeHtml(l.customer) + '</span>';
-                        html += '    <span class="' + stClass + '">' + escapeHtml(stName) + '</span>';
-                        html += '  </div>';
-                        html += '  <div class="lead-meta-row">';
-                        html += '    <span><i class="fa fa-user" style="color: #94a3b8;"></i> ' + escapeHtml(l.poc || 'No POC') + '</span>';
-                        if (hasTwo) {
-                            html += '    <span style="display: inline-flex; gap: 4px; align-items: center;">';
-                            html += '      <span class="badge" style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 10px; font-weight: 600; cursor: pointer; padding: 2px 6px;" onclick="event.stopPropagation(); pickQueueNumber(\'' + escapeHtml(p1) + '\', \'' + escapeHtml(p2) + '\', \'primary\', ' + l.id + ');"><i class="fa fa-phone"></i> ' + escapeHtml(p1) + '</span>';
-                            html += '      <span class="badge" style="background: #f8fafc; color: #475569; border: 1px solid #cbd5e1; font-size: 10px; font-weight: 600; cursor: pointer; padding: 2px 6px;" onclick="event.stopPropagation(); pickQueueNumber(\'' + escapeHtml(p1) + '\', \'' + escapeHtml(p2) + '\', \'alt\', ' + l.id + ');"><i class="fa fa-mobile"></i> ' + escapeHtml(p2) + '</span>';
-                            html += '    </span>';
-                        } else {
-                            html += '    <span><i class="fa fa-phone" style="color: #2563eb;"></i> ' + escapeHtml(disp) + '</span>';
-                        }
-                        html += '  </div>';
-                        html += '</div>';
-                    });
-                    $('#queueListContainer').html(html);
-                    $('#mobileQueueCount').text(res.leads.length);
-                    loadLeadInfo(res.leads[0].id);
-                } else {
-                    $('#queueListContainer').html('<div style="padding: 35px 20px; text-align: center; color: #94a3b8;"><i class="fa fa-inbox fa-3x" style="margin-bottom: 8px; display: block; opacity: 0.4;"></i><p style="font-weight: 600; color: #64748b;">No leads found</p></div>');
-                    $('#mobileQueueCount').text('0');
-                }
-            }
-        });
+  $(document).on('click', '.cw-queue-card-item', function() {
+    var idx = parseInt($(this).attr('data-queue-idx'));
+    if (!isNaN(idx) && leadQueue[idx]) {
+      loadLeadData(leadQueue[idx], idx);
+      $('#nextCallsQueueDrawer').removeClass('open');
+      $('#queueDrawerBackdrop').fadeOut(200);
     }
+  });
 
-    $(document).on('click', '.lead-item-row', function() {
-        var id = $(this).data('id');
-        var idx = $(this).data('index');
-        currentQueueIdx = idx;
-        $('.lead-item-row').removeClass('active');
-        $(this).addClass('active');
-        loadLeadInfo(id);
-
-        if ($(window).width() < 992) {
-            $('.mobile-nav-btn[data-target="paneDialer"]').trigger('click');
-        }
+  $('#inputQueueFilterSearch').on('keyup', function() {
+    var q = $(this).val().toLowerCase();
+    $('#queueCardsContainer .cw-queue-card-item').each(function() {
+      var text = $(this).text().toLowerCase();
+      if (text.indexOf(q) > -1) {
+        $(this).show();
+      } else {
+        $(this).hide();
+      }
     });
+  });
 
-    window.pickQueueNumber = function(p1, p2, choice, leadId) {
-        $('.lead-item-row').removeClass('active');
-        $('.lead-item-row[data-id="' + leadId + '"]').addClass('active');
-        loadLeadInfo(leadId, function() {
-            if (choice === 'alt') {
-                $('#btnPickAlt').trigger('click');
-            } else {
-                $('#btnPickPrimary').trigger('click');
-            }
-        });
-        if ($(window).width() < 992) {
-            $('.mobile-nav-btn[data-target="paneDialer"]').trigger('click');
-        }
-    };
-
-    function loadLeadInfo(leadId, cb) {
-        $.ajax({
-            url: '<?php echo base_url(); ?>manager/calls/ajax_get_lead/' + leadId,
-            type: 'GET',
-            dataType: 'json',
-            success: function(res) {
-                if (res.status && res.lead) {
-                    var l = res.lead;
-                    primaryNumber = l.phone_primary || '';
-                    altNumber = l.phone_alt || '';
-
-                    $('#cardClientTitle').text(l.customer || '—');
-                    $('#cardClientCode').text(l.lead_id ? '#' + l.lead_id : '');
-                    $('#formLeadId').val(l.id);
-                    $('#formCustomerName').val(l.customer || '');
-                    $('#lblPoc').text(l.poc || '—');
-                    $('#lblEmail').text(l.email || '—');
-                    $('#leadMetaSummary').show();
-
-                    if (l.has_two_numbers) {
-                        $('#txtPrimaryNum').text(primaryNumber);
-                        $('#txtAltNum').text(altNumber);
-                        $('#btnPickPrimary').addClass('active');
-                        $('#btnPickAlt').removeClass('active');
-                        $('#dualNumberSelector').show();
-                        $('#phoneDialerInput').val(primaryNumber);
-                    } else {
-                        $('#dualNumberSelector').hide();
-                        $('#phoneDialerInput').val(primaryNumber || altNumber);
-                    }
-
-                    var dialNum = $('#phoneDialerInput').val();
-                    if (dialNum) {
-                        $('#linkTelBackup').attr('href', 'tel:' + dialNum).show();
-                    } else {
-                        $('#linkTelBackup').hide();
-                    }
-
-                    if (l.status) {
-                        $('#leadStatusSelect').val(l.status);
-                    }
-
-                    stopCallTimer();
-                    $('#callStateBadge').html('<span class="live-pulse offline"></span> Ready to Call');
-                    $('#btnCallNow').show();
-                    $('#btnEndNow').hide();
-                    if (typeof cb === 'function') {
-                        cb();
-                    }
-                }
-            }
-        });
-    }
-
-    $('#btnPickPrimary').click(function() {
-        $('.btn-num-choice').removeClass('active');
-        $(this).addClass('active');
-        if (primaryNumber) {
-            $('#phoneDialerInput').val(primaryNumber);
-            $('#linkTelBackup').attr('href', 'tel:' + primaryNumber);
-        }
-    });
-
-    $('#btnPickAlt').click(function() {
-        $('.btn-num-choice').removeClass('active');
-        $(this).addClass('active');
-        if (altNumber) {
-            $('#phoneDialerInput').val(altNumber);
-            $('#linkTelBackup').attr('href', 'tel:' + altNumber);
-        }
-    });
-
-    function startCallTimer() {
-        clearInterval(callTimer);
-        callSeconds = 0;
-        $('#callLiveTimer').text('00:00');
-        callTimer = setInterval(function() {
-            callSeconds++;
-            $('#callLiveTimer').text(formatTime(callSeconds));
-            $('#formDuration').val(callSeconds);
-        }, 1000);
-    }
-
-    function stopCallTimer() {
-        clearInterval(callTimer);
-        return callSeconds;
-    }
-
-    $('#btnCallNow').click(function() {
-        var phone = $('#phoneDialerInput').val().trim();
-        var leadId = $('#formLeadId').val();
-        var customerName = $('#formCustomerName').val();
-
-        if (!phone) {
-            alert('Please enter or select a phone number to call.');
-            $('#phoneDialerInput').focus();
-            return;
-        }
-
-        $('#btnCallNow').hide();
-        $('#btnEndNow').show();
-        $('#callStateBadge').html('<span class="live-pulse active-call"></span> Calling via 3CX...');
-        startTimerAndLog(phone, leadId, customerName);
-    });
-
-    function startTimerAndLog(phone, leadId, customerName) {
-        startCallTimer();
-        $.ajax({
-            url: '<?php echo base_url(); ?>manager/calls/ajax_initiate_call',
-            type: 'POST',
-            data: { phone: phone, lead_id: leadId, customer_name: customerName },
-            dataType: 'json',
-            success: function(res) {
-                if (res.status) {
-                    activeCallLogId = res.call_log_id;
-                    $('#formCallLogId').val(activeCallLogId);
-
-                    var isMobile = $(window).width() < 992;
-                    if (isMobile) {
-                        if (res.dispatch && res.dispatch.tel_url) {
-                            window.location.href = res.dispatch.tel_url;
-                        } else if (res.dispatch && res.dispatch.webclient_url) {
-                            window.open(res.dispatch.webclient_url, '_blank');
-                        }
-                    } else {
-                        if (res.dispatch && res.dispatch.webclient_url) {
-                            window.open(res.dispatch.webclient_url, '_blank');
-                        } else if (res.dispatch && res.dispatch.tel_url) {
-                            window.location.href = res.dispatch.tel_url;
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    $('#btnEndNow').click(function() {
-        stopCallTimer();
-        $('#btnCallNow').show();
-        $('#btnEndNow').hide();
-        $('#callStateBadge').html('<span class="live-pulse offline"></span> Call Ended &bull; Enter Outcome');
-    });
-
-    $('#callDispositionForm').on('submit', function(e) {
-        e.preventDefault();
-        saveCurrentCall(true);
-    });
-
-    $('#btnSaveLogOnly').click(function() {
-        saveCurrentCall(false);
-    });
-
-    function saveCurrentCall(loadNext) {
-        var phone = $('#phoneDialerInput').val().trim();
-        var formData = $('#callDispositionForm').serialize() + '&phone=' + encodeURIComponent(phone);
-        var submitBtn = $('#btnSaveSubmit');
-        submitBtn.prop('disabled', true);
-
-        $.ajax({
-            url: '<?php echo base_url(); ?>manager/calls/ajax_save_call',
-            type: 'POST',
-            data: formData,
-            dataType: 'json',
-            success: function(res) {
-                submitBtn.prop('disabled', false);
-                if (res.status) {
-                    $('#remarksTextarea').val('');
-                    stopCallTimer();
-                    $('#callLiveTimer').text('00:00');
-                    $('#formDuration').val('0');
-                    $('#formCallLogId').val('0');
-                    activeCallLogId = 0;
-                    $('#callStateBadge').html('<span class="live-pulse offline"></span> Ready to Call');
-
-                    var todayCount = parseInt($('#statCallsToday').text().replace(/,/g, '')) || 0;
-                    $('#statCallsToday').text(todayCount + 1);
-
-                    if (res.duration > 0) {
-                        var connCount = parseInt($('#statCallsConnected').text().replace(/,/g, '')) || 0;
-                        $('#statCallsConnected').text(connCount + 1);
-                    }
-
-                    loadCallLogsTable();
-
-                    if (loadNext && $('#formLeadId').val() > 0) {
-                        var nextRow = $('.lead-item-row[data-index="' + (currentQueueIdx + 1) + '"]');
-                        if (nextRow.length) {
-                            nextRow.trigger('click');
-                        } else {
-                            alert('Call log saved. Reached end of current queue.');
-                        }
-                    } else {
-                        alert('Call log saved successfully.');
-                    }
-                } else {
-                    alert('Failed to save call: ' + (res.message || 'Error'));
-                }
-            },
-            error: function() {
-                submitBtn.prop('disabled', false);
-                alert('Server error while saving call record.');
-            }
-        });
-    }
-
-    function loadCallLogsTable() {
-        $.ajax({
-            url: '<?php echo base_url(); ?>manager/calls/ajax_get_call_logs',
-            type: 'GET',
-            dataType: 'json',
-            success: function(res) {
-                if (res.status && res.logs && res.logs.length > 0) {
-                    var html = '';
-                    $.each(res.logs, function(i, log) {
-                        var d = new Date(log.created_at);
-                        var dateStr = d.toLocaleDateString([], {month:'short', day:'numeric'}) + ', ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                        var durSec = parseInt(log.duration) || 0;
-                        var name = log.customer_name || log.lead_customer || 'Direct Call';
-
-                        html += '<tr>';
-                        html += '  <td>' + dateStr + '</td>';
-                        html += '  <td><strong>' + escapeHtml(name) + '</strong></td>';
-                        html += '  <td style="font-family: monospace; font-weight: 600; color: #2563eb;">' + escapeHtml(log.phone_number) + '</td>';
-                        html += '  <td>' + formatTime(durSec) + '</td>';
-                        html += '  <td><span class="badge" style="background: #e2e8f0; color: #1e293b; font-size: 10.5px;">' + escapeHtml(log.disposition || 'Dialed') + '</span></td>';
-                        html += '  <td style="max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">' + escapeHtml(log.notes || '') + '</td>';
-                        html += '  <td style="text-align: right;"><button type="button" class="btn btn-xs btn-default btn-quick-redial" data-phone="' + escapeHtml(log.phone_number) + '" data-name="' + escapeHtml(name) + '" data-lead-id="' + (log.lead_id || 0) + '"><i class="fa fa-phone text-success"></i> Redial</button></td>';
-                        html += '</tr>';
-                    });
-                    $('#logsTableBody').html(html);
-                }
-            }
-        });
-    }
-
-    $('#btnRefreshLogsTable').click(function() {
-        loadCallLogsTable();
-    });
-
-    $(document).on('click', '.btn-quick-redial', function() {
-        var phone = $(this).data('phone');
-        var name = $(this).data('name');
-        var leadId = $(this).data('lead-id');
-
-        if (leadId && leadId > 0) {
-            loadLeadInfo(leadId);
-        } else {
-            switchToManualDial();
-            $('#phoneDialerInput').val(phone);
-            $('#cardClientTitle').text(name || 'Direct Call');
-        }
-
-        if ($(window).width() < 992) {
-            $('.mobile-nav-btn[data-target="paneDialer"]').trigger('click');
-        }
-    });
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        var map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-        return str.toString().replace(/[&<>"']/g, function(m) { return map[m]; });
-    }
+  updateQueueCountDisplays();
 });
 </script>
 

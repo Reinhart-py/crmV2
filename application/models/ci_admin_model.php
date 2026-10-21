@@ -1165,12 +1165,13 @@ public function dashboard_MyPro($table='ci_leads'){
 					if (isset($_GET['assign_scope']) && $_GET['assign_scope'] === 'unassigned') {
 						$this->db->where('(A.lead_assign = 0 OR A.lead_assign IS NULL)');
 					} else if (isset($_GET['assign_scope']) && is_numeric($_GET['assign_scope']) && (int)$_GET['assign_scope'] > 0) {
-						$this->db->where('A.lead_assign', (int)$_GET['assign_scope']);
+						$target_user_id = (int)$_GET['assign_scope'];
+						$this->db->where('(A.lead_assign = ' . $target_user_id . ' OR FIND_IN_SET(' . $target_user_id . ', A.agents) > 0)');
 					}
 					$where1 = "A.status NOT IN (42,43,44)";
 					$this->db->where($where1);
 				} else {
-					$where1 = "A.status NOT IN (42,43,44) AND A.lead_assign = " . (int)$cur_id;
+					$where1 = "A.status NOT IN (42,43,44) AND (A.lead_assign = " . (int)$cur_id . " OR FIND_IN_SET(" . (int)$cur_id . ", A.agents) > 0)";
 					$this->db->where($where1);
 				}
 			 	

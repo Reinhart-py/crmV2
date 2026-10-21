@@ -149,7 +149,8 @@ $route['manager/system/admin-logs/(:num)'] = "ci_admin_system/logs/$1";
 $route['manager/system/admin_logs'] = "ci_admin_system/logs";
 $route['manager/system/admin_logs/(:num)'] = "ci_admin_system/logs/$1";
 
-// 5-minute inactivity session keepalive/ping
+$route['manager/system/calling-api'] = "ci_admin_calls/calling_api";
+$route['manager/system/calling_api'] = "ci_admin_calls/calling_api";
 $route['manager/ping'] = "ci_admin/ping";
 
 /* End of file routes.php */

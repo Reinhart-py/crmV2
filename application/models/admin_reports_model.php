@@ -717,17 +717,90 @@ class Admin_reports_model extends CI_Model {
 				$batch = !empty($l['data_batch_referral_no']) ? $l['data_batch_referral_no'] : (!empty($l['created']) ? date('M-y', strtotime($l['created'])) . '/Online' : 'General');
 
 				$db_status = '';
-				if (!empty($l['status_category'])) {
-					$db_status = $l['status_category'];
-				} elseif (!empty($l['dnd_status']) && ($l['dnd_status'] == 1 || stripos($l['dnd_status'], 'dncr') !== false)) {
+				if (!empty($l['call_status'])) {
+					$cs_n = trim($l['call_status']);
+					if (stripos($cs_n, 'busy') !== false || stripos($cs_n, 'not responding') !== false || stripos($cs_n, 'not respoding') !== false) {
+						$db_status = 'Busy / Not Respoding';
+					} elseif (stripos($cs_n, 'dncr') !== false || stripos($cs_n, 'dnd') !== false) {
+						$db_status = 'DNCR / DND';
+					} elseif (stripos($cs_n, 'follow') !== false || stripos($cs_n, 'call back') !== false || stripos($cs_n, 'callback') !== false) {
+						$db_status = 'Follow up / Call Back';
+					} elseif (stripos($cs_n, 'not interested') !== false) {
+						$db_status = 'Not Interested';
+					} elseif (stripos($cs_n, 'not valid') !== false || stripos($cs_n, 'invalid') !== false) {
+						$db_status = 'Not Valid';
+					} elseif (stripos($cs_n, 'future') !== false) {
+						$db_status = 'Future';
+					} elseif (stripos($cs_n, 'lost') !== false) {
+						$db_status = 'Lost';
+					} elseif (stripos($cs_n, 'expected') !== false || stripos($cs_n, 'prospective') !== false) {
+						$db_status = 'Prospective';
+					} elseif (stripos($cs_n, 'lead') !== false) {
+						$db_status = 'Lead';
+					} elseif (stripos($cs_n, 'duplicate') !== false) {
+						$db_status = 'Duplicate';
+					} elseif (stripos($cs_n, 'associate') !== false) {
+						$db_status = 'Associate';
+					} else {
+						$db_status = $cs_n;
+					}
+				} elseif (!empty($l['status_name'])) {
+					$st_n = trim($l['status_name']);
+					if (stripos($st_n, 'busy') !== false || stripos($st_n, 'not responding') !== false || stripos($st_n, 'not respoding') !== false) {
+						$db_status = 'Busy / Not Respoding';
+					} elseif (stripos($st_n, 'dncr') !== false || stripos($st_n, 'dnd') !== false) {
+						$db_status = 'DNCR / DND';
+					} elseif (stripos($st_n, 'follow') !== false || stripos($st_n, 'call back') !== false || stripos($st_n, 'callback') !== false) {
+						$db_status = 'Follow up / Call Back';
+					} elseif (stripos($st_n, 'not interested') !== false) {
+						$db_status = 'Not Interested';
+					} elseif (stripos($st_n, 'not valid') !== false || stripos($st_n, 'invalid') !== false) {
+						$db_status = 'Not Valid';
+					} elseif (stripos($st_n, 'future') !== false) {
+						$db_status = 'Future';
+					} elseif (stripos($st_n, 'lost') !== false) {
+						$db_status = 'Lost';
+					} elseif (stripos($st_n, 'expected') !== false) {
+						$db_status = 'Prospective';
+					} elseif (stripos($st_n, 'in process') !== false) {
+						$db_status = 'Follow up / Call Back';
+					} elseif (stripos($st_n, 'closed') !== false || stripos($st_n, 'activated') !== false || stripos($st_n, 'submitted') !== false) {
+						$db_status = 'Lead';
+					} else {
+						$db_status = $st_n;
+					}
+				} elseif (!empty($l['status_category'])) {
+					$st_c = trim($l['status_category']);
+					if (stripos($st_c, 'busy') !== false || stripos($st_c, 'not responding') !== false || stripos($st_c, 'not respoding') !== false) {
+						$db_status = 'Busy / Not Respoding';
+					} elseif (stripos($st_c, 'dncr') !== false || stripos($st_c, 'dnd') !== false) {
+						$db_status = 'DNCR / DND';
+					} elseif (stripos($st_c, 'follow') !== false || stripos($st_c, 'call back') !== false) {
+						$db_status = 'Follow up / Call Back';
+					} elseif (stripos($st_c, 'not interested') !== false) {
+						$db_status = 'Not Interested';
+					} elseif (stripos($st_c, 'not valid') !== false || stripos($st_c, 'wrong') !== false) {
+						$db_status = 'Not Valid';
+					} elseif (stripos($st_c, 'future') !== false) {
+						$db_status = 'Future';
+					} elseif (stripos($st_c, 'duplicate') !== false) {
+						$db_status = 'Duplicate';
+					} elseif (stripos($st_c, 'lost') !== false) {
+						$db_status = 'Lost';
+					} elseif (stripos($st_c, 'associate') !== false) {
+						$db_status = 'Associate';
+					} else {
+						$db_status = $st_c;
+					}
+				} elseif (!empty($l['dnd_status']) && ($l['dnd_status'] == 1 || stripos($l['dnd_status'], 'dncr') !== false || stripos($l['dnd_status'], 'yes') !== false)) {
 					$db_status = 'DNCR / DND';
 				} else {
 					$rem = !empty($l['remark']) ? strtolower($l['remark']) : '';
 					if (strpos($rem, 'not interested') !== false) {
 						$db_status = 'Not Interested';
-					} elseif (strpos($rem, 'busy') !== false || strpos($rem, 'not responding') !== false || strpos($rem, 'no answer') !== false) {
-						$db_status = 'Busy / Not Responding';
-					} elseif (strpos($rem, 'follow up') !== false || strpos($rem, 'callback') !== false) {
+					} elseif (strpos($rem, 'busy') !== false || strpos($rem, 'not responding') !== false || strpos($rem, 'not respoding') !== false || strpos($rem, 'no answer') !== false) {
+						$db_status = 'Busy / Not Respoding';
+					} elseif (strpos($rem, 'follow up') !== false || strpos($rem, 'callback') !== false || strpos($rem, 'call back') !== false) {
 						$db_status = 'Follow up / Call Back';
 					} elseif (strpos($rem, 'interested') !== false || strpos($rem, 'proposal') !== false) {
 						$db_status = 'Lead';
@@ -751,10 +824,8 @@ class Admin_reports_model extends CI_Model {
 						$db_status = 'Prospective';
 					} elseif ((int)$l['status'] == 38) {
 						$db_status = 'Follow up / Call Back';
-					} elseif (!empty($l['status_name'])) {
-						$db_status = $l['status_name'];
 					} else {
-						$db_status = 'Database';
+						$db_status = 'Prospective';
 					}
 				}
 
@@ -2879,7 +2950,7 @@ class Admin_reports_model extends CI_Model {
 		}
 
 		if ($dept == 'sales' && $report == 'database') {
-			$headers = array('Name', 'Source', 'Batch Ref', 'Busy', 'Not Responding', 'DNC/RDND', 'Duplicate', 'Follow-up', 'Corporate Tags Count');
+			$headers = array('Name', 'Source', 'Batch Ref', 'Database Status', 'COUNTA of Database Status', 'COUNTA of Corp Tax');
 			$current_user_id = isset($filters['manager_id']) ? (int)$filters['manager_id'] : 0;
 			$current_user_name = 'My Report';
 			if ($current_user_id > 0) {
@@ -2891,7 +2962,6 @@ class Admin_reports_model extends CI_Model {
 
 			$my_recs = array();
 			$team_recs = array();
-			$grand = array('busy' => 0, 'not_responding' => 0, 'dnc' => 0, 'duplicate' => 0, 'follow_up' => 0, 'corp_tax' => 0);
 
 			foreach ($rows as $r) {
 				$is_my = $this->_isMyRecord($r, $current_user_id);
@@ -2902,141 +2972,127 @@ class Admin_reports_model extends CI_Model {
 				}
 			}
 
-			$build_database_section = function($recs, $scope, $default_person_name = '') use ($d1, $d2, &$grand) {
-				$map = array();
-				$sub = array('busy' => 0, 'not_responding' => 0, 'dnc' => 0, 'duplicate' => 0, 'follow_up' => 0, 'corp_tax' => 0);
+			$grand_count = 0;
+			$grand_corp_tax = 0;
+
+			$build_database_section = function($recs, $scope) use ($d1, $d2, &$grand_count, &$grand_corp_tax) {
+				$hier = array();
+				$sub_count = 0;
+				$sub_corp_tax = 0;
 
 				foreach ($recs as $r) {
-					if ($scope == 'my') {
-						$person_name = !empty($default_person_name) ? $default_person_name : (!empty($r['assigned_name']) ? $r['assigned_name'] : '');
-					} else {
-						$person_name = (!empty($r['assigned_name']) && $r['assigned_name'] !== '-') ? $r['assigned_name'] : '';
-					}
-
-					if (empty($person_name) || $person_name === 'Unassigned') {
+					$p_name = (!empty($r['assigned_name']) && $r['assigned_name'] !== '-') ? $r['assigned_name'] : '';
+					if (empty($p_name) || $p_name === 'Unassigned') {
 						continue;
 					}
 
 					$source = !empty($r['source']) ? $r['source'] : (!empty($r['data_source']) ? $r['data_source'] : 'Other');
 					$batch_id = !empty($r['batch_ref']) ? $r['batch_ref'] : (!empty($r['data_batch_referral_no']) ? $r['data_batch_referral_no'] : 'General');
-					$date_added = !empty($r['created_raw']) ? date('d-M-Y', strtotime($r['created_raw'])) : (!empty($r['created']) ? $r['created'] : '');
-					$batch_display = (!empty($date_added) && strpos($batch_id, $date_added) === false) ? ($batch_id . ' (' . $date_added . ')') : $batch_id;
+					$db_st = !empty($r['db_status']) ? $r['db_status'] : 'Prospective';
+					$has_corp_tax = !empty($r['has_corp_tax']) ? 1 : 0;
 
-					$rem = !empty($r['remark']) ? strtolower($r['remark']) : '';
-					$st_cat = !empty($r['status_category']) ? strtolower($r['status_category']) : '';
-					$st_rem = !empty($r['status_remarks']) ? strtolower($r['status_remarks']) : '';
-					$dnd_st = !empty($r['dnd_status']) ? strtolower($r['dnd_status']) : '';
-					$corp_tax_st = !empty($r['corporate_tax_status']) ? strtolower($r['corporate_tax_status']) : '';
-					$vat_st = !empty($r['vat_status']) ? strtolower($r['vat_status']) : '';
-					$cat_val = !empty($r['category']) ? strtolower($r['category']) : '';
-					$p_cat_val = !empty($r['p_cat']) ? strtolower($r['p_cat']) : '';
-					$lead_cat_val = !empty($r['lead_cat']) ? strtolower($r['lead_cat']) : '';
-					$cust_val = !empty($r['customer']) ? strtolower($r['customer']) : '';
-					$status_id = isset($r['status']) ? (int)$r['status'] : 0;
-
-					$is_busy = (strpos($rem, 'busy') !== false || strpos($st_cat, 'busy') !== false || strpos($st_rem, 'busy') !== false);
-					$is_not_responding = (strpos($rem, 'not responding') !== false || strpos($rem, 'no answer') !== false || strpos($rem, 'not answering') !== false || strpos($rem, 'not picking') !== false || strpos($rem, 'no response') !== false || strpos($st_cat, 'not responding') !== false || strpos($st_cat, 'no answer') !== false);
-					$is_dnc = (!empty($r['dnd_status']) && ($r['dnd_status'] == 1 || $dnd_st == 'yes' || $dnd_st == 'y' || strpos($dnd_st, 'dnd') !== false || strpos($dnd_st, 'dncr') !== false) || strpos($rem, 'dnd') !== false || strpos($rem, 'dncr') !== false || strpos($st_cat, 'dnd') !== false || strpos($st_cat, 'dncr') !== false);
-					$is_duplicate = (strpos($rem, 'duplicate') !== false || strpos($st_cat, 'duplicate') !== false || strpos($st_rem, 'duplicate') !== false);
-					$is_followup = ($status_id == 38 || strpos($rem, 'follow up') !== false || strpos($rem, 'followup') !== false || strpos($rem, 'callback') !== false || strpos($rem, 'call back') !== false || strpos($rem, 'fu ') !== false || strpos($st_cat, 'follow up') !== false || strpos($st_cat, 'followup') !== false);
-					$has_corp_tax = (!empty($r['has_corp_tax']) || (!empty($corp_tax_st) && $corp_tax_st != 'not applicable' && $corp_tax_st != 'not registered') || (!empty($vat_st) && $vat_st != 'not registered') || strpos($rem, 'corporate') !== false || strpos($rem, 'tax') !== false || strpos($cat_val, 'corporate') !== false || strpos($p_cat_val, 'corporate') !== false || strpos($lead_cat_val, 'corporate') !== false || strpos($cust_val, 'corporate') !== false) ? 1 : 0;
-
-					$group_key = $person_name . '||' . $source . '||' . $batch_display;
-
-					if (!isset($map[$group_key])) {
-						$map[$group_key] = array(
-							'person_name' => $person_name,
-							'source' => $source,
-							'batch_display' => $batch_display,
-							'raw_batch' => $batch_id,
-							'busy' => 0,
-							'not_responding' => 0,
-							'dnc' => 0,
-							'duplicate' => 0,
-							'follow_up' => 0,
-							'corp_tax' => 0
-						);
+					if (!isset($hier[$p_name])) {
+						$hier[$p_name] = array();
+					}
+					if (!isset($hier[$p_name][$source])) {
+						$hier[$p_name][$source] = array();
+					}
+					if (!isset($hier[$p_name][$source][$batch_id])) {
+						$hier[$p_name][$source][$batch_id] = array();
+					}
+					if (!isset($hier[$p_name][$source][$batch_id][$db_st])) {
+						$hier[$p_name][$source][$batch_id][$db_st] = array('count' => 0, 'corp_tax' => 0);
 					}
 
-					if ($is_busy) {
-						$map[$group_key]['busy'] += 1;
-						$sub['busy'] += 1;
-						$grand['busy'] += 1;
-					}
-					if ($is_not_responding) {
-						$map[$group_key]['not_responding'] += 1;
-						$sub['not_responding'] += 1;
-						$grand['not_responding'] += 1;
-					}
-					if ($is_dnc) {
-						$map[$group_key]['dnc'] += 1;
-						$sub['dnc'] += 1;
-						$grand['dnc'] += 1;
-					}
-					if ($is_duplicate) {
-						$map[$group_key]['duplicate'] += 1;
-						$sub['duplicate'] += 1;
-						$grand['duplicate'] += 1;
-					}
-					if ($is_followup) {
-						$map[$group_key]['follow_up'] += 1;
-						$sub['follow_up'] += 1;
-						$grand['follow_up'] += 1;
-					}
+					$hier[$p_name][$source][$batch_id][$db_st]['count'] += 1;
+					$sub_count += 1;
+					$grand_count += 1;
+
 					if ($has_corp_tax) {
-						$map[$group_key]['corp_tax'] += 1;
-						$sub['corp_tax'] += 1;
-						$grand['corp_tax'] += 1;
+						$hier[$p_name][$source][$batch_id][$db_st]['corp_tax'] += 1;
+						$sub_corp_tax += 1;
+						$grand_corp_tax += 1;
 					}
 				}
 
 				$r_list = array();
-				foreach ($map as $k => $m) {
-					$p_name = $m['person_name'];
-					$src = $m['source'];
-					$bat = $m['batch_display'];
-					$raw_bat = $m['raw_batch'];
+				foreach ($hier as $mem => $sources) {
+					$first_mem = true;
+					$mem_tot_count = 0;
+					$mem_tot_tax = 0;
 
-					$url_base = base_url().'manager/download-report/drilldown?dept=sales&report=database&scope='.$scope.'&cat='.urlencode($src).'&sub='.urlencode($raw_bat).'&d1='.$d1.'&d2='.$d2;
-					if ($scope == 'team' && $p_name !== 'Unassigned') {
-						$url_base .= '&emp='.urlencode($p_name);
+					foreach ($sources as $src => $batches) {
+						$first_src = true;
+						foreach ($batches as $bat => $statuses) {
+							$first_bat = true;
+							$bat_tot_count = 0;
+							$bat_tot_tax = 0;
+
+							foreach ($statuses as $st => $counts) {
+								$bat_tot_count += $counts['count'];
+								$bat_tot_tax += $counts['corp_tax'];
+								$mem_tot_count += $counts['count'];
+								$mem_tot_tax += $counts['corp_tax'];
+
+								$url_base = base_url().'manager/download-report/drilldown?dept=sales&report=database&scope='.$scope.'&emp='.urlencode($mem).'&cat='.urlencode($src).'&sub='.urlencode($bat).'&d1='.$d1.'&d2='.$d2;
+								$st_url = $url_base . '&metric=' . urlencode($st);
+								$tax_url = $counts['corp_tax'] > 0 ? ($st_url . '&tax=1') : '';
+
+								$r_list[] = array(
+									array('val' => $first_mem ? $mem : '', 'url' => ''),
+									array('val' => $first_src ? $src : '', 'url' => ''),
+									array('val' => $first_bat ? $bat : '', 'url' => ''),
+									array('val' => $st, 'url' => $st_url),
+									array('val' => number_format($counts['count']), 'url' => $st_url),
+									array('val' => number_format($counts['corp_tax']), 'url' => $tax_url)
+								);
+								$first_mem = false;
+								$first_src = false;
+								$first_bat = false;
+							}
+
+							$bat_url = base_url().'manager/download-report/drilldown?dept=sales&report=database&scope='.$scope.'&emp='.urlencode($mem).'&cat='.urlencode($src).'&sub='.urlencode($bat).'&metric=all&d1='.$d1.'&d2='.$d2;
+							$r_list[] = array(
+								array('val' => '', 'url' => ''),
+								array('val' => '', 'url' => ''),
+								array('val' => $bat . ' Total', 'url' => $bat_url),
+								array('val' => '', 'url' => ''),
+								array('val' => number_format($bat_tot_count), 'url' => $bat_url),
+								array('val' => number_format($bat_tot_tax), 'url' => ($bat_tot_tax > 0 ? $bat_url.'&tax=1' : ''))
+							);
+						}
 					}
 
+					$mem_url = base_url().'manager/download-report/drilldown?dept=sales&report=database&scope='.$scope.'&emp='.urlencode($mem).'&cat=All&sub=All&metric=all&d1='.$d1.'&d2='.$d2;
 					$r_list[] = array(
-						array('val' => $p_name, 'url' => ''),
-						array('val' => $src, 'url' => $url_base.'&metric=all'),
-						array('val' => $bat, 'url' => $url_base.'&metric=all'),
-						array('val' => number_format($m['busy']), 'url' => ($m['busy'] > 0 ? $url_base.'&metric=busy' : '')),
-						array('val' => number_format($m['not_responding']), 'url' => ($m['not_responding'] > 0 ? $url_base.'&metric=not_responding' : '')),
-						array('val' => number_format($m['dnc']), 'url' => ($m['dnc'] > 0 ? $url_base.'&metric=dnc' : '')),
-						array('val' => number_format($m['duplicate']), 'url' => ($m['duplicate'] > 0 ? $url_base.'&metric=duplicate' : '')),
-						array('val' => number_format($m['follow_up']), 'url' => ($m['follow_up'] > 0 ? $url_base.'&metric=follow_up' : '')),
-						array('val' => number_format($m['corp_tax']), 'url' => ($m['corp_tax'] > 0 ? $url_base.'&metric=corp_tax&tax=1' : ''))
+						array('val' => $mem . ' Total', 'url' => $mem_url),
+						array('val' => '', 'url' => ''),
+						array('val' => '', 'url' => ''),
+						array('val' => '', 'url' => ''),
+						array('val' => number_format($mem_tot_count), 'url' => $mem_url),
+						array('val' => number_format($mem_tot_tax), 'url' => ($mem_tot_tax > 0 ? $mem_url.'&tax=1' : ''))
 					);
 				}
 
-				return array('rows' => $r_list, 'sub' => $sub);
+				return array('rows' => $r_list, 'total_count' => $sub_count, 'total_tax' => $sub_corp_tax);
 			};
 
 			$groups = array();
-			$my_data = $build_database_section($my_recs, 'my', $current_user_name);
+			$my_data = $build_database_section($my_recs, 'my');
 			$groups[] = array(
-				'category' => 'My Report',
+				'category' => 'My Report (' . $current_user_name . ')',
 				'rows' => $my_data['rows'],
 				'subtotal' => array(
 					array('val' => 'My Report Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=my&cat=All&sub=All&metric=all&d1='.$d1.'&d2='.$d2),
 					'',
 					'',
-					array('val' => number_format($my_data['sub']['busy']), 'url' => ($my_data['sub']['busy'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=my&cat=All&sub=All&metric=busy&d1='.$d1.'&d2='.$d2 : '')),
-					array('val' => number_format($my_data['sub']['not_responding']), 'url' => ($my_data['sub']['not_responding'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=my&cat=All&sub=All&metric=not_responding&d1='.$d1.'&d2='.$d2 : '')),
-					array('val' => number_format($my_data['sub']['dnc']), 'url' => ($my_data['sub']['dnc'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=my&cat=All&sub=All&metric=dnc&d1='.$d1.'&d2='.$d2 : '')),
-					array('val' => number_format($my_data['sub']['duplicate']), 'url' => ($my_data['sub']['duplicate'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=my&cat=All&sub=All&metric=duplicate&d1='.$d1.'&d2='.$d2 : '')),
-					array('val' => number_format($my_data['sub']['follow_up']), 'url' => ($my_data['sub']['follow_up'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=my&cat=All&sub=All&metric=follow_up&d1='.$d1.'&d2='.$d2 : '')),
-					array('val' => number_format($my_data['sub']['corp_tax']), 'url' => ($my_data['sub']['corp_tax'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=my&cat=All&sub=All&metric=corp_tax&tax=1&d1='.$d1.'&d2='.$d2 : ''))
+					'',
+					array('val' => number_format($my_data['total_count']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=my&cat=All&sub=All&metric=all&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($my_data['total_tax']), 'url' => ($my_data['total_tax'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=my&cat=All&sub=All&metric=all&tax=1&d1='.$d1.'&d2='.$d2 : ''))
 				)
 			);
 
-			$team_data = $build_database_section($team_recs, 'team', '');
+			$team_data = $build_database_section($team_recs, 'team');
 			$groups[] = array(
 				'category' => 'Team Report',
 				'rows' => $team_data['rows'],
@@ -3044,12 +3100,9 @@ class Admin_reports_model extends CI_Model {
 					array('val' => 'Team Report Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=team&cat=All&sub=All&metric=all&d1='.$d1.'&d2='.$d2),
 					'',
 					'',
-					array('val' => number_format($team_data['sub']['busy']), 'url' => ($team_data['sub']['busy'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=team&cat=All&sub=All&metric=busy&d1='.$d1.'&d2='.$d2 : '')),
-					array('val' => number_format($team_data['sub']['not_responding']), 'url' => ($team_data['sub']['not_responding'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=team&cat=All&sub=All&metric=not_responding&d1='.$d1.'&d2='.$d2 : '')),
-					array('val' => number_format($team_data['sub']['dnc']), 'url' => ($team_data['sub']['dnc'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=team&cat=All&sub=All&metric=dnc&d1='.$d1.'&d2='.$d2 : '')),
-					array('val' => number_format($team_data['sub']['duplicate']), 'url' => ($team_data['sub']['duplicate'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=team&cat=All&sub=All&metric=duplicate&d1='.$d1.'&d2='.$d2 : '')),
-					array('val' => number_format($team_data['sub']['follow_up']), 'url' => ($team_data['sub']['follow_up'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=team&cat=All&sub=All&metric=follow_up&d1='.$d1.'&d2='.$d2 : '')),
-					array('val' => number_format($team_data['sub']['corp_tax']), 'url' => ($team_data['sub']['corp_tax'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=team&cat=All&sub=All&metric=corp_tax&tax=1&d1='.$d1.'&d2='.$d2 : ''))
+					'',
+					array('val' => number_format($team_data['total_count']), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=team&cat=All&sub=All&metric=all&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($team_data['total_tax']), 'url' => ($team_data['total_tax'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=team&cat=All&sub=All&metric=all&tax=1&d1='.$d1.'&d2='.$d2 : ''))
 				)
 			);
 
@@ -3060,12 +3113,9 @@ class Admin_reports_model extends CI_Model {
 					array('val' => 'Grand Total', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=all&cat=All&sub=All&metric=all&d1='.$d1.'&d2='.$d2),
 					'',
 					'',
-					array('val' => number_format($grand['busy']), 'url' => ($grand['busy'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=all&cat=All&sub=All&metric=busy&d1='.$d1.'&d2='.$d2 : '')),
-					array('val' => number_format($grand['not_responding']), 'url' => ($grand['not_responding'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=all&cat=All&sub=All&metric=not_responding&d1='.$d1.'&d2='.$d2 : '')),
-					array('val' => number_format($grand['dnc']), 'url' => ($grand['dnc'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=all&cat=All&sub=All&metric=dnc&d1='.$d1.'&d2='.$d2 : '')),
-					array('val' => number_format($grand['duplicate']), 'url' => ($grand['duplicate'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=all&cat=All&sub=All&metric=duplicate&d1='.$d1.'&d2='.$d2 : '')),
-					array('val' => number_format($grand['follow_up']), 'url' => ($grand['follow_up'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=all&cat=All&sub=All&metric=follow_up&d1='.$d1.'&d2='.$d2 : '')),
-					array('val' => number_format($grand['corp_tax']), 'url' => ($grand['corp_tax'] > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=all&cat=All&sub=All&metric=corp_tax&tax=1&d1='.$d1.'&d2='.$d2 : ''))
+					'',
+					array('val' => number_format($grand_count), 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=all&cat=All&sub=All&metric=all&d1='.$d1.'&d2='.$d2),
+					array('val' => number_format($grand_corp_tax), 'url' => ($grand_corp_tax > 0 ? base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=all&cat=All&sub=All&metric=all&tax=1&d1='.$d1.'&d2='.$d2 : ''))
 				)
 			);
 		}
@@ -4012,34 +4062,30 @@ class Admin_reports_model extends CI_Model {
 			}
 
 			if (!empty($metric) && $metric !== 'all' && $metric !== 'status' && $metric !== 'corp_tax') {
-				if ($metric == 'busy') {
-					$this->db->where("(LOWER(A.status_category) LIKE '%busy%' OR LOWER(A.remark) LIKE '%busy%' OR A.status = 38)");
-				} elseif ($metric == 'not_responding') {
-					$this->db->where("(LOWER(A.status_category) LIKE '%not responding%' OR LOWER(A.remark) LIKE '%not responding%' OR LOWER(A.remark) LIKE '%no answer%' OR LOWER(A.remark) LIKE '%ringing%')");
-				} elseif ($metric == 'dnc') {
-					$this->db->where("(A.dnd_status = 1 OR LOWER(A.dnd_status) LIKE '%dncr%' OR LOWER(A.dnd_status) LIKE '%dnd%' OR LOWER(A.status_category) LIKE '%dnc%' OR LOWER(A.remark) LIKE '%dnc%')");
-				} elseif ($metric == 'duplicate') {
-					$this->db->where("(LOWER(A.status_category) LIKE '%duplicate%' OR LOWER(A.remark) LIKE '%duplicate%')");
-				} elseif ($metric == 'follow_up') {
-					$this->db->where("(A.status = 38 OR LOWER(A.status_category) LIKE '%follow%' OR LOWER(A.remark) LIKE '%follow%')");
+				if ($metric == 'Busy / Not Responding' || $metric == 'Busy / Not Respoding' || $metric == 'busy') {
+					$this->db->where("(A.call_status LIKE '%busy%' OR A.call_status LIKE '%not responding%' OR A.call_status LIKE '%not respoding%' OR LOWER(A.status_category) LIKE '%busy%' OR LOWER(A.remark) LIKE '%busy%' OR LOWER(A.remark) LIKE '%not responding%' OR LOWER(A.remark) LIKE '%not respoding%' OR LOWER(A.remark) LIKE '%no answer%' OR A.status = 45)");
+				} elseif ($metric == 'DNCR / DND' || $metric == 'dnc') {
+					$this->db->where("(A.call_status LIKE '%dncr%' OR A.call_status LIKE '%dnd%' OR A.dnd_status = 1 OR LOWER(A.dnd_status) LIKE '%dncr%' OR LOWER(A.dnd_status) LIKE '%dnd%' OR LOWER(A.status_category) LIKE '%dnc%' OR LOWER(A.remark) LIKE '%dnc%' OR A.status = 46)");
+				} elseif ($metric == 'Follow up / Call Back' || $metric == 'follow_up') {
+					$this->db->where("(A.call_status LIKE '%follow%' OR A.call_status LIKE '%call back%' OR A.status = 38 OR A.status = 47 OR LOWER(A.status_category) LIKE '%follow%' OR LOWER(A.remark) LIKE '%follow%' OR LOWER(A.remark) LIKE '%callback%')");
+				} elseif ($metric == 'Future') {
+					$this->db->where("(A.call_status LIKE '%future%' OR A.status = 48 OR LOWER(A.status_category) LIKE '%future%' OR LOWER(A.remark) LIKE '%future%')");
 				} elseif ($metric == 'Not Interested') {
-					$this->db->where("(LOWER(A.status_category) LIKE '%not interested%' OR LOWER(A.remark) LIKE '%not interested%')");
-				} elseif ($metric == 'Busy / Not Responding') {
-					$this->db->where("(LOWER(A.status_category) LIKE '%busy%' OR LOWER(A.remark) LIKE '%busy%' OR LOWER(A.remark) LIKE '%not responding%' OR LOWER(A.remark) LIKE '%no answer%')");
-				} elseif ($metric == 'Follow up / Call Back') {
-					$this->db->where("(A.status = 38 OR LOWER(A.status_category) LIKE '%follow%' OR LOWER(A.remark) LIKE '%follow%' OR LOWER(A.remark) LIKE '%callback%')");
-				} elseif ($metric == 'Lead') {
-					$this->db->where("(A.status IN (39, 42) OR LOWER(A.status_category) LIKE '%lead%' OR LOWER(A.remark) LIKE '%lead%' OR LOWER(A.remark) LIKE '%interested%')");
-				} elseif ($metric == 'Prospective') {
-					$this->db->where("(A.status = 37 OR LOWER(A.status_category) LIKE '%prospective%' OR LOWER(A.remark) LIKE '%prospective%')");
-				} elseif ($metric == 'Lost') {
-					$this->db->where("(A.status = 43 OR LOWER(A.status_category) LIKE '%lost%' OR LOWER(A.lost_reason) LIKE '%lost%')");
+					$this->db->where("(A.call_status LIKE '%not interested%' OR A.status = 49 OR LOWER(A.status_category) LIKE '%not interested%' OR LOWER(A.remark) LIKE '%not interested%')");
 				} elseif ($metric == 'Not Valid') {
-					$this->db->where("(A.status = 44 OR LOWER(A.status_category) LIKE '%not valid%' OR LOWER(A.remark) LIKE '%not valid%' OR LOWER(A.remark) LIKE '%invalid%')");
-				} elseif ($metric == 'DNCR / DND') {
-					$this->db->where("(A.dnd_status = 1 OR LOWER(A.dnd_status) LIKE '%dncr%')");
+					$this->db->where("(A.call_status LIKE '%not valid%' OR A.status = 44 OR A.status = 50 OR LOWER(A.status_category) LIKE '%not valid%' OR LOWER(A.remark) LIKE '%not valid%' OR LOWER(A.remark) LIKE '%invalid%')");
+				} elseif ($metric == 'Lead') {
+					$this->db->where("(A.call_status LIKE '%lead%' OR A.status IN (39, 42) OR LOWER(A.status_category) LIKE '%lead%' OR LOWER(A.remark) LIKE '%lead%' OR LOWER(A.remark) LIKE '%interested%')");
+				} elseif ($metric == 'Prospective') {
+					$this->db->where("(A.call_status LIKE '%prospective%' OR A.call_status LIKE '%expected%' OR A.status = 37 OR LOWER(A.status_category) LIKE '%prospective%' OR LOWER(A.remark) LIKE '%prospective%')");
+				} elseif ($metric == 'Lost') {
+					$this->db->where("(A.call_status LIKE '%lost%' OR A.status = 43 OR LOWER(A.status_category) LIKE '%lost%' OR LOWER(A.lost_reason) LIKE '%lost%')");
+				} elseif ($metric == 'Duplicate') {
+					$this->db->where("(A.call_status LIKE '%duplicate%' OR LOWER(A.status_category) LIKE '%duplicate%' OR LOWER(A.remark) LIKE '%duplicate%')");
+				} elseif ($metric == 'Associate') {
+					$this->db->where("(A.call_status LIKE '%associate%' OR LOWER(A.status_category) LIKE '%associate%')");
 				} else {
-					$this->db->where("(A.status_category = " . $this->db->escape($metric) . " OR C.status = " . $this->db->escape($metric) . ")");
+					$this->db->where("(A.call_status = " . $this->db->escape($metric) . " OR A.status_category = " . $this->db->escape($metric) . " OR C.status = " . $this->db->escape($metric) . ")");
 				}
 			}
 

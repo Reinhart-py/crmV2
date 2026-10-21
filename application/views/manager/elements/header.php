@@ -109,19 +109,82 @@
         if (empty($m_role) && $this->session->userdata('manager_id') == 1) {
             $m_role = 1;
         }
+
+        $current_user_id = (int)$this->session->userdata('manager_id');
+        $current_user_name = '';
+        $current_user_gender = '';
+        $current_user_email = '';
+        if ($current_user_id) {
+          $u_row = $this->db->select('name, gender, email, c_email')->get_where('ci_user', array('id' => $current_user_id))->row_array();
+          if (!empty($u_row)) {
+            $current_user_name = !empty($u_row['name']) ? $u_row['name'] : '';
+            $current_user_gender = !empty($u_row['gender']) ? trim($u_row['gender']) : '';
+            $current_user_email = !empty($u_row['email']) ? $u_row['email'] : (!empty($u_row['c_email']) ? $u_row['c_email'] : '');
+          }
+        }
+        if (empty($current_user_name)) {
+          $current_user_name = $this->session->userdata('manager_name');
+        }
+        if (empty($current_user_name)) {
+          $current_user_name = 'User';
+        }
+
+        $male_avatars = array(
+          'assets/dist/img/pfp_male_1.svg',
+          'assets/dist/img/pfp_male_2.svg',
+          'assets/dist/img/pfp_male_3.svg'
+        );
+        $female_avatars = array(
+          'assets/dist/img/pfp_female_1.svg',
+          'assets/dist/img/pfp_female_2.svg',
+          'assets/dist/img/pfp_female_3.svg'
+        );
+        $neutral_avatars = array(
+          'assets/dist/img/pfp_male_1.svg',
+          'assets/dist/img/pfp_female_1.svg',
+          'assets/dist/img/pfp_male_2.svg'
+        );
+
+        $user_avatar = 'assets/dist/img/pfp_male_1.svg';
+        if (strcasecmp($current_user_gender, 'female') === 0) {
+          $idx = abs($current_user_id) % count($female_avatars);
+          $user_avatar = $female_avatars[$idx];
+        } elseif (strcasecmp($current_user_gender, 'male') === 0) {
+          $idx = abs($current_user_id) % count($male_avatars);
+          $user_avatar = $male_avatars[$idx];
+        } else {
+          $idx = abs($current_user_id) % count($neutral_avatars);
+          $user_avatar = $neutral_avatars[$idx];
+        }
       ?>
       <li class="<?php if($route1=="dashboard"){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/dashboard"> <i class="fa fa-tachometer"></i> <span>Dashboard</span>  </a> </li>
 
-
-      <li class="<?php if(in_array($route1, array('tasks', 'tickets', 'operations', 'calls'))){ echo "active";}else{ echo "";}?>"> <a href="javascript:void(0);"><i class="fa fa-cogs"></i> <span>Operations</span> </a>
+      <li class="<?php if($route1=="leads" || $route1=="verticals" || $route1=="database-transfer"){ echo "active";}else{ echo "";}?>"> 
+        <a href="javascript:void(0);"><i class="fa fa-th-large"></i> <span>My Zone</span> </a>
         <ul>
-          <li><a href="<?php echo base_url();?>manager/tasks/add"><i class="fa fa-plus"></i>Add Task</a></li>
-          <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-list"></i>Task View</a></li>
-          <li><a href="<?php echo base_url();?>manager/tasks/followups"><i class="fa fa-calendar-check-o"></i>Task Follow-up</a></li>
-          <li><a href="<?php echo base_url();?>manager/tickets/add"><i class="fa fa-plus"></i>Raise Ticket</a></li>
-          <li><a href="<?php echo base_url();?>manager/tickets"><i class="fa fa-ticket"></i>Ticket View</a></li>
-          <li><a href="<?php echo base_url();?>manager/tickets/followups"><i class="fa fa-calendar-check-o"></i>Open Tickets</a></li>
-          <li><a href="<?php echo base_url();?>manager/calls"><i class="fa fa-phone"></i>Calls</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/add"><i class="fa fa-plus"></i>Database Add</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads"><i class="fa fa-list"></i>Database View</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/followups"><i class="fa fa-clock-o"></i>Database Follow-up</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/meetings"><i class="fa fa-calendar"></i>Database Meetings</a></li>
+          <li><a href="<?php echo base_url();?>manager/verticals/add"><i class="fa fa-plus"></i>Vertical Add</a></li>
+          <li><a href="<?php echo base_url();?>manager/verticals"><i class="fa fa-list"></i>Vertical View</a></li>
+          <li><a href="<?php echo base_url();?>manager/verticals/followups"><i class="fa fa-list"></i>Vertical Follow-up</a></li>
+          <li><a href="<?php echo base_url();?>manager/database-transfer"><i class="fa fa-exchange"></i>Database Transfer</a></li>
+        </ul>
+      </li>
+
+      <li class="<?php if($route1=="team"){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/team/members"><i class="fa fa-users"></i> <span>Team</span> </a>
+        <ul>
+          <li><a href="<?php echo base_url();?>manager/team/members"><i class="fa fa-users"></i>Members </a></li>
+          <li><a href="<?php echo base_url();?>manager/team/chart"><i class="fa fa-list"></i>Chart</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/leads"><i class="fa fa-list"></i>Leads</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/verticals"><i class="fa fa-list"></i>Verticals</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/followups"><i class="fa fa-list"></i>Follow up</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/meetings"><i class="fa fa-list"></i>Meetings</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/assignmeetings"><i class="fa fa-list"></i>Assigned Meetings</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/assignleads"><i class="fa fa-list"></i>Assign Database</a></li>
+          <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-tasks"></i>Task</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/tickets"><i class="fa fa-ticket"></i>Tickets</a></li>
         </ul>
       </li>
 
@@ -138,48 +201,20 @@
       </li>
       <?php } ?>
 
-      <li class="<?php if($route1=="leads" || $route1=="verticals" || $route1=="database-transfer"){ echo "active";}else{ echo "";}?>"> 
-        <a href="javascript:void(0);"><i class="fa fa-th-large"></i> <span>My Zone</span> </a>
+      <li class="<?php if(in_array($route1, array('tasks', 'tickets', 'operations', 'calls'))){ echo "active";}else{ echo "";}?>"> <a href="javascript:void(0);"><i class="fa fa-tasks"></i> <span>Tasks</span> </a>
         <ul>
-          <li><a href="<?php echo base_url();?>manager/leads/add"><i class="fa fa-plus"></i>Database Add</a></li>
-          <li><a href="<?php echo base_url();?>manager/leads"><i class="fa fa-list"></i>Database View</a></li>
-          <li><a href="<?php echo base_url();?>manager/leads/followups"><i class="fa fa-clock-o"></i>Database Follow-up</a></li>
-          <li><a href="<?php echo base_url();?>manager/leads/meetings"><i class="fa fa-calendar"></i>Database Meetings</a></li>
-          <li><a href="<?php echo base_url();?>manager/verticals/add"><i class="fa fa-plus"></i>Vertical Add</a></li>
-          <li><a href="<?php echo base_url();?>manager/verticals"><i class="fa fa-list"></i>Vertical View</a></li>
-          <li><a href="<?php echo base_url();?>manager/verticals/followups"><i class="fa fa-list"></i>Vertical Follow-up</a></li>
-          <li><a href="<?php echo base_url();?>manager/database-transfer"><i class="fa fa-exchange"></i>Database Transfer</a></li>
+          <li><a href="<?php echo base_url();?>manager/tasks/add"><i class="fa fa-plus"></i>Add Task</a></li>
+          <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-list"></i>Task View</a></li>
+          <li><a href="<?php echo base_url();?>manager/tasks/followups"><i class="fa fa-calendar-check-o"></i>Task Follow-up</a></li>
+          <li><a href="<?php echo base_url();?>manager/tickets/add"><i class="fa fa-plus"></i>Raise Ticket</a></li>
+          <li><a href="<?php echo base_url();?>manager/tickets"><i class="fa fa-ticket"></i>Ticket View</a></li>
+          <li><a href="<?php echo base_url();?>manager/tickets/followups"><i class="fa fa-calendar-check-o"></i>Open Tickets</a></li>
+          <li><a href="<?php echo base_url();?>manager/calls"><i class="fa fa-phone"></i>Calls</a></li>
         </ul>
       </li>
 
-
-      <li class="<?php if($route1=="team"){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/team/members"><i class="fa fa-list"></i> <span>Team</span> </a>
-        <ul>
-          <li><a href="<?php echo base_url();?>manager/team/members"><i class="fa fa-plus"></i>Members </a></li>
-          <li><a href="<?php echo base_url();?>manager/team/chart"><i class="fa fa-list"></i>Chart</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/leads"><i class="fa fa-list"></i>Leads</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/verticals"><i class="fa fa-list"></i>Verticals</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/followups"><i class="fa fa-list"></i>Follow up</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/meetings"><i class="fa fa-list"></i>Meetings</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/assignmeetings"><i class="fa fa-list"></i>Assigned Meetings</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/assignleads"><i class="fa fa-list"></i>Assigned Leads</a></li>
-          <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-tasks"></i>Task</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/tickets"><i class="fa fa-ticket"></i>Tickets</a></li>
-        </ul>
-      </li>
-
-      <li class="<?php if($route1=="reports" || $route1=="download-report" || $route1=="admin-reports"){ echo "active";}else{ echo "";}?>"> <a href="#"><i class="fa fa-bar-chart"></i> <span>Reports</span> </a>
-        <ul>
-          <li><a href="https://7strokes.maxvendor47.workers.dev/" target="_blank"><i class="fa fa-database"></i>Generate Data</a></li>
-          <li><a href="<?php echo base_url();?>manager/download-report"><i class="fa fa-file-pdf-o"></i>Download Reports</a></li>
-        </ul>
-      </li>
-     
-
-     <?php 
-       if($m_role == 1 || $m_role == 4){ 
-     ?>
-      <li class="<?php if($route1=="roles" || $route1=="terms" || $route1=="users" || $route1=="assigned-leads" || $route1=="admin-logs" || ($route1=="leads" && in_array($route2, array("import", "export")))){ echo "active";}else{ echo "";}?>"> 
+      <?php if($m_role == 1 || $m_role == 4){ ?>
+      <li class="<?php if($route1=="roles" || $route1=="terms" || $route1=="users" || $route1=="assigned-leads" || $route1=="admin-logs" || ($route1=="system" && ($route2=="calling-api" || $route2=="calling_api")) || ($route1=="leads" && in_array($route2, array("import", "export")))){ echo "active";}else{ echo "";}?>"> 
         <a href="<?php echo ($m_role == 1)? base_url().'manager/roles' : base_url().'manager/leads/import'; ?>"><i class="fa fa-paperclip"></i> <span>System</span> </a>
         <ul>        
           <?php if($m_role == 1){ ?>
@@ -195,44 +230,69 @@
             <li><a href="<?php echo base_url();?>manager/assigned-leads?alloc_filter=non_allotted"><i class="fa fa-folder-open-o"></i>Non-Allotted Database</a></li>
             <li><a href="<?php echo base_url();?>manager/admin-logs"><i class="fa fa-history"></i>Admin Logs</a></li>
           <?php } ?>
+          <li><a href="<?php echo base_url();?>manager/system/calling-api"><i class="fa fa-phone-square"></i>Calling API</a></li>
         </ul>
       </li>
       <?php } ?>
-   
-      
-      
-      <li class="<?php if($route1=="profile"){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/profile"> <i class="fa fa-user" aria-hidden="true"></i><span>Profile</span></a>
-      <ul>        
-          <li><a href="<?php echo base_url();?>manager/profile"><i class="fa fa-eye"></i>View Profile</a></li>
-          <li><a href="<?php echo base_url();?>manager/password"><i class="fa fa-list"></i>Change Password</a></li>
+
+      <li class="<?php if($route1=="reports" || $route1=="download-report" || $route1=="admin-reports"){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/download-report"><i class="fa fa-bar-chart"></i> <span>Reports</span> </a>
+        <ul>
+          <li><a href="https://7strokes.maxvendor47.workers.dev/" target="_blank"><i class="fa fa-database"></i>Generate Data</a></li>
+          <li><a href="<?php echo base_url();?>manager/download-report"><i class="fa fa-file-pdf-o"></i>Download Reports</a></li>
         </ul>
-         </li>
-
-
-      <li> <a class="logout" href="#"> <i class="fa fa-power-off"></i> <span>Logout</span></a> </li>
+      </li>
 
     </ul>
   </nav>
 
-  <!-- Global Header Quick Actions: Dynamic User Greeting + Dark/Light Mode Toggle -->
   <div class="header-quick-actions">
-    <span class="header-user-greeting">Hi, <?php 
-      $current_user_id = $this->session->userdata('manager_id');
-      $current_user_name = '';
-      if ($current_user_id) {
-        $u_row = $this->db->select('name')->get_where('ci_user', array('id' => $current_user_id))->row_array();
-        if (!empty($u_row['name'])) {
-          $current_user_name = $u_row['name'];
-        }
-      }
-      if (empty($current_user_name)) {
-        $current_user_name = $this->session->userdata('manager_name');
-      }
-      echo !empty($current_user_name) ? htmlspecialchars($current_user_name) : 'User';
-    ?></span>
     <button type="button" class="global-theme-btn" id="globalThemeToggle" title="Toggle Dark/Light Mode">
       <i class="fa fa-moon-o"></i>
     </button>
+
+    <div class="profile-menu-container">
+      <button type="button" class="profile-avatar-btn" id="profileMenuToggle" aria-haspopup="true" aria-expanded="false" title="<?php echo htmlspecialchars($current_user_name); ?>">
+        <img src="<?php echo base_url() . $user_avatar; ?>" alt="<?php echo htmlspecialchars($current_user_name); ?>" class="profile-avatar-img" />
+      </button>
+
+      <div class="google-profile-dropdown" id="googleProfileDropdown">
+        <div class="google-profile-card">
+          <div class="google-avatar-wrap">
+            <img src="<?php echo base_url() . $user_avatar; ?>" alt="<?php echo htmlspecialchars($current_user_name); ?>" class="google-profile-large-img" />
+          </div>
+          <div class="google-greeting-name">Hi, <?php echo htmlspecialchars($current_user_name); ?></div>
+          <?php if (!empty($current_user_email)) { ?>
+            <div class="google-user-email"><?php echo htmlspecialchars($current_user_email); ?></div>
+          <?php } ?>
+        </div>
+
+        <div class="google-menu-divider"></div>
+
+        <ul class="google-profile-options">
+          <li>
+            <a href="<?php echo base_url(); ?>manager/profile" class="google-profile-item">
+              <i class="fa fa-user-circle"></i>
+              <span>View Profile</span>
+            </a>
+          </li>
+          <li>
+            <a href="<?php echo base_url(); ?>manager/password" class="google-profile-item">
+              <i class="fa fa-key"></i>
+              <span>Change Password</span>
+            </a>
+          </li>
+        </ul>
+
+        <div class="google-menu-divider"></div>
+
+        <div class="google-logout-wrap">
+          <a href="#" class="logout google-logout-btn">
+            <i class="fa fa-power-off"></i>
+            <span>Logout</span>
+          </a>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -263,6 +323,18 @@ $(function() {
     var nextTheme = (current === 'dark') ? 'light' : 'dark';
     applyCrmTheme(nextTheme);
   });
+
+  $(document).on('click', '#profileMenuToggle', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    $('#googleProfileDropdown').fadeToggle(150);
+  });
+
+  $(document).on('click', function(e) {
+    if (!$(e.target).closest('.profile-menu-container').length) {
+      $('#googleProfileDropdown').fadeOut(120);
+    }
+  });
 });
 </script>
 <div class="clearfix"></div>
@@ -287,17 +359,33 @@ $(function() {
         <a href="<?php echo base_url();?>manager/dashboard"> <i class="fa fa-tachometer"></i> <span>Dashboard</span> </a> 
       </li>
 
-
-      <li class="<?php if(in_array($route1, array('tasks', 'tickets', 'operations', 'calls'))){ echo "active";}else{ echo "";}?> treeview"> 
-        <a href="javascript:void(0);"><i class="fa fa-cogs"></i> <span>Operations</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
+      <li class="<?php if($route1=="leads" || $route1=="verticals" || $route1=="database-transfer"){ echo "active";}else{ echo "";}?> treeview"> 
+        <a href="javascript:void(0);"><i class="fa fa-th-large"></i> <span>My Zone</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu">
-          <li><a href="<?php echo base_url();?>manager/tasks/add"><i class="fa fa-plus"></i>Add Task</a></li>
-          <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-list"></i>Task View</a></li>
-          <li><a href="<?php echo base_url();?>manager/tasks/followups"><i class="fa fa-calendar-check-o"></i>Task Follow-up</a></li>
-          <li><a href="<?php echo base_url();?>manager/tickets/add"><i class="fa fa-plus"></i>Raise Ticket</a></li>
-          <li><a href="<?php echo base_url();?>manager/tickets"><i class="fa fa-ticket"></i>Ticket View</a></li>
-          <li><a href="<?php echo base_url();?>manager/tickets/followups"><i class="fa fa-calendar-check-o"></i>Open Tickets</a></li>
-          <li><a href="<?php echo base_url();?>manager/calls"><i class="fa fa-phone"></i>Calls</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/add"><i class="fa fa-plus"></i>Database Add</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads"><i class="fa fa-list"></i>Database View</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/followups"><i class="fa fa-clock-o"></i>Database Follow-up</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/meetings"><i class="fa fa-calendar"></i>Database Meetings</a></li>
+          <li><a href="<?php echo base_url();?>manager/verticals/add"><i class="fa fa-plus"></i>Vertical Add</a></li>
+          <li><a href="<?php echo base_url();?>manager/verticals"><i class="fa fa-list"></i>Vertical View</a></li>
+          <li><a href="<?php echo base_url();?>manager/verticals/followups"><i class="fa fa-list"></i>Vertical Follow-up</a></li>
+          <li><a href="<?php echo base_url();?>manager/database-transfer"><i class="fa fa-exchange"></i>Database Transfer</a></li>
+        </ul>
+      </li>
+
+      <li class="<?php if($route1=="team"){ echo "active";}else{ echo "";}?> treeview"> 
+        <a href="javascript:void(0);"><i class="fa fa-users"></i> <span>Team</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
+        <ul class="treeview-menu">
+          <li><a href="<?php echo base_url();?>manager/team/members"><i class="fa fa-users"></i>Members </a></li>
+          <li><a href="<?php echo base_url();?>manager/team/chart"><i class="fa fa-list"></i>Chart</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/leads"><i class="fa fa-list"></i>Leads</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/verticals"><i class="fa fa-list"></i>Verticals</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/followups"><i class="fa fa-list"></i>Follow up</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/meetings"><i class="fa fa-list"></i>Meetings</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/assignmeetings"><i class="fa fa-list"></i>Assigned Meetings</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/assignleads"><i class="fa fa-list"></i>Assign Database</a></li>
+          <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-tasks"></i>Task</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/tickets"><i class="fa fa-ticket"></i>Tickets</a></li>
         </ul>
       </li>
 
@@ -315,46 +403,21 @@ $(function() {
       </li>
       <?php } ?>
 
-      <li class="<?php if($route1=="leads" || $route1=="verticals" || $route1=="database-transfer"){ echo "active";}else{ echo "";}?> treeview"> 
-        <a href="javascript:void(0);"><i class="fa fa-th-large"></i> <span>My Zone</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
+      <li class="<?php if(in_array($route1, array('tasks', 'tickets', 'operations', 'calls'))){ echo "active";}else{ echo "";}?> treeview"> 
+        <a href="javascript:void(0);"><i class="fa fa-tasks"></i> <span>Tasks</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu">
-          <li><a href="<?php echo base_url();?>manager/leads/add"><i class="fa fa-plus"></i>Database Add</a></li>
-          <li><a href="<?php echo base_url();?>manager/leads"><i class="fa fa-list"></i>Database View</a></li>
-          <li><a href="<?php echo base_url();?>manager/leads/followups"><i class="fa fa-clock-o"></i>Database Follow-up</a></li>
-          <li><a href="<?php echo base_url();?>manager/leads/meetings"><i class="fa fa-calendar"></i>Database Meetings</a></li>
-          <li><a href="<?php echo base_url();?>manager/verticals/add"><i class="fa fa-plus"></i>Vertical Add</a></li>
-          <li><a href="<?php echo base_url();?>manager/verticals"><i class="fa fa-list"></i>Vertical View</a></li>
-          <li><a href="<?php echo base_url();?>manager/verticals/followups"><i class="fa fa-list"></i>Vertical Follow-up</a></li>
-          <li><a href="<?php echo base_url();?>manager/database-transfer"><i class="fa fa-exchange"></i>Database Transfer</a></li>
+          <li><a href="<?php echo base_url();?>manager/tasks/add"><i class="fa fa-plus"></i>Add Task</a></li>
+          <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-list"></i>Task View</a></li>
+          <li><a href="<?php echo base_url();?>manager/tasks/followups"><i class="fa fa-calendar-check-o"></i>Task Follow-up</a></li>
+          <li><a href="<?php echo base_url();?>manager/tickets/add"><i class="fa fa-plus"></i>Raise Ticket</a></li>
+          <li><a href="<?php echo base_url();?>manager/tickets"><i class="fa fa-ticket"></i>Ticket View</a></li>
+          <li><a href="<?php echo base_url();?>manager/tickets/followups"><i class="fa fa-calendar-check-o"></i>Open Tickets</a></li>
+          <li><a href="<?php echo base_url();?>manager/calls"><i class="fa fa-phone"></i>Calls</a></li>
         </ul>
       </li>
 
-      <li class="<?php if($route1=="team"){ echo "active";}else{ echo "";}?> treeview"> 
-        <a href="javascript:void(0);"><i class="fa fa-list"></i> <span>Team</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
-        <ul class="treeview-menu">
-          <li><a href="<?php echo base_url();?>manager/team/members"><i class="fa fa-plus"></i>Members </a></li>
-          <li><a href="<?php echo base_url();?>manager/team/chart"><i class="fa fa-list"></i>Chart</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/leads"><i class="fa fa-list"></i>Leads</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/verticals"><i class="fa fa-list"></i>Verticals</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/followups"><i class="fa fa-list"></i>Follow up</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/meetings"><i class="fa fa-list"></i>Meetings</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/assignmeetings"><i class="fa fa-list"></i>Assigned Meetings</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/assignleads"><i class="fa fa-list"></i>Assigned Leads</a></li>
-          <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-tasks"></i>Task</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/tickets"><i class="fa fa-ticket"></i>Tickets</a></li>
-        </ul>
-      </li>
-
-      <li class="<?php if($route1=="reports" || $route1=="download-report" || $route1=="admin-reports"){ echo "active menu-open";}else{ echo "";}?> treeview"> 
-        <a href="javascript:void(0);"><i class="fa fa-bar-chart"></i> <span>Reports</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
-        <ul class="treeview-menu" style="<?php if($route1=="reports" || $route1=="download-report" || $route1=="admin-reports"){ echo "display: block;"; } ?>">
-          <li><a href="https://7strokes.maxvendor47.workers.dev/" target="_blank"><i class="fa fa-database"></i>Generate Data</a></li>
-          <li><a href="<?php echo base_url();?>manager/download-report"><i class="fa fa-file-pdf-o"></i>Download Reports</a></li>
-        </ul>
-      </li>
-
-     <?php if($m_role == 1 || $m_role == 4){ ?>
-      <li class="<?php if($route1=="roles" || $route1=="terms" || $route1=="users" || $route1=="assigned-leads" || $route1=="admin-logs" || ($route1=="leads" && in_array($route2, array("import", "export")))){ echo "active";}else{ echo "";}?> treeview"> 
+      <?php if($m_role == 1 || $m_role == 4){ ?>
+      <li class="<?php if($route1=="roles" || $route1=="terms" || $route1=="users" || $route1=="assigned-leads" || $route1=="admin-logs" || ($route1=="system" && ($route2=="calling-api" || $route2=="calling_api")) || ($route1=="leads" && in_array($route2, array("import", "export")))){ echo "active";}else{ echo "";}?> treeview"> 
         <a href="javascript:void(0);"><i class="fa fa-paperclip"></i> <span>System</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu">        
           <?php if($m_role == 1){ ?>
@@ -370,22 +433,18 @@ $(function() {
             <li><a href="<?php echo base_url();?>manager/assigned-leads?alloc_filter=non_allotted"><i class="fa fa-folder-open-o"></i>Non-Allotted Database</a></li>
             <li><a href="<?php echo base_url();?>manager/admin-logs"><i class="fa fa-history"></i>Admin Logs</a></li>
           <?php } ?>
+          <li><a href="<?php echo base_url();?>manager/system/calling-api"><i class="fa fa-phone-square"></i>Calling API</a></li>
         </ul>
       </li>
-     <?php } ?>
+      <?php } ?>
 
-      <li class="<?php if($route1=="profile"){ echo "active";}else{ echo "";}?> treeview"> 
-        <a href="javascript:void(0);"> <i class="fa fa-cog" aria-hidden="true"></i><span>Profile</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span></a>
-        <ul class="treeview-menu">        
-          <li><a href="<?php echo base_url();?>manager/profile"><i class="fa fa-eye"></i>View Profile</a></li>
-          <li><a href="<?php echo base_url();?>manager/password"><i class="fa fa-exchange"></i>Change Password</a></li>
+      <li class="<?php if($route1=="reports" || $route1=="download-report" || $route1=="admin-reports"){ echo "active menu-open";}else{ echo "";}?> treeview"> 
+        <a href="javascript:void(0);"><i class="fa fa-bar-chart"></i> <span>Reports</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
+        <ul class="treeview-menu" style="<?php if($route1=="reports" || $route1=="download-report" || $route1=="admin-reports"){ echo "display: block;"; } ?>">
+          <li><a href="https://7strokes.maxvendor47.workers.dev/" target="_blank"><i class="fa fa-database"></i>Generate Data</a></li>
+          <li><a href="<?php echo base_url();?>manager/download-report"><i class="fa fa-file-pdf-o"></i>Download Reports</a></li>
         </ul>
       </li>
-    
-      <li> 
-        <a class="logout" href="#"> <i class="fa fa-power-off"></i> <span>Logout</span> </a> 
-      </li>
-
     </ul>
   </section>
   

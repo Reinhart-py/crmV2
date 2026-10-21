@@ -1,6 +1,5 @@
 <footer class="crm-footer">
-<span>&copy; 2026 Rolexto CRM Platform. All rights reserved.</span>
-<span>Rolexto Real Estate &amp; Business Setup</span>
+<span>&copy; 2026 Seven Strokes CRM Platform. All rights reserved.</span>
 </footer>
 </div>
 </div>
@@ -289,7 +288,24 @@ $(document).ready(function() {
         }
     });
 
-    // Universal Back Button handler
+    $(document).on('click', '.munk_menu > li.has-submenu > a', function(e) {
+        var href = $(this).attr('href');
+        if (href === '#' || href === 'javascript:void(0);' || !href) {
+            e.preventDefault();
+            var $li = $(this).parent('li');
+            var $sub = $li.find('> ul');
+            if ($sub.length) {
+                var isVis = $sub.is(':visible');
+                $('.munk_menu > li.has-submenu > ul').not($sub).slideUp(180);
+                if (isVis) {
+                    $sub.slideUp(180);
+                } else {
+                    $sub.slideDown(180);
+                }
+            }
+        }
+    });
+
     $(document).on('click', 'a.btn:contains("Back"), a:has(i.fa-arrow-left)', function(e) {
         if ($(this).attr('href') === 'javascript:window.history.back();' || $(this).data('action') === 'back') {
             e.preventDefault();

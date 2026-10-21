@@ -578,13 +578,14 @@
             </div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Lead Assigned To / Collaborators</label>
-                <select class="form-control select2" name="lead_assign[]" multiple="multiple" data-placeholder="Select Assignee(s)" style="width: 100%;">
+                <label>Database Assigned to Collaborators</label>
+                <select class="form-control select2" name="lead_assign[]" multiple="multiple" data-placeholder="Select Collaborator(s)" style="width: 100%;">
                   <?php if(isset($u_list) && !empty($u_list)) { 
                     $my_id = (int)$this->session->userdata('manager_id');
                     foreach($u_list as $li){
+                      if((int)$li['id'] === $my_id){ continue; }
                   ?>
-                    <option value="<?php echo $li['id']; ?>" <?php if($li['id'] == $my_id){ echo 'selected'; } ?>><?php echo htmlspecialchars($li['name']); ?></option>          
+                    <option value="<?php echo $li['id']; ?>"><?php echo htmlspecialchars($li['name']); ?></option>          
                   <?php } } ?>
                 </select>
               </div>
@@ -1203,6 +1204,48 @@ $(document).ready(function() {
       'Service Live',
       'Handover Completed',
       'First Bill Generated',
+      'Other'
+    ],
+    '45': [
+      'No Answer / Ringing',
+      'Line Busy / Engaged',
+      'Switched Off / Unreachable',
+      'Call Disconnected',
+      'Other'
+    ],
+    '46': [
+      'DND Registered',
+      'Do Not Call Request',
+      'Customer Refusal',
+      'Other'
+    ],
+    '47': [
+      'Callback Requested',
+      'Awaiting Decision Maker',
+      'Call After 2 Days',
+      'Call Next Week',
+      'Call Next Month',
+      'Other'
+    ],
+    '48': [
+      'Future Requirement (1-3 Months)',
+      'Future Requirement (3-6 Months)',
+      'Budget Available Next Year',
+      'Contract Renewal Later',
+      'Other'
+    ],
+    '49': [
+      'Not Interested in Service',
+      'Currently Satisfied with Competitor',
+      'No Requirement',
+      'Price Too High',
+      'Other'
+    ],
+    '50': [
+      'Wrong Number / Invalid Contact',
+      'Disconnected Number',
+      'Company Closed / Ceased Operations',
+      'Duplicate Entry',
       'Other'
     ],
     'default': [

@@ -435,9 +435,15 @@
             <table class="pivot-table">
                 <thead>
                     <tr>
-                        <?php foreach ($report_data['pivot_data']['headers'] as $hdr) { ?>
-                        <th><?php echo htmlspecialchars($hdr); ?></th>
-                        <?php } ?>
+                        <?php 
+                        $th_idx = 0;
+                        foreach ($report_data['pivot_data']['headers'] as $hdr) { 
+                            $is_left = in_array($report, array('database', 'quote')) ? ($th_idx < 4) : ($th_idx < 2);
+                        ?>
+                        <th style="text-align: <?php echo $is_left ? 'left' : 'right'; ?>;"><?php echo htmlspecialchars(str_ireplace('COUNTA of ', '', $hdr)); ?></th>
+                        <?php 
+                            $th_idx++;
+                        } ?>
                     </tr>
                 </thead>
                 <tbody>

@@ -156,8 +156,8 @@ class Ci_admin_team extends CI_Controller {
 
         $data=array();
 		$data['info']=array(
-			'title'=>'Manager - Leads',
-			'page_heading'=>'Assigned Leads'
+			'title'=>'Manager - Assigned Database',
+			'page_heading'=>'Assigned Database'
 		);
         $data['info2']=$this->if_not_login();
         

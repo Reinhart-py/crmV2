@@ -689,20 +689,18 @@
             </div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Lead Assigned To / Collaborators</label>
+                <label>Database Assigned to Collaborators</label>
                 <?php 
                   $current_agents = array();
                   if (!empty($list['agents'])) {
                     $current_agents = array_map('trim', explode(',', $list['agents']));
                   }
-                  if (!empty($list['lead_assign'])) {
-                    $current_agents[] = (string)$list['lead_assign'];
-                  }
-                  $current_agents = array_unique(array_filter($current_agents));
+                  $owner_id = !empty($list['lead_assign']) ? (int)$list['lead_assign'] : (!empty($list['created_by']) ? (int)$list['created_by'] : (int)$this->session->userdata('manager_id'));
                 ?>
-                <select class="form-control select2" name="lead_assign[]" multiple="multiple" data-placeholder="Select Assignee(s)" style="width: 100%;">
+                <select class="form-control select2" name="lead_assign[]" multiple="multiple" data-placeholder="Select Collaborator(s)" style="width: 100%;">
                   <?php if(isset($u_list) && !empty($u_list)) { 
                     foreach($u_list as $li){
+                      if((int)$li['id'] === $owner_id){ continue; }
                       $is_sel = in_array((string)$li['id'], $current_agents);
                   ?>
                     <option <?php if($is_sel){ echo "selected"; } ?> value="<?php echo $li['id']; ?>"><?php echo htmlspecialchars($li['name']); ?></option>          
@@ -1426,6 +1424,48 @@ $(document).ready(function() {
       'Service Live',
       'Handover Completed',
       'First Bill Generated',
+      'Other'
+    ],
+    '45': [
+      'No Answer / Ringing',
+      'Line Busy / Engaged',
+      'Switched Off / Unreachable',
+      'Call Disconnected',
+      'Other'
+    ],
+    '46': [
+      'DND Registered',
+      'Do Not Call Request',
+      'Customer Refusal',
+      'Other'
+    ],
+    '47': [
+      'Callback Requested',
+      'Awaiting Decision Maker',
+      'Call After 2 Days',
+      'Call Next Week',
+      'Call Next Month',
+      'Other'
+    ],
+    '48': [
+      'Future Requirement (1-3 Months)',
+      'Future Requirement (3-6 Months)',
+      'Budget Available Next Year',
+      'Contract Renewal Later',
+      'Other'
+    ],
+    '49': [
+      'Not Interested in Service',
+      'Currently Satisfied with Competitor',
+      'No Requirement',
+      'Price Too High',
+      'Other'
+    ],
+    '50': [
+      'Wrong Number / Invalid Contact',
+      'Disconnected Number',
+      'Company Closed / Ceased Operations',
+      'Duplicate Entry',
       'Other'
     ],
     'default': [
