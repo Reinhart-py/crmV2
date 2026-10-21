@@ -526,6 +526,7 @@ class Admin_reports_model extends CI_Model {
 		$search = isset($filters['search']) ? trim($filters['search']) : '';
 		$emp = isset($filters['employee_id']) ? $filters['employee_id'] : (isset($filters['employee_ids']) ? $filters['employee_ids'] : '');
 		$status = isset($filters['status']) ? $filters['status'] : '';
+		$manager_id = (int)$this->session->userdata('manager_id');
 
 		if ($report == 'performance') {
 			$this->db->select('id, name, email, department, manager');
@@ -671,16 +672,14 @@ class Admin_reports_model extends CI_Model {
 		if ($report == 'database') {
 			$this->db->select('A.*, B.name as assigned_name, C.status as status_name');
 			$this->db->from('ci_leads as A');
-			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'LEFT');
+			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'INNER');
 			$this->db->join('ci_status as C', 'A.status = C.id', 'LEFT');
+			$this->db->where('A.lead_assign >', 0);
+			$this->db->where('A.lead_assign IS NOT NULL', null, false);
+			$this->db->where('B.name IS NOT NULL', null, false);
+			$this->db->where("B.name != ''", null, false);
 			if (!empty($filters['database_category'])) {
-				if ($filters['database_category'] == 'Allotted Database') {
-					$this->db->where('(A.database_category = "Allotted Database" OR (A.database_category = "" AND A.lead_assign > 0))');
-				} elseif ($filters['database_category'] == 'Non-Allotted Database') {
-					$this->db->where('(A.database_category = "Non-Allotted Database" OR (A.database_category = "" AND (A.lead_assign = 0 OR A.lead_assign IS NULL)))');
-				} else {
-					$this->db->where('A.database_category', $filters['database_category']);
-				}
+				$this->db->where('A.database_category', $filters['database_category']);
 			}
 			if (!empty($filters['data_source'])) {
 				$this->db->where('A.data_source', $filters['data_source']);
@@ -807,6 +806,16 @@ class Admin_reports_model extends CI_Model {
 				);
 			}
 
+			$tot_my = 0;
+			$tot_team = 0;
+			foreach ($rows as $r) {
+				if ($this->_isMyRecord($r, $manager_id)) {
+					$tot_my++;
+				} else {
+					$tot_team++;
+				}
+			}
+
 			return array(
 				'title' => 'Sales Database Report',
 				'department_title' => 'Sales Department',
@@ -815,9 +824,9 @@ class Admin_reports_model extends CI_Model {
 				'rows' => $rows,
 				'summary' => array(
 					array('label' => 'Total Database', 'value' => number_format(count($rows)), 'icon' => 'fa-database', 'color' => 'bg-green', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=all&cat=All&sub=All&metric=all&d1='.$d1.'&d2='.$d2),
-					array('label' => 'Allotted Database', 'value' => number_format($tot_allotted), 'icon' => 'fa-user-check', 'color' => 'bg-aqua', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=allotted&cat=All&sub=All&metric=all&d1='.$d1.'&d2='.$d2),
-					array('label' => 'Not Allotted Database', 'value' => number_format($tot_not_allotted), 'icon' => 'fa-hourglass-half', 'color' => 'bg-yellow', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=not_allotted&cat=All&sub=All&metric=all&d1='.$d1.'&d2='.$d2),
-					array('label' => 'Total Corporate Tax', 'value' => number_format($tot_corp_tax), 'icon' => 'fa-shield', 'color' => 'bg-purple', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=all&cat=All&sub=All&metric=all&tax=1&d1='.$d1.'&d2='.$d2)
+					array('label' => 'My Database Records', 'value' => number_format($tot_my), 'icon' => 'fa-user', 'color' => 'bg-aqua', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=my&cat=All&sub=All&metric=all&d1='.$d1.'&d2='.$d2),
+					array('label' => 'Team Database Records', 'value' => number_format($tot_team), 'icon' => 'fa-users', 'color' => 'bg-blue', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=team&cat=All&sub=All&metric=all&d1='.$d1.'&d2='.$d2),
+					array('label' => 'Total Corporate Tags', 'value' => number_format($tot_corp_tax), 'icon' => 'fa-shield', 'color' => 'bg-purple', 'url' => base_url().'manager/download-report/drilldown?dept=sales&report=database&scope=all&cat=All&sub=All&metric=corp_tax&tax=1&d1='.$d1.'&d2='.$d2)
 				)
 			);
 		}
@@ -2899,9 +2908,13 @@ class Admin_reports_model extends CI_Model {
 
 				foreach ($recs as $r) {
 					if ($scope == 'my') {
-						$person_name = $default_person_name;
+						$person_name = !empty($default_person_name) ? $default_person_name : (!empty($r['assigned_name']) ? $r['assigned_name'] : '');
 					} else {
-						$person_name = (!empty($r['assigned_name']) && $r['assigned_name'] !== '-') ? $r['assigned_name'] : 'Unassigned';
+						$person_name = (!empty($r['assigned_name']) && $r['assigned_name'] !== '-') ? $r['assigned_name'] : '';
+					}
+
+					if (empty($person_name) || $person_name === 'Unassigned') {
+						continue;
 					}
 
 					$source = !empty($r['source']) ? $r['source'] : (!empty($r['data_source']) ? $r['data_source'] : 'Other');
@@ -3946,8 +3959,12 @@ class Admin_reports_model extends CI_Model {
 		if ($report == 'database') {
 			$this->db->select('A.*, B.name as assigned_name, C.status as status_name');
 			$this->db->from('ci_leads as A');
-			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'LEFT');
+			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'INNER');
 			$this->db->join('ci_status as C', 'A.status = C.id', 'LEFT');
+			$this->db->where('A.lead_assign >', 0);
+			$this->db->where('A.lead_assign IS NOT NULL', null, false);
+			$this->db->where('B.name IS NOT NULL', null, false);
+			$this->db->where("B.name != ''", null, false);
 			$this->_applyDate($this->db, 'A.created', $d1, $d2);
 
 			$scope = $this->input->get('scope');
