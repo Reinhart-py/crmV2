@@ -462,7 +462,7 @@
                         <?php 
                         $cell_idx = 0;
                         foreach ($r_item as $cell) { 
-                            $align = ($report == 'database') ? (($cell_idx < 3) ? 'left' : 'right') : (($cell_idx < 2) ? 'left' : 'right');
+                            $align = ($report == 'database' || $report == 'quote') ? (($cell_idx < 3) ? 'left' : 'right') : (($cell_idx < 2) ? 'left' : 'right');
                             $indent = ($cell_idx == 0) ? 'padding-left: 28px;' : '';
                             $cell_val = is_array($cell) ? (isset($cell['val']) ? $cell['val'] : '') : $cell;
                             $cell_url = is_array($cell) && isset($cell['url']) ? $cell['url'] : '';
@@ -494,7 +494,7 @@
                         <?php 
                         $cell_idx = 0;
                         foreach ($grp['subtotal'] as $cell) { 
-                            $align = ($report == 'database') ? (($cell_idx < 3) ? 'left' : 'right') : (($cell_idx < 2) ? 'left' : 'right');
+                            $align = ($report == 'database' || $report == 'quote') ? (($cell_idx < 3) ? 'left' : 'right') : (($cell_idx < 2) ? 'left' : 'right');
                             $cell_val = is_array($cell) ? (isset($cell['val']) ? $cell['val'] : '') : $cell;
                             $cell_url = is_array($cell) && isset($cell['url']) ? $cell['url'] : '';
                             $is_numeric = (bool)preg_match('/[0-9]/', (string)$cell_val) && !preg_match('/[a-zA-Z]{3,}/', (string)$cell_val);
@@ -521,7 +521,7 @@
                         <?php 
                         $cell_idx = 0;
                         foreach ($report_data['pivot_data']['grand_total'] as $cell) { 
-                            $align = ($report == 'database') ? (($cell_idx < 3) ? 'left' : 'right') : (($cell_idx < 2) ? 'left' : 'right');
+                            $align = ($report == 'database' || $report == 'quote') ? (($cell_idx < 3) ? 'left' : 'right') : (($cell_idx < 2) ? 'left' : 'right');
                             $cell_val = is_array($cell) ? (isset($cell['val']) ? $cell['val'] : '') : $cell;
                             $cell_url = is_array($cell) && isset($cell['url']) ? $cell['url'] : '';
                             $is_numeric = (bool)preg_match('/[0-9]/', (string)$cell_val) && !preg_match('/[a-zA-Z]{3,}/', (string)$cell_val);

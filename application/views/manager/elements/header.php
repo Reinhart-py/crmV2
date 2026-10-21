@@ -345,9 +345,9 @@ $(function() {
         </ul>
       </li>
 
-      <li class="<?php if($route1=="reports" || $route1=="download-report" || $route1=="admin-reports"){ echo "active";}else{ echo "";}?> treeview"> 
+      <li class="<?php if($route1=="reports" || $route1=="download-report" || $route1=="admin-reports"){ echo "active menu-open";}else{ echo "";}?> treeview"> 
         <a href="javascript:void(0);"><i class="fa fa-bar-chart"></i> <span>Reports</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
-        <ul class="treeview-menu">
+        <ul class="treeview-menu" style="<?php if($route1=="reports" || $route1=="download-report" || $route1=="admin-reports"){ echo "display: block;"; } ?>">
           <li><a href="https://7strokes.maxvendor47.workers.dev/" target="_blank"><i class="fa fa-database"></i>Generate Data</a></li>
           <li><a href="<?php echo base_url();?>manager/download-report"><i class="fa fa-file-pdf-o"></i>Download Reports</a></li>
         </ul>

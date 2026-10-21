@@ -103,14 +103,14 @@
             </div>
             <div>
                 <button type="button" class="btn btn-sm btn-default" id="toggleAllSectionsBtn" style="font-weight: 600; border-radius: 4px; padding: 6px 14px; color: #111827;">
-                    <i class="fa fa-expand" id="toggleAllIcon"></i> <span id="toggleAllText">Expand All</span>
+                    <i class="fa fa-compress" id="toggleAllIcon"></i> <span id="toggleAllText">Collapse All</span>
                 </button>
             </div>
         </div>
 
         <div id="reportsContainer">
             <?php foreach ($sections as $dept_slug => $dept_data) { ?>
-            <div class="report-section-card collapsed" data-dept="<?php echo $dept_slug; ?>">
+            <div class="report-section-card" data-dept="<?php echo $dept_slug; ?>">
                 <div class="report-section-header" onclick="toggleSection(this);">
                     <div class="report-section-title-wrap">
                         <i class="fa fa-chevron-down report-section-chevron"></i>
@@ -138,20 +138,14 @@
             <h4 style="color: #111827; font-weight: 700; margin: 0 0 5px 0;">No matching reports found</h4>
             <p style="color: #64748b; font-size: 13px; margin: 0;">Try searching with a different term.</p>
         </div>
+
     </section>
 </div>
 
 <script>
 function toggleSection(headerElem) {
     var card = headerElem.closest('.report-section-card');
-    var isCurrentlyCollapsed = card.classList.contains('collapsed');
-    var allCards = document.querySelectorAll('.report-section-card');
-    allCards.forEach(function(c) {
-        c.classList.add('collapsed');
-    });
-    if (isCurrentlyCollapsed) {
-        card.classList.remove('collapsed');
-    }
+    card.classList.toggle('collapsed');
     var toggleIcon = document.getElementById('toggleAllIcon');
     var toggleText = document.getElementById('toggleAllText');
     if (toggleIcon && toggleText) {
