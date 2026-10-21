@@ -1,153 +1,118 @@
 # Changelog
 
-All notable changes, features, bug fixes, and refinements for the Rolexto CRM repository are documented in this file.
+All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
-### Calling API Clean UI, Universal Reports Navigation, Non-Human Vector PFPs & Unified CRM Status
-- **Date & Time**: `2026-10-21 16:50:00 +0530`
-
-#### Changes & Additions:
-- **Calling API Settings Streamlined UI (`application/views/manager/system/calling_api.php`)**:
-  - Removed obsolete subtitle text and redundant "Open Calls Workstation" button.
-  - Eliminated helper text clutter and annotations below input fields for a clean, minimal SaaS configuration experience.
-  - Streamlined input placeholders and preserved 3CX PBX FQDN, Client ID, Client Secret, default extension, browser WebClient toggle, multi-line mapping, and test connection integration.
-- **Universal Reports Navigation Across All User Levels**:
-  - Removed administrator-only role restriction (`m_role == 1 || m_role == 4`) from the **Reports** navigation bar in both desktop (`.munk_menu`) and mobile (`.sidebar-menu`) headers.
-  - Enabled all team members and regular users to access reports, allowing them to view and track their own and their team's performance, database, leads, and quotes.
-- **Non-Human Vector Profile Pictures (PFPs)**:
-  - Replaced human photographic avatar fallbacks with clean, modern vector-illustrated character avatars (`assets/dist/img/pfp_male_*.svg`, `assets/dist/img/pfp_female_*.svg`).
-  - Completely eliminated real human photos from male and female profile avatars across the top-right header and profile dropdown.
-- **Footer Branding Standardization (`application/views/manager/elements/footer.php`)**:
-  - Updated copyright line across all CRM pages to: `© 2026 Seven Strokes CRM Platform. All rights reserved.`
-  - Removed outdated secondary company tagline from footer.
-- **Unified Call & Lead Status Architecture**:
-  - Unified call outcome statuses and lead statuses under the CRM's primary status workflow (`ci_status`), eliminating duplicate and confusing redundant dropdowns across the CRM.
-  - Aligned post-call outcomes and lead status updates in `ci_admin_calls.php` to synchronize disposition and status records cleanly.
-- **Date & Time**: `2026-10-21 16:25:00 +0530`
-
-#### Changes & Additions:
-- **Calls Page UI Modernization (`application/views/manager/calls/dashboard.php`)**:
-  - Removed obsolete 3CX configuration section from Calls page (3CX configuration is securely restricted to administrators and support personnel under `System > Calling API`).
-  - Replicated modern workstation UI from reference design and user screenshots:
-    - **Active Call Notification Card**: Displays contact avatar, name, live pulse indicator, live call duration timer, and action buttons (`Mute`, `Hold`, `Speaker`, and red `End Call`).
-    - **Left Column**:
-      - Switcher tabs: `Keypad` and `Recent Calls`.
-      - Keypad view with large formatted phone number display, backspace icon button, 3x4 dialpad matrix (1-9, *, 0, #), and full-width green `Call` button.
-      - Recent Calls view showing incoming, outgoing, and missed call history with durations and timestamps.
-      - Audio input summary card showing active input device.
-    - **Right Column (Contact Context & Post-Call Actions)**:
-      - Contact Details Card with headshot, name, role/designation, lead code, quick email and calendar buttons, and phone/email/category pills.
-      - Previous/Next queue navigation buttons to cycle through allotted database leads.
-      - **Post-Call Outcome & Data Fill Card**:
-        - Outcome dropdown populated with required options: `Busy / Not Responding`, `DNCR / DND`, `Follow up / Call Back`, `Future`, `Lost`, `Not Interested`, `Not Valid`, `Follow up in 2 days`, `Meeting scheduled`, `Send email summary`, and `Connected`.
-        - Lead status dropdown, next follow-up date, and next follow-up time.
-        - Notes textarea with `Save Notes` and `Save & Next Lead` actions.
-      - **Recent Activity Card**: Live activity timeline tracking past calls, remarks, and follow-ups.
-    - **Call Logs Modal**: Full search and history viewer accessible via `Call Logs` button.
-- **To-Do List & GitHub Pre-Push Verification**:
-  - Validated PHP syntax (`php -l`) across all modified view, model, and controller files with zero errors.
-  - Ensured strict compliance with repository coding standards (zero comments in PHP files).
-  - Verified collaborator assignment, database report team member grouping, and top navigation/profile menu.
-
-### Collaborator Assignment, Team Navigation ("Assign Database"), Main Navigation Reordering & Google-Style Profile Menu
-- **Date & Time**: `2026-10-21 16:15:00 +0530`
-
-#### Changes & Additions:
-- **Database Add – Collaborator Assignment**:
-  - Renamed `Lead Assigned To` to **Database Assigned to Collaborators** in `My Zone > Database Add > More Category Fields` (`application/views/manager/leads/addleads.php`) and edit views (`application/views/manager/leads/editleads.php`).
-  - Removed the current user's own username from the collaborator dropdown options; the creator/owner is assigned by default as primary (`created_by` / `lead_assign`) and cannot be re-added as a collaborator.
-  - Allowed selecting other existing active users as collaborators from `ci_user`.
-  - Stored additional collaborators into `agents` (comma-separated IDs) while keeping primary creator/owner intact in `lead_assign` and `created_by`.
-  - Fixed visibility bug in `application/models/ci_admin_model.php` (`getTeamAssignLeads`) by querying `(A.lead_assign = $cur_id OR FIND_IN_SET($cur_id, A.agents) > 0)`, ensuring records appear correctly in each collaborator's `Team > Assigned Database` list.
-  - Kept database ownership, collaborator assignment, and System-level database allocation as distinct functionalities.
-- **Team Navigation & Page Renaming**:
-  - Renamed **Assign Leads** to **Assign Database** in top navigation and mobile sidebar dropdown under `Team`.
-  - Renamed page heading and title in `ci_admin_team.php` and `application/views/manager/team/assignleads.php` to **Assigned Database** / **Assign Database**.
-  - Updated filter labels to `All Database (Assigned & Unassigned)` and `⚡ Unassigned Database Only`.
-  - Displayed assigned owner and collaborator badges in the table.
-- **Main Navigation Order**:
-  - Reordered main navigation in exact order: **Dashboard, My Zone, Team, KAM, Tasks, System, Reports** across both desktop `.munk_menu` and mobile `.sidebar-menu`.
-  - Renamed Operations to **Tasks** (icon `fa-tasks`).
-  - Placed **Reports** at the end of main navigation for administrators.
-  - Preserved all routes, child items, permissions, and functionality intact.
-- **Top-Right Google-Style Profile Menu**:
-  - Moved Profile and Logout out of the main navigation and into a dedicated circular profile menu in the top-right header actions.
-  - Displayed a circular profile avatar with diverse, deterministic default avatars based on gender (Male, Female, Neutral) without requiring manual upload.
-  - Implemented Google-account-style dropdown with large avatar, user name greeting (**Hi, [User Name]**), and email address.
-  - Structured dropdown options in exact order:
-    1. **View Profile** (`manager/profile`)
-    2. **Change Password** (`manager/password`)
-    3. **Logout** (`.logout` / `manager/logout`)
-  - Added full light and dark mode support, smooth CSS transitions, and mobile viewport responsive sizing.
+### [v1.57.0] - 2026-10-21
+- **Commit**: `1df3fce9ac93e7c37c31eb58634e892f1174a74d` (`1df3fce`)
+- **Tree Code**: `9c2840ee8372b00e83499a3d5ad186c749ea2b0b` (`9c2840e`)
+- **Timestamp**: `2026-10-21 17:00:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Update README.md and CHANGELOG.md with standard versioning, commit hashes, tree codes, and strict local memory rules
+- **Detailed Changes & Technical Implementation**:
+  - **Permanent Workspace Memory & Rules**: Created `project_memory.md` and `.agents/rules/crm_rules.md` documenting user aesthetic preferences (clean minimal SaaS forms, zero AI clutter, no random human photos, strict standard palette), strict coding rules (zero comments in PHP files, `php -l` verification), and domain logic (unified status, collaborator vs owner distinction, main navigation order).
+  - **Git Ignore Security**: Added `project_memory.md` and `.agents/` to `.gitignore` so local memory and rule files are preserved locally and never leaked or pushed to GitHub.
+  - **Documentation Alignment**: Synchronized `README.md` and `CHANGELOG.md` to reflect Calling API settings, workstation calling workflow, universal reports navigation, and vector PFPs.
 
 ---
 
-### Database Report Member Identification (`Name` Column), Clean Headers & Dedicated Call Status Field
-- **Date & Time**: `2026-10-21 15:25:00 +0530`
-
-#### Changes & Additions:
-- **Dedicated Call Status Field (`call_status`)**:
-  - Added `call_status VARCHAR(100) DEFAULT NULL` to the `ci_leads` table to accurately track call outcomes and dispositions.
-  - Added `Call Status` select dropdown in `application/views/manager/leads/addleads.php` and `application/views/manager/leads/editleads.php` with standard call outcome options: `Busy / Not Responding`, `DNCR / DND`, `Follow up / Call Back`, `Future`, `Lead`, `Lost`, `Not Interested`, `Not Valid`, `Prospective`, `Duplicate`, and `Associate`.
-  - Updated `application/controllers/ci_admin_leads.php` (`add()` and `edit()` actions) to persist and manage `call_status`.
-- **Database Report Team Member Identification**:
-  - Added `Name` as the primary first column in the Sales Database Report (`manager/download-report/sales/database`), grouping rows by Team Member (`Name`) -> `Source` -> `Batch Ref` -> `Status`.
-  - Added Batch Totals, Team Member Totals, Category Subtotals (`My Report Total` / `Team Report Total`), and Grand Total.
-- **Header Cleanliness**:
-  - Removed `COUNTA of ` from report headers: clean 6-column layout (`Name`, `Source`, `Batch Ref`, `Status`, `Database Status`, `Corp Tax`).
-  - Added dynamic stripping in `application/views/manager/report/admin/view.php` to ensure `COUNTA of ` never appears.
-  - Prioritized `call_status` in `admin_reports_model.php` to accurately classify database lead statuses, and updated drilldown filtering accordingly.
+### [v1.56.0] - 2026-10-21
+- **Commit**: `8ce5b0f32d448188c2e7a5e3876f5ba450c74700` (`8ce5b0f`)
+- **Tree Code**: `05fcb92f91d558622c2f8975cc22cadb1027915c` (`05fcb92`)
+- **Timestamp**: `2026-10-21 16:49:01 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Refine Calling API UI, enable universal Reports navigation, add vector PFPs, standardize footer and unify CRM statuses
+- **Detailed Changes & Technical Implementation**:
+  - **Calling API Settings Streamlined UI (`application/views/manager/system/calling_api.php`)**:
+    - Removed obsolete subtitle text and redundant "Open Calls Workstation" button.
+    - Eliminated helper text clutter and annotations below input fields for a clean, minimal SaaS configuration experience.
+    - Streamlined input placeholders and preserved 3CX PBX FQDN, Client ID, Client Secret, default extension, browser WebClient toggle, multi-line mapping, and test connection integration.
+  - **Universal Reports Navigation Across All User Levels**:
+    - Removed administrator-only role restriction (`m_role == 1 || m_role == 4`) from the **Reports** navigation bar in both desktop (`.munk_menu`) and mobile (`.sidebar-menu`) headers.
+    - Enabled all team members and regular users to access reports, allowing them to view and track their own and their team's performance, database, leads, and quotes.
+  - **Non-Human Vector Profile Pictures (PFPs)**:
+    - Replaced human photographic avatar fallbacks with clean, modern vector-illustrated character avatars (`assets/dist/img/pfp_male_*.svg`, `assets/dist/img/pfp_female_*.svg`).
+    - Completely eliminated real human photos from male and female profile avatars across the top-right header and profile dropdown.
+  - **Footer Branding Standardization (`application/views/manager/elements/footer.php`)**:
+    - Updated copyright line across all CRM pages to: `© 2026 Seven Strokes CRM Platform. All rights reserved.`
+    - Removed outdated secondary company tagline from footer.
+  - **Unified Call & Lead Status Architecture**:
+    - Unified call outcome statuses and lead statuses under the CRM's primary status workflow (`ci_status`), eliminating duplicate and confusing redundant dropdowns across the CRM.
+    - Aligned post-call outcomes and lead status updates in `ci_admin_calls.php` to synchronize disposition and status records cleanly.
+  - **Calls Workstation Layout (`application/views/manager/calls/dashboard.php`)**:
+    - Compact single-screen workstation matching reference design with no vertical scrolling.
+    - Left column with Keypad (38px keys) and Recent Calls tab.
+    - Right column with active call banner, 4-box meta summary, outcome/status dropdown, notes, and follow-up date/time.
+    - Right slide-in drawer (`#nextCallsQueueDrawer`) tracking upcoming database records and remaining queue counter badge.
+  - **Collaborator Assignment & Team Navigation**:
+    - Renamed `Lead Assigned To` to **Database Assigned to Collaborators** in `My Zone > Database Add > More Category Fields` (`addleads.php`, `editleads.php`).
+    - Primary creator/owner is default; collaborators are stored in `agents` excluding the current user.
+    - Renamed **Assign Leads** under `Team` navigation to **Assign Database**; collaborator-assigned records appear in each collaborator's `Team > Assigned Database` list.
+  - **Main Navigation Order & Profile Menu**:
+    - Navigation order: **Dashboard, My Zone, Team, KAM, Tasks, System, Reports**.
+    - Top-right Google-style profile menu with gender-based vector illustrated avatars and greeting `Hi, [User Name]`.
 
 ---
 
-### Database Report Excel Pivot Structure & Detailed View Streamlining
-- **Date & Time**: `2026-10-21 11:35:00 +0530`
-
-#### Changes & Additions:
-- **Database Report Pivot Layout Overhaul (`manager/download-report/sales/database`)**:
-  - Re-structured the Database Report pivot sheet to mirror the Excel Pivot layout with standard headers: `Source`, `Batch Ref`, `Database Status`, `COUNTA of Database Status`, and `COUNTA of Corp Tax`.
-  - Grouped records into two collapsible main categories: **Allotted Database** and **Not Allotted Database**.
-  - Sourced and aggregated rows by `Source` (Google Map, Online, GRS, etc.) -> `Batch Ref` (e.g. `Oct-26/Online`, `Aug-22/Online`) -> `Database Status` (Database, Follow up / Call Back, Lead, Prospective, Not Interested, DNCR / DND, Lost, Not Valid, etc.).
-  - Added group-level subtotals for Allotted Database Total and Not Allotted Database Total, plus Grand Total.
-  - Interactive drilldown links on count columns take users to `/manager/download-report/drilldown` with precise multi-filter audit criteria.
-- **Removed Redundant Detailed Records Table**:
-  - Removed the redundant bottom detailed records table from report views (`application/views/manager/report/admin/view.php`), keeping the interface clean, fast, and exclusively focused on the pivot sheet view.
-- **Adaptive Column Alignment in Pivot Tables**:
-  - Updated pivot cell alignment to dynamically format text columns (Source, Batch Ref, Status) to left alignment and numeric counts/metrics to right alignment.
+### [v1.55.0] - 2026-10-21
+- **Commit**: `8a47fba1444f9c6b60b8d407c7a3e8c0c85380db` (`8a47fba`)
+- **Tree Code**: `268e3b82fd7b7dddc54df367a251acdaaf77e4e4` (`268e3b8`)
+- **Timestamp**: `2026-10-21 14:11:48 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Filter sales database report to only include assigned database records and show assigned person name
+- **Detailed Changes & Technical Implementation**:
+  - Filtered sales database report to only include assigned database records.
+  - Added assigned person's name as the primary column in pivot summaries (`Name` -> `Source` -> `Batch Ref` -> `Status`).
+  - Removed `COUNTA of ` prefix from headers and streamlined table display.
 
 ---
 
-### Two-Section Report Architecture (My Report & Team Report), Configurable Column Selector, Non-Allotted Leads Filter & Admin Logs UI Standard
-- **Date & Time**: `2026-10-21 11:10:00 +0530`
+### [v1.54.0] - 2026-10-21
+- **Commit**: `224f19b9358b3f01930fad4f24ce1cd0f50c4f5c` (`224f19b`)
+- **Tree Code**: `2a1bedd57bcb9c07d3e9492d72ccd414f66b84c9` (`2a1bedd`)
+- **Timestamp**: `2026-10-21 13:50:45 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Update admin logs UI to match team leads with responsive layout and plain black status text
+- **Detailed Changes & Technical Implementation**:
+  - Re-architected `application/views/manager/system/admin_logs.php` matching Leads View typography, table layout, and pagination controls.
+  - Standardized status badges and eliminated extraneous banner cards.
 
-#### Changes & Additions:
-- **Two-Section Sales Report Architecture ("My Report" & "Team Report")**:
-  - Implemented unified two-section collapsible pivot summaries (`My Report` and `Team Report`) across all 8 Sales reports:
-    - **Performance Report** (`manager/download-report/sales/performance`)
-    - **Database Report** (`manager/download-report/sales/database`)
-    - **Lead Report** (`manager/download-report/sales/lead`)
-    - **Quote Report** (`manager/download-report/sales/quote`)
-    - **CT / VAT Registration Report** (`manager/download-report/sales/tax-registration`)
-    - **Lost Deals Report** (`manager/download-report/sales/lost`)
-    - **Trade License Report** (`manager/download-report/sales/trade-license`)
-    - **Custom Report** (`manager/download-report/sales/custom`)
-  - Added `_isMyRecord()` helper in `admin_reports_model.php` to accurately partition records by ownership (`created_by`), assignment (`lead_assign`), and collaboration (`agents`).
-  - Added collapsible pivot tables with group-level subtotals and overall grand totals.
-  - Enhanced detailed records table for all non-performance reports with instant client-side tabs: `All Records (count)`, `My Records (count)`, and `Team Records (count)`.
-- **Standardized Report Headers & Field Alignments**:
-  - **Performance**: Name, Department, Database, Active Deals, Closed Deals, Lost Deals, Followups Attended, Total Quoted (AED), Total MRR, Total Lost MRR, Total Closed MRR.
-  - **Leads**: Lead ID, Customer Name, POC, Contact, Email, Service Type, MRR, Status, Owner, Created Date, Action.
-  - **Quote**: Lead ID, Customer Name, Quote Status, Quote Mode, Quote Amount, Status, Quoted Date, Owner, Action. Included status 40 (Submitted) as quotes with fallback to MRR value.
-  - **Database**: Lead ID, Customer Name, POC, Contact, Email, Database Category, Data Source, Batch Ref No, Status, Assigned To, Created Date, Action.
-- **PowerSheet Configurable Column Selector for Custom Reports**:
-  - Added interactive field selector toolbar in `sales/custom` report allowing users to pick and reorder columns dynamically.
-  - Added quick action buttons: "Select All", "Clear All", and "Default Columns".
-  - Selected columns persist across pagination and exports.
-- **Non-Allotted Database View Fix (`manager/assigned-leads`)**:
-  - Fixed `alloc_filter=non_allotted` returning empty due to imported leads (`created_by = 1` and `lead_assign = 0`).
-  - Broadened query criteria in `ci_admin_model.php`: `(lead_assign = 0 OR lead_assign IS NULL) AND (created_by = 0 OR created_by = 1)`.
-  - Added dynamic page heading (`Non-Allotted Database` vs `Allotted Database`).
-  - Preserved `alloc_filter` in search filter form via hidden input and in the Reset button URL.
-- **System Admin Logs UI Alignment (`manager/system/admin-logs`)**:
+---
+
+### [v1.53.0] - 2026-10-21
+- **Commit**: `89abc45f8f9418deeb46c7e9e464016c969e0264` (`89abc45`)
+- **Tree Code**: `3091fd9d432cb4d1cf29f0dc035092a833c5d5fc` (`3091fd9`)
+- **Timestamp**: `2026-10-21 12:05:18 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Open report sections by default and partition team report sections by member name
+- **Detailed Changes & Technical Implementation**:
+  - Set both My Report and Team Report collapsible accordion sections to open by default.
+  - Grouped and partitioned team report records by team member name with subtotals.
+
+---
+
+### [v1.52.1] - 2026-10-21
+- **Commit**: `5a989e3d31a55767f051a313b3a8bc7769574af3` (`5a989e3`)
+- **Tree Code**: `411ee8208f66a91ddb83ff6d36bb83d536357598` (`411ee82`)
+- **Timestamp**: `2026-10-21 11:37:42 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Align database report with Excel pivot structure and remove detailed view table
+- **Detailed Changes & Technical Implementation**:
+  - Re-structured Database Report pivot sheet to mirror Excel Pivot format (`Source` -> `Batch Ref` -> `Database Status`).
+  - Removed redundant bottom detailed records table from report views, keeping pivot view fast and uncluttered.
+
+---
+
+### [v1.52.0] - 2026-10-21
+- **Commit**: `32947b18873e428b8e05728e0e06a749d81a2228` (`32947b1`)
+- **Tree Code**: `9949d811a51ad57a67ed908a90f77fea8b6ef8be` (`9949d81`)
+- **Timestamp**: `2026-10-21 11:10:45 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Implement two-section reports architecture, configurable column selector, non-allotted leads view fix, system admin logs UI standard, and documentation update
+- **Detailed Changes & Technical Implementation**:
+  - Implemented unified two-section collapsible pivot summaries (`My Report` and `Team Report`) across all 8 Sales reports.
+  - Added PowerSheet configurable column selector for custom reports with instant preset buttons.
+  - Fixed non-allotted database view to properly surface imported leads with `lead_assign = 0`.
+  - Reordered main navigation: Dashboard, My Zone, Team, KAM, Tasks, System, Reports.
   - Re-architected `application/views/manager/system/admin_logs.php` to match the exact table layout, typography, filters, and spacing of `Leads -> View` (`leadsview.php`).
   - Removed redundant headers and banner clutter.
   - Standardized status badges (`Success`, `Timeout`, `Failed`) using matching Leads View badge styling.

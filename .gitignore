@@ -10,3 +10,7 @@ application/logs/*
 
 cookie.txt
 *.tmp
+
+# Agent Memory & Local Preferences (strictly ignored from Git)
+project_memory.md
+.agents/

@@ -60,10 +60,22 @@ Managing enterprise sales teams requires clean boundaries between ownership and 
 - **PowerSheet Configurable Column Selector**:
   - Custom reports (`manager/download-report/sales/custom`) feature an interactive column selector.
   - Pick fields on-demand with "Select All", "Clear All", and "Default Columns" buttons.
+- **Calling Workstation (`manager/calls`)**:
+  - Single-screen desktop workstation matching modern reference designs with zero vertical scrolling.
+  - Interactive dialpad with formatted input, backspace, and recent calls tab.
+  - Live active call banner with mute, hold, speaker, end call, and duration counter.
+  - Unified status dropdown, outcome remarks, follow-up date/time, and save/advance actions.
+  - Slide-in Next Calls Queue drawer displaying upcoming database records and remaining queue count.
+- **3CX Calling API Configuration (`manager/system/calling-api`)**:
+  - Secure administrator configuration for 3CX PBX FQDN, Client ID, Client Secret, default extension, and multi-line mapping.
+  - Test connection AJAX diagnostic and automatic 3CX WebClient browser dialer dispatch.
+- **Collaborator Assignment & Team Database**:
+  - Clear separation between primary record creator/owner (`created_by`, `lead_assign`) and team collaborators (`agents`).
+  - Records assigned to collaborators appear directly in their `Team > Assigned Database` view.
+- **Universal Reports Navigation**:
+  - All users can access `Reports` to monitor their personal and team performance, database, leads, and quotes.
 - **Operations & Help Desk**:
   - Ticket queues, priority flags, deadlines, and open ticket follow-ups.
-- **Calling Center Dashboard**:
-  - Track calls, talk time, and dispositions by agent.
 - **KAM (Key Account Management)**:
   - Role-gated client management and onboarding views.
 - **System Admin Logs**:
@@ -276,11 +288,13 @@ The CRM includes a unified, responsive calling center integrated with the **3CX 
 | `manager/assigned-leads` | Allotted database records (supports `?alloc_filter=non_allotted`) |
 | `manager/database-transfer` | Lead ownership transfer interface |
 | `manager/team/leads` | Team lead pipeline |
+| `manager/team/assignleads` | Assign Database to team members |
 | `manager/verticals/followups` | Vertical follow-up queue |
 | `manager/kam/my-client` | Key account client view |
-| `manager/calls/dashboard` | Calling center metrics & records |
+| `manager/calls` | Calling Workstation (dialpad, queue drawer, post-call outcome) |
+| `manager/system/calling-api` | 3CX PBX REST API settings & multi-line extension routing |
 | `manager/tickets/open` | Open support tickets |
-| `manager/download-report` | Unified reports catalog |
+| `manager/download-report` | Unified reports catalog (accessible to all user roles) |
 | `manager/download-report/sales/performance` | Sales performance pivot report (My & Team sections) |
 | `manager/download-report/sales/database` | Excel-style database pivot report (Allotted vs Not Allotted, Source, Batch Ref, Status, Corp Tax) |
 | `manager/download-report/sales/lead` | Lead pipeline report (My & Team sections) |
