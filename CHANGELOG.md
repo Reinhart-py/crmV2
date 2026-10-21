@@ -2,6 +2,21 @@
 
 All notable changes, features, bug fixes, and refinements for the Rolexto CRM repository are documented in this file.
 
+### Database Report Excel Pivot Structure & Detailed View Streamlining
+- **Date & Time**: `2026-10-21 11:35:00 +0530`
+
+#### Changes & Additions:
+- **Database Report Pivot Layout Overhaul (`manager/download-report/sales/database`)**:
+  - Re-structured the Database Report pivot sheet to mirror the Excel Pivot layout with standard headers: `Source`, `Batch Ref`, `Database Status`, `COUNTA of Database Status`, and `COUNTA of Corp Tax`.
+  - Grouped records into two collapsible main categories: **Allotted Database** and **Not Allotted Database**.
+  - Sourced and aggregated rows by `Source` (Google Map, Online, GRS, etc.) -> `Batch Ref` (e.g. `Oct-26/Online`, `Aug-22/Online`) -> `Database Status` (Database, Follow up / Call Back, Lead, Prospective, Not Interested, DNCR / DND, Lost, Not Valid, etc.).
+  - Added group-level subtotals for Allotted Database Total and Not Allotted Database Total, plus Grand Total.
+  - Interactive drilldown links on count columns take users to `/manager/download-report/drilldown` with precise multi-filter audit criteria.
+- **Removed Redundant Detailed Records Table**:
+  - Removed the redundant bottom detailed records table from report views (`application/views/manager/report/admin/view.php`), keeping the interface clean, fast, and exclusively focused on the pivot sheet view.
+- **Adaptive Column Alignment in Pivot Tables**:
+  - Updated pivot cell alignment to dynamically format text columns (Source, Batch Ref, Status) to left alignment and numeric counts/metrics to right alignment.
+
 ---
 
 ### Two-Section Report Architecture (My Report & Team Report), Configurable Column Selector, Non-Allotted Leads Filter & Admin Logs UI Standard

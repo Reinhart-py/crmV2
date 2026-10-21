@@ -462,7 +462,7 @@
                         <?php 
                         $cell_idx = 0;
                         foreach ($r_item as $cell) { 
-                            $align = ($cell_idx < 2) ? 'left' : 'right';
+                            $align = ($report == 'database') ? (($cell_idx < 3) ? 'left' : 'right') : (($cell_idx < 2) ? 'left' : 'right');
                             $indent = ($cell_idx == 0) ? 'padding-left: 28px;' : '';
                             $cell_val = is_array($cell) ? (isset($cell['val']) ? $cell['val'] : '') : $cell;
                             $cell_url = is_array($cell) && isset($cell['url']) ? $cell['url'] : '';
@@ -494,7 +494,7 @@
                         <?php 
                         $cell_idx = 0;
                         foreach ($grp['subtotal'] as $cell) { 
-                            $align = ($cell_idx < 2) ? 'left' : 'right';
+                            $align = ($report == 'database') ? (($cell_idx < 3) ? 'left' : 'right') : (($cell_idx < 2) ? 'left' : 'right');
                             $cell_val = is_array($cell) ? (isset($cell['val']) ? $cell['val'] : '') : $cell;
                             $cell_url = is_array($cell) && isset($cell['url']) ? $cell['url'] : '';
                             $is_numeric = (bool)preg_match('/[0-9]/', (string)$cell_val) && !preg_match('/[a-zA-Z]{3,}/', (string)$cell_val);
@@ -521,7 +521,7 @@
                         <?php 
                         $cell_idx = 0;
                         foreach ($report_data['pivot_data']['grand_total'] as $cell) { 
-                            $align = ($cell_idx < 2) ? 'left' : 'right';
+                            $align = ($report == 'database') ? (($cell_idx < 3) ? 'left' : 'right') : (($cell_idx < 2) ? 'left' : 'right');
                             $cell_val = is_array($cell) ? (isset($cell['val']) ? $cell['val'] : '') : $cell;
                             $cell_url = is_array($cell) && isset($cell['url']) ? $cell['url'] : '';
                             $is_numeric = (bool)preg_match('/[0-9]/', (string)$cell_val) && !preg_match('/[a-zA-Z]{3,}/', (string)$cell_val);
@@ -544,76 +544,7 @@
             </table>
         </div>
         <?php } ?>
-
-        <?php if (!empty($report_data['rows']) && $report != 'performance') { 
-            $cur_uid = isset($manager_id) ? (int)$manager_id : (int)$this->session->userdata('admin_id');
-            $my_rows_cnt = 0;
-            $team_rows_cnt = 0;
-            foreach ($report_data['rows'] as $r_chk) {
-                $is_mine = false;
-                if ($cur_uid > 0) {
-                    if (isset($r_chk['lead_assign_id']) && (int)$r_chk['lead_assign_id'] === $cur_uid) $is_mine = true;
-                    elseif (isset($r_chk['created_by_id']) && (int)$r_chk['created_by_id'] === $cur_uid) $is_mine = true;
-                    elseif (!empty($r_chk['agents']) && in_array((string)$cur_uid, explode(',', (string)$r_chk['agents']))) $is_mine = true;
-                }
-                if ($is_mine) $my_rows_cnt++;
-                else $team_rows_cnt++;
-            }
-        ?>
-        <div class="box protected-crm-data" style="border-radius: 6px; border: 1px solid var(--crm-border); background: #ffffff; margin-top: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
-            <div class="box-header with-border" style="padding: 12px 16px; background: #f8fafc; border-bottom: 1px solid var(--crm-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                <h4 class="box-title" style="font-size: 13.5px; font-weight: 700; color: #1e293b; margin: 0;">
-                    <i class="fa fa-list-alt" style="color: #64748b; margin-right: 6px;"></i> Detailed Records
-                </h4>
-                <div class="btn-group btn-group-sm" id="detailedRecordsFilter">
-                    <button type="button" class="btn btn-sm btn-primary active" onclick="filterDetailedRows('all', this)" style="font-weight: 600; font-size: 11.5px; border-radius: 4px 0 0 4px;">
-                        All Records (<?php echo count($report_data['rows']); ?>)
-                    </button>
-                    <button type="button" class="btn btn-sm btn-default" onclick="filterDetailedRows('my', this)" style="font-weight: 600; font-size: 11.5px;">
-                        My Records (<?php echo $my_rows_cnt; ?>)
-                    </button>
-                    <button type="button" class="btn btn-sm btn-default" onclick="filterDetailedRows('team', this)" style="font-weight: 600; font-size: 11.5px; border-radius: 0 4px 4px 0;">
-                        Team Records (<?php echo $team_rows_cnt; ?>)
-                    </button>
-                </div>
-            </div>
-            <div class="box-body no-padding">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover" id="detailedRecordsTable" style="margin-bottom: 0; font-size: 12.5px;">
-                        <thead style="background: var(--crm-bg); color: var(--crm-text);">
-                            <tr>
-                                <?php foreach ($report_data['headers'] as $hdr) { ?>
-                                <th style="white-space: nowrap; font-weight: 700; padding: 10px 12px; border-bottom: 2px solid var(--crm-border); text-align: left;">
-                                    <?php echo htmlspecialchars($hdr); ?>
-                                </th>
-                                <?php } ?>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($report_data['rows'] as $row) { 
-                                $is_my_row = 0;
-                                if ($cur_uid > 0) {
-                                    if (isset($row['lead_assign_id']) && (int)$row['lead_assign_id'] === $cur_uid) $is_my_row = 1;
-                                    elseif (isset($row['created_by_id']) && (int)$row['created_by_id'] === $cur_uid) $is_my_row = 1;
-                                    elseif (!empty($row['agents']) && in_array((string)$cur_uid, explode(',', (string)$row['agents']))) $is_my_row = 1;
-                                }
-                            ?>
-                            <tr class="record-row" data-my="<?php echo $is_my_row; ?>">
-                                <?php foreach ($report_data['fields'] as $fld) { 
-                                    $val = isset($row[$fld]) ? $row[$fld] : '';
-                                ?>
-                                <td style="padding: 9px 12px; vertical-align: middle; text-align: left;">
-                                    <?php echo $val; ?>
-                                </td>
-                                <?php } ?>
-                            </tr>
-                            <?php } ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <?php } elseif (empty($report_data['pivot_data']) && empty($report_data['rows'])) { ?>
+        <?php if (empty($report_data['pivot_data']) || empty($report_data['pivot_data']['groups'])) { ?>
         <div style="background: #ffffff; border: 1px solid var(--crm-border); border-radius: 6px; padding: 36px 20px; text-align: center; color: var(--crm-text-muted); font-size: 13px;">
             <i class="fa fa-info-circle" style="font-size: 24px; color: #94a3b8; margin-bottom: 8px;"></i>
             <div style="font-weight: 600; color: #1e293b;">No records available for the selected filters.</div>
@@ -624,26 +555,6 @@
 </div>
 
 <script>
-function filterDetailedRows(type, btn) {
-    var btns = document.querySelectorAll('#detailedRecordsFilter .btn');
-    btns.forEach(function(b) {
-        b.classList.remove('active', 'btn-primary');
-        b.classList.add('btn-default');
-    });
-    btn.classList.remove('btn-default');
-    btn.classList.add('active', 'btn-primary');
-
-    var rows = document.querySelectorAll('#detailedRecordsTable tbody tr.record-row');
-    rows.forEach(function(tr) {
-        if (type === 'all') {
-            tr.style.display = '';
-        } else if (type === 'my') {
-            tr.style.display = (tr.getAttribute('data-my') === '1') ? '' : 'none';
-        } else if (type === 'team') {
-            tr.style.display = (tr.getAttribute('data-my') === '0') ? '' : 'none';
-        }
-    });
-}
 
 function selectAllCols(check) {
     document.querySelectorAll('.custom-col-cb').forEach(function(cb) {

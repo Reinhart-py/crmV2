@@ -231,7 +231,7 @@ These three operations have distinct rules in the CRM:
 | `manager/tickets/open` | Open support tickets |
 | `manager/download-report` | Unified reports catalog |
 | `manager/download-report/sales/performance` | Sales performance pivot report (My & Team sections) |
-| `manager/download-report/sales/database` | Database category report (My & Team sections) |
+| `manager/download-report/sales/database` | Excel-style database pivot report (Allotted vs Not Allotted, Source, Batch Ref, Status, Corp Tax) |
 | `manager/download-report/sales/lead` | Lead pipeline report (My & Team sections) |
 | `manager/download-report/sales/quote` | Quote & proposal report (My & Team sections) |
 | `manager/download-report/sales/tax-registration` | Corporate tax & VAT status report (My & Team sections) |
