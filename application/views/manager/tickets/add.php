@@ -40,15 +40,8 @@
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
                 <label>Company Name<span>*</span></label>
-                <select class="form-control select2" name="company_name" required style="width: 100%;">
-                  <option value="">Select Company</option>
-                  <?php if(isset($companies_list) && !empty($companies_list)){
-                    foreach($companies_list as $comp){ 
-                      $cname = is_array($comp) ? ($comp['name'] ?? $comp['company'] ?? '') : $comp;
-                      if(empty($cname)) continue;
-                    ?>
-                      <option value="<?php echo htmlspecialchars($cname); ?>"><?php echo htmlspecialchars($cname); ?></option>
-                  <?php } } ?>
+                <select class="form-control select2-company-ajax" name="company_name" required style="width: 100%;">
+                  <option value="">Type at least 3 characters...</option>
                 </select>
               </div>
             </div>
@@ -260,7 +253,10 @@
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
                 <label>Initial Follow-up Time</label>
-                <input type="text" class="form-control" name="followup_time" placeholder="HH:MM">
+                <div class="input-group bootstrap-timepicker timepicker">
+                  <input type="text" class="form-control input-small timepicker" name="followup_time" value="<?php echo date('h:i A'); ?>">
+                  <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+                </div>
               </div>
             </div>
 
@@ -310,3 +306,24 @@
 </div>
 
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>
+
+<script>
+$(function(){
+  $('.select2-company-ajax').select2({
+    placeholder: 'Type at least 3 characters...',
+    minimumInputLength: 3,
+    ajax: {
+      url: '<?php echo base_url(); ?>manager/leads/ajax_search_companies',
+      dataType: 'json',
+      delay: 250,
+      data: function(params){
+        return { q: params.term };
+      },
+      processResults: function(data){
+        return { results: data.results || [] };
+      },
+      cache: true
+    }
+  });
+});
+</script>

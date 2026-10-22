@@ -92,7 +92,7 @@ function __construct()
 				);
 				$this->session->set_flashdata('message', 'Meeting has been added successfully!');
 				$this->comman_model->saveData('ci_meetings',$list);				
-				redirect('manager/meetingss');
+				redirect('manager/meetings');
 
        }
 

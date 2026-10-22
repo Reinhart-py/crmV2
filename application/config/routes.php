@@ -32,6 +32,7 @@ $route['manager/leads/add'] = "ci_admin_leads/add";
 $route['manager/leads/edit/(:any)'] = 'ci_admin_leads/edit/$1';
 $route['manager/leads/editLimited/(:any)'] = 'ci_admin_leads/editLimited/$1';
 $route['manager/leads/view/(:any)'] = 'ci_admin_leads/view/$1';
+$route['manager/leads/ajax_search_companies'] = "ci_admin_leads/ajax_search_companies";
 $route['manager/deleteleads'] = "ci_admin_leads/leadDeleteAjax";
 $route['manager/deleteleads/(:any)'] = "ci_admin_leads/leadDeleteAjax/$1";
 $route['manager/calls'] = "ci_admin_calls/index";
@@ -90,17 +91,27 @@ $route['manager/roles'] = "ci_admin_roles/index";
 $route['manager/roles/(:num)'] = 'ci_admin_roles/index/$1';
 $route['manager/roles/add'] = "ci_admin_roles/add";
 $route['manager/roles/edit/(:num)'] = 'ci_admin_roles/edit/$1';
+$route['manager/roles/delete/(:num)'] = 'ci_admin_roles/delete/$1';
 
-// Manager Category
+$route['manager/meetings'] = 'ci_admin_meetings/index';
+$route['manager/meetings/(:any)'] = 'ci_admin_meetings/index/$1';
+$route['manager/meetings/add'] = 'ci_admin_meetings/add';
+$route['manager/meetings/edit/(:any)'] = 'ci_admin_meetings/edit/$1';
+$route['manager/meetings/delete/(:any)'] = 'ci_admin_meetings/delete/$1';
+
 $route['manager/terms'] = 'ci_admin_terms/index';
 $route['manager/terms/add'] = 'ci_admin_terms/add';
 $route['manager/terms/edit/(:any)'] = 'ci_admin_terms/edit/$1';
-$route['manager/category-delete/(:any)'] = 'ci_admin_category/delete/$1';
+$route['manager/terms/delete/(:any)'] = 'ci_admin_terms/delete/$1';
+$route['manager/category-delete/(:any)'] = 'ci_admin_terms/delete/$1';
+$route['manager/category-tree'] = 'ci_admin_terms/index';
+$route['manager/categories'] = 'ci_admin_terms/index';
 
 // Ticket Trace / Help Desk
 $route['manager/tickets'] = "ci_admin_tickets/index";
 $route['manager/tickets/add'] = "ci_admin_tickets/add";
 $route['manager/tickets/quick_add'] = "ci_admin_tickets/quick_add";
+$route['manager/tickets/edit/(:any)'] = "ci_admin_tickets/edit/$1";
 $route['manager/tickets/view/(:any)'] = "ci_admin_tickets/view/$1";
 $route['manager/tickets/respond'] = "ci_admin_tickets/respond";
 $route['manager/tickets/close/(:any)'] = "ci_admin_tickets/close/$1";

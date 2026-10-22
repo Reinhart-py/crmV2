@@ -65,11 +65,15 @@ function __construct()
 		$type = isset($_GET['type']) ? $_GET['type'] : 0;	
 
         if(!empty($category)){
-	         $category= implode(',', $category); 
+			if(is_array($category)){
+				$category= implode(',', $category); 
+			}
 	     }
 
         if(!empty($status)){
-	         $status= implode(',', $status); 
+			if(is_array($status)){
+				$status= implode(',', $status); 
+			}
 		 }
 	//	$data['st_list']= $this->comman_model->getAll(array('active'=>1),'','ci_status');
 		$data['st_list']= $this->comman_model->getAll(array('status'=>1,'cat_type'=>'v_status'),'','ci_terms');
@@ -113,10 +117,14 @@ function __construct()
 		$type = isset($_GET['type']) ? $_GET['type'] : 0;
 
 		if (!empty($category)) {
-			$category = implode(',', $category);
+			if (is_array($category)) {
+				$category = implode(',', $category);
+			}
 		}
 		if (!empty($status)) {
-			$status = implode(',', $status);
+			if (is_array($status)) {
+				$status = implode(',', $status);
+			}
 		}
 
 		$data['st_list'] = $this->comman_model->getAll(array('status' => 1, 'cat_type' => 'v_status'), '', 'ci_terms');
@@ -154,11 +162,15 @@ function __construct()
 		$type = isset($_GET['type']) ? $_GET['type'] : 0;	
 
         if(!empty($category)){
-	         $category= implode(',', $category); 
+			if(is_array($category)){
+				$category= implode(',', $category); 
+			}
 	     }
 
         if(!empty($status)){
-	         $status= implode(',', $status); 
+			if(is_array($status)){
+				$status= implode(',', $status); 
+			}
 		 }
 		//$data['st_list']= $this->comman_model->getAll(array('active'=>1),'','ci_status');
 		$data['st_list']= $this->comman_model->getAll(array('status'=>1,'cat_type'=>'v_status'),'','ci_terms');
@@ -184,9 +196,6 @@ function __construct()
 
 	public function verticals()
 	{
-
-		die;
-		
         $data=array();
 		$data['info']=array(
 			'title'=>'Verticals Report',

@@ -45,7 +45,9 @@
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
                 <label>Customer Name<span>*</span></label>
-                <input type="text" name="customer" class="form-control" style="text-transform: capitalize;" required="" >
+                <select name="customer" id="company_customer_select" class="form-control select2-company-ajax" style="width: 100%;" required>
+                  <option value=""></option>
+                </select>
               </div>
             </div>
 
@@ -1430,6 +1432,44 @@ $(document).ready(function() {
   updateTopHeaderBadges();
 
   updateStatusCategoryOptions($('#lead_status_select').val(), '');
+
+  if ($.fn.select2) {
+    $('.select2-company-ajax').select2({
+      placeholder: 'Type company name (min 3 characters)...',
+      minimumInputLength: 3,
+      allowClear: true,
+      tags: true,
+      createTag: function (params) {
+        var term = $.trim(params.term);
+        if (term === '' || term.length < 3) {
+          return null;
+        }
+        return {
+          id: term,
+          text: term,
+          newTag: true
+        };
+      },
+      ajax: {
+        url: '<?php echo base_url(); ?>manager/leads/ajax_search_companies',
+        dataType: 'json',
+        delay: 250,
+        data: function (params) {
+          return {
+            term: params.term
+          };
+        },
+        processResults: function (data) {
+          return {
+            results: (data || []).map(function(item) {
+              return { id: item, text: item };
+            })
+          };
+        },
+        cache: true
+      }
+    });
+  }
 });
 </script>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

@@ -158,9 +158,13 @@ class Ci_admin_calls extends CI_Controller
 		$this->db->select('L.*, C.customer as lead_customer, C.lead_id as lead_code');
 		$this->db->from('ci_call_logs as L');
 		$this->db->join('ci_leads as C', 'C.id = L.lead_id', 'left');
-		$this->db->where('L.user_id', $manager_id);
+		if ($role != 1 && $role != 4) {
+			$this->db->where('L.user_id', $manager_id);
+		}
+		$this->db->where_not_in('L.call_status', array('Initiated', 'Dialing'));
+		$this->db->where('L.created_at <=', date('Y-m-d H:i:s'));
 		$this->db->order_by('L.id', 'DESC');
-		$this->db->limit(40);
+		$this->db->limit(50);
 		$recent_logs = $this->db->get()->result_array();
 
 		$allowed_statuses = $this->db->where_not_in('id', array(39, 42, 44))
@@ -168,10 +172,12 @@ class Ci_admin_calls extends CI_Controller
 			->get('ci_status')
 			->result_array();
 
+		$user_dept_row = $this->db->select('department')->where('id', $manager_id)->get('ci_user')->row_array();
+		$manager_dept = !empty($user_dept_row['department']) ? $user_dept_row['department'] : 'Sales';
 		$active_lead = !empty($queue) ? $queue[0] : null;
 
 		$data = array();
-		$data['info'] = array('title' => 'Calls & 3CX Dialer', 'page_heading' => 'Calling Center');
+		$data['info'] = array('title' => 'Calls & Dialer', 'page_heading' => 'Calling Center');
 		$data['queue'] = $queue;
 		$data['total_queue'] = count($queue);
 		$data['total_my_leads'] = $total_my_leads;
@@ -184,7 +190,9 @@ class Ci_admin_calls extends CI_Controller
 		$data['manager_role'] = $role;
 		$data['manager_id'] = $manager_id;
 		$data['manager_name'] = $this->session->userdata('manager_name');
+		$data['manager_department'] = $manager_dept;
 		$data['threecx_config'] = $this->threecx->get_config();
+		$data['is_backend_configured'] = (!empty($data['threecx_config']['pbx_fqdn']) && !empty($data['threecx_config']['client_id']));
 
 		$this->load->view('manager/calls/dashboard', $data);
 	}
@@ -203,7 +211,8 @@ class Ci_admin_calls extends CI_Controller
 		$this->_apply_lead_filters($status_filter);
 
 		if (!empty($search)) {
-			$this->db->where("(A.customer LIKE '%$search%' OR A.poc LIKE '%$search%' OR A.contact1 LIKE '%$search%' OR A.alt_contact LIKE '%$search%' OR A.contact2 LIKE '%$search%' OR A.mobile LIKE '%$search%' OR A.lead_id LIKE '%$search%')");
+			$escaped_search = $this->db->escape_like_str($search);
+			$this->db->where("(A.customer LIKE '%$escaped_search%' OR A.poc LIKE '%$escaped_search%' OR A.contact1 LIKE '%$escaped_search%' OR A.alt_contact LIKE '%$escaped_search%' OR A.contact2 LIKE '%$escaped_search%' OR A.mobile LIKE '%$escaped_search%' OR A.lead_id LIKE '%$escaped_search%')");
 		}
 
 		$this->db->order_by('A.id', 'DESC');
@@ -322,14 +331,16 @@ class Ci_admin_calls extends CI_Controller
 		$call_log_id = $this->db->insert_id();
 
 		$dispatch = $this->threecx->build_call_dispatch($phone);
+		$is_configured = !empty($dispatch['configured']);
 
 		echo json_encode(array(
 			'status' => true,
+			'configured' => $is_configured,
 			'call_log_id' => $call_log_id,
 			'phone' => $phone,
 			'customer_name' => $customer_name,
 			'dispatch' => $dispatch,
-			'message' => 'Call initiated via 3CX'
+			'message' => $is_configured ? 'Call initiated via Calling API backend' : 'Calling backend not configured'
 		));
 	}
 
@@ -363,6 +374,18 @@ class Ci_admin_calls extends CI_Controller
 			$outcome = 'Connected';
 		}
 
+		$lower_outcome = strtolower($outcome);
+		if ($status_id <= 0 && (strpos($lower_outcome, 'miss') !== false || strpos($lower_outcome, 'no answer') !== false || strpos($lower_outcome, 'busy') !== false || strpos($lower_outcome, 'abandon') !== false)) {
+			$status_id = 38;
+		}
+
+		$vat_status = trim($this->input->post('vat_status'));
+		$corporate_tax_status = trim($this->input->post('corporate_tax_status'));
+		$vat_trn = trim($this->input->post('vat_trn'));
+		$ct_trn = trim($this->input->post('ct_trn'));
+		$business_category = trim($this->input->post('business_category'));
+		$industry_category = trim($this->input->post('industry_category'));
+
 		$remarks = trim($this->input->post('remarks'));
 		$next_date = trim($this->input->post('next_followup'));
 		$next_time = trim($this->input->post('next_followup_time'));
@@ -382,7 +405,7 @@ class Ci_admin_calls extends CI_Controller
 				'lead_id' => ($lead_id > 0) ? $lead_id : null,
 				'customer_name' => !empty($customer_name) ? $customer_name : 'Direct Call',
 				'phone_number' => !empty($phone) ? $phone : 'Unknown',
-				'call_type' => 'Outbound 3CX',
+				'call_type' => 'Outbound Call',
 				'call_status' => 'Completed',
 				'duration' => $duration,
 				'disposition' => $outcome,
@@ -392,7 +415,16 @@ class Ci_admin_calls extends CI_Controller
 		}
 
 		if ($lead_id > 0) {
-			$remark_full = "[3CX Call: $outcome" . ($duration > 0 ? " | {$duration}s" : "") . "] " . $remarks;
+			$extra_tags = array();
+			if (!empty($vat_status)) {
+				$extra_tags[] = "VAT: " . $vat_status . (!empty($vat_trn) ? " (TRN: $vat_trn)" : "");
+			}
+			if (!empty($corporate_tax_status)) {
+				$extra_tags[] = "CT: " . $corporate_tax_status . (!empty($ct_trn) ? " (TRN: $ct_trn)" : "");
+			}
+			$tag_str = !empty($extra_tags) ? " [" . implode(" | ", $extra_tags) . "]" : "";
+
+			$remark_full = "[Call: $outcome" . ($duration > 0 ? " | {$duration}s" : "") . "]$tag_str " . $remarks;
 
 			$followup_data = array(
 				'lead_id' => $lead_id,
@@ -420,16 +452,50 @@ class Ci_admin_calls extends CI_Controller
 				$lead_update['status'] = $status_id;
 			}
 			$lead_update['call_status'] = $outcome;
+
+			if (!empty($vat_status)) {
+				$lead_update['vat_status'] = $vat_status;
+			}
+			if (!empty($corporate_tax_status)) {
+				$lead_update['corporate_tax_status'] = $corporate_tax_status;
+			}
+			if (!empty($business_category)) {
+				$lead_update['business_category'] = $business_category;
+			}
+			if (!empty($industry_category)) {
+				$lead_update['industry_category'] = $industry_category;
+			}
+			if (!empty($vat_trn)) {
+				$lead_update['tl_number'] = $vat_trn;
+			}
+
 			$this->db->where('id', $lead_id);
 			$this->db->update('ci_leads', $lead_update);
 
 			$this->ci_admin_model->log_admin_action(
 				'call_remark_save',
-				"Logged 3CX Call with disposition '$outcome' for Lead ID #$lead_id",
+				"Logged Call with disposition '$outcome' for Lead ID #$lead_id",
 				'SUCCESS',
 				$manager_id,
 				$this->session->userdata('manager_name')
 			);
+		}
+
+		$this->db->select('A.id, A.lead_id, A.customer, A.poc, A.poc2, A.contact1, A.alt_contact, A.contact2, A.mobile, A.email, A.category, A.status, A.p_cat, A.tl_number, A.tl_authority, A.tl_emirate, A.tl_zone, A.r_amount, A.mrr, A.followup_date, A.created, A.remark, S.status as status_name');
+		$this->db->from('ci_leads as A');
+		$this->db->join('ci_status as S', 'S.id = A.status', 'left');
+		$this->_apply_lead_filters('all');
+		if ($lead_id > 0) {
+			$this->db->where('A.id !=', $lead_id);
+		}
+		$this->db->order_by('A.id', 'DESC');
+		$this->db->limit(1);
+		$next_lead = $this->db->get()->row_array();
+		if (!empty($next_lead)) {
+			$extracted = $this->_extract_lead_phones($next_lead);
+			$next_lead['phone_primary'] = $extracted['primary'];
+			$next_lead['phone_alt'] = $extracted['alt'];
+			$next_lead['has_two_numbers'] = $extracted['has_two'];
 		}
 
 		echo json_encode(array(
@@ -437,17 +503,23 @@ class Ci_admin_calls extends CI_Controller
 			'message' => 'Call log and remarks saved successfully',
 			'outcome' => $outcome,
 			'lead_id' => $lead_id,
-			'duration' => $duration
+			'duration' => $duration,
+			'next_lead' => $next_lead
 		));
 	}
 
 	public function ajax_get_call_logs()
 	{
 		$manager_id = (int)$this->session->userdata('manager_id');
+		$role = (int)$this->session->userdata('manager_role');
 		$this->db->select('L.*, C.customer as lead_customer, C.lead_id as lead_code');
 		$this->db->from('ci_call_logs as L');
 		$this->db->join('ci_leads as C', 'C.id = L.lead_id', 'left');
-		$this->db->where('L.user_id', $manager_id);
+		if ($role != 1 && $role != 4) {
+			$this->db->where('L.user_id', $manager_id);
+		}
+		$this->db->where_not_in('L.call_status', array('Initiated', 'Dialing'));
+		$this->db->where('L.created_at <=', date('Y-m-d H:i:s'));
 		$this->db->order_by('L.id', 'DESC');
 		$this->db->limit(60);
 		$logs = $this->db->get()->result_array();
@@ -495,6 +567,66 @@ class Ci_admin_calls extends CI_Controller
 		$data['manager_name'] = $this->session->userdata('manager_name');
 
 		$this->load->view('manager/system/calling_api', $data);
+	}
+
+	public function cdr_webhook()
+	{
+		$raw_data = file_get_contents('php://input');
+		$payload = json_decode($raw_data, true);
+		if (empty($payload)) {
+			$payload = $_POST;
+		}
+
+		$caller = isset($payload['caller']) ? trim($payload['caller']) : (isset($payload['Caller']) ? trim($payload['Caller']) : '');
+		$callee = isset($payload['callee']) ? trim($payload['callee']) : (isset($payload['Callee']) ? trim($payload['Callee']) : '');
+		$status = isset($payload['status']) ? trim($payload['status']) : (isset($payload['Status']) ? trim($payload['Status']) : 'Completed');
+		$duration = isset($payload['duration']) ? (int)$payload['duration'] : (isset($payload['Duration']) ? (int)$payload['Duration'] : 0);
+		$call_type = isset($payload['type']) ? trim($payload['type']) : 'Inbound 3CX';
+
+		$phone = !empty($caller) ? $caller : $callee;
+		$lead = null;
+		if (!empty($phone)) {
+			$clean_p = preg_replace('/[^\d]/', '', $phone);
+			if (strlen($clean_p) >= 7) {
+				$tail = substr($clean_p, -7);
+				$escaped_tail = $this->db->escape_like_str($tail);
+				$lead = $this->db->query("SELECT id, customer, lead_assign FROM ci_leads WHERE contact1 LIKE '%$escaped_tail%' OR alt_contact LIKE '%$escaped_tail%' OR mobile LIKE '%$escaped_tail%' LIMIT 1")->row_array();
+			}
+		}
+
+		$disposition = ($duration > 0) ? 'Answered' : 'Missed Call';
+		if (stripos($status, 'busy') !== false) {
+			$disposition = 'Busy';
+		} elseif (stripos($status, 'no answer') !== false || stripos($status, 'unanswered') !== false) {
+			$disposition = 'Unanswered';
+		}
+
+		$lead_id = !empty($lead) ? (int)$lead['id'] : null;
+		$user_id = !empty($lead) ? (int)$lead['lead_assign'] : 1;
+		$customer_name = !empty($lead) ? $lead['customer'] : 'Inbound Caller (' . $phone . ')';
+
+		$this->db->insert('ci_call_logs', array(
+			'user_id' => $user_id,
+			'lead_id' => $lead_id,
+			'customer_name' => $customer_name,
+			'phone_number' => $phone,
+			'call_type' => $call_type,
+			'call_status' => $status,
+			'duration' => $duration,
+			'disposition' => $disposition,
+			'notes' => '3CX Webhook CDR: ' . $disposition,
+			'created_at' => date('Y-m-d H:i:s')
+		));
+
+		if ($lead_id && $duration == 0) {
+			$this->db->where('id', $lead_id)->update('ci_leads', array(
+				'call_status' => 'Missed Call - Follow Up Needed',
+				'status' => 38,
+				'modified' => date('Y-m-d')
+			));
+		}
+
+		echo json_encode(array('status' => true, 'message' => 'CDR processed'));
 	}
 }
 

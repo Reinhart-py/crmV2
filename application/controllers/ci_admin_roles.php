@@ -182,11 +182,12 @@ class Ci_admin_roles extends CI_Controller {
 					);
 				$data['info2']=$this->if_not_login();				
 		                 $save= array(	                 		
-							'delete_status'=>1,
+							'status'=>0,
 							);
 			              $response= $this->comman_model->updateData('id', $id,$save, 'ci_roles');
 							if($response)
 							{
+							 $this->ci_admin_model->log_admin_action('role_delete', 'Deleted role ID #'.$id, 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));
 							 $this->session->set_flashdata('message', 'Role Removed successfully!');
 						    	redirect('manager/roles');
 							}

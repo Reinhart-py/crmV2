@@ -56,13 +56,13 @@
     <form action="<?php echo base_url(); ?>ci_admin/fchange_password" method="post">
       <div class="form-group has-feedback">
         <input type="hidden" name="token" value="<?php echo $token; ?>">
-        <input type="text" class="form-control" name="password" placeholder="Enter New Password" required="">
-        <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
+        <input type="password" class="form-control" name="password" placeholder="Enter New Password" required="">
+        <span class="glyphicon glyphicon-lock form-control-feedback"></span>
       </div>
 
       <div class="form-group has-feedback">
-        <input required="" type="text" class="form-control" name="change_password" placeholder="Repeat Password">
-        <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
+        <input required="" type="password" class="form-control" name="change_password" placeholder="Repeat Password">
+        <span class="glyphicon glyphicon-lock form-control-feedback"></span>
       </div>
      
  

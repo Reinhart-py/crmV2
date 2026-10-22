@@ -67,7 +67,7 @@
       <div class="box">
         <div class="box-body"> <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?> <?php echo get_message($this->session->flashdata('message'),'message'); ?>
           <?php if(isset($logs) && !empty($logs)) { ?>
-          <div>
+          <div class="table-responsive">
             <table id="example_lead" class="table table-hover table-bordered table-striped" style="width:100%">
               <thead>
                 <tr>

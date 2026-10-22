@@ -59,9 +59,9 @@
                     <td><?php echo $li['lead_id']; ?></td> 
                     <td><span class="no_show"><?php echo date('Ymd',strtotime($li['m_date'])); ?></span><?php echo simple_date($li['m_date']); ?></td>                 
                     <td><?php echo $li['m_time']; ?></td>
-                    <td><?php echo $li['poc']; ?></td>
-                    <td><?php echo $li['mobile']; ?></td>
-                     <td><?php echo $li['address']; ?></td>
+                    <td><?php echo $li['m_poc'] ?? $li['poc'] ?? ''; ?></td>
+                    <td><?php echo $li['m_mobile'] ?? $li['mobile'] ?? ''; ?></td>
+                    <td><?php echo $li['m_address'] ?? $li['address'] ?? ''; ?></td>
                      
                     
                                            

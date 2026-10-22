@@ -303,3 +303,55 @@ Configured via `localStorage.crm_global_palette` or `localStorage.crm_palette`:
 - **`blue`**: Primary `#3c8dbc`, Dark `#286090`, Accent `#00c0ef`
 - **`green`**: Primary `#00a65a`, Dark `#00733e`, Accent `#001f3f`
 - **`black`**: Primary `#222d32`, Dark `#1a2226`, Accent `#605ca8`
+
+---
+
+## 11. Complete System Pages & Verification URLs
+
+http://localhost:8080/manager/dashboard
+http://localhost:8080/manager/profile
+http://localhost:8080/manager/password
+http://localhost:8080/manager/users
+http://localhost:8080/manager/users/add
+http://localhost:8080/manager/users/report
+http://localhost:8080/manager/leads
+http://localhost:8080/manager/leads/add
+http://localhost:8080/manager/leads/import
+http://localhost:8080/manager/calls
+http://localhost:8080/manager/leads/followups
+http://localhost:8080/manager/meetings
+http://localhost:8080/manager/performance-report
+http://localhost:8080/manager/performance-report/individual
+http://localhost:8080/manager/verticals
+http://localhost:8080/manager/verticals/add
+http://localhost:8080/manager/verticals/followups
+http://localhost:8080/manager/database-transfer
+http://localhost:8080/manager/team/members
+http://localhost:8080/manager/team/leads
+http://localhost:8080/manager/team/assignleads
+http://localhost:8080/manager/team/followups
+http://localhost:8080/manager/team/meetings
+http://localhost:8080/manager/team/assignmeetings
+http://localhost:8080/manager/team/chart
+http://localhost:8080/manager/roles
+http://localhost:8080/manager/roles/add
+http://localhost:8080/manager/terms
+http://localhost:8080/manager/terms/add
+http://localhost:8080/manager/tickets
+http://localhost:8080/manager/tickets/add
+http://localhost:8080/manager/tickets/followups
+http://localhost:8080/manager/team/tickets
+http://localhost:8080/manager/tasks
+http://localhost:8080/manager/tasks/add
+http://localhost:8080/manager/tasks/followups
+http://localhost:8080/manager/kam/my-client
+http://localhost:8080/manager/kam/onboard
+http://localhost:8080/manager/kam/schedule
+http://localhost:8080/manager/kam/report
+http://localhost:8080/manager/download-report
+http://localhost:8080/manager/download-report/drilldown
+http://localhost:8080/manager/admin-reports
+http://localhost:8080/manager/assigned-leads
+http://localhost:8080/manager/admin-logs
+http://localhost:8080/manager/system/admin-logs
+http://localhost:8080/manager/system/calling-api

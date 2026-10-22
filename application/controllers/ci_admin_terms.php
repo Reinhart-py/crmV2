@@ -69,8 +69,8 @@ class Ci_admin_terms extends CI_Controller {
 		 
 		  $data=array();
 		  $data['info']=array(
-			'title'=>'Manager - Leads',
-			'page_heading'=>'All Leads'
+			'title'=>'Manager - Categories',
+			'page_heading'=>'Add Category'
 		);
 		$data['info2']=$this->if_not_login();		
 	   	$data['category_list']= $this->comman_model->getAll(array('parent_id'=>0),'','ci_terms');
@@ -101,8 +101,8 @@ class Ci_admin_terms extends CI_Controller {
        	
 		$data=array();
 		$data['info']=array(
-			'title'=>'Manager - Leads',
-			'page_heading'=>'All Leads'
+			'title'=>'Manager - Categories',
+			'page_heading'=>'Edit Category'
 		);
 		$data['info2']=$this->if_not_login();
 		if(empty($did))
@@ -143,8 +143,8 @@ class Ci_admin_terms extends CI_Controller {
      	
 		 $data=array();
 		 $data['info']=array(
-			'title'=>'Manager - Leads',
-			'page_heading'=>'All Leads'
+			'title'=>'Manager - Categories',
+			'page_heading'=>'Delete Category'
 		);
 		$data['info2']=$this->if_not_login();
 		 $data['product_list']=$this->ci_admin_model->getproduct_by_catid($cat_id);
@@ -169,7 +169,7 @@ class Ci_admin_terms extends CI_Controller {
          
 		  $this->session->set_flashdata('message', 'Category deleted Successfully...');
 		
-		       redirect('manager/category-tree');
+		       redirect('manager/terms');
 			
 			
 	}

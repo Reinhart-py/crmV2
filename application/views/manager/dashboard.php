@@ -230,8 +230,8 @@
             <div class="crm-col-5 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
-                        <h4 class="card-title"><i class="fa fa-tasks"></i> My Tasks</h4>
-                        <span class="card-total-pill"><?php echo $total_my_tasks; ?> Total</span>
+                        <h4 class="card-title"><a href="<?php echo base_url(); ?>manager/tasks?team=0" style="color:inherit; text-decoration:none;"><i class="fa fa-tasks"></i> My Tasks</a></h4>
+                        <a href="<?php echo base_url(); ?>manager/tasks?team=0" class="card-total-pill" style="text-decoration:none;"><?php echo $total_my_tasks; ?> Total</a>
                     </div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
@@ -472,8 +472,8 @@
             <div class="crm-col-5 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
-                        <h4 class="card-title"><i class="fa fa-tasks"></i> Team Tasks</h4>
-                        <span class="card-total-pill"><?php echo $total_team_tasks; ?> Total</span>
+                        <h4 class="card-title"><a href="<?php echo base_url(); ?>manager/tasks?team=1" style="color:inherit; text-decoration:none;"><i class="fa fa-tasks"></i> Team Tasks</a></h4>
+                        <a href="<?php echo base_url(); ?>manager/tasks?team=1" class="card-total-pill" style="text-decoration:none;"><?php echo $total_team_tasks; ?> Total</a>
                     </div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>

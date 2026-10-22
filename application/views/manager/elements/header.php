@@ -188,18 +188,17 @@
         </ul>
       </li>
 
-      <?php if($m_role == 1 || $m_role == 2 || $m_role == 4){ ?>
-      <li class="<?php if($route1=="kam"){ echo "active";}else{ echo "";}?>"> <a href="javascript:void(0);"><i class="fa fa-briefcase"></i> <span>KAM</span> </a>
+      <li class="<?php if($route1=="kam"){ echo "active";}else{ echo "";}?>"> 
+        <a href="<?php echo base_url();?>manager/kam/my-client"><i class="fa fa-briefcase"></i> <span>KAM</span> </a>
         <ul>
           <li><a href="<?php echo base_url();?>manager/kam/my-client"><i class="fa fa-user"></i>My Client</a></li>
-          <?php if($m_role == 1 || $m_role == 4){ ?>
+          <?php if($m_role == 1){ ?>
           <li><a href="<?php echo base_url();?>manager/kam/onboard"><i class="fa fa-user-plus"></i>Onboard Client</a></li>
+          <?php } ?>
           <li><a href="<?php echo base_url();?>manager/kam/schedule"><i class="fa fa-calendar"></i>Create Schedule</a></li>
           <li><a href="<?php echo base_url();?>manager/kam/report"><i class="fa fa-bar-chart"></i>Report</a></li>
-          <?php } ?>
         </ul>
       </li>
-      <?php } ?>
 
       <li class="<?php if(in_array($route1, array('tasks', 'tickets', 'operations', 'calls'))){ echo "active";}else{ echo "";}?>"> <a href="javascript:void(0);"><i class="fa fa-tasks"></i> <span>Tasks</span> </a>
         <ul>
@@ -353,7 +352,7 @@ $(function() {
       <?php  
         $route1=$this->uri->segment(2);
 	      $route2=$this->uri->segment(3);
-        $m_role = $this->session->userdata['manager_role'];
+        $m_role = $this->session->userdata('manager_role');
       ?>
       <li class="<?php if($route1=="dashboard"){ echo "active";}else{ echo "";}?>"> 
         <a href="<?php echo base_url();?>manager/dashboard"> <i class="fa fa-tachometer"></i> <span>Dashboard</span> </a> 
@@ -389,19 +388,17 @@ $(function() {
         </ul>
       </li>
 
-      <?php if($m_role == 1 || $m_role == 2 || $m_role == 4){ ?>
       <li class="<?php if($route1=="kam"){ echo "active";}else{ echo "";}?> treeview"> 
-        <a href="javascript:void(0);"><i class="fa fa-briefcase"></i> <span>KAM</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
+        <a href="<?php echo base_url();?>manager/kam/my-client"><i class="fa fa-briefcase"></i> <span>KAM</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu">
           <li><a href="<?php echo base_url();?>manager/kam/my-client"><i class="fa fa-user"></i>My Client</a></li>
-          <?php if($m_role == 1 || $m_role == 4){ ?>
+          <?php if($m_role == 1){ ?>
           <li><a href="<?php echo base_url();?>manager/kam/onboard"><i class="fa fa-user-plus"></i>Onboard Client</a></li>
+          <?php } ?>
           <li><a href="<?php echo base_url();?>manager/kam/schedule"><i class="fa fa-calendar"></i>Create Schedule</a></li>
           <li><a href="<?php echo base_url();?>manager/kam/report"><i class="fa fa-bar-chart"></i>Report</a></li>
-          <?php } ?>
         </ul>
       </li>
-      <?php } ?>
 
       <li class="<?php if(in_array($route1, array('tasks', 'tickets', 'operations', 'calls'))){ echo "active";}else{ echo "";}?> treeview"> 
         <a href="javascript:void(0);"><i class="fa fa-tasks"></i> <span>Tasks</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>

@@ -1882,6 +1882,15 @@ table.dataTable {
   }
 }
 
+.bootstrap-timepicker-widget.dropdown-menu {
+  z-index: 99999 !important;
+}
+
+.bootstrap-timepicker .input-group-addon {
+  cursor: pointer;
+}
+
+
 
 
 

@@ -48,17 +48,34 @@
 
                             </form>
                         </div>
-                        <div class="x_col-sm-auto text-center pt-4 pt-md-0">
-                            <div>
-                                <button type="button" class="btn btn-primary" id="btnTransferLeads" disabled data-toggle="modal" data-target="#modalTransferLeads" style="font-weight:600; background:#2563eb; border-color:#2563eb;">
-                                    <i class="fa fa-exchange"></i> Transfer Selected (<span id="selectedCount">0</span>)
-                                </button>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
                 <div class="box">
+                    <div class="box-header with-border" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; padding:10px 15px;">
+                        <h3 class="box-title" style="margin:0; font-size:16px; font-weight:600;">Database Records</h3>
+                        <form method="post" action="<?php echo base_url(); ?>manager/leads/bulk-transfer" id="formBulkTransfer" class="form-inline" style="margin:0;">
+                            <div id="inlineTransferLeadInputs"></div>
+                            <div style="display:inline-flex; align-items:center; gap:8px;">
+                                <span id="selectedCountText" class="label label-default" style="font-size:12px; font-weight:600; padding:4px 8px;">0 selected</span>
+                                
+                                <div style="position:relative; display:inline-block;">
+                                    <div class="input-group input-group-sm" style="width:240px;">
+                                        <input type="text" id="transfer_user_search" class="form-control" placeholder="Type 3+ letters to search..." autocomplete="off">
+                                        <span class="input-group-btn">
+                                            <button class="btn btn-default" type="button" id="btnClearTransferUser" title="Clear"><i class="fa fa-times"></i></button>
+                                        </span>
+                                    </div>
+                                    <input type="hidden" name="target_user" id="target_user_val" required>
+                                    <div id="transfer_user_dropdown" style="display:none; position:absolute; top:100%; left:0; width:100%; z-index:9999; background:#fff; border:1px solid #cbd5e1; border-radius:4px; box-shadow:0 8px 16px rgba(0,0,0,0.12); max-height:200px; overflow-y:auto; margin-top:2px;"></div>
+                                </div>
+
+                                <button type="submit" id="btnConfirmTransfer" class="btn btn-sm btn-primary" disabled style="background:#2563eb; border-color:#2563eb; font-weight:600;">
+                                    <i class="fa fa-exchange"></i> Transfer
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                     <div class="box-body">
                         <?php if(isset($product_list) && !empty($product_list)) { ?>
                         <div>
@@ -84,7 +101,7 @@
                                     <?php foreach($product_list as $k => $li) { ?>
                                     <tr>
                                         <td style="text-align: center;">
-                                            <input type="checkbox" name="lead_ids[]" value="<?php echo $li['id']; ?>" class="lead-check">
+                                            <input type="checkbox" name="lead_ids_table[]" value="<?php echo $li['id']; ?>" class="lead-check" data-customer="<?php echo htmlspecialchars($li['customer']); ?>">
                                         </td>
                                         <td><a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>"><strong><?php echo $li['lead_id']; ?></strong></a></td>
                                         <td>
@@ -121,11 +138,13 @@
                                                     <span class="caret"></span>
                                                     <span class="sr-only">Toggle Dropdown</span>
                                                 </button>
-                                                <ul class="dropdown-menu" role="menu">
+                                                <ul class="dropdown-menu dropdown-menu-right" role="menu">
                                                     <li> <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>"
                                                             data-toggle="tooltip" title="View">Preview</a> </li>
                                                     <li> <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($li['id']); ?>"
                                                             data-toggle="tooltip" title="Edit">Edit</a> </li>
+                                                    <li> <a href="javascript:void(0);" onclick="transferSingleLead(<?php echo $li['id']; ?>, '<?php echo addslashes(htmlspecialchars($li['customer'])); ?>')">
+                                                            <i class="fa fa-exchange" style="color:#2563eb; margin-right:4px;"></i> Transfer</a> </li>
                                                 </ul>
                                             </div>
                                         </td>
@@ -145,82 +164,131 @@
     </section>
 </div>
 
-<div class="modal fade" id="modalTransferLeads" tabindex="-1" role="dialog" aria-labelledby="modalTransferLabel">
-    <div class="modal-dialog" role="document">
-        <form method="post" action="<?php echo base_url(); ?>manager/leads/bulk-transfer" id="formBulkTransfer">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="modalTransferLabel"><i class="fa fa-exchange" style="color:#2563eb;"></i> Transfer Selected Leads</h4>
-                </div>
-                <div class="modal-body">
-                    <p style="font-size:14px; margin-bottom:15px;">
-                        You have selected <strong id="modalSelectedLeadCount" style="color:#2563eb;">0</strong> lead record(s) to transfer.
-                    </p>
-                    <div class="form-group">
-                        <label style="font-weight:600;">Transfer To Team Member:</label>
-                        <select name="target_user" class="form-control" required style="width:100%;">
-                            <option value="">-- Select Team Member --</option>
-                            <?php if (!empty($users_list)) {
-                                foreach ($users_list as $u) {
-                                    echo '<option value="'.$u['id'].'">'.htmlspecialchars($u['name']).' ('.htmlspecialchars($u['email']).')</option>';
-                                }
-                            } ?>
-                        </select>
-                    </div>
-                    <div id="selectedLeadInputsContainer"></div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary" style="background:#2563eb; border-color:#2563eb;">Confirm Transfer</button>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
-
 <script>
+var transferUsers = <?php 
+  $clean_tu = array();
+  if(!empty($users_list)){
+    foreach($users_list as $u){
+      $clean_tu[] = array(
+        'id' => (int)$u['id'],
+        'name' => htmlspecialchars($u['name']),
+        'email' => htmlspecialchars($u['email'])
+      );
+    }
+  }
+  echo json_encode($clean_tu);
+?>;
+
 $(function() {
-    function updateTransferButtonState() {
+    function syncTransferState() {
         var checked = $('.lead-check:checked');
         var count = checked.length;
-        $('#selectedCount').text(count);
-        $('#modalSelectedLeadCount').text(count);
-
+        $('#selectedCountText').text(count + ' selected');
         if (count > 0) {
-            $('#btnTransferLeads').prop('disabled', false);
+            $('#selectedCountText').removeClass('label-default').addClass('label-primary');
         } else {
-            $('#btnTransferLeads').prop('disabled', true);
+            $('#selectedCountText').removeClass('label-primary').addClass('label-default');
+        }
+
+        var container = $('#inlineTransferLeadInputs');
+        container.empty();
+        checked.each(function() {
+            var val = $(this).val();
+            container.append('<input type="hidden" name="lead_ids[]" value="' + val + '">');
+        });
+
+        var targetUser = $('#target_user_val').val();
+        if (count > 0 && targetUser !== '') {
+            $('#btnConfirmTransfer').prop('disabled', false);
+        } else {
+            $('#btnConfirmTransfer').prop('disabled', true);
         }
 
         var total = $('.lead-check').length;
-        if (total > 0 && count === total) {
-            $('#checkAllLeads').prop('checked', true);
-        } else {
-            $('#checkAllLeads').prop('checked', false);
-        }
+        $('#checkAllLeads').prop('checked', (total > 0 && count === total));
     }
 
     $('#checkAllLeads').on('change', function() {
         var isChecked = $(this).is(':checked');
         $('.lead-check').prop('checked', isChecked);
-        updateTransferButtonState();
+        syncTransferState();
     });
 
     $(document).on('change', '.lead-check', function() {
-        updateTransferButtonState();
+        syncTransferState();
     });
 
-    $('#modalTransferLeads').on('show.bs.modal', function() {
-        var container = $('#selectedLeadInputsContainer');
-        container.empty();
-        $('.lead-check:checked').each(function() {
-            var val = $(this).val();
-            container.append('<input type="hidden" name="lead_ids[]" value="' + val + '">');
+    var searchInput = document.getElementById("transfer_user_search");
+    var hiddenInput = document.getElementById("target_user_val");
+    var dropdown = document.getElementById("transfer_user_dropdown");
+
+    if (searchInput) {
+        searchInput.addEventListener("input", function() {
+            var query = this.value.trim().toLowerCase();
+            dropdown.innerHTML = "";
+            
+            if (query.length < 3) {
+                dropdown.style.display = "none";
+                hiddenInput.value = "";
+                syncTransferState();
+                return;
+            }
+
+            var matches = transferUsers.filter(function(u) {
+                return u.name.toLowerCase().indexOf(query) !== -1 || u.email.toLowerCase().indexOf(query) !== -1;
+            });
+
+            if (matches.length === 0) {
+                dropdown.innerHTML = '<div style="padding:8px 12px; color:#64748b; font-size:12px;">No matching member</div>';
+                dropdown.style.display = "block";
+                return;
+            }
+
+            matches.forEach(function(u) {
+                var item = document.createElement("div");
+                item.style.padding = "8px 12px";
+                item.style.cursor = "pointer";
+                item.style.borderBottom = "1px solid #f1f5f9";
+                item.style.fontSize = "12px";
+                item.innerHTML = '<strong>' + u.name + '</strong> <span style="color:#64748b; font-size:11px;">(' + u.email + ')</span>';
+                
+                item.addEventListener("mouseenter", function() {
+                    this.style.background = "#eff6ff";
+                });
+                item.addEventListener("mouseleave", function() {
+                    this.style.background = "#fff";
+                });
+
+                item.addEventListener("click", function() {
+                    searchInput.value = u.name;
+                    hiddenInput.value = u.id;
+                    dropdown.style.display = "none";
+                    syncTransferState();
+                });
+
+                dropdown.appendChild(item);
+            });
+
+            dropdown.style.display = "block";
         });
-    });
+    }
 
-    updateTransferButtonState();
+    var btnClear = document.getElementById("btnClearTransferUser");
+    if (btnClear && searchInput) {
+        btnClear.addEventListener("click", function() {
+            searchInput.value = "";
+            hiddenInput.value = "";
+            dropdown.style.display = "none";
+            syncTransferState();
+            searchInput.focus();
+        });
+    }
+
+    document.addEventListener("click", function(e) {
+        if (searchInput && dropdown && !searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.style.display = "none";
+        }
+    });
 
     if (!$.fn.DataTable.isDataTable('#example_lead')) {
         $('#example_lead').DataTable({
@@ -233,6 +301,29 @@ $(function() {
         });
     }
 });
+
+function transferSingleLead(id, customerName) {
+    $('.lead-check').prop('checked', false);
+    var targetCheck = $('.lead-check[value="' + id + '"]');
+    if (targetCheck.length) {
+        targetCheck.prop('checked', true);
+    }
+    var container = $('#inlineTransferLeadInputs');
+    container.empty();
+    container.append('<input type="hidden" name="lead_ids[]" value="' + id + '">');
+    $('#selectedCountText').text('1 selected').removeClass('label-default').addClass('label-primary');
+
+    var targetUser = $('#target_user_val').val();
+    if (targetUser !== '') {
+        $('#btnConfirmTransfer').prop('disabled', false);
+    } else {
+        $('#btnConfirmTransfer').prop('disabled', true);
+    }
+    $('#transfer_user_search').focus();
+    $('html, body').animate({
+        scrollTop: $('#formBulkTransfer').offset().top - 80
+    }, 200);
+}
 </script>
 
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

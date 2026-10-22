@@ -40,19 +40,13 @@
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
                 <label>Company Name<span>*</span></label>
-                <select class="form-control select2" name="company_name" required style="width: 100%;">
-                  <option value="">Select Company</option>
-                  <?php 
-                  $current_comp = !empty($ticket['company_name']) ? $ticket['company_name'] : $ticket['customer'];
-                  if(isset($companies_list) && !empty($companies_list)){
-                    foreach($companies_list as $comp){ 
-                      $cname = is_array($comp) ? ($comp['name'] ?? $comp['company'] ?? '') : $comp;
-                      if(empty($cname)) continue;
-                    ?>
-                      <option value="<?php echo htmlspecialchars($cname); ?>" <?php if($cname == $current_comp) echo 'selected'; ?>>
-                        <?php echo htmlspecialchars($cname); ?>
-                      </option>
-                  <?php } } ?>
+                <?php $current_comp = !empty($ticket['company_name']) ? $ticket['company_name'] : (!empty($ticket['customer']) ? $ticket['customer'] : ''); ?>
+                <select class="form-control select2-company-ajax" name="company_name" required style="width: 100%;">
+                  <?php if(!empty($current_comp)){ ?>
+                    <option value="<?php echo htmlspecialchars($current_comp); ?>" selected><?php echo htmlspecialchars($current_comp); ?></option>
+                  <?php } else { ?>
+                    <option value="">Type at least 3 characters...</option>
+                  <?php } ?>
                 </select>
               </div>
             </div>
@@ -181,7 +175,7 @@
                   <?php 
                   $cur_status = $ticket['status'] ?? 'Open';
                   $statuses = array('Open', 'Assigned', 'In Progress', 'Pending', 'On Hold', 'Resolved');
-                  if($can_close || strtolower($cur_status) == 'closed'){
+                  if(!empty($can_close) || strtolower($cur_status) == 'closed'){
                     $statuses[] = 'Closed';
                   }
                   foreach($statuses as $st){ ?>
@@ -317,7 +311,10 @@
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
                 <label>Initial Follow-up Time</label>
-                <input type="text" class="form-control" name="followup_time" value="<?php echo htmlspecialchars($ticket['followup_time'] ?? ''); ?>" placeholder="HH:MM">
+                <div class="input-group bootstrap-timepicker timepicker">
+                  <input type="text" class="form-control input-small timepicker" name="followup_time" value="<?php echo htmlspecialchars($ticket['followup_time'] ?? ''); ?>">
+                  <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+                </div>
               </div>
             </div>
 
@@ -370,3 +367,24 @@
 </div>
 
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>
+
+<script>
+$(function(){
+  $('.select2-company-ajax').select2({
+    placeholder: 'Type at least 3 characters...',
+    minimumInputLength: 3,
+    ajax: {
+      url: '<?php echo base_url(); ?>manager/leads/ajax_search_companies',
+      dataType: 'json',
+      delay: 250,
+      data: function(params){
+        return { q: params.term };
+      },
+      processResults: function(data){
+        return { results: data.results || [] };
+      },
+      cache: true
+    }
+  });
+});
+</script>

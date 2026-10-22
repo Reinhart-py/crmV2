@@ -22997,8 +22997,237 @@ ALTER TABLE `country_code`
 --
 ALTER TABLE `states`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4122;
+
+CREATE TABLE IF NOT EXISTS `ci_tasks` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `task_id` varchar(50) DEFAULT NULL,
+  `customer` varchar(255) DEFAULT NULL,
+  `poc` varchar(255) DEFAULT NULL,
+  `contact1` varchar(255) DEFAULT NULL,
+  `alt_mobile` varchar(100) DEFAULT NULL,
+  `alt_contact` varchar(100) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `a_number` varchar(255) DEFAULT NULL,
+  `a_department` varchar(255) DEFAULT NULL,
+  `r_amount` varchar(255) DEFAULT NULL,
+  `r_date` varchar(255) DEFAULT NULL,
+  `category` varchar(255) DEFAULT NULL,
+  `business_category` varchar(150) DEFAULT NULL,
+  `s_cat` varchar(255) DEFAULT NULL,
+  `p_cat` varchar(255) DEFAULT NULL,
+  `p_details` text DEFAULT NULL,
+  `tl_number` varchar(255) DEFAULT NULL,
+  `tl_authority` varchar(255) DEFAULT NULL,
+  `tl_issue_date` varchar(255) DEFAULT NULL,
+  `tl_expire_date` varchar(255) DEFAULT NULL,
+  `qty` varchar(255) DEFAULT NULL,
+  `mrc` varchar(255) DEFAULT NULL,
+  `revenue` varchar(255) DEFAULT NULL,
+  `mrr` varchar(255) DEFAULT NULL,
+  `location` varchar(255) DEFAULT NULL,
+  `status` varchar(50) DEFAULT 'Open',
+  `dnd_status` varchar(10) DEFAULT 'No',
+  `dnd_check_date` varchar(30) DEFAULT NULL,
+  `close_date` varchar(50) DEFAULT NULL,
+  `remark` text DEFAULT NULL,
+  `address` text DEFAULT NULL,
+  `country` int(11) DEFAULT 0,
+  `state` int(11) DEFAULT 0,
+  `city` varchar(255) DEFAULT NULL,
+  `poc2` varchar(255) DEFAULT NULL,
+  `contact2` varchar(255) DEFAULT NULL,
+  `c_partner` varchar(255) DEFAULT NULL,
+  `otc` varchar(255) DEFAULT NULL,
+  `lead_cat` varchar(255) DEFAULT NULL,
+  `assigned_to` int(11) DEFAULT 0,
+  `lead_source` varchar(255) DEFAULT NULL,
+  `followup_date` varchar(50) DEFAULT NULL,
+  `followup_time` varchar(50) DEFAULT NULL,
+  `m_date` varchar(50) DEFAULT NULL,
+  `m_time` varchar(50) DEFAULT NULL,
+  `created_by` int(11) DEFAULT 0,
+  `created` varchar(50) DEFAULT NULL,
+  `modified` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS `ci_call_logs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `lead_id` int(11) DEFAULT NULL,
+  `customer_name` varchar(255) DEFAULT '',
+  `phone_number` varchar(50) NOT NULL,
+  `call_type` varchar(50) DEFAULT 'Outbound 3CX',
+  `call_status` varchar(50) DEFAULT 'Initiated',
+  `duration` int(11) DEFAULT 0,
+  `disposition` varchar(100) DEFAULT '',
+  `notes` text DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_user` (`user_id`),
+  KEY `idx_lead` (`lead_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS `ci_admin_logs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) DEFAULT NULL,
+  `username` varchar(255) NOT NULL,
+  `ip_address` varchar(100) DEFAULT NULL,
+  `user_agent` varchar(255) DEFAULT NULL,
+  `activity` varchar(100) NOT NULL,
+  `status` varchar(50) NOT NULL,
+  `login_time` datetime DEFAULT NULL,
+  `logout_time` datetime DEFAULT NULL,
+  `details` text DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+
+CREATE TABLE IF NOT EXISTS `ci_tasks` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `task_id` varchar(50) DEFAULT NULL,
+  `customer` varchar(255) DEFAULT NULL,
+  `poc` varchar(255) DEFAULT NULL,
+  `contact1` varchar(255) DEFAULT NULL,
+  `alt_mobile` varchar(100) DEFAULT NULL,
+  `alt_contact` varchar(100) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `a_number` varchar(255) DEFAULT NULL,
+  `a_department` varchar(255) DEFAULT NULL,
+  `r_amount` varchar(255) DEFAULT NULL,
+  `r_date` varchar(255) DEFAULT NULL,
+  `category` varchar(255) DEFAULT NULL,
+  `business_category` varchar(150) DEFAULT NULL,
+  `s_cat` varchar(255) DEFAULT NULL,
+  `p_cat` varchar(255) DEFAULT NULL,
+  `p_details` text DEFAULT NULL,
+  `tl_number` varchar(255) DEFAULT NULL,
+  `tl_authority` varchar(255) DEFAULT NULL,
+  `tl_issue_date` varchar(255) DEFAULT NULL,
+  `tl_expire_date` varchar(255) DEFAULT NULL,
+  `qty` varchar(255) DEFAULT NULL,
+  `mrc` varchar(255) DEFAULT NULL,
+  `revenue` varchar(255) DEFAULT NULL,
+  `mrr` varchar(255) DEFAULT NULL,
+  `location` varchar(255) DEFAULT NULL,
+  `status` varchar(50) DEFAULT "Open",
+  `dnd_status` varchar(10) DEFAULT "No",
+  `dnd_check_date` varchar(30) DEFAULT NULL,
+  `close_date` varchar(50) DEFAULT NULL,
+  `remark` text DEFAULT NULL,
+  `address` text DEFAULT NULL,
+  `country` int(11) DEFAULT 0,
+  `state` int(11) DEFAULT 0,
+  `city` varchar(255) DEFAULT NULL,
+  `poc2` varchar(255) DEFAULT NULL,
+  `contact2` varchar(255) DEFAULT NULL,
+  `c_partner` varchar(255) DEFAULT NULL,
+  `otc` varchar(255) DEFAULT NULL,
+  `lead_cat` varchar(255) DEFAULT NULL,
+  `assigned_to` int(11) DEFAULT 0,
+  `lead_source` varchar(255) DEFAULT NULL,
+  `followup_date` varchar(50) DEFAULT NULL,
+  `followup_time` varchar(50) DEFAULT NULL,
+  `m_date` varchar(50) DEFAULT NULL,
+  `m_time` varchar(50) DEFAULT NULL,
+  `created_by` int(11) DEFAULT 0,
+  `created` varchar(50) DEFAULT NULL,
+  `modified` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+
+CREATE TABLE IF NOT EXISTS `ci_call_logs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `lead_id` int(11) DEFAULT NULL,
+  `customer_name` varchar(255) DEFAULT "",
+  `phone_number` varchar(50) NOT NULL,
+  `call_type` varchar(50) DEFAULT "Outbound 3CX",
+  `call_status` varchar(50) DEFAULT "Initiated",
+  `duration` int(11) DEFAULT 0,
+  `disposition` varchar(100) DEFAULT "",
+  `notes` text DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_user` (`user_id`),
+  KEY `idx_lead` (`lead_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `ci_admin_logs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) DEFAULT NULL,
+  `username` varchar(255) NOT NULL,
+  `ip_address` varchar(100) DEFAULT NULL,
+  `user_agent` varchar(255) DEFAULT NULL,
+  `activity` varchar(100) NOT NULL,
+  `status` varchar(50) NOT NULL,
+  `login_time` datetime DEFAULT NULL,
+  `logout_time` datetime DEFAULT NULL,
+  `details` text DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `ci_lead_transfers` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `lead_id` int(11) NOT NULL,
+  `from_user_id` int(11) NOT NULL,
+  `to_user_id` int(11) NOT NULL,
+  `transferred_by` int(11) NOT NULL,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `lead_id` (`lead_id`),
+  KEY `from_user_id` (`from_user_id`),
+  KEY `to_user_id` (`to_user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `ci_kam_client_details` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `lead_id` int(11) NOT NULL,
+  `client_name` varchar(255) DEFAULT NULL,
+  `group_name` varchar(255) DEFAULT NULL,
+  `executive_id` int(11) DEFAULT NULL,
+  `executive_name` varchar(255) DEFAULT NULL,
+  `v_man` varchar(255) DEFAULT NULL,
+  `v_exe` varchar(255) DEFAULT NULL,
+  `kam_data` longtext DEFAULT NULL,
+  `schedule_data` longtext DEFAULT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lead_id` (`lead_id`),
+  KEY `client_name` (`client_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `ci_kam_schedules` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `lead_id` int(11) NOT NULL,
+  `client_name` varchar(255) DEFAULT NULL,
+  `executive_id` int(11) DEFAULT NULL,
+  `recurrence_type` varchar(50) DEFAULT 'once',
+  `selected_days` varchar(255) DEFAULT NULL,
+  `month_day` int(11) DEFAULT NULL,
+  `start_date` date DEFAULT NULL,
+  `end_date` date DEFAULT NULL,
+  `start_time` varchar(20) DEFAULT NULL,
+  `end_time` varchar(20) DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `status` varchar(50) DEFAULT 'Active',
+  `created_by` int(11) DEFAULT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `lead_id` (`lead_id`),
+  KEY `executive_id` (`executive_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

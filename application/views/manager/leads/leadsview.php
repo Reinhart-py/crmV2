@@ -104,7 +104,7 @@
 foreach($pc_list as $pli){
 ?>
         <option
-            <?php if(isset($_GET['category']) && !empty($_GET['category']) && in_array($pli['id'], $_GET['category'])){ echo "selected"; } ?>
+            <?php if(isset($_GET['category']) && (is_array($_GET['category']) ? in_array($pli['id'], $_GET['category']) : $_GET['category'] == $pli['id'])){ echo "selected"; } ?>
             value="<?php echo $pli['id']; ?>"><?php echo $pli['title']; ?></option>
         <?php } }  ?>
 
@@ -120,7 +120,7 @@ foreach($pc_list as $pli){
         foreach($lc_list as $cli){
         ?>
         <option
-            <?php if(isset($_GET['lCat']) && !empty($_GET['lCat']) && in_array($cli['id'], $_GET['lCat'])){ echo "selected"; } ?>
+            <?php if(isset($_GET['lCat']) && (is_array($_GET['lCat']) ? in_array($cli['id'], $_GET['lCat']) : $_GET['lCat'] == $cli['id'])){ echo "selected"; } ?>
             value="<?php echo $cli['id']; ?>"><?php echo $cli['title']; ?></option>
         <?php } }  ?>
     </select>
@@ -135,7 +135,7 @@ foreach($pc_list as $pli){
 foreach($st_list as $cli){
 ?>
         <option
-            <?php if(isset($_GET['status']) && !empty($_GET['status']) && in_array($cli['id'], $_GET['status'])){ echo "selected"; } ?>
+            <?php if(isset($_GET['status']) && (is_array($_GET['status']) ? in_array($cli['id'], $_GET['status']) : $_GET['status'] == $cli['id'])){ echo "selected"; } ?>
             value="<?php echo $cli['id']; ?>"><?php echo $cli['status']; ?></option>
         <?php } }  ?>
     </select>
@@ -444,7 +444,7 @@ $(document).ready(function() {
 
             }).done(function(msg) {
 
-                if (msg == 'success') {
+                if (msg == 'success' || msg == 'ok') {
                     location.reload();
                 } else {
                     alert("Error : Not update Confirm status")
@@ -471,7 +471,7 @@ $(document).ready(function() {
 
             }).done(function(msg) {
 
-                if (msg == 'success') {
+                if (msg == 'success' || msg == 'ok') {
                     location.reload();
                 } else {
                     alert("Error : Not update Confirm status")
@@ -499,16 +499,14 @@ $(".remove").click(function() {
         function(isConfirm) {
             if (isConfirm) {
                 $.ajax({
-                    url: 'deleteleads/' + id,
+                    url: '<?php echo base_url(); ?>manager/deleteleads/' + id,
                     type: 'GET',
                     error: function() {
                         alert('Something is wrong');
                     },
                     success: function(data) {
-                        // $("#"+id).remove();
+                        $("#"+id).remove();
                         swal("Deleted!", "", "success");
-                        //location.reload();
-                        //swal("Logged Out!", "", "success");
                     }
                 });
             }

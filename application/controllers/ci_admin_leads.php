@@ -163,11 +163,15 @@ function __construct()
 		$state = isset($_GET['state']) ? $_GET['state'] : '';	
 		
 		if(!empty($country)){
-			$country= implode(',', $country); 
+			if(is_array($country)){
+				$country= implode(',', $country); 
+			}
 			$data['state_list']= $this->comman_model->getAll(array('country_id'=>$country),'','states');
 	   }
 		if(!empty($state)){
-			 $state= implode(',', $state); 
+			if(is_array($state)){
+				$state= implode(',', $state); 
+			}
 		}
 
 		$status = isset($_GET['status']) ? $_GET['status'] : '';		
@@ -177,15 +181,21 @@ function __construct()
 		$lCat = isset($_GET['lCat']) ? $_GET['lCat'] : '';
 		
 		if(!empty($lCat)){
-	         $lCat= implode(',', $lCat); 
+			if(is_array($lCat)){
+				$lCat= implode(',', $lCat); 
+			}
 	     }		
 
         if(!empty($category)){
-	         $category= implode(',', $category); 
+			if(is_array($category)){
+				$category= implode(',', $category); 
+			}
 	     }
 
         if(!empty($status)){
-	         $status= implode(',', $status); 
+			if(is_array($status)){
+				$status= implode(',', $status); 
+			}
 		 }
 		$data['st_list']= $this->comman_model->getAll(array('active'=>1),'','ci_status');
 		$data['c_list'] =$this->comman_model->getAll('',array('id','ASC'),'countries');
@@ -232,11 +242,15 @@ function __construct()
 		$state = isset($_GET['state']) ? $_GET['state'] : '';	
 		
 		if(!empty($country)){
-			$country= implode(',', $country); 
+			if(is_array($country)){
+				$country= implode(',', $country); 
+			}
 			$data['state_list']= $this->comman_model->getAll(array('country_id'=>$country),'','states');
 	   }
 		if(!empty($state)){
-			 $state= implode(',', $state); 
+			if(is_array($state)){
+				$state= implode(',', $state); 
+			}
 		}
 
 		$status = isset($_GET['status']) ? $_GET['status'] : '';		
@@ -245,15 +259,21 @@ function __construct()
 		$lCat = isset($_GET['lCat']) ? $_GET['lCat'] : '';
 		
 		if(!empty($lCat)){
-	         $lCat= implode(',', $lCat); 
+			if(is_array($lCat)){
+				$lCat= implode(',', $lCat); 
+			}
 	     }		
 
         if(!empty($category)){
-	         $category= implode(',', $category); 
+			if(is_array($category)){
+				$category= implode(',', $category); 
+			}
 	     }
 
         if(!empty($status)){
-	         $status= implode(',', $status); 
+			if(is_array($status)){
+				$status= implode(',', $status); 
+			}
 		 }
 		$data['st_list']= $this->comman_model->getAll(array('active'=>1),'','ci_status');
 		$data['c_list'] =$this->comman_model->getAll('',array('id','ASC'),'countries');
@@ -271,9 +291,20 @@ function __construct()
 		$this->load->view('manager/leads/leadsview',$data);
 	}
 
+	public function ajax_search_companies()
+	{
+		$term = $this->input->get('term');
+		if (empty($term)) {
+			$term = $this->input->get('q');
+		}
+		$companies = $this->ci_admin_model->search_companies($term);
+		header('Content-Type: application/json');
+		echo json_encode($companies);
+		exit;
+	}
 
 	public function ajaxFetchLeads()
-		{
+	{
 			
 			$data=array();
 			$data['info']=array(
@@ -319,11 +350,34 @@ function __construct()
 			$data['p_info']=$this->ci_admin_model->getSingleLead($id);
 			$data['p_team']= $this->ci_admin_model->fetchTeamList($this->session->userdata('manager_id'),'');
 			if(!empty($data['p_info'])){
+				$cur_mgr_id = (int)$this->session->userdata('manager_id');
+				$cur_mgr_role = (int)$this->session->userdata('manager_role');
+				if ($cur_mgr_role != 1 && $cur_mgr_role != 4) {
+					$lead_owner = !empty($data['p_info']['lead_assign']) ? (int)$data['p_info']['lead_assign'] : (int)$data['p_info']['created_by'];
+					$is_collab = (!empty($data['p_info']['agents']) && in_array($cur_mgr_id, array_map('intval', explode(',', $data['p_info']['agents']))));
+					if ($lead_owner !== $cur_mgr_id && !$is_collab) {
+						$this->session->set_flashdata('error_message', 'You do not have access to this lead.');
+						$return_url = urldecode($this->session->userdata('manager_return_string'));
+						redirect('/manager/' . ($return_url ?: 'leads'));
+						return;
+					}
+				}
+
+				$data['transfer_history'] = $this->db->select('T.*, U1.name as from_user_name, U2.name as to_user_name, U3.name as transferred_by_name')
+					->from('ci_lead_transfers as T')
+					->join('ci_user as U1', 'T.from_user_id = U1.id', 'LEFT')
+					->join('ci_user as U2', 'T.to_user_id = U2.id', 'LEFT')
+					->join('ci_user as U3', 'T.transferred_by = U3.id', 'LEFT')
+					->where('T.lead_id', $id)
+					->order_by('T.id', 'DESC')
+					->get()
+					->result_array();
+
 				$data['bo_list']=$this->comman_model->getAll(array('lead_id'=>$id),'','ci_boleads');
 				$data['follow_list']=$this->comman_model->getAll(array('lead_id'=>$id,'lead_type'=>'lead'),'','ci_followup');
 				$data['m_list']=$this->comman_model->getAll(array('lead_id'=>$id),array('id','desc'),'ci_meetings','first');
 				$data['action']= $action;
-    	 	   if(empty($data['p_info']))
+     	 	   if(empty($data['p_info']))
 
 			   {
 			   		$this->session->set_flashdata('error_message', 'Not allowed');
@@ -585,7 +639,15 @@ function __construct()
 		}  
 		
 		$cur_role = (int)$this->session->userdata('manager_role');
+		$cur_mgr_id = (int)$this->session->userdata('manager_id');
 		if ($cur_role !== 1 && $cur_role !== 4) {
+			$lead_owner = !empty($data['list']['lead_assign']) ? (int)$data['list']['lead_assign'] : (int)$data['list']['created_by'];
+			$is_collab = (!empty($data['list']['agents']) && in_array($cur_mgr_id, array_map('intval', explode(',', $data['list']['agents']))));
+			if ($lead_owner !== $cur_mgr_id && !$is_collab) {
+				$this->session->set_flashdata('error_message', 'You do not have permission to edit this lead.');
+				redirect($action == 'tm' ? '/manager/team/leads' : '/manager/leads');
+				return;
+			}
 			if (!empty($data['slist']['user_level']) && $data['slist']['user_level'] < $this->session->userdata('manager_level')) {
 				$this->session->set_flashdata('error_message', 'Not allowed');
 				if ($action == 'tm') {
@@ -593,6 +655,7 @@ function __construct()
 				} else {
 					redirect('/manager/leads');
 				}
+				return;
 			}
 		}
 			
@@ -669,7 +732,7 @@ function __construct()
 				'a_number'=>$a_number,
 				'a_department'=>$a_department,
 				'r_amount'=>$r_amount,
-				'r_date'=>$r_date,
+				'r_date'=>!empty($r_date) ? db_date($r_date) : '',
 				's_cat'=>$s_cat,
 				'p_cat'=>$p_cat,
 				'p_details'=>$p_details,
@@ -937,7 +1000,7 @@ $data['info2']=$this->if_not_login();
 
 	     {
 
-			 redirect('ci_admin_leads/leads_info');
+			 redirect('manager/leads');
 
 		 }	
 
@@ -947,7 +1010,7 @@ $data['info2']=$this->if_not_login();
 
 		{
 
-			redirect('ci_admin_leads/leads_info');
+			redirect('manager/leads');
 
 		}
 
@@ -1006,6 +1069,12 @@ $data['info2']=$this->if_not_login();
 
 		$this->db->where_in('lead_id', $ids);
 		$this->db->delete('ci_followup');
+
+		$this->db->where_in('lead_id', $ids);
+		$this->db->delete('ci_meetings');
+
+		$this->db->where_in('lead_id', $ids);
+		$this->db->delete('ci_call_logs');
 
 		$del_count = count($ids);
 		$this->ci_admin_model->log_admin_action(
@@ -1735,11 +1804,15 @@ $data['info2']=$this->if_not_login();
 		$state = isset($_GET['state']) ? $_GET['state'] : '';
 
 		if (!empty($country)) {
-			$country = implode(',', $country);
+			if (is_array($country)) {
+				$country = implode(',', $country);
+			}
 			$data['state_list'] = $this->comman_model->getAll(array('country_id' => $country), '', 'states');
 		}
 		if (!empty($state)) {
-			$state = implode(',', $state);
+			if (is_array($state)) {
+				$state = implode(',', $state);
+			}
 		}
 
 		$status = isset($_GET['status']) ? $_GET['status'] : '';
@@ -1747,18 +1820,19 @@ $data['info2']=$this->if_not_login();
 		$lCat = isset($_GET['lCat']) ? $_GET['lCat'] : '';
 
 		if (!empty($lCat)) {
-			$lCat = implode(',', $lCat);
+			if (is_array($lCat)) {
+				$lCat = implode(',', $lCat);
+			}
 		}
 		if (!empty($category)) {
-			$category = implode(',', $category);
+			if (is_array($category)) {
+				$category = implode(',', $category);
+			}
 		}
 		if (!empty($status)) {
-			$status = implode(',', $status);
-		}
-
-		if (!empty($country)) {
-			$country_str = is_array($country) ? implode(',', $country) : $country;
-			$data['state_list'] = $this->comman_model->getAll(array('country_id' => $country_str), '', 'states');
+			if (is_array($status)) {
+				$status = implode(',', $status);
+			}
 		}
 
 		$data['st_list'] = $this->comman_model->getAll(array('active' => 1), '', 'ci_status');
@@ -1892,17 +1966,49 @@ $data['info2']=$this->if_not_login();
 
 		$this->db->where_in('id', $sanitized_ids);
 		if ($manager_role != 1 && $manager_role != 4) {
-			$this->db->where("(lead_assign = $manager_id OR created_by = $manager_id OR (agents IS NOT NULL AND FIND_IN_SET($manager_id, agents) > 0))");
+			$this->db->where("(lead_assign = $manager_id OR (created_by = $manager_id AND (lead_assign = 0 OR lead_assign IS NULL)) OR (agents IS NOT NULL AND FIND_IN_SET($manager_id, agents) > 0))");
+			$this->db->where("(database_category != 'KAM Onboarded' OR database_category IS NULL)");
 		}
-		$update_payload = array(
-			'created_by' => $target_user_id,
-			'lead_assign' => $target_user_id,
-			'edited_by' => $manager_id,
-			'modified' => date('Y-m-d')
-		);
-		$this->db->update('ci_leads', $update_payload);
+		$leads_to_transfer = $this->db->get('ci_leads')->result_array();
 
-		$transferred_count = $this->db->affected_rows();
+		$transferred_count = 0;
+		$now_dt = date('Y-m-d H:i:s');
+
+		foreach ($leads_to_transfer as $lead_row) {
+			$lid = (int)$lead_row['id'];
+			$orig_owner = !empty($lead_row['lead_assign']) ? (int)$lead_row['lead_assign'] : (int)$lead_row['created_by'];
+			if ($orig_owner <= 0) {
+				$orig_owner = $manager_id;
+			}
+
+			$existing_agents = !empty($lead_row['agents']) ? explode(',', $lead_row['agents']) : array();
+			$cleaned_agents = array();
+			foreach ($existing_agents as $ag) {
+				$ag_int = (int)trim($ag);
+				if ($ag_int > 0 && $ag_int !== $target_user_id && $ag_int !== $orig_owner) {
+					$cleaned_agents[] = $ag_int;
+				}
+			}
+			$new_agents_str = implode(',', array_unique($cleaned_agents));
+
+			$this->db->where('id', $lid)->update('ci_leads', array(
+				'created_by' => $target_user_id,
+				'lead_assign' => $target_user_id,
+				'agents' => $new_agents_str,
+				'edited_by' => $manager_id,
+				'modified' => date('Y-m-d')
+			));
+
+			$this->db->insert('ci_lead_transfers', array(
+				'lead_id' => $lid,
+				'from_user_id' => $orig_owner,
+				'to_user_id' => $target_user_id,
+				'transferred_by' => $manager_id,
+				'created_at' => $now_dt
+			));
+
+			$transferred_count++;
+		}
 
 		$this->ci_admin_model->log_admin_action(
 			'lead_transfer',

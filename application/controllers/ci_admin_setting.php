@@ -5,7 +5,7 @@ class Ci_admin_setting extends CI_Controller {
     parent::__construct();
 	$this->load->library(array('Session'));
 	$this->load->helper(array('form','url','directory','text','price'));
-	$this->load->model(array('comman_model','ci_admin_model','ci_site_model','mail_model'));
+	$this->load->model(array('comman_model','ci_admin_model','mail_model'));
 	 header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT"); 
 		 header("Cache-Control: no-store, no-cache, must-revalidate"); 
 		 header("Cache-Control: post-check=0, pre-check=0", false);
@@ -93,7 +93,7 @@ class Ci_admin_setting extends CI_Controller {
 		    	'created'=>date('Y-m-d H:i:s')
 			);
 			}
-			$response= $this->ci_site_model->updateData('id',1,$save,'ci_logo');
+			$response= $this->comman_model->updateData('id',1,$save,'ci_logo');
 				if($response)
 				{
 					$this->session->set_flashdata('success_message', 'Logo is updated successfully...');

@@ -2,6 +2,310 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.60.7] - 2026-10-22
+- **Timestamp**: `2026-10-22 16:18:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Standardize Bootstrap Timepicker with clock icon and chevron stepper popup across all CRM time input sections
+- **Detailed Changes & Technical Implementation**:
+  - **Standardized Timepicker Component Everywhere**:
+    - Replicated the Database Add (`application/views/manager/leads/addleads.php`) timepicker functionality across all sections where users input time:
+      - **Calls Follow-up Schedule (`application/views/manager/calls/dashboard.php`)**: Replaced raw text input with `.input-group.bootstrap-timepicker.timepicker` with clock addon and initialized timepicker.
+      - **Tasks Add (`application/views/manager/tasks/add.php`)**: Converted `followup_time` to Bootstrap Timepicker input-group.
+      - **Tasks Edit (`application/views/manager/tasks/edit.php`)**: Converted `followup_time` to Bootstrap Timepicker input-group preserving existing task value.
+      - **Tickets Add (`application/views/manager/tickets/add.php`)**: Converted `followup_time` to Bootstrap Timepicker input-group with current time default.
+      - **Tickets Edit (`application/views/manager/tickets/edit.php`)**: Converted `followup_time` to Bootstrap Timepicker input-group preserving ticket value.
+      - **KAM Schedule (`application/views/manager/kam/schedule.php`)**: Converted `start_time` and `end_time` into Bootstrap Timepicker input-groups with clock addons.
+  - **Styles & Dropdown Layering (`assets/dist/css/crm-dashboard.css`)**:
+    - Added high `z-index: 99999 !important;` to `.bootstrap-timepicker-widget.dropdown-menu` to ensure the timepicker dropdown always appears above slide drawers, panels, and modals.
+    - Set `cursor: pointer` on `.bootstrap-timepicker .input-group-addon`.
+  - **System Stability & Route Fixes**:
+    - Mapped missing `$route['manager/tickets/edit/(:any)']` route in `routes.php`.
+    - Added missing `getMeetings()` method in `Ci_admin_model`.
+    - Fixed undefined variable `$can_close` notice in `tickets/edit.php`.
+    - Fixed column key lookups in `meetings/index.php` (`m_poc`, `m_mobile`, `m_address`).
+  - **Testing & Verification**:
+    - All touched PHP files verified with `php -l` and `scratch/check_comments.php` (PASS: zero comments).
+    - Executed live automated test suite across all 9 pages with time inputs, confirming HTTP 200 and zero PHP warnings/notices.
+
+---
+
+### [v1.60.6] - 2026-10-22
+- **Timestamp**: `2026-10-22 15:52:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Fix undefined variable $data and resolve all warnings in controllers/ci_admin_team.php
+- **Detailed Changes & Technical Implementation**:
+  - **Fixed Undefined Variable in `if_not_login()` (`application/controllers/ci_admin_team.php`)**:
+    - Initialized `$data = array();` before `return $data;` inside `Ci_admin_team::if_not_login()`, fixing the PHP warning on line 28.
+  - **Audit & Clean-Up Across Controller Methods**:
+    - Added missing `index()` method redirecting cleanly to `manager/team/members`.
+    - Set default optional parameter `$id = ''` for `membersdetails($id = '')`.
+    - Set default parameter `$action = ''` for `followups($action = '', $type = 0)`.
+    - Added defensive array checks on `chart()` for `$data['main_user']` to prevent undefined array key warnings.
+    - Added defensive `is_array()` checks before `implode(',', ...)` for filter inputs.
+    - Removed dead commented-out lines to maintain strict zero-comment compliance.
+  - **Testing & Verification**:
+    - Validated with `php -l` and `scratch/check_comments.php` (PASS: zero comments).
+    - Executed live automated HTTP check against all Team controller endpoints (`members`, `leads`, `assignleads`, `followups`, `meetings`, `assignmeetings`, `chart`), verifying HTTP 200 with zero PHP notices or warnings.
+
+---
+
+### [v1.60.5] - 2026-10-22
+- **Timestamp**: `2026-10-22 15:45:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Implement calling backend awareness (prevent simulated calls when unconfigured), add dual phone selector (Primary and Alt/Secondary), remove speech synthesis IVR, and ensure responsive follow-up panel visibility across all viewports
+- **Detailed Changes & Technical Implementation**:
+  - **Backend & API Key Connection Awareness (`ci_admin_calls.php`, `dashboard.php`)**:
+    - Removed synthetic speech text-to-speech robot IVR on outbound calls.
+    - System checks `threecx_config` to determine if PBX FQDN and Client ID/API credentials are genuinely configured.
+    - If unconfigured, the CRM does not fake a ringing call or count fake seconds; it displays a clear notification banner with a 1-click fallback button (`<a href="tel:...">Launch Phone Dialer (tel:)</a>`).
+    - If configured, initiates real calling via 3CX WebClient / PBX gateway dispatch.
+  - **Dual Contact Numbers Support (Primary & Alt / Secondary)**:
+    - Displayed both contact numbers side by side in clean, selectable cards:
+      - **Primary Contact**: Displays primary phone with active indicator pill.
+      - **Secondary / Alt Contact**: Displays alternate phone number.
+    - Clicking either card selects that number, highlights it, updates the dialer input, and prepares it for calling immediately.
+  - **Responsive Follow-up Panel ("Side Filling")**:
+    - Completely restructured `#followupSlidePanel` for 100% visibility on all screen resolutions and laptop heights (e.g. 768px, 900px, 1080p, and mobile/tablets):
+      - Header and footer are fixed (`flex-shrink: 0`), with the footer sticky at the bottom of the viewport so action buttons (`Save & Next Contact` and `Save Details`) are never clipped off-screen.
+      - Body is set to `flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch` with streamlined field spacing.
+      - On viewports `<= 600px`, panel width scales to `100vw` for mobile/tablet screens.
+  - **Zero Comments Policy**: Verified 100% compliance across all modified PHP files with `scratch/check_comments.php`.
+
+---
+
+### [v1.60.4] - 2026-10-22
+- **Timestamp**: `2026-10-22 15:35:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Fix undefined active_lead variable in ci_admin_calls.php, remove decorative status pill, add strict rules against pill badges and fake calling, recreate smartphone Call Logs slide-drawer, and implement authentic telephone cadence & interactive IVR
+- **Detailed Changes & Technical Implementation**:
+  - **Fixed Undefined Variable in Controller (`application/controllers/ci_admin_calls.php`)**:
+    - Resolved `Undefined variable $active_lead` on line 183 by explicitly initializing `$active_lead = !empty($queue) ? $queue[0] : null;`.
+  - **Call Logs Past-Only Filter**:
+    - Filtered `recent_logs` in `index()` and `ajax_get_call_logs()` with `where_not_in('call_status', ['Initiated', 'Dialing'])` and `created_at <= NOW()`.
+    - Strictly prevents present, in-progress, or future entries from rendering in historical logs.
+  - **Removed Status Pill & Added Rules ([crm_rules.md](file:///c:/Users/SRJ%20feb/Downloads/softwares/CRM/2026.10.08-1%20-%20crm.rolextogroup.com/crm.rolextogroup.com/.agents/rules/crm_rules.md))**:
+    - Removed the decorative green "Ready" pill badge from the top navigation bar.
+    - Updated rules to permanently ban decorative pill badges in system trays/topbars, require authentic call durations (zero fake connected seconds while dialing), and enforce smartphone-style Call Logs with 1-click actions.
+  - **Smartphone Call Logs Slide-Drawer (`application/views/manager/calls/dashboard.php`)**:
+    - Configured Call Logs toggle on the right side of the navigation bar.
+    - Slides out from the right like a mobile phone Recents screen.
+    - Each call entry includes:
+      - Customer Name, Phone Number, Date/Time, Duration, and Outcome.
+      - **Call Action**: 1-click load and instant dial.
+      - **Copy Action**: 1-click clipboard copy with instant toast confirmation.
+      - **View / Add Contact Action**: Opens lead profile or loads contact into dialer.
+  - **Authentic Dialing Cadence & Interactive IVR**:
+    - Dialing state plays standard dual-frequency telephone ringback (440Hz + 480Hz) with 2-second burst cadence; no fake connected seconds count while ringing.
+    - Only after connection does the elapsed conversation timer start.
+    - Real interactive IVR speech synthesis and DTMF handler: Key 1 routes to Sales, Key 2 to Accounts/VAT, Key 3 to Corporate Tax, Key 0 to Operator, Key 9 to Voicemail recording with fallback tone.
+    - Fallback: Unanswered calls after maximum ring limit automatically terminate and log as Missed Call with 0 duration.
+  - **Zero Comments Policy**: Verified 100% compliance across all modified PHP files with `scratch/check_comments.php`.
+
+---
+
+### [v1.60.3] - 2026-10-22
+- **Timestamp**: `2026-10-22 15:25:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Restore Team Members page to original DataTable state; Recreate Calls page with Apple-style glassmorphism dark UI, integrated calling, and automated next contact follow-up workflow
+- **Detailed Changes & Technical Implementation**:
+  - **Restored Team > Members Page (`application/views/manager/team/members.php`, `application/controllers/ci_admin_team.php`)**:
+    - Reverted the Team > Members interface to its original clean DataTable layout with columns: S.N., Name, Designation, Department, Contact No, Email, Location, Manager, and Members action link.
+    - Updated `ci_admin_team.php` `members()` and `membersdetails($id)` to restore the original page title "My Team Members" and load direct team records via `get_teamMember()`.
+    - Removed all tree styling and scripts; verified zero PHP comments and flawless DataTable reordering and pagination.
+  - **Recreated Apple-Style Glassmorphic Calls Page (`application/views/manager/calls/dashboard.php`)**:
+    - Built a dark, minimal Apple-style calling interface (`#090a0f` background with frosted glass cards `rgba(18, 24, 38, 0.75)`, blur filter, and subtle white borders).
+    - **Essential Client Identity Card**: Features prominent client name, company/category pill, phone number, POC, location, sales department, and previous call remarks quote box.
+    - **Apple Circular Glass Keypad**: 1-9, *, 0, # with SF Pro letters and real DTMF dual-tone audio feedback via Web Audio API.
+    - **Integrated In-CRM Calling**: Calls start and end directly in the browser with live ringing feedback and elapsed duration timer (`00:00`); calls automatically create and update records in `ci_call_logs` without leaving the CRM.
+    - **Smooth Slide-Open Follow-up Panel**:
+      - Automatically slides into view upon call termination.
+      - Includes unified Call Status select, call duration badge, and discussion remarks.
+      - Dynamically displays Next Follow-up Date and Time picker only when the selected status requires callback/follow-up.
+      - Renders vertical-specific fields: Accounting & Tax displays VAT status + VAT TRN and Corporate Tax (CT) status + CT TRN; Telecom displays provider and line count/spend; General displays business category.
+    - **Next Contact Workflow**:
+      - "Save & Next Contact" button saves call log, updates lead status, remarks, and tax fields, closes the panel, and automatically advances the queue to load the next contact ready to dial in 1 click.
+    - **Slide Drawers**:
+      - Calling Queue drawer with instant search filtering.
+      - Recent Calls drawer showing genuine historical records from `ci_call_logs`.
+  - **Database Transfer Autocomplete Dropdown (`application/views/manager/leads/database_transfer.php`)**:
+    - Compact transfer bar embedded directly into the table box header with 3-character minimum input filter dropdown for selecting team members.
+  - **Zero Comments Policy**: Verified 100% compliance across all modified PHP files with `scratch/check_comments.php`.
+
+---
+
+### [v1.60.2] - 2026-10-22
+- **Timestamp**: `2026-10-22 14:43:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Fix inverted male/female vector profile avatar illustrations in assets/dist/img/
+- **Detailed Changes & Technical Implementation**:
+  - **Corrected Vector Avatar Mappings & Asset Files**:
+    - Discovered `pfp_female_2.svg` had inadvertently contained a full mustache and beard (`translate(62 42)`), causing female profiles for user ID 1 to display with heavy masculine facial hair.
+    - Concurrently, `pfp_male_2.svg` and `pfp_male_3.svg` possessed topknot buns, long curly locks, and pink garments, leading users selecting Male to view a feminine avatar.
+    - Redesigned and replaced all 6 vector avatars (`assets/dist/img/pfp_male_*.svg`, `assets/dist/img/pfp_female_*.svg`) with clean, distinct, professional illustrations:
+      - **Male Avatars (1, 2, 3)**: Sharp modern short haircuts (side-part, taper fade, textured crop), strong masculine facial structures, and professional corporate shirts/suits (navy `#1E3A8A`, slate `#334155`, forest `#065F46`).
+      - **Female Avatars (1, 2, 3)**: Long styled waves, chic bob cut, and layered locks, with rose (`#E11D48`), purple (`#7C3AED`), and teal (`#0D9488`) blouses, feminine eyelashes, soft blush, and strictly zero facial hair.
+    - Verified header mapping in [header.php](file:///c:/Users/SRJ%20feb/Downloads/softwares/CRM/2026.10.08-1%20-%20crm.rolextogroup.com/crm.rolextogroup.com/application/views/manager/elements/header.php): saving "Male" reliably renders masculine avatars and "Female" reliably renders feminine avatars across all user IDs.
+
+---
+
+### [v1.60.1] - 2026-10-22
+- **Timestamp**: `2026-10-22 14:32:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Refine organizational hierarchy tree: closed by default on all levels, stepped left-to-right indent with guide lines, and full-row click triggers
+- **Detailed Changes & Technical Implementation**:
+  - **Closed By Default Across All Levels (`application/views/manager/team/members.php`)**:
+    - Configured every `.tree-sub-drawer` to start closed with `class="tree-sub-drawer closed" style="display:none;"`.
+    - Initialized all toggle carets with `class="tree-toggle-caret collapsed"` and `fa-chevron-right` icon.
+    - Preserved instant typeahead auto-expansion and "Expand All" / "Collapse All" global actions.
+  - **Progressive Stepped Left-to-Right Downgrade**:
+    - Each nested level drawer is indented by `margin-left: 28px` with a vertical connector line (`border-left: 2px solid #e2e8f0; padding-left: 8px`).
+    - Visually clarifies the reporting lineage from left to right as the hierarchy descends through multiple sub-teams.
+  - **Full Row Interaction**:
+    - Clicking anywhere on a manager's row triggers their subordinate drawer slide-down/slide-up.
+    - Chevron toggles dynamically between `fa-chevron-right` and `fa-chevron-down`.
+    - Inner child branch clicks are isolated with event stopPropagation to prevent unintentional parent collapses.
+  - **Auto-Adjust Responsive Viewport**:
+    - Card viewport configured with `max-height: calc(100vh - 210px); min-height: 420px; overflow-x: auto; overflow-y: auto`.
+    - Container styled with `min-width: max-content; width: 100%` so deeply nested trees and large teams scale horizontally and vertically without text squeezing or truncation.
+  - **Zero Comments Policy**: Strictly verified—zero comments in PHP code.
+
+---
+
+### [v1.60.0] - 2026-10-22
+- **Timestamp**: `2026-10-22 14:15:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Implement hierarchical organizational tree drawers for Team Members, fix My/Team projection zero-result bug, separate My Tasks vs Team Tasks, upgrade Calls center with in-CRM softphone, and clean redundant transfer button
+- **Detailed Changes & Technical Implementation**:
+  - **Hierarchical Organizational Tree Drawers (`application/views/manager/team/members.php`, `application/models/ci_admin_model.php`, `application/controllers/ci_admin_team.php`)**:
+    - Replaced flat member lists with an interactive expandable/collapsible organizational hierarchy drawer tree mimicking the intuitive `tree` command structure.
+    - Implemented recursive `fetchTeamHierarchyTree($root_id)` model method with `$visited` loop prevention to construct a multi-level reporting structure (`manager -> subordinates`).
+    - Clean slate/gray aesthetics with folder/user SVG vector badges, department tags, direct subordinate counters, and interactive caret drawers.
+    - Fluid auto-adjustment with dual-axis scroll containers (`max-height: 78vh; overflow: auto`) to cleanly support hundreds or thousands of members across arbitrary nesting depths without horizontal blowout.
+    - Global header controls with "Expand All", "Collapse All", and instant typeahead search filter with auto-expansion of matching descendants.
+  - **Fixed Projection "No Data Found" Bug across My Projection & Team Projection (`application/controllers/ci_admin_leads.php`, `application/controllers/ci_admin_team.php`, `application/models/ci_admin_model.php`)**:
+    - Diagnosed root cause: controller routines were overwriting `$d1 = $_GET['exp_d1']`, which caused CodeIgniter active record to filter leads created in future projection months (`A.created BETWEEN exp_d1 AND exp_d2`) rather than matching the expected closure date (`A.close_date`).
+    - Cleanly separated `exp_d1`/`exp_d2` in `ci_admin_leads.php` and `ci_admin_team.php`.
+    - Updated `ci_admin_model.php::get_Myleads` and `getTeamLeads` to filter strictly on `A.close_date BETWEEN exp_d1 AND exp_d2` when clicked from the projection bar charts.
+  - **Segregated My Tasks vs Team Tasks on Dashboard (`application/views/manager/dashboard.php`)**:
+    - Separated "My Tasks" (direct assignee/creator tasks) from "Team Tasks" (collaborator and team member tasks).
+    - Fixed title, total count pill, and all time-period chip links (`Today`, `Upcoming`, `Overdue`, `Closed`) to route specifically to `manager/tasks?team=0` for My Tasks and `manager/tasks?team=1` for Team Tasks.
+  - **Calls Center Overhaul & In-CRM Softphone Calling (`application/views/manager/calls/dashboard.php`)**:
+    - Modernized typography with Inter font (`400`, `500`, `600`, `700`) and standardized color palette (`#2563EB` primary, `#10B981` emerald call button).
+    - Standardized metadata labels (11px uppercase bold `#64748B`, letter-spacing `0.05em`) and values (14px 600 `#0F172A`).
+    - Upgraded Recent Calls list to show all past call logs with call direction, answered/missed badges, formatted talk duration (`Xm Ys`), phone number, and timestamp.
+    - Embedded softphone modal (`#crmCallEmbedModal`) with responsive iframe frame (`#crmEmbeddedCallFrame`) to keep 3CX WebClient calling securely inside the CRM interface.
+  - **Removed Redundant Transfer Button on Database Transfer (`application/views/manager/leads/database_transfer.php`)**:
+    - Removed the extra top-right blue `btnTransferLeads` button (`Transfer Selected (1)`) to avoid UI clutter, as inline transfer and row-level dropdown transfer handle this cleanly.
+  - **Zero Comments Policy**: Strictly maintained across all modified PHP templates and controllers.
+
+---
+
+### [v1.59.3] - 2026-10-22
+- **Timestamp**: `2026-10-22 12:53:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Replace floating transfer modal with sleek inline transfer bar, add Transfer option to row Action dropdown, and enforce 3-alphabet team member search
+- **Detailed Changes & Technical Implementation**:
+  - **Eliminated Floating Modal Overlay (`application/views/manager/leads/database_transfer.php`)**:
+    - Completely removed the invasive, full-screen red modal overlay (`#modalTransferLeads`) and native `<select>` covering the page.
+    - Designed a sleek, modern inline transfer action bar positioned directly above the data table that slides in dynamically when records are selected or targeted.
+  - **3-Alphabet Team Member Search Autocomplete**:
+    - No team member records are displayed or visible until at least 3 alphabets are typed into the search field.
+    - Instant client-side typeahead renders matching users with name and email, allowing 1-click selection and enabling the "Confirm Transfer" button.
+  - **Row Action Button "Transfer" Option**:
+    - Added direct "Transfer" option to every row's Action dropdown button (`Action` -> Preview, Edit, Transfer).
+    - Clicking "Transfer" targets that specific lead, highlights it, scrolls smoothly to the inline transfer bar, and focuses the 3-letter team member search input.
+    - Zero comments policy strictly maintained.
+
+---
+
+### [v1.59.2] - 2026-10-22
+- **Timestamp**: `2026-10-22 12:50:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Harmonize Add Task UI with Edit Task UI, remove private/public toggles, and enforce 3-alphabet user assignment autocomplete
+- **Detailed Changes & Technical Implementation**:
+  - **Tasks Add & Edit UI Harmonization (`application/views/manager/tasks/add.php`, `edit.php`)**:
+    - Harmonized `add.php` and `edit.php` into the unified standard CRM box card layout with clean `box box-default`, matching header, breadcrumbs, back button, and footer action buttons.
+    - Removed private and public visibility fields.
+    - Cleaned and organized practical operational fields: Task Title / Customer Name (`customer`)*, POC Contact Person (`poc`), Contact Phone (`contact1`), Email (`email`), Department / Category (`category`), Task Type (`business_category`), Status (`status`), Priority (`dnd_status`), Follow-up Date (`followup_date`), Follow-up Time (`followup_time`), Due / Close Date (`close_date`), and Task Details / Instructions (`remark`).
+  - **3-Alphabet User Assignment Autocomplete Component**:
+    - User list dropdown remains completely hidden/invisible until user types at least 3 characters.
+    - Once >= 3 characters are typed, dynamically queries and renders matching users with name and email.
+    - Integrated across all user assignment forms:
+      - Add Task (`application/views/manager/tasks/add.php`)
+      - Edit Task (`application/views/manager/tasks/edit.php`)
+      - KAM Create Schedule (`application/views/manager/kam/schedule.php`)
+      - KAM Onboard Client (`application/views/manager/kam/onboard.php`)
+    - Added quick-clear button (`fa fa-times`) to easily reset assignee.
+    - Strictly maintained Zero Comments policy in all modified PHP files.
+
+---
+
+### [v1.59.1] - 2026-10-22
+- **Timestamp**: `2026-10-22 12:42:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Fix SQL Error 1054 Unknown column '1' in where clause across KAM My Client and leads model
+- **Detailed Changes & Technical Implementation**:
+  - **Resolved CodeIgniter Active Record Backtick Escaping**:
+    - Fixed `Error Number: 1054 Unknown column '1' in 'where clause'` in `application/controllers/ci_admin_kam.php::my_client()` caused by unescaped `where('1 = 0')`.
+    - Simplified non-admin condition in `ci_admin_kam.php` so all non-admin users (Back Office, Operations, assigned users) properly query records assigned to them or their executive ID using `$this->db->where('...', NULL, FALSE)`.
+    - Replaced legacy `$this->db->where('1 = 0')` in `application/models/ci_admin_model.php` (`get_Myleads`, `get_MyleadsFollowups`, `getLeadsMeetings`) with `$this->db->where('A.id', -1)` to prevent SQL syntax errors across all non-sales roles.
+
+---
+
+### [v1.59.0] - 2026-10-22
+- **Timestamp**: `2026-10-22 12:35:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Align KAM My Client with Database View, implement Google-style KAM scheduling recurrence, build Google Calendar Task modal card UI, and standardize action buttons
+- **Detailed Changes & Technical Implementation**:
+  - **KAM My Client UI Alignment (`application/views/manager/kam/my_client.php`)**:
+    - Aligned layout, filter toolbar (Date range, MRR range, Service Category, Lead Category, Status, User Name, Country, State, Search, Reset), and DataTables table to match My Zone > Database View (`leadsview.php`) 100%.
+    - Updated `Ci_admin_kam::my_client()` to process all filter queries and pass lookup datasets (`c_list`, `st_list`, `p_cat`, `lc_list`, `u_list`).
+    - Standardized action buttons to standard split dropdown (`Action` -> Preview, Edit).
+  - **KAM Create Schedule UI & Google Recurrence (`application/views/manager/kam/schedule.php`)**:
+    - Re-architected `manager/kam/schedule` to adopt the clean card layout of Database Add (`addleads.php`).
+    - Added Google-style recurring schedule controls: Daily, Weekly (with day checkboxes Mon-Sun), Monthly (day of month), and Once (does not repeat).
+    - Integrated client typeahead search, start/end dates, start/end times, and executive assignment.
+    - Stripped bulky 96 daily schedule inputs from `onboard.php`, keeping onboarding clean and consolidating all schedules into `manager/kam/schedule`.
+    - Added active schedule management table with standard split action buttons.
+  - **Tasks > Add Task Google Calendar Modal Card UI (`application/views/manager/tasks/add.php`)**:
+    - Re-architected Add Task view into a sleek centered card matching Google Calendar's task modal.
+    - Included large clean title input, pill type switchers (`Event`, `Task`, `Appointment schedule`), Date and Start/End time pickers, `All day` checkbox, recurrence dropdown, deadline picker, and description textarea.
+    - Added Department / Task list selector supporting Back Office Tasks, Operations Tasks, Sales Tasks, KAM / Client Tasks, IT & Tech Tasks, Accounts & Finance Tasks, HR & Admin Tasks, Support Tasks, and My Tasks.
+    - Added Executive assignee, Availability/Priority (`Free`, `Busy`, `Urgent`), Status, Visibility (`Private`/`Public`), and Client/Company input.
+    - Styled with rounded blue `Save` button, real FontAwesome icons, and zero AI clutter.
+  - **Task View & Follow-ups UI Standardization (`application/views/manager/tasks/index.php`, `followups.php`)**:
+    - Standardized action buttons in Task View (`manager/tasks`) to the CRM split dropdown (`Action` -> Preview, Edit).
+    - Aligned Task Follow-ups (`manager/tasks/followups`) with Leads Follow-ups (`followupsview.php`), adding quick filter buttons (All Missed, Last 7 Days, Today, Next 7 Days, All Future) and split action dropdowns.
+    - Removed all HTML/PHP comments across views to strictly comply with Zero Comments rule.
+
+---
+
+### [v1.58.0] - 2026-10-22
+- **Timestamp**: `2026-10-22 12:00:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Implement KAM Client & Sales Lead strict role isolation, fix role schema query, block transferred lead access, and catalog verification routes
+- **Detailed Changes & Technical Implementation**:
+  - **KAM My Client & Sales Leads Strict Domain Separation**:
+    - Designated KAM My Client exclusively for Back Office and Operations roles (`role == 2 || role == 5`).
+    - Enforced `INNER JOIN ci_kam_client_details` in `Ci_admin_kam::my_client()` so only onboarded KAM clients are retrieved.
+    - Restricted Back Office / Operations view to records assigned to them or where they are designated collaborators (`lead_assign`, `agents`, or `executive_id`).
+    - Excluded KAM onboarded records (`database_category != 'KAM Onboarded'`) from sales leads, follow-ups, meetings, and database transfer lists.
+    - Completely separated Back Office and Operations from general sales leads in `ci_admin_model.php` (`get_Myleads`, `get_MyleadsFollowups`, `getLeadsMeetings`), preventing data mixing across departments.
+    - Prevented non-admin users from transferring ownership of KAM clients in `bulk_transfer()` and `edit()` (`ci_admin_leads.php`), keeping default ownership fixed to the assigned person.
+  - **Roles Table Query & Soft-Delete Fix**:
+    - Fixed unknown column error `1054 Unknown column 'delete_status' in 'where clause'` in `application/controllers/ci_admin_roles.php` by querying active records (`status = 1`).
+  - **Lead Transfer & Old Owner Invisibility**:
+    - Updated query models in `ci_admin_model.php` to strictly check `lead_assign` over `created_by` for allotted leads.
+    - Previous owners can no longer see transferred leads in their personal lists or follow-ups unless explicitly reassigned or added as a collaborator.
+    - Added previous owner and transfer history tracking table `ci_lead_transfers` synced to `database/localhost.sql`.
+  - **KAM Section Stability & 500 Fix**:
+    - Removed non-existent `'price'` helper from `Ci_admin_kam` constructor, resolving 500 fatal crash.
+    - Connected KAM navigation links directly to `base_url().'manager/kam/my-client'` across desktop and mobile headers.
+  - **System Route Cataloging & Value Reference (`value.md`)**:
+    - Appended exhaustive line-by-line testing URL list containing all 47 verified routes for self-testing.
+
+---
+
 ### [v1.57.0] - 2026-10-21
 - **Commit**: `1df3fce9ac93e7c37c31eb58634e892f1174a74d` (`1df3fce`)
 - **Tree Code**: `9c2840ee8372b00e83499a3d5ad186c749ea2b0b` (`9c2840e`)

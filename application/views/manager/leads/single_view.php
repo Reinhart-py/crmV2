@@ -29,27 +29,22 @@
         
           <div class="pull-right">
             <?php if(!empty($m_list)){ if($m_list['a1']==$this->session->userdata('manager_id') || $m_list['a2']==$this->session->userdata('manager_id') || $m_list['a3']==$this->session->userdata('manager_id')){ ?>
-       	 <a href="<?php echo base_url(); ?>manager/leads/editLimited/<?php echo base64_encode($p_info['id']); ?>/tm" class="btn btn-warning">Update Status</a>
+        	 <a href="<?php echo base_url(); ?>manager/leads/editLimited/<?php echo base64_encode($p_info['id']); ?>/tm" class="btn btn-warning">Update Status</a>
        
        <?php } } ?>
-         <?php if($this->session->userdata('manager_id')==$p_info['created_by']){ ?>
+         <?php 
+         $cur_user = (int)$this->session->userdata('manager_id');
+         $cur_r = (int)$this->session->userdata('manager_role');
+         $lead_owner_id = !empty($p_info['lead_assign']) ? (int)$p_info['lead_assign'] : (int)$p_info['created_by'];
+         $is_agent_collab = (!empty($p_info['agents']) && in_array($cur_user, array_map('intval', explode(',', $p_info['agents']))));
+         $can_edit = ($cur_r == 1 || $cur_r == 4 || $cur_user === $lead_owner_id || $is_agent_collab);
+         if($can_edit){ ?>
           <?php if($action=='tm'){ ?>
             <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($p_info['id']); ?>/tm" class="btn btn-danger">Edit Lead</a>
-         <?php }else{ ?>
-          <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($p_info['id']); ?>" class="btn btn-danger">Edit Lead</a>
-         <?php }  ?>
-         
-         
-         <?php } elseif(in_array($p_info['created_by'],$p_team)){ ?>
-         
-         <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($p_info['id']); ?>/tm" class="btn btn-danger">Edit Lead</a>
-         <?php }else{ ?>
-          <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($p_info['id']); ?>" class="btn btn-danger">Edit Lead</a>
-          
-         
+          <?php }else{ ?>
+            <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($p_info['id']); ?>" class="btn btn-danger">Edit Lead</a>
+          <?php } ?>
          <?php } ?>
-        
-         
          </div>
 
           </div>
@@ -471,6 +466,29 @@
             
               </tr>
 
+              <tr>
+              <th scope="col">Previous Owner(s)</th>
+              <td scope="col">
+                <?php 
+                if(!empty($transfer_history)){
+                  $prev_names = array();
+                  foreach($transfer_history as $th){
+                    if(!empty($th['from_user_name']) && !in_array($th['from_user_name'], $prev_names)){
+                      $prev_names[] = $th['from_user_name'];
+                    }
+                  }
+                  if(!empty($prev_names)){
+                    echo htmlspecialchars(implode(' &rarr; ', $prev_names));
+                  } else {
+                    echo '-';
+                  }
+                } else {
+                  echo '-';
+                }
+                ?>
+              </td>
+              </tr>
+
 
 
 
@@ -569,6 +587,39 @@
 </div>
 </div>
 
+<?php if(!empty($transfer_history)){ ?>
+<div class="box box-default">
+      <div class="box-header">
+		<div class="col-sm-12">
+       		<h3 class="box-title"><i class="fa fa-history" style="color:#2563eb;"></i> Ownership &amp; Transfer History</h3>
+        </div>
+        </div>
+<div class="box-body">
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr style="background:#f8fafc;">
+            <th>Date &amp; Time</th>
+            <th>Transferred From (Previous Owner)</th>
+            <th>Transferred To (New Owner)</th>
+            <th>Transferred By</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php foreach($transfer_history as $th){ ?>
+            <tr>
+              <td><?php echo date('d-m-Y h:i A', strtotime($th['created_at'])); ?></td>
+              <td><span class="label label-default" style="font-size:12px;"><?php echo htmlspecialchars($th['from_user_name'] ?? 'User #'.$th['from_user_id']); ?></span></td>
+              <td><span class="label label-success" style="font-size:12px;"><?php echo htmlspecialchars($th['to_user_name'] ?? 'User #'.$th['to_user_id']); ?></span></td>
+              <td><?php echo htmlspecialchars($th['transferred_by_name'] ?? 'User #'.$th['transferred_by']); ?></td>
+            </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+    </div>
+</div>
+</div>
+<?php } ?>
 
     
     </div>

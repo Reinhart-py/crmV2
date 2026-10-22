@@ -347,6 +347,7 @@ public function view($id='') //userloyee id
 				$response= $this->comman_model->updateData('id',$id,$save,'ci_user');
 				if($response)
 					{
+						$this->ci_admin_model->log_admin_action('user_edit', 'Updated user ID #'.$id, 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));
 						$this->session->set_flashdata('message', 'User has been updated successfully!');
 						redirect('manager/users');
 					}			
@@ -463,6 +464,7 @@ public function ajax_edit_status()
 			
 				$status = ($_POST['admin_status']==1) ? 0 : 1;
 				$response= $this->comman_model->updateData('id',$_POST['id'],array('admin_status'=>$status),'ci_user');
+				$this->ci_admin_model->log_admin_action('user_status_toggle', 'Toggled user status for ID #'.$_POST['id'].' to '.$status, 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));
 				echo "ok";
 			}
 			else{

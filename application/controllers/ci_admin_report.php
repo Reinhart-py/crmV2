@@ -82,8 +82,6 @@ class Ci_admin_report extends CI_Controller {
 	
 	  public function leads()
 	{
-		die;
-		
         $data=array();
 		$data['info']=array(
 			'title'=>'Leads Report',
@@ -127,7 +125,6 @@ class Ci_admin_report extends CI_Controller {
 
 	public function followup()
 	{
-		die;
         $data=array();
 		$data['info']=array(
 			'title'=>'Followup Report',

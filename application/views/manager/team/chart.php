@@ -620,7 +620,7 @@
 
                 }).done(function (msg) {
 
-                    if (msg == 'success') {
+                    if (msg == 'success' || msg == 'ok') {
                         location.reload();
                     }
                     else {
@@ -647,7 +647,7 @@
 
                 }).done(function (msg) {
 
-                    if (msg == 'success') {
+                    if (msg == 'success' || msg == 'ok') {
                         location.reload();
                     }
                     else {

@@ -14,8 +14,11 @@ class Ci_admin_team extends CI_Controller {
 		 header('Cache-Control: no-cache');
   
 	}
-	
-	
+	public function index()
+	{
+		redirect('manager/team/members');
+	}
+
 	public function if_not_login($url = '')
     {
         if ($this->session->userdata('manager_id') == '') {
@@ -26,8 +29,7 @@ class Ci_admin_team extends CI_Controller {
             }
         } else {
             $data = array();
-           // $data['logo'] = $this->ci_admin_model->getpostdata2(array('id'=>1),'','ci_logo');
-           return $data;
+            return $data;
         }
 	}
 	
@@ -42,29 +44,28 @@ class Ci_admin_team extends CI_Controller {
         }
 	}
 		
-	   public function members()
+	public function members()
 	{
-		
-        $data=array();
-		$data['info']=array(
-			'title'=>'Users',
-			'page_heading'=>'My Team Members'
+		$data = array();
+		$data['info'] = array(
+			'title' => 'Users',
+			'page_heading' => 'My Team Members'
 		);
-		$data['info2']=$this->if_not_login();
-		$data['product_list']= $this->ci_admin_model->get_teamMember($this->session->userdata('manager_id'));
-		$this->load->view('manager/team/members',$data);
+		$data['info2'] = $this->if_not_login();
+		$data['product_list'] = $this->ci_admin_model->get_teamMember($this->session->userdata('manager_id'));
+		$this->load->view('manager/team/members', $data);
 	}
-	public function membersdetails($id)
+
+	public function membersdetails($id = '')
 	{
-		
-        $data=array();
-		$data['info']=array(
-			'title'=>'Users',
-			'page_heading'=>'My Team Members'
+		$data = array();
+		$data['info'] = array(
+			'title' => 'Users',
+			'page_heading' => 'My Team Members'
 		);
-		$data['info2']=$this->if_not_login();
-		$data['product_list']= $this->ci_admin_model->get_teamMember($id);
-		$this->load->view('manager/team/members',$data);
+		$data['info2'] = $this->if_not_login();
+		$data['product_list'] = $this->ci_admin_model->get_teamMember($id);
+		$this->load->view('manager/team/members', $data);
 	}
 	
 
@@ -145,7 +146,6 @@ class Ci_admin_team extends CI_Controller {
 			$this->session->set_userdata('manager_return_string', urlencode($page_url.$page_url1.$page2.$con_q)); 	
         
 		    
-        //$data['product_list']= $this->ci_admin_model->getTeamLeadsFixed($type);
        $this->load->view('manager/team/leads',$data);
        
 		
@@ -177,11 +177,15 @@ class Ci_admin_team extends CI_Controller {
 		$state = isset($_GET['state']) ? $_GET['state'] : '';	
 		
 		if(!empty($country)){
-			$country= implode(',', $country); 
+			if(is_array($country)){
+				$country= implode(',', $country); 
+			}
 			$data['state_list']= $this->comman_model->getAll(array('country_id'=>$country),'','states');
 	   }
 		if(!empty($state)){
-			 $state= implode(',', $state); 
+			if(is_array($state)){
+				$state= implode(',', $state); 
+			}
 		}
 
 
@@ -190,15 +194,21 @@ class Ci_admin_team extends CI_Controller {
 		$lCat = isset($_GET['lCat']) ? $_GET['lCat'] : '';
 		
 		if(!empty($lCat)){
-	         $lCat= implode(',', $lCat); 
+			if(is_array($lCat)){
+				$lCat= implode(',', $lCat); 
+			}
 	     }	
 
         if(!empty($category)){
-	         $category= implode(',', $category); 
+			if(is_array($category)){
+				$category= implode(',', $category); 
+			}
 	     }
 
         if(!empty($status)){
-	         $status= implode(',', $status); 
+			if(is_array($status)){
+				$status= implode(',', $status); 
+			}
 		 }
 		$data['st_list']= $this->comman_model->getAll(array('active'=>1),'','ci_status');
 		$data['c_list'] =$this->comman_model->getAll('',array('id','ASC'),'countries');
@@ -218,13 +228,12 @@ class Ci_admin_team extends CI_Controller {
 			$this->session->set_userdata('manager_return_string', urlencode($page_url.$page_url1.$page2.$con_q)); 	
         
 		    
-        //$data['product_list']= $this->ci_admin_model->getTeamLeadsFixed($type);
        $this->load->view('manager/team/assignleads',$data);
        
 		
     }
     
-    public function followups($action, $type=0)
+    public function followups($action = '', $type = 0)
 	{
 
         $data=array();
@@ -250,11 +259,15 @@ class Ci_admin_team extends CI_Controller {
 		$state = isset($_GET['state']) ? $_GET['state'] : '';	
 		
 		if(!empty($country)){
-			$country= implode(',', $country); 
+			if(is_array($country)){
+				$country= implode(',', $country); 
+			}
 			$data['state_list']= $this->comman_model->getAll(array('country_id'=>$country),'','states');
 	   }
 		if(!empty($state)){
-			 $state= implode(',', $state); 
+			if(is_array($state)){
+				$state= implode(',', $state); 
+			}
 		}
 
 		$status = isset($_GET['status']) ? $_GET['status'] : '';		
@@ -263,15 +276,21 @@ class Ci_admin_team extends CI_Controller {
 		$lCat = isset($_GET['lCat']) ? $_GET['lCat'] : '';
 		
 		if(!empty($lCat)){
-	         $lCat= implode(',', $lCat); 
+			if(is_array($lCat)){
+				$lCat= implode(',', $lCat); 
+			}
 	     }		
 
         if(!empty($category)){
-	         $category= implode(',', $category); 
+			if(is_array($category)){
+				$category= implode(',', $category); 
+			}
 	     }
 
         if(!empty($status)){
-	         $status= implode(',', $status); 
+			if(is_array($status)){
+				$status= implode(',', $status); 
+			}
 		 }
 		$data['st_list']= $this->comman_model->getAll(array('active'=>1),'','ci_status');
 		$data['c_list'] =$this->comman_model->getAll('',array('id','ASC'),'countries');
@@ -320,11 +339,15 @@ class Ci_admin_team extends CI_Controller {
 		$state = isset($_GET['state']) ? $_GET['state'] : '';	
 		
 		if(!empty($country)){
-			$country= implode(',', $country); 
+			if(is_array($country)){
+				$country= implode(',', $country); 
+			}
 			$data['state_list']= $this->comman_model->getAll(array('country_id'=>$country),'','states');
 	   }
 		if(!empty($state)){
-			 $state= implode(',', $state); 
+			if(is_array($state)){
+				$state= implode(',', $state); 
+			}
 		}
 
 		$status = isset($_GET['status']) ? $_GET['status'] : '';		
@@ -333,15 +356,21 @@ class Ci_admin_team extends CI_Controller {
 		$lCat = isset($_GET['lCat']) ? $_GET['lCat'] : '';
 		
 		if(!empty($lCat)){
-	         $lCat= implode(',', $lCat); 
+			if(is_array($lCat)){
+				$lCat= implode(',', $lCat); 
+			}
 	     }	
 		 
         if(!empty($category)){
-	         $category= implode(',', $category); 
+			if(is_array($category)){
+				$category= implode(',', $category); 
+			}
 	     }
 		 
         if(!empty($status)){
-	         $status= implode(',', $status); 
+			if(is_array($status)){
+				$status= implode(',', $status); 
+			}
 		 }
 		$data['st_list']= $this->comman_model->getAll(array('active'=>1),'','ci_status');
 		$data['c_list'] =$this->comman_model->getAll('',array('id','ASC'),'countries');
@@ -357,7 +386,6 @@ class Ci_admin_team extends CI_Controller {
 		$page_url1=$this->uri->segment(3)."/";
         $this->session->set_userdata('manager_return_string', urlencode($page_url.$page_url1.$page2.$con_q));
         
-       // $data['product_list']= $this->ci_admin_model->getTeamLeadsMeetings($type);
        $this->load->view('manager/team/meetings',$data);
        
 		
@@ -388,11 +416,15 @@ class Ci_admin_team extends CI_Controller {
 		$state = isset($_GET['state']) ? $_GET['state'] : '';	
 		
 		if(!empty($country)){
-			$country= implode(',', $country); 
+			if(is_array($country)){
+				$country= implode(',', $country); 
+			}
 			$data['state_list']= $this->comman_model->getAll(array('country_id'=>$country),'','states');
 	   }
 		if(!empty($state)){
-			 $state= implode(',', $state); 
+			if(is_array($state)){
+				$state= implode(',', $state); 
+			}
 		}
 
 		$status = isset($_GET['status']) ? $_GET['status'] : '';		
@@ -401,15 +433,21 @@ class Ci_admin_team extends CI_Controller {
 		$lCat = isset($_GET['lCat']) ? $_GET['lCat'] : '';
 		
 		if(!empty($lCat)){
-	         $lCat= implode(',', $lCat); 
+			if(is_array($lCat)){
+				$lCat= implode(',', $lCat); 
+			}
 	     }	
 		 
         if(!empty($category)){
-	         $category= implode(',', $category); 
+			if(is_array($category)){
+				$category= implode(',', $category); 
+			}
 	     }
 		 
         if(!empty($status)){
-	         $status= implode(',', $status); 
+			if(is_array($status)){
+				$status= implode(',', $status); 
+			}
 		 }
 		$data['st_list']= $this->comman_model->getAll(array('active'=>1),'','ci_status');
 		$data['c_list'] =$this->comman_model->getAll('',array('id','ASC'),'countries');
@@ -448,8 +486,9 @@ class Ci_admin_team extends CI_Controller {
 			$data['main_user'] = $this->comman_model->getpostdata2(array('id'=>$id),'','ci_user');
 
 		}
-	    $data['List2']= $this->comman_model->getAll(array('manager'=>$data['main_user']['id']),'','ci_user');
-		$data['back_user'] = $this->comman_model->getpostdata2(array('id'=>$data['main_user']['id']),'','ci_user');
+		$main_user_id = (!empty($data['main_user']) && isset($data['main_user']['id'])) ? $data['main_user']['id'] : 0;
+	    $data['List2']= $this->comman_model->getAll(array('manager'=>$main_user_id),'','ci_user');
+		$data['back_user'] = $this->comman_model->getpostdata2(array('id'=>$main_user_id),'','ci_user');
 
 		$this->load->view('manager/team/chart',$data);
 	}
