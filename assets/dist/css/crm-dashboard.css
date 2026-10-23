@@ -1890,6 +1890,45 @@ table.dataTable {
   cursor: pointer;
 }
 
+.crm-row-6cols {
+  margin-left: -6px !important;
+  margin-right: -6px !important;
+}
+
+.crm-row-6cols > .crm-col-6 {
+  width: 16.666667% !important;
+  float: left !important;
+  padding-left: 6px !important;
+  padding-right: 6px !important;
+  position: relative !important;
+  min-height: 1px !important;
+}
+
+@media (max-width: 1280px) and (min-width: 992px) {
+  .crm-row-6cols > .crm-col-6 {
+    width: 33.333333% !important;
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+    margin-bottom: 12px !important;
+  }
+}
+
+@media (max-width: 991px) and (min-width: 768px) {
+  .crm-row-6cols > .crm-col-6 {
+    width: 50% !important;
+    margin-bottom: 12px !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .crm-row-6cols > .crm-col-6 {
+    width: 100% !important;
+    float: none !important;
+    margin-bottom: 12px !important;
+  }
+}
+
+
 
 
 

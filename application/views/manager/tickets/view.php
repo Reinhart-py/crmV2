@@ -16,15 +16,36 @@
           <div class="box-header">
             <div class="col-sm-12">
               <div class="pull-left">
-                <a href="<?php echo base_url(); ?>manager/tickets" class="btn btn-info">Back</a>
+                <a href="<?php echo base_url(); ?>manager/tickets/followups" class="btn btn-info" style="margin-right: 5px;"><i class="fa fa-folder-open-o"></i> Open Tickets</a>
+                <a href="<?php echo base_url(); ?>manager/tickets" class="btn btn-default">All Tickets</a>
               </div>
               <div class="pull-right">
+                <?php if(!empty($can_manage_tickets) && $ticket['status'] !== 'Closed'){ ?>
+                  <a href="#review_close_section" class="btn btn-success" style="margin-right: 8px;"><i class="fa fa-check-circle"></i> Close Ticket</a>
+                <?php } ?>
                 <a href="<?php echo base_url(); ?>manager/tickets/edit/<?php echo $ticket['id']; ?>" class="btn btn-danger">Edit Ticket</a>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      <?php if($ticket['status'] === 'Closed'){ ?>
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="alert alert-success" style="font-size: 14px; margin-bottom: 20px;">
+            <i class="fa fa-check-circle" style="font-size: 18px; margin-right: 8px;"></i>
+            <strong>This ticket is verified and Closed.</strong>
+            <?php if(!empty($ticket['reviewer_name'])){ ?>
+              <span> Closed by <strong><?php echo htmlspecialchars($ticket['reviewer_name']); ?></strong> on <?php echo simple_date($ticket['resolution_confirmed_at']); ?>.</span>
+            <?php } ?>
+            <?php if(!empty($ticket['resolution_remarks'])){ ?>
+              <div style="margin-top: 5px; font-size: 13px;"><em>Verification Remarks:</em> <?php echo htmlspecialchars($ticket['resolution_remarks']); ?></div>
+            <?php } ?>
+          </div>
+        </div>
+      </div>
+      <?php } ?>
 
       <div class="row my-profile">
         <div class="box box-default">
@@ -235,10 +256,10 @@
       </div>
 
       <?php if(!empty($can_manage_tickets)){ ?>
-      <div class="row">
+      <div class="row" id="review_close_section">
         <div class="box box-default">
           <div class="box-header with-border">
-            <h3 class="box-title">Support Review & Ticket Closure</h3>
+            <h3 class="box-title"><i class="fa fa-lock text-primary"></i> Ticket Review & Closure</h3>
           </div>
           <div class="box-body">
             <?php if($ticket['status'] === 'Closed'){ ?>

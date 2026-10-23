@@ -26,7 +26,6 @@ class Ci_admin extends CI_Controller {
         } else {
             $this->ci_admin_model->check_auth_timeout();
             $data = array();
-            //$data['logo'] = $this->comman_model->getpostdata2(array('id'=>1),'','ci_logo');
            return $data;
         }
     } 
@@ -128,8 +127,6 @@ class Ci_admin extends CI_Controller {
 			'title'=>'Manager Dashboard'
 			);
 		$data['info2']=$this->if_not_login();
-		//$data['latest_product']=$this->ci_admin_model->get_latest_product();
-		//$data['latest_order']=$this->ci_admin_model->get_latest_order();
 		$data['dashboard_count']=$this->ci_admin_model->dashboard_countdata();
 		$data['dashboard_Tcount']=$this->ci_admin_model->dashboard_Tcountdata();
 		$data['dashboard_lead']=$this->ci_admin_model->dashboard_leaddata();
@@ -144,6 +141,8 @@ class Ci_admin extends CI_Controller {
 		$data['dashboard_Tvfu']=$this->ci_admin_model->dashboard_vertical_fu(1);
 		$data['dashboard_tasks']=$this->ci_admin_model->dashboard_tasks(0);
 		$data['dashboard_Ttasks']=$this->ci_admin_model->dashboard_tasks(1);
+		$data['dashboard_tickets']=$this->ci_admin_model->dashboard_tickets(0);
+		$data['dashboard_Ttickets']=$this->ci_admin_model->dashboard_tickets(1);
 		
 		$data['dashboard_TeamPro']=$this->ci_admin_model->dashboard_TeamPro();
 		$data['dashboard_MyPro']=$this->ci_admin_model->dashboard_MyPro();
@@ -199,79 +198,71 @@ class Ci_admin extends CI_Controller {
 			$data['users']= $this->comman_model->getAll(array('c_username'=>$email,'status'=>1),'','ci_user','first');
 			if(!empty($data['users']))
 			{
-				$otp= rand(00000000,99999999);
-				$this->comman_model->updateData('id',$data['users']['id'],array('fotp'=>$otp),'ci_user');
+				$token = bin2hex(random_bytes(24)) . '_' . (time() + 900);
+				$this->comman_model->updateData('id', $data['users']['id'], array('fotp' => $token), 'ci_user');
 
-				$mail_str='<p>Hello, Admin</p>
-				<p>Seems like you forgot your password for SRJ. If this is true, click below to reset your password</p>
-				<p> <a href="'.base_url().'manager/bnr54dfdf/'.$otp.'">Reset Password</a></p>';
-				$mail_str.="<p>If you did not forgot your password you can safely ignore this email.</p>";
+				$mail_str = '<p>Hello ' . htmlspecialchars($data['users']['name']) . ',</p>
+				<p>We received a request to reset your password for Seven Strokes CRM. Click the link below to reset your password (valid for 15 minutes):</p>
+				<p><a href="' . base_url() . 'manager/bnr54dfdf/' . $token . '">Reset Password</a></p>
+				<p>If you did not request this password reset, you can safely ignore this email.</p>';
 				
-			 	$resp=$this->mail_model->sendmail($email,"Forgot Passwrd - SRJ CRM",$data=array(),$mail_str);
+				$resp = $this->mail_model->sendmail($email, "Password Reset - Seven Strokes CRM", $data = array(), $mail_str);
 				
-				$this->session->set_flashdata('message', 'Password reset link has been sent on your registered email. Thanks');
-	            redirect("manager/login");
+				$this->session->set_flashdata('message', 'Password reset link has been sent to your registered email. Valid for 15 minutes.');
+				redirect("manager/login");
 			}
 			else
 			{   
-			$this->session->set_flashdata('error_message', 'Sorry! Your username not exist in our system');
-            redirect("manager/forgot");
+				$this->session->set_flashdata('error_message', 'Sorry! Your username does not exist in our system.');
+				redirect("manager/forgot");
 			}
-			
 		}
-		$this->load->view('manager/forgot',$data);
+		$this->load->view('manager/forgot', $data);
 	}
 
-	public function reset($token="")
-    {
-		
-	   
-	  	$data=array();
-		$data['info']=array(
-			'title'=>'Manager Password Reset'
-			);
-	  
-	  
-		  
-			$data['token'] = $token;		
-			$data['users']= $this->comman_model->getAll(array('fotp'=>$token,'status'=>1),'','ci_user','first');
-			if(empty($data['users']))
-			{
-				$this->session->set_flashdata('error_message', 'Sorry! Unauthorized or expired access');
-            	redirect("manager/login");
-				
-				
+	public function reset($token = "")
+	{
+		$data = array();
+		$data['info'] = array(
+			'title' => 'Manager Password Reset'
+		);
+		$data['token'] = $token;
+		$is_expired = false;
+		$parts = explode('_', $token);
+		if (count($parts) >= 2 && time() > (int)$parts[1]) {
+			$is_expired = true;
+		}
+		$data['users'] = $this->comman_model->getAll(array('fotp' => $token, 'status' => 1), '', 'ci_user', 'first');
+		if (empty($data['users']) || $is_expired) {
+			if (!empty($data['users']) && $is_expired) {
+				$this->comman_model->updateData('id', $data['users']['id'], array('fotp' => ''), 'ci_user');
 			}
-			
-		
-		$this->load->view('manager/reset',$data);
+			$this->session->set_flashdata('error_message', 'Sorry! Password reset link is invalid or expired. Please request a new one.');
+			redirect("manager/forgot");
+		}
+		$this->load->view('manager/reset', $data);
 	}
 
 	public function fchange_password()
-		  {  
-			 
-	 
-				
-				   
-				   if($this->input->server('REQUEST_METHOD')==='POST')
-		            {  
-		            	$token= $this->input->post('token');
-                         $password= $this->input->post('password');
-						 $confirm_password= $this->input->post('change_password'); 
-			 
-			             if($password==$confirm_password)
-		 				  {
-							 $this->comman_model->updateData('fotp',$token,array('c_password'=>sha1($password),'fotp'=>''),'ci_user');
-							 $this->session->set_flashdata('message', 'Your password has been changed successfully!');
-						  }
-						  else
-						  {
-						       $this->session->set_flashdata('error_message', 'Error: Password and Confirm Password not match!');
-						  }
-						redirect('manager/login');
-					}
-			
-		 }
+	{
+		if ($this->input->server('REQUEST_METHOD') === 'POST') {
+			$token = $this->input->post('token');
+			$password = $this->input->post('password');
+			$confirm_password = $this->input->post('change_password');
+			$parts = explode('_', $token);
+			if (count($parts) >= 2 && time() > (int)$parts[1]) {
+				$this->session->set_flashdata('error_message', 'Error: Password reset link has expired. Please request a new one.');
+				redirect('manager/forgot');
+			}
+			if ($password === $confirm_password) {
+				$this->comman_model->updateData('fotp', $token, array('c_password' => sha1($password), 'fotp' => ''), 'ci_user');
+				$this->session->set_flashdata('message', 'Your password has been changed successfully!');
+			} else {
+				$this->session->set_flashdata('error_message', 'Error: Password and Confirm Password do not match!');
+			}
+			redirect('manager/login');
+		}
+	}
    
    
    
@@ -382,5 +373,3 @@ class Ci_admin extends CI_Controller {
    
    
 }
-/* End of file welcome.php */
-/* Location: ./application/controllers/welcome.php */

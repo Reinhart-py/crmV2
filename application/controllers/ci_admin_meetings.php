@@ -59,7 +59,6 @@ function __construct()
 
 
 
-	//to add category
 
 	public function add()
 
@@ -99,7 +98,6 @@ function __construct()
         $this->load->view('manager/meetings/add',$data);
 	}
 
-		//edit category
 
      public function edit($id='')
 
@@ -165,6 +163,3 @@ function __construct()
 
 
 
-/* End of file welcome.php */
-
-/* Location: ./application/controllers/welcome.php */

@@ -25,7 +25,6 @@ class Ci_admin_terms extends CI_Controller {
             }
         } else {
             $data = array();
-           // $data['logo'] = $this->ci_admin_model->getpostdata2(array('id'=>1),'','ci_logo');
            return $data;
         }
     } 
@@ -63,7 +62,6 @@ class Ci_admin_terms extends CI_Controller {
 	
 	
      
-	 //to add category
 	public function add()
 	{
 		 
@@ -95,7 +93,6 @@ class Ci_admin_terms extends CI_Controller {
 	}
 	
 	
-	//edit category
      public function edit($did)
 	 {
        	
@@ -153,7 +150,7 @@ class Ci_admin_terms extends CI_Controller {
 			 foreach($data['product_list'] as $pli)
 			 {
 				 $vari_del=$this->ci_admin_model->deleteData('product_id',$pli['id'],'ci_variations');
-				 $dir = "uploads/product_image/"; // Your Path to folder
+				 $dir = "uploads/product_image/";
 				 $map = directory_map($dir); 
 				 foreach($map as $li)
 				 { 
@@ -199,5 +196,3 @@ class Ci_admin_terms extends CI_Controller {
 	
 	
 }
-/* End of file welcome.php */
-/* Location: ./application/controllers/welcome.php */

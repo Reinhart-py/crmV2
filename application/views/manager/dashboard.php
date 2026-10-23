@@ -1,9 +1,9 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
-<!-- Full Screen Executive Dashboard Container -->
+
 <div class="content-wrapper full-screen-dash">
 
-    <!-- Dashboard Top Header Bar with Theme Switcher -->
+    
     <div class="dash-header-bar">
         <h1 class="dash-header-title">
             <i class="fa fa-dashboard" style="color:#b91c1c;"></i> Dashboard
@@ -15,12 +15,12 @@
         </div>
     </div>
 
-    <!-- Main Dashboard Content -->
+    
     <div class="dash-content-body">
 
-        <!-- 1. Top 4 Statistic Cards Row -->
+        
         <div class="row">
-            <!-- MY LEADS (Navy) -->
+            
             <div class="col-lg-3 col-sm-6 col-xs-12">
                 <a href="<?php echo base_url(); ?>manager/leads" class="dash-kpi-card dash-kpi-navy" id="cardMyLeads">
                     <div class="dash-kpi-top">
@@ -36,7 +36,7 @@
                 </a>
             </div>
 
-            <!-- MY VERTICALS (Forest Green) -->
+            
             <div class="col-lg-3 col-sm-6 col-xs-12">
                 <a href="<?php echo base_url(); ?>manager/verticals" class="dash-kpi-card dash-kpi-forest" id="cardMyVerticals">
                     <div class="dash-kpi-top">
@@ -52,7 +52,7 @@
                 </a>
             </div>
 
-            <!-- TEAM USERS (Warm Brown) -->
+            
             <div class="col-lg-3 col-sm-6 col-xs-12">
                 <a href="<?php echo base_url(); ?>manager/team/members" class="dash-kpi-card dash-kpi-amber" id="cardTeamUsers">
                     <div class="dash-kpi-top">
@@ -68,7 +68,7 @@
                 </a>
             </div>
 
-            <!-- TEAM LEADS (Dark Crimson) -->
+            
             <div class="col-lg-3 col-sm-6 col-xs-12">
                 <a href="<?php echo base_url(); ?>manager/team/leads" class="dash-kpi-card dash-kpi-crimson" id="cardTeamLeads">
                     <div class="dash-kpi-top">
@@ -85,7 +85,7 @@
             </div>
         </div>
 
-        <!-- Lead Status Overview (My Lead Stats & Team Lead Stats) -->
+        
         <?php
             $my_lead_total = 0;
             if (!empty($dashboard_lead)) {
@@ -101,7 +101,7 @@
             }
         ?>
         <div class="row" style="margin-top: 15px;">
-            <!-- My Lead Stats -->
+            
             <div class="col-md-6 col-xs-12">
                 <div class="crm-modern-stat-card" style="margin-bottom: 20px;">
                     <div class="card-top">
@@ -135,7 +135,7 @@
                 </div>
             </div>
 
-            <!-- Team Lead Stats -->
+            
             <div class="col-md-6 col-xs-12">
                 <div class="crm-modern-stat-card" style="margin-bottom: 20px;">
                     <div class="card-top">
@@ -171,9 +171,9 @@
         </div>
 
 
-        <!-- 2. Projections Charts Row (My Projection & Team Projection) -->
+        
         <div class="row">
-            <!-- My Projection -->
+            
             <div class="col-md-6 col-xs-12">
                 <div class="dash-chart-card">
                     <div class="dash-chart-header">
@@ -187,7 +187,7 @@
                 </div>
             </div>
 
-            <!-- Team Projection -->
+            
             <div class="col-md-6 col-xs-12">
                 <div class="dash-chart-card">
                     <div class="dash-chart-header">
@@ -202,7 +202,7 @@
             </div>
         </div>
 
-        <!-- 3. Section Header: Operational Activity and Breakdown -->
+        
         <div class="dash-section-divider">
             <h3 class="dash-section-title">
                 <span class="dash-section-title-icon">
@@ -214,20 +214,80 @@
         </div>
 
         <?php
+            $total_my_tickets = !empty($dashboard_tickets['total_all']) ? (int)$dashboard_tickets['total_all'] : 0;
             $total_my_tasks = !empty($dashboard_tasks['total_all']) ? (int)$dashboard_tasks['total_all'] : (!empty($dashboard_tasks) ? (int)array_sum(array_slice($dashboard_tasks, 0, 5)) : 0);
             $total_my_f = !empty($dashboard_f) ? (int)array_sum(array_slice($dashboard_f, 0, 5)) : 0;
             $total_my_m = !empty($dashboard_m) ? (int)array_sum(array_slice($dashboard_m, 0, 5)) : 0;
             $total_my_c = !empty($dashboard_c['total_all']) ? (int)$dashboard_c['total_all'] : (!empty($dashboard_c) ? (int)array_sum(array_slice($dashboard_c, 0, 5)) : 0);
             $total_my_vfu = !empty($dashboard_vfu) ? (int)array_sum(array_slice($dashboard_vfu, 0, 5)) : 0;
 
+            $total_team_tickets = !empty($dashboard_Ttickets['total_all']) ? (int)$dashboard_Ttickets['total_all'] : 0;
             $total_team_tasks = !empty($dashboard_Ttasks['total_all']) ? (int)$dashboard_Ttasks['total_all'] : (!empty($dashboard_Ttasks) ? (int)array_sum(array_slice($dashboard_Ttasks, 0, 5)) : 0);
             $total_team_f = !empty($dashboard_Tf) ? (int)array_sum(array_slice($dashboard_Tf, 0, 5)) : 0;
             $total_team_m = !empty($dashboard_Tm) ? (int)array_sum(array_slice($dashboard_Tm, 0, 5)) : 0;
             $total_team_c = !empty($dashboard_Tc['total_all']) ? (int)$dashboard_Tc['total_all'] : (!empty($dashboard_Tc) ? (int)array_sum(array_slice($dashboard_Tc, 0, 5)) : 0);
             $total_team_vfu = !empty($dashboard_Tvfu) ? (int)array_sum(array_slice($dashboard_Tvfu, 0, 5)) : 0; ?>
 
-        <div class="row crm-row-5cols">
-            <div class="crm-col-5 col-xs-12">
+        <div class="row crm-row-6cols">
+            <div class="crm-col-6 col-xs-12">
+                <div class="crm-modern-stat-card">
+                    <div class="card-top">
+                        <h4 class="card-title">
+                            <?php if(has_section_perm('tickets', 'read')){ ?>
+                                <a href="<?php echo base_url(); ?>manager/tickets?assigned_user=<?php echo (int)$this->session->userdata('manager_id'); ?>&status=Open" style="color:inherit; text-decoration:none;"><i class="fa fa-ticket" style="color:#2563eb;"></i> My Tickets</a>
+                            <?php } else { ?>
+                                <span><i class="fa fa-ticket" style="color:#2563eb;"></i> My Tickets</span>
+                            <?php } ?>
+                        </h4>
+                        <?php if(has_section_perm('tickets', 'read')){ ?>
+                            <a href="<?php echo base_url(); ?>manager/tickets?assigned_user=<?php echo (int)$this->session->userdata('manager_id'); ?>&status=Open" class="card-total-pill" style="text-decoration:none;"><?php echo $total_my_tickets; ?> Total</a>
+                        <?php } else { ?>
+                            <span class="card-total-pill"><?php echo $total_my_tickets; ?> Total</span>
+                        <?php } ?>
+                    </div>
+                    <div class="crm-seg-bar">
+                        <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
+                        <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
+                        <div class="crm-seg seg-today" style="width:16%;" title="Today"></div>
+                        <div class="crm-seg seg-next7" style="width:20%;" title="Next 7 Days"></div>
+                        <div class="crm-seg seg-future" style="width:30%;" title="All Future"></div>
+                    </div>
+                    <ul class="crm-modern-stat-grid">
+                        <li>
+                            <a href="<?php echo has_section_perm('tickets', 'read') ? base_url().'manager/tickets?overdue=1' : '#'; ?>" class="crm-modern-stat-chip">
+                                <span>All Missed</span>
+                                <span class="badge bg-red"><?php echo isset($dashboard_tickets['total_missed']) ? $dashboard_tickets['total_missed'] : 0; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo has_section_perm('tickets', 'read') ? base_url().'manager/tickets?status=Open' : '#'; ?>" class="crm-modern-stat-chip">
+                                <span>Last 7 Days</span>
+                                <span class="badge bg-orange"><?php echo isset($dashboard_tickets['total_lastweek']) ? $dashboard_tickets['total_lastweek'] : 0; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo has_section_perm('tickets', 'read') ? base_url().'manager/tickets?deadline='.date('d-m-Y') : '#'; ?>" class="crm-modern-stat-chip">
+                                <span>Today</span>
+                                <span class="badge bg-skyblue"><?php echo isset($dashboard_tickets['total_today']) ? $dashboard_tickets['total_today'] : 0; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo has_section_perm('tickets', 'read') ? base_url().'manager/tickets?overdue=soon' : '#'; ?>" class="crm-modern-stat-chip">
+                                <span>Next 7 Days</span>
+                                <span class="badge bg-blue"><?php echo isset($dashboard_tickets['total_nextweek']) ? $dashboard_tickets['total_nextweek'] : 0; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo has_section_perm('tickets', 'read') ? base_url().'manager/tickets?status=Open' : '#'; ?>" class="crm-modern-stat-chip">
+                                <span>All Future</span>
+                                <span class="badge bg-green"><?php echo isset($dashboard_tickets['total_future']) ? $dashboard_tickets['total_future'] : 0; ?></span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="crm-col-6 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><a href="<?php echo base_url(); ?>manager/tasks?team=0" style="color:inherit; text-decoration:none;"><i class="fa fa-tasks"></i> My Tasks</a></h4>
@@ -275,7 +335,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-5 col-xs-12">
+            <div class="crm-col-6 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-calendar-check-o"></i> My Followups</h4>
@@ -323,7 +383,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-5 col-xs-12">
+            <div class="crm-col-6 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-handshake-o"></i> My Meetings</h4>
@@ -371,7 +431,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-5 col-xs-12">
+            <div class="crm-col-6 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-trophy"></i> My Closures</h4>
@@ -419,7 +479,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-5 col-xs-12">
+            <div class="crm-col-6 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-briefcase"></i> My Vertical FU</h4>
@@ -468,8 +528,66 @@
             </div>
         </div>
 
-        <div class="row crm-row-5cols">
-            <div class="crm-col-5 col-xs-12">
+        <div class="row crm-row-6cols">
+            <div class="crm-col-6 col-xs-12">
+                <div class="crm-modern-stat-card">
+                    <div class="card-top">
+                        <h4 class="card-title">
+                            <?php if(has_section_perm('tickets', 'read')){ ?>
+                                <a href="<?php echo base_url(); ?>manager/tickets?team=1&status=Open" style="color:inherit; text-decoration:none;"><i class="fa fa-ticket" style="color:#2563eb;"></i> Team Tickets</a>
+                            <?php } else { ?>
+                                <span><i class="fa fa-ticket" style="color:#2563eb;"></i> Team Tickets</span>
+                            <?php } ?>
+                        </h4>
+                        <?php if(has_section_perm('tickets', 'read')){ ?>
+                            <a href="<?php echo base_url(); ?>manager/tickets?team=1&status=Open" class="card-total-pill" style="text-decoration:none;"><?php echo $total_team_tickets; ?> Total</a>
+                        <?php } else { ?>
+                            <span class="card-total-pill"><?php echo $total_team_tickets; ?> Total</span>
+                        <?php } ?>
+                    </div>
+                    <div class="crm-seg-bar">
+                        <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
+                        <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
+                        <div class="crm-seg seg-today" style="width:16%;" title="Today"></div>
+                        <div class="crm-seg seg-next7" style="width:20%;" title="Next 7 Days"></div>
+                        <div class="crm-seg seg-future" style="width:30%;" title="All Future"></div>
+                    </div>
+                    <ul class="crm-modern-stat-grid">
+                        <li>
+                            <a href="<?php echo has_section_perm('tickets', 'read') ? base_url().'manager/tickets?team=1&overdue=1' : '#'; ?>" class="crm-modern-stat-chip">
+                                <span>All Missed</span>
+                                <span class="badge bg-red"><?php echo isset($dashboard_Ttickets['total_missed']) ? $dashboard_Ttickets['total_missed'] : 0; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo has_section_perm('tickets', 'read') ? base_url().'manager/tickets?team=1&status=Open' : '#'; ?>" class="crm-modern-stat-chip">
+                                <span>Last 7 Days</span>
+                                <span class="badge bg-orange"><?php echo isset($dashboard_Ttickets['total_lastweek']) ? $dashboard_Ttickets['total_lastweek'] : 0; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo has_section_perm('tickets', 'read') ? base_url().'manager/tickets?team=1&deadline='.date('d-m-Y') : '#'; ?>" class="crm-modern-stat-chip">
+                                <span>Today</span>
+                                <span class="badge bg-skyblue"><?php echo isset($dashboard_Ttickets['total_today']) ? $dashboard_Ttickets['total_today'] : 0; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo has_section_perm('tickets', 'read') ? base_url().'manager/tickets?team=1&overdue=soon' : '#'; ?>" class="crm-modern-stat-chip">
+                                <span>Next 7 Days</span>
+                                <span class="badge bg-blue"><?php echo isset($dashboard_Ttickets['total_nextweek']) ? $dashboard_Ttickets['total_nextweek'] : 0; ?></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo has_section_perm('tickets', 'read') ? base_url().'manager/tickets?team=1&status=Open' : '#'; ?>" class="crm-modern-stat-chip">
+                                <span>All Future</span>
+                                <span class="badge bg-green"><?php echo isset($dashboard_Ttickets['total_future']) ? $dashboard_Ttickets['total_future'] : 0; ?></span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="crm-col-6 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><a href="<?php echo base_url(); ?>manager/tasks?team=1" style="color:inherit; text-decoration:none;"><i class="fa fa-tasks"></i> Team Tasks</a></h4>
@@ -517,7 +635,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-5 col-xs-12">
+            <div class="crm-col-6 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-calendar-check-o"></i> Team Followups</h4>
@@ -565,7 +683,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-5 col-xs-12">
+            <div class="crm-col-6 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-handshake-o"></i> Team Meetings</h4>
@@ -613,7 +731,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-5 col-xs-12">
+            <div class="crm-col-6 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-trophy"></i> Team Closures</h4>
@@ -661,7 +779,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-5 col-xs-12">
+            <div class="crm-col-6 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-briefcase"></i> Team Vertical FU</h4>
@@ -710,7 +828,7 @@
             </div>
         </div>
 
-        <!-- 6. Dedicated Interactive Dashboard Drill-Down View Section -->
+        
         <div class="dash-drilldown-panel" id="dashDrilldownPanel">
             <div class="dash-drilldown-header">
                 <h4 class="dash-drilldown-title">
@@ -739,7 +857,7 @@
                         </tr>
                     </thead>
                     <tbody id="drilldownTableBody">
-                        <!-- Populated dynamically on chip click -->
+                        
                     </tbody>
                 </table>
             </div>
@@ -750,7 +868,7 @@
     </div>
 </div>
 
-<!-- Projection Chart Configuration & Scripting -->
+
 <script>
 $(function () {
     // 1. Dark / Light Mode Toggle logic

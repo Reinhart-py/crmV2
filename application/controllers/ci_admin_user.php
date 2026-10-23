@@ -32,7 +32,7 @@ class Ci_admin_user extends CI_Controller {
 
         }else {
             $data = array();
-		   // $data['logo'] = $this->ci_admin_model->getpostdata2(array('id'=>1),'','ci_logo');
+		   
 		   
            return $data;
         }
@@ -63,7 +63,7 @@ class Ci_admin_user extends CI_Controller {
 		$search = isset($_GET['search']) ? $_GET['search'] : '';		
 		$data['product_list2']= $this->ci_admin_model->get_users('','',$order_by,$sort_by,$search); 
 		
-		//Pagination
+		
 		$params = array();
         $limit_per_page = 2000;
         $page = ($this->uri->segment(3)) ? ($this->uri->segment(3) - 1) : 0;
@@ -73,7 +73,7 @@ class Ci_admin_user extends CI_Controller {
 		
 		if ($total_records > 0) 
         {
-            // get current page records
+            
          $data['product_list']= $this->ci_admin_model->get_users($limit_per_page, $page_index,$order_by,$sort_by,$search);
 		 	$con_q= '';
 			 if(!empty($_SERVER['QUERY_STRING']))
@@ -88,7 +88,7 @@ class Ci_admin_user extends CI_Controller {
             $config['per_page'] = $limit_per_page;
             $config["uri_segment"] = 3;
 			
-			 // custom paging configuration
+			 
             $config['num_links'] = 2;
             $config['use_page_numbers'] = TRUE;
             $config['reuse_query_string'] = TRUE;
@@ -120,7 +120,7 @@ class Ci_admin_user extends CI_Controller {
              
             $this->pagination->initialize($config);
              
-            // build paging links
+            
             $data["links"] = $this->pagination->create_links();
         }
 	
@@ -129,7 +129,7 @@ class Ci_admin_user extends CI_Controller {
 	}
 
 	
-public function view($id='') //userloyee id
+public function view($id='') 
 
 		{
 
@@ -141,9 +141,9 @@ public function view($id='') //userloyee id
 			$data['info2']=$this->if_not_login();
 			
 			$data['p_info']=$this->ci_admin_model->getSingleUser($id);
-			//$data['team']= $this->ci_admin_model->fetchTeamList(1,'');
-			//echo "<pre>";
-			//print_r($data['team']);
+			
+			
+			
 			
 			
     	 	   if(empty($data['p_info']))
@@ -209,7 +209,7 @@ public function view($id='') //userloyee id
 			'national'=>$national,
 			'blood'=>$blood,
 			'p_no'=>$p_no,
-			//'p_date'=>$p_date,
+			
 			'p_exdate'=>db_date($p_exdate),
 			'visa_type'=>$visa_type,
 			'visa_no'=>$visa_no,
@@ -221,7 +221,7 @@ public function view($id='') //userloyee id
 			'h_contact_relation'=>$h_contact_relation,
 			'h_contact_no'=>$h_contact_no,
 			'h_contact_no2'=>$h_contact_no2,			
-			//'no_d_uae'=>$no_d_uae,
+			
 			'bank'=>$bank,
 			'bank_country'=>$bank_country,
 			'iban'=>$iban,
@@ -258,7 +258,7 @@ public function view($id='') //userloyee id
     }
 
 	
-		public function edit($id='') //userloyee id
+		public function edit($id='') 
 
 		{
 
@@ -315,7 +315,7 @@ public function view($id='') //userloyee id
 			'national'=>$national,
 			'blood'=>$blood,
 			'p_no'=>$p_no,
-			//'p_date'=>$p_date,
+			
 			'p_exdate'=>db_date($p_exdate),
 			'visa_type'=>$visa_type,
 			'visa_no'=>$visa_no,
@@ -327,7 +327,7 @@ public function view($id='') //userloyee id
 			'h_contact_relation'=>$h_contact_relation,
 			'h_contact_no'=>$h_contact_no,
 			'h_contact_no2'=>$h_contact_no2,			
-			//'no_d_uae'=>$no_d_uae,
+			
 			'bank'=>$bank,
 			'bank_country'=>$bank_country,
 			'iban'=>$iban,
@@ -359,7 +359,7 @@ public function view($id='') //userloyee id
 	  }
 	  
 
-	  public function cedit($id='') //userloyee id
+	  public function cedit($id='') 
 
 		{
 
@@ -423,31 +423,61 @@ public function view($id='') //userloyee id
 
 	public function delete($id='')
 	{
-    	$data=array();
-		$data['info']=array(
-			'title'=>'Manager- Roles',
-			'page_heading'=>'All Roles'
+		$data = array();
+		$data['info'] = array(
+			'title' => 'Manager - Users',
+			'page_heading' => 'All Users'
 		);
-		$data['info2']=$this->if_not_login();
+		$data['info2'] = $this->if_not_login();
 
-		if(empty($id))
-   	    {
-    	    redirect('manager/users');
-	    }
+		$id = (int)$id;
+		if (empty($id)) {
+			redirect('manager/users');
+			return;
+		}
+
+		$current_admin_id = (int)$this->session->userdata('manager_id');
+		if ($id === $current_admin_id) {
+			$this->session->set_flashdata('error_message', 'You cannot delete your own account while logged in.');
+			redirect('manager/users');
+			return;
+		}
 
 		$user_to_delete = $this->comman_model->getAll(array('id' => $id), '', 'ci_user', 'first');
+		if (empty($user_to_delete)) {
+			$this->session->set_flashdata('error_message', 'User not found.');
+			redirect('manager/users');
+			return;
+		}
 		$uname = !empty($user_to_delete['name']) ? $user_to_delete['name'] : 'User #' . $id;
 
-		$this->db->trans_start();
-		$this->db->where('lead_assign', $id);
-		$this->db->update('ci_leads', array('lead_assign' => 0));
+		$owned_counts = $this->ci_admin_model->get_user_owned_records_count($id);
+		if ($owned_counts['total'] > 0) {
+			$details = array();
+			if ($owned_counts['leads'] > 0) {
+				$details[] = $owned_counts['leads'] . ' database record(s)/lead(s)';
+			}
+			if ($owned_counts['kam'] > 0) {
+				$details[] = $owned_counts['kam'] . ' KAM client record(s)';
+			}
+			if ($owned_counts['tasks'] > 0) {
+				$details[] = $owned_counts['tasks'] . ' active task(s)';
+			}
+			$reason = implode(', ', $details);
 
+			$this->session->set_flashdata('error_message', 'Cannot delete user "' . htmlspecialchars($uname) . '". This user still owns ' . $reason . '. Their database must be transferred first before deletion.');
+			redirect('manager/database-transfer?from_user=' . $id);
+			return;
+		}
+
+		$this->db->trans_start();
+		$this->db->query("UPDATE ci_leads SET agents = TRIM(BOTH ',' FROM REPLACE(CONCAT(',', IFNULL(agents, ''), ','), ',{$id},', ',')) WHERE FIND_IN_SET({$id}, agents) > 0");
 		$this->ci_admin_model->deleteData('id', $id, 'ci_user');
 		$this->db->trans_complete();
 
 		if ($this->db->trans_status() !== FALSE) {
-			$this->ci_admin_model->log_admin_action('user_deleted', 'User deleted: ' . $uname . ' (Leads moved to unassigned queue)', 'SUCCESS');
-			$this->session->set_flashdata('message', 'User deleted successfully and leads moved to unassigned queue.');
+			$this->ci_admin_model->log_admin_action('user_deleted', 'User deleted: ' . $uname . ' after verifying zero owned records', 'SUCCESS');
+			$this->session->set_flashdata('message', 'User ' . htmlspecialchars($uname) . ' has been deleted successfully.');
 		} else {
 			$this->session->set_flashdata('error_message', 'Failed to delete user.');
 		}
@@ -476,7 +506,7 @@ public function ajax_edit_status()
  {
 	
 	 $str='<option value="">Choose State</option>';
-   //Ajax call for city where values are going to be fetch by state_id
+   
 	if(isset($_POST['c_id'])&&!empty($_POST['c_id']))
 	{
 	

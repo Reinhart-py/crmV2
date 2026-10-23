@@ -227,7 +227,17 @@
                       <?php echo simple_date(!empty($t['created_date']) ? $t['created_date'] : $t['created_at']); ?>
                     </td>
                     <td><?php echo htmlspecialchars(!empty($t['creator_name']) ? $t['creator_name'] : (!empty($user_map[$t['raised_by']]) ? $user_map[$t['raised_by']] : '-')); ?></td>
-                    <td><?php echo htmlspecialchars($t['status']); ?></td>
+                    <td>
+                      <?php 
+                        $s_cls = 'label-default';
+                        if($t['status'] == 'Open') $s_cls = 'label-info';
+                        elseif($t['status'] == 'In Progress') $s_cls = 'label-primary';
+                        elseif($t['status'] == 'Pending' || $t['status'] == 'Assigned') $s_cls = 'label-warning';
+                        elseif($t['status'] == 'Resolved') $s_cls = 'label-success';
+                        elseif($t['status'] == 'Closed') $s_cls = 'label-default';
+                      ?>
+                      <span class="label <?php echo $s_cls; ?>" style="font-size:11px; padding:3px 6px;"><?php echo htmlspecialchars($t['status']); ?></span>
+                    </td>
                     <td>
                       <div class="btn-group">
                         <button type="button" class="btn btn-sm btn-warning">Action</button>
@@ -238,6 +248,9 @@
                         <ul class="dropdown-menu" role="menu">
                           <li> <a href="<?php echo base_url(); ?>manager/tickets/view/<?php echo $t['id']; ?>" data-toggle="tooltip" title="Preview">Preview</a> </li>
                           <li> <a href="<?php echo base_url(); ?>manager/tickets/edit/<?php echo $t['id']; ?>" data-toggle="tooltip" title="Edit">Edit</a> </li>
+                          <?php if(!empty($can_manage_tickets) && $t['status'] !== 'Closed'){ ?>
+                            <li> <a href="<?php echo base_url(); ?>manager/tickets/view/<?php echo $t['id']; ?>#review_close_section" data-toggle="tooltip" title="Close Ticket"><i class="fa fa-check-circle text-success"></i> Close Ticket</a> </li>
+                          <?php } ?>
                         </ul>
                       </div>
                     </td>

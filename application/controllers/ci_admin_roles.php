@@ -29,7 +29,6 @@ class Ci_admin_roles extends CI_Controller {
 
         }else {
             $data = array();
-           // $data['logo'] = $this->ci_admin_model->getpostdata2(array('id'=>1),'','ci_logo');
            return $data;
         }
     } 
@@ -71,15 +70,12 @@ class Ci_admin_roles extends CI_Controller {
 		
 		if($this->input->server('REQUEST_METHOD')==='POST')
 		            {
-						
 		                extract($_POST);
-						//print_r($_POST);
 					 $resp=$this->ci_admin_model->checkDuplicate($title,'title','ci_roles');
 					 if($resp)
 					 {
 						  $this->session->set_flashdata('error_message', 'Role Name Already Exist...');
 						   redirect("manager/roles/add");
-						 
 					 }
 					else
 					 { 
@@ -89,12 +85,21 @@ class Ci_admin_roles extends CI_Controller {
 						 }else{
 						 	$level=1;
 						 }
+
+						 $raw_perms = $this->input->post('permissions');
+						 $clean_perms = array();
+						 if (is_array($raw_perms)) {
+							 foreach ($raw_perms as $sec => $val) {
+								 $clean_perms[$sec] = in_array($val, array('no_access', 'read', 'write')) ? $val : 'no_access';
+							 }
+						 }
 					 
 		                 $save= array(	                 		
 							'title'=>$title,
 							'parent_id'=>$parent_id,
 							'level'=> $level,
-							'status'=>1,												
+							'status'=>1,
+							'permissions' => json_encode($clean_perms),
 							'created' =>date('Y-m-d')							
 							);
 						  
@@ -103,10 +108,8 @@ class Ci_admin_roles extends CI_Controller {
 							{
 							 $this->session->set_flashdata('message', 'New Role added successfully!');
 						    	redirect('manager/roles');
-								
 							}
 						}
-	                 
 					}
 	                $this->load->view('manager/roles/add',$data);
 				
@@ -114,7 +117,6 @@ class Ci_admin_roles extends CI_Controller {
 			
 			 public function edit($id='')
 		    {
-				
 	 	$data=array();
 		$data['info']=array(
 			'title'=>'Manager - Roles',
@@ -130,20 +132,15 @@ class Ci_admin_roles extends CI_Controller {
 			
 		if($this->input->server('REQUEST_METHOD')==='POST')
 		            {
-						
-						
 		                extract($_POST);
-						//print_r($_POST);
 						$chk=$this->ci_admin_model->checkDuplicate_other_row(array('id !='=>$id,'title'=>$title),'ci_roles');
 		   if($chk)
 			 {
 				  $this->session->set_flashdata('error_message', 'Role Name Already Exist...');
 				  redirect("manager/roles/edit/".$id);
-				 
 			 }
 			else
 			 {
-
 			 			if($parent_id!=0){
 						 	$data['role'] =$this->comman_model->getAll(array('id'=>$parent_id),'','ci_roles','first');
 						 	$level= $data['role']['level']+1;
@@ -151,12 +148,20 @@ class Ci_admin_roles extends CI_Controller {
 						 	$level=1;
 						 }
 
+						 $raw_perms = $this->input->post('permissions');
+						 $clean_perms = array();
+						 if (is_array($raw_perms)) {
+							 foreach ($raw_perms as $sec => $val) {
+								 $clean_perms[$sec] = in_array($val, array('no_access', 'read', 'write')) ? $val : 'no_access';
+							 }
+						 }
+
 		                 $save= array(	                 		
 							'title'=>$title,
 							'parent_id'=>$parent_id,
 							'level'=> $level,							
-							'status'=>$status					
-													
+							'status'=>$status,
+							'permissions' => json_encode($clean_perms)
 							);
 						  
 			              $response= $this->comman_model->updateData('id', $id,$save, 'ci_roles');
@@ -164,7 +169,6 @@ class Ci_admin_roles extends CI_Controller {
 							{
 							 $this->session->set_flashdata('message', 'Role updated successfully!');
 						    	redirect('manager/roles');
-								
 							}
 	                 }
 					}
@@ -196,5 +200,3 @@ class Ci_admin_roles extends CI_Controller {
 		
    
 }
-/* End of file welcome.php */
-/* Location: ./application/controllers/welcome.php */

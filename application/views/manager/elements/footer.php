@@ -316,6 +316,41 @@ $(document).ready(function() {
             }
         }
     });
+
+    var cName = '<?php echo $this->security->get_csrf_token_name(); ?>';
+    var cHash = '<?php echo $this->security->get_csrf_hash(); ?>';
+    $('form').each(function() {
+        var m = $(this).attr('method');
+        if (m && m.toLowerCase() === 'post') {
+            if (!$(this).find('input[name="' + cName + '"]').length) {
+                $(this).prepend('<input type="hidden" name="' + cName + '" value="' + cHash + '">');
+            }
+        }
+    });
+    $(document).on('submit', 'form', function() {
+        var m = $(this).attr('method');
+        if (m && m.toLowerCase() === 'post') {
+            if (!$(this).find('input[name="' + cName + '"]').length) {
+                $(this).prepend('<input type="hidden" name="' + cName + '" value="' + cHash + '">');
+            }
+        }
+    });
+    $(document).ajaxSend(function(event, jqXHR, settings) {
+        if (settings.type && settings.type.toUpperCase() === 'POST') {
+            jqXHR.setRequestHeader('X-CSRF-TOKEN', cHash);
+            if (typeof settings.data === 'string') {
+                if (settings.data.indexOf(cName + '=') === -1) {
+                    settings.data += (settings.data.length > 0 ? '&' : '') + cName + '=' + encodeURIComponent(cHash);
+                }
+            } else if (settings.data instanceof FormData) {
+                if (!settings.data.has(cName)) {
+                    settings.data.append(cName, cHash);
+                }
+            } else if (typeof settings.data === 'object' && settings.data !== null) {
+                settings.data[cName] = cHash;
+            }
+        }
+    });
 });
 </script>
 

@@ -2,6 +2,93 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.60.9] - 2026-10-23
+- **Timestamp**: `2026-10-23 13:48:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Relocate Create Schedule exclusively to KAM navigation and restore original Back Office Updates section in My Zone > Database > Add/Edit/View
+- **Detailed Changes & Technical Implementation**:
+  - **1. My Zone > Database > Add / Edit / View**:
+    - Restored original "Back Office Updates" section at the bottom of the form in `application/views/manager/leads/addleads.php` (`manager/leads/add`).
+    - Restored original fields (`Category`, `Date`, `Status`, `Reference`, `Remarks`), layout, and functionality (`name="bo_cat[]"`, `bo_date[]`, `bo_status[]`, `bo_ref[]`, `bo_remark[]`).
+    - Restored original "Back Office Update" section in `application/views/manager/leads/editleads.php` (`manager/leads/edit`) with hidden `bo_id[]` tracking for all 7 standard items (`SPR`, `Company Code`, `Lead Activity`, `Document Col/Sub`, `Pending Documents`, `Video Verification`, `Post Verification`).
+    - Restored original "Meeting Field" table in `application/views/manager/leads/single_view.php` (`manager/leads/view`).
+    - Restored backend persistence in `application/controllers/ci_admin_leads.php` (`add()` and `editleads()`) to save/update `ci_boleads` directly without schedule synchronization.
+    - Completely removed the 12-month Create Schedule implementation from the Database module.
+  - **2. KAM > Create Schedule (`manager/kam/schedule`)**:
+    - Replaced the previous single-meeting schedule page with the comprehensive **Create Schedule** implementation under `manager/kam/schedule`.
+    - Integrated Client / Company selection dropdown (`#client_select`), Target Year selector (`#sched_year`), Assigned Executive (`assigned_to`), and General Schedule Remarks.
+    - Embedded the full 12-month schedule table with:
+      - First column: `Schedule / Task Name` (text input, required).
+      - 12 columns for calendar months in sequential order: `Jan`, `Feb`, `Mar`, `Apr`, `May`, `Jun`, `Jul`, `Aug`, `Sep`, `Oct`, `Nov`, `Dec`.
+      - Monthly cell controls: Compact status dropdown (`Not Applicable`, `Pending`, `Approved`, `Expired`, `Other`) and month active checkbox.
+      - Action column with remove row button (`.btn-remove-sched-row`).
+      - Pre-populated with the standard 7 default schedules (`SPR`, `Company Code`, `Lead Activity`, `Document Col/Sub`, `Pending Documents`, `Video Verification`, `Post Verification`).
+      - Dynamic row management: `+ Add Schedule Name` button dynamically appends new custom schedule rows.
+      - Client schedule auto-load: Selecting a client automatically triggers AJAX fetch (`manager/kam/ajax_get_client_schedules`) to populate previously saved 12-month schedules for that client, falling back to the 7 defaults if none exist.
+    - Controller persistence in `application/controllers/ci_admin_kam.php`:
+      - `schedule()`: Saves 12-month schedule matrix into `ci_kam_schedules` (supporting `matrix_data`, `remarks`, `sched_year`, and calculated overall status) and synchronizes with `ci_kam_client_details.schedule_data`.
+      - `ajax_get_client_schedules()`: Returns structured JSON with client's saved schedules and monthly statuses.
+      - `delete_schedule()`: Allows deleting schedule rows with authorization checks.
+    - Preserved existing navigation item in `application/views/manager/elements/header.php` linking to `manager/kam/schedule`.
+  - **Testing & Verification**:
+    - Zero Comments Rule: Verified 100% compliance across all touched PHP files with `verify_zero_comments.php`.
+    - PHP Syntax Lint: `php -l` passed cleanly on all modified files.
+    - End-to-End Verification: Tested `/manager/leads/add` (Back Office Updates present, Create Schedule removed) and `/manager/kam/schedule` (Create Schedule 12-month matrix present with AJAX endpoint) via HTTP suite.
+
+---
+
+### [v1.60.8] - 2026-10-23
+- **Timestamp**: `2026-10-23 12:26:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Implement distinct Internal Task vs External Task workflows, transform Back Office Updates to Create Schedule with 12-month calendar grid, remove KAM Report navigation, and enforce strict Ticket Closure permissions for Admin and Support
+- **Detailed Changes & Technical Implementation**:
+  - **1. Internal Task and External Task Workflows**:
+    - Separated Internal Tasks (`manager/tasks/internal`) and External Tasks (`manager/tasks/external`) into two dedicated pages without tabs or shared switching headers.
+    - **Internal Task Form Flow (`application/views/manager/tasks/add.php` & `edit.php`)**:
+      - Department-first selection: Strictly scoped to the 7 core departments (`Procurement`, `Sales`, `HR`, `Admin`, `IT`, `Accounts`, `Operations`).
+      - Does not ask for company or client name by default.
+      - Includes "Person Task Is For / Employee Responsible" (`raised_by`) and "Assigned To" (`assigned_to`).
+      - Department-specific conditional fields: Accounts invoicing, Operations details, HR/Admin/IT specifics.
+      - 10 clean recurrence frequencies (`One-Time`, `Weekly`, `Twice a Week`, `Three Times a Week`, `Monthly`, `Twice a Month`, `Three Times a Month`, `Quarterly`, `Half-Yearly`, `Yearly`) removing ambiguous "Biweekly".
+      - Strict weekday selection validation: exactly 1 day for Weekly, 2 days for Twice a Week, 3 days for Three Times a Week.
+      - Live Upcoming Schedules list displaying all future dates and start times cleanly.
+    - **External Task Form Flow**:
+      - Client/company-first workflow: Company dropdown displays strictly the company name without address, contact, or tax clutter.
+      - Automatically populates POC name, contact number, and email.
+      - Clean link to complete client onboarding (`manager/kam/onboard`) if company is not yet onboarded.
+      - General vs Telecom category selection: For telecom tasks, integrates product catalogue with new connection plans, quantity, and MRC (disallowing plan upgrades/downgrades).
+    - **Accounts Department & Invoicing Logic**:
+      - "Invoiced" selector (`Yes` / `No`).
+      - When `No`: automatically classifies task as "To Be Invoiced".
+      - When `Yes`: exposes Invoice Reference, Invoice Date, Invoice Amount, and Invoice Value fields.
+      - Removed obsolete duplicate `INV-REF` / `INV RAF` fields across forms and views.
+    - **Task Views & Controller Authorization (`ci_admin_tasks.php`, `internal.php`, `external.php`, `view.php`)**:
+      - Strict role checks on creation: Internal Tasks restricted to Admin; External Tasks restricted to Admin & Support.
+      - Standardized table layouts with proper columns, responsive design, and action buttons.
+  - **2. My Zone > Database > Add/Edit > Create Schedule**:
+    - Renamed legacy "Back Office Updates" section at bottom of Database Add (`addleads.php`), Database Edit (`editleads.php`), and Lead View (`single_view.php`) to **Create Schedule**.
+    - Designed compact 12-month table grid: First column = Schedule / Task Name, followed by January through December in calendar order, plus row action.
+    - Each monthly cell provides a compact status dropdown (`Not Applicable`, `Pending`, `Approved`, `Expired`, `Other`) and an active checkbox.
+    - Pre-loaded with standard 7 default schedules: `SPR`, `Company Code`, `Lead Activity`, `Document Col/Sub`, `Pending Documents`, `Video Verification`, `Post Verification`.
+    - Dynamic row management: Users can click `+ Add Schedule Name` to insert custom schedule rows, or delete existing rows.
+    - Backend persistence (`ci_admin_leads.php`): Stores 12-month schedule status and checkbox data as structured JSON within `bo_remark` in `ci_boleads`, preserving complete backward compatibility with all 12,474 existing database records.
+    - Reused KAM Create Schedule logic: Automatically synchronizes active/approved lead schedules with `ci_kam_schedules`.
+    - Removed `Report` link from the KAM navigation dropdown in `application/views/manager/elements/header.php`, preserving all general CRM reports.
+  - **3. Ticket Management and Closure Permissions**:
+    - Kept `Raise Ticket` and `Open Ticket` as separate destinations under the Tasks navigation menu.
+    - `Open Ticket` (`manager/tickets/followups`) lists all non-closed tickets (`t.status != 'Closed'`), preventing completed or resolved tickets from prematurely disappearing before administrative closure.
+    - Added dedicated status filter dropdown in Open Tickets to filter among `Open`, `Assigned`, `In Progress`, `Pending`, `On Hold`, and `Resolved (Ready for Review)`.
+    - Strict Ticket Closure Permissions: Only Admin (Role 1) and Support (Role 4) can close tickets. All other users cannot close tickets regardless of who created or is assigned to the ticket.
+    - Backend security enforcement in `Ci_admin_tickets::update_status()` and `Ci_admin_tickets::status()`.
+    - Prominent **Close Ticket** action provided in ticket details (`tickets/view.php`) and table dropdowns (`tickets/index.php`, `tickets/followups.php`), recording `resolution_reviewed_by` and `resolution_confirmed_at`.
+    - Displays green verification alert banner on closed tickets showing reviewer name, confirmation date, and closure remarks.
+  - **Testing & Verification**:
+    - Verified all modified PHP files comply with the zero comments policy (`scratch/check_all_modified.php` returned PASS).
+    - All touched PHP files passed `php -l` without errors.
+    - Automated curl test suite verified HTTP 200 responses across all updated routes.
+
+---
+
 ### [v1.60.7] - 2026-10-22
 - **Timestamp**: `2026-10-22 16:18:00 +0530`
 - **Author**: Reinhart-py

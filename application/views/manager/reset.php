@@ -55,6 +55,7 @@
    <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?> <?php echo get_message($this->session->flashdata('message'),'message'); ?>
     <form action="<?php echo base_url(); ?>ci_admin/fchange_password" method="post">
       <div class="form-group has-feedback">
+        <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
         <input type="hidden" name="token" value="<?php echo $token; ?>">
         <input type="password" class="form-control" name="password" placeholder="Enter New Password" required="">
         <span class="glyphicon glyphicon-lock form-control-feedback"></span>

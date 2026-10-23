@@ -1,10 +1,10 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
-<!-- Content Wrapper. Contains page content -->
+
 <div class="container">
 <div class="content-wrapper"> 
   
-  <!-- Content Header (Page header) -->
+  
   
   <section class="content-header">
     <h1> Leads </h1>
@@ -14,11 +14,11 @@
     </ol>
   </section>
   
-  <!-- Main content -->
+  
   
   <section class="content"> 
     
-    <!-- SELECT2 EXAMPLE -->
+    
     
    
      <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?> <?php echo get_message($this->session->flashdata('message'),'message'); ?>
@@ -100,7 +100,7 @@
         </div>
       </div>
       
-      <!-- /.box-header -->
+      
       
       <div class="box-body" >
       
@@ -548,23 +548,6 @@
                 <input type="text" class="form-control" name="status_remarks" value="<?php echo isset($list['status_remarks']) ? htmlspecialchars($list['status_remarks']) : ''; ?>" placeholder="Enter status remarks / explanation">
               </div>
             </div>
-            <?php /* <div class="col-lg-4 col-sm-6">
-              <div class="form-group">
-                <label>Next Follow Up Date</label>
-                <input type="text" class="form-control datepicker" name="followup_date" value="<?php echo $list['followup_date']; ?>"  >
-              </div>
-            </div>
-            <div class="col-lg-4 col-sm-6">
-              <div class="form-group">
-                <label>Next Follow Up Time</label>               
-
-                <div class="input-group bootstrap-timepicker timepicker">
-                  <input  type="text" class="form-control input-small timepicker" name="followup_time" value="<?php echo $list['followup_time']; ?>">
-                  <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
-                </div>
-
-              </div>
-            </div> */ ?>
              <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Exp. Close Date</label>
@@ -589,7 +572,7 @@
         <h3 class="box-title">More Category Field</h3>
       </div>
       
-      <!-- /.box-header -->
+      
       
       <div class="box-body" >
       
@@ -786,7 +769,7 @@
         
         </div>
         
-        <!-- /.row --> 
+         
         
       </div>
 
@@ -798,7 +781,7 @@
         <h3 class="box-title">Followup Update</h3>
       </div>
       
-      <!-- /.box-header -->
+      
       
       <div class="box-body" >
       
@@ -869,7 +852,7 @@
         <h3 class="box-title">Meeting Update</h3>
       </div>
       
-      <!-- /.box-header -->
+      
       
       <div class="box-body" >
 
@@ -906,12 +889,7 @@
             
 
 
-        <!--    <div class="col-lg-4 col-sm-6">
-              <div class="form-group">
-                <label>Address</label>
-                <input type="text" class="form-control" name="m_address"  >
-              </div>
-            </div> -->
+        
 
 
             <div class="col-lg-4 col-sm-6">
@@ -1014,12 +992,7 @@
 </div>
 <div class="row">
 
-        <!--    <div class="col-lg-4 col-sm-6">
-              <div class="form-group">
-                <label>Address</label>
-                <input type="text" class="form-control" name="m_address[]"  >
-              </div>
-            </div> -->
+        
 
 
             <div class="col-lg-4 col-sm-6">
@@ -1095,7 +1068,7 @@
         <h3 class="box-title">Vertical Selection</h3>
       </div>
       
-      <!-- /.box-header -->
+      
      
       <div class="box-body" >
       
@@ -1137,13 +1110,10 @@
         </div>
         </div>
 
-
        <div class="box box-default">
       <div class="box-header with-border">
         <h3 class="box-title">Back Office Update</h3>
       </div>
-      
-      <!-- /.box-header -->
       
       <div class="box-body" >
       
@@ -1212,15 +1182,15 @@
      </form>
   
     
-    <!-- /.box --> 
+     
     
   </section>
   
-  <!-- /.content --> 
+   
   
 </div>
 
-<!-- /.content-wrapper --> 
+ 
 </div>
 <script>
 
@@ -1651,6 +1621,7 @@ $(document).ready(function() {
 
   var initialVal = $('#status_category_input').val();
   updateStatusCategoryOptions($('#lead_status_select').val(), initialVal);
+
 });
 </script>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

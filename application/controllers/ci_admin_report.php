@@ -43,7 +43,6 @@ class Ci_admin_report extends CI_Controller {
 	
    public function users()
 	{
-		//die;
 		
         $data=array();
 		$data['info']=array(
@@ -75,7 +74,6 @@ class Ci_admin_report extends CI_Controller {
 					}
 					
 					$data['list']=$this->report_model->get_user_report($d1,$d2,$role,$manager,$status,$department,$office);
-				//print_r($data['list']);
 				}
 		$this->load->view('manager/report/user_report',$data);
 	}
@@ -113,7 +111,6 @@ class Ci_admin_report extends CI_Controller {
 					}
 					
 					$data['list']=$this->report_model->get_lead_report($d1,$d2,$f1, $f2,$category,$created_by,$status,$s_cat);
-				//print_r($data['list']);
 				}
 		$this->load->view('manager/report/lead_report',$data);
 	}
@@ -210,7 +207,6 @@ class Ci_admin_report extends CI_Controller {
 			}
 		
 			$data['list']=$this->report_model->getPerformanceReportByDepartment($d1,$d2,$department);
-			//print_r($data['list']);
 	    }
 
 		$this->load->view('manager/report/performance_report',$data);
@@ -239,7 +235,6 @@ class Ci_admin_report extends CI_Controller {
 			}
 			
 			$data['list']=$this->report_model->getPerformanceReportByIndividual($d1,$d2,$manager_id);
-			//print_r($data['list']);
 	    }
 
 		$this->load->view('manager/report/performance_individual',$data);
@@ -480,13 +475,6 @@ class Ci_admin_report extends CI_Controller {
 		);
 
 		$report_data = $this->admin_reports_model->getReportData($dept, $report, $filters);
-
-		if ($this->input->get('export')) {
-			if (!$is_admin_or_support) {
-				show_error('Access Denied: Exporting reports is restricted to Administrators and Support.', 403);
-				exit();
-			}
-		}
 
 		if ($this->input->get('export') == 'pivot_excel' && !empty($report_data['pivot_data'])) {
 			$filename = 'pivot_summary_' . $dept . '_' . $report . '_' . date('Ymd_His') . '.xls';

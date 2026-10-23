@@ -7,7 +7,7 @@ $route['translate_uri_dashes'] = FALSE;
 
 $route['manager/login'] = "ci_admin/login";
 $route['manager/forgot'] = "ci_admin/forgot";
-$route['manager/bnr54dfdf/(:num)'] = 'ci_admin/reset/$1';
+$route['manager/bnr54dfdf/(:any)'] = 'ci_admin/reset/$1';
 $route['manager/logout'] = "ci_admin/logout";
 $route['manager/dashboard'] = "ci_admin/dashboard";
 $route['manager/profile'] = "ci_admin/admin_profile";
@@ -21,7 +21,6 @@ $route['manager/users/cedit/(:num)'] = 'ci_admin_user/cedit/$1';
 $route['manager/users/view/(:num)'] = 'ci_admin_user/view/$1';
 $route['manager/users/report'] = "ci_admin_report/users";
 
-//My Leads
 $route['manager/leads/import'] = "ci_admin_leads/import";
 $route['manager/leads/import_action'] = "ci_admin_leads/import_action";
 $route['manager/leads/export'] = "ci_admin_leads/export";
@@ -40,7 +39,6 @@ $route['manager/calls/ajax_save_call'] = "ci_admin_calls/ajax_save_call";
 $route['manager/calls/ajax_get_lead'] = "ci_admin_calls/ajax_get_lead";
 $route['manager/calls/(:any)'] = "ci_admin_calls/$1";
 
-//My Followups
 $route['manager/leads/followups'] = "ci_admin_leads/followups/";
 $route['manager/leads/followups/(:num)'] = "ci_admin_leads/followups/$1";
 $route['manager/leads/meetings'] = "ci_admin_leads/meetings/";
@@ -65,11 +63,22 @@ $route['manager/database-transfer'] = "ci_admin_leads/database_transfer";
 $route['manager/database-transfer/(:num)'] = "ci_admin_leads/database_transfer/$1";
 $route['manager/leads/bulk-transfer'] = "ci_admin_leads/bulk_transfer";
 
-$route['manager/team/verticals'] = "ci_admin_verticals/teams/$1";
+$route['manager/team/verticals'] = "ci_admin_verticals/teams";
 $route['manager/team/verticals/(:any)'] = 'ci_admin_verticals/teams/$1';
 
 $route['manager/verticals/report'] = "ci_admin_verticals/report";
 $route['manager/verticals/report/fixed/(:any)'] = "ci_admin_verticals/report_fixed/$1";
+
+$route['manager/users'] = "ci_admin_user/index";
+$route['manager/users/(:num)'] = 'ci_admin_user/index/$1';
+$route['manager/users/add'] = "ci_admin_user/add";
+$route['manager/users/edit/(:any)'] = 'ci_admin_user/edit/$1';
+$route['manager/users/view/(:any)'] = 'ci_admin_user/view/$1';
+$route['manager/users/delete/(:any)'] = 'ci_admin_user/delete/$1';
+$route['manager/user/add'] = "ci_admin_user/add";
+$route['manager/user/edit/(:any)'] = 'ci_admin_user/edit/$1';
+$route['manager/user/view/(:any)'] = 'ci_admin_user/view/$1';
+$route['manager/user/delete/(:any)'] = 'ci_admin_user/delete/$1';
 
 
 $route['manager/team/members'] = "ci_admin_team/members";
@@ -107,7 +116,6 @@ $route['manager/category-delete/(:any)'] = 'ci_admin_terms/delete/$1';
 $route['manager/category-tree'] = 'ci_admin_terms/index';
 $route['manager/categories'] = 'ci_admin_terms/index';
 
-// Ticket Trace / Help Desk
 $route['manager/tickets'] = "ci_admin_tickets/index";
 $route['manager/tickets/add'] = "ci_admin_tickets/add";
 $route['manager/tickets/quick_add'] = "ci_admin_tickets/quick_add";
@@ -123,17 +131,25 @@ $route['manager/team/tickets'] = "ci_admin_tickets/index";
 $route['manager/team/tickets/(:any)'] = "ci_admin_tickets/index/$1";
 
 $route['manager/tasks'] = "ci_admin_tasks/index";
+$route['manager/tasks/internal'] = "ci_admin_tasks/internal";
+$route['manager/tasks/internal/(:num)'] = "ci_admin_tasks/internal/$1";
+$route['manager/tasks/external'] = "ci_admin_tasks/external";
+$route['manager/tasks/external/(:num)'] = "ci_admin_tasks/external/$1";
 $route['manager/tasks/add'] = "ci_admin_tasks/add";
 $route['manager/tasks/view/(:any)'] = "ci_admin_tasks/view/$1";
 $route['manager/tasks/edit/(:any)'] = "ci_admin_tasks/edit/$1";
+$route['manager/tasks/ajax_preview_recurrence'] = "ci_admin_tasks/ajax_preview_recurrence";
 $route['manager/tasks/followups'] = "ci_admin_tasks/followups";
 
 $route['manager/kam'] = "ci_admin_kam/index";
 $route['manager/kam/my-client'] = "ci_admin_kam/my_client";
 $route['manager/kam/my_client'] = "ci_admin_kam/my_client";
 $route['manager/kam/onboard'] = "ci_admin_kam/onboard";
+$route['manager/kam/ajax_get_company_pocs'] = "ci_admin_kam/ajax_get_company_pocs";
 $route['manager/kam/schedule'] = "ci_admin_kam/schedule";
 $route['manager/kam/pitch-schedule'] = "ci_admin_kam/schedule";
+$route['manager/kam/ajax_get_client_schedules'] = "ci_admin_kam/ajax_get_client_schedules";
+$route['manager/kam/schedule/delete/(:num)'] = "ci_admin_kam/delete_schedule/$1";
 $route['manager/kam/report'] = "ci_admin_kam/report";
 
 $route['manager/download-report/drilldown'] = "ci_admin_report/drilldown";
@@ -147,12 +163,10 @@ $route['manager/reports/admin'] = "ci_admin_report/adminReports";
 $route['manager/reports/admin/(:any)'] = "ci_admin_report/adminReports/$1";
 $route['manager/reports/admin/(:any)/(:any)'] = "ci_admin_report/adminReports/$1/$2";
 
-// System > Assigned Leads & Bulk Move
 $route['manager/assigned-leads'] = "ci_admin_leads/assigned_leads";
 $route['manager/assigned-leads/(:num)'] = "ci_admin_leads/assigned_leads/$1";
 $route['manager/leads/bulk-move'] = "ci_admin_leads/bulk_move_assign";
 
-// System > Admin Logs
 $route['manager/admin-logs'] = "ci_admin_system/logs";
 $route['manager/admin-logs/(:num)'] = "ci_admin_system/logs/$1";
 $route['manager/system/admin-logs'] = "ci_admin_system/logs";
@@ -164,6 +178,3 @@ $route['manager/system/calling-api'] = "ci_admin_calls/calling_api";
 $route['manager/system/calling_api'] = "ci_admin_calls/calling_api";
 $route['manager/ping'] = "ci_admin/ping";
 
-/* End of file routes.php */
-
-/* Location: ./application/config/routes.php */

@@ -32,29 +32,27 @@ class Report_model extends CI_model {
 
 	    
 	public function fetchTeamListByDepartment($department = 0, $user_tree_array = '') {
- 
-		if (!is_array($user_tree_array))
-		$user_tree_array = array();
-	 
-
-		 if(empty($department)){
-			$sql = "SELECT name,id FROM ci_user WHERE department!=''";
-		 }else{
-			$sql = "SELECT name,id FROM ci_user WHERE department='$department'";
-		 }
-
-	  	$rows = $this->db->query($sql);	
-		  if($rows->num_rows()>=1){
-			foreach($rows->result_array() as  $row){
-				
-				$user_tree_array[] = $row['id'];
-				$user_tree_array = $this->fetchTeamListByDepartment($row['id'], $user_tree_array);	
-				}
+		if (!is_array($user_tree_array)) {
+			$user_tree_array = array();
+		}
+		if (empty($department)) {
+			$this->db->select('id');
+			$this->db->from('ci_user');
+			$this->db->where("department != ''");
+			$this->db->where('status', 1);
+		} else {
+			$this->db->select('id');
+			$this->db->from('ci_user');
+			$this->db->where('department', $department);
+			$this->db->where('status', 1);
+		}
+		$rows = $this->db->get();
+		if ($rows->num_rows() >= 1) {
+			foreach ($rows->result_array() as $row) {
+				$user_tree_array[] = (int)$row['id'];
 			}
-
-			return $user_tree_array;
-			
-
+		}
+		return array_values(array_unique($user_tree_array));
 	}
 
 
@@ -79,7 +77,6 @@ class Report_model extends CI_model {
 			$cond['manager_id'] = "A.created_by ='$manager_id'";
 		}
 
-		//$cond['users'] = "B.role=3"; 
 		if(!empty($cond)){
 		$con = implode(' AND ',$cond);	
 		$con = "WHERE ".$con;
@@ -130,35 +127,34 @@ class Report_model extends CI_model {
 		}
 
 		$team_array= $this->fetchTeamListByDepartment($department,'');	
-		$team_str= implode(',',$team_array);			
+		$team_str= !empty($team_array) ? implode(',',$team_array) : '0';			
 
 		$cond['my']="FIND_IN_SET(A.created_by,'".$team_str."')>0";
 		$wh="FIND_IN_SET(A.created_by,'".$team_str."')>0";
-		//$cond['users'] = "B.role=3"; 
 		if(!empty($cond)){
-		$con = implode(' AND ',$cond);	
-		$con = "WHERE ".$con;
+			$con = implode(' AND ',$cond);	
+			$con = "WHERE ".$con;
 		}
 
-
-
+		$act_row = $this->db->select('id')->from('ci_status')->like('status', 'Activate', 'after')->get()->row_array();
+		$active_id = !empty($act_row['id']) ? (int)$act_row['id'] : 42;
+		$cls_row = $this->db->select('id')->from('ci_status')->where('status', 'Closed')->get()->row_array();
+		$closed_id = !empty($cls_row['id']) ? (int)$cls_row['id'] : 39;
 
 		$order = 'ORDER BY B.id DESC';	
 	
-		$sql = "SELECT A.*, COUNT(A.id) as totalLead, SUM(A.mrr) as amount, B.name,B.id,B.department ,( SELECT COUNT(id) FROM ci_leads a WHERE FIND_IN_SET(a.status, 42)>0 and a.created_by=B.id ) AS activeLead,( SELECT COUNT(DISTINCT id) FROM ci_leads a WHERE a.status=39 and a.created_by=B.id ) AS closedLead,( SELECT COUNT(DISTINCT id) FROM ci_followup as a WHERE a.followup_date<'$today' AND a.followup_date!='' and a.lead_id=A.id) AS total_missed,( SELECT COUNT(DISTINCT id) FROM ci_followup as a WHERE a.followup_remark!='' and a.lead_id=A.id) AS attendedFollowups,( SELECT COUNT(DISTINCT id) FROM ci_meetings as a WHERE a.m_date<'$today' AND a.m_date!='' and a.lead_id=A.id) AS totalMissedMeetings,( SELECT COUNT(DISTINCT id) FROM ci_meetings as a WHERE a.m_remark!='' and a.lead_id=A.id) AS attendedMeetings,( SELECT COUNT(id) FROM ci_verticals a WHERE a.created_by=B.id ) AS totalVerticals FROM ci_leads as A  LEFT JOIN  ci_user as B ON A.created_by=B.id  $con AND  B.department!='' GROUP BY B.id $order" ; 
+		$sql = "SELECT A.*, COUNT(A.id) as totalLead, SUM(A.mrr) as amount, B.name,B.id,B.department ,( SELECT COUNT(id) FROM ci_leads a WHERE FIND_IN_SET(a.status, " . $active_id . ")>0 and a.created_by=B.id ) AS activeLead,( SELECT COUNT(DISTINCT id) FROM ci_leads a WHERE a.status=" . $closed_id . " and a.created_by=B.id ) AS closedLead,( SELECT COUNT(DISTINCT id) FROM ci_followup as a WHERE a.followup_date<'$today' AND a.followup_date!='' and a.lead_id=A.id) AS total_missed,( SELECT COUNT(DISTINCT id) FROM ci_followup as a WHERE a.followup_remark!='' and a.lead_id=A.id) AS attendedFollowups,( SELECT COUNT(DISTINCT id) FROM ci_meetings as a WHERE a.m_date<'$today' AND a.m_date!='' and a.lead_id=A.id) AS totalMissedMeetings,( SELECT COUNT(DISTINCT id) FROM ci_meetings as a WHERE a.m_remark!='' and a.lead_id=A.id) AS attendedMeetings,( SELECT COUNT(id) FROM ci_verticals a WHERE a.created_by=B.id ) AS totalVerticals FROM ci_leads as A  LEFT JOIN  ci_user as B ON A.created_by=B.id  $con AND  B.department!='' GROUP BY B.id $order" ; 
 
 		$rows = $this->db->query($sql);
-		//echo $this->db->last_query();
-			if($rows->num_rows()>=1)
-			{
+		if($rows->num_rows()>=1)
+		{
 			foreach($rows->result_array() as  $row)
 			{
 				$data[] = $row; 
 			}
-			}
-			return $data;
-			
-		  }	
+		}
+		return $data;
+	}	
 	
 
 	 
@@ -206,7 +202,6 @@ class Report_model extends CI_model {
 					$team_str= implode(',',$team_array);
 					$cond['my']="FIND_IN_SET(A.id,'".$team_str."')>0";
 				  
-				  //$cond['users'] = "B.role=3"; 
 				   if(!empty($cond)){
 				$con = implode(' AND ',$cond);	
 				$con = "WHERE ".$con;
@@ -271,10 +266,8 @@ class Report_model extends CI_model {
 				   $team_array= $this->fetchTeamList($this->session->userdata('manager_id'),'');
 					$team_str= implode(',',$team_array);
 					$cond['my']="FIND_IN_SET(A.created_by,'".$team_str."')>0";
-				   //$cond['my']="B.user_level >= ".$this->session->userdata('manager_level');
 				 
 				  
-				  //$cond['users'] = "B.role=3"; 
 				   if(!empty($cond)){
 				$con = implode(' AND ',$cond);	
 				$con = "WHERE ".$con;
@@ -339,7 +332,6 @@ class Report_model extends CI_model {
 				  
 				 
 				  
-				  //$cond['users'] = "B.role=3"; 
 				   if(!empty($cond)){
 				$con = implode(' AND ',$cond);	
 				$con = "WHERE ".$con;
@@ -404,7 +396,6 @@ class Report_model extends CI_model {
 				  
 				 
 				  
-				  //$cond['users'] = "B.role=3"; 
 				   if(!empty($cond)){
 				$con = implode(' AND ',$cond);	
 				$con = "WHERE ".$con;
@@ -471,7 +462,6 @@ class Report_model extends CI_model {
 							  
 							 
 							  
-							  //$cond['users'] = "B.role=3"; 
 							   if(!empty($cond)){
 							$con = implode(' AND ',$cond);	
 							$con = "WHERE ".$con;

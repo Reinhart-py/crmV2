@@ -60,6 +60,8 @@ class Ci_admin_kam extends CI_Controller
 			assigned_to INT DEFAULT NULL,
 			assigned_name VARCHAR(255) DEFAULT NULL,
 			remarks TEXT,
+			matrix_data LONGTEXT DEFAULT NULL,
+			sched_year INT DEFAULT 2026,
 			status VARCHAR(50) DEFAULT 'Scheduled',
 			created_by INT DEFAULT NULL,
 			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -67,6 +69,15 @@ class Ci_admin_kam extends CI_Controller
 			KEY (assigned_to),
 			KEY (start_date)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+		$check_col = $this->db->query("SHOW COLUMNS FROM ci_kam_schedules LIKE 'matrix_data'")->row_array();
+		if (empty($check_col)) {
+			$this->db->query("ALTER TABLE ci_kam_schedules ADD COLUMN matrix_data LONGTEXT DEFAULT NULL AFTER remarks");
+		}
+		$check_year = $this->db->query("SHOW COLUMNS FROM ci_kam_schedules LIKE 'sched_year'")->row_array();
+		if (empty($check_year)) {
+			$this->db->query("ALTER TABLE ci_kam_schedules ADD COLUMN sched_year INT DEFAULT 2026 AFTER matrix_data");
+		}
 	}
 
 	public function index()
@@ -176,16 +187,69 @@ class Ci_admin_kam extends CI_Controller
 		$this->load->view('manager/kam/my_client', $data);
 	}
 
+	public function ajax_get_company_pocs()
+	{
+		$this->ci_admin_model->check_permission('kam', 'read', true);
+		$company = trim($this->input->get_post('company'));
+		if (empty($company)) {
+			$company = trim($this->input->get_post('customer'));
+		}
+		if (empty($company)) {
+			$company = trim($this->input->get_post('term'));
+		}
+
+		$result = array(
+			'status' => 'empty',
+			'pocs' => array(),
+			'company' => $company
+		);
+
+		if (!empty($company)) {
+			$this->db->select('id, lead_id, customer, poc, poc2, contact1, contact2, mobile, alt_contact, email, location, tl_number, tl_emirate, tl_zone, tl_authority, tl_expire_date, status_category, category, company_status');
+			$this->db->from('ci_leads');
+			$this->db->where('customer', $company);
+			$this->db->order_by('id', 'DESC');
+			$leads = $this->db->get()->result_array();
+
+			if (!empty($leads)) {
+				$primary = $leads[0];
+				$pocs = array();
+				foreach ($leads as $l) {
+					if (!empty($l['poc']) && !in_array($l['poc'], $pocs)) {
+						$pocs[] = $l['poc'];
+					}
+					if (!empty($l['poc2']) && !in_array($l['poc2'], $pocs)) {
+						$pocs[] = $l['poc2'];
+					}
+				}
+
+				$result['status'] = 'success';
+				$result['pocs'] = $pocs;
+				$result['primary_poc'] = !empty($primary['poc']) ? $primary['poc'] : (!empty($primary['poc2']) ? $primary['poc2'] : '');
+				$result['email'] = !empty($primary['email']) ? $primary['email'] : '';
+				$result['contact'] = !empty($primary['contact1']) ? $primary['contact1'] : (!empty($primary['mobile']) ? $primary['mobile'] : (!empty($primary['contact2']) ? $primary['contact2'] : ''));
+				$result['location'] = !empty($primary['location']) ? $primary['location'] : '';
+				$result['tl_number'] = !empty($primary['tl_number']) ? $primary['tl_number'] : '';
+				$result['tl_emirate'] = !empty($primary['tl_emirate']) ? $primary['tl_emirate'] : '';
+				$result['tl_zone'] = !empty($primary['tl_zone']) ? $primary['tl_zone'] : '';
+				$result['tl_authority'] = !empty($primary['tl_authority']) ? $primary['tl_authority'] : '';
+				$result['tl_expire_date'] = (!empty($primary['tl_expire_date']) && $primary['tl_expire_date'] != '0000-00-00') ? date('d-m-Y', strtotime($primary['tl_expire_date'])) : '';
+				$result['status_category'] = !empty($primary['status_category']) ? $primary['status_category'] : (!empty($primary['category']) ? $primary['category'] : '');
+				$result['client_status'] = !empty($primary['company_status']) ? $primary['company_status'] : 'Active';
+			}
+		}
+
+		header('Content-Type: application/json');
+		echo json_encode($result);
+		exit;
+	}
+
 	public function onboard()
 	{
 		$manager_id = (int)$this->session->userdata('manager_id');
 		$role = (int)$this->session->userdata('manager_role');
 
-		if ($role != 1) {
-			$this->session->set_flashdata('error_message', 'Access denied: Only administrators can onboard clients.');
-			redirect('manager/kam/my-client');
-			return;
-		}
+		$this->ci_admin_model->check_permission('kam', 'write', true);
 
 		$data = array();
 		$data['info'] = array(
@@ -211,6 +275,11 @@ class Ci_admin_kam extends CI_Controller
 				return;
 			}
 
+			$poc = trim($this->input->post('poc'));
+			if (empty($poc)) {
+				$poc = trim($this->input->post('poc_name'));
+			}
+
 			$group_name = trim($this->input->post('group_name'));
 			$status_category = trim($this->input->post('status_category'));
 			$client_status = trim($this->input->post('client_status'));
@@ -224,8 +293,6 @@ class Ci_admin_kam extends CI_Controller
 			$el_due = trim($this->input->post('el_due'));
 			$inactive_reason = trim($this->input->post('inactive_reason'));
 			$amount = trim($this->input->post('amount'));
-			$f_20_oct_26 = trim($this->input->post('f_20_oct_26'));
-			$f_18_jan_27 = trim($this->input->post('f_18_jan_27'));
 			$group_yn = trim($this->input->post('group_yn'));
 			$executive_post = trim($this->input->post('executive'));
 
@@ -251,15 +318,12 @@ class Ci_admin_kam extends CI_Controller
 			$exec_user = $this->comman_model->getpostdata2(array('id' => $primary_assignee), '', 'ci_user');
 			$executive_name = !empty($exec_user['name']) ? $exec_user['name'] : (!empty($executive_post) ? $executive_post : '');
 
-			$ma_dec_25 = trim($this->input->post('ma_dec_25'));
-			$ma_jan_26 = trim($this->input->post('ma_jan_26'));
-			$ma_feb_26 = trim($this->input->post('ma_feb_26'));
-			$ma_mar_26 = trim($this->input->post('ma_mar_26'));
-
 			$tl_number = trim($this->input->post('tl_number'));
+			$tl_emirate = trim($this->input->post('tl_emirate'));
+			$tl_zone = trim($this->input->post('tl_zone'));
+			$tl_authority = trim($this->input->post('tl_authority'));
 			$tl_expire_date = trim($this->input->post('tl_expire_date'));
 			$tl_due = trim($this->input->post('tl_due'));
-			$tl_authority = trim($this->input->post('tl_authority'));
 			$last_mol = trim($this->input->post('last_mol'));
 			$no_of_mol_employee = trim($this->input->post('no_of_mol_employee'));
 			$year_ending = trim($this->input->post('year_ending'));
@@ -268,7 +332,6 @@ class Ci_admin_kam extends CI_Controller
 			$vat_qtr = trim($this->input->post('vat_qtr'));
 			$fta_remark = trim($this->input->post('fta_remark'));
 			$due_date = trim($this->input->post('due_date'));
-			$month = trim($this->input->post('month'));
 
 			$wa = trim($this->input->post('wa'));
 			$db_field = trim($this->input->post('db_field'));
@@ -353,6 +416,7 @@ class Ci_admin_kam extends CI_Controller
 			$lead_record = array(
 				'lead_id' => 100000000,
 				'customer' => $client_name,
+				'poc' => $poc,
 				'category' => !empty($status_category) ? $status_category : 'Existing',
 				'company_status' => $client_status,
 				'status' => 36,
@@ -364,9 +428,10 @@ class Ci_admin_kam extends CI_Controller
 				'mobile' => $number,
 				'location' => $location,
 				'tl_number' => $tl_number,
-				'tl_expire_date' => !empty($tl_expire_date) ? db_date($tl_expire_date) : '',
+				'tl_emirate' => $tl_emirate,
+				'tl_zone' => $tl_zone,
 				'tl_authority' => $tl_authority,
-				'month' => $month,
+				'tl_expire_date' => !empty($tl_expire_date) ? db_date($tl_expire_date) : '',
 				'remark' => $remarks,
 				'lead_assign' => $primary_assignee,
 				'agents' => $assigned_agents,
@@ -383,6 +448,7 @@ class Ci_admin_kam extends CI_Controller
 				$this->db->where('id', $inserted_lead_id)->update('ci_leads', array('lead_id' => $custom_lead_code));
 
 				$kam_data_array = array(
+					'poc' => $poc,
 					'group_name' => $group_name,
 					'status_category' => $status_category,
 					'client_status' => $client_status,
@@ -392,14 +458,13 @@ class Ci_admin_kam extends CI_Controller
 					'el_due' => $el_due,
 					'inactive_reason' => $inactive_reason,
 					'amount' => $amount,
-					'20-Oct-26' => $f_20_oct_26,
-					'18-Jan-27' => $f_18_jan_27,
 					'group_yn' => $group_yn,
 					'executive' => $executive_name,
-					'ma_dec_25' => $ma_dec_25,
-					'ma_jan_26' => $ma_jan_26,
-					'ma_feb_26' => $ma_feb_26,
-					'ma_mar_26' => $ma_mar_26,
+					'tl_number' => $tl_number,
+					'tl_emirate' => $tl_emirate,
+					'tl_zone' => $tl_zone,
+					'tl_authority' => $tl_authority,
+					'tl_expire_date' => $tl_expire_date,
 					'tl_due' => $tl_due,
 					'last_mol' => $last_mol,
 					'no_of_mol_employee' => $no_of_mol_employee,
@@ -409,7 +474,6 @@ class Ci_admin_kam extends CI_Controller
 					'vat_qtr' => $vat_qtr,
 					'fta_remark' => $fta_remark,
 					'due_date' => $due_date,
-					'month' => $month,
 					'wa' => $wa,
 					'db' => $db_field,
 					'db_storage' => $db_storage,
@@ -506,28 +570,17 @@ class Ci_admin_kam extends CI_Controller
 			if (empty($client_name)) {
 				$client_name = trim($this->input->post('customer'));
 			}
-			$title = trim($this->input->post('title'));
-			if (empty($title)) {
-				$title = 'Scheduled Service - ' . (!empty($client_name) ? $client_name : 'Client');
+			if (empty($client_name)) {
+				$this->session->set_flashdata('error_message', 'Please select a Client / Company Name.');
+				redirect('manager/kam/schedule');
+				return;
 			}
-			$service_type = trim($this->input->post('service_type'));
-			$frequency = trim($this->input->post('frequency'));
-			if (empty($frequency)) {
-				$frequency = 'Once';
-			}
-			$repeat_days = '';
-			if ($frequency === 'Weekly' && $this->input->post('repeat_days')) {
-				$days = $this->input->post('repeat_days');
-				$repeat_days = is_array($days) ? implode(',', $days) : (string)$days;
-			}
-			$repeat_day_month = (int)$this->input->post('repeat_day_month');
-			$start_date = trim($this->input->post('start_date'));
-			$start_date_db = !empty($start_date) ? date('Y-m-d', strtotime($start_date)) : date('Y-m-d');
-			$end_date = trim($this->input->post('end_date'));
-			$end_date_db = !empty($end_date) ? date('Y-m-d', strtotime($end_date)) : null;
 
-			$start_time = trim($this->input->post('start_time'));
-			$end_time = trim($this->input->post('end_time'));
+			$sched_year = (int)$this->input->post('sched_year');
+			if ($sched_year < 2000) {
+				$sched_year = (int)date('Y');
+			}
+
 			$assigned_to = (int)$this->input->post('assigned_to');
 			if ($assigned_to <= 0) {
 				$assigned_to = $manager_id;
@@ -536,43 +589,102 @@ class Ci_admin_kam extends CI_Controller
 			$assigned_name = !empty($assigned_user['name']) ? $assigned_user['name'] : '';
 
 			$remarks = trim($this->input->post('remarks'));
-			$status = trim($this->input->post('status'));
-			if (empty($status)) {
-				$status = 'Scheduled';
-			}
 
 			$client_record = $this->db->where('customer', $client_name)->get('ci_leads')->row_array();
 			$client_id = !empty($client_record['id']) ? (int)$client_record['id'] : null;
 
-			$insert_schedule = array(
-				'client_id' => $client_id,
-				'client_name' => $client_name,
-				'title' => $title,
-				'service_type' => $service_type,
-				'frequency' => $frequency,
-				'repeat_days' => $repeat_days,
-				'repeat_day_month' => $repeat_day_month,
-				'start_date' => $start_date_db,
-				'end_date' => $end_date_db,
-				'start_time' => $start_time,
-				'end_time' => $end_time,
-				'assigned_to' => $assigned_to,
-				'assigned_name' => $assigned_name,
-				'remarks' => $remarks,
-				'status' => $status,
-				'created_by' => $manager_id,
-				'created_at' => date('Y-m-d H:i:s')
-			);
+			$sched_name = $this->input->post('sched_name');
+			$sched_status = $this->input->post('sched_status');
+			$sched_check = $this->input->post('sched_check');
 
-			$this->db->insert('ci_kam_schedules', $insert_schedule);
-			$this->ci_admin_model->log_admin_action('kam_schedule_create', 'Created KAM schedule "' . $title . '" for ' . $client_name, 'SUCCESS', $manager_id, $this->session->userdata('manager_name'));
-			$this->session->set_flashdata('message', 'Schedule "' . htmlspecialchars($title) . '" created successfully.');
+			if (empty($sched_name) || !is_array($sched_name)) {
+				$this->session->set_flashdata('error_message', 'Please provide at least one schedule row.');
+				redirect('manager/kam/schedule');
+				return;
+			}
+
+			$sched_months = array('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec');
+			$all_schedules_data = array();
+
+			foreach ($sched_name as $s_idx => $s_title) {
+				$s_title = trim($s_title);
+				if ($s_title === '') continue;
+
+				$months_data = array();
+				$primary_status = 'Not Applicable';
+				foreach ($sched_months as $sm) {
+					$st = isset($sched_status[$s_idx][$sm]) ? $sched_status[$s_idx][$sm] : 'Not Applicable';
+					$ck = !empty($sched_check[$s_idx][$sm]) ? 1 : 0;
+					$months_data[$sm] = array('status' => $st, 'checked' => $ck);
+					if ($st !== 'Not Applicable') {
+						if ($primary_status === 'Not Applicable') {
+							$primary_status = $st;
+						} elseif ($st === 'Approved') {
+							$primary_status = 'Approved';
+						} elseif ($st === 'Pending' && $primary_status !== 'Approved') {
+							$primary_status = 'Pending';
+						}
+					}
+				}
+
+				$all_schedules_data[] = array(
+					'title' => $s_title,
+					'months' => $months_data,
+					'status' => $primary_status
+				);
+
+				$existing = $this->db->get_where('ci_kam_schedules', array(
+					'client_name' => $client_name,
+					'title' => $s_title,
+					'sched_year' => $sched_year
+				))->row_array();
+
+				$record = array(
+					'client_id' => $client_id,
+					'client_name' => $client_name,
+					'title' => $s_title,
+					'service_type' => 'Annual Schedule',
+					'frequency' => 'Monthly',
+					'sched_year' => $sched_year,
+					'assigned_to' => $assigned_to,
+					'assigned_name' => $assigned_name,
+					'remarks' => json_encode($months_data),
+					'matrix_data' => json_encode($months_data),
+					'status' => $primary_status
+				);
+
+				if (!empty($existing)) {
+					$this->db->where('id', $existing['id'])->update('ci_kam_schedules', $record);
+				} else {
+					$record['created_by'] = $manager_id;
+					$record['created_at'] = date('Y-m-d H:i:s');
+					$this->db->insert('ci_kam_schedules', $record);
+				}
+			}
+
+			$client_detail = $this->db->get_where('ci_kam_client_details', array('client_name' => $client_name))->row_array();
+			if (!empty($client_detail)) {
+				$this->db->where('id', $client_detail['id'])->update('ci_kam_client_details', array(
+					'schedule_data' => json_encode($all_schedules_data)
+				));
+			}
+
+			$this->ci_admin_model->log_admin_action('kam_schedule_save', 'Saved 12-month schedule for ' . $client_name . ' (' . $sched_year . ')', 'SUCCESS', $manager_id, $this->session->userdata('manager_name'));
+			$this->session->set_flashdata('message', 'Schedules for ' . htmlspecialchars($client_name) . ' saved successfully.');
 			redirect('manager/kam/schedule');
 			return;
 		}
 
 		$data['u_list'] = $this->comman_model->getAll(array('status' => 1), array('name', 'ASC'), 'ci_user');
 		$data['p_cat'] = $this->comman_model->getAll(array('parent_id' => 0, 'status' => 1, 'cat_type' => 'p_cat'), '', 'ci_terms');
+
+		$this->db->select('DISTINCT(customer) as client_name, id, poc, contact1, email');
+		$this->db->from('ci_leads');
+		$this->db->where('customer IS NOT NULL AND customer != ""');
+		$this->db->where('(company_status IS NULL OR LOWER(company_status) != "closed")');
+		$this->db->order_by('customer', 'ASC');
+		$data['client_list'] = $this->db->get()->result_array();
+
 		$this->db->order_by('id', 'DESC');
 		if ($role != 1 && $role != 4) {
 			$this->db->where("(assigned_to = $manager_id OR created_by = $manager_id)");
@@ -580,6 +692,66 @@ class Ci_admin_kam extends CI_Controller
 		$data['schedules'] = $this->db->get('ci_kam_schedules')->result_array();
 
 		$this->load->view('manager/kam/schedule', $data);
+	}
+
+	public function ajax_get_client_schedules()
+	{
+		$this->ci_admin_model->check_permission('kam', 'read', true);
+		$client_name = trim($this->input->get_post('client_name'));
+		if (empty($client_name)) {
+			$client_name = trim($this->input->get_post('customer'));
+		}
+		$sched_year = (int)$this->input->get_post('sched_year');
+		if ($sched_year < 2000) {
+			$sched_year = (int)date('Y');
+		}
+
+		$result = array('status' => 'empty', 'schedules' => array());
+
+		if (!empty($client_name)) {
+			$this->db->select('*');
+			$this->db->from('ci_kam_schedules');
+			$this->db->where('client_name', $client_name);
+			$this->db->where('sched_year', $sched_year);
+			$this->db->order_by('id', 'ASC');
+			$rows = $this->db->get()->result_array();
+
+			if (!empty($rows)) {
+				$schedules = array();
+				foreach ($rows as $r) {
+					$raw = !empty($r['matrix_data']) ? $r['matrix_data'] : $r['remarks'];
+					$decoded = json_decode($raw, true);
+					$schedules[] = array(
+						'id' => $r['id'],
+						'name' => $r['title'],
+						'status' => $r['status'],
+						'months' => is_array($decoded) ? $decoded : array()
+					);
+				}
+				$result['status'] = 'success';
+				$result['schedules'] = $schedules;
+			}
+		}
+
+		header('Content-Type: application/json');
+		echo json_encode($result);
+		exit;
+	}
+
+	public function delete_schedule($id = 0)
+	{
+		$id = (int)$id;
+		if ($id > 0) {
+			$role = (int)$this->session->userdata('manager_role');
+			$manager_id = (int)$this->session->userdata('manager_id');
+			if ($role == 1 || $role == 4) {
+				$this->db->where('id', $id)->delete('ci_kam_schedules');
+			} else {
+				$this->db->where('id', $id)->where('(created_by = ' . $manager_id . ' OR assigned_to = ' . $manager_id . ')')->delete('ci_kam_schedules');
+			}
+			$this->session->set_flashdata('message', 'Schedule deleted successfully.');
+		}
+		redirect('manager/kam/schedule');
 	}
 
 	public function report()

@@ -70,6 +70,7 @@ class Ci_admin_tickets extends CI_Controller {
 	public function index()
 	{
 		$this->if_not_login();
+		$this->ci_admin_model->check_permission('tickets', 'read', true);
 		$role = (int)$this->session->userdata('manager_role');
 		$manager_id = (int)$this->session->userdata('manager_id');
 		$can_manage = $this->is_admin_or_support();
@@ -106,6 +107,7 @@ class Ci_admin_tickets extends CI_Controller {
 		$search_query = $this->input->get('search');
 		$d1 = $this->input->get('d1');
 		$d2 = $this->input->get('d2');
+		$team = (int)$this->input->get('team');
 
 		$this->db->select('t.*, u.name as creator_name, u.email as creator_email, r.name as resolver_name, l.name as updater_name');
 		$this->db->from('ci_tickets t');
@@ -113,14 +115,31 @@ class Ci_admin_tickets extends CI_Controller {
 		$this->db->join('ci_user r', 'r.id = t.resolved_by', 'left');
 		$this->db->join('ci_user l', 'l.id = t.last_updated_by', 'left');
 
-		if (!$can_manage) {
-			$this->db->group_start();
-			$this->db->where('t.created_by', $manager_id);
-			$this->db->or_where('t.raised_by', $manager_id);
-			$this->db->or_where("FIND_IN_SET('$manager_id', t.assigned_users) >", 0);
-			$this->db->or_where("FIND_IN_SET('$manager_id', t.tagged_users) >", 0);
-			$this->db->or_where('t.assigned_to', $manager_id);
-			$this->db->group_end();
+		if ($team === 1) {
+			if ($role !== 1 && $role !== 4) {
+				$team_array = $this->ci_admin_model->fetchTeamList($manager_id, '');
+				if (!is_array($team_array)) {
+					$team_array = array();
+				}
+				if (!in_array($manager_id, $team_array)) {
+					$team_array[] = $manager_id;
+				}
+				$team_str = implode(',', $team_array);
+				if (empty($team_str)) {
+					$team_str = (string)$manager_id;
+				}
+				$this->db->where("(FIND_IN_SET(t.created_by, '".$team_str."') > 0 OR FIND_IN_SET(t.raised_by, '".$team_str."') > 0 OR FIND_IN_SET(t.assigned_to, '".$team_str."') > 0)");
+			}
+		} else {
+			if (!$can_manage) {
+				$this->db->group_start();
+				$this->db->where('t.created_by', $manager_id);
+				$this->db->or_where('t.raised_by', $manager_id);
+				$this->db->or_where("FIND_IN_SET('$manager_id', t.assigned_users) >", 0);
+				$this->db->or_where("FIND_IN_SET('$manager_id', t.tagged_users) >", 0);
+				$this->db->or_where('t.assigned_to', $manager_id);
+				$this->db->group_end();
+			}
 		}
 
 		if (!empty($client_type)) {
@@ -139,7 +158,11 @@ class Ci_admin_tickets extends CI_Controller {
 			$this->db->where('t.category', $category);
 		}
 		if (!empty($status_filter)) {
-			$this->db->where('t.status', $status_filter);
+			if (strtolower($status_filter) === 'open') {
+				$this->db->where('t.status !=', 'Closed');
+			} else {
+				$this->db->where('t.status', $status_filter);
+			}
 		}
 		if (!empty($priority)) {
 			$this->db->where('t.priority', $priority);
@@ -247,6 +270,7 @@ class Ci_admin_tickets extends CI_Controller {
 	public function add()
 	{
 		$this->if_not_login();
+		$this->ci_admin_model->check_permission('tickets', 'write', true);
 		$manager_id = (int)$this->session->userdata('manager_id');
 
 		if ($this->input->server('REQUEST_METHOD') === 'POST') {
@@ -406,6 +430,7 @@ class Ci_admin_tickets extends CI_Controller {
 	public function edit($id = '')
 	{
 		$this->if_not_login();
+		$this->ci_admin_model->check_permission('tickets', 'write', true);
 		$manager_id = (int)$this->session->userdata('manager_id');
 		$can_manage = $this->is_admin_or_support();
 
@@ -947,6 +972,7 @@ class Ci_admin_tickets extends CI_Controller {
 		if (empty($created_by)) {
 			$created_by = $this->input->get('raised_by');
 		}
+		$status = $this->input->get('status');
 		$department = $this->input->get('department');
 		$search = $this->input->get('search');
 		$d1 = $this->input->get('d1');
@@ -958,7 +984,11 @@ class Ci_admin_tickets extends CI_Controller {
 		$this->db->join('ci_user r', 'r.id = t.resolved_by', 'left');
 		$this->db->join('ci_user l', 'l.id = t.last_updated_by', 'left');
 
-		$this->db->where('t.status', 'Open');
+		if (!empty($status)) {
+			$this->db->where('t.status', $status);
+		} else {
+			$this->db->where('t.status !=', 'Closed');
+		}
 
 		if (!$can_manage) {
 			$this->db->group_start();

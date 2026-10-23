@@ -1,10 +1,10 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
-<!-- Content Wrapper. Contains page content -->
+
 <div class="container">
 <div class="content-wrapper"> 
   
-  <!-- Content Header (Page header) -->
+  
   
   <section class="content-header">
     <h1> Leads </h1>
@@ -14,11 +14,11 @@
     </ol>
   </section>
   
-  <!-- Main content -->
+  
   
   <section class="content"> 
     
-    <!-- SELECT2 EXAMPLE -->
+    
     
    
      <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?> <?php echo get_message($this->session->flashdata('message'),'message'); ?>
@@ -35,7 +35,7 @@
         </div>
       </div>
       
-      <!-- /.box-header -->
+      
       
       <div class="box-body" >
       
@@ -484,7 +484,7 @@
         <h3 class="box-title">More Category Field</h3>
       </div>
       
-      <!-- /.box-header -->
+      
       
       <div class="box-body" >
       
@@ -655,7 +655,7 @@
         </div>
       </div>
         
-        <!-- /.row --> 
+         
         
       </div>
 
@@ -665,7 +665,7 @@
         <h3 class="box-title">Followup Field</h3>
       </div>
       
-      <!-- /.box-header -->
+      
       
       <div class="box-body" >
       
@@ -706,7 +706,7 @@
         <h3 class="box-title">Meeting Field</h3>
       </div>
       
-      <!-- /.box-header -->
+      
       
       <div class="box-body" >
 
@@ -742,12 +742,7 @@
 
 		</div>
         <div class="row">
-        <!--    <div class="col-lg-4 col-sm-6">
-              <div class="form-group">
-                <label>Address</label>
-                <input type="text" class="form-control" name="m_address"  >
-              </div>
-            </div> -->
+        
 
 
             <div class="col-lg-4 col-sm-6">
@@ -823,7 +818,7 @@
         <h3 class="box-title">Vertical Selection</h3>
       </div>
       
-      <!-- /.box-header -->
+      
       
       <div class="box-body" >
       
@@ -856,27 +851,26 @@
             <div class="col-lg-8 col-sm-6">
               <div class="form-group">
                 <label>Remark</label>
-                <input type="text" class="form-control only_number" name="v_remark"  >
+                <input type="text" class="form-control" name="v_remark">
               </div>
             </div>
-           
-
+          </div>
         </div>
-        </div>
-        </div>
+      </div>
 
       <div class="box box-default">
-      <div class="box-header with-border">
-        <h3 class="box-title">Back Office Update</h3>
-      </div>
-      
-      <!-- /.box-header -->
-      
-      <div class="box-body" >
+      <div class="box-header">
+		<div class="col-sm-12">
+       		<h3 class="box-title">Back Office Updates</h3>
+        </div>
+        </div>
+<div class="box-body" >
       
         <div class="row">
+  
+    <div class="table-responsive">
 
-          <table class="table tale-border">
+          <table class="table table-border">
             <tr>
               <th>Category</th>
               <th>Date</th>
@@ -900,19 +894,22 @@
               <td><input type="text" class="form-control" name="bo_ref[]" ></td>
               <td><input type="text" class="form-control" name="bo_remark[]" ></td>
             </tr>
-
-             <tr>
+            <tr>
               <td><input type="text" class="form-control" name="bo_cat[]" value="Company Code" readonly=""></td>
               <td><input type="text" class="form-control datepicker" name="bo_date[]"  ></td>
-              <td colspan="3">
-                <select style="display:none;" class="form-control" style="width: 100%;" name="bo_status[]">
-                  <option value="">Not Applicable</option>                                    
+              <td>
+                <select class="form-control" style="width: 100%;" name="bo_status[]">
+                  <option value="Not Applicable" selected="selected">Not Applicable</option>
+                  <option value="Pending Approval">Pending Approval</option>
+                  <option value="Query">Query</option>
+                  <option value="Approved">Approved</option> 
+                  <option value="Expired">Expired</option> 
+                  <option value="Other">Other</option>                    
                 </select>
-             <input type="hidden" class="form-control" name="bo_ref[]" >
-             <input type="text" class="form-control" name="bo_remark[]" ></td>
+              </td>
+              <td colspan="2"><input type="text" class="form-control" name="bo_remark[]" ></td>
             </tr>
-
-             <tr>
+            <tr>
               <td><input type="text" class="form-control" name="bo_cat[]" value="Lead Activity" readonly=""></td>
               <td><input type="text" class="form-control datepicker" name="bo_date[]"  ></td>
               <td>
@@ -928,12 +925,11 @@
               <td><input type="text" class="form-control" name="bo_ref[]" ></td>
               <td><input type="text" class="form-control" name="bo_remark[]" ></td>
             </tr>
-
-             <tr>
+            <tr>
               <td><input type="text" class="form-control" name="bo_cat[]" value="Document Col/Sub" readonly=""></td>
               <td><input type="text" class="form-control datepicker" name="bo_date[]"  ></td>
               <td>
-               <select class="form-control" style="width: 100%;" name="bo_status[]">
+                <select class="form-control" style="width: 100%;" name="bo_status[]">
                   <option value="Not Applicable" selected="selected">Not Applicable</option>
                   <option value="Pending Approval">Pending Approval</option>
                   <option value="Query">Query</option>
@@ -945,19 +941,22 @@
               <td><input type="text" class="form-control" name="bo_ref[]" ></td>
               <td><input type="text" class="form-control" name="bo_remark[]" ></td>
             </tr>
-
-             <tr>
+            <tr>
               <td><input type="text" class="form-control" name="bo_cat[]" value="Pending Documents" readonly=""></td>
               <td><input type="text" class="form-control datepicker" name="bo_date[]"  ></td>
-              <td colspan="3">
-                <select style="display:none;" class="form-control" style="width: 100%;" name="bo_status[]">
-                  <option value="">Not Applicable</option>                                    
+              <td>
+                <select class="form-control" style="width: 100%;" name="bo_status[]">
+                  <option value="Not Applicable" selected="selected">Not Applicable</option>
+                  <option value="Pending Approval">Pending Approval</option>
+                  <option value="Query">Query</option>
+                  <option value="Approved">Approved</option> 
+                  <option value="Expired">Expired</option> 
+                  <option value="Other">Other</option>                    
                 </select>
-             <input type="hidden" class="form-control" name="bo_ref[]" >
-             <input type="text" class="form-control" name="bo_remark[]" ></td>
+              </td>
+              <td colspan="2"><input type="text" class="form-control" name="bo_remark[]" ></td>
             </tr>
-
-             <tr>
+            <tr>
               <td><input type="text" class="form-control" name="bo_cat[]" value="Video Verification" readonly=""></td>
               <td><input type="text" class="form-control datepicker" name="bo_date[]"  ></td>
               <td>
@@ -991,30 +990,23 @@
               <td><input type="text" class="form-control" name="bo_remark[]" ></td>
             </tr>
           </table>
-
         </div>
       </div>
     </div>
       
       <div class="box-footer text-center">
-                <button id="add_btn" type="submit" class="btn btn-info">Submit</button>
-                <button type="reset" class="btn btn-default">Cancel</button>
-              </div>
-              
-         
-              
-     </form>
-  
-    
-    <!-- /.box --> 
+        <button id="add_btn" type="submit" class="btn btn-info">Submit</button>
+        <button type="reset" class="btn btn-default">Cancel</button>
+      </div>
+      </form> 
     
   </section>
   
-  <!-- /.content --> 
+   
   
 </div>
 
-<!-- /.content-wrapper --> 
+ 
 </div>
 <script>
 
@@ -1470,6 +1462,7 @@ $(document).ready(function() {
       }
     });
   }
+
 });
 </script>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

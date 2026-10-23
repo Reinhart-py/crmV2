@@ -36,16 +36,23 @@
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>Group Name</label>
-                <input type="text" class="form-control" name="group_name">
+                <label>POC Name <span>*</span></label>
+                <input type="text" class="form-control" name="poc" id="kam_poc_name" placeholder="Contact Person Name" required>
               </div>
             </div>
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>Status Category</label>
-                <select class="form-control select2" style="width: 100%;" name="status_category">
-                  <option value="">Select Category</option>
+                <label>Group Name</label>
+                <input type="text" class="form-control" name="group_name" id="kam_group_name">
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Status</label>
+                <select class="form-control select2" style="width: 100%;" name="status_category" id="kam_status_category">
+                  <option value="">Select Status</option>
                   <option value="Active" selected="selected">Active</option>
                   <option value="In Progress">In Progress</option>
                   <option value="Pending Review">Pending Review</option>
@@ -58,12 +65,35 @@
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
+                <label>Category</label>
+                <select class="form-control select2" style="width: 100%;" name="category" id="kam_category">
+                  <option value="">Select Category</option>
+                  <option value="Existing" selected="selected">Existing</option>
+                  <option value="New">New</option>
+                  <option value="Prospect">Prospect</option>
+                  <?php if(isset($business_categories) && !empty($business_categories)){
+                    foreach($business_categories as $bc){ ?>
+                      <option value="<?php echo htmlspecialchars($bc['title']); ?>"><?php echo htmlspecialchars($bc['title']); ?></option>
+                  <?php } } ?>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
                 <label>Client Status</label>
-                <select class="form-control select2" style="width: 100%;" name="client_status">
+                <select class="form-control select2" style="width: 100%;" name="client_status" id="kam_client_status">
                   <option value="Active" selected="selected">Active</option>
                   <option value="Inactive">Inactive</option>
                   <option value="Closed">Closed</option>
                 </select>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Onboarding Date</label>
+                <input type="text" class="form-control datepicker" name="onboarding_date" value="<?php echo date('d-m-Y'); ?>" placeholder="DD-MM-YYYY" autocomplete="off">
               </div>
             </div>
 
@@ -76,22 +106,15 @@
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>On-Boarding Date</label>
-                <input type="text" class="form-control datepicker" name="onboarding_date" value="<?php echo date('d-m-Y'); ?>" placeholder="DD-MM-YYYY" autocomplete="off">
-              </div>
-            </div>
-
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group">
-                <label>EL Expiry</label>
+                <label>EL Expiry Date</label>
                 <input type="text" class="form-control datepicker" name="el_expiry" placeholder="DD-MM-YYYY" autocomplete="off">
               </div>
             </div>
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>EL Due</label>
-                <input type="text" class="form-control" name="el_due">
+                <label>EL2</label>
+                <input type="text" class="form-control" name="el_due" placeholder="EL2 / Due Info">
               </div>
             </div>
 
@@ -106,20 +129,6 @@
               <div class="form-group">
                 <label>Amount</label>
                 <input type="text" class="form-control only_number" name="amount">
-              </div>
-            </div>
-
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group">
-                <label>20-Oct-26</label>
-                <input type="text" class="form-control datepicker" name="f_20_oct_26" placeholder="DD-MM-YYYY" autocomplete="off">
-              </div>
-            </div>
-
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group">
-                <label>18-Jan-27</label>
-                <input type="text" class="form-control datepicker" name="f_18_jan_27" placeholder="DD-MM-YYYY" autocomplete="off">
               </div>
             </div>
 
@@ -167,48 +176,152 @@
                 <input type="text" class="form-control" name="executive" placeholder="Designation / Notes">
               </div>
             </div>
-
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group">
-                <label>MA Dec-25</label>
-                <input type="text" class="form-control" name="ma_dec_25">
-              </div>
-            </div>
-
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group">
-                <label>MA Jan-26</label>
-                <input type="text" class="form-control" name="ma_jan_26">
-              </div>
-            </div>
-
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group">
-                <label>MA Feb-26</label>
-                <input type="text" class="form-control" name="ma_feb_26">
-              </div>
-            </div>
-
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group">
-                <label>MA Mar-26</label>
-                <input type="text" class="form-control" name="ma_mar_26">
-              </div>
-            </div>
           </div>
         </div>
       </div>
 
       <div class="box box-default">
         <div class="box-header with-border">
-          <h3 class="box-title">Trade License and Compliance</h3>
+          <h3 class="box-title">Trade License, Compliance & FTA Details</h3>
         </div>
         <div class="box-body">
           <div class="row">
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>Trade License No</label>
-                <input type="text" class="form-control" name="tl_number">
+                <label>Trade License Number</label>
+                <input type="text" class="form-control" name="tl_number" id="tl_number" placeholder="Enter Trade License Number">
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Trade License Emirates</label>
+                <select class="form-control" name="tl_emirate" id="tl_emirate_select">
+                  <option value="">Select Emirate</option>
+                  <option value="Abu Dhabi">Abu Dhabi</option>
+                  <option value="Dubai">Dubai</option>
+                  <option value="Sharjah">Sharjah</option>
+                  <option value="Ajman">Ajman</option>
+                  <option value="Umm Al Quwain">Umm Al Quwain</option>
+                  <option value="Ras Al Khaimah">Ras Al Khaimah</option>
+                  <option value="Fujairah">Fujairah</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Trade License Zone</label>
+                <select class="form-control" name="tl_zone" id="tl_zone_select" disabled>
+                  <option value="">Select Zone</option>
+                  <option value="Mainland">Mainland</option>
+                  <option value="Freezone">Freezone</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Licensing Authorities</label>
+                <select class="form-control select2" name="tl_authority" id="tl_authority_select" style="width: 100%;" disabled>
+                  <option value="">Select Authority</option>
+                  <optgroup label="Mainland">
+                    <option value="Abu Dhabi DED" data-emirate="Abu Dhabi" data-zone="Mainland">Abu Dhabi DED</option>
+                    <option value="Abu Dhabi Department of Economic Development — ADDED" data-emirate="Abu Dhabi" data-zone="Mainland">Abu Dhabi Department of Economic Development — ADDED</option>
+                    <option value="Dubai Economy (DED / DET)" data-emirate="Dubai" data-zone="Mainland">Dubai Economy (DED / DET)</option>
+                    <option value="Dubai Economy (DED)" data-emirate="Dubai" data-zone="Mainland">Dubai Economy (DED)</option>
+                    <option value="Dubai Department of Economy and Tourism — DET" data-emirate="Dubai" data-zone="Mainland">Dubai Department of Economy and Tourism — DET</option>
+                    <option value="Sharjah SEDD" data-emirate="Sharjah" data-zone="Mainland">Sharjah SEDD</option>
+                    <option value="Sharjah Economic Development Department — SEDD" data-emirate="Sharjah" data-zone="Mainland">Sharjah Economic Development Department — SEDD</option>
+                    <option value="Ajman DED" data-emirate="Ajman" data-zone="Mainland">Ajman DED</option>
+                    <option value="Ajman Department of Economic Development — Ajman DED" data-emirate="Ajman" data-zone="Mainland">Ajman Department of Economic Development — Ajman DED</option>
+                    <option value="RAK DED" data-emirate="Ras Al Khaimah" data-zone="Mainland">RAK DED</option>
+                    <option value="Ras Al Khaimah Department of Economic Development — RAK DED" data-emirate="Ras Al Khaimah" data-zone="Mainland">Ras Al Khaimah Department of Economic Development — RAK DED</option>
+                    <option value="Fujairah Municipality" data-emirate="Fujairah" data-zone="Mainland">Fujairah Municipality</option>
+                    <option value="Fujairah Municipality — FM" data-emirate="Fujairah" data-zone="Mainland">Fujairah Municipality — FM</option>
+                    <option value="Dibba Municipality — DM" data-emirate="Fujairah" data-zone="Mainland">Dibba Municipality — DM</option>
+                    <option value="UAQ DED" data-emirate="Umm Al Quwain" data-zone="Mainland">UAQ DED</option>
+                    <option value="Umm Al Quwain Department of Economic Development — UAQ DED" data-emirate="Umm Al Quwain" data-zone="Mainland">Umm Al Quwain Department of Economic Development — UAQ DED</option>
+                  </optgroup>
+                  <optgroup label="Free zones">
+                    <option value="ADGM (Abu Dhabi Global Market)" data-emirate="Abu Dhabi" data-zone="Freezone">ADGM (Abu Dhabi Global Market)</option>
+                    <option value="Abu Dhabi Global Market — ADGM" data-emirate="Abu Dhabi" data-zone="Freezone">Abu Dhabi Global Market — ADGM</option>
+                    <option value="Masdar City Free Zone" data-emirate="Abu Dhabi" data-zone="Freezone">Masdar City Free Zone</option>
+                    <option value="Masdar City Free Zone — Masdar" data-emirate="Abu Dhabi" data-zone="Freezone">Masdar City Free Zone — Masdar</option>
+                    <option value="KIZAD / KEZAD" data-emirate="Abu Dhabi" data-zone="Freezone">KIZAD / KEZAD</option>
+                    <option value="Khalifa Economic Zones Abu Dhabi — KEZAD" data-emirate="Abu Dhabi" data-zone="Freezone">Khalifa Economic Zones Abu Dhabi — KEZAD</option>
+                    <option value="twofour54" data-emirate="Abu Dhabi" data-zone="Freezone">twofour54</option>
+                    <option value="Media Zone Authority – twofour54 — TCA" data-emirate="Abu Dhabi" data-zone="Freezone">Media Zone Authority – twofour54 — TCA</option>
+                    <option value="Abu Dhabi Airports Free Zone — ADAFZ" data-emirate="Abu Dhabi" data-zone="Freezone">Abu Dhabi Airports Free Zone — ADAFZ</option>
+                    <option value="Tawazun Industrial Park — TIP" data-emirate="Abu Dhabi" data-zone="Freezone">Tawazun Industrial Park — TIP</option>
+                    <option value="DMCC (Dubai Multi Commodities Centre)" data-emirate="Dubai" data-zone="Freezone">DMCC (Dubai Multi Commodities Centre)</option>
+                    <option value="Dubai Multi Commodities Centre — DMCC" data-emirate="Dubai" data-zone="Freezone">Dubai Multi Commodities Centre — DMCC</option>
+                    <option value="IFZA (International Free Zone Authority)" data-emirate="Dubai" data-zone="Freezone">IFZA (International Free Zone Authority)</option>
+                    <option value="IFZA Dubai" data-emirate="Dubai" data-zone="Freezone">IFZA Dubai</option>
+                    <option value="International Free Zone Authority — IFZA" data-emirate="Dubai" data-zone="Freezone">International Free Zone Authority — IFZA</option>
+                    <option value="DIFC (Dubai International Financial Centre)" data-emirate="Dubai" data-zone="Freezone">DIFC (Dubai International Financial Centre)</option>
+                    <option value="Dubai International Financial Centre — DIFC" data-emirate="Dubai" data-zone="Freezone">Dubai International Financial Centre — DIFC</option>
+                    <option value="DAFZA (Dubai Airport Freezone)" data-emirate="Dubai" data-zone="Freezone">DAFZA (Dubai Airport Freezone)</option>
+                    <option value="Dubai Airport Free Zone Authority — DAFZA" data-emirate="Dubai" data-zone="Freezone">Dubai Airport Free Zone Authority — DAFZA</option>
+                    <option value="JAFZA (Jebel Ali Free Zone)" data-emirate="Dubai" data-zone="Freezone">JAFZA (Jebel Ali Free Zone)</option>
+                    <option value="Jebel Ali Free Zone Authority — JAFZA" data-emirate="Dubai" data-zone="Freezone">Jebel Ali Free Zone Authority — JAFZA</option>
+                    <option value="DSOA / Dubai Silicon Oasis" data-emirate="Dubai" data-zone="Freezone">DSOA / Dubai Silicon Oasis</option>
+                    <option value="Dubai Silicon Oasis — DSO" data-emirate="Dubai" data-zone="Freezone">Dubai Silicon Oasis — DSO</option>
+                    <option value="DWTC (Dubai World Trade Centre)" data-emirate="Dubai" data-zone="Freezone">DWTC (Dubai World Trade Centre)</option>
+                    <option value="Dubai World Trade Centre Authority — DWTC" data-emirate="Dubai" data-zone="Freezone">Dubai World Trade Centre Authority — DWTC</option>
+                    <option value="Meydan Free Zone" data-emirate="Dubai" data-zone="Freezone">Meydan Free Zone</option>
+                    <option value="Meydan Free Zone — MFZ" data-emirate="Dubai" data-zone="Freezone">Meydan Free Zone — MFZ</option>
+                    <option value="Dubai South (DWC)" data-emirate="Dubai" data-zone="Freezone">Dubai South (DWC)</option>
+                    <option value="Dubai South — DS" data-emirate="Dubai" data-zone="Freezone">Dubai South — DS</option>
+                    <option value="Dubai Internet City (TECOM)" data-emirate="Dubai" data-zone="Freezone">Dubai Internet City (TECOM)</option>
+                    <option value="Dubai Media City (TECOM)" data-emirate="Dubai" data-zone="Freezone">Dubai Media City (TECOM)</option>
+                    <option value="Dubai Knowledge Park (TECOM)" data-emirate="Dubai" data-zone="Freezone">Dubai Knowledge Park (TECOM)</option>
+                    <option value="Dubai Production City (TECOM)" data-emirate="Dubai" data-zone="Freezone">Dubai Production City (TECOM)</option>
+                    <option value="Dubai Studio City (TECOM)" data-emirate="Dubai" data-zone="Freezone">Dubai Studio City (TECOM)</option>
+                    <option value="Dubai Outsource City (TECOM)" data-emirate="Dubai" data-zone="Freezone">Dubai Outsource City (TECOM)</option>
+                    <option value="Dubai Science Park (TECOM)" data-emirate="Dubai" data-zone="Freezone">Dubai Science Park (TECOM)</option>
+                    <option value="Dubai Design District (d3)" data-emirate="Dubai" data-zone="Freezone">Dubai Design District (d3)</option>
+                    <option value="Dubai Maritime City" data-emirate="Dubai" data-zone="Freezone">Dubai Maritime City</option>
+                    <option value="Dubai Maritime City Authority — DMCA" data-emirate="Dubai" data-zone="Freezone">Dubai Maritime City Authority — DMCA</option>
+                    <option value="Dubai Healthcare City (DHCC)" data-emirate="Dubai" data-zone="Freezone">Dubai Healthcare City (DHCC)</option>
+                    <option value="Dubai Healthcare City Authority — DHCC" data-emirate="Dubai" data-zone="Freezone">Dubai Healthcare City Authority — DHCC</option>
+                    <option value="Dubai CommerCity" data-emirate="Dubai" data-zone="Freezone">Dubai CommerCity</option>
+                    <option value="Dubai Development Authority — DDA" data-emirate="Dubai" data-zone="Freezone">Dubai Development Authority — DDA</option>
+                    <option value="Dubai Humanitarian — DH" data-emirate="Dubai" data-zone="Freezone">Dubai Humanitarian — DH</option>
+                    <option value="Trakhees — Trakhees" data-emirate="Dubai" data-zone="Freezone">Trakhees — Trakhees</option>
+                    <option value="National Industries Park — NIP" data-emirate="Dubai" data-zone="Freezone">National Industries Park — NIP</option>
+                    <option value="Expo City Dubai — Expo City" data-emirate="Dubai" data-zone="Freezone">Expo City Dubai — Expo City</option>
+                    <option value="SHAMS (Sharjah Media City)" data-emirate="Sharjah" data-zone="Freezone">SHAMS (Sharjah Media City)</option>
+                    <option value="Sharjah Media City (SHAMS)" data-emirate="Sharjah" data-zone="Freezone">Sharjah Media City (SHAMS)</option>
+                    <option value="Sharjah Media City — SHAMS" data-emirate="Sharjah" data-zone="Freezone">Sharjah Media City — SHAMS</option>
+                    <option value="SAIF Zone (Sharjah Airport International Free Zone)" data-emirate="Sharjah" data-zone="Freezone">SAIF Zone (Sharjah Airport International Free Zone)</option>
+                    <option value="Sharjah Airport International Free Zone — SAIF Zone" data-emirate="Sharjah" data-zone="Freezone">Sharjah Airport International Free Zone — SAIF Zone</option>
+                    <option value="HFZA (Hamriyah Free Zone)" data-emirate="Sharjah" data-zone="Freezone">HFZA (Hamriyah Free Zone)</option>
+                    <option value="Hamriyah Free Zone Authority — HFZA" data-emirate="Sharjah" data-zone="Freezone">Hamriyah Free Zone Authority — HFZA</option>
+                    <option value="SPCFZ (Sharjah Publishing City Free Zone)" data-emirate="Sharjah" data-zone="Freezone">SPCFZ (Sharjah Publishing City Free Zone)</option>
+                    <option value="Sharjah Publishing City Free Zone — SPC" data-emirate="Sharjah" data-zone="Freezone">Sharjah Publishing City Free Zone — SPC</option>
+                    <option value="SRTI Park (Sharjah Research Tech & Innovation)" data-emirate="Sharjah" data-zone="Freezone">SRTI Park (Sharjah Research Tech & Innovation)</option>
+                    <option value="Sharjah Research, Technology and Innovation Park — SRTIP" data-emirate="Sharjah" data-zone="Freezone">Sharjah Research, Technology and Innovation Park — SRTIP</option>
+                    <option value="Sharjah Healthcare City — SHCC" data-emirate="Sharjah" data-zone="Freezone">Sharjah Healthcare City — SHCC</option>
+                    <option value="Sharjah Oasis for Technology and Innovation — SOTI" data-emirate="Sharjah" data-zone="Freezone">Sharjah Oasis for Technology and Innovation — SOTI</option>
+                    <option value="AFZA (Ajman Free Zone)" data-emirate="Ajman" data-zone="Freezone">AFZA (Ajman Free Zone)</option>
+                    <option value="Ajman Free Zone — AFZ" data-emirate="Ajman" data-zone="Freezone">Ajman Free Zone — AFZ</option>
+                    <option value="Ajman Media City Free Zone (AMCFZ)" data-emirate="Ajman" data-zone="Freezone">Ajman Media City Free Zone (AMCFZ)</option>
+                    <option value="Ajman Media City Free Zone — AMCFZ" data-emirate="Ajman" data-zone="Freezone">Ajman Media City Free Zone — AMCFZ</option>
+                    <option value="RAKEZ (Ras Al Khaimah Economic Zone)" data-emirate="Ras Al Khaimah" data-zone="Freezone">RAKEZ (Ras Al Khaimah Economic Zone)</option>
+                    <option value="Ras Al Khaimah Economic Zone — RAKEZ" data-emirate="Ras Al Khaimah" data-zone="Freezone">Ras Al Khaimah Economic Zone — RAKEZ</option>
+                    <option value="RAK Maritime City" data-emirate="Ras Al Khaimah" data-zone="Freezone">RAK Maritime City</option>
+                    <option value="Ras Al Khaimah Maritime City — RAKMC" data-emirate="Ras Al Khaimah" data-zone="Freezone">Ras Al Khaimah Maritime City — RAKMC</option>
+                    <option value="Innovation City — IC" data-emirate="Ras Al Khaimah" data-zone="Freezone">Innovation City — IC</option>
+                    <option value="RAK Digital Assets Oasis — RAK DAO" data-emirate="Ras Al Khaimah" data-zone="Freezone">RAK Digital Assets Oasis — RAK DAO</option>
+                    <option value="Fujairah Free Zone (FFZ)" data-emirate="Fujairah" data-zone="Freezone">Fujairah Free Zone (FFZ)</option>
+                    <option value="Fujairah Free Zone — FFZ" data-emirate="Fujairah" data-zone="Freezone">Fujairah Free Zone — FFZ</option>
+                    <option value="Creative City Fujairah" data-emirate="Fujairah" data-zone="Freezone">Creative City Fujairah</option>
+                    <option value="Creative City Fujairah — CCF" data-emirate="Fujairah" data-zone="Freezone">Creative City Fujairah — CCF</option>
+                    <option value="UAQ FTZ (Umm Al Quwain Free Trade Zone)" data-emirate="Umm Al Quwain" data-zone="Freezone">UAQ FTZ (Umm Al Quwain Free Trade Zone)</option>
+                    <option value="Umm Al Quwain Free Trade Zone — UAQ FTZ" data-emirate="Umm Al Quwain" data-zone="Freezone">Umm Al Quwain Free Trade Zone — UAQ FTZ</option>
+                  </optgroup>
+                </select>
               </div>
             </div>
 
@@ -223,13 +336,6 @@
               <div class="form-group">
                 <label>TL Due</label>
                 <input type="text" class="form-control" name="tl_due">
-              </div>
-            </div>
-
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group">
-                <label>TL Authority</label>
-                <input type="text" class="form-control" name="tl_authority">
               </div>
             </div>
 
@@ -289,22 +395,6 @@
               </div>
             </div>
 
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group">
-                <label>Month</label>
-                <input type="text" class="form-control" name="month">
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="box box-default">
-        <div class="box-header with-border">
-          <h3 class="box-title">Services and FTA Details</h3>
-        </div>
-        <div class="box-body">
-          <div class="row">
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
                 <label>WA</label>
@@ -601,21 +691,21 @@
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
                 <label>Location</label>
-                <input type="text" class="form-control" name="location">
+                <input type="text" class="form-control" name="location" id="kam_location">
               </div>
             </div>
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
                 <label>Number</label>
-                <input type="text" class="form-control" name="number">
+                <input type="text" class="form-control" name="number" id="kam_contact">
               </div>
             </div>
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
                 <label>Email</label>
-                <input type="email" class="form-control" name="email">
+                <input type="email" class="form-control" name="email" id="kam_email">
               </div>
             </div>
 
@@ -722,6 +812,127 @@ $(document).ready(function() {
   $('.only_number').on('keyup keydown blur', function(e) {
     $(this).val($(this).val().replace(/[^0-9.]/g, ''));
   });
+
+  $('#kam_company_select').on('change select2:select', function() {
+    var val = $(this).val();
+    if (!val || val.length < 2) return;
+    $.ajax({
+      url: '<?php echo base_url(); ?>manager/kam/ajax_get_company_pocs',
+      type: 'GET',
+      data: { company: val },
+      dataType: 'json',
+      success: function(resp) {
+        if (resp && resp.status === 'success') {
+          if (resp.primary_poc && !$('#kam_poc_name').val()) {
+            $('#kam_poc_name').val(resp.primary_poc);
+          }
+          if (resp.contact && !$('#kam_contact').val()) {
+            $('#kam_contact').val(resp.contact);
+          }
+          if (resp.email && !$('#kam_email').val()) {
+            $('#kam_email').val(resp.email);
+          }
+          if (resp.location && !$('#kam_location').val()) {
+            $('#kam_location').val(resp.location);
+          }
+          if (resp.group_name && !$('#kam_group_name').val()) {
+            $('#kam_group_name').val(resp.group_name);
+          }
+          if (resp.tl_number && !$('#tl_number').val()) {
+            $('#tl_number').val(resp.tl_number);
+          }
+          if (resp.tl_expire_date && !$('input[name="tl_expire_date"]').val()) {
+            $('input[name="tl_expire_date"]').val(resp.tl_expire_date);
+          }
+          if (resp.tl_emirate) {
+            $('#tl_emirate_select').val(resp.tl_emirate).trigger('change');
+            if (resp.tl_zone) {
+              $('#tl_zone_select').val(resp.tl_zone).trigger('change');
+              if (resp.tl_authority) {
+                $('#tl_authority_select').val(resp.tl_authority).trigger('change');
+              }
+            }
+          }
+        }
+      }
+    });
+  });
+
+  var originalAuthorityHtml = $('#tl_authority_select').html();
+
+  function applyTradeLicenseDependencies(initialLoad) {
+    var selEmirate = $('#tl_emirate_select').val() || '';
+    var selZone = $('#tl_zone_select').val() || '';
+    var currentAuth = $('#tl_authority_select').val() || '';
+
+    if (!selEmirate) {
+      $('#tl_zone_select').prop('disabled', true);
+      if (!initialLoad) {
+        $('#tl_zone_select').val('');
+      }
+      selZone = '';
+      $('#tl_authority_select').prop('disabled', true);
+      if (!initialLoad) {
+        $('#tl_authority_select').val('');
+      }
+      currentAuth = '';
+    } else {
+      $('#tl_zone_select').prop('disabled', false);
+      if (!selZone) {
+        $('#tl_authority_select').prop('disabled', true);
+        if (!initialLoad) {
+          $('#tl_authority_select').val('');
+        }
+        currentAuth = '';
+      } else {
+        $('#tl_authority_select').prop('disabled', false);
+      }
+    }
+
+    var tempDiv = $('<div>').html(originalAuthorityHtml);
+    tempDiv.find('option').each(function() {
+      var opt = $(this);
+      var optVal = opt.val();
+      if (!optVal) return;
+      var optEm = opt.attr('data-emirate') || '';
+      var optZn = opt.attr('data-zone') || '';
+
+      var matchEm = !selEmirate || (optEm.toLowerCase() === selEmirate.toLowerCase());
+      var matchZn = !selZone || (optZn.toLowerCase() === selZone.toLowerCase());
+
+      if (!matchEm || !matchZn) {
+        opt.remove();
+      }
+    });
+
+    tempDiv.find('optgroup').each(function() {
+      if ($(this).find('option').length === 0) {
+        $(this).remove();
+      }
+    });
+
+    $('#tl_authority_select').html(tempDiv.html());
+
+    if (currentAuth && $('#tl_authority_select').find('option[value="' + currentAuth.replace(/"/g, '\\"') + '"]').length > 0) {
+      $('#tl_authority_select').val(currentAuth);
+    } else {
+      $('#tl_authority_select').val('');
+    }
+
+    if ($.fn.select2 && $('#tl_authority_select').data('select2')) {
+      $('#tl_authority_select').select2();
+    }
+  }
+
+  $('#tl_emirate_select').on('change', function() {
+    applyTradeLicenseDependencies(false);
+  });
+
+  $('#tl_zone_select').on('change', function() {
+    applyTradeLicenseDependencies(false);
+  });
+
+  applyTradeLicenseDependencies(true);
 });
 
 var onboardUsers = <?php 

@@ -56,15 +56,13 @@ class Ci_admin_setting extends CI_Controller {
 		     	{
 					$config['upload_path']='uploads/logo/';
 					$config['allowed_types']='jpg|jpeg|png|gif';
-					//$config['max_size']=0; 
-                  	$config['file_name']=$_FILES['logo_image']['name'];
+					$config['file_name']=$_FILES['logo_image']['name'];
 					$this->load->library('upload',$config);
 					$this->upload->initialize($config);
 					
 					if($this->upload->do_upload('logo_image'))
 					{
 						$uploadData=$this->upload->data();
-						//print_r( $uploadData);
 						$picture=$uploadData['file_name'];
 					} 
 	     		else

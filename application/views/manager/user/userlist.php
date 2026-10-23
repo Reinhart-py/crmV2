@@ -1,13 +1,13 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
-<!-- Content Wrapper. Contains page content -->
-<div class="content-wrapper px-4"> <!-- Content Header (Page header) -->
+
+<div class="content-wrapper px-4"> 
   <section class="content-header">
     <h1> <?php echo $info['page_heading']; ?> </h1>
   </section>
-  <!-- Main content -->
-  <section class="content"> <!-- /.row -->
-    <div class="row"> <!-- form close-->
+  
+  <section class="content"> 
+    <div class="row"> 
       <div class="col-xs-12">
 
       <div class="box  p-4">
@@ -15,27 +15,27 @@
       <div class="x_col"> 
 
             <div class="pull-right">
-             <?php /* <form class="form-inline" method="get">
-                <select class="form-control" name="order_by">
-                  <option <?php if(isset($_GET['order_by']) && $_GET['order_by']=='A.created'){ echo 'selected'; } ?> value="A.created">Date</option>
-                  <option <?php if(isset($_GET['order_by']) && $_GET['order_by']=='A.name'){ echo 'selected'; } ?> value="A.name">Name</option>
-                  <option <?php if(isset($_GET['order_by']) && $_GET['order_by']=='A.c_username'){ echo 'selected'; } ?> value="A.c_username">Username</option>
-                  <option <?php if(isset($_GET['order_by']) && $_GET['order_by']=='A.user_type'){ echo 'selected'; } ?> value="A.user_type">Category</option>
-                  <option <?php if(isset($_GET['order_by']) && $_GET['order_by']=='A.status'){ echo 'selected'; } ?> value="A.status">Status</option>
-                 
-                  
-                  
-                </select>
-                <select class="form-control" name="sort_by">
-                  <option <?php if(isset($_GET['sort_by']) && $_GET['sort_by']=='DESC'){ echo 'selected'; } ?> value="DESC">DESC</option>
-                  <option <?php if(isset($_GET['sort_by']) && $_GET['sort_by']=='ASC'){ echo 'selected'; } ?> value="ASC">ASC</option>
-                </select>
-                <input type="text" class="form-control" name="search" value="<?php if(isset($_GET['search'])){ echo $_GET['search']; } ?>" />
-                <button type="submit" class="btn btn-success">Search</button>
-                <a href="<?php echo base_url(); ?>manager/users" class="btn btn-danger"> Reset</a>
-                 
-               <!-- <a href="<?php //echo base_url(); ?>manager/players/add/" class="btn btn-info">Add New</a>-->
-              </form> */ ?>
+             <?php 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ ?>
               <a href="<?php echo base_url(); ?>manager/users/add" class="btn btn-success"> Add New</a>
             </div>
 
@@ -100,6 +100,7 @@
                <a data-id="<?php echo $li['id'];?>" data-admin_status="0"  id="btn_block" data-toggle="tooltip" title="Enable User">Enable</button> 
                 <?php }else{?>
                <a data-id="<?php echo $li['id'];?>" data-admin_status="1" id="btn_unblock" data-toggle="tooltip" title="Disable User">Disable</button> <?php } ?> </li>
+                    <li><a href="<?php echo base_url(); ?>manager/users/delete/<?php echo $li['id']; ?>" onclick="return do_confirm();" data-toggle="tooltip" title="Delete" style="color:#dc2626;"><i class="fa fa-trash"></i> Delete</a></li>
                   </ul>
                 </div>
 
@@ -115,9 +116,9 @@
             
             <div class="alert alert-info"> No Data Found </div>
             <?php }?>
-            <!-- /.box-body --> </div>
+             </div>
         </div>
-        <!-- /.box --> </div>
+         </div>
     </div>
   </section>
 </div>

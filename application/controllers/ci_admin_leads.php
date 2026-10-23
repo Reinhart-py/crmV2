@@ -25,7 +25,7 @@ function __construct()
             }
         } else {
             $data = array();
-		   // $data['logo'] = $this->ci_admin_model->getpostdata2(array('id'=>1),'','ci_logo');
+		   
 		   $data['back_url'] = $this->agent->referrer();
            return $data;
         }
@@ -73,8 +73,8 @@ function __construct()
 			}
 		}
 
-		$d1 = isset($_GET['d1']) ? $_GET['d1'] : '';
-		$d2 = isset($_GET['d2']) ? $_GET['d2'] : '';
+		$d1 = isset($_GET['d1']) ? $_GET['d1'] : (isset($_GET['exp_d1']) ? $_GET['exp_d1'] : '');
+		$d2 = isset($_GET['d2']) ? $_GET['d2'] : (isset($_GET['exp_d2']) ? $_GET['exp_d2'] : '');
 
 		$mrr1 = isset($_GET['mrr1']) ? $_GET['mrr1'] : '';
 		$mrr2 = isset($_GET['mrr2']) ? $_GET['mrr2'] : '';
@@ -109,7 +109,7 @@ function __construct()
 		$data['pc_list']= $this->comman_model->getAll(array('cat_type'=>'p_cat','parent_id'=>0),'','ci_terms');
 		$data['lc_list']= $this->comman_model->getAll(array('cat_type'=>'lead_cat','parent_id'=>0),'','ci_terms');
 		$data['product_list']= $this->ci_admin_model->get_Myleads($d1, $d2, $mrr1, $mrr2, '','',$order_by,$sort_by,$search,$status,$category,$lCat,$user_name,$country,$state,$closure,$vertical_fu);
-		//print_r($data['product_list']);
+		
 		$con_q= '';
 		 if(!empty($_SERVER['QUERY_STRING']))
 		{
@@ -126,7 +126,7 @@ function __construct()
 	{
 
 	   $str='<option value="" disabled>Select State</option>';
-	  //Ajax call for Sub product where values are going to be fetch by parent_id
+	  
 	   if(isset($_POST['country_id'])&&!empty($_POST['country_id']))
 	   {   
 	   $data['state_list']= $this->comman_model->getAll(array('country_id'=>$_POST['country_id']),'','states');
@@ -330,7 +330,7 @@ function __construct()
 				echo json_encode($json);
 			
 	}
-		public function view($id='',$action='') //userloyee id
+		public function view($id='',$action='') 
 
 		{
 
@@ -392,7 +392,7 @@ function __construct()
 	           $this->load->view('manager/leads/single_view',$data);
 
 }
-	//to add category
+	
 
 	public function add()
 
@@ -550,7 +550,6 @@ function __construct()
 				);
 
 		     	if(!empty($bo_cat)){
-
 		     		for($i=0;$i<=6;$i++){
 		     			$so= array(
 		     				'lead_id'=>$lead_id,
@@ -587,7 +586,7 @@ function __construct()
 						'm_remark'=>$m_remark,
 						'm_poc'=>$m_poc,
 						'm_mobile'=>$m_mobile,
-					//	'm_address'=>$m_address,
+					
 						'a1'=>$a1,
 						'a2'=>$a2,
 						'created'=>date('Y-m-d'),
@@ -609,7 +608,7 @@ function __construct()
 
 	}
 
-		//edit category
+		
 
      public function edit($id='',$action='')
 
@@ -626,8 +625,8 @@ function __construct()
 		
 		$data['slist']=$this->ci_admin_model->getSingleLead($id);
 		$data['v_list'] =$this->ci_admin_model->getShortVerticals($this->session->userdata('manager_id'));
-		//print_r($data['slist']);
-		//die;
+		
+		
 
 		if(empty($data['list'])){
 			$this->session->set_flashdata('error_message', 'Not allowed');
@@ -802,8 +801,7 @@ function __construct()
 				$this->session->userdata('manager_id'),
 				$this->session->userdata('manager_name')
 			);	
-			if(!empty($bo_id)){
-
+		     	if(!empty($bo_id)){
 		     		for($i=0;$i<=6;$i++){
 		     			$so= array(		     				
 		     				'bo_cat'=>$bo_cat[$i],
@@ -873,7 +871,7 @@ function __construct()
 									'm_remark'=>$m_remark[$i],
 									'm_poc'=>$m_poc[$i],
 									'm_mobile'=>$m_mobile[$i],
-								//	'm_address'=>$m_address[$i],
+								
 									'a1'=>$a1[$i],
 									'a2'=>$a2[$i],
 									'created'=>date('Y-m-d'),
@@ -925,8 +923,8 @@ function __construct()
 		  
 		  $data['slist']=$this->ci_admin_model->getSingleLead($id);
 		  $data['v_list'] =$this->ci_admin_model->getShortVerticals($this->session->userdata('manager_id'));
-		  //print_r($data['slist']);
-		  //die;
+		  
+		  
   
 		  if(empty($data['list'])){
 			  $this->session->set_flashdata('error_message', 'Not allowed');
@@ -982,7 +980,7 @@ function __construct()
 
 	   
 
-	// delete category of news using category id 	
+	
 
     public function leads_del($id='')
 
@@ -1088,10 +1086,10 @@ $data['info2']=$this->if_not_login();
 		echo json_encode(array('status' => true, 'count' => $del_count, 'message' => "$del_count lead(s) deleted successfully"));
     }
 
-	/**
-	 * Export Leads in CSV format with actual DB values and scope filtering
-	 * Strict Access: Admin only (manager_role == 1)
-	 */
+	
+
+
+
 	public function export()
 	{
 		$this->if_not_login();
@@ -1101,11 +1099,11 @@ $data['info2']=$this->if_not_login();
 			return;
 		}
 
-		// If download parameter is requested, stream CSV
+		
 		if ($this->input->get('download') == 1) {
 			$user_id = $this->input->get('user_id');
 
-			// Pre-fetch lookups for readable CSV values
+			
 			$status_map = array();
 			$statuses = $this->comman_model->getAll('', '', 'ci_status');
 			if (!empty($statuses)) {
@@ -1300,7 +1298,7 @@ $data['info2']=$this->if_not_login();
 			exit();
 		}
 
-		// Configure View Data
+		
 		$data = array();
 		$data['info'] = array(
 			'title' => 'Manager - Export Leads',
@@ -1315,7 +1313,7 @@ $data['info2']=$this->if_not_login();
 
 		$data['users'] = $this->db->select('id, name, email')->get_where('ci_user', array('status' => 1))->result_array();
 
-		// Count leads per user
+		
 		$user_counts_raw = $this->db->select('lead_assign, COUNT(*) as cnt')->group_by('lead_assign')->get('ci_leads')->result_array();
 		$user_counts = array();
 		foreach ($user_counts_raw as $uc) {
@@ -1328,10 +1326,10 @@ $data['info2']=$this->if_not_login();
 		$this->load->view('manager/leads/export', $data);
 	}
 
-	/**
-	 * Leads Import UI
-	 * Admin has full upload permission; Managers have view-only access; others blocked.
-	 */
+	
+
+
+
 	public function import()
 	{
 		$this->if_not_login();
@@ -1353,10 +1351,10 @@ $data['info2']=$this->if_not_login();
 		$this->load->view('manager/leads/import', $data);
 	}
 
-	/**
-	 * Process Leads CSV Import
-	 * Backend Permission: Admin and Support (manager_role == 1 || manager_role == 4)
-	 */
+	
+
+
+
 	public function import_action()
 	{
 		$this->if_not_login();
@@ -1387,7 +1385,7 @@ $data['info2']=$this->if_not_login();
 			return;
 		}
 
-		// Read header line
+		
 		$raw_headers = fgetcsv($handle, 5000, ',');
 		if (!$raw_headers) {
 			fclose($handle);
@@ -1396,7 +1394,7 @@ $data['info2']=$this->if_not_login();
 			return;
 		}
 
-		// Normalize headers to map keys
+		
 		$col_index = array();
 		foreach ($raw_headers as $idx => $hdr) {
 			$clean = strtolower(trim(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $hdr)));
@@ -1424,7 +1422,7 @@ $data['info2']=$this->if_not_login();
 				continue;
 			}
 
-			// Clean formula injection characters from all cells
+			
 			foreach ($row as $k => $val) {
 				$val = trim($val);
 				if (strlen($val) > 0 && in_array($val[0], array('=', '+', '-', '@'))) {
@@ -1634,9 +1632,9 @@ $data['info2']=$this->if_not_login();
 		redirect('manager/leads');
 	}
 
-	/**
-	 * Download sample CSV file template for Leads import
-	 */
+	
+
+
 	public function download_sample_csv()
 	{
 		$this->if_not_login();
@@ -1908,14 +1906,23 @@ $data['info2']=$this->if_not_login();
 		$data['info2'] = $this->if_not_login();
 
 		$manager_id = (int)$this->session->userdata('manager_id');
+		$manager_role = (int)$this->session->userdata('manager_role');
+		$from_user = (int)$this->input->get('from_user');
+
+		$source_user_id = $manager_id;
+		if (($manager_role === 1 || $manager_role === 4) && $from_user > 0) {
+			$source_user_id = $from_user;
+		}
+
 		$d1 = $this->input->get('d1');
 		$d2 = $this->input->get('d2');
 		$search = $this->input->get('search');
 		$status = $this->input->get('status');
 		$status_str = is_array($status) ? implode(',', array_filter($status)) : (string)$status;
 
+		$data['from_user'] = $source_user_id;
 		$data['product_list'] = $this->ci_admin_model->getMyTransferLeads(
-			$manager_id,
+			$source_user_id,
 			$d1,
 			$d2,
 			'',
@@ -1931,7 +1938,8 @@ $data['info2']=$this->if_not_login();
 		);
 
 		$data['st_list'] = $this->db->order_by('id', 'ASC')->get('ci_status')->result_array();
-		$data['users_list'] = $this->db->select('id, name, email')->where('status', 1)->where('id !=', $manager_id)->order_by('name', 'ASC')->get('ci_user')->result_array();
+		$data['all_users'] = $this->db->select('id, name, email')->where('status', 1)->order_by('name', 'ASC')->get('ci_user')->result_array();
+		$data['users_list'] = $this->db->select('id, name, email')->where('status', 1)->where('id !=', $source_user_id)->order_by('name', 'ASC')->get('ci_user')->result_array();
 
 		$this->load->view('manager/leads/database_transfer', $data);
 	}
@@ -2024,6 +2032,5 @@ $data['info2']=$this->if_not_login();
 }
 
 
-/* End of file welcome.php */
 
-/* Location: ./application/controllers/welcome.php */
+

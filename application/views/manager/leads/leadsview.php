@@ -172,72 +172,12 @@ foreach($st_list as $cli){
 
 
 
-<?php /* ?>
-<div class="form-group">
-    <select class="form-control" name="order_by">
-        <option value="">Sort By</option>
-        <option
-            <?php if(!empty($_GET['order_by']) && ($_GET['order_by']=='lead_id')) { echo "selected"; } ?>
-            value="lead_id">ID</option>
-        <option
-            <?php if(!empty($_GET['order_by']) && ($_GET['order_by']=='customer')) { echo "selected"; } ?>
-            value="customer">Customer</option>
-        <option
-            <?php if(!empty($_GET['order_by']) && ($_GET['order_by']=='productcat')) { echo "selected"; } ?>
-            value="productcat">Product Type</option>
-        <option
-            <?php if(!empty($_GET['order_by']) && ($_GET['order_by']=='mrr')) { echo "selected"; } ?>
-            value="mrr">MRR</option>
-        <option
-            <?php if(!empty($_GET['order_by']) && ($_GET['order_by']=='poc')) { echo "selected"; } ?>
-            value="poc">POC Name</option>
-
-        <option
-            <?php if(!empty($_GET['order_by']) && ($_GET['order_by']=='contact1')) { echo "selected"; } ?>
-            value="contact1">Contact Number</option>
-        <option
-            <?php if(!empty($_GET['order_by']) && ($_GET['order_by']=='followup_date')) { echo "selected"; } ?>
-            value="followup_date">Next FU date</option>
-        <option
-            <?php if(!empty($_GET['order_by']) && ($_GET['order_by']=='created')) { echo "selected"; } ?>
-            value="created">Created</option>
-        <option
-            <?php if(!empty($_GET['order_by']) && ($_GET['order_by']=='lead_status')) { echo "selected"; } ?>
-            value="lead_status">Status</option>
-    </select>
-</div>
-
-<div class="form-group">
-    <select name="sort_by" class="form-control">
-        <option value="">Order</option>
-        <option
-            <?php if(!empty($_GET['sort_by']) && ($_GET['sort_by']=='DESC')) { echo "selected"; } ?>
-            value="DESC">DESC</option>
-        <option
-            <?php if(!empty($_GET['sort_by']) && ($_GET['sort_by']=='ASC')) { echo "selected"; } ?>
-            value="ASC">ASC</option>
-    </select>
-</div>
-
-<div class="form-group">
-    <input type="text" class="input-md form-control" name="search" placeholder="Search"
-        value="<?php if(isset($_GET['search'])&&(!empty($_GET['search']))){ echo $_GET['search'];}?>"
-        autocomplete="off" />
-</div>
-<?php */ ?>
-
 <div class="form-group">
     <button type="submit" class="btn btn-success">Search</button>
     <a href="<?php echo base_url(); ?>manager/leads<?php if($this->uri->segment(3)=='followups'){ echo '/followups'; }elseif($this->uri->segment(3)=='meetings'){ echo '/meetings'; } ?>"
         class="btn btn-danger"> Reset</a>
 </div>
 
-
-
-
-
-
-<!-- <a href="<?php //echo base_url(); ?>manager/players/add/" class="btn btn-info">Add New</a>-->
 </form>
                     </div>
                     <div class="x_col-sm-auto  text-center pt-4 pt-md-0">

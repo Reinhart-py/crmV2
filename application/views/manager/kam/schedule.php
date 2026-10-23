@@ -2,159 +2,62 @@
 
 <div class="content-wrapper px-4">
   <section class="content-header">
-    <h1> <?php echo isset($info['page_heading']) ? $info['page_heading'] : 'Create Schedule'; ?> </h1>
+    <h1><?php echo isset($info['page_heading']) ? $info['page_heading'] : 'Create Schedule'; ?></h1>
   </section>
 
   <section class="content">
     <?php echo get_message($this->session->flashdata('error_message'), 'error_message'); ?> 
     <?php echo get_message($this->session->flashdata('message'), 'message'); ?>
 
-    <form role="form" action="<?php echo base_url(); ?>manager/kam/schedule" method="post" name="kam_schedule_form">
+    <form role="form" action="<?php echo base_url(); ?>manager/kam/schedule" method="post" id="kamScheduleForm">
       
       <div class="box box-default">
         <div class="box-header with-border">
-          <h3 class="box-title">Client Information</h3>
+          <h3 class="box-title">Client &amp; Schedule Details</h3>
         </div>
         <div class="box-body">
           <div class="row">
-            <div class="col-lg-6 col-sm-12">
+            <div class="col-lg-5 col-sm-12">
               <div class="form-group">
                 <label>Client / Company Name<span>*</span></label>
-                <select class="form-control select2-company-ajax" name="client_name" required style="width: 100%;">
-                  <option value="">Type company name (min 3 characters)...</option>
-                </select>
-              </div>
-            </div>
-            <div class="col-lg-6 col-sm-12">
-              <div class="form-group">
-                <label>Schedule Title / Purpose<span>*</span></label>
-                <input type="text" class="form-control" name="title" placeholder="e.g. Weekly Accounts Review / VAT Filing Audit" required>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="box box-default">
-        <div class="box-header with-border">
-          <h3 class="box-title">Recurrence & Timing</h3>
-        </div>
-        <div class="box-body">
-          <div class="row">
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group">
-                <label>Service Category</label>
-                <select class="form-control select2" name="service_type" style="width: 100%;">
-                  <option value="">Select Category</option>
-                  <?php if(isset($p_cat) && !empty($p_cat)){
-                    foreach($p_cat as $cat){ ?>
-                      <option value="<?php echo htmlspecialchars($cat['title']); ?>"><?php echo htmlspecialchars($cat['title']); ?></option>
+                <select class="form-control select2" name="client_name" id="client_select" required style="width: 100%;">
+                  <option value="">Select Client / Company...</option>
+                  <?php if(isset($client_list) && !empty($client_list)){
+                    foreach($client_list as $cl){ ?>
+                      <option value="<?php echo htmlspecialchars($cl['client_name']); ?>" data-poc="<?php echo htmlspecialchars($cl['poc'] ?? ''); ?>" data-contact="<?php echo htmlspecialchars($cl['contact1'] ?? ''); ?>" data-email="<?php echo htmlspecialchars($cl['email'] ?? ''); ?>">
+                        <?php echo htmlspecialchars($cl['client_name']); ?>
+                      </option>
                   <?php } } ?>
-                  <option value="Accounting">Accounting</option>
-                  <option value="Audit & Tax">Audit & Tax</option>
-                  <option value="VAT Compliance">VAT Compliance</option>
-                  <option value="Corporate Tax">Corporate Tax</option>
-                  <option value="Consulting / CFO">Consulting / CFO</option>
                 </select>
               </div>
             </div>
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>Frequency (Recurrence)<span>*</span></label>
-                <select class="form-control select2" name="frequency" id="sch_frequency" style="width: 100%;" required>
-                  <option value="Once">Does not repeat (Once)</option>
-                  <option value="Daily">Daily</option>
-                  <option value="Weekly">Weekly</option>
-                  <option value="Monthly">Monthly</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group">
-                <label>Start Date<span>*</span></label>
-                <input type="text" class="form-control datepicker" name="start_date" value="<?php echo date('d-m-Y'); ?>" required autocomplete="off">
-              </div>
-            </div>
-
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group">
-                <label>End / Until Date</label>
-                <input type="text" class="form-control datepicker" name="end_date" placeholder="Leave blank if indefinite" autocomplete="off">
-              </div>
-            </div>
-          </div>
-
-          <div class="row" id="weekly_days_row" style="display: none; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 10px; margin: 0 0 15px 0;">
-            <div class="col-xs-12">
-              <label style="display: block; margin-bottom: 8px;">Repeat on Days:</label>
-              <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <?php 
-                $days = array('Mon' => 'Monday', 'Tue' => 'Tuesday', 'Wed' => 'Wednesday', 'Thu' => 'Thursday', 'Fri' => 'Friday', 'Sat' => 'Saturday', 'Sun' => 'Sunday');
-                foreach($days as $k => $dname){ ?>
-                  <label style="font-weight: normal; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
-                    <input type="checkbox" name="repeat_days[]" value="<?php echo $k; ?>"> <?php echo $k; ?>
-                  </label>
-                <?php } ?>
-              </div>
-            </div>
-          </div>
-
-          <div class="row" id="monthly_day_row" style="display: none;">
-            <div class="col-lg-4 col-sm-6">
-              <div class="form-group">
-                <label>Day of Month (1 - 31)</label>
-                <select class="form-control" name="repeat_day_month">
-                  <option value="">Select Day</option>
-                  <?php for($day_i = 1; $day_i <= 31; $day_i++){ ?>
-                    <option value="<?php echo $day_i; ?>"><?php echo $day_i . date('S', mktime(0, 0, 0, 1, $day_i)); ?> of every month</option>
+                <label>Schedule Year<span>*</span></label>
+                <select class="form-control" name="sched_year" id="sched_year" style="width: 100%;">
+                  <?php 
+                    $curYear = (int)date('Y');
+                    for($y = $curYear - 1; $y <= $curYear + 2; $y++){ 
+                  ?>
+                    <option value="<?php echo $y; ?>" <?php echo ($y == $curYear) ? 'selected' : ''; ?>><?php echo $y; ?></option>
                   <?php } ?>
                 </select>
               </div>
             </div>
-          </div>
 
-          <div class="row">
-            <div class="col-lg-3 col-sm-6">
+            <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Start Time</label>
-                <div class="input-group bootstrap-timepicker timepicker">
-                  <input type="text" class="form-control input-small timepicker" name="start_time" value="10:00 AM">
-                  <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group">
-                <label>End Time</label>
-                <div class="input-group bootstrap-timepicker timepicker">
-                  <input type="text" class="form-control input-small timepicker" name="end_time" value="11:00 AM">
-                  <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group" style="position: relative;">
                 <label>Assigned Executive<span>*</span></label>
-                <div class="input-group">
-                  <input type="text" id="exec_search_input" class="form-control" placeholder="Type 3+ letters to search..." autocomplete="off">
-                  <span class="input-group-btn">
-                    <button class="btn btn-default" type="button" onclick="clearExecSelection()"><i class="fa fa-times"></i></button>
-                  </span>
-                </div>
-                <input type="hidden" name="assigned_to" id="exec_assigned_to_input" value="<?php echo (int)$this->session->userdata('manager_id'); ?>">
-                <div id="exec_search_dropdown" style="display:none; position:absolute; top:100%; left:0; right:0; z-index:9999; background:#fff; border:1px solid #cbd5e1; border-radius:4px; box-shadow:0 8px 16px rgba(0,0,0,0.12); max-height:220px; overflow-y:auto; margin-top:2px;"></div>
-              </div>
-            </div>
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group">
-                <label>Status</label>
-                <select class="form-control" name="status">
-                  <option value="Scheduled">Scheduled</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Completed">Completed</option>
-                  <option value="Cancelled">Cancelled</option>
+                <select class="form-control select2" name="assigned_to" style="width: 100%;" required>
+                  <?php 
+                    $my_id = (int)$this->session->userdata('manager_id');
+                    if(isset($u_list) && !empty($u_list)){
+                      foreach($u_list as $u){ ?>
+                        <option value="<?php echo $u['id']; ?>" <?php echo ($u['id'] == $my_id) ? 'selected' : ''; ?>>
+                          <?php echo htmlspecialchars($u['name']); ?> (<?php echo htmlspecialchars($u['email']); ?>)
+                        </option>
+                  <?php } } ?>
                 </select>
               </div>
             </div>
@@ -162,19 +65,83 @@
 
           <div class="row">
             <div class="col-xs-12">
-              <div class="form-group">
-                <label>Schedule Remarks & Client Instructions</label>
-                <textarea class="form-control" name="remarks" rows="3" placeholder="Enter deliverables, preparation guidelines, or agenda notes..."></textarea>
+              <div class="form-group" style="margin-bottom:0;">
+                <label>Schedule Remarks &amp; Client Instructions</label>
+                <textarea class="form-control" name="remarks" rows="2" placeholder="Enter deliverables, preparation guidelines, or agenda notes..."></textarea>
               </div>
             </div>
           </div>
-
         </div>
       </div>
 
-      <div class="box-footer text-center" style="padding: 15px; background: transparent;">
-        <button type="submit" class="btn btn-danger btn-lg" style="min-width: 180px;"><i class="fa fa-calendar-check-o"></i> Save Schedule</button>
-        <a href="<?php echo base_url(); ?>manager/kam/my-client" class="btn btn-default btn-lg" style="margin-left: 10px;">Cancel</a>
+      <div class="box box-default">
+        <div class="box-header with-border" style="display:flex; justify-content:space-between; align-items:center;">
+          <h3 class="box-title" style="margin:0;"><i class="fa fa-calendar-check-o text-primary"></i> 12-Month Schedule Matrix</h3>
+          <div class="box-tools pull-right" style="position:static;">
+            <button type="button" class="btn btn-sm btn-primary" id="btn_add_sched_row"><i class="fa fa-plus"></i> Add Schedule Name</button>
+          </div>
+        </div>
+        <div class="box-body">
+          <div class="table-responsive">
+            <table class="table table-bordered table-striped" id="table_create_schedule" style="font-size:12px; margin-bottom:0;">
+              <thead>
+                <tr style="background:#f1f5f9; color:#1e293b;">
+                  <th style="min-width:180px; vertical-align:middle;">Schedule / Task Name</th>
+                  <?php 
+                    $sched_months = array('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec');
+                    foreach($sched_months as $m_name){ 
+                  ?>
+                    <th class="text-center" style="min-width:92px; vertical-align:middle;"><?php echo $m_name; ?></th>
+                  <?php } ?>
+                  <th class="text-center" style="width:45px; vertical-align:middle;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="sched_tbody">
+                <?php 
+                  $default_scheds = array(
+                    'SPR',
+                    'Company Code',
+                    'Lead Activity',
+                    'Document Col/Sub',
+                    'Pending Documents',
+                    'Video Verification',
+                    'Post Verification'
+                  );
+                  foreach($default_scheds as $idx => $sname){
+                ?>
+                <tr class="sched-row" data-row-index="<?php echo $idx; ?>">
+                  <td style="vertical-align:middle;">
+                    <input type="text" class="form-control input-sm sched-name-input" name="sched_name[<?php echo $idx; ?>]" value="<?php echo htmlspecialchars($sname); ?>" required style="font-size:12px; height:28px;">
+                  </td>
+                  <?php foreach($sched_months as $m_name){ ?>
+                  <td class="text-center" style="padding:4px 3px; vertical-align:middle;">
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
+                      <select class="form-control input-sm" name="sched_status[<?php echo $idx; ?>][<?php echo $m_name; ?>]" style="font-size:11px; height:24px; padding:1px 3px; min-width:82px; width:100%;">
+                        <option value="Not Applicable" selected>Not Applicable</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Expired">Expired</option>
+                        <option value="Other">Other</option>
+                      </select>
+                      <label style="font-weight:normal; margin:0; cursor:pointer;" title="<?php echo $m_name; ?> Active">
+                        <input type="checkbox" name="sched_check[<?php echo $idx; ?>][<?php echo $m_name; ?>]" value="1" style="margin:0;">
+                      </label>
+                    </div>
+                  </td>
+                  <?php } ?>
+                  <td class="text-center" style="vertical-align:middle;">
+                    <button type="button" class="btn btn-xs btn-danger btn-remove-sched-row" title="Remove row"><i class="fa fa-times"></i></button>
+                  </td>
+                </tr>
+                <?php } ?>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="box-footer text-center" style="padding: 15px; background: transparent;">
+          <button type="submit" class="btn btn-danger btn-lg" style="min-width: 180px;"><i class="fa fa-calendar-check-o"></i> Save Schedule</button>
+          <a href="<?php echo base_url(); ?>manager/kam/my-client" class="btn btn-default btn-lg" style="margin-left: 10px;">Cancel</a>
+        </div>
       </div>
 
     </form>
@@ -189,16 +156,14 @@
             <table id="example_lead" class="table table-hover table-bordered table-striped" style="width: 100%;">
               <thead>
                 <tr>
-                  <th>ID</th>
+                  <th style="width:60px;">ID</th>
                   <th>Client / Company</th>
-                  <th>Schedule Title</th>
-                  <th>Service</th>
-                  <th>Frequency</th>
-                  <th>Start Date</th>
-                  <th>Time Slot</th>
+                  <th>Schedule Name</th>
+                  <th style="width:70px;">Year</th>
                   <th>Assigned To</th>
-                  <th>Status</th>
-                  <th>Action</th>
+                  <th style="width:100px;">Status</th>
+                  <th style="width:90px;">Created</th>
+                  <th style="width:60px;" class="text-center">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -207,35 +172,21 @@
                     <td><strong>#<?php echo $sch['id']; ?></strong></td>
                     <td><?php echo htmlspecialchars($sch['client_name'] ?? ''); ?></td>
                     <td><?php echo htmlspecialchars($sch['title'] ?? ''); ?></td>
-                    <td><?php echo htmlspecialchars($sch['service_type'] ?? '-'); ?></td>
-                    <td>
-                      <span class="label label-primary"><?php echo htmlspecialchars($sch['frequency']); ?></span>
-                      <?php if(!empty($sch['repeat_days'])){ ?>
-                        <br><small class="text-muted"><?php echo htmlspecialchars($sch['repeat_days']); ?></small>
-                      <?php } ?>
-                    </td>
-                    <td><?php echo !empty($sch['start_date']) ? simple_date($sch['start_date']) : '-'; ?></td>
-                    <td><?php echo (!empty($sch['start_time']) ? htmlspecialchars($sch['start_time']) : '') . (!empty($sch['end_time']) ? ' - '.htmlspecialchars($sch['end_time']) : ''); ?></td>
+                    <td><span class="label label-default"><?php echo htmlspecialchars($sch['sched_year'] ?? '2026'); ?></span></td>
                     <td><?php echo htmlspecialchars($sch['assigned_name'] ?? 'Self'); ?></td>
                     <td>
                       <?php 
-                      $badge = 'label-info';
-                      if($sch['status'] == 'Completed') $badge = 'label-success';
-                      elseif($sch['status'] == 'Cancelled') $badge = 'label-danger';
+                      $badge = 'label-default';
+                      if($sch['status'] == 'Approved' || $sch['status'] == 'Completed' || $sch['status'] == 'Active') $badge = 'label-success';
+                      elseif($sch['status'] == 'Pending' || $sch['status'] == 'Scheduled' || $sch['status'] == 'In Progress') $badge = 'label-warning';
+                      elseif($sch['status'] == 'Expired' || $sch['status'] == 'Cancelled') $badge = 'label-danger';
+                      elseif($sch['status'] == 'Other') $badge = 'label-info';
                       ?>
                       <span class="label <?php echo $badge; ?>"><?php echo htmlspecialchars($sch['status']); ?></span>
                     </td>
-                    <td>
-                      <div class="btn-group" style="min-width: 85px;">
-                        <button type="button" class="btn btn-sm btn-warning">Action</button>
-                        <button type="button" class="btn btn-sm btn-warning dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                          <span class="caret"></span>
-                          <span class="sr-only">Toggle Dropdown</span>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-right" role="menu">
-                          <li><a href="<?php echo base_url(); ?>manager/kam/my-client">View Client</a></li>
-                        </ul>
-                      </div>
+                    <td><?php echo !empty($sch['created_at']) ? date('d-m-Y', strtotime($sch['created_at'])) : '-'; ?></td>
+                    <td class="text-center">
+                      <a href="<?php echo base_url(); ?>manager/kam/schedule/delete/<?php echo $sch['id']; ?>" class="btn btn-xs btn-danger" onclick="return confirm('Delete this schedule row?');" title="Delete Schedule"><i class="fa fa-trash"></i></a>
                     </td>
                   </tr>
                 <?php } ?>
@@ -243,7 +194,7 @@
             </table>
           </div>
         <?php } else { ?>
-          <div class="alert alert-info">No schedules created yet. Create a schedule using the form above.</div>
+          <div class="alert alert-info">No schedules recorded yet. Create a schedule using the 12-month matrix above.</div>
         <?php } ?>
       </div>
     </div>
@@ -255,38 +206,7 @@
 $(document).ready(function() {
   if ($.fn.select2) {
     $('.select2').select2();
-
-    $('.select2-company-ajax').select2({
-      placeholder: 'Type company name (min 3 characters)...',
-      minimumInputLength: 3,
-      ajax: {
-        url: '<?php echo base_url(); ?>manager/leads/ajax_search_companies',
-        dataType: 'json',
-        delay: 250,
-        data: function(params) {
-          return { q: params.term };
-        },
-        processResults: function(data) {
-          return { results: data.results || [] };
-        },
-        cache: true
-      }
-    });
   }
-
-  $('#sch_frequency').on('change', function() {
-    var freq = $(this).val();
-    if (freq === 'Weekly') {
-      $('#weekly_days_row').slideDown(150);
-      $('#monthly_day_row').slideUp(150);
-    } else if (freq === 'Monthly') {
-      $('#weekly_days_row').slideUp(150);
-      $('#monthly_day_row').slideDown(150);
-    } else {
-      $('#weekly_days_row').slideUp(150);
-      $('#monthly_day_row').slideUp(150);
-    }
-  });
 
   if ($('#example_lead').length) {
     $('#example_lead').DataTable({
@@ -294,93 +214,120 @@ $(document).ready(function() {
       responsive: true
     });
   }
-});
 
-var execUsers = <?php 
-  $clean_u = array();
-  if(!empty($u_list)){
-    foreach($u_list as $u){
-      $clean_u[] = array(
-        'id' => (int)$u['id'],
-        'name' => htmlspecialchars($u['name']),
-        'email' => htmlspecialchars($u['email'])
-      );
-    }
-  }
-  echo json_encode($clean_u);
-?>;
+  var schedMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var defaultSchedules = [
+    'SPR',
+    'Company Code',
+    'Lead Activity',
+    'Document Col/Sub',
+    'Pending Documents',
+    'Video Verification',
+    'Post Verification'
+  ];
 
-var defaultExecId = <?php echo (int)$this->session->userdata('manager_id'); ?>;
-var defaultExecName = "<?php echo addslashes($this->session->userdata('manager_name')); ?>";
+  function renderScheduleRows(schedulesList) {
+    var tbody = $('#sched_tbody');
+    tbody.empty();
 
-document.addEventListener("DOMContentLoaded", function() {
-  var execInput = document.getElementById("exec_search_input");
-  var execHidden = document.getElementById("exec_assigned_to_input");
-  var execDropdown = document.getElementById("exec_search_dropdown");
-
-  if (defaultExecId > 0 && defaultExecName !== "") {
-    execInput.value = defaultExecName;
-  }
-
-  execInput.addEventListener("input", function() {
-    var query = this.value.trim().toLowerCase();
-    execDropdown.innerHTML = "";
-    
-    if (query.length < 3) {
-      execDropdown.style.display = "none";
-      return;
+    if (!schedulesList || schedulesList.length === 0) {
+      schedulesList = defaultSchedules.map(function(name) {
+        return { name: name, months: {} };
+      });
     }
 
-    var matches = execUsers.filter(function(u) {
-      return u.name.toLowerCase().indexOf(query) !== -1 || u.email.toLowerCase().indexOf(query) !== -1;
+    schedulesList.forEach(function(item, idx) {
+      var rowHtml = '<tr class="sched-row" data-row-index="' + idx + '">';
+      rowHtml += '<td style="vertical-align:middle;">';
+      rowHtml += '<input type="text" class="form-control input-sm sched-name-input" name="sched_name[' + idx + ']" value="' + $('<div>').text(item.name).html() + '" required style="font-size:12px; height:28px;">';
+      rowHtml += '</td>';
+
+      schedMonths.forEach(function(mn) {
+        var mData = (item.months && item.months[mn]) ? item.months[mn] : null;
+        var curStatus = mData ? (mData.status || 'Not Applicable') : 'Not Applicable';
+        var isChecked = mData ? (parseInt(mData.checked, 10) === 1) : false;
+
+        rowHtml += '<td class="text-center" style="padding:4px 3px; vertical-align:middle;">';
+        rowHtml += '<div style="display:flex; flex-direction:column; align-items:center; gap:2px;">';
+        rowHtml += '<select class="form-control input-sm" name="sched_status[' + idx + '][' + mn + ']" style="font-size:11px; height:24px; padding:1px 3px; min-width:82px; width:100%;">';
+        rowHtml += '<option value="Not Applicable"' + (curStatus === 'Not Applicable' ? ' selected' : '') + '>Not Applicable</option>';
+        rowHtml += '<option value="Pending"' + (curStatus === 'Pending' ? ' selected' : '') + '>Pending</option>';
+        rowHtml += '<option value="Approved"' + (curStatus === 'Approved' ? ' selected' : '') + '>Approved</option>';
+        rowHtml += '<option value="Expired"' + (curStatus === 'Expired' ? ' selected' : '') + '>Expired</option>';
+        rowHtml += '<option value="Other"' + (curStatus === 'Other' ? ' selected' : '') + '>Other</option>';
+        rowHtml += '</select>';
+        rowHtml += '<label style="font-weight:normal; margin:0; cursor:pointer;" title="' + mn + ' Active">';
+        rowHtml += '<input type="checkbox" name="sched_check[' + idx + '][' + mn + ']" value="1"' + (isChecked ? ' checked' : '') + ' style="margin:0;">';
+        rowHtml += '</label>';
+        rowHtml += '</div>';
+        rowHtml += '</td>';
+      });
+
+      rowHtml += '<td class="text-center" style="vertical-align:middle;">';
+      rowHtml += '<button type="button" class="btn btn-xs btn-danger btn-remove-sched-row" title="Remove row"><i class="fa fa-times"></i></button>';
+      rowHtml += '</td>';
+      rowHtml += '</tr>';
+
+      tbody.append(rowHtml);
     });
+  }
 
-    if (matches.length === 0) {
-      execDropdown.innerHTML = '<div style="padding:10px 14px; color:#64748b; font-size:13px;">No executive found</div>';
-      execDropdown.style.display = "block";
-      return;
+  $('#btn_add_sched_row').on('click', function(e) {
+    e.preventDefault();
+    var nextIdx = $('#sched_tbody tr').length;
+    var rowHtml = '<tr class="sched-row" data-row-index="' + nextIdx + '">';
+    rowHtml += '<td style="vertical-align:middle;"><input type="text" class="form-control input-sm sched-name-input" name="sched_name[' + nextIdx + ']" placeholder="Enter Schedule Name" required style="font-size:12px; height:28px;"></td>';
+    for (var m = 0; m < schedMonths.length; m++) {
+      var mn = schedMonths[m];
+      rowHtml += '<td class="text-center" style="padding:4px 3px; vertical-align:middle;">';
+      rowHtml += '<div style="display:flex; flex-direction:column; align-items:center; gap:2px;">';
+      rowHtml += '<select class="form-control input-sm" name="sched_status[' + nextIdx + '][' + mn + ']" style="font-size:11px; height:24px; padding:1px 3px; min-width:82px; width:100%;">';
+      rowHtml += '<option value="Not Applicable" selected>Not Applicable</option>';
+      rowHtml += '<option value="Pending">Pending</option>';
+      rowHtml += '<option value="Approved">Approved</option>';
+      rowHtml += '<option value="Expired">Expired</option>';
+      rowHtml += '<option value="Other">Other</option>';
+      rowHtml += '</select>';
+      rowHtml += '<label style="font-weight:normal; margin:0; cursor:pointer;" title="' + mn + ' Active">';
+      rowHtml += '<input type="checkbox" name="sched_check[' + nextIdx + '][' + mn + ']" value="1" style="margin:0;">';
+      rowHtml += '</label>';
+      rowHtml += '</div>';
+      rowHtml += '</td>';
     }
-
-    matches.forEach(function(u) {
-      var item = document.createElement("div");
-      item.style.padding = "9px 14px";
-      item.style.cursor = "pointer";
-      item.style.borderBottom = "1px solid #f1f5f9";
-      item.style.fontSize = "13px";
-      item.innerHTML = '<strong>' + u.name + '</strong> <span style="color:#64748b; font-size:12px;">(' + u.email + ')</span>';
-      
-      item.addEventListener("mouseenter", function() {
-        this.style.background = "#eff6ff";
-      });
-      item.addEventListener("mouseleave", function() {
-        this.style.background = "#fff";
-      });
-
-      item.addEventListener("click", function() {
-        execInput.value = u.name;
-        execHidden.value = u.id;
-        execDropdown.style.display = "none";
-      });
-
-      execDropdown.appendChild(item);
-    });
-
-    execDropdown.style.display = "block";
+    rowHtml += '<td class="text-center" style="vertical-align:middle;"><button type="button" class="btn btn-xs btn-danger btn-remove-sched-row" title="Remove row"><i class="fa fa-times"></i></button></td>';
+    rowHtml += '</tr>';
+    $('#sched_tbody').append(rowHtml);
   });
 
-  document.addEventListener("click", function(e) {
-    if (!execInput.contains(e.target) && !execDropdown.contains(e.target)) {
-      execDropdown.style.display = "none";
+  $(document).on('click', '.btn-remove-sched-row', function(e) {
+    e.preventDefault();
+    if ($('#sched_tbody tr').length > 1) {
+      $(this).closest('tr').remove();
+    } else {
+      alert('At least one schedule row is required.');
     }
   });
-});
 
-function clearExecSelection() {
-  document.getElementById("exec_search_input").value = "";
-  document.getElementById("exec_assigned_to_input").value = "0";
-  document.getElementById("exec_search_dropdown").style.display = "none";
-  document.getElementById("exec_search_input").focus();
-}
+  $('#client_select, #sched_year').on('change', function() {
+    var cname = $('#client_select').val();
+    var syear = $('#sched_year').val();
+    if (!cname) return;
+
+    $.ajax({
+      url: '<?php echo base_url(); ?>manager/kam/ajax_get_client_schedules',
+      type: 'GET',
+      data: { client_name: cname, sched_year: syear },
+      dataType: 'json',
+      success: function(resp) {
+        if (resp && resp.status === 'success' && resp.schedules && resp.schedules.length > 0) {
+          renderScheduleRows(resp.schedules);
+        } else {
+          renderScheduleRows([]);
+        }
+      }
+    });
+  });
+});
 </script>
 
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

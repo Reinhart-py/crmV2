@@ -503,34 +503,7 @@
             <!-- form close-->
             <div class="col-xs-12">
                 <div class="box">
-                    <div class="box-header">
                         <div class="pull-right">
-                            <?php /*  <form class="form-inline" method="get">
-                <select class="form-control" name="order_by">
-                  <option <?php if(isset($_GET['order_by']) && $_GET['order_by']=='A.created'){ echo 'selected'; } ?>
-                            value="A.created">Date</option>
-                            <option <?php if(isset($_GET['order_by']) && $_GET['order_by']=='A.name' ){ echo 'selected'
-                                ; } ?> value="A.name">Name</option>
-                            <option <?php if(isset($_GET['order_by']) && $_GET['order_by']=='A.status' ){
-                                echo 'selected' ; } ?> value="A.status">Status</option>
-                            <option <?php if(isset($_GET['order_by']) && $_GET['order_by']=='A.user_type' ){
-                                echo 'selected' ; } ?> value="A.user_type">Role</option>
-                            <option <?php if(isset($_GET['order_by']) && $_GET['order_by']=='A.user_level' ){
-                                echo 'selected' ; } ?> value="A.user_level">Level</option>
-
-                            </select>
-                            <select class="form-control" name="sort_by">
-                                <option <?php if(isset($_GET['sort_by']) && $_GET['sort_by']=='DESC' ){ echo 'selected'
-                                    ; } ?> value="DESC">DESC</option>
-                                <option <?php if(isset($_GET['sort_by']) && $_GET['sort_by']=='ASC' ){ echo 'selected' ;
-                                    } ?> value="ASC">ASC</option>
-                            </select>
-                            <input type="text" class="form-control" name="search"
-                                value="<?php if(isset($_GET['search'])){ echo $_GET['search']; } ?>" />
-                            <button type="submit" class="btn btn-success">Search</button>
-                            <a href="<?php echo base_url(); ?>manager/users" class="btn btn-danger"> Reset</a>
-
-                            </form> */ ?>
                         </div>
                     </div>
                     <div class="box-body">

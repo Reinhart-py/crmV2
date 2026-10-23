@@ -41,6 +41,21 @@
                                     <input type="text" class="input-md form-control" name="search" placeholder="Search customer, phone, email..." value="<?php if(isset($_GET['search'])&&(!empty($_GET['search']))){ echo htmlspecialchars($_GET['search']);}?>" autocomplete="off" style="min-width: 200px;" />
                                 </div>
 
+                                <?php 
+                                $m_role = (int)$this->session->userdata('manager_role');
+                                if(($m_role === 1 || $m_role === 4) && !empty($all_users)){ ?>
+                                <div class="form-group">
+                                    <select class="form-control" name="from_user" onchange="this.form.submit()">
+                                        <option value="<?php echo (int)$this->session->userdata('manager_id'); ?>">Current User (Self)</option>
+                                        <?php foreach($all_users as $au){ ?>
+                                            <option value="<?php echo $au['id']; ?>" <?php if(isset($from_user) && (int)$from_user === (int)$au['id']){ echo 'selected'; } ?>>
+                                                From: <?php echo htmlspecialchars($au['name']); ?>
+                                            </option>
+                                        <?php } ?>
+                                    </select>
+                                </div>
+                                <?php } ?>
+
                                 <div class="form-group">
                                     <button type="submit" class="btn btn-success">Search</button>
                                     <a href="<?php echo base_url(); ?>manager/database-transfer" class="btn btn-danger">Reset</a>

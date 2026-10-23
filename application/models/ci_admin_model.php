@@ -387,6 +387,58 @@ public function dashboard_MyPro($table='ci_leads'){
 		return $data;
 	}
 
+	public function dashboard_tickets($type){
+		$manager_id = (int)$this->session->userdata('manager_id');
+		$today = date('Y-m-d');
+		$last_date = date('Y-m-d', strtotime("-7 day"));
+		$next_date = date('Y-m-d', strtotime("+7 day"));
+
+		$user_role = (int)$this->session->userdata('user_role');
+		if($type == 0){
+			$user_cond = "(created_by = ".$manager_id." OR raised_by = ".$manager_id." OR assigned_to = ".$manager_id." OR FIND_IN_SET('".$manager_id."', assigned_users) > 0)";
+		}else{
+			if($user_role === 1 || $user_role === 4){
+				$user_cond = "(created_by > 0 OR raised_by > 0 OR assigned_to > 0)";
+			}else{
+				$team_array = $this->fetchTeamList($manager_id, '');
+				if(!is_array($team_array)){
+					$team_array = array();
+				}
+				if(!in_array($manager_id, $team_array)){
+					$team_array[] = $manager_id;
+				}
+				$team_str = implode(',', $team_array);
+				if(empty($team_str)){
+					$team_str = (string)$manager_id;
+				}
+				$user_cond = "(FIND_IN_SET(created_by, '".$team_str."') > 0 OR FIND_IN_SET(raised_by, '".$team_str."') > 0 OR FIND_IN_SET(assigned_to, '".$team_str."') > 0)";
+			}
+		}
+
+		$data = array(
+			'total_missed' => 0,
+			'total_lastweek' => 0,
+			'total_today' => 0,
+			'total_nextweek' => 0,
+			'total_future' => 0,
+			'total_all' => 0
+		);
+
+		$sql = "SELECT 
+			(SELECT COUNT(DISTINCT id) FROM ci_tickets WHERE deadline_date < '$today' AND deadline_date != '' AND deadline_date != '0000-00-00' AND deadline_date IS NOT NULL AND status NOT IN ('Resolved', 'Closed') AND ".$user_cond.") AS total_missed,
+			(SELECT COUNT(DISTINCT id) FROM ci_tickets WHERE deadline_date < '$today' AND deadline_date >= '$last_date' AND deadline_date != '' AND deadline_date != '0000-00-00' AND deadline_date IS NOT NULL AND status NOT IN ('Resolved', 'Closed') AND ".$user_cond.") AS total_lastweek,
+			(SELECT COUNT(DISTINCT id) FROM ci_tickets WHERE deadline_date = '$today' AND status NOT IN ('Resolved', 'Closed') AND ".$user_cond.") AS total_today,
+			(SELECT COUNT(DISTINCT id) FROM ci_tickets WHERE deadline_date > '$today' AND deadline_date <= '$next_date' AND deadline_date != '' AND deadline_date != '0000-00-00' AND deadline_date IS NOT NULL AND status NOT IN ('Resolved', 'Closed') AND ".$user_cond.") AS total_nextweek,
+			(SELECT COUNT(DISTINCT id) FROM ci_tickets WHERE deadline_date > '$today' AND deadline_date != '' AND deadline_date != '0000-00-00' AND deadline_date IS NOT NULL AND status NOT IN ('Resolved', 'Closed') AND ".$user_cond.") AS total_future,
+			(SELECT COUNT(DISTINCT id) FROM ci_tickets WHERE status NOT IN ('Resolved', 'Closed') AND ".$user_cond.") AS total_all";
+
+		$rows = $this->db->query($sql);
+		if($rows && $rows->num_rows() >= 1){
+			$data = $rows->row_array();
+		}
+		return $data;
+	}
+
 	public function checkDuplicate($value,$col,$table) {
     $this->db->where($col,$value);
     $query = $this->db->get($table);
@@ -444,7 +496,7 @@ public function dashboard_MyPro($table='ci_leads'){
 
 
 
-    // get the parent category for select box values 
+    
 	 public function get_users($limit_per_page='', $page_index='', $order_by='',$sort_by='', $search='')
 	 {
 	   			$result=array();
@@ -469,7 +521,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			   $this->db->limit($limit_per_page, $page_index);
 			  }
 			  $data = $this->db->get();
-			// $this->db->last_query();
+			
 		foreach($data->result_array() as $row)
 		{
 			$result[]= $row;
@@ -479,7 +531,7 @@ public function dashboard_MyPro($table='ci_leads'){
 		return $result;
 	 }
 
-	 // get the parent category for select box values 
+	 
 	 public function get_Myleads($d1='', $d2='', $mrr1='', $mrr2='', $limit_per_page='', $page_index='', $order_by='',$sort_by='', $search='', $status='', $category='', $lCat='',$user_name='',$country='',$state='', $closure='', $vertical_fu='')
 	 {			 
 	 			$date1=date("Y-m-d",strtotime($d1) );
@@ -560,7 +612,7 @@ public function dashboard_MyPro($table='ci_leads'){
 
 			  if(!empty($user_name))
 			  {
-			  //$multipleWhere= 'FIND_IN_SET(A.country, "'.$user_name.'")>0 ';
+			  
                $this->db->where('B.name',$user_name);
 			  }				  
 
@@ -606,7 +658,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			   $this->db->limit($limit_per_page, $page_index);
 			  }
 			  $data = $this->db->get();
-		//	echo $this->db->last_query();
+		
 		foreach($data->result_array() as $row)
 		{
 			$result[]= $row;
@@ -616,7 +668,7 @@ public function dashboard_MyPro($table='ci_leads'){
 		return $result;
 	 }	 
 	 
-	// get the parent category for select box values 
+	
 	 public function get_Allleads($limit_per_page='', $page_index='', $order_by='',$sort_by='', $search='')
 	 {
 	   			$result=array();
@@ -639,7 +691,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			   $this->db->limit($limit_per_page, $page_index);
 			  }
 			  $data = $this->db->get();
-			// $this->db->last_query();
+			
 		foreach($data->result_array() as $row)
 		{
 			$result[]= $row;
@@ -650,7 +702,7 @@ public function dashboard_MyPro($table='ci_leads'){
 	 }	
 
 
-	 // get the parent category for select box values 
+	 
 	 public function getLeadsFollowups($d1='', $d2='', $mrr1='', $mrr2='', $limit_per_page='', $page_index='', $order_by='',$sort_by='', $search='', $status='', $category='',$type='', $lCat='',$user_name='',$country='',$state='')
 	 {			 
 	 			$date1=date("Y-m-d",strtotime($d1) );
@@ -706,7 +758,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			  
 			  if(!empty($user_name))
 			  {
-			  //$multipleWhere= 'FIND_IN_SET(A.country, "'.$user_name.'")>0 ';
+			  
                $this->db->where('B.name',$user_name);
 			  }				  
 
@@ -764,7 +816,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			  }
 
 			  $data = $this->db->get();
-			//echo $this->db->last_query();
+			
 		foreach($data->result_array() as $row)
 		{
 			$result[]= $row;
@@ -842,7 +894,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			  
 			  if(!empty($user_name))
 			  {
-			  //$multipleWhere= 'FIND_IN_SET(A.country, "'.$user_name.'")>0 ';
+			  
                $this->db->where('B.name',$user_name);
 			  }				  
 
@@ -892,7 +944,7 @@ public function dashboard_MyPro($table='ci_leads'){
 
 			
 			  $data = $this->db->get();
-			 //echo $this->db->last_query();
+			 
 		foreach($data->result_array() as $row)
 		{
 			$result[]= $row;
@@ -1051,7 +1103,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			  			  
 			  if(!empty($user_name))
 			  {
-			  //$multipleWhere= 'FIND_IN_SET(A.country, "'.$user_name.'")>0 ';
+			  
                $this->db->where('B.name',$user_name);
 			  }				  
 
@@ -1096,7 +1148,7 @@ public function dashboard_MyPro($table='ci_leads'){
 				$this->db->limit($limit_per_page, $page_index);
 			   }
 			   $data = $this->db->get();
-			// echo $this->db->last_query();
+			
 		 foreach($data->result_array() as $row)
 		 {
 			 $result[]= $row;
@@ -1108,7 +1160,7 @@ public function dashboard_MyPro($table='ci_leads'){
 	  
 	  
 	  
-	  // get the parent category for select box values 
+	  
 	  public function getTeamAssignLeads($d1='', $d2='', $mrr1='', $mrr2='', $limit_per_page='', $page_index='', $order_by='',$sort_by='', $search='', $status='', $category='', $lCat='',$user_name='',$country='',$state='')
 	  {			 
 		
@@ -1143,7 +1195,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			  			  
 			   if(!empty($user_name))
 			   {
-			   //$multipleWhere= 'FIND_IN_SET(A.country, "'.$user_name.'")>0 ';
+			   
 				$this->db->where('B.name',$user_name);
 			   }				  
  
@@ -1203,7 +1255,7 @@ public function dashboard_MyPro($table='ci_leads'){
 				$this->db->limit($limit_per_page, $page_index);
 			   }
 			   $data = $this->db->get();
-			// echo $this->db->last_query();
+			
 		 foreach($data->result_array() as $row)
 		 {
 			 $result[]= $row;
@@ -1216,7 +1268,7 @@ public function dashboard_MyPro($table='ci_leads'){
 
 
 
-	  // get the parent category for select box values 
+	  
 	  public function getTeamFollowups($d1='', $d2='', $mrr1='', $mrr2='', $limit_per_page='', $page_index='', $order_by='',$sort_by='', $search='', $status='', $category='',$type='', $lCat='',$user_name='',$country='',$state='')
 	  {			 
 		$team_array= $this->fetchTeamList($this->session->userdata('manager_id'),'');
@@ -1272,7 +1324,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			   			   			  			  
 				if(!empty($user_name))
 				{
-				//$multipleWhere= 'FIND_IN_SET(A.country, "'.$user_name.'")>0 ';
+				
 				$this->db->where('B.name',$user_name);
 				}				  
 
@@ -1328,7 +1380,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			   }
  
 			   $data = $this->db->get();
-			 //$this->db->last_query();
+			 
 		 foreach($data->result_array() as $row)
 		 {
 			 $result[]= $row;
@@ -1411,7 +1463,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			  			   			   			  			  
 				if(!empty($user_name))
 				{
-				//$multipleWhere= 'FIND_IN_SET(A.country, "'.$user_name.'")>0 ';
+				
 				$this->db->where('B.name',$user_name);
 				}				  
 
@@ -1439,8 +1491,8 @@ public function dashboard_MyPro($table='ci_leads'){
                $this->db->where($where);
 			  }	
 			  
-			  //$where1="A.status NOT IN (42,43,44) AND FIND_IN_SET(A.created_by,'".$team_str."')>0";	
-			//	$this->db->where($where1);
+			  
+			
 			  	
 				if(!empty($order_by) && !empty($sort_by)){
 					$this->db->order_by($order_by,$sort_by);
@@ -1456,7 +1508,7 @@ public function dashboard_MyPro($table='ci_leads'){
 
 			
 			  $data = $this->db->get();
-			//echo $this->db->last_query();
+			
 		foreach($data->result_array() as $row)
 		{
 			$result[]= $row;
@@ -1478,7 +1530,7 @@ public function dashboard_MyPro($table='ci_leads'){
 				$this->db->join('ci_user as B','A.created_by=B.id','LEFT');
 				$this->db->join('ci_status as C','A.status=C.id','LEFT');	
 				$this->db->join('ci_terms as E','A.s_cat=E.id','LEFT');	 
-				//("select max(id) from ci_meetings as e2 where e2.lead_id = A.id")
+				
 				$where="A.status NOT IN (42,43,44) AND Z.a1=".$this->session->userdata('manager_id')." AND A.m_date!=''";				
 				
 					$today = date('Y-m-d');
@@ -1519,7 +1571,7 @@ public function dashboard_MyPro($table='ci_leads'){
 				   			  			   			   			  			  
 					if(!empty($user_name))
 					{
-					//$multipleWhere= 'FIND_IN_SET(A.country, "'.$user_name.'")>0 ';
+					
 					$this->db->where('B.name',$user_name);
 					}				  
 
@@ -1571,7 +1623,7 @@ public function dashboard_MyPro($table='ci_leads'){
 				   }
 			
 			  $data = $this->db->get();
-		//echo $this->db->last_query();
+		
 		foreach($data->result_array() as $row)
 		{
 			$result[]= $row;
@@ -1622,7 +1674,7 @@ public function dashboard_MyPro($table='ci_leads'){
 				return $result;
 	 }
 
-	  // get the parent category for select box values 
+	  
 
 	  public function getShortVerticals($id)
 	  {
@@ -1631,7 +1683,7 @@ public function dashboard_MyPro($table='ci_leads'){
 				   $this->db->from('ci_verticals as A');
 				   $this->db->where('A.created_by',$id);			
 				   $data = $this->db->get();
-				 // $this->db->last_query();
+				 
 				 foreach($data->result_array() as $row)
 				 {
 					 $result[]= $row;
@@ -1712,7 +1764,7 @@ public function dashboard_MyPro($table='ci_leads'){
 				   
 
 				   $data = $this->db->get();
-				 // $this->db->last_query();
+				 
 				 foreach($data->result_array() as $row)
 				 {
 					 $result[]= $row;
@@ -1802,14 +1854,14 @@ public function dashboard_MyPro($table='ci_leads'){
 				   
 
 				   $data = $this->db->get();
-				 // $this->db->last_query();
+				 
 				 foreach($data->result_array() as $row)
 				 {
 					 $result[]= $row;
 				 }
 				 return $result;
 	  }	 
-		// get the parent category for select box values 
+		
 		public function getSingleVertical($id)
 		{
 						$result=array();
@@ -1826,7 +1878,7 @@ public function dashboard_MyPro($table='ci_leads'){
 						
 					$this->db->where('A.id',$id); 
 					$data = $this->db->get();
-					// $this->db->last_query();
+					
 					foreach($data->result_array() as $row)
 					{
 						$result= $row;
@@ -1993,7 +2045,7 @@ public function dashboard_MyPro($table='ci_leads'){
 		$manager_id = (int)$this->session->userdata('manager_id');
 		if (!empty($manager_id)) {
 			$last_activity = $this->session->userdata('last_activity_time');
-			$timeout_seconds = 600; // 10 minutes inactivity timeout
+			$timeout_seconds = 600; 
 
 			if (!empty($last_activity) && (time() - $last_activity) > $timeout_seconds) {
 				$this->log_admin_action('session_timeout', 'Logged out due to 10 minutes of inactivity', 'TIMEOUT', $manager_id);
@@ -2008,13 +2060,13 @@ public function dashboard_MyPro($table='ci_leads'){
 				exit;
 			}
 
-			// Single Device Login Verification:
-			// Check if another device has logged in with this user account
+			
+			
 			$session_token = $this->session->userdata('login_session_token');
 			if (!empty($session_token)) {
 				$user_row = $this->db->select('current_session_token')->where('id', $manager_id)->get('ci_user')->row_array();
 				if (!empty($user_row['current_session_token']) && $user_row['current_session_token'] !== $session_token) {
-					// Another device logged in! Terminate this device's session
+					
 					$this->log_admin_action('concurrent_logout', 'Session terminated: account logged in from another device', 'TERMINATED', $manager_id);
 					$this->session->unset_userdata('manager_id');
 					$this->session->unset_userdata('manager_email');
@@ -2027,7 +2079,7 @@ public function dashboard_MyPro($table='ci_leads'){
 				}
 			}
 
-			// Update activity timestamp and keep online flag fresh
+			
 			$this->session->set_userdata('last_activity_time', time());
 			$client_ip = $this->get_client_ip();
 			$this->db->where('id', $manager_id)->update('ci_user', array(
@@ -2092,12 +2144,7 @@ public function dashboard_MyPro($table='ci_leads'){
 		$this->db->join('ci_status as C', 'A.status=C.id', 'LEFT');
 		$this->db->join('ci_terms as E', 'A.s_cat=E.id', 'LEFT');
 
-		$m_role = (int)$this->session->userdata('manager_role');
-		if ($m_role != 1 && $m_role != 4) {
-			$this->db->where("(A.lead_assign = $user_id OR (A.created_by = $user_id AND (A.lead_assign = 0 OR A.lead_assign IS NULL)) OR (A.agents IS NOT NULL AND FIND_IN_SET($user_id, A.agents) > 0))");
-		} else {
-			$this->db->where("(A.lead_assign = $user_id OR A.created_by = $user_id OR (A.agents IS NOT NULL AND FIND_IN_SET($user_id, A.agents) > 0))");
-		}
+		$this->db->where("(A.lead_assign = $user_id OR (A.created_by = $user_id AND (A.lead_assign = 0 OR A.lead_assign IS NULL)))");
 		$this->db->where('(A.company_status IS NULL OR LOWER(A.company_status) != "closed")');
 
 		if (!empty($d1) && !empty($d2)) {
@@ -2151,5 +2198,108 @@ public function dashboard_MyPro($table='ci_leads'){
 		$this->db->order_by('id', 'DESC');
 		$query = $this->db->get();
 		return $query->result_array();
+	}
+
+	public function get_role_permissions($role_id)
+	{
+		$role_id = (int)$role_id;
+		$sections = array(
+			'dashboard', 'my_zone', 'database', 'leads', 'calls',
+			'team', 'kam', 'tasks', 'tickets', 'internal_tasks',
+			'external_tasks', 'reports', 'system', 'users', 'roles'
+		);
+
+		if ($role_id === 1) {
+			$res = array();
+			foreach ($sections as $s) {
+				$res[$s] = 'write';
+			}
+			return $res;
+		}
+
+		$role_row = $this->db->select('permissions')->get_where('ci_roles', array('id' => $role_id))->row_array();
+		if (!empty($role_row['permissions'])) {
+			$decoded = json_decode($role_row['permissions'], true);
+			if (is_array($decoded)) {
+				return $decoded;
+			}
+		}
+
+		$res = array();
+		foreach ($sections as $s) {
+			$res[$s] = 'read';
+		}
+		return $res;
+	}
+
+	public function check_permission($section, $required = 'read', $redirect = false)
+	{
+		$role = (int)$this->session->userdata('manager_role');
+		if ($role === 1) {
+			return true;
+		}
+
+		$perms = $this->get_role_permissions($role);
+		$user_perm = isset($perms[$section]) ? $perms[$section] : 'no_access';
+
+		$allowed = false;
+		if ($required === 'read') {
+			if ($user_perm === 'read' || $user_perm === 'write') {
+				$allowed = true;
+			}
+		} elseif ($required === 'write') {
+			if ($user_perm === 'write') {
+				$allowed = true;
+			}
+		}
+
+		if (!$allowed && $redirect) {
+			if ($this->input->is_ajax_request()) {
+				header('Content-Type: application/json');
+				echo json_encode(array('status' => 'error', 'message' => 'Permission denied. You do not have ' . $required . ' access for this section.'));
+				exit;
+			} else {
+				$this->session->set_flashdata('error_message', 'Permission denied. You do not have ' . $required . ' access for ' . ucwords(str_replace('_', ' ', $section)) . '.');
+				redirect('manager/dashboard');
+			}
+		}
+
+		return $allowed;
+	}
+
+	public function get_user_owned_records_count($user_id)
+	{
+		$user_id = (int)$user_id;
+		if ($user_id <= 0) {
+			return array('leads' => 0, 'kam' => 0, 'tasks' => 0, 'total' => 0);
+		}
+
+		$this->db->where("(lead_assign = $user_id OR (created_by = $user_id AND (lead_assign = 0 OR lead_assign IS NULL)))");
+		$leads_count = $this->db->count_all_results('ci_leads');
+
+		$this->db->where('executive_id', $user_id);
+		$kam_count = $this->db->count_all_results('ci_kam_client_details');
+
+		$this->db->where('assigned_to', $user_id);
+		$this->db->where_not_in('status', array('Completed', 'Closed'));
+		$tasks_count = $this->db->count_all_results('ci_tasks');
+
+		$total = $leads_count + $kam_count + $tasks_count;
+		return array(
+			'leads' => $leads_count,
+			'kam' => $kam_count,
+			'tasks' => $tasks_count,
+			'total' => $total
+		);
+	}
+}
+
+if (!function_exists('has_section_perm')) {
+	function has_section_perm($section, $required = 'read') {
+		$ci =& get_instance();
+		if (!isset($ci->ci_admin_model)) {
+			$ci->load->model('ci_admin_model');
+		}
+		return $ci->ci_admin_model->check_permission($section, $required);
 	}
 }

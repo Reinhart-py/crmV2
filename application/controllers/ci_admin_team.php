@@ -165,8 +165,8 @@ class Ci_admin_team extends CI_Controller {
 		$sort_by = isset($_GET['sort_by']) ? $_GET['sort_by'] : 'DESC';
 		$search = isset($_GET['search']) ? $_GET['search'] : '';		
 
-		$d1 = isset($_GET['d1']) ? $_GET['d1'] : '';
-		$d2 = isset($_GET['d2']) ? $_GET['d2'] : '';
+		$d1 = isset($_GET['d1']) ? $_GET['d1'] : (isset($_GET['exp_d1']) ? $_GET['exp_d1'] : '');
+		$d2 = isset($_GET['d2']) ? $_GET['d2'] : (isset($_GET['exp_d2']) ? $_GET['exp_d2'] : '');
 
 		$mrr1 = isset($_GET['mrr1']) ? $_GET['mrr1'] : '';
 		$mrr2 = isset($_GET['mrr2']) ? $_GET['mrr2'] : '';
