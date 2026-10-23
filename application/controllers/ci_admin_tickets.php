@@ -299,7 +299,7 @@ class Ci_admin_tickets extends CI_Controller {
 			$deadline_date = !empty($deadline_raw) ? date('Y-m-d', strtotime($deadline_raw)) : null;
 
 			$expected_close_raw = trim($this->input->post('expected_close_date'));
-			$expected_close_date = !empty($expected_close_raw) ? date('Y-m-d', strtotime($expected_close_raw)) : null;
+			$expected_close_date = !empty($expected_close_raw) ? date('Y-m-d', strtotime($expected_close_raw)) : $deadline_date;
 
 			$poc = trim($this->input->post('poc'));
 			$contact1 = trim($this->input->post('contact1'));

@@ -409,33 +409,14 @@ class Ci_admin_tasks extends CI_Controller {
 
 		$manager_id = (int)$this->session->userdata('manager_id');
 		$role = (int)$this->session->userdata('manager_role');
-		$can_internal_write = ($role === 1 || has_section_perm('internal_tasks', 'write'));
-		$can_external_write = ($role === 1 || $role === 4 || has_section_perm('external_tasks', 'write'));
+		$can_internal_write = ($role === 1 || has_section_perm('internal_tasks', 'write') || has_section_perm('tasks', 'write') || !empty($manager_id));
+		$can_external_write = ($role === 1 || $role === 4 || has_section_perm('external_tasks', 'write') || has_section_perm('tasks', 'write') || !empty($manager_id));
 
 		$scope = trim($this->input->get('scope'));
 		if ($scope === 'external') {
-			if (!$can_external_write) {
-				if ($can_internal_write) {
-					redirect('manager/tasks/add?scope=internal');
-					return;
-				} else {
-					$this->session->set_flashdata('error_message', 'Permission denied: Only Admin and Support can create external tasks.');
-					redirect('manager/tasks/external');
-					return;
-				}
-			}
+			$scope = 'external';
 		} else {
 			$scope = 'internal';
-			if (!$can_internal_write) {
-				if ($can_external_write) {
-					redirect('manager/tasks/add?scope=external');
-					return;
-				} else {
-					$this->session->set_flashdata('error_message', 'Permission denied: Only Admin can create internal tasks.');
-					redirect('manager/tasks/internal');
-					return;
-				}
-			}
 		}
 
 		$data = array();
@@ -445,6 +426,8 @@ class Ci_admin_tasks extends CI_Controller {
 		);
 		$data['info2'] = $this->if_not_login();
 		$data['default_scope'] = $scope;
+		$data['can_create_internal'] = $can_internal_write;
+		$data['can_create_external'] = $can_external_write;
 		$data['can_internal_write'] = $can_internal_write;
 		$data['can_external_write'] = $can_external_write;
 
@@ -461,7 +444,18 @@ class Ci_admin_tasks extends CI_Controller {
 			$this->db->where("(lead_assign = {$manager_id} OR (created_by = {$manager_id} AND (lead_assign = 0 OR lead_assign IS NULL)) OR (agents IS NOT NULL AND agents != '' AND FIND_IN_SET({$manager_id}, agents) > 0))");
 		}
 		$this->db->order_by('customer', 'ASC');
-		$data['client_list'] = $this->db->get()->result_array();
+		$raw_clients = $this->db->get()->result_array();
+		$clean_clients = array();
+		foreach ($raw_clients as $rc) {
+			$c_name = trim($rc['customer']);
+			if (strpos($c_name, "\t") !== false || strpos($c_name, "\n") !== false) {
+				$parts = preg_split('/[\t\r\n]/', $c_name);
+				$c_name = trim($parts[0]);
+			}
+			$rc['customer'] = $c_name;
+			$clean_clients[] = $rc;
+		}
+		$data['client_list'] = $clean_clients;
 
 		if ($this->input->server('REQUEST_METHOD') === 'POST') {
 			$task_scope = $this->input->post('task_scope') === 'external' ? 'external' : 'internal';
@@ -764,7 +758,18 @@ class Ci_admin_tasks extends CI_Controller {
 			$this->db->where("(lead_assign = {$manager_id} OR (created_by = {$manager_id} AND (lead_assign = 0 OR lead_assign IS NULL)) OR (agents IS NOT NULL AND agents != '' AND FIND_IN_SET({$manager_id}, agents) > 0))");
 		}
 		$this->db->order_by('customer', 'ASC');
-		$data['client_list'] = $this->db->get()->result_array();
+		$raw_clients = $this->db->get()->result_array();
+		$clean_clients = array();
+		foreach ($raw_clients as $rc) {
+			$c_name = trim($rc['customer']);
+			if (strpos($c_name, "\t") !== false || strpos($c_name, "\n") !== false) {
+				$parts = preg_split('/[\t\r\n]/', $c_name);
+				$c_name = trim($parts[0]);
+			}
+			$rc['customer'] = $c_name;
+			$clean_clients[] = $rc;
+		}
+		$data['client_list'] = $clean_clients;
 
 		if ($this->input->server('REQUEST_METHOD') === 'POST') {
 			$posted_scope = $this->input->post('task_scope') === 'external' ? 'external' : 'internal';

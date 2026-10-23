@@ -50,13 +50,7 @@
 <link rel="stylesheet" href="<?php echo base_url();?>assets/bootstrap/developer.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/multiselect/multiselect.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-dashboard.css">
-
-<script src="<?php echo base_url(); ?>assets/plugins/jQuery/jquery-2.2.3.min.js"></script>
-<script src="<?php echo base_url(); ?>assets/bootstrap/js/bootstrap.min.js"></script>
-<script src="<?php echo base_url();?>assets/plugins/jQueryUI/jquery-ui.js"></script>
 <link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/plugins/table_export/css/tableexport.css" />
-<script src="<?php echo base_url();?>assets/dist/js/jquery-1.10.2.min.js"></script>
-
 
 <script src="<?php echo base_url();?>assets/plugins/table_export/FileSaver.min.js"></script>
 <script src="<?php echo base_url();?>assets/plugins/table_export/Blob.min.js"></script>
@@ -158,8 +152,8 @@
       <li class="<?php if($route1=="dashboard"){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/dashboard"> <i class="fa fa-tachometer"></i> <span>Dashboard</span>  </a> </li>
       <?php } ?>
 
-      <?php if(has_section_perm('my_zone') || has_section_perm('database') || has_section_perm('leads') || has_section_perm('calls')){ ?>
-      <li class="<?php if($route1=="leads" || $route1=="verticals" || $route1=="database-transfer" || $route1=="calls"){ echo "active";}else{ echo "";}?>"> 
+      <?php if(has_section_perm('my_zone') || has_section_perm('database') || has_section_perm('leads') || has_section_perm('tasks') || has_section_perm('tickets') || has_section_perm('internal_tasks') || has_section_perm('external_tasks')){ ?>
+      <li class="<?php if($route1=="leads" || $route1=="verticals" || $route1=="database-transfer" || in_array($route1, array('tasks', 'tickets', 'operations'))){ echo "active";}else{ echo "";}?>"> 
         <a href="javascript:void(0);"><i class="fa fa-th-large"></i> <span>My Zone</span> </a>
         <ul>
           <?php if(has_section_perm('database', 'write')){ ?>
@@ -167,68 +161,34 @@
           <?php } ?>
           <?php if(has_section_perm('database')){ ?>
           <li><a href="<?php echo base_url();?>manager/leads"><i class="fa fa-list"></i>Database View</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/view_leads"><i class="fa fa-bullseye"></i>Lead View</a></li>
           <li><a href="<?php echo base_url();?>manager/leads/followups"><i class="fa fa-clock-o"></i>Database Follow-up</a></li>
           <li><a href="<?php echo base_url();?>manager/leads/meetings"><i class="fa fa-calendar"></i>Database Meetings</a></li>
           <?php } ?>
-          <?php if(has_section_perm('database', 'write')){ ?>
-          <li><a href="<?php echo base_url();?>manager/verticals/add"><i class="fa fa-plus"></i>Vertical Add</a></li>
+          <?php if(has_section_perm('internal_tasks', 'write') || has_section_perm('tasks', 'write') || has_section_perm('tasks')){ ?>
+          <li><a href="<?php echo base_url();?>manager/tasks/add?scope=internal"><i class="fa fa-plus-circle"></i>Add Internal Task</a></li>
           <?php } ?>
-          <?php if(has_section_perm('database')){ ?>
-          <li><a href="<?php echo base_url();?>manager/verticals"><i class="fa fa-list"></i>Vertical View</a></li>
-          <li><a href="<?php echo base_url();?>manager/verticals/followups"><i class="fa fa-list"></i>Vertical Follow-up</a></li>
-          <li><a href="<?php echo base_url();?>manager/database-transfer"><i class="fa fa-exchange"></i>Database Transfer</a></li>
-          <?php } ?>
-          <?php if(has_section_perm('calls')){ ?>
-          <li><a href="<?php echo base_url();?>manager/calls"><i class="fa fa-phone"></i>Calls</a></li>
-          <?php } ?>
-        </ul>
-      </li>
-      <?php } ?>
-
-      <?php if(has_section_perm('team')){ ?>
-      <li class="<?php if($route1=="team"){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/team/members"><i class="fa fa-users"></i> <span>Team</span> </a>
-        <ul>
-          <li><a href="<?php echo base_url();?>manager/team/members"><i class="fa fa-users"></i>Members </a></li>
-          <li><a href="<?php echo base_url();?>manager/team/chart"><i class="fa fa-list"></i>Chart</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/leads"><i class="fa fa-list"></i>Leads</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/verticals"><i class="fa fa-list"></i>Verticals</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/followups"><i class="fa fa-list"></i>Follow up</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/meetings"><i class="fa fa-list"></i>Meetings</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/assignmeetings"><i class="fa fa-list"></i>Assigned Meetings</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/assignleads"><i class="fa fa-list"></i>Assign Database</a></li>
-          <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-tasks"></i>Task</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/tickets"><i class="fa fa-ticket"></i>Tickets</a></li>
-        </ul>
-      </li>
-      <?php } ?>
-
-      <?php if(has_section_perm('kam')){ ?>
-      <li class="<?php if($route1=="kam"){ echo "active";}else{ echo "";}?>"> 
-        <a href="<?php echo base_url();?>manager/kam/my-client"><i class="fa fa-briefcase"></i> <span>KAM</span> </a>
-        <ul>
-          <li><a href="<?php echo base_url();?>manager/kam/my-client"><i class="fa fa-user"></i>My Client</a></li>
-          <?php if($m_role == 1 || has_section_perm('kam', 'write')){ ?>
-          <li><a href="<?php echo base_url();?>manager/kam/onboard"><i class="fa fa-user-plus"></i>Onboard Client</a></li>
-          <?php } ?>
-          <li><a href="<?php echo base_url();?>manager/kam/schedule"><i class="fa fa-calendar"></i>Create Schedule</a></li>
-        </ul>
-      </li>
-      <?php } ?>
-
-      <?php if(has_section_perm('tasks') || has_section_perm('tickets') || has_section_perm('internal_tasks') || has_section_perm('external_tasks')){ ?>
-      <li class="<?php if(in_array($route1, array('tasks', 'tickets', 'operations'))){ echo "active";}else{ echo "";}?>"> <a href="javascript:void(0);"><i class="fa fa-tasks"></i> <span>Tasks</span> </a>
-        <ul>
-          <?php if(has_section_perm('tickets', 'write')){ ?>
-          <li><a href="<?php echo base_url();?>manager/tickets/add"><i class="fa fa-plus"></i>Raise Ticket</a></li>
-          <?php } ?>
-          <?php if(has_section_perm('tickets')){ ?>
-          <li><a href="<?php echo base_url();?>manager/tickets?status_filter=open"><i class="fa fa-ticket"></i>Open Ticket</a></li>
+          <?php if(has_section_perm('external_tasks', 'write') || has_section_perm('tasks', 'write') || has_section_perm('tasks')){ ?>
+          <li><a href="<?php echo base_url();?>manager/tasks/add?scope=external"><i class="fa fa-plus-square"></i>Add External Task</a></li>
           <?php } ?>
           <?php if(has_section_perm('internal_tasks') || has_section_perm('tasks')){ ?>
           <li><a href="<?php echo base_url();?>manager/tasks/internal"><i class="fa fa-building-o"></i>View Internal Task</a></li>
           <?php } ?>
           <?php if(has_section_perm('external_tasks') || has_section_perm('tasks')){ ?>
           <li><a href="<?php echo base_url();?>manager/tasks/external"><i class="fa fa-briefcase"></i>View External Task</a></li>
+          <?php } ?>
+          <?php if(has_section_perm('tickets', 'write')){ ?>
+          <li><a href="<?php echo base_url();?>manager/tickets/add"><i class="fa fa-plus"></i>Raise Ticket</a></li>
+          <?php } ?>
+          <?php if(has_section_perm('tickets')){ ?>
+          <li><a href="<?php echo base_url();?>manager/tickets?status_filter=open"><i class="fa fa-ticket"></i>Open Ticket</a></li>
+          <?php } ?>
+          <?php if(has_section_perm('database', 'write')){ ?>
+          <li><a href="<?php echo base_url();?>manager/verticals/add"><i class="fa fa-plus"></i>Vertical Add</a></li>
+          <?php } ?>
+          <?php if(has_section_perm('database')){ ?>
+          <li><a href="<?php echo base_url();?>manager/verticals"><i class="fa fa-list"></i>Vertical View</a></li>
+          <li><a href="<?php echo base_url();?>manager/database-transfer"><i class="fa fa-exchange"></i>Database Transfer</a></li>
           <?php } ?>
         </ul>
       </li>
@@ -275,6 +235,11 @@
   </nav>
 
   <div class="header-quick-actions">
+    <?php if(has_section_perm('calls')){ ?>
+    <a href="<?php echo base_url();?>manager/calls" class="global-theme-btn" title="Phone Dialer & Calls" style="display:inline-flex; align-items:center; justify-content:center; text-decoration:none; margin-right:6px; color:#2563eb;">
+      <i class="fa fa-phone"></i>
+    </a>
+    <?php } ?>
     <button type="button" class="global-theme-btn" id="globalThemeToggle" title="Toggle Dark/Light Mode">
       <i class="fa fa-moon-o"></i>
     </button>

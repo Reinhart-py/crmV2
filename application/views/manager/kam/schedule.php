@@ -76,7 +76,7 @@
 
       <div class="box box-default">
         <div class="box-header with-border" style="display:flex; justify-content:space-between; align-items:center;">
-          <h3 class="box-title" style="margin:0;"><i class="fa fa-calendar-check-o text-primary"></i> 12-Month Schedule Matrix</h3>
+          <h3 class="box-title" style="margin:0;"><i class="fa fa-calendar-check-o text-primary"></i> 12-Month Schedule</h3>
           <div class="box-tools pull-right" style="position:static;">
             <button type="button" class="btn btn-sm btn-primary" id="btn_add_sched_row"><i class="fa fa-plus"></i> Add Schedule Name</button>
           </div>
@@ -99,13 +99,13 @@
               <tbody id="sched_tbody">
                 <?php 
                   $default_scheds = array(
-                    'SPR',
-                    'Company Code',
-                    'Lead Activity',
+                    'VAT Return Filing',
+                    'Corporate Tax Filing',
+                    'Monthly Bookkeeping',
+                    'Financial Statements',
                     'Document Col/Sub',
-                    'Pending Documents',
-                    'Video Verification',
-                    'Post Verification'
+                    'Review & Compliance',
+                    'Audit & Verification'
                   );
                   foreach($default_scheds as $idx => $sname){
                 ?>

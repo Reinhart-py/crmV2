@@ -66,21 +66,7 @@ $is_external_task = ($task['task_scope'] === 'external');
         </div>
       
         <div class="box-body">
-          <div class="row">
-            <div class="col-xs-12" style="margin-bottom: 20px;">
-              <label style="font-size: 13px; font-weight: 600; color: #334155; margin-right: 25px;">Task Scope:</label>
-              <?php if(!empty($can_create_internal)){ ?>
-              <label class="radio-inline" style="font-weight: 600; color: #1e293b;">
-                <input type="radio" name="task_scope" id="scope_internal" value="internal" <?php echo (!$is_external_task) ? 'checked' : ''; ?> onchange="toggleTaskScope()"> Internal Task
-              </label>
-              <?php } ?>
-              <?php if(!empty($can_create_external)){ ?>
-              <label class="radio-inline" style="font-weight: 600; color: #1e293b;">
-                <input type="radio" name="task_scope" id="scope_external" value="external" <?php echo ($is_external_task) ? 'checked' : ''; ?> onchange="toggleTaskScope()"> External (Client) Task
-              </label>
-              <?php } ?>
-            </div>
-          </div>
+          <input type="hidden" name="task_scope" id="task_scope_input" value="<?php echo ($is_external_task) ? 'external' : 'internal'; ?>">
 
           <div id="external_section" style="<?php echo ($is_external_task) ? '' : 'display:none;'; ?>">
             <div class="row">
@@ -94,9 +80,12 @@ $is_external_task = ($task['task_scope'] === 'external');
                   </div>
                   <select class="form-control" name="client_id" id="client_select" onchange="onClientSelected()">
                     <option value="">-- Choose Company --</option>
-                    <?php if(!empty($client_list)){ foreach($client_list as $cli){ ?>
-                      <option value="<?php echo $cli['id']; ?>" <?php echo ((int)$cli['id'] === (int)$task['client_id']) ? 'selected' : ''; ?> data-poc="<?php echo htmlspecialchars($cli['poc']); ?>" data-contact="<?php echo htmlspecialchars($cli['contact1']); ?>" data-email="<?php echo htmlspecialchars($cli['email']); ?>" data-name="<?php echo htmlspecialchars($cli['customer']); ?>">
-                        <?php echo htmlspecialchars($cli['customer']); ?>
+                    <?php if(!empty($client_list)){ foreach($client_list as $cli){ 
+                      $cname = trim(preg_split('/[\t\r\n]/', $cli['customer'])[0]);
+                      if (empty($cname)) continue;
+                    ?>
+                      <option value="<?php echo $cli['id']; ?>" <?php echo ((int)$cli['id'] === (int)$task['client_id']) ? 'selected' : ''; ?> data-poc="<?php echo htmlspecialchars($cli['poc']); ?>" data-contact="<?php echo htmlspecialchars($cli['contact1']); ?>" data-email="<?php echo htmlspecialchars($cli['email']); ?>" data-name="<?php echo htmlspecialchars($cname); ?>">
+                        <?php echo htmlspecialchars($cname); ?>
                       </option>
                     <?php }} ?>
                   </select>
@@ -812,7 +801,7 @@ document.addEventListener("DOMContentLoaded", function() {
       item.style.cursor = "pointer";
       item.style.borderBottom = "1px solid #f1f5f9";
       item.style.fontSize = "13px";
-      item.innerHTML = '<strong>' + u.name + '</strong> <span style="color:#64748b; font-size:12px;">(' + u.email + ')</span>';
+      item.innerHTML = '<strong>' + u.name + '</strong>';
       
       item.addEventListener("mouseenter", function() {
         this.style.background = "#eff6ff";

@@ -2,6 +2,48 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.61.0] - 2026-10-23
+- **Timestamp**: `2026-10-23 17:25:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Merge Tasks and Tickets into My Zone navigation, remove standalone Tasks top pill, strictly separate Internal vs External task scope forms, clean company name parsing, normalize screen zoom and compact density, and add Add Database view
+- **Detailed Changes & Technical Implementation**:
+  - **1. Navigation & Header Consolidation (`application/views/manager/elements/header.php`)**:
+    - Merged all task and ticket operations directly into the **My Zone** dropdown:
+      - `Add Internal Task` (`manager/tasks/add?scope=internal`)
+      - `Add External Task` (`manager/tasks/add?scope=external`)
+      - `View Internal Task` (`manager/tasks/internal`)
+      - `View External Task` (`manager/tasks/external`)
+      - `Raise Ticket` (`manager/tickets/add`)
+      - `Open Ticket` (`manager/tickets?status_filter=open`)
+    - Removed the standalone **Tasks** top-level pill, streamlining the navigation to: `Dashboard`, `My Zone`, `Team`, `KAM`, `System`, and `Reports`.
+    - Integrated a quick Phone Dialer / Calls launcher button directly inside `.header-quick-actions` beside the theme toggle button.
+    - Removed redundant jQuery, Bootstrap, and UI duplicate scripts in header and footer.
+  - **2. Dedicated Task Scopes (`tasks/add.php` & `tasks/edit.php`)**:
+    - Completely removed the task scope radio toggle buttons (`Internal Task` / `External Task`).
+    - Made task scope strictly determined by route parameters using hidden input (`<input type="hidden" name="task_scope" ...>`).
+    - Internal tasks exclusively render internal configuration fields; External tasks exclusively render client configuration fields.
+  - **3. Company Name Sanitization & Dropdown Fix**:
+    - Cleaned legacy database rows where raw tab-delimited Excel rows were pasted into the `customer` column.
+    - Updated `Ci_admin_tasks::add()`, `Ci_admin_tasks::edit()`, `Ci_admin_model::get_all_companies_dropdown()`, and `Ci_admin_model::search_companies()` to sanitize company names with regex and string splitting.
+    - Updated company select options to display exclusively clean company names without multi-column table clutter.
+  - **4. Screen Size & Zoom Normalization (`crm-dashboard.css`)**:
+    - Fixed the oversized/zoomed-in feeling across all pages:
+      - Set compact base typography (`font-size: 13px !important; line-height: 1.45 !important;`).
+      - Applied desktop responsive scaling (`zoom: 0.93` on viewports `>= 1200px`).
+      - Normalized form inputs to compact 34px height (`.form-control`, `select.form-control`, `.select2-selection--single`).
+      - Removed AdminLTE's default `50px` left margin on `.content-wrapper`, `.right-side`, and `.main-footer`.
+      - Hidden floating help widget FAB.
+  - **5. Add Database View & Routing**:
+    - Added `application/views/manager/leads/add-database.php` with title and heading "Add Database".
+    - Updated `application/controllers/ci_admin_leads.php` `add()` to load `manager/leads/add-database`.
+    - Maintained `addleads.php` delegating cleanly to `add-database.php`.
+    - Added dedicated routes for `manager/database` and `manager/database/add`.
+  - **6. KAM 12-Month Schedule**:
+    - Updated heading in `application/views/manager/kam/schedule.php` to "12-Month Schedule".
+    - Updated default schedule templates to versatile accounting deliverables (`VAT Return Filing`, `Corporate Tax Filing`, `Monthly Bookkeeping`, `Financial Statements`, `Document Col/Sub`, `Review & Compliance`, `Audit & Verification`).
+  - **7. Zero Comments Policy**:
+    - Confirmed zero comments across all 26 modified PHP files via automated AST token scan.
+
 ### [v1.60.9] - 2026-10-23
 - **Timestamp**: `2026-10-23 13:48:00 +0530`
 - **Author**: Reinhart-py

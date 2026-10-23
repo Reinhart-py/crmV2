@@ -113,8 +113,8 @@
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>EL2</label>
-                <input type="text" class="form-control" name="el_due" placeholder="EL2 / Due Info">
+                <label>EL Action</label>
+                <input type="text" class="form-control" name="el_due" placeholder="EL Action / Due Info">
               </div>
             </div>
 

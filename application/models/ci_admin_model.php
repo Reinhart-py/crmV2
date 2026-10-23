@@ -532,14 +532,16 @@ public function dashboard_MyPro($table='ci_leads'){
 	 }
 
 	 
-	 public function get_Myleads($d1='', $d2='', $mrr1='', $mrr2='', $limit_per_page='', $page_index='', $order_by='',$sort_by='', $search='', $status='', $category='', $lCat='',$user_name='',$country='',$state='', $closure='', $vertical_fu='')
+	 public function get_Myleads($d1='', $d2='', $mrr1='', $mrr2='', $limit_per_page='', $page_index='', $order_by='',$sort_by='', $search='', $status='', $category='', $lCat='',$user_name='',$country='',$state='', $closure='', $vertical_fu='', $stage='')
 	 {			 
 	 			$date1=date("Y-m-d",strtotime($d1) );
 	 			$date2=date("Y-m-d",strtotime($d2) );
 	   			$result=array();
-			  $this->db->select(array('A.*','B.name as owner_name','C.status as lead_status','B.user_level','E.title as servicecat'));
+			  $this->db->select(array('A.*','B.name as owner_name','C.status as lead_status','B.user_level','E.title as servicecat','P.pipeline_stage','P.vertical_code','P.conversion_status','P.conversion_reason','P.conversion_requested_by','P.conversion_requested_at','P.conversion_reviewed_by','P.conversion_reviewed_at','P.bo_remarks','P.vertical_data','ReqU.name as requested_by_name'));
 			  $this->db->from('ci_leads as A');
+			  $this->db->join('ci_pipeline as P','P.lead_id=A.id','LEFT');
 			  $this->db->join('ci_user as B','A.created_by=B.id','LEFT');
+			  $this->db->join('ci_user as ReqU','P.conversion_requested_by=ReqU.id','LEFT');
 			  $this->db->join('ci_status as C','A.status=C.id','LEFT');
 			  $this->db->join('ci_terms as E','A.s_cat=E.id','LEFT');
 			 
@@ -638,14 +640,40 @@ public function dashboard_MyPro($table='ci_leads'){
 			    $where = '(A.lead_id LIKE "%'.$search.'%" OR A.mrr LIKE "%'.$search.'%"  OR A.contact1 LIKE "%'.$search.'%" OR A.id LIKE "%'.$search.'%")';	
                $this->db->where($where);
 			  }	
+			   if ($stage === 'database') {
+				   $this->db->where("(P.pipeline_stage = 'database' OR (P.pipeline_stage IS NULL AND (A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)))");
+			   } elseif ($stage === 'lead') {
+				   $this->db->where("P.pipeline_stage", 'lead');
+			   } elseif ($stage === 'pending_approval') {
+				   $this->db->where("P.conversion_status", 'pending');
+			   } elseif ($stage === 'back_office') {
+				   $this->db->where("P.pipeline_stage", 'back_office');
+			   } elseif ($stage === 'kam') {
+				   $this->db->where("(P.pipeline_stage = 'kam' OR A.database_category = 'KAM Onboarded')");
+			   }
+
 			   $uid = (int)$this->session->userdata('manager_id');
 			   $urole = (int)$this->session->userdata('manager_role');
 			   if ($urole == 2 || $urole == 5) {
-				   $this->db->where('A.id', -1);
+				   if ($stage !== 'back_office') {
+					   $this->db->where('A.id', -1);
+				   }
+			   } elseif ($stage === 'pending_approval') {
+				   if ($urole !== 1 && $urole !== 4) {
+					   $team_members = $this->fetchTeamList($uid, '');
+					   if (!is_array($team_members)) $team_members = array();
+					   if (!empty($team_members)) {
+						   $this->db->where_in('P.conversion_requested_by', $team_members);
+					   } else {
+						   $this->db->where('A.id', -1);
+					   }
+				   }
 			   } else {
 				   $where1 = "(A.lead_assign = $uid OR (A.created_by = $uid AND (A.lead_assign = 0 OR A.lead_assign IS NULL)) OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET($uid, A.agents) > 0))";	
 				   $this->db->where($where1);
-				   $this->db->where("(A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)");
+				   if ($stage !== 'kam') {
+					   $this->db->where("(A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)");
+				   }
 			   }		
 			   if(!empty($order_by) && !empty($sort_by)){
 			     $this->db->order_by($order_by,$sort_by);
@@ -1161,15 +1189,14 @@ public function dashboard_MyPro($table='ci_leads'){
 	  
 	  
 	  
-	  public function getTeamAssignLeads($d1='', $d2='', $mrr1='', $mrr2='', $limit_per_page='', $page_index='', $order_by='',$sort_by='', $search='', $status='', $category='', $lCat='',$user_name='',$country='',$state='')
+	  public function getTeamAssignLeads($d1='', $d2='', $mrr1='', $mrr2='', $limit_per_page='', $page_index='', $order_by='',$sort_by='', $search='', $status='', $category='', $lCat='',$user_name='',$country='',$state='', $stage='')
 	  {			 
-		
-
 				  $date1=date("Y-m-d",strtotime($d1) );
 				  $date2=date("Y-m-d",strtotime($d2) );
 					$result=array();
-			   $this->db->select(array('A.*','B.name as owner_name','U.name as assigned_to_name','C.status as lead_status','B.user_level','E.title as servicecat'));
+			   $this->db->select(array('A.*','B.name as owner_name','U.name as assigned_to_name','C.status as lead_status','B.user_level','E.title as servicecat','P.pipeline_stage','P.vertical_code','P.conversion_status'));
 			   $this->db->from('ci_leads as A');
+			   $this->db->join('ci_pipeline as P','P.lead_id=A.id','LEFT');
 			   $this->db->join('ci_user as B','A.created_by=B.id','LEFT');
 			   $this->db->join('ci_user as U','A.lead_assign=U.id','LEFT');
 			   $this->db->join('ci_status as C','A.status=C.id','LEFT');
@@ -1227,10 +1254,16 @@ public function dashboard_MyPro($table='ci_leads'){
 				 $where = '(A.lead_id LIKE "%'.$search.'%" OR A.mrr LIKE "%'.$search.'%"  OR A.contact1 LIKE "%'.$search.'%" OR A.id LIKE "%'.$search.'%")';	
 				$this->db->where($where);
 			   }	
+
+			   if ($stage === 'lead') {
+				   $this->db->where("P.pipeline_stage", 'lead');
+			   } elseif ($stage === 'database') {
+				   $this->db->where("(P.pipeline_stage = 'database' OR (P.pipeline_stage IS NULL AND (A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)))");
+			   }
 			  
-				$cur_role = $this->session->userdata('manager_role');
-				$cur_id = $this->session->userdata('manager_id');
-				if ($cur_role == 1 || $cur_role == 4) {
+				$cur_role = (int)$this->session->userdata('manager_role');
+				$cur_id = (int)$this->session->userdata('manager_id');
+				if ($cur_role === 1 || $cur_role === 4) {
 					if (isset($_GET['assign_scope']) && $_GET['assign_scope'] === 'unassigned') {
 						$this->db->where('(A.lead_assign = 0 OR A.lead_assign IS NULL)');
 					} else if (isset($_GET['assign_scope']) && is_numeric($_GET['assign_scope']) && (int)$_GET['assign_scope'] > 0) {
@@ -1240,7 +1273,18 @@ public function dashboard_MyPro($table='ci_leads'){
 					$where1 = "A.status NOT IN (42,43,44)";
 					$this->db->where($where1);
 				} else {
-					$where1 = "A.status NOT IN (42,43,44) AND (A.lead_assign = " . (int)$cur_id . " OR FIND_IN_SET(" . (int)$cur_id . ", A.agents) > 0)";
+					$team_ids = $this->fetchTeamList($cur_id, '');
+					if (!is_array($team_ids)) {
+						$team_ids = array();
+					}
+					if (!in_array($cur_id, $team_ids)) {
+						$team_ids[] = $cur_id;
+					}
+					$team_str = implode(',', array_filter(array_map('intval', $team_ids)));
+					if (empty($team_str)) {
+						$team_str = (string)$cur_id;
+					}
+					$where1 = "A.status NOT IN (42,43,44) AND (FIND_IN_SET(A.created_by, '{$team_str}') > 0 OR FIND_IN_SET(A.lead_assign, '{$team_str}') > 0)";
 					$this->db->where($where1);
 				}
 			 	
@@ -1637,9 +1681,11 @@ public function dashboard_MyPro($table='ci_leads'){
 	 public function getSingleLead($id)
 	 {
 			  $result=array();
-			  $this->db->select(array('A.*','B.user_level','B.name as created_name','D.name as country_name','E.name as state_name','F.title as pcat_name','G.title as psubcat_name','H.name as assigned_name'));
+			  $this->db->select(array('A.*','B.user_level','B.name as created_name','D.name as country_name','E.name as state_name','F.title as pcat_name','G.title as psubcat_name','H.name as assigned_name','P.pipeline_stage','P.vertical_code','P.conversion_status','P.conversion_reason','P.conversion_requested_by','P.conversion_requested_at','P.conversion_reviewed_by','P.conversion_reviewed_at','P.bo_remarks','P.vertical_data','P.bo_status','P.work_order_no','ReqU.name as requested_by_name'));
 			  $this->db->from('ci_leads as A');
-			  $this->db->join('ci_user as B','A.created_by=B.id','LEFT');			
+			  $this->db->join('ci_pipeline as P','P.lead_id=A.id','LEFT');
+			  $this->db->join('ci_user as B','A.created_by=B.id','LEFT');
+			  $this->db->join('ci_user as ReqU','P.conversion_requested_by=ReqU.id','LEFT');
 			  $this->db->join('countries as D','A.country=D.id','LEFT');
 			  $this->db->join('states as E','A.state=E.id','LEFT');
 			  $this->db->join('ci_terms as F','A.s_cat=F.id','LEFT');
@@ -1647,13 +1693,32 @@ public function dashboard_MyPro($table='ci_leads'){
 			  $this->db->join('ci_user as H','A.lead_assign=H.id','LEFT');
 			 $this->db->where('A.id',$id);
 			
-			  $this->db->limit(5);
+			  $this->db->limit(1);
 			  $data = $this->db->get();
 				foreach($data->result_array() as $row)
 				{
 					$result= $row;
 				}
 				return $result;
+	 }
+
+	 public function can_approve_conversion($requester_id, $approver_id = null)
+	 {
+		if ($approver_id === null) {
+			$approver_id = (int)$this->session->userdata('manager_id');
+		}
+		$approver_role = (int)$this->session->userdata('manager_role');
+		if ($approver_role === 1 || $approver_role === 4) {
+			return true;
+		}
+		if ((int)$requester_id === (int)$approver_id) {
+			return false;
+		}
+		$team_members = $this->fetchTeamList($approver_id, '');
+		if (is_array($team_members) && in_array((int)$requester_id, array_map('intval', $team_members))) {
+			return true;
+		}
+		return false;
 	 }
 
 	 public function getSingleUser($id)
@@ -2102,6 +2167,10 @@ public function dashboard_MyPro($table='ci_leads'){
 		$companies = array();
 		foreach ($res as $r) {
 			$clean = trim($r['company']);
+			if (strpos($clean, "\t") !== false || strpos($clean, "\n") !== false) {
+				$parts = preg_split('/[\t\r\n]/', $clean);
+				$clean = trim($parts[0]);
+			}
 			if (!empty($clean) && !in_array($clean, $companies)) {
 				$companies[] = $clean;
 			}
@@ -2128,6 +2197,10 @@ public function dashboard_MyPro($table='ci_leads'){
 		$companies = array();
 		foreach ($res as $r) {
 			$clean = trim($r['company']);
+			if (strpos($clean, "\t") !== false || strpos($clean, "\n") !== false) {
+				$parts = preg_split('/[\t\r\n]/', $clean);
+				$clean = trim($parts[0]);
+			}
 			if (!empty($clean) && !in_array($clean, $companies)) {
 				$companies[] = $clean;
 			}

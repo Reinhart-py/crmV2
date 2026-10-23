@@ -1,6 +1,4 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
-
-<div class="container">
 <div class="content-wrapper"> 
   <section class="content-header">
     <h1 id="page_heading_title"><?php echo ($default_scope === 'external') ? 'Add External Task' : 'Add Internal Task'; ?></h1>
@@ -27,23 +25,9 @@
         </div>
       
         <div class="box-body">
-          <div class="row">
-            <div class="col-xs-12" style="margin-bottom: 20px;">
-              <label style="font-size: 13px; font-weight: 600; color: #334155; margin-right: 25px;">Task Scope:</label>
-              <?php if(!empty($can_create_internal)){ ?>
-              <label class="radio-inline" style="font-weight: 600; color: #1e293b;">
-                <input type="radio" name="task_scope" id="scope_internal" value="internal" <?php echo ($default_scope === 'internal') ? 'checked' : ''; ?> onchange="toggleTaskScope()"> Internal Task
-              </label>
-              <?php } ?>
-              <?php if(!empty($can_create_external)){ ?>
-              <label class="radio-inline" style="font-weight: 600; color: #1e293b;">
-                <input type="radio" name="task_scope" id="scope_external" value="external" <?php echo ($default_scope === 'external' || empty($can_create_internal)) ? 'checked' : ''; ?> onchange="toggleTaskScope()"> External (Client) Task
-              </label>
-              <?php } ?>
-            </div>
-          </div>
+          <input type="hidden" name="task_scope" id="task_scope_input" value="<?php echo ($default_scope === 'external') ? 'external' : 'internal'; ?>">
 
-          <div id="external_section" style="<?php echo ($default_scope === 'external' || empty($can_create_internal)) ? '' : 'display:none;'; ?>">
+          <div id="external_section" style="<?php echo ($default_scope === 'external') ? '' : 'display:none;'; ?>">
             <div class="row">
               <div class="col-lg-5 col-sm-6">
                 <div class="form-group">
@@ -55,9 +39,12 @@
                   </div>
                   <select class="form-control" name="client_id" id="client_select" onchange="onClientSelected()">
                     <option value="">-- Choose Company --</option>
-                    <?php if(!empty($client_list)){ foreach($client_list as $cli){ ?>
-                      <option value="<?php echo $cli['id']; ?>" data-poc="<?php echo htmlspecialchars($cli['poc']); ?>" data-contact="<?php echo htmlspecialchars($cli['contact1']); ?>" data-email="<?php echo htmlspecialchars($cli['email']); ?>" data-name="<?php echo htmlspecialchars($cli['customer']); ?>">
-                        <?php echo htmlspecialchars($cli['customer']); ?>
+                    <?php if(!empty($client_list)){ foreach($client_list as $cli){ 
+                      $cname = trim(preg_split('/[\t\r\n]/', $cli['customer'])[0]);
+                      if (empty($cname)) continue;
+                    ?>
+                      <option value="<?php echo $cli['id']; ?>" data-poc="<?php echo htmlspecialchars($cli['poc']); ?>" data-contact="<?php echo htmlspecialchars($cli['contact1']); ?>" data-email="<?php echo htmlspecialchars($cli['email']); ?>" data-name="<?php echo htmlspecialchars($cname); ?>">
+                        <?php echo htmlspecialchars($cname); ?>
                       </option>
                     <?php }} ?>
                   </select>
@@ -102,7 +89,7 @@
               <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:14px 16px;">
                 <h4 style="margin-top:0; margin-bottom:12px; font-size:14px; font-weight:600; color:#0f172a;">Telecom Connection Details</h4>
                 <div class="row">
-                  <div class="col-lg-3 col-sm-6">
+                  <div class="col-lg-4 col-sm-6">
                     <div class="form-group">
                       <label>Connection Type</label>
                       <div style="padding-top:7px;">
@@ -111,29 +98,13 @@
                       </div>
                     </div>
                   </div>
-                  <div class="col-lg-3 col-sm-6">
-                    <div class="form-group">
-                      <label>Product Category</label>
-                      <select class="form-control" name="p_cat" id="telecom_p_cat">
-                        <option value="">-- Select Product --</option>
-                        <?php if(!empty($telecom_cats)){ foreach($telecom_cats as $tc){ ?>
-                          <option value="<?php echo htmlspecialchars($tc['name']); ?>"><?php echo htmlspecialchars($tc['name']); ?></option>
-                        <?php }} else { ?>
-                          <option value="Fixed">Fixed</option>
-                          <option value="Mobile">Mobile</option>
-                          <option value="Managed">Managed</option>
-                          <option value="Other">Other</option>
-                        <?php } ?>
-                      </select>
-                    </div>
-                  </div>
-                  <div class="col-lg-3 col-sm-6">
+                  <div class="col-lg-4 col-sm-6">
                     <div class="form-group">
                       <label>Quantity</label>
                       <input type="number" min="1" class="form-control" name="qty" id="telecom_qty" value="1">
                     </div>
                   </div>
-                  <div class="col-lg-3 col-sm-6">
+                  <div class="col-lg-4 col-sm-6">
                     <div class="form-group">
                       <label>Monthly Recurring Charge (MRC)</label>
                       <input type="number" step="0.01" class="form-control" name="mrc" id="telecom_mrc" placeholder="0.00">
@@ -425,7 +396,6 @@
     </form>
   </section>
 </div>
-</div>
 
 <script>
 var systemUsers = <?php 
@@ -446,8 +416,8 @@ var currentUserId = <?php echo (int)$this->session->userdata('manager_id'); ?>;
 var currentUserName = "<?php echo addslashes($this->session->userdata('manager_name')); ?>";
 
 function toggleTaskScope() {
-  var extRadio = document.getElementById("scope_external");
-  var isExternal = extRadio ? extRadio.checked : false;
+  var extInput = document.getElementById("task_scope_input");
+  var isExternal = extInput ? (extInput.value === "external") : false;
   var extSection = document.getElementById("external_section");
   var empBox = document.getElementById("internal_employee_box");
   var titleElem = document.getElementById("page_heading_title");
@@ -464,7 +434,8 @@ function toggleTaskScope() {
     if (empBox) empBox.style.display = "block";
     if (titleElem) titleElem.textContent = "Add Internal Task";
     if (boxTitle) boxTitle.textContent = "Internal Task Configuration";
-    document.getElementById("telecom_section").style.display = "none";
+    var telSection = document.getElementById("telecom_section");
+    if (telSection) telSection.style.display = "none";
   }
 }
 
@@ -749,7 +720,7 @@ document.addEventListener("DOMContentLoaded", function() {
   var dropdown = document.getElementById("user_search_dropdown");
 
   if (currentUserId > 0 && currentUserName !== "") {
-    searchInput.value = currentUserName + " (Self)";
+    searchInput.value = currentUserName;
   }
 
   searchInput.addEventListener("input", function() {
@@ -777,7 +748,7 @@ document.addEventListener("DOMContentLoaded", function() {
       item.style.cursor = "pointer";
       item.style.borderBottom = "1px solid #f1f5f9";
       item.style.fontSize = "13px";
-      item.innerHTML = '<strong>' + u.name + '</strong> <span style="color:#64748b; font-size:12px;">(' + u.email + ')</span>';
+      item.innerHTML = '<strong>' + u.name + '</strong>';
       
       item.addEventListener("mouseenter", function() {
         this.style.background = "#eff6ff";

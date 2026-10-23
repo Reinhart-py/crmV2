@@ -108,7 +108,8 @@ function __construct()
 		$data['c_list'] =$this->comman_model->getAll('',array('id','ASC'),'countries');
 		$data['pc_list']= $this->comman_model->getAll(array('cat_type'=>'p_cat','parent_id'=>0),'','ci_terms');
 		$data['lc_list']= $this->comman_model->getAll(array('cat_type'=>'lead_cat','parent_id'=>0),'','ci_terms');
-		$data['product_list']= $this->ci_admin_model->get_Myleads($d1, $d2, $mrr1, $mrr2, '','',$order_by,$sort_by,$search,$status,$category,$lCat,$user_name,$country,$state,$closure,$vertical_fu);
+		$data['product_list']= $this->ci_admin_model->get_Myleads($d1, $d2, $mrr1, $mrr2, '','',$order_by,$sort_by,$search,$status,$category,$lCat,$user_name,$country,$state,$closure,$vertical_fu, 'database');
+		$data['stage'] = 'database';
 		
 		$con_q= '';
 		 if(!empty($_SERVER['QUERY_STRING']))
@@ -120,6 +121,230 @@ function __construct()
 		$this->session->set_userdata('manager_return_string', urlencode($page_url.$page2.$con_q));		
 		
 		$this->load->view('manager/leads/leadsview',$data);
+	}	
+
+	public function qualified()
+	{
+        $data=array();
+		$data['info']=array(
+			'title'=>'Manager - Leads',
+			'page_heading'=>'Lead View'
+		);
+		$data['info2']=$this->if_not_login();
+		
+		$order_by = isset($_GET['order_by']) ? $_GET['order_by'] : 'A.id';
+		$sort_by = isset($_GET['sort_by']) ? $_GET['sort_by'] : 'DESC';
+		$search = isset($_GET['search']) ? $_GET['search'] : '';	
+		$user_name = isset($_GET['user_name']) ? $_GET['user_name'] : '';	
+		$country = isset($_GET['country']) ? $_GET['country'] : '';	
+		$state = isset($_GET['state']) ? $_GET['state'] : '';	
+		
+		if(!empty($country)){
+			if(is_array($country)){
+				$country= implode(',', $country); 
+			}
+			$data['state_list']= $this->comman_model->getAll(array('country_id'=>$country),'','states');
+	    }
+		if(!empty($state)){
+			if(is_array($state)){
+				$state= implode(',', $state); 
+			}
+		}
+
+		$d1 = isset($_GET['d1']) ? $_GET['d1'] : (isset($_GET['exp_d1']) ? $_GET['exp_d1'] : '');
+		$d2 = isset($_GET['d2']) ? $_GET['d2'] : (isset($_GET['exp_d2']) ? $_GET['exp_d2'] : '');
+		$mrr1 = isset($_GET['mrr1']) ? $_GET['mrr1'] : '';
+		$mrr2 = isset($_GET['mrr2']) ? $_GET['mrr2'] : '';
+		$status = isset($_GET['status']) ? $_GET['status'] : '';		
+		$category = isset($_GET['category']) ? $_GET['category'] : '';
+		$lCat = isset($_GET['lCat']) ? $_GET['lCat'] : '';
+		
+		if(!empty($lCat)){
+			if(is_array($lCat)){
+				$lCat= implode(',', $lCat); 
+			}
+	    }	
+        if(!empty($category)){
+			if(is_array($category)){
+				$category= implode(',', $category); 
+			}
+	    }
+		if(!empty($status)){
+			if(is_array($status)){
+				$status= implode(',', $status); 
+			}
+		}
+
+		$closure = isset($_GET['closure']) ? $_GET['closure'] : '';
+		$vertical_fu = isset($_GET['vertical_fu']) ? $_GET['vertical_fu'] : '';
+
+		$data['st_list']= $this->comman_model->getAll(array('active'=>1),'','ci_status');
+		$data['c_list'] =$this->comman_model->getAll('',array('id','ASC'),'countries');
+		$data['pc_list']= $this->comman_model->getAll(array('cat_type'=>'p_cat','parent_id'=>0),'','ci_terms');
+		$data['lc_list']= $this->comman_model->getAll(array('cat_type'=>'lead_cat','parent_id'=>0),'','ci_terms');
+		$data['product_list']= $this->ci_admin_model->get_Myleads($d1, $d2, $mrr1, $mrr2, '','',$order_by,$sort_by,$search,$status,$category,$lCat,$user_name,$country,$state,$closure,$vertical_fu, 'lead');
+		$data['stage'] = 'lead';
+		$data['is_leads_view'] = true;
+
+		$con_q= '';
+		if(!empty($_SERVER['QUERY_STRING']))
+		{
+			$con_q.='?'.$_SERVER['QUERY_STRING'];
+		}		
+		$page_url=$this->uri->segment(2)."/";
+		$page2 = ($this->uri->segment(4)) ? $this->uri->segment(4): 0;
+		$this->session->set_userdata('manager_return_string', urlencode($page_url.$page2.$con_q));		
+		
+		$this->load->view('manager/leads/lead_view',$data);
+	}
+
+	public function approvals()
+	{
+        $data=array();
+		$data['info']=array(
+			'title'=>'Manager - Pending Lead Approvals',
+			'page_heading'=>'Pending Lead Approvals'
+		);
+		$data['info2']=$this->if_not_login();
+		
+		$order_by = isset($_GET['order_by']) ? $_GET['order_by'] : 'A.id';
+		$sort_by = isset($_GET['sort_by']) ? $_GET['sort_by'] : 'DESC';
+		$search = isset($_GET['search']) ? $_GET['search'] : '';	
+		$user_name = isset($_GET['user_name']) ? $_GET['user_name'] : '';	
+		$country = isset($_GET['country']) ? $_GET['country'] : '';	
+		$state = isset($_GET['state']) ? $_GET['state'] : '';	
+		
+		if(!empty($country)){
+			if(is_array($country)){
+				$country= implode(',', $country); 
+			}
+			$data['state_list']= $this->comman_model->getAll(array('country_id'=>$country),'','states');
+	    }
+		if(!empty($state)){
+			if(is_array($state)){
+				$state= implode(',', $state); 
+			}
+		}
+
+		$d1 = isset($_GET['d1']) ? $_GET['d1'] : (isset($_GET['exp_d1']) ? $_GET['exp_d1'] : '');
+		$d2 = isset($_GET['d2']) ? $_GET['d2'] : (isset($_GET['exp_d2']) ? $_GET['exp_d2'] : '');
+		$mrr1 = isset($_GET['mrr1']) ? $_GET['mrr1'] : '';
+		$mrr2 = isset($_GET['mrr2']) ? $_GET['mrr2'] : '';
+		$status = isset($_GET['status']) ? $_GET['status'] : '';		
+		$category = isset($_GET['category']) ? $_GET['category'] : '';
+		$lCat = isset($_GET['lCat']) ? $_GET['lCat'] : '';
+		
+		if(!empty($lCat)){
+			if(is_array($lCat)){
+				$lCat= implode(',', $lCat); 
+			}
+	    }	
+        if(!empty($category)){
+			if(is_array($category)){
+				$category= implode(',', $category); 
+			}
+	    }
+		if(!empty($status)){
+			if(is_array($status)){
+				$status= implode(',', $status); 
+			}
+		}
+
+		$closure = isset($_GET['closure']) ? $_GET['closure'] : '';
+		$vertical_fu = isset($_GET['vertical_fu']) ? $_GET['vertical_fu'] : '';
+
+		$data['st_list']= $this->comman_model->getAll(array('active'=>1),'','ci_status');
+		$data['c_list'] =$this->comman_model->getAll('',array('id','ASC'),'countries');
+		$data['pc_list']= $this->comman_model->getAll(array('cat_type'=>'p_cat','parent_id'=>0),'','ci_terms');
+		$data['lc_list']= $this->comman_model->getAll(array('cat_type'=>'lead_cat','parent_id'=>0),'','ci_terms');
+		$data['product_list']= $this->ci_admin_model->get_Myleads($d1, $d2, $mrr1, $mrr2, '','',$order_by,$sort_by,$search,$status,$category,$lCat,$user_name,$country,$state,$closure,$vertical_fu, 'pending_approval');
+		$data['stage'] = 'pending_approval';
+		$data['is_approvals_view'] = true;
+
+		$con_q= '';
+		if(!empty($_SERVER['QUERY_STRING']))
+		{
+			$con_q.='?'.$_SERVER['QUERY_STRING'];
+		}		
+		$page_url=$this->uri->segment(2)."/";
+		$page2 = ($this->uri->segment(4)) ? $this->uri->segment(4): 0;
+		$this->session->set_userdata('manager_return_string', urlencode($page_url.$page2.$con_q));		
+		
+		$this->load->view('manager/leads/leadsview',$data);
+	}
+
+	public function view_leads()
+	{
+		$this->qualified();
+	}
+
+	public function transfer_to_lead()
+	{
+		$this->if_not_login();
+		$lead_id = (int)$this->input->post('lead_id');
+		$comment = trim($this->input->post('comment'));
+		$uid = (int)$this->session->userdata('manager_id');
+		$uname = $this->session->userdata('manager_name');
+
+		if (empty($lead_id)) {
+			$this->session->set_flashdata('error_message', 'Invalid record selected.');
+			redirect('manager/leads');
+			return;
+		}
+
+		$lead = $this->ci_admin_model->getSingleLead($lead_id);
+		if (empty($lead)) {
+			$this->session->set_flashdata('error_message', 'Record not found.');
+			redirect('manager/leads');
+			return;
+		}
+
+		$now = date('Y-m-d H:i:s');
+		$pipe = $this->db->get_where('ci_pipeline', array('lead_id' => $lead_id))->row_array();
+		if (empty($pipe)) {
+			$this->db->insert('ci_pipeline', array(
+				'lead_id' => $lead_id,
+				'pipeline_stage' => 'lead',
+				'conversion_status' => 'approved',
+				'conversion_reason' => $comment,
+				'conversion_requested_by' => $uid,
+				'conversion_reviewed_by' => $uid,
+				'conversion_requested_at' => $now,
+				'conversion_reviewed_at' => $now,
+				'created_at' => $now,
+				'updated_at' => $now
+			));
+		} else {
+			$this->db->where('lead_id', $lead_id)->update('ci_pipeline', array(
+				'pipeline_stage' => 'lead',
+				'conversion_status' => 'approved',
+				'conversion_reason' => $comment,
+				'conversion_reviewed_by' => $uid,
+				'conversion_reviewed_at' => $now,
+				'updated_at' => $now
+			));
+		}
+
+		$this->db->insert('ci_pipeline_logs', array(
+			'lead_id' => $lead_id,
+			'action' => 'transfer_to_lead',
+			'stage_from' => 'database',
+			'stage_to' => 'lead',
+			'action_by' => $uid,
+			'action_by_name' => $uname,
+			'remarks' => "Transferred to Lead: " . $comment,
+			'created_at' => $now
+		));
+
+		$this->ci_admin_model->log_admin_action('transfer_to_lead', "Transferred #$lead_id to Lead", 'SUCCESS', $uid, $uname);
+		$this->session->set_flashdata('message', 'Database record transferred to Lead successfully.');
+
+		$back = $this->agent->referrer();
+		if (!empty($back)) {
+			redirect($back);
+		} else {
+			redirect('manager/leads');
+		}
 	}	
 
 	public function ajax_get_state()
@@ -402,8 +627,8 @@ function __construct()
 
 		$data=array();
 		$data['info']=array(
-			'title'=>'Manager- Leads',
-			'page_heading'=>'Add Lead'
+			'title'=>'Manager - Database',
+			'page_heading'=>'Add Database'
 		);
 		$data['info2']=$this->if_not_login();
 
@@ -600,7 +825,7 @@ function __construct()
 
        }
 
-        $this->load->view('manager/leads/addleads',$data);	
+        $this->load->view('manager/leads/add-database',$data);
 
    
 
@@ -1592,7 +1817,7 @@ $data['info2']=$this->if_not_login();
 				'city' => $city,
 				'poc2' => $poc2,
 				'contact2' => $contact2,
-				'c_partner' => !empty($c_partner) ? $c_partner : 'SRJ Electronics Trading LLC',
+				'c_partner' => !empty($c_partner) ? $c_partner : 'Seven Strokes',
 				'otc' => $otc,
 				'lead_cat' => $lead_cat,
 				'lead_assign' => $assigned_user_id,

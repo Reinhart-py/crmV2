@@ -1,6 +1,5 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
-<div class="container">
 <div class="content-wrapper"> 
   
   <section class="content-header">
@@ -229,34 +228,10 @@
             <input type="hidden" name="raised_by" value="<?php echo (int)$this->session->userdata('manager_id'); ?>">
             <input type="hidden" name="created_date" value="<?php echo date('Y-m-d H:i:s'); ?>">
 
-            <div class="col-lg-3 col-sm-6">
+            <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Deadline Date</label>
+                <label>Due Date</label>
                 <input type="text" class="form-control datepicker" name="deadline_date" autocomplete="off" placeholder="YYYY-MM-DD">
-              </div>
-            </div>
-
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group">
-                <label>Expected Closure Date</label>
-                <input type="text" class="form-control datepicker" name="expected_close_date" autocomplete="off" placeholder="YYYY-MM-DD">
-              </div>
-            </div>
-
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group">
-                <label>Initial Follow-up Date</label>
-                <input type="text" class="form-control datepicker" name="followup_date" autocomplete="off" placeholder="YYYY-MM-DD">
-              </div>
-            </div>
-
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group">
-                <label>Initial Follow-up Time</label>
-                <div class="input-group bootstrap-timepicker timepicker">
-                  <input type="text" class="form-control input-small timepicker" name="followup_time" value="<?php echo date('h:i A'); ?>">
-                  <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
-                </div>
               </div>
             </div>
 
@@ -302,7 +277,6 @@
     </form>
     
   </section>
-</div>
 </div>
 
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

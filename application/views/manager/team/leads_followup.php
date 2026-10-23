@@ -254,63 +254,6 @@ function ajax_get_state()
 }
 
 
-  $(document).ready(function(){
-  $(document).on("click","#btn_block", function(){ 
-      
-   var id = $(this).data("id");
-   var admin_status = $(this).data("admin_status");
-  
-  if (confirm("Are you sure to unblock User?")) {
-  
-    $.ajax({
-        type: "POST",
-       url: '<?php  echo base_url(); ?>ci_admin_user/ajax_edit_status',
-      data:"admin_status="+admin_status+"&id="+id, // as you are getting in php $_POST['action1'] 
-       
-        }).done(function(msg){
-           
-            if (msg == 'success') 
-      {
-             location.reload();
-            }
-      else
-      {
-         alert("Error : Not update Confirm status")
-      }
-    });
-  }
-   });
-
- }); 
- 
-  $(document).ready(function(){
-  $(document).on("click","#btn_unblock", function(){ 
-      
-   var id = $(this).data("id");
-   var admin_status = $(this).data("admin_status");
-  
-  if (confirm("Are you sure to block User?")) {
-  
-    $.ajax({
-        type: "POST",
-       url: '<?php  echo base_url(); ?>ci_admin_user/ajax_edit_status',
-       data:"admin_status="+admin_status+"&id="+id, // as you are getting in php $_POST['action1'] 
-       
-        }).done(function(msg){
-           
-            if (msg == 'success') 
-      {
-             location.reload();
-            }
-      else
-      {
-         alert("Error : Not update Confirm status")
-      }
-    });
-  }
-   });
-
- }); 
 
      $(document).ready(function() {
     $('#example_lead').DataTable( {

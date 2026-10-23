@@ -1,10 +1,9 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
-<!-- Content Wrapper. Contains page content -->
-<div class="container">
+
 <div class="content-wrapper"> 
   
-  <!-- Content Header (Page header) -->
+  
   
   <section class="content-header">
     <h1> Verticals </h1>
@@ -14,11 +13,11 @@
     </ol>
   </section>
   
-  <!-- Main content -->
+  
   
   <section class="content"> 
     
-    <!-- SELECT2 EXAMPLE -->
+    
     
    
      <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?> <?php echo get_message($this->session->flashdata('message'),'message'); ?>
@@ -30,7 +29,7 @@
         <h3 class="box-title">Initial Fields</h3>
       </div>
       
-      <!-- /.box-header -->
+      
       
       <div class="box-body" >
       
@@ -281,16 +280,15 @@
      </form>
   
     
-    <!-- /.box --> 
+     
     
   </section>
   
-  <!-- /.content --> 
+   
   
 </div>
 
-<!-- /.content-wrapper --> 
-</div>
+ 
 <script>
 
  $(document).ready(function () { 

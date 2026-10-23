@@ -1,10 +1,5 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
-
-<!-- Content Wrapper. Contains page content -->
-<div class="container">
 <div class="content-wrapper"> 
-  
-  <!-- Content Header (Page header) -->
   <section class="content-header">
     <h1> Import Leads </h1>
     <ol class="breadcrumb">
@@ -14,7 +9,6 @@
     </ol>
   </section>
   
-  <!-- Main content -->
   <section class="content"> 
     <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?> 
     <?php echo get_message($this->session->flashdata('message'),'message'); ?>
@@ -38,45 +32,30 @@
               <form action="<?php echo base_url(); ?>manager/leads/import_action" method="post" enctype="multipart/form-data">
                 <div class="form-group" style="margin-bottom: 24px;">
                   <label for="csv_file" style="font-weight: 600; font-size: 14px; margin-bottom: 8px; display: block;">
-                    Select CSV File to Upload <span class="text-danger">*</span>
+                    Choose CSV File <span class="text-danger">*</span>
                   </label>
-                  <div style="border: 2px dashed #cbd5e1; border-radius: 8px; padding: 24px; text-align: center; background: #f8fafc;">
-                    <i class="fa fa-file-excel-o text-success" style="font-size: 40px; margin-bottom: 12px; display: block;"></i>
-                    <input type="file" name="csv_file" id="csv_file" accept=".csv" required style="display: inline-block; margin: 0 auto;">
-                    <p class="help-block" style="margin-top: 10px; color: #64748b; font-size: 13px;">
-                      Supported file format: <strong>.csv</strong> (Comma-Separated Values, UTF-8 encoded). Max size: 10MB.
-                    </p>
-                  </div>
+                  <input type="file" name="csv_file" id="csv_file" class="form-control" accept=".csv" required style="padding: 8px; height: auto;">
+                  <span class="help-block" style="font-size: 12px; color: #64748b; margin-top: 6px;">
+                    Only valid .csv files formatted per the template specifications are supported.
+                  </span>
                 </div>
 
-                <div class="row">
-                  <div class="col-xs-6">
-                    <a href="<?php echo base_url(); ?>manager/leads" class="btn btn-default" style="border-radius: 6px; padding: 8px 18px; font-weight: 600;">
-                      <i class="fa fa-arrow-left"></i> Back to Leads
-                    </a>
-                  </div>
-                  <div class="col-xs-6 text-right">
-                    <button type="submit" class="btn btn-primary" style="border-radius: 6px; padding: 8px 24px; font-weight: 600; background: #000000; border-color: #000000;">
-                      <i class="fa fa-cloud-upload"></i> Upload & Import Leads
-                    </button>
-                  </div>
+                <div class="form-group" style="margin-top: 20px;">
+                  <button type="submit" class="btn btn-primary" style="padding: 9px 24px; font-weight: 600; border-radius: 5px;">
+                    <i class="fa fa-cloud-upload" style="margin-right: 6px;"></i> Upload and Import Records
+                  </button>
+                  <a href="<?php echo base_url(); ?>manager/leads" class="btn btn-default" style="padding: 9px 20px; border-radius: 5px; margin-left: 8px;">
+                    Cancel
+                  </a>
                 </div>
               </form>
             <?php } else { ?>
-              <div class="alert alert-warning" style="border-radius: 6px;">
-                <h4><i class="icon fa fa-lock"></i> Restricted Access</h4>
-                <p>Only users with <strong>Admin</strong> or <strong>Support</strong> roles have permission to import leads into the system.</p>
-              </div>
-              <div class="text-center" style="padding: 10px 0;">
-                <a href="<?php echo base_url(); ?>manager/leads" class="btn btn-default" style="border-radius: 6px; padding: 8px 20px;">
-                  <i class="fa fa-arrow-left"></i> Return to Leads List
-                </a>
+              <div class="alert alert-warning" style="border-radius: 6px; font-weight: 500;">
+                <i class="fa fa-lock" style="margin-right: 6px;"></i> You do not have permission to import leads into the CRM. Only Admin and Support roles may execute bulk lead imports.
               </div>
             <?php } ?>
 
-            <hr style="margin: 28px 0 20px 0; border-top: 1px solid #e2e8f0;">
-
-            <div class="import-instructions" style="background: #f8fafc; border-radius: 6px; padding: 18px 20px; border: 1px solid #e2e8f0;">
+            <div style="margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
               <h4 style="font-size: 14px; font-weight: 700; color: #0f172a; margin-top: 0; margin-bottom: 12px;">
                 <i class="fa fa-lightbulb-o text-warning" style="margin-right: 6px;"></i> Import Specifications & Instructions:
               </h4>
@@ -94,9 +73,5 @@
       </div>
     </div>
   </section>
-  <!-- /.content --> 
 </div>
-<!-- /.content-wrapper --> 
-</div>
-
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>
