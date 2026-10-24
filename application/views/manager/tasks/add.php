@@ -37,16 +37,8 @@
                       <i class="fa fa-plus"></i> Onboard New Client
                     </a>
                   </div>
-                  <select class="form-control" name="client_id" id="client_select" onchange="onClientSelected()">
-                    <option value="">-- Choose Company --</option>
-                    <?php if(!empty($client_list)){ foreach($client_list as $cli){ 
-                      $cname = trim(preg_split('/[\t\r\n]/', $cli['customer'])[0]);
-                      if (empty($cname)) continue;
-                    ?>
-                      <option value="<?php echo $cli['id']; ?>" data-poc="<?php echo htmlspecialchars($cli['poc']); ?>" data-contact="<?php echo htmlspecialchars($cli['contact1']); ?>" data-email="<?php echo htmlspecialchars($cli['email']); ?>" data-name="<?php echo htmlspecialchars($cname); ?>">
-                        <?php echo htmlspecialchars($cname); ?>
-                      </option>
-                    <?php }} ?>
+                  <select class="form-control" name="client_id" id="client_select" style="width:100%;">
+                    <option value="">Type 3+ letters to search company...</option>
                   </select>
                 </div>
               </div>
@@ -806,6 +798,42 @@ document.addEventListener("DOMContentLoaded", function() {
       }
     }
   });
+
+  if (window.jQuery && $.fn.select2) {
+    $('#client_select').select2({
+      placeholder: 'Type at least 3 letters to search company...',
+      minimumInputLength: 3,
+      allowClear: true,
+      width: '100%',
+      ajax: {
+        url: '<?php echo base_url(); ?>manager/tasks/ajax_search_companies',
+        dataType: 'json',
+        delay: 250,
+        data: function (params) {
+          return {
+            q: params.term
+          };
+        },
+        processResults: function (data) {
+          return {
+            results: data.results || []
+          };
+        },
+        cache: true
+      }
+    }).on('select2:select', function (e) {
+      var item = e.params.data;
+      if (item) {
+        document.getElementById("client_poc").value = item.poc || '';
+        document.getElementById("client_phone").value = item.contact || '';
+        document.getElementById("client_email").value = item.email || '';
+        var titleInput = document.getElementById("task_title_input");
+        if (titleInput && titleInput.value.trim() === '') {
+          titleInput.value = (item.text || '') + ' - Deliverable';
+        }
+      }
+    });
+  }
 
   toggleTaskScope();
   onDepartmentChanged();

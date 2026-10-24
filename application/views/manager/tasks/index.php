@@ -47,9 +47,11 @@
                             </form>
                         </div>
                         <div class="x_col-sm-auto text-center pt-4 pt-md-0">
+                            <?php if(!empty($can_create)){ ?>
                             <div>
                                 <a href="<?php echo base_url(); ?>manager/tasks/add" class="btn btn-success"> Task Add</a>
                             </div>
+                            <?php } ?>
                         </div>
                     </div>
                 </div>

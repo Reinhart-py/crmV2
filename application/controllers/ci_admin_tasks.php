@@ -177,6 +177,54 @@ class Ci_admin_tasks extends CI_Controller {
 		));
 		exit;
 	}
+	public function ajax_search_companies()
+	{
+		$this->if_not_login();
+		header('Content-Type: application/json');
+		$term = trim($this->input->get('q'));
+		if (strlen($term) < 3) {
+			echo json_encode(array('results' => array()));
+			exit;
+		}
+
+		$manager_id = (int)$this->session->userdata('manager_id');
+		$role = (int)$this->session->userdata('manager_role');
+
+		$this->db->select('id, customer, poc, contact1, email');
+		$this->db->from('ci_leads');
+		$this->db->where('(company_status IS NULL OR LOWER(company_status) != "closed")');
+		$this->db->where('customer IS NOT NULL', null, false);
+		$this->db->where("TRIM(customer) != ''", null, false);
+		if ($role !== 1 && $role !== 4) {
+			$this->db->where("(lead_assign = {$manager_id} OR (created_by = {$manager_id} AND (lead_assign = 0 OR lead_assign IS NULL)) OR (agents IS NOT NULL AND agents != '' AND FIND_IN_SET({$manager_id}, agents) > 0))");
+		}
+		$this->db->like('customer', $term);
+		$this->db->order_by('customer', 'ASC');
+		$this->db->limit(50);
+		$rows = $this->db->get()->result_array();
+
+		$results = array();
+		foreach ($rows as $r) {
+			$c_name = trim($r['customer']);
+			if (strpos($c_name, "\t") !== false || strpos($c_name, "\n") !== false) {
+				$parts = preg_split('/[\t\r\n]/', $c_name);
+				$c_name = trim($parts[0]);
+			}
+			if (empty($c_name)) continue;
+
+			$results[] = array(
+				'id' => $r['id'],
+				'text' => $c_name,
+				'poc' => !empty($r['poc']) ? $r['poc'] : '',
+				'contact' => !empty($r['contact1']) ? $r['contact1'] : '',
+				'email' => !empty($r['email']) ? $r['email'] : '',
+				'name' => $c_name
+			);
+		}
+
+		echo json_encode(array('results' => $results));
+		exit;
+	}
 
 	public function index()
 	{
@@ -197,7 +245,7 @@ class Ci_admin_tasks extends CI_Controller {
 			'page_heading' => 'Internal Tasks'
 		);
 		$data['info2'] = $this->if_not_login();
-		$data['can_create'] = ($role === 1 || has_section_perm('internal_tasks', 'write'));
+		$data['can_create'] = ($role === 1 || $role === 4 || $manager_id === 1);
 
 		$data['st_list'] = $this->comman_model->getAll(array('active' => 1), '', 'ci_status');
 		$data['u_list'] = $this->comman_model->getAll('', array('name', 'ASC'), 'ci_user');
@@ -305,7 +353,7 @@ class Ci_admin_tasks extends CI_Controller {
 			'page_heading' => 'External Tasks'
 		);
 		$data['info2'] = $this->if_not_login();
-		$data['can_create'] = ($role === 1 || $role === 4 || has_section_perm('external_tasks', 'write'));
+		$data['can_create'] = ($role === 1 || $role === 4 || $manager_id === 1);
 
 		$data['st_list'] = $this->comman_model->getAll(array('active' => 1), '', 'ci_status');
 		$data['u_list'] = $this->comman_model->getAll('', array('name', 'ASC'), 'ci_user');
@@ -409,15 +457,19 @@ class Ci_admin_tasks extends CI_Controller {
 
 		$manager_id = (int)$this->session->userdata('manager_id');
 		$role = (int)$this->session->userdata('manager_role');
-		$can_internal_write = ($role === 1 || has_section_perm('internal_tasks', 'write') || has_section_perm('tasks', 'write') || !empty($manager_id));
-		$can_external_write = ($role === 1 || $role === 4 || has_section_perm('external_tasks', 'write') || has_section_perm('tasks', 'write') || !empty($manager_id));
-
 		$scope = trim($this->input->get('scope'));
-		if ($scope === 'external') {
-			$scope = 'external';
-		} else {
+		if ($scope !== 'external') {
 			$scope = 'internal';
 		}
+
+		if ($role !== 1 && $role !== 4 && $manager_id !== 1) {
+			$this->session->set_flashdata('error_message', 'Access denied. Adding tasks is restricted to Admin and Support.');
+			redirect('manager/tasks/' . $scope);
+			return;
+		}
+
+		$can_internal_write = true;
+		$can_external_write = true;
 
 		$data = array();
 		$data['info'] = array(

@@ -2,6 +2,51 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.62.0] - 2026-10-24
+- **Timestamp**: `2026-10-24 10:55:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Refine navigation hierarchy (KAM, Review Lead and Orders, Team, My Zone), implement backend & frontend Lead Review and Qualification conversion system with hierarchy permission gating, enforce task creation permissions, and implement 3-letter AJAX company search
+- **Detailed Changes & Technical Implementation**:
+  - **1. Navigation Structure (`application/views/manager/elements/header.php`)**:
+    - **KAM**: Streamlined to contain exclusively three items:
+      - `My Client` (`manager/kam/my-client`)
+      - `Onboard Client` (`manager/kam/onboard`)
+      - `Create Schedule` (`manager/kam/schedule`) (labeled as "Create Schedule").
+    - **Review Lead and Orders**: Set label to **Review Lead and Orders** containing only review operations:
+      - `Review Leads` (`manager/leads/review_leads`)
+      - `Review Orders` (`manager/tasks/external`)
+    - **Team**: Kept existing Team navigation and functionality completely unchanged (Members, Chart, Leads, Verticals, Follow up, Meetings, Assigned Meetings, Assign Database, Task, Tickets).
+    - **My Zone**: Arranged in the exact 10-item required order:
+      1. `Database Add` (`manager/leads/add`)
+      2. `Database View` (`manager/leads`)
+      3. `Database Follow-Up` (`manager/leads/followups`)
+      4. `Database Meetings` (`manager/leads/meetings`)
+      5. `Lead View` (`manager/leads/view_leads`)
+      6. `Vertical Add` (`manager/verticals/add`)
+      7. `Vertical View` (`manager/verticals`)
+      8. `View Internal Task` (`manager/tasks/internal`)
+      9. `View External Task` (`manager/tasks/external`)
+      10. `Database Transfer` (`manager/database-transfer`)
+    - **Admin & Hierarchy Visibility**: Ensured Admin (`$m_role === 1 || $current_user_id === 1`) and authorized managers have full, unconditional visibility across both desktop topbar (`ul.munk_menu`) and mobile drawer (`ul.sidebar-menu`).
+  - **2. Lead Review & Qualification System (`ci_admin_leads.php`, `ci_admin_model.php`, `single_view.php`, `routes.php`)**:
+    - Built the lead review process using existing CRM components without duplicate pages or tables.
+    - **Review Leads Page (`manager/leads/review_leads`)**: Accessible to Admin, Support, and managers above team members in the reporting hierarchy (`fetchTeamList()`), listing submitted database records awaiting qualification review.
+    - **Existing Details Page (`manager/leads/view/{id}`)**: Serves as the review interface with all record information displayed for review. Added a prominent **Convert to Lead** button.
+    - **Strict Permission Enforcement**:
+      - Visible and executable only by Admin (Role 1 or ID 1), Back Office / Support (Role 4), or the user's authorized manager in the reporting hierarchy (`in_array($lead_owner, fetchTeamList($cur_uid))`).
+      - Ordinary sales users are prevented from converting their own records into Leads both in the UI and via backend validation.
+    - **Conversion Behavior**:
+      - Updates existing `ci_pipeline` record to `pipeline_stage = 'lead'`, `conversion_status = 'approved'`, `conversion_reviewed_by`, and `conversion_reviewed_at`.
+      - Preserves original database record, ID, and history (no duplicate records).
+      - Appends audit entry into `ci_pipeline_logs` and logs action in `ci_admin_logs`.
+      - Displays "Converted to Lead" badge if already converted, preventing duplicate conversion attempts.
+      - Displays pipeline conversion history table on the Details page.
+  - **3. Task Creation Permissions & 3-Character Company Search (`ci_admin_tasks.php`, `tasks/add.php`, `tasks/edit.php`, `tasks/internal.php`, `tasks/external.php`)**:
+    - Gated "+ Add Internal Task" and "+ Add External Task" buttons and backend creation in `Ci_admin_tasks::add()` strictly to Admin and Support (`role === 1 || role === 4 || manager_id === 1`).
+    - Replaced full company dropdown loads in `tasks/add.php` and `tasks/edit.php` with Select2 AJAX search requiring at least 3 letters typed before querying (`minimumInputLength: 3`, endpoint `manager/tasks/ajax_search_companies`), auto-populating POC, phone, and email upon selection.
+  - **4. Zero Comments Policy**:
+    - Verified strict adherence to the zero comments rule across all modified PHP files with automated diff and AST token scanning.
+
 ### [v1.61.0] - 2026-10-23
 - **Timestamp**: `2026-10-23 17:25:00 +0530`
 - **Author**: Reinhart-py

@@ -642,6 +642,8 @@ public function dashboard_MyPro($table='ci_leads'){
 			  }	
 			   if ($stage === 'database') {
 				   $this->db->where("(P.pipeline_stage = 'database' OR (P.pipeline_stage IS NULL AND (A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)))");
+			   } elseif ($stage === 'review_leads') {
+				   $this->db->where("(P.pipeline_stage = 'database' OR (P.pipeline_stage IS NULL AND (A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)))");
 			   } elseif ($stage === 'lead') {
 				   $this->db->where("P.pipeline_stage", 'lead');
 			   } elseif ($stage === 'pending_approval') {
@@ -659,7 +661,7 @@ public function dashboard_MyPro($table='ci_leads'){
 					   $this->db->where('A.id', -1);
 				   }
 			   } elseif ($stage === 'pending_approval') {
-				   if ($urole !== 1 && $urole !== 4) {
+				   if ($urole !== 1 && $urole !== 4 && $uid !== 1) {
 					   $team_members = $this->fetchTeamList($uid, '');
 					   if (!is_array($team_members)) $team_members = array();
 					   if (!empty($team_members)) {
@@ -668,9 +670,22 @@ public function dashboard_MyPro($table='ci_leads'){
 						   $this->db->where('A.id', -1);
 					   }
 				   }
+			   } elseif ($stage === 'review_leads') {
+				   if ($urole !== 1 && $urole !== 4 && $uid !== 1) {
+					   $team_members = $this->fetchTeamList($uid, '');
+					   if (!is_array($team_members)) $team_members = array();
+					   if (!empty($team_members)) {
+						   $team_str = implode(',', array_map('intval', $team_members));
+						   $this->db->where("(A.created_by IN ($team_str) OR A.lead_assign IN ($team_str))");
+					   } else {
+						   $this->db->where('A.id', -1);
+					   }
+				   }
 			   } else {
-				   $where1 = "(A.lead_assign = $uid OR (A.created_by = $uid AND (A.lead_assign = 0 OR A.lead_assign IS NULL)) OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET($uid, A.agents) > 0))";	
-				   $this->db->where($where1);
+				   if ($urole !== 1 && $urole !== 4 && $uid !== 1) {
+					   $where1 = "(A.lead_assign = $uid OR (A.created_by = $uid AND (A.lead_assign = 0 OR A.lead_assign IS NULL)) OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET($uid, A.agents) > 0))";	
+					   $this->db->where($where1);
+				   }
 				   if ($stage !== 'kam') {
 					   $this->db->where("(A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)");
 				   }

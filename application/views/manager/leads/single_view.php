@@ -5,7 +5,8 @@
     <h1> <?php echo $info['page_heading']; ?> </h1>
   </section>
   <section class="content ">
-
+    <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?>
+    <?php echo get_message($this->session->flashdata('message'),'message'); ?>
   <div class="container">
 
 
@@ -32,6 +33,15 @@
         	 <a href="<?php echo base_url(); ?>manager/leads/editLimited/<?php echo base64_encode($p_info['id']); ?>/tm" class="btn btn-warning">Update Status</a>
        
        <?php } } ?>
+         <?php if (!empty($is_already_lead)) { ?>
+           <span class="btn btn-default" style="cursor:default; background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; font-weight:600; margin-right:5px;">
+             <i class="fa fa-check-circle" style="color:#10b981;"></i> Converted to Lead
+           </span>
+         <?php } elseif (!empty($can_convert_to_lead)) { ?>
+           <button type="button" class="btn btn-success" data-toggle="modal" data-target="#convertLeadModal" style="background:#16a34a; border-color:#15803d; font-weight:600; margin-right:5px;">
+             <i class="fa fa-check-circle"></i> Convert to Lead
+           </button>
+         <?php } ?>
          <?php 
          $cur_user = (int)$this->session->userdata('manager_id');
          $cur_r = (int)$this->session->userdata('manager_role');
@@ -620,8 +630,70 @@
 </div>
 </div>
 <?php } ?>
+<?php if(!empty($pipeline_logs)){ ?>
+<div class="box box-default">
+      <div class="box-header">
+		<div class="col-sm-12">
+       		<h3 class="box-title"><i class="fa fa-history" style="color:#16a34a;"></i> Pipeline &amp; Conversion History</h3>
+        </div>
+        </div>
+<div class="box-body">
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr style="background:#f8fafc;">
+            <th>Date &amp; Time</th>
+            <th>Action</th>
+            <th>Stage Change</th>
+            <th>Performed By</th>
+            <th>Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php foreach($pipeline_logs as $pl){ ?>
+            <tr>
+              <td><?php echo date('d-m-Y h:i A', strtotime($pl['created_at'])); ?></td>
+              <td><span class="label label-primary" style="font-size:11px;"><?php echo htmlspecialchars(ucwords(str_replace('_', ' ', $pl['action']))); ?></span></td>
+              <td><?php echo htmlspecialchars(ucfirst($pl['stage_from'] ?? 'database')); ?> &rarr; <strong style="color:#16a34a;"><?php echo htmlspecialchars(ucfirst($pl['stage_to'] ?? 'lead')); ?></strong></td>
+              <td><?php echo htmlspecialchars($pl['action_by_name'] ?? ('User #'.$pl['action_by'])); ?></td>
+              <td><?php echo htmlspecialchars($pl['remarks'] ?? '-'); ?></td>
+            </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+    </div>
+</div>
+</div>
+<?php } ?>
 
-    
+<div class="modal fade" id="convertLeadModal" tabindex="-1" role="dialog" aria-labelledby="convertLeadModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="border-radius:6px;">
+      <form action="<?php echo base_url(); ?>manager/leads/convert_to_lead" method="post">
+        <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
+        <input type="hidden" name="lead_id" value="<?php echo $p_info['id']; ?>">
+        <div class="modal-header" style="border-bottom:1px solid #e2e8f0; background:#f8fafc; border-top-left-radius:6px; border-top-right-radius:6px;">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="convertLeadModalLabel" style="font-weight:600; color:#0f172a;"><i class="fa fa-check-circle" style="color:#16a34a;"></i> Convert to Lead</h4>
+        </div>
+        <div class="modal-body" style="padding:20px;">
+          <p style="font-size:14px; color:#334155; margin-bottom:15px;">
+            Qualifying <strong><?php echo htmlspecialchars($p_info['customer']); ?></strong> (Record #<?php echo htmlspecialchars($p_info['lead_id']); ?>) as a verified Lead.
+          </p>
+          <div class="form-group" style="margin-bottom:0;">
+            <label style="font-weight:600; color:#0f172a;">Qualification Remarks</label>
+            <textarea class="form-control" name="remarks" rows="3" placeholder="Enter qualification remarks or rationale for converting into a Lead..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer" style="border-top:1px solid #e2e8f0; background:#f8fafc; border-bottom-left-radius:6px; border-bottom-right-radius:6px;">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-success" style="background:#16a34a; border-color:#15803d; font-weight:600;">Confirm Conversion</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
     </div>
   
   </section>

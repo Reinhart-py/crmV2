@@ -278,13 +278,80 @@ function __construct()
 		$this->qualified();
 	}
 
-	public function transfer_to_lead()
+	public function review_leads()
+	{
+		$data = array();
+		$data['info'] = array(
+			'title' => 'Manager - Review Leads',
+			'page_heading' => 'Review Submitted Leads'
+		);
+		$data['info2'] = $this->if_not_login();
+
+		$cur_uid = (int)$this->session->userdata('manager_id');
+		$cur_role = (int)$this->session->userdata('manager_role');
+		$team = $this->ci_admin_model->fetchTeamList($cur_uid, '');
+		if ($cur_role !== 1 && $cur_role !== 4 && $cur_uid !== 1 && empty($team)) {
+			$this->session->set_flashdata('error_message', 'Access denied. You do not have permission to review leads.');
+			redirect('manager/dashboard');
+			return;
+		}
+
+		$order_by = isset($_GET['order_by']) ? $_GET['order_by'] : 'A.id';
+		$sort_by = isset($_GET['sort_by']) ? $_GET['sort_by'] : 'DESC';
+		$search = isset($_GET['search']) ? $_GET['search'] : '';
+		$user_name = isset($_GET['user_name']) ? $_GET['user_name'] : '';
+		$country = isset($_GET['country']) ? $_GET['country'] : '';
+		$state = isset($_GET['state']) ? $_GET['state'] : '';
+		if (!empty($country)) {
+			if (is_array($country)) {
+				$country = implode(',', $country);
+			}
+			$data['state_list'] = $this->comman_model->getAll(array('country_id' => $country), '', 'states');
+		}
+		if (!empty($state)) {
+			if (is_array($state)) {
+				$state = implode(',', $state);
+			}
+		}
+		$d1 = isset($_GET['d1']) ? $_GET['d1'] : (isset($_GET['exp_d1']) ? $_GET['exp_d1'] : '');
+		$d2 = isset($_GET['d2']) ? $_GET['d2'] : (isset($_GET['exp_d2']) ? $_GET['exp_d2'] : '');
+		$mrr1 = isset($_GET['mrr1']) ? $_GET['mrr1'] : '';
+		$mrr2 = isset($_GET['mrr2']) ? $_GET['mrr2'] : '';
+		$status = isset($_GET['status']) ? $_GET['status'] : '';
+		$category = isset($_GET['category']) ? $_GET['category'] : '';
+		$lCat = isset($_GET['lCat']) ? $_GET['lCat'] : '';
+		if (!empty($lCat) && is_array($lCat)) {
+			$lCat = implode(',', $lCat);
+		}
+		if (!empty($category) && is_array($category)) {
+			$category = implode(',', $category);
+		}
+		if (!empty($status) && is_array($status)) {
+			$status = implode(',', $status);
+		}
+		$closure = isset($_GET['closure']) ? $_GET['closure'] : '';
+		$vertical_fu = isset($_GET['vertical_fu']) ? $_GET['vertical_fu'] : '';
+
+		$data['st_list'] = $this->comman_model->getAll(array('active' => 1), '', 'ci_status');
+		$data['c_list'] = $this->comman_model->getAll('', array('id', 'ASC'), 'countries');
+		$data['pc_list'] = $this->comman_model->getAll(array('cat_type' => 'p_cat', 'parent_id' => 0), '', 'ci_terms');
+		$data['lc_list'] = $this->comman_model->getAll(array('cat_type' => 'lead_cat', 'parent_id' => 0), '', 'ci_terms');
+		$data['product_list'] = $this->ci_admin_model->get_Myleads($d1, $d2, $mrr1, $mrr2, '', '', $order_by, $sort_by, $search, $status, $category, $lCat, $user_name, $country, $state, $closure, $vertical_fu, 'review_leads');
+		$data['stage'] = 'review_leads';
+		$data['is_review_view'] = true;
+
+		$this->session->set_userdata('manager_return_string', 'leads/review_leads');
+		$this->load->view('manager/leads/leadsview', $data);
+	}
+
+	public function convert_to_lead()
 	{
 		$this->if_not_login();
 		$lead_id = (int)$this->input->post('lead_id');
-		$comment = trim($this->input->post('comment'));
-		$uid = (int)$this->session->userdata('manager_id');
-		$uname = $this->session->userdata('manager_name');
+		$remarks = trim($this->input->post('remarks'));
+		$cur_uid = (int)$this->session->userdata('manager_id');
+		$cur_role = (int)$this->session->userdata('manager_role');
+		$cur_name = $this->session->userdata('manager_name');
 
 		if (empty($lead_id)) {
 			$this->session->set_flashdata('error_message', 'Invalid record selected.');
@@ -294,8 +361,32 @@ function __construct()
 
 		$lead = $this->ci_admin_model->getSingleLead($lead_id);
 		if (empty($lead)) {
-			$this->session->set_flashdata('error_message', 'Record not found.');
+			$this->session->set_flashdata('error_message', 'Database record not found.');
 			redirect('manager/leads');
+			return;
+		}
+
+		if (!empty($lead['pipeline_stage']) && $lead['pipeline_stage'] === 'lead') {
+			$this->session->set_flashdata('error_message', 'This record has already been converted to a Lead.');
+			redirect('manager/leads/view/' . base64_encode($lead_id));
+			return;
+		}
+
+		$lead_owner = !empty($lead['lead_assign']) ? (int)$lead['lead_assign'] : (int)$lead['created_by'];
+		$team_members = $this->ci_admin_model->fetchTeamList($cur_uid, '');
+		if (!is_array($team_members)) {
+			$team_members = array();
+		}
+		$can_convert = false;
+		if ($cur_role === 1 || $cur_uid === 1 || $cur_role === 4) {
+			$can_convert = true;
+		} elseif ($lead_owner > 0 && $cur_uid !== $lead_owner && in_array($lead_owner, array_map('intval', $team_members))) {
+			$can_convert = true;
+		}
+
+		if (!$can_convert) {
+			$this->session->set_flashdata('error_message', 'Access denied. You do not have permission to convert this record to a Lead.');
+			redirect('manager/leads/view/' . base64_encode($lead_id));
 			return;
 		}
 
@@ -306,10 +397,10 @@ function __construct()
 				'lead_id' => $lead_id,
 				'pipeline_stage' => 'lead',
 				'conversion_status' => 'approved',
-				'conversion_reason' => $comment,
-				'conversion_requested_by' => $uid,
-				'conversion_reviewed_by' => $uid,
+				'conversion_reason' => $remarks,
+				'conversion_requested_by' => $lead_owner ?: $cur_uid,
 				'conversion_requested_at' => $now,
+				'conversion_reviewed_by' => $cur_uid,
 				'conversion_reviewed_at' => $now,
 				'created_at' => $now,
 				'updated_at' => $now
@@ -318,8 +409,8 @@ function __construct()
 			$this->db->where('lead_id', $lead_id)->update('ci_pipeline', array(
 				'pipeline_stage' => 'lead',
 				'conversion_status' => 'approved',
-				'conversion_reason' => $comment,
-				'conversion_reviewed_by' => $uid,
+				'conversion_reason' => $remarks,
+				'conversion_reviewed_by' => $cur_uid,
 				'conversion_reviewed_at' => $now,
 				'updated_at' => $now
 			));
@@ -327,24 +418,23 @@ function __construct()
 
 		$this->db->insert('ci_pipeline_logs', array(
 			'lead_id' => $lead_id,
-			'action' => 'transfer_to_lead',
+			'action' => 'convert_to_lead',
 			'stage_from' => 'database',
 			'stage_to' => 'lead',
-			'action_by' => $uid,
-			'action_by_name' => $uname,
-			'remarks' => "Transferred to Lead: " . $comment,
+			'action_by' => $cur_uid,
+			'action_by_name' => $cur_name,
+			'remarks' => !empty($remarks) ? $remarks : 'Converted Database record to Lead upon qualification review',
 			'created_at' => $now
 		));
 
-		$this->ci_admin_model->log_admin_action('transfer_to_lead', "Transferred #$lead_id to Lead", 'SUCCESS', $uid, $uname);
-		$this->session->set_flashdata('message', 'Database record transferred to Lead successfully.');
+		$this->ci_admin_model->log_admin_action('convert_to_lead', "Converted record #$lead_id to Lead", 'SUCCESS', $cur_uid, $cur_name);
+		$this->session->set_flashdata('message', 'Database record has been successfully converted into a Lead.');
+		redirect('manager/leads/view/' . base64_encode($lead_id));
+	}
 
-		$back = $this->agent->referrer();
-		if (!empty($back)) {
-			redirect($back);
-		} else {
-			redirect('manager/leads');
-		}
+	public function transfer_to_lead()
+	{
+		$this->convert_to_lead();
 	}	
 
 	public function ajax_get_state()
@@ -577,16 +667,28 @@ function __construct()
 			if(!empty($data['p_info'])){
 				$cur_mgr_id = (int)$this->session->userdata('manager_id');
 				$cur_mgr_role = (int)$this->session->userdata('manager_role');
-				if ($cur_mgr_role != 1 && $cur_mgr_role != 4) {
-					$lead_owner = !empty($data['p_info']['lead_assign']) ? (int)$data['p_info']['lead_assign'] : (int)$data['p_info']['created_by'];
+				$lead_owner = !empty($data['p_info']['lead_assign']) ? (int)$data['p_info']['lead_assign'] : (int)$data['p_info']['created_by'];
+				$team_members = is_array($data['p_team']) ? array_map('intval', $data['p_team']) : array();
+				$is_mgr_above_owner = (!empty($team_members) && in_array($lead_owner, $team_members));
+				if ($cur_mgr_role != 1 && $cur_mgr_role != 4 && $cur_mgr_id !== 1) {
 					$is_collab = (!empty($data['p_info']['agents']) && in_array($cur_mgr_id, array_map('intval', explode(',', $data['p_info']['agents']))));
-					if ($lead_owner !== $cur_mgr_id && !$is_collab) {
+					if ($lead_owner !== $cur_mgr_id && !$is_collab && !$is_mgr_above_owner) {
 						$this->session->set_flashdata('error_message', 'You do not have access to this lead.');
 						$return_url = urldecode($this->session->userdata('manager_return_string'));
 						redirect('/manager/' . ($return_url ?: 'leads'));
 						return;
 					}
 				}
+
+				$can_convert = false;
+				if ($cur_mgr_role === 1 || $cur_mgr_id === 1 || $cur_mgr_role === 4) {
+					$can_convert = true;
+				} elseif ($lead_owner > 0 && $cur_mgr_id !== $lead_owner && $is_mgr_above_owner) {
+					$can_convert = true;
+				}
+				$data['can_convert_to_lead'] = $can_convert;
+				$data['is_already_lead'] = (!empty($data['p_info']['pipeline_stage']) && $data['p_info']['pipeline_stage'] === 'lead');
+				$data['pipeline_logs'] = $this->db->where('lead_id', $id)->order_by('id', 'DESC')->get('ci_pipeline_logs')->result_array();
 
 				$data['transfer_history'] = $this->db->select('T.*, U1.name as from_user_name, U2.name as to_user_name, U3.name as transferred_by_name')
 					->from('ci_lead_transfers as T')

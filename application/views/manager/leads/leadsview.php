@@ -301,9 +301,6 @@ foreach($st_list as $cli){
                                                             data-toggle="tooltip" title="View">Preview</a> </li>
                                                     <li> <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($li['id']); ?>"
                                                             data-toggle="tooltip" title="Edit">Edit</a> </li>
-                                                    <?php if(empty($li['pipeline_stage']) || $li['pipeline_stage'] === 'database'){ ?>
-                                                    <li> <a href="javascript:void(0);" onclick="transferToLead(<?php echo $li['id']; ?>, '<?php echo htmlspecialchars(addslashes($li['customer'])); ?>')">Transfer to Lead</a> </li>
-                                                    <?php } ?>
                                                 </ul>
                                             </div>
 
@@ -487,40 +484,6 @@ $(document).ready(function() {
     	]
     });
 });
-</script>
-
-<div class="modal fade" id="transferLeadModal" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content" style="border-radius:6px;">
-      <form action="<?php echo base_url(); ?>manager/leads/transfer_to_lead" method="post">
-        <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
-        <input type="hidden" name="lead_id" id="transfer_lead_id" value="">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title" style="font-weight:600;">Transfer Database to Lead</h4>
-        </div>
-        <div class="modal-body">
-          <p>Transfer client <strong id="transfer_lead_name"></strong> to Lead pipeline?</p>
-          <div class="form-group">
-            <label>Comment / Requirement Note <span class="text-danger">*</span></label>
-            <textarea name="comment" class="form-control" rows="3" placeholder="Enter confirmed requirement or note" required></textarea>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary" style="background:#2563eb; border-color:#2563eb;">Confirm Transfer</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<script>
-function transferToLead(id, name) {
-  $('#transfer_lead_id').val(id);
-  $('#transfer_lead_name').text(name);
-  $('#transferLeadModal').modal('show');
-}
 </script>
 
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>
