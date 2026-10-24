@@ -38,13 +38,16 @@
   <div class="col-md-6">
       <div class="table-responsive border">
           <table class="table">
-        
+              <tr>
+                <th scope="col">Database No.</th>
+                <td><?php echo !empty($slist['db_ref_no']) ? htmlspecialchars($slist['db_ref_no']) : ('D' . str_pad($slist['id'], 10, '0', STR_PAD_LEFT)); ?></td>
+              </tr>
+              <?php if (!empty($slist['lead_ref_no']) || (isset($slist['pipeline_stage']) && $slist['pipeline_stage'] === 'lead')) { ?>
               <tr>
                 <th scope="col">Lead No.</th>
-                <td><?php echo $slist['lead_id']; ?></td>
-
-                
+                <td><?php echo !empty($slist['lead_ref_no']) ? htmlspecialchars($slist['lead_ref_no']) : htmlspecialchars($slist['lead_id']); ?></td>
               </tr>
+              <?php } ?>
      <tr>
               <th scope="col">Lead Assigned To   </th>
               <td scope="col"><?php echo $slist['assigned_name']; ?></td>              

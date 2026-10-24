@@ -200,8 +200,6 @@ foreach($st_list as $cli){
                             
 
                             <?php } else { ?>
-
-                            <a href="<?php echo base_url(); ?>manager/leads/add" class="btn btn-success">Add Database Contact</a>
                             <?php } ?>
 
 
@@ -227,7 +225,7 @@ foreach($st_list as $cli){
                                 <thead>
                                     <tr>
 
-                                        <th>ID</th>
+                                        <th>Lead No.</th>
                                         <th>Customer</th>
                                         <th>Service Type</th>
                                         <th>MRR</th>
@@ -264,7 +262,7 @@ foreach($st_list as $cli){
                                     <?php foreach($product_list as $k=>$li){ ?>
                                     <tr>
 
-                                        <td><a href="<?php echo base_url(); ?>manager/leads/view_leads/view/<?php echo base64_encode($li['id']); ?>"><strong><?php echo $li['lead_id']; ?></strong></a></td>
+                                        <td><a href="<?php echo base_url(); ?>manager/leads/view_leads/view/<?php echo base64_encode($li['id']); ?>"><strong><?php echo !empty($li['lead_ref_no']) ? htmlspecialchars($li['lead_ref_no']) : ('L' . str_pad($li['id'], 10, '0', STR_PAD_LEFT)); ?></strong></a></td>
                                         <td>
                                             <a href="<?php echo base_url(); ?>manager/leads/view_leads/view/<?php echo base64_encode($li['id']); ?>"><?php echo $li['customer']; ?></a>
                                             <?php if(!empty($li['dnd_status']) && strtolower($li['dnd_status']) == 'yes'){ ?>

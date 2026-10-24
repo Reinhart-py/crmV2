@@ -16,6 +16,9 @@
 <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/slimmenu.min.css" >   
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/font-awesome.min.css">
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/ionicons.min.css">
@@ -49,7 +52,7 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.5/css/responsive.dataTables.min.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/bootstrap/developer.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/multiselect/multiselect.css">
-<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-dashboard.css">
+<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-dashboard.css?v=20261024_blue">
 <link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/plugins/table_export/css/tableexport.css" />
 
 <script src="<?php echo base_url();?>assets/plugins/table_export/FileSaver.min.js"></script>
@@ -108,12 +111,16 @@
         $current_user_name = '';
         $current_user_gender = '';
         $current_user_email = '';
+        $custom_avatar = '';
         if ($current_user_id) {
-          $u_row = $this->db->select('name, gender, email, c_email')->get_where('ci_user', array('id' => $current_user_id))->row_array();
+          $u_row = $this->db->select('name, gender, email, c_email, avatar')->get_where('ci_user', array('id' => $current_user_id))->row_array();
           if (!empty($u_row)) {
             $current_user_name = !empty($u_row['name']) ? $u_row['name'] : '';
             $current_user_gender = !empty($u_row['gender']) ? trim($u_row['gender']) : '';
             $current_user_email = !empty($u_row['email']) ? $u_row['email'] : (!empty($u_row['c_email']) ? $u_row['c_email'] : '');
+            if (!empty($u_row['avatar']) && file_exists(FCPATH . $u_row['avatar'])) {
+              $custom_avatar = $u_row['avatar'];
+            }
           }
         }
         if (empty($current_user_name)) {
@@ -139,16 +146,20 @@
           'assets/dist/img/pfp_male_2.svg'
         );
 
-        $user_avatar = 'assets/dist/img/pfp_male_1.svg';
-        if (strcasecmp($current_user_gender, 'female') === 0) {
-          $idx = abs($current_user_id) % count($female_avatars);
-          $user_avatar = $female_avatars[$idx];
-        } elseif (strcasecmp($current_user_gender, 'male') === 0) {
-          $idx = abs($current_user_id) % count($male_avatars);
-          $user_avatar = $male_avatars[$idx];
+        if (!empty($custom_avatar)) {
+          $user_avatar = $custom_avatar;
         } else {
-          $idx = abs($current_user_id) % count($neutral_avatars);
-          $user_avatar = $neutral_avatars[$idx];
+          $user_avatar = 'assets/dist/img/pfp_male_1.svg';
+          if (strcasecmp($current_user_gender, 'female') === 0) {
+            $idx = abs($current_user_id) % count($female_avatars);
+            $user_avatar = $female_avatars[$idx];
+          } elseif (strcasecmp($current_user_gender, 'male') === 0) {
+            $idx = abs($current_user_id) % count($male_avatars);
+            $user_avatar = $male_avatars[$idx];
+          } else {
+            $idx = abs($current_user_id) % count($neutral_avatars);
+            $user_avatar = $neutral_avatars[$idx];
+          }
         }
       ?>
       <?php if($is_admin || has_section_perm('dashboard')){ ?>
@@ -156,23 +167,26 @@
       <?php } ?>
 
       <?php if($is_admin || has_section_perm('my_zone') || has_section_perm('database') || has_section_perm('leads') || has_section_perm('tasks') || has_section_perm('internal_tasks') || has_section_perm('external_tasks')){ ?>
-      <li class="<?php if(($route1=="leads" && $route2!="review_leads") || $route1=="verticals" || $route1=="database-transfer" || in_array($route1, array('tasks'))){ echo "active";}else{ echo "";}?>"> 
+      <li class="<?php if(($route1=="leads" && $route2!="review_leads") || $route1=="verticals" || $route1=="database-transfer" || in_array($route1, array('tasks')) || ($route1=="orders" && ($route2=="my" || (isset($_GET['scope']) && $_GET['scope']=="my"))) || $route1=="sales"){ echo "active";}else{ echo "";}?>"> 
         <a href="javascript:void(0);"><i class="fa fa-th-large"></i> <span>My Zone</span> </a>
         <ul>
           <?php if($is_admin || has_section_perm('database', 'write')){ ?>
-          <li><a href="<?php echo base_url();?>manager/leads/add"><i class="fa fa-plus"></i>Database Add</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/add"><i class="fa fa-plus"></i>Add Database</a></li>
           <?php } ?>
           <?php if($is_admin || has_section_perm('database')){ ?>
-          <li><a href="<?php echo base_url();?>manager/leads"><i class="fa fa-list"></i>Database View</a></li>
-          <li><a href="<?php echo base_url();?>manager/leads/followups"><i class="fa fa-clock-o"></i>Database Follow-Up</a></li>
-          <li><a href="<?php echo base_url();?>manager/leads/meetings"><i class="fa fa-calendar"></i>Database Meetings</a></li>
-          <li><a href="<?php echo base_url();?>manager/leads/view_leads"><i class="fa fa-bullseye"></i>Lead View</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads"><i class="fa fa-database"></i>View Database</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/view_leads"><i class="fa fa-bullseye"></i>View Leads</a></li>
+          <li><a href="<?php echo base_url();?>manager/orders/my"><i class="fa fa-shopping-cart"></i>View Orders</a></li>
+          <li><a href="<?php echo base_url();?>manager/sales"><i class="fa fa-line-chart"></i>View Sales</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/followups"><i class="fa fa-clock-o"></i>My Follow-Up</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/meetings"><i class="fa fa-calendar"></i>My Meetings</a></li>
           <?php } ?>
           <?php if($is_admin || has_section_perm('database', 'write')){ ?>
-          <li><a href="<?php echo base_url();?>manager/verticals/add"><i class="fa fa-plus"></i>Vertical Add</a></li>
+          <li><a href="<?php echo base_url();?>manager/verticals/add"><i class="fa fa-plus"></i>Add Vertical</a></li>
           <?php } ?>
           <?php if($is_admin || has_section_perm('database')){ ?>
-          <li><a href="<?php echo base_url();?>manager/verticals"><i class="fa fa-list"></i>Vertical View</a></li>
+          <li><a href="<?php echo base_url();?>manager/verticals"><i class="fa fa-list"></i>View Vertical</a></li>
+          <li><a href="<?php echo base_url();?>manager/verticals/followups"><i class="fa fa-clock-o"></i>Vertical Follow-up</a></li>
           <?php } ?>
           <?php if($is_admin || has_section_perm('internal_tasks') || has_section_perm('tasks')){ ?>
           <li><a href="<?php echo base_url();?>manager/tasks/internal"><i class="fa fa-building-o"></i>View Internal Task</a></li>
@@ -188,28 +202,24 @@
       <?php } ?>
 
       <?php if($is_admin || has_section_perm('team')){ ?>
-      <li class="<?php if($route1=="team"){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/team/members"><i class="fa fa-users"></i> <span>Team</span> </a>
+      <li class="<?php if(in_array($route1, array('team')) || ($route1=="orders" && ($route2=="team" || (isset($_GET['scope']) && $_GET['scope']=="team")))){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/team/members"><i class="fa fa-users"></i> <span>Team</span> </a>
         <ul>
-          <li><a href="<?php echo base_url();?>manager/team/members"><i class="fa fa-users"></i>Members </a></li>
-          <li><a href="<?php echo base_url();?>manager/team/chart"><i class="fa fa-list"></i>Chart</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/leads"><i class="fa fa-list"></i>Leads</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/verticals"><i class="fa fa-list"></i>Verticals</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/followups"><i class="fa fa-list"></i>Follow up</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/meetings"><i class="fa fa-list"></i>Meetings</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/assignmeetings"><i class="fa fa-list"></i>Assigned Meetings</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/assignleads"><i class="fa fa-list"></i>Assign Database</a></li>
-          <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-tasks"></i>Task</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/tickets"><i class="fa fa-ticket"></i>Tickets</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/members"><i class="fa fa-users"></i>Members</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/chart"><i class="fa fa-sitemap"></i>Chart</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/orders"><i class="fa fa-shopping-cart"></i>Orders</a></li>
         </ul>
       </li>
       <?php } ?>
 
       <?php if($can_see_review){ ?>
-      <li class="<?php if(($route1=="leads" && $route2=="review_leads") || ($route1=="tasks" && $route2=="external" && isset($_GET['review'])) || $route1=="back-office"){ echo "active";}else{ echo "";}?>"> 
+      <li class="<?php if(($route1=="leads" && $route2=="review_leads") || $route1=="back-office" || ($route1=="orders" && $route2!="my" && $route2!="team" && (!isset($_GET['scope']) || !in_array($_GET['scope'], array('my', 'team'))))){ echo "active";}else{ echo "";}?>"> 
         <a href="javascript:void(0);"><i class="fa fa-briefcase"></i> <span>Back Office</span> </a>
         <ul>
-          <li><a href="<?php echo base_url();?>manager/leads/review_leads"><i class="fa fa-check-square-o"></i>Review Lead</a></li>
-          <li><a href="<?php echo base_url();?>manager/tasks/external"><i class="fa fa-shopping-cart"></i>Order</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/review_leads"><i class="fa fa-check-square-o"></i>Pending Leads Approval</a></li>
+          <li><a href="<?php echo base_url();?>manager/orders/pending_process"><i class="fa fa-hourglass-half"></i>Pending Order Process</a></li>
+          <li><a href="<?php echo base_url();?>manager/kam/onboard"><i class="fa fa-user-plus"></i>Onboard Client</a></li>
+          <li><a href="<?php echo base_url();?>manager/orders?status=completed"><i class="fa fa-check-circle"></i>Completed Orders</a></li>
+          <li><a href="<?php echo base_url();?>manager/orders"><i class="fa fa-list"></i>View All Orders</a></li>
         </ul>
       </li>
       <?php } ?>
@@ -228,7 +238,7 @@
       <?php } ?>
 
       <?php if($is_admin || has_section_perm('system')){ ?>
-      <li class="<?php if($route1=="roles" || $route1=="terms" || $route1=="users" || $route1=="assigned-leads" || $route1=="admin-logs" || ($route1=="system" && ($route2=="calling-api" || $route2=="calling_api")) || ($route1=="leads" && in_array($route2, array("import", "export")))){ echo "active";}else{ echo "";}?>"> 
+      <li class="<?php if($route1=="roles" || $route1=="terms" || $route1=="users" || $route1=="assigned-leads" || $route1=="admin-logs" || ($route1=="system" && ($route2=="calling-api" || $route2=="calling_api" || $route2=="integrations")) || $route1=="integrations" || ($route1=="leads" && in_array($route2, array("import", "export")))){ echo "active";}else{ echo "";}?>"> 
         <a href="<?php echo ($is_admin)? base_url().'manager/roles' : base_url().'manager/leads/import'; ?>"><i class="fa fa-paperclip"></i> <span>System</span> </a>
         <ul>        
           <?php if($is_admin || has_section_perm('users', 'write')){ ?>
@@ -251,13 +261,18 @@
             <li><a href="<?php echo base_url();?>manager/admin-logs"><i class="fa fa-history"></i>Admin Logs</a></li>
           <?php } ?>
           <li><a href="<?php echo base_url();?>manager/system/calling-api"><i class="fa fa-phone-square"></i>Calling API</a></li>
+          <?php if($is_admin || has_section_perm('integrations')){ ?>
+          <li><a href="<?php echo base_url();?>manager/system/integrations"><i class="fa fa-plug"></i>Third-Party API</a></li>
+          <?php } ?>
         </ul>
       </li>
       <?php } ?>
 
       <?php if($is_admin || has_section_perm('reports')){ ?>
-      <li class="<?php if($route1=="reports" || $route1=="download-report" || $route1=="admin-reports"){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/download-report"><i class="fa fa-bar-chart"></i> <span>Reports</span> </a>
+      <li class="<?php if($route1=="reports" || $route1=="download-report" || $route1=="admin-reports" || $route1=="revenue-list" || $route1=="company-projections"){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/download-report"><i class="fa fa-bar-chart"></i> <span>Reports</span> </a>
         <ul>
+          <li><a href="<?php echo base_url();?>manager/reports/revenue-list"><i class="fa fa-money"></i>Revenue List</a></li>
+          <li><a href="<?php echo base_url();?>manager/reports/company-projections"><i class="fa fa-line-chart"></i>Company Projections</a></li>
           <li><a href="https://7strokes.maxvendor47.workers.dev/" target="_blank"><i class="fa fa-database"></i>Generate Data</a></li>
           <li><a href="<?php echo base_url();?>manager/download-report"><i class="fa fa-file-pdf-o"></i>Download Reports</a></li>
         </ul>
@@ -300,6 +315,12 @@
             <a href="<?php echo base_url(); ?>manager/profile" class="google-profile-item">
               <i class="fa fa-user-circle"></i>
               <span>View Profile</span>
+            </a>
+          </li>
+          <li>
+            <a href="<?php echo base_url(); ?>manager/events" class="google-profile-item">
+              <i class="fa fa-calendar-check-o"></i>
+              <span>Event and Awards</span>
             </a>
           </li>
           <li>
@@ -396,23 +417,26 @@ $(function() {
       <?php } ?>
 
       <?php if($is_admin || has_section_perm('my_zone') || has_section_perm('database') || has_section_perm('leads') || has_section_perm('tasks') || has_section_perm('internal_tasks') || has_section_perm('external_tasks')){ ?>
-      <li class="<?php if(($route1=="leads" && $route2!="review_leads") || $route1=="verticals" || $route1=="database-transfer" || in_array($route1, array('tasks'))){ echo "active";}else{ echo "";}?> treeview"> 
+      <li class="<?php if(($route1=="leads" && $route2!="review_leads") || $route1=="verticals" || $route1=="database-transfer" || in_array($route1, array('tasks')) || ($route1=="orders" && ($route2=="my" || (isset($_GET['scope']) && $_GET['scope']=="my"))) || $route1=="sales"){ echo "active";}else{ echo "";}?> treeview"> 
         <a href="javascript:void(0);"><i class="fa fa-th-large"></i> <span>My Zone</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu">
           <?php if($is_admin || has_section_perm('database', 'write')){ ?>
-          <li><a href="<?php echo base_url();?>manager/leads/add"><i class="fa fa-plus"></i>Database Add</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/add"><i class="fa fa-plus"></i>Add Database</a></li>
           <?php } ?>
           <?php if($is_admin || has_section_perm('database')){ ?>
-          <li><a href="<?php echo base_url();?>manager/leads"><i class="fa fa-list"></i>Database View</a></li>
-          <li><a href="<?php echo base_url();?>manager/leads/followups"><i class="fa fa-clock-o"></i>Database Follow-Up</a></li>
-          <li><a href="<?php echo base_url();?>manager/leads/meetings"><i class="fa fa-calendar"></i>Database Meetings</a></li>
-          <li><a href="<?php echo base_url();?>manager/leads/view_leads"><i class="fa fa-bullseye"></i>Lead View</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads"><i class="fa fa-database"></i>View Database</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/view_leads"><i class="fa fa-bullseye"></i>View Leads</a></li>
+          <li><a href="<?php echo base_url();?>manager/orders/my"><i class="fa fa-shopping-cart"></i>View Orders</a></li>
+          <li><a href="<?php echo base_url();?>manager/sales"><i class="fa fa-line-chart"></i>View Sales</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/followups"><i class="fa fa-clock-o"></i>My Follow-Up</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/meetings"><i class="fa fa-calendar"></i>My Meetings</a></li>
           <?php } ?>
           <?php if($is_admin || has_section_perm('database', 'write')){ ?>
-          <li><a href="<?php echo base_url();?>manager/verticals/add"><i class="fa fa-plus"></i>Vertical Add</a></li>
+          <li><a href="<?php echo base_url();?>manager/verticals/add"><i class="fa fa-plus"></i>Add Vertical</a></li>
           <?php } ?>
           <?php if($is_admin || has_section_perm('database')){ ?>
-          <li><a href="<?php echo base_url();?>manager/verticals"><i class="fa fa-list"></i>Vertical View</a></li>
+          <li><a href="<?php echo base_url();?>manager/verticals"><i class="fa fa-list"></i>View Vertical</a></li>
+          <li><a href="<?php echo base_url();?>manager/verticals/followups"><i class="fa fa-clock-o"></i>Vertical Follow-up</a></li>
           <?php } ?>
           <?php if($is_admin || has_section_perm('internal_tasks') || has_section_perm('tasks')){ ?>
           <li><a href="<?php echo base_url();?>manager/tasks/internal"><i class="fa fa-building-o"></i>View Internal Task</a></li>
@@ -428,29 +452,25 @@ $(function() {
       <?php } ?>
 
       <?php if($is_admin || has_section_perm('team')){ ?>
-      <li class="<?php if($route1=="team"){ echo "active";}else{ echo "";}?> treeview"> 
+      <li class="<?php if(in_array($route1, array('team')) || ($route1=="orders" && ($route2=="team" || (isset($_GET['scope']) && $_GET['scope']=="team")))){ echo "active";}else{ echo "";}?> treeview"> 
         <a href="javascript:void(0);"><i class="fa fa-users"></i> <span>Team</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu">
-          <li><a href="<?php echo base_url();?>manager/team/members"><i class="fa fa-users"></i>Members </a></li>
-          <li><a href="<?php echo base_url();?>manager/team/chart"><i class="fa fa-list"></i>Chart</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/leads"><i class="fa fa-list"></i>Leads</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/verticals"><i class="fa fa-list"></i>Verticals</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/followups"><i class="fa fa-list"></i>Follow up</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/meetings"><i class="fa fa-list"></i>Meetings</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/assignmeetings"><i class="fa fa-list"></i>Assigned Meetings</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/assignleads"><i class="fa fa-list"></i>Assign Database</a></li>
-          <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-tasks"></i>Task</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/tickets"><i class="fa fa-ticket"></i>Tickets</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/members"><i class="fa fa-users"></i>Members</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/chart"><i class="fa fa-sitemap"></i>Chart</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/orders"><i class="fa fa-shopping-cart"></i>Orders</a></li>
         </ul>
       </li>
       <?php } ?>
 
       <?php if($can_see_review){ ?>
-      <li class="<?php if(($route1=="leads" && $route2=="review_leads") || ($route1=="tasks" && $route2=="external" && isset($_GET['review'])) || $route1=="back-office"){ echo "active";}else{ echo "";}?> treeview"> 
+      <li class="<?php if(($route1=="leads" && $route2=="review_leads") || ($route1=="tasks" && $route2=="external" && isset($_GET['review'])) || $route1=="back-office" || ($route1=="orders" && $route2!="my" && $route2!="team" && (!isset($_GET['scope']) || !in_array($_GET['scope'], array('my', 'team'))))){ echo "active";}else{ echo "";}?> treeview"> 
         <a href="javascript:void(0);"><i class="fa fa-briefcase"></i> <span>Back Office</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu">
-          <li><a href="<?php echo base_url();?>manager/leads/review_leads"><i class="fa fa-check-square-o"></i>Review Lead</a></li>
-          <li><a href="<?php echo base_url();?>manager/tasks/external"><i class="fa fa-shopping-cart"></i>Order</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/review_leads"><i class="fa fa-check-square-o"></i>Pending Leads Approval</a></li>
+          <li><a href="<?php echo base_url();?>manager/orders/pending_process"><i class="fa fa-hourglass-half"></i>Pending Order Process</a></li>
+          <li><a href="<?php echo base_url();?>manager/kam/onboard"><i class="fa fa-user-plus"></i>Onboard Client</a></li>
+          <li><a href="<?php echo base_url();?>manager/orders?status=completed"><i class="fa fa-check-circle"></i>Completed Orders</a></li>
+          <li><a href="<?php echo base_url();?>manager/orders"><i class="fa fa-list"></i>View All Orders</a></li>
         </ul>
       </li>
       <?php } ?>
@@ -497,9 +517,11 @@ $(function() {
       <?php } ?>
 
       <?php if($is_admin || has_section_perm('reports')){ ?>
-      <li class="<?php if($route1=="reports" || $route1=="download-report" || $route1=="admin-reports"){ echo "active menu-open";}else{ echo "";}?> treeview"> 
+      <li class="<?php if($route1=="reports" || $route1=="download-report" || $route1=="admin-reports" || $route1=="revenue-list" || $route1=="company-projections"){ echo "active menu-open";}else{ echo "";}?> treeview"> 
         <a href="javascript:void(0);"><i class="fa fa-bar-chart"></i> <span>Reports</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
-        <ul class="treeview-menu" style="<?php if($route1=="reports" || $route1=="download-report" || $route1=="admin-reports"){ echo "display: block;"; } ?>">
+        <ul class="treeview-menu" style="<?php if($route1=="reports" || $route1=="download-report" || $route1=="admin-reports" || $route1=="revenue-list" || $route1=="company-projections"){ echo "display: block;"; } ?>">
+          <li><a href="<?php echo base_url();?>manager/reports/revenue-list"><i class="fa fa-money"></i>Revenue List</a></li>
+          <li><a href="<?php echo base_url();?>manager/reports/company-projections"><i class="fa fa-line-chart"></i>Company Projections</a></li>
           <li><a href="https://7strokes.maxvendor47.workers.dev/" target="_blank"><i class="fa fa-database"></i>Generate Data</a></li>
           <li><a href="<?php echo base_url();?>manager/download-report"><i class="fa fa-file-pdf-o"></i>Download Reports</a></li>
         </ul>

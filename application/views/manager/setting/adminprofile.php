@@ -33,7 +33,7 @@
    
      <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?> <?php echo get_message($this->session->flashdata('message'),'message'); ?>
      
-      <form role="form" action="<?php echo base_url(); ?>manager/profile" method="post" name="edit_form">
+      <form role="form" action="<?php echo base_url(); ?>manager/profile" method="post" name="edit_form" enctype="multipart/form-data">
 
       
        <div class="box box-default">
@@ -41,11 +41,21 @@
         <h3 class="box-title">Personal Details</h3>
       </div>
       
-      <!-- /.box-header -->
-      
       <div class="box-body" >
       
         <div class="row">
+         
+            <div class="col-md-12">
+              <div class="form-group" style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
+                <div style="width:64px; height:64px; border-radius:50%; overflow:hidden; border:2px solid #e2e8f0; background:#f8fafc; flex-shrink:0;">
+                  <img src="<?php echo (!empty($list['avatar']) && file_exists(FCPATH . $list['avatar'])) ? base_url() . $list['avatar'] : base_url() . 'assets/dist/img/pfp_male_1.svg'; ?>" style="width:100%; height:100%; object-fit:cover;" />
+                </div>
+                <div>
+                  <label style="display:block; margin-bottom:4px; font-weight:600;">Profile Photo</label>
+                  <input type="file" name="avatar" accept="image/jpeg,image/png,image/webp" class="form-control" style="height:auto; padding:4px;" />
+                </div>
+              </div>
+            </div>
          
           
             <div class="col-md-6">

@@ -99,4 +99,89 @@ class Ci_admin_system extends CI_Controller {
 
 		$this->load->view('manager/system/admin_logs', $data);
 	}
+
+	public function live_location()
+	{
+		$this->if_not_login();
+		$cur_role = (int)$this->session->userdata('manager_role');
+		$cur_uid = (int)$this->session->userdata('manager_id');
+		if ($cur_role !== 1 && $cur_role !== 4 && $cur_uid !== 1) {
+			redirect('manager/dashboard');
+			return;
+		}
+
+		$data = array();
+		$data['info'] = array(
+			'title' => 'Live Location Tracking',
+			'page_heading' => 'Staff Live Location'
+		);
+
+		$this->db->select('L.*, U.name, U.email, U.department, U.mobile');
+		$this->db->from('ci_user_live_locations L');
+		$this->db->join('ci_user U', 'L.user_id = U.id', 'INNER');
+		$this->db->where('L.tracking_active', 1);
+		$this->db->order_by('L.updated_at', 'DESC');
+		$data['locations'] = $this->db->get()->result_array();
+
+		$this->load->view('manager/system/admin_logs', $data);
+	}
+
+	public function ajax_update_live_location()
+	{
+		$this->if_not_login();
+		$uid = (int)$this->session->userdata('manager_id');
+		$lat = $this->input->post('latitude');
+		$lng = $this->input->post('longitude');
+		$acc = $this->input->post('accuracy');
+		$active = (int)$this->input->post('tracking_active');
+
+		if ($uid > 0 && !empty($lat) && !empty($lng) && is_numeric($lat) && is_numeric($lng)) {
+			$this->session->set_userdata('user_last_latitude', $lat);
+			$this->session->set_userdata('user_last_longitude', $lng);
+
+			$existing = $this->db->where('user_id', $uid)->get('ci_user_live_locations')->row_array();
+			$payload = array(
+				'user_id' => $uid,
+				'latitude' => $lat,
+				'longitude' => $lng,
+				'accuracy' => !empty($acc) && is_numeric($acc) ? (float)$acc : null,
+				'tracking_active' => ($active === 1 ? 1 : 0),
+				'updated_at' => date('Y-m-d H:i:s')
+			);
+			if (!empty($existing)) {
+				$this->db->where('user_id', $uid)->update('ci_user_live_locations', $payload);
+			} else {
+				$this->db->insert('ci_user_live_locations', $payload);
+			}
+			header('Content-Type: application/json');
+			echo json_encode(array('success' => true));
+			exit();
+		}
+		header('Content-Type: application/json');
+		echo json_encode(array('success' => false, 'message' => 'Invalid coordinates'));
+		exit();
+	}
+
+	public function ajax_get_live_location()
+	{
+		$this->if_not_login();
+		$cur_role = (int)$this->session->userdata('manager_role');
+		$cur_uid = (int)$this->session->userdata('manager_id');
+		if ($cur_role !== 1 && $cur_role !== 4 && $cur_uid !== 1) {
+			header('Content-Type: application/json');
+			echo json_encode(array('success' => false, 'message' => 'Unauthorized'));
+			exit();
+		}
+
+		$this->db->select('L.*, U.name, U.email, U.department, U.mobile');
+		$this->db->from('ci_user_live_locations L');
+		$this->db->join('ci_user U', 'L.user_id = U.id', 'INNER');
+		$this->db->where('L.tracking_active', 1);
+		$this->db->order_by('L.updated_at', 'DESC');
+		$rows = $this->db->get()->result_array();
+
+		header('Content-Type: application/json');
+		echo json_encode(array('success' => true, 'locations' => $rows));
+		exit();
+	}
 }

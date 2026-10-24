@@ -195,9 +195,7 @@ foreach($st_list as $cli){
 
 
                             <?php } 
-       elseif($this->uri->segment(3)=='meetings'){ ?>
-
-                            
+       elseif($this->uri->segment(3)=='meetings' || $this->uri->segment(3)=='review_leads' || (isset($stage) && $stage === 'review_leads')){ ?>
 
                             <?php } else { ?>
 
@@ -226,20 +224,23 @@ foreach($st_list as $cli){
                                 style="width:100%">
                                 <thead>
                                     <tr>
-
-                                        <th>ID</th>
+                                        <th>Database No.</th>
                                         <th>Customer</th>
                                         <th>Service Type</th>
                                         <th>MRR</th>
-                                        <th>POC Name</th>
-                                        <th>Contact Number</th>
-                                        <th>Next FU date</th>
-                                        <th>Created</th>
-                                        <th>Status</th>
+                                        <?php if(isset($stage) && $stage === 'review_leads'){ ?>
+                                            <th>Requested By</th>
+                                            <th>Requested Date</th>
+                                            <th>Rationale</th>
+                                            <th>Status</th>
+                                        <?php } else { ?>
+                                            <th>POC Name</th>
+                                            <th>Contact Number</th>
+                                            <th>Next FU date</th>
+                                            <th>Created</th>
+                                            <th>Status</th>
+                                        <?php } ?>
                                         <th>Action</th>
-
-
-
                                     </tr>
                                 </thead>
                                 <tfoot>
@@ -264,7 +265,7 @@ foreach($st_list as $cli){
                                     <?php foreach($product_list as $k=>$li){ ?>
                                     <tr>
 
-                                        <td><a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>"><strong><?php echo $li['lead_id']; ?></strong></a></td>
+                                        <td><a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>"><strong><?php echo !empty($li['db_ref_no']) ? htmlspecialchars($li['db_ref_no']) : ('D' . str_pad($li['id'], 10, '0', STR_PAD_LEFT)); ?></strong></a></td>
                                         <td>
                                             <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>"><?php echo $li['customer']; ?></a>
                                             <?php if(!empty($li['dnd_status']) && strtolower($li['dnd_status']) == 'yes'){ ?>
@@ -273,39 +274,48 @@ foreach($st_list as $cli){
                                         </td>
                                         <td><?php echo $li['servicecat']; ?></td>
                                         <td><?php echo $li['mrr']; ?></td>
-                                        <td><?php echo $li['poc']; ?></td>
-                                        <td><?php echo $li['contact1']; ?></td>
-                                        <td><span class="no_show"><?php echo date('Ymd',strtotime($li['followup_date'])); ?></span><?php echo simple_date($li['followup_date']); ?></td>
-                                        <td><span class="no_show"><?php echo date('Ymd',strtotime($li['created'])); ?></span><?php echo simple_date($li['created']); ?></td>
-                                        <td>
-                                            <?php echo $li['lead_status']; ?>
-                                            <?php 
-                                            $cat_label = !empty($li['status_category']) ? $li['status_category'] : (!empty($li['lost_reason']) ? $li['lost_reason'] : '');
-                                            if (!empty($cat_label)): ?>
-                                                <br><small class="text-muted" style="font-weight: 500;">Category: <?php echo htmlspecialchars($cat_label); ?></small>
-                                            <?php endif; ?>
-                                            <?php if (!empty($li['quote_status'])): ?>
-                                                <br><span class="label label-info" style="font-size: 10px;"><?php echo htmlspecialchars($li['quote_status']); ?></span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td>
-                                            <div class="btn-group" style="min-width: 85px;">
-                                                <button type="button" class="btn btn-sm btn-warning">Action</button>
-                                                <button type="button" class="btn btn-sm btn-warning dropdown-toggle"
-                                                    data-toggle="dropdown" aria-expanded="false">
-                                                    <span class="caret"></span>
-                                                    <span class="sr-only">Toggle Dropdown</span>
-                                                </button>
-                                                <ul class="dropdown-menu" role="menu">
-                                                    <li> <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>"
-                                                            data-toggle="tooltip" title="View">Preview</a> </li>
-                                                    <li> <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($li['id']); ?>"
-                                                            data-toggle="tooltip" title="Edit">Edit</a> </li>
-                                                </ul>
-                                            </div>
-
-
-                                        </td>
+                                        <?php if(isset($stage) && $stage === 'review_leads'){ ?>
+                                            <td><?php echo htmlspecialchars($li['requested_by_name'] ?? 'Staff'); ?></td>
+                                            <td><?php echo !empty($li['conversion_requested_at']) ? date('d-m-Y H:i', strtotime($li['conversion_requested_at'])) : '-'; ?></td>
+                                            <td><span title="<?php echo htmlspecialchars($li['conversion_reason'] ?? ''); ?>"><?php echo htmlspecialchars(mb_strimwidth($li['conversion_reason'] ?? '-', 0, 35, '...')); ?></span></td>
+                                            <td><span class="label label-warning" style="background:#f59e0b; color:#ffffff; font-weight:600; font-size:11px;">Pending Review</span></td>
+                                            <td>
+                                                <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>" class="btn btn-xs btn-default" style="margin-right:4px;">Preview</a>
+                                                <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($li['id']); ?>" class="btn btn-xs btn-primary" style="background:#2563eb; border-color:#1d4ed8;">Edit</a>
+                                            </td>
+                                        <?php } else { ?>
+                                            <td><?php echo $li['poc']; ?></td>
+                                            <td><?php echo $li['contact1']; ?></td>
+                                            <td><span class="no_show"><?php echo date('Ymd',strtotime($li['followup_date'])); ?></span><?php echo simple_date($li['followup_date']); ?></td>
+                                            <td><span class="no_show"><?php echo date('Ymd',strtotime($li['created'])); ?></span><?php echo simple_date($li['created']); ?></td>
+                                            <td>
+                                                <?php echo $li['lead_status']; ?>
+                                                <?php 
+                                                $cat_label = !empty($li['status_category']) ? $li['status_category'] : (!empty($li['lost_reason']) ? $li['lost_reason'] : '');
+                                                if (!empty($cat_label)): ?>
+                                                    <br><small class="text-muted" style="font-weight: 500;">Category: <?php echo htmlspecialchars($cat_label); ?></small>
+                                                <?php endif; ?>
+                                                <?php if (!empty($li['quote_status'])): ?>
+                                                    <br><span class="label label-info" style="font-size: 10px;"><?php echo htmlspecialchars($li['quote_status']); ?></span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" style="min-width: 85px;">
+                                                    <button type="button" class="btn btn-sm btn-warning">Action</button>
+                                                    <button type="button" class="btn btn-sm btn-warning dropdown-toggle"
+                                                        data-toggle="dropdown" aria-expanded="false">
+                                                        <span class="caret"></span>
+                                                        <span class="sr-only">Toggle Dropdown</span>
+                                                    </button>
+                                                    <ul class="dropdown-menu" role="menu">
+                                                        <li> <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>"
+                                                                data-toggle="tooltip" title="View">Preview</a> </li>
+                                                        <li> <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($li['id']); ?>"
+                                                                data-toggle="tooltip" title="Edit">Edit</a> </li>
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                        <?php } ?>
                                     </tr>
                                     <?php } ?>
                                 </tbody>

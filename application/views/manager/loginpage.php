@@ -34,8 +34,12 @@
               </div>
             <?php } ?>
             <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?> <?php echo get_message($this->session->flashdata('message'),'message'); ?>
-            <form action="<?php echo base_url(); ?>manager/login" method="post">
+            <form action="<?php echo base_url(); ?>manager/login" method="post" id="loginForm">
               <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
+              <input type="hidden" name="latitude" id="login_lat" value="">
+              <input type="hidden" name="longitude" id="login_lng" value="">
+              <input type="hidden" name="accuracy" id="login_acc" value="">
+              <input type="hidden" name="location_status" id="login_loc_status" value="unrequested">
               <div class="form-group has-feedback">
                 <input type="text" class="form-control" name="email" placeholder="Enter Email" required>
               </div>
@@ -45,7 +49,7 @@
               <div class="row">
                 <div class="col-xs-6">
                   <div class="text-left">
-                    <button type="submit" class="btn btn-danger">Sign In</button>   
+                    <button type="submit" class="btn btn-danger" id="loginBtn">Sign In</button>   
                   </div>   
                 </div>
                 <div class="col-xs-6">
@@ -70,6 +74,31 @@
         radioClass: 'iradio_square-blue',
         increaseArea: '20%'
       });
+
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(function(pos) {
+          $('#login_lat').val(pos.coords.latitude);
+          $('#login_lng').val(pos.coords.longitude);
+          $('#login_acc').val(pos.coords.accuracy);
+          $('#login_loc_status').val('granted');
+        }, function(err) {
+          if (err.code === 1) {
+            $('#login_loc_status').val('denied');
+          } else if (err.code === 2) {
+            $('#login_loc_status').val('unavailable');
+          } else if (err.code === 3) {
+            $('#login_loc_status').val('timeout');
+          } else {
+            $('#login_loc_status').val('error');
+          }
+        }, {
+          enableHighAccuracy: true,
+          timeout: 6000,
+          maximumAge: 60000
+        });
+      } else {
+        $('#login_loc_status').val('unsupported');
+      }
     });
   </script>
 </body>

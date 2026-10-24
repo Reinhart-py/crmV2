@@ -169,7 +169,7 @@ class Ci_admin_model extends CI_model {
 
 public function dashboard_TeamPro($table='ci_leads'){
 	$manager_id = (int)$this->session->userdata('manager_id');
-	$user_role = (int)$this->session->userdata('user_role');
+	$user_role = (int)$this->session->userdata('manager_role');
 	$team_array = $this->fetchTeamList($manager_id, '');
 	if (!is_array($team_array)) {
 		$team_array = array();
@@ -177,7 +177,7 @@ public function dashboard_TeamPro($table='ci_leads'){
 	if (!in_array($manager_id, $team_array)) {
 		$team_array[] = $manager_id;
 	}
-	$team_str = implode(',', $team_array);
+	$team_str = implode(',', array_filter(array_map('intval', $team_array)));
 	if (empty($team_str)) {
 		$team_str = (string)$manager_id;
 	}
@@ -187,7 +187,7 @@ public function dashboard_TeamPro($table='ci_leads'){
 	$loop_labels = array();
 	$month_dates = array();
 	
-	$select_parts = array("COUNT(id) as total");
+	$select_parts = array("COUNT(a.id) as total");
 	for ($i = 0; $i < 12; $i++) {
 		$m_date = date("Y-m-01", strtotime("+$i month"));
 		$loop[] = $m_date;
@@ -198,16 +198,16 @@ public function dashboard_TeamPro($table='ci_leads'){
 		$d2 = date("Y-m-t", strtotime("+$i month"));
 		$month_dates[] = array('d1' => $d1, 'd2' => $d2);
 		if ($user_role === 1 || $user_role === 4) {
-			$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ".$table." a WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND a.status NOT IN (42,43,44)" . ($table == 'ci_leads' ? " AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')" : "") . ") AS pt_".$i;
+			$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ci_leads a INNER JOIN ci_pipeline P ON P.lead_id = a.id AND P.pipeline_stage = 'lead' WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND a.status NOT IN (42,43,44) AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS pt_".$i;
 		} else {
-			$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ".$table." a WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND a.status NOT IN (42,43,44) AND (FIND_IN_SET(a.created_by,'".$team_str."')>0 OR (a.lead_assign > 0 AND FIND_IN_SET(a.lead_assign,'".$team_str."')>0))" . ($table == 'ci_leads' ? " AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')" : "") . ") AS pt_".$i;
+			$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ci_leads a INNER JOIN ci_pipeline P ON P.lead_id = a.id AND P.pipeline_stage = 'lead' WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND a.status NOT IN (42,43,44) AND (FIND_IN_SET(a.created_by,'".$team_str."')>0 OR (a.lead_assign > 0 AND FIND_IN_SET(a.lead_assign,'".$team_str."')>0)) AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS pt_".$i;
 		}
 	}
 
 	if ($user_role === 1 || $user_role === 4) {
-		$sql = "SELECT " . implode(", ", $select_parts) . " FROM " . $table . " WHERE status NOT IN (42,43,44)" . ($table == 'ci_leads' ? " AND (company_status IS NULL OR LOWER(company_status) != 'closed')" : ""); 
+		$sql = "SELECT " . implode(", ", $select_parts) . " FROM ci_leads a INNER JOIN ci_pipeline P ON P.lead_id = a.id AND P.pipeline_stage = 'lead' WHERE a.status NOT IN (42,43,44) AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')"; 
 	} else {
-		$sql = "SELECT " . implode(", ", $select_parts) . " FROM " . $table . " WHERE status NOT IN (42,43,44) AND (FIND_IN_SET(created_by,'".$team_str."')>0 OR (lead_assign > 0 AND FIND_IN_SET(lead_assign,'".$team_str."')>0))" . ($table == 'ci_leads' ? " AND (company_status IS NULL OR LOWER(company_status) != 'closed')" : ""); 
+		$sql = "SELECT " . implode(", ", $select_parts) . " FROM ci_leads a INNER JOIN ci_pipeline P ON P.lead_id = a.id AND P.pipeline_stage = 'lead' WHERE a.status NOT IN (42,43,44) AND (FIND_IN_SET(a.created_by,'".$team_str."')>0 OR (a.lead_assign > 0 AND FIND_IN_SET(a.lead_assign,'".$team_str."')>0)) AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')"; 
 	}
 	$data = array();
 	$rows = $this->db->query($sql);
@@ -231,7 +231,7 @@ public function dashboard_MyPro($table='ci_leads'){
 	$loop_labels = array();
 	$month_dates = array();
 
-	$select_parts = array("COUNT(id) as total");
+	$select_parts = array("COUNT(a.id) as total");
 	for ($i = 0; $i < 12; $i++) {
 		$m_date = date("Y-m-01", strtotime("+$i month"));
 		$loop[] = $m_date;
@@ -241,10 +241,10 @@ public function dashboard_MyPro($table='ci_leads'){
 		$d1 = date("Y-m-01", strtotime("+$i month"));
 		$d2 = date("Y-m-t", strtotime("+$i month"));
 		$month_dates[] = array('d1' => $d1, 'd2' => $d2);
-		$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ".$table." a WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND a.status NOT IN (42,43,44) AND a.created_by = ".$user_id . ($table == 'ci_leads' ? " AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')" : "") . ") AS pt_".$i;
+		$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ci_leads a INNER JOIN ci_pipeline P ON P.lead_id = a.id AND P.pipeline_stage = 'lead' WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND a.status NOT IN (42,43,44) AND (a.created_by = ".$user_id." OR a.lead_assign = ".$user_id.") AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS pt_".$i;
 	}
 
-	$sql = "SELECT " . implode(", ", $select_parts) . " FROM " . $table . " WHERE status NOT IN (42,43,44) AND created_by = ".$user_id . ($table == 'ci_leads' ? " AND (company_status IS NULL OR LOWER(company_status) != 'closed')" : ""); 
+	$sql = "SELECT " . implode(", ", $select_parts) . " FROM ci_leads a INNER JOIN ci_pipeline P ON P.lead_id = a.id AND P.pipeline_stage = 'lead' WHERE a.status NOT IN (42,43,44) AND (a.created_by = ".$user_id." OR a.lead_assign = ".$user_id.") AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')"; 
 	$data = array();
 	$rows = $this->db->query($sql);
 	if($rows && is_object($rows) && $rows->num_rows()>=1){				
@@ -340,26 +340,38 @@ public function dashboard_MyPro($table='ci_leads'){
 		$today = date('Y-m-d');
 		$last_date = date('Y-m-d', strtotime("-7 day"));
 		$next_date = date('Y-m-d', strtotime("+7 day"));
+		$user_role = (int)$this->session->userdata('manager_role');
 
-		$user_role = (int)$this->session->userdata('user_role');
 		if($type == 0){
-			$user_cond = "(created_by = ".$manager_id." OR assigned_to = ".$manager_id.")";
+			$user_cond = "(assigned_to = ".$manager_id." OR (assigned_users IS NOT NULL AND assigned_users != '' AND FIND_IN_SET('".$manager_id."', assigned_users) > 0))";
 		}else{
+			$not_me = "(assigned_to != ".$manager_id." AND (assigned_users IS NULL OR assigned_users = '' OR FIND_IN_SET('".$manager_id."', assigned_users) = 0))";
 			if($user_role === 1 || $user_role === 4){
-				$user_cond = "(created_by > 0 OR assigned_to > 0)";
+				$user_cond = "((assigned_to > 0 OR (assigned_users IS NOT NULL AND assigned_users != '')) AND ".$not_me.")";
 			}else{
-				$team_array = $this->fetchTeamList($manager_id, '');
-				if(!is_array($team_array)){
-					$team_array = array();
+				$team_raw = $this->fetchTeamList($manager_id, '');
+				if(!is_array($team_raw)){
+					$team_raw = array();
 				}
-				if(!in_array($manager_id, $team_array)){
-					$team_array[] = $manager_id;
+				$team_members = array();
+				foreach($team_raw as $t_id){
+					$t_id = (int)$t_id;
+					if($t_id > 0 && $t_id !== $manager_id){
+						$team_members[] = $t_id;
+					}
 				}
-				$team_str = implode(',', $team_array);
-				if(empty($team_str)){
-					$team_str = (string)$manager_id;
+				$team_members = array_unique($team_members);
+				if(empty($team_members)){
+					$user_cond = "1 = 0";
+				}else{
+					$team_str = implode(',', $team_members);
+					$or_team = array();
+					$or_team[] = "assigned_to IN (".$team_str.")";
+					foreach($team_members as $tm){
+						$or_team[] = "FIND_IN_SET('".$tm."', assigned_users) > 0";
+					}
+					$user_cond = "((".implode(" OR ", $or_team).") AND ".$not_me.")";
 				}
-				$user_cond = "(FIND_IN_SET(created_by, '".$team_str."') > 0 OR FIND_IN_SET(assigned_to, '".$team_str."') > 0)";
 			}
 		}
 
@@ -392,26 +404,38 @@ public function dashboard_MyPro($table='ci_leads'){
 		$today = date('Y-m-d');
 		$last_date = date('Y-m-d', strtotime("-7 day"));
 		$next_date = date('Y-m-d', strtotime("+7 day"));
+		$user_role = (int)$this->session->userdata('manager_role');
 
-		$user_role = (int)$this->session->userdata('user_role');
 		if($type == 0){
-			$user_cond = "(created_by = ".$manager_id." OR raised_by = ".$manager_id." OR assigned_to = ".$manager_id." OR FIND_IN_SET('".$manager_id."', assigned_users) > 0)";
+			$user_cond = "(assigned_to = ".$manager_id." OR (assigned_users IS NOT NULL AND assigned_users != '' AND FIND_IN_SET('".$manager_id."', assigned_users) > 0))";
 		}else{
+			$not_me = "(assigned_to != ".$manager_id." AND (assigned_users IS NULL OR assigned_users = '' OR FIND_IN_SET('".$manager_id."', assigned_users) = 0))";
 			if($user_role === 1 || $user_role === 4){
-				$user_cond = "(created_by > 0 OR raised_by > 0 OR assigned_to > 0)";
+				$user_cond = "((assigned_to > 0 OR (assigned_users IS NOT NULL AND assigned_users != '')) AND ".$not_me.")";
 			}else{
-				$team_array = $this->fetchTeamList($manager_id, '');
-				if(!is_array($team_array)){
-					$team_array = array();
+				$team_raw = $this->fetchTeamList($manager_id, '');
+				if(!is_array($team_raw)){
+					$team_raw = array();
 				}
-				if(!in_array($manager_id, $team_array)){
-					$team_array[] = $manager_id;
+				$team_members = array();
+				foreach($team_raw as $t_id){
+					$t_id = (int)$t_id;
+					if($t_id > 0 && $t_id !== $manager_id){
+						$team_members[] = $t_id;
+					}
 				}
-				$team_str = implode(',', $team_array);
-				if(empty($team_str)){
-					$team_str = (string)$manager_id;
+				$team_members = array_unique($team_members);
+				if(empty($team_members)){
+					$user_cond = "1 = 0";
+				}else{
+					$team_str = implode(',', $team_members);
+					$or_team = array();
+					$or_team[] = "assigned_to IN (".$team_str.")";
+					foreach($team_members as $tm){
+						$or_team[] = "FIND_IN_SET('".$tm."', assigned_users) > 0";
+					}
+					$user_cond = "((".implode(" OR ", $or_team).") AND ".$not_me.")";
 				}
-				$user_cond = "(FIND_IN_SET(created_by, '".$team_str."') > 0 OR FIND_IN_SET(raised_by, '".$team_str."') > 0 OR FIND_IN_SET(assigned_to, '".$team_str."') > 0)";
 			}
 		}
 
@@ -643,7 +667,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			   if ($stage === 'database') {
 				   $this->db->where("(P.pipeline_stage = 'database' OR (P.pipeline_stage IS NULL AND (A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)))");
 			   } elseif ($stage === 'review_leads') {
-				   $this->db->where("(P.pipeline_stage = 'database' OR (P.pipeline_stage IS NULL AND (A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)))");
+				   $this->db->where("P.conversion_status", 'pending');
 			   } elseif ($stage === 'lead') {
 				   $this->db->where("P.pipeline_stage", 'lead');
 			   } elseif ($stage === 'pending_approval') {
@@ -1071,7 +1095,7 @@ public function dashboard_MyPro($table='ci_leads'){
 		return $result;
 	}
 
-	  public function getTeamLeads($d1='', $d2='', $mrr1='', $mrr2='', $limit_per_page='', $page_index='', $order_by='',$sort_by='', $search='', $status='', $category='', $lCat='',$user_name='',$country='',$state='', $closure='')
+	  public function getTeamLeads($d1='', $d2='', $mrr1='', $mrr2='', $limit_per_page='', $page_index='', $order_by='',$sort_by='', $search='', $status='', $category='', $lCat='',$user_name='',$country='',$state='', $closure='', $stage='lead')
 	  {			 
 		$manager_id = (int)$this->session->userdata('manager_id');
 		$user_role = (int)$this->session->userdata('user_role');
@@ -1090,11 +1114,18 @@ public function dashboard_MyPro($table='ci_leads'){
 				  $date1=date("Y-m-d",strtotime($d1) );
 				  $date2=date("Y-m-d",strtotime($d2) );
 					$result=array();
-			   $this->db->select(array('A.*','B.name as owner_name','C.status as lead_status','B.user_level','E.title as servicecat'));
+			   $this->db->select(array('A.*','B.name as owner_name','C.status as lead_status','B.user_level','E.title as servicecat', 'P.db_ref_no', 'P.lead_ref_no', 'P.pipeline_stage', 'P.order_request_status', 'P.is_locked'));
 			   $this->db->from('ci_leads as A');
 			   $this->db->join('ci_user as B','A.created_by=B.id','LEFT');
 			   $this->db->join('ci_status as C','A.status=C.id','LEFT');
 			   $this->db->join('ci_terms as E','A.s_cat=E.id','LEFT');
+			   $this->db->join('ci_pipeline as P','A.id=P.lead_id','LEFT');
+
+			   if ($stage === 'database') {
+				   $this->db->where("(P.pipeline_stage = 'database' OR P.pipeline_stage IS NULL)");
+			   } elseif ($stage === 'lead') {
+				   $this->db->where("P.pipeline_stage", 'lead');
+			   }
 			  
 			   if(!empty($closure)){
 				   $this->db->where_not_in('A.status', array(42, 43, 44));
@@ -1274,6 +1305,12 @@ public function dashboard_MyPro($table='ci_leads'){
 				   $this->db->where("P.pipeline_stage", 'lead');
 			   } elseif ($stage === 'database') {
 				   $this->db->where("(P.pipeline_stage = 'database' OR (P.pipeline_stage IS NULL AND (A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)))");
+			   } elseif ($stage === 'review_leads' || $stage === 'pending_approval') {
+				   $this->db->where("P.conversion_status", 'pending');
+			   } elseif ($stage === 'back_office') {
+				   $this->db->where("P.pipeline_stage", 'back_office');
+			   } elseif ($stage === 'kam') {
+				   $this->db->where("(P.pipeline_stage = 'kam' OR A.database_category = 'KAM Onboarded')");
 			   }
 			  
 				$cur_role = (int)$this->session->userdata('manager_role');
@@ -2087,7 +2124,7 @@ public function dashboard_MyPro($table='ci_leads'){
 		return !empty($ip) ? $ip : '127.0.0.1';
 	}
 
-	public function log_admin_action($activity, $details = '', $status = 'SUCCESS', $user_id = null, $username = null)
+	public function log_admin_action($activity, $details = '', $status = 'SUCCESS', $user_id = null, $username = null, $lat = null, $lng = null, $accuracy = null, $loc_status = null)
 	{
 		if ($user_id === null) {
 			$user_id = $this->session->userdata('manager_id');
@@ -2100,6 +2137,26 @@ public function dashboard_MyPro($table='ci_leads'){
 		$ua = !empty($_SERVER['HTTP_USER_AGENT']) ? substr($_SERVER['HTTP_USER_AGENT'], 0, 255) : '';
 		$now = date('Y-m-d H:i:s');
 
+		if ($lat === null && isset($_POST['latitude']) && $_POST['latitude'] !== '') {
+			$lat = trim($_POST['latitude']);
+		}
+		if ($lng === null && isset($_POST['longitude']) && $_POST['longitude'] !== '') {
+			$lng = trim($_POST['longitude']);
+		}
+		if ($accuracy === null && isset($_POST['accuracy']) && $_POST['accuracy'] !== '') {
+			$accuracy = (float)$_POST['accuracy'];
+		}
+		if ($loc_status === null && isset($_POST['location_status']) && $_POST['location_status'] !== '') {
+			$loc_status = trim($_POST['location_status']);
+		}
+
+		if ($lat === null && $this->session->userdata('user_last_latitude')) {
+			$lat = $this->session->userdata('user_last_latitude');
+		}
+		if ($lng === null && $this->session->userdata('user_last_longitude')) {
+			$lng = $this->session->userdata('user_last_longitude');
+		}
+
 		$log_data = array(
 			'user_id' => !empty($user_id) ? (int)$user_id : null,
 			'username' => $username,
@@ -2108,11 +2165,19 @@ public function dashboard_MyPro($table='ci_leads'){
 			'activity' => $activity,
 			'status' => $status,
 			'details' => $details,
-			'created_at' => $now
+			'created_at' => $now,
+			'latitude' => (!empty($lat) && is_numeric($lat)) ? $lat : null,
+			'longitude' => (!empty($lng) && is_numeric($lng)) ? $lng : null,
+			'accuracy' => (!empty($accuracy) && is_numeric($accuracy)) ? (float)$accuracy : null,
+			'location_status' => !empty($loc_status) ? substr($loc_status, 0, 50) : null
 		);
 
 		if ($activity === 'login' && $status === 'SUCCESS') {
 			$log_data['login_time'] = $now;
+			if (!empty($lat) && !empty($lng)) {
+				$this->session->set_userdata('user_last_latitude', $lat);
+				$this->session->set_userdata('user_last_longitude', $lng);
+			}
 		} else if ($activity === 'logout' || $activity === 'session_timeout' || $activity === 'concurrent_logout') {
 			$log_data['logout_time'] = $now;
 		}
@@ -2292,9 +2357,10 @@ public function dashboard_MyPro($table='ci_leads'){
 	{
 		$role_id = (int)$role_id;
 		$sections = array(
-			'dashboard', 'my_zone', 'database', 'leads', 'calls',
-			'team', 'kam', 'tasks', 'tickets', 'internal_tasks',
-			'external_tasks', 'reports', 'system', 'users', 'roles'
+			'dashboard', 'my_zone', 'database', 'leads', 'lead_review',
+			'orders', 'calls', 'team', 'kam', 'tasks', 'tickets',
+			'internal_tasks', 'external_tasks', 'reports', 'events',
+			'awards', 'integrations', 'system', 'users', 'roles'
 		);
 
 		if ($role_id === 1) {

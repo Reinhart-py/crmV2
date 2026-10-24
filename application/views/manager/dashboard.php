@@ -6,7 +6,7 @@
     
     <div class="dash-header-bar">
         <h1 class="dash-header-title">
-            <i class="fa fa-dashboard" style="color:#b91c1c;"></i> Dashboard
+            <i class="fa fa-dashboard" style="color:#0072f0;"></i> Dashboard
         </h1>
         <div>
             <button type="button" class="dash-theme-btn" id="dashThemeToggle" title="Toggle Light / Dark Mode">
@@ -26,60 +26,57 @@
                     <div class="dash-kpi-top">
                         <div>
                             <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_leads']) ? (int)$dashboard_count['count_leads'] : 0; ?></div>
-                            <div class="dash-kpi-label">MY LEADS</div>
+                            <div class="dash-kpi-label">My Leads</div>
                         </div>
                         <div class="dash-kpi-icon"><i class="ion ion-bag"></i></div>
                     </div>
                     <div class="dash-kpi-footer">
-                        <span>View Details</span> <i class="fa fa-arrow-circle-right"></i>
+                        <span>More info</span> <i class="fa fa-arrow-circle-right"></i>
                     </div>
                 </a>
             </div>
 
-            
             <div class="col-lg-3 col-sm-6 col-xs-12">
                 <a href="<?php echo base_url(); ?>manager/verticals" class="dash-kpi-card dash-kpi-forest" id="cardMyVerticals">
                     <div class="dash-kpi-top">
                         <div>
                             <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_vetricals']) ? (int)$dashboard_count['count_vetricals'] : 0; ?></div>
-                            <div class="dash-kpi-label">MY VERTICALS</div>
+                            <div class="dash-kpi-label">My Verticals</div>
                         </div>
                         <div class="dash-kpi-icon"><i class="ion ion-stats-bars"></i></div>
                     </div>
                     <div class="dash-kpi-footer">
-                        <span>View Details</span> <i class="fa fa-arrow-circle-right"></i>
+                        <span>More info</span> <i class="fa fa-arrow-circle-right"></i>
                     </div>
                 </a>
             </div>
 
-            
             <div class="col-lg-3 col-sm-6 col-xs-12">
                 <a href="<?php echo base_url(); ?>manager/team/members" class="dash-kpi-card dash-kpi-amber" id="cardTeamUsers">
                     <div class="dash-kpi-top">
                         <div>
                             <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_user']) ? (int)$dashboard_Tcount['count_user'] : 0; ?></div>
-                            <div class="dash-kpi-label">TEAM USERS</div>
+                            <div class="dash-kpi-label">Team Users</div>
                         </div>
                         <div class="dash-kpi-icon"><i class="ion ion-person-add"></i></div>
                     </div>
                     <div class="dash-kpi-footer">
-                        <span>View Details</span> <i class="fa fa-arrow-circle-right"></i>
+                        <span>More info</span> <i class="fa fa-arrow-circle-right"></i>
                     </div>
                 </a>
             </div>
 
-            
             <div class="col-lg-3 col-sm-6 col-xs-12">
                 <a href="<?php echo base_url(); ?>manager/team/leads" class="dash-kpi-card dash-kpi-crimson" id="cardTeamLeads">
                     <div class="dash-kpi-top">
                         <div>
                             <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_leads']) ? (int)$dashboard_Tcount['count_leads'] : 0; ?></div>
-                            <div class="dash-kpi-label">TEAM LEADS</div>
+                            <div class="dash-kpi-label">Team Leads</div>
                         </div>
                         <div class="dash-kpi-icon"><i class="ion ion-pie-graph"></i></div>
                     </div>
                     <div class="dash-kpi-footer">
-                        <span>View Details</span> <i class="fa fa-arrow-circle-right"></i>
+                        <span>More info</span> <i class="fa fa-arrow-circle-right"></i>
                     </div>
                 </a>
             </div>
@@ -832,7 +829,7 @@
         <div class="dash-drilldown-panel" id="dashDrilldownPanel">
             <div class="dash-drilldown-header">
                 <h4 class="dash-drilldown-title">
-                    <i class="fa fa-list-alt" style="color:#b91c1c;"></i>
+                    <i class="fa fa-list-alt" style="color:#0072f0;"></i>
                     <span id="drilldownTitle">Operational Metric Drill-Down</span>
                     <span class="badge bg-blue" id="drilldownCountBadge" style="margin-left:8px; font-size:12px;">0 Records</span>
                 </h4>
@@ -871,7 +868,6 @@
 
 <script>
 $(function () {
-    // 1. Dark / Light Mode Toggle logic
     function setDashTheme(theme) {
         if (theme === 'dark') {
             $('html, body, .main-header').attr('data-theme', 'dark');
@@ -893,7 +889,6 @@ $(function () {
         setDashTheme(current === 'dark' ? 'light' : 'dark');
     });
 
-    // 2. Bar Chart Data Preparation (Current month & Future months only)
     var months = <?php 
         if (!empty($dashboard_MyPro['month_labels'])) {
             echo json_encode($dashboard_MyPro['month_labels']);
@@ -962,7 +957,6 @@ $(function () {
     var monthDates = <?php echo json_encode(!empty($dashboard_MyPro['month_dates']) ? $dashboard_MyPro['month_dates'] : array()); ?>;
     var teamMonthDates = <?php echo json_encode(!empty($dashboard_TeamPro['month_dates']) ? $dashboard_TeamPro['month_dates'] : array()); ?>;
 
-    // Initialize My Projection Chart
     var canvas2 = document.getElementById('barChart2');
     if (canvas2) {
         canvas2.style.cursor = 'pointer';
@@ -971,10 +965,10 @@ $(function () {
             labels: months,
             datasets: [{
                 label: 'My Projection',
-                fillColor: '#991b1b', // Exact deep crimson bars matching screenshot
-                strokeColor: '#7f1d1d',
-                highlightFill: '#b91c1c',
-                highlightStroke: '#7f1d1d',
+                fillColor: '#0084ff',
+                strokeColor: '#0062ea',
+                highlightFill: '#00a0ff',
+                highlightStroke: '#0062ea',
                 data: myProData
             }]
         }, chartOptions);
@@ -1001,10 +995,10 @@ $(function () {
             labels: months,
             datasets: [{
                 label: 'Team Projection',
-                fillColor: '#991b1b',
-                strokeColor: '#7f1d1d',
-                highlightFill: '#b91c1c',
-                highlightStroke: '#7f1d1d',
+                fillColor: '#0084ff',
+                strokeColor: '#0062ea',
+                highlightFill: '#00a0ff',
+                highlightStroke: '#0062ea',
                 data: teamProData
             }]
         }, chartOptions);

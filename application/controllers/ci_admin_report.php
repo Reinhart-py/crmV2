@@ -775,4 +775,221 @@ class Ci_admin_report extends CI_Controller {
 			redirect('manager/download-report');
 		}
 	}
+
+	public function revenue_list()
+	{
+		$this->if_not_login();
+		$manager_id = (int)$this->session->userdata('manager_id');
+		$manager_role = (int)$this->session->userdata('manager_role');
+
+		$data = array();
+		$data['info'] = array(
+			'title' => 'Revenue List & Projections',
+			'page_heading' => 'Revenue List'
+		);
+
+		$d1 = trim($this->input->get('d1'));
+		$d2 = trim($this->input->get('d2'));
+		$client = trim($this->input->get('client'));
+		$filter_type = trim($this->input->get('type'));
+		$user_id = (int)$this->input->get('user_id');
+
+		$orders_data = array();
+		if ($filter_type !== 'projected') {
+			$this->db->select('O.*, C.customer as lead_customer, C.poc as lead_poc');
+			$this->db->from('ci_orders as O');
+			$this->db->join('ci_leads as C', 'C.id = O.lead_id', 'left');
+			if (!empty($d1) && !empty($d2)) {
+				$this->db->where('DATE(O.created_at) >=', db_date($d1));
+				$this->db->where('DATE(O.created_at) <=', db_date($d2));
+			}
+			if (!empty($client)) {
+				$this->db->like('O.client_name', $client);
+			}
+			if ($user_id > 0) {
+				$this->db->where('O.created_by', $user_id);
+			} elseif ($manager_role != 1 && $manager_role != 4) {
+				$accessible = $this->ci_admin_model->get_accessible_user_ids($manager_id);
+				if (!empty($accessible)) {
+					$this->db->where_in('O.created_by', $accessible);
+				} else {
+					$this->db->where('O.created_by', $manager_id);
+				}
+			}
+			$this->db->order_by('O.id', 'DESC');
+			$orders_data = $this->db->get()->result_array();
+		}
+
+		$leads_data = array();
+		if ($filter_type !== 'confirmed') {
+			$this->db->select('L.*, S.status as status_title, U.name as owner_name');
+			$this->db->from('ci_leads as L');
+			$this->db->join('ci_status as S', 'S.id = L.status', 'left');
+			$this->db->join('ci_user as U', 'U.id = L.lead_assign', 'left');
+			$this->db->where('L.pipeline_stage', 'lead');
+			if (!empty($d1) && !empty($d2)) {
+				$this->db->where('L.created >=', db_date($d1));
+				$this->db->where('L.created <=', db_date($d2));
+			}
+			if (!empty($client)) {
+				$this->db->like('L.customer', $client);
+			}
+			if ($user_id > 0) {
+				$this->db->where('L.lead_assign', $user_id);
+			} elseif ($manager_role != 1 && $manager_role != 4) {
+				$accessible = $this->ci_admin_model->get_accessible_user_ids($manager_id);
+				if (!empty($accessible)) {
+					$this->db->where_in('L.lead_assign', $accessible);
+				} else {
+					$this->db->where('L.lead_assign', $manager_id);
+				}
+			}
+			$this->db->order_by('L.id', 'DESC');
+			$leads_data = $this->db->get()->result_array();
+		}
+
+		$total_confirmed_mrr = 0;
+		$total_confirmed_otc = 0;
+		$total_projected_mrr = 0;
+		$total_projected_revenue = 0;
+
+		foreach ($orders_data as $ord) {
+			$total_confirmed_mrr += floatval($ord['mrr'] ?: $ord['mrc']);
+			$total_confirmed_otc += floatval($ord['otc']);
+		}
+
+		foreach ($leads_data as $ld) {
+			$lmrr = floatval($ld['mrr'] ?: $ld['mrc']);
+			$lrev = floatval($ld['revenue'] ?: $ld['r_amount']);
+			$total_projected_mrr += $lmrr;
+			$total_projected_revenue += ($lrev > 0) ? $lrev : ($lmrr * 12);
+		}
+
+		$data['orders'] = $orders_data;
+		$data['leads'] = $leads_data;
+		$data['total_confirmed_mrr'] = $total_confirmed_mrr;
+		$data['total_confirmed_otc'] = $total_confirmed_otc;
+		$data['total_projected_mrr'] = $total_projected_mrr;
+		$data['total_projected_revenue'] = $total_projected_revenue;
+		$data['filter_d1'] = $d1;
+		$data['filter_d2'] = $d2;
+		$data['filter_client'] = $client;
+		$data['filter_type'] = $filter_type;
+		$data['filter_user'] = $user_id;
+		$data['users_list'] = $this->db->select('id, name, email')->where('status', 1)->order_by('name', 'ASC')->get('ci_user')->result_array();
+
+		$this->load->view('manager/report/revenue_list', $data);
+	}
+
+	public function company_projections()
+	{
+		$this->if_not_login();
+		$manager_id = (int)$this->session->userdata('manager_id');
+		$manager_role = (int)$this->session->userdata('manager_role');
+
+		$data = array();
+		$data['info'] = array(
+			'title' => 'Company Projections',
+			'page_heading' => 'Company Projections'
+		);
+
+		$d1 = trim($this->input->get('d1'));
+		$d2 = trim($this->input->get('d2'));
+		$search = trim($this->input->get('search'));
+		$user_id = (int)$this->input->get('user_id');
+
+		$this->db->select('L.*, S.status as status_title, U.name as owner_name');
+		$this->db->from('ci_leads as L');
+		$this->db->join('ci_status as S', 'S.id = L.status', 'left');
+		$this->db->join('ci_user as U', 'U.id = L.lead_assign', 'left');
+		$this->db->where('L.pipeline_stage', 'lead');
+		$this->db->where('L.customer IS NOT NULL AND L.customer != ""');
+
+		if (!empty($d1) && !empty($d2)) {
+			$this->db->where('L.created >=', db_date($d1));
+			$this->db->where('L.created <=', db_date($d2));
+		}
+		if (!empty($search)) {
+			$this->db->group_start();
+			$this->db->like('L.customer', $search);
+			$this->db->or_like('L.poc', $search);
+			$this->db->or_like('L.category', $search);
+			$this->db->group_end();
+		}
+		if ($user_id > 0) {
+			$this->db->where('L.lead_assign', $user_id);
+		} elseif ($manager_role != 1 && $manager_role != 4) {
+			$accessible = $this->ci_admin_model->get_accessible_user_ids($manager_id);
+			if (!empty($accessible)) {
+				$this->db->where_in('L.lead_assign', $accessible);
+			} else {
+				$this->db->where('L.lead_assign', $manager_id);
+			}
+		}
+
+		$this->db->order_by('L.customer', 'ASC');
+		$raw_leads = $this->db->get()->result_array();
+
+		$companies = array();
+		$total_pipeline_mrr = 0;
+		$total_pipeline_rev = 0;
+
+		foreach ($raw_leads as $row) {
+			$cname = trim($row['customer']);
+			if (!isset($companies[$cname])) {
+				$companies[$cname] = array(
+					'customer' => $cname,
+					'poc' => $row['poc'],
+					'contact' => $row['contact1'],
+					'email' => $row['email'],
+					'deal_count' => 0,
+					'total_mrr' => 0,
+					'total_revenue' => 0,
+					'categories' => array(),
+					'nearest_close' => '',
+					'owners' => array(),
+					'leads' => array()
+				);
+			}
+
+			$lmrr = floatval($row['mrr'] ?: $row['mrc']);
+			$lrev = floatval($row['revenue'] ?: $row['r_amount']);
+			if ($lrev <= 0) {
+				$lrev = $lmrr * 12;
+			}
+
+			$companies[$cname]['deal_count']++;
+			$companies[$cname]['total_mrr'] += $lmrr;
+			$companies[$cname]['total_revenue'] += $lrev;
+			$total_pipeline_mrr += $lmrr;
+			$total_pipeline_rev += $lrev;
+
+			if (!empty($row['category']) && !in_array($row['category'], $companies[$cname]['categories'])) {
+				$companies[$cname]['categories'][] = $row['category'];
+			}
+			if (!empty($row['owner_name']) && !in_array($row['owner_name'], $companies[$cname]['owners'])) {
+				$companies[$cname]['owners'][] = $row['owner_name'];
+			}
+			if (!empty($row['close_date'])) {
+				if (empty($companies[$cname]['nearest_close']) || strtotime($row['close_date']) < strtotime($companies[$cname]['nearest_close'])) {
+					$companies[$cname]['nearest_close'] = $row['close_date'];
+				}
+			}
+
+			$companies[$cname]['leads'][] = $row;
+		}
+
+		$data['companies'] = array_values($companies);
+		$data['total_companies'] = count($companies);
+		$data['total_deals'] = count($raw_leads);
+		$data['total_pipeline_mrr'] = $total_pipeline_mrr;
+		$data['total_pipeline_rev'] = $total_pipeline_rev;
+		$data['filter_d1'] = $d1;
+		$data['filter_d2'] = $d2;
+		$data['filter_search'] = $search;
+		$data['filter_user'] = $user_id;
+		$data['users_list'] = $this->db->select('id, name, email')->where('status', 1)->order_by('name', 'ASC')->get('ci_user')->result_array();
+
+		$this->load->view('manager/report/company_projections', $data);
+	}
 }

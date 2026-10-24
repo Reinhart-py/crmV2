@@ -77,11 +77,13 @@
                   <th>Activity</th>
                   <th>Status</th>
                   <th>IP Address</th>
+                  <th>Location</th>
                   <th>Details</th>
                 </tr>
               </thead>
               <tfoot>
                 <tr>
+                  <th></th>
                   <th></th>
                   <th></th>
                   <th></th>
@@ -112,6 +114,20 @@
                     <?php echo htmlspecialchars(ucfirst(strtolower($log['status']))); ?>
                   </td>
                   <td><code><?php echo htmlspecialchars($log['ip_address']); ?></code></td>
+                  <td>
+                    <?php if (!empty($log['latitude']) && !empty($log['longitude']) && is_numeric($log['latitude']) && is_numeric($log['longitude'])) { ?>
+                      <a href="https://www.google.com/maps?q=<?php echo urlencode($log['latitude'] . ',' . $log['longitude']); ?>" target="_blank" class="btn btn-xs btn-default" style="font-weight:600; color:#2563eb; border-color:#bfdbfe;" title="Accuracy: <?php echo !empty($log['accuracy']) ? round($log['accuracy']) . 'm' : 'Standard'; ?>">
+                        <i class="fa fa-map-marker text-danger"></i> View Map
+                      </a>
+                      <div style="font-size:10px; color:#64748b; margin-top:2px;">
+                        <?php echo number_format((float)$log['latitude'], 4) . ', ' . number_format((float)$log['longitude'], 4); ?>
+                      </div>
+                    <?php } elseif (!empty($log['location_status'])) { ?>
+                      <span class="label label-default" style="font-size:10px; text-transform:capitalize;"><?php echo htmlspecialchars($log['location_status']); ?></span>
+                    <?php } else { ?>
+                      <span class="text-muted" style="font-size:11px;">-</span>
+                    <?php } ?>
+                  </td>
                   <td>
                     <?php echo htmlspecialchars($log['details']); ?>
                     <?php if (!empty($log['logout_time'])) { ?>

@@ -320,6 +320,26 @@ class Ci_admin extends CI_Controller {
 			
 				);			
 						  
+						if (isset($_FILES['avatar']) && !empty($_FILES['avatar']['name']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
+							$f_name = $_FILES['avatar']['name'];
+							$ext = strtolower(pathinfo($f_name, PATHINFO_EXTENSION));
+							if (in_array($ext, array('jpg', 'jpeg', 'png', 'webp'))) {
+								$upload_dir = FCPATH . 'assets/uploads/avatars/';
+								if (!is_dir($upload_dir)) {
+									mkdir($upload_dir, 0777, true);
+								}
+								$new_filename = 'avatar_' . $cur_uid . '_' . time() . '.' . $ext;
+								$dest_path = $upload_dir . $new_filename;
+								if (move_uploaded_file($_FILES['avatar']['tmp_name'], $dest_path)) {
+									$old_user = $this->db->select('avatar')->where('id', $cur_uid)->get('ci_user')->row_array();
+									if (!empty($old_user['avatar']) && file_exists(FCPATH . $old_user['avatar']) && strpos($old_user['avatar'], 'assets/uploads/avatars/') !== false) {
+										@unlink(FCPATH . $old_user['avatar']);
+									}
+									$save['avatar'] = 'assets/uploads/avatars/' . $new_filename;
+								}
+							}
+						}
+
 			              $response= $this->comman_model->updateData('id',$cur_uid,$save,'ci_user');
 							if($response)
 							{
@@ -337,6 +357,35 @@ class Ci_admin extends CI_Controller {
 	            }
 				
 			}
+
+	public function ajax_upload_avatar()
+	{
+		$this->if_not_login();
+		$cur_uid = (int)$this->session->userdata('manager_id');
+		if (isset($_FILES['avatar']) && !empty($_FILES['avatar']['name']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
+			$f_name = $_FILES['avatar']['name'];
+			$ext = strtolower(pathinfo($f_name, PATHINFO_EXTENSION));
+			if (in_array($ext, array('jpg', 'jpeg', 'png', 'webp'))) {
+				$upload_dir = FCPATH . 'assets/uploads/avatars/';
+				if (!is_dir($upload_dir)) {
+					mkdir($upload_dir, 0777, true);
+				}
+				$new_filename = 'avatar_' . $cur_uid . '_' . time() . '.' . $ext;
+				$dest_path = $upload_dir . $new_filename;
+				if (move_uploaded_file($_FILES['avatar']['tmp_name'], $dest_path)) {
+					$old_user = $this->db->select('avatar')->where('id', $cur_uid)->get('ci_user')->row_array();
+					if (!empty($old_user['avatar']) && file_exists(FCPATH . $old_user['avatar']) && strpos($old_user['avatar'], 'assets/uploads/avatars/') !== false) {
+						@unlink(FCPATH . $old_user['avatar']);
+					}
+					$rel = 'assets/uploads/avatars/' . $new_filename;
+					$this->db->where('id', $cur_uid)->update('ci_user', array('avatar' => $rel));
+					echo json_encode(array('status' => true, 'avatar_url' => base_url() . $rel, 'message' => 'Profile photo updated successfully'));
+					return;
+				}
+			}
+		}
+		echo json_encode(array('status' => false, 'message' => 'Failed to upload photo. Please upload JPG, PNG, or WEBP file.'));
+	}
 	   
 	    
 	   

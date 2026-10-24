@@ -13,12 +13,28 @@
 <div class=" table-border">
 <div class="row">
 
-<div class="box-header">
-        <h3 class="box-title" style="text-transform:capitalize"><b>
-          <?php if((isset($p_info['name']))&&(!empty($p_info['name']))){echo $p_info['name'];}else echo ""; ?>
-          </b></h3>
-          
-          </div>
+<div class="box-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; padding:15px; border-bottom:1px solid #e2e8f0;">
+  <div style="display:flex; align-items:center; gap:15px;">
+    <div style="position:relative; width:64px; height:64px; border-radius:50%; overflow:hidden; border:2px solid #e2e8f0; background:#f8fafc;">
+      <img id="profileAvatarImg" src="<?php echo (!empty($p_info['avatar']) && file_exists(FCPATH . $p_info['avatar'])) ? base_url() . $p_info['avatar'] : base_url() . 'assets/dist/img/pfp_male_1.svg'; ?>" style="width:100%; height:100%; object-fit:cover;" />
+    </div>
+    <div>
+      <h3 class="box-title" style="text-transform:capitalize; margin:0 0 4px 0; font-weight:700;">
+        <?php if((isset($p_info['name']))&&(!empty($p_info['name']))){echo htmlspecialchars($p_info['name']);}else echo ""; ?>
+      </h3>
+      <span style="font-size:12px; color:#64748b;"><?php echo htmlspecialchars($p_info['email'] ?? ''); ?></span>
+    </div>
+  </div>
+  <div style="display:flex; gap:8px;">
+    <label class="btn btn-sm btn-default" style="margin-bottom:0; cursor:pointer;" title="Upload or Replace Profile Photo">
+      <i class="fa fa-camera"></i> Change Photo
+      <input type="file" id="ajaxAvatarInput" accept="image/jpeg,image/png,image/webp" style="display:none;" />
+    </label>
+    <a href="<?php echo base_url(); ?>manager/profile?edit=1" class="btn btn-sm btn-primary">
+      <i class="fa fa-pencil"></i> Edit Profile Details
+    </a>
+  </div>
+</div>
   <div class="col-md-6">
       <div class="table-responsive border">
           <table class="table">
@@ -426,9 +442,40 @@
           </div>
         </div>
       </div>
-    </div> -->
+    </div>
    
   </section>
 </div>
 
+<script>
+$(document).ready(function() {
+  $('#ajaxAvatarInput').on('change', function() {
+    var file = this.files[0];
+    if (!file) return;
+    var formData = new FormData();
+    formData.append('avatar', file);
+    $.ajax({
+      url: '<?php echo base_url(); ?>manager/profile/upload_avatar',
+      type: 'POST',
+      data: formData,
+      processData: false,
+      contentType: false,
+      dataType: 'json',
+      success: function(res) {
+        if (res && res.status && res.avatar_url) {
+          $('#profileAvatarImg').attr('src', res.avatar_url);
+          $('.profile-avatar-img').attr('src', res.avatar_url);
+        } else {
+          alert(res && res.message ? res.message : 'Error uploading profile photo');
+        }
+      },
+      error: function() {
+        alert('Server communication error uploading profile photo');
+      }
+    });
+  });
+});
+</script>
+
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>
+

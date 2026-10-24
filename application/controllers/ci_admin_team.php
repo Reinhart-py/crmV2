@@ -69,6 +69,81 @@ class Ci_admin_team extends CI_Controller {
 	}
 	
 
+	public function database()
+	{
+		$data = array();
+		$data['info'] = array(
+			'title' => 'Manager - Database',
+			'page_heading' => 'Team Database'
+		);
+		$data['info2'] = $this->if_not_login();
+
+		$order_by = isset($_GET['order_by']) ? $_GET['order_by'] : 'A.id';
+		$sort_by = isset($_GET['sort_by']) ? $_GET['sort_by'] : 'DESC';
+		$search = isset($_GET['search']) ? $_GET['search'] : '';		
+
+		$d1 = isset($_GET['d1']) ? $_GET['d1'] : (isset($_GET['exp_d1']) ? $_GET['exp_d1'] : '');
+		$d2 = isset($_GET['d2']) ? $_GET['d2'] : (isset($_GET['exp_d2']) ? $_GET['exp_d2'] : '');
+
+		$mrr1 = isset($_GET['mrr1']) ? $_GET['mrr1'] : '';
+		$mrr2 = isset($_GET['mrr2']) ? $_GET['mrr2'] : '';
+
+		$user_name = isset($_GET['user_name']) ? $_GET['user_name'] : '';	
+		$country = isset($_GET['country']) ? $_GET['country'] : '';	
+		$state = isset($_GET['state']) ? $_GET['state'] : '';	
+
+		if (!empty($country)) {
+			if (is_array($country)) {
+				$country = implode(',', $country); 
+			}
+			$data['state_list'] = $this->comman_model->getAll(array('country_id' => $country), '', 'states');
+		}
+		if (!empty($state)) {
+			if (is_array($state)) {
+				$state = implode(',', $state); 
+			}
+		}
+
+		$status = isset($_GET['status']) ? $_GET['status'] : '';		
+		$category = isset($_GET['category']) ? $_GET['category'] : '';
+		$lCat = isset($_GET['lCat']) ? $_GET['lCat'] : '';
+
+		if (!empty($lCat)) {
+			if (is_array($lCat)) {
+				$lCat = implode(',', $lCat); 
+			}
+		}		
+		if (!empty($category)) {
+			if (is_array($category)) {
+				$category = implode(',', $category); 
+			}
+		}
+		if (!empty($status)) {
+			if (is_array($status)) {
+				$status = implode(',', $status); 
+			}
+		}
+		$closure = isset($_GET['closure']) ? $_GET['closure'] : '';
+
+		$data['st_list'] = $this->comman_model->getAll(array('active' => 1), '', 'ci_status');
+		$data['c_list'] = $this->comman_model->getAll('', array('id', 'ASC'), 'countries');
+		$data['pc_list'] = $this->comman_model->getAll(array('cat_type' => 'p_cat', 'parent_id' => 0), '', 'ci_terms');
+		$data['lc_list'] = $this->comman_model->getAll(array('cat_type' => 'lead_cat', 'parent_id' => 0), '', 'ci_terms');
+		$data['product_list'] = $this->ci_admin_model->getTeamLeads($d1, $d2, $mrr1, $mrr2, '', '', $order_by, $sort_by, $search, $status, $category, $lCat, $user_name, $country, $state, $closure, 'database');
+		$data['stage'] = 'database';
+
+		$page2 = ($this->uri->segment(4)) ? $this->uri->segment(4) : 0;       
+		$con_q = '';
+		if (!empty($_SERVER['QUERY_STRING'])) {
+			$con_q .= '?' . $_SERVER['QUERY_STRING'];
+		}		
+		$page_url = $this->uri->segment(2) . "/";
+		$page_url1 = $this->uri->segment(3) . "/";
+		$this->session->set_userdata('manager_return_string', urlencode($page_url . $page_url1 . $page2 . $con_q)); 	
+
+		$this->load->view('manager/team/leads', $data);
+	}
+
     public function leads()
 	{
 
@@ -132,7 +207,8 @@ class Ci_admin_team extends CI_Controller {
 		 $data['c_list'] =$this->comman_model->getAll('',array('id','ASC'),'countries');
 		 $data['pc_list']= $this->comman_model->getAll(array('cat_type'=>'p_cat','parent_id'=>0),'','ci_terms');
 		 $data['lc_list']= $this->comman_model->getAll(array('cat_type'=>'lead_cat','parent_id'=>0),'','ci_terms');
-	  	 $data['product_list']= $this->ci_admin_model->getTeamLeads($d1, $d2, $mrr1, $mrr2, '','',$order_by,$sort_by,$search,$status,$category,$lCat,$user_name,$country,$state,$closure);
+	  	 $data['product_list']= $this->ci_admin_model->getTeamLeads($d1, $d2, $mrr1, $mrr2, '','',$order_by,$sort_by,$search,$status,$category,$lCat,$user_name,$country,$state,$closure, 'lead');
+		 $data['stage'] = 'lead';
 
 		$page2 = ($this->uri->segment(4)) ? $this->uri->segment(4): 0;       
 		 	$con_q= '';
@@ -147,11 +223,9 @@ class Ci_admin_team extends CI_Controller {
         
 		    
        $this->load->view('manager/team/leads',$data);
-       
-		
     }
 	
-	 public function assignleads()
+	public function assignleads()
 	{
 
         $data=array();
@@ -492,6 +566,14 @@ class Ci_admin_team extends CI_Controller {
 
 		$this->load->view('manager/team/chart',$data);
 	}
-	
 
+	public function orders()
+	{
+		redirect('manager/orders/team');
+	}
+
+	public function sales()
+	{
+		redirect('manager/sales');
+	}
 }

@@ -685,8 +685,16 @@ class Ci_admin_kam extends CI_Controller
 		$this->db->order_by('customer', 'ASC');
 		$data['client_list'] = $this->db->get()->result_array();
 
+		$filter_tab = trim($this->input->get('tab'));
+		if ($filter_tab !== 'my' && $filter_tab !== 'all') {
+			$filter_tab = 'all';
+		}
+		$data['filter_tab'] = $filter_tab;
+
 		$this->db->order_by('id', 'DESC');
-		if ($role != 1 && $role != 4) {
+		if ($filter_tab === 'my') {
+			$this->db->where('assigned_to', $manager_id);
+		} elseif ($role != 1 && $role != 4) {
 			$this->db->where("(assigned_to = $manager_id OR created_by = $manager_id)");
 		}
 		$data['schedules'] = $this->db->get('ci_kam_schedules')->result_array();

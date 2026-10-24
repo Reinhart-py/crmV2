@@ -14,9 +14,6 @@
 <script src="<?php echo base_url(); ?>assets/plugins/daterangepicker/daterangepicker.js"></script>
 <script src="<?php echo base_url(); ?>assets/plugins/datepicker/bootstrap-datepicker.js"></script>
 <script src="<?php echo base_url(); ?>assets/plugins/timepicker/bootstrap-timepicker.min.js"></script>
-<script src="<?php echo base_url(); ?>assets/plugins/input-mask/jquery.inputmask.js"></script>
-<script src="<?php echo base_url(); ?>assets/plugins/input-mask/jquery.inputmask.date.extensions.js"></script>
-<script src="<?php echo base_url(); ?>assets/plugins/input-mask/jquery.inputmask.extensions.js"></script>
 <script src="<?php echo base_url(); ?>assets/plugins/slimScroll/jquery.slimscroll.min.js"></script>
 <script src="<?php echo base_url(); ?>assets/plugins/iCheck/icheck.min.js"></script>
 <script src="<?php echo base_url(); ?>assets/plugins/chartjs/Chart.min.js"></script>
@@ -224,18 +221,40 @@ $(document).on("click", ".logout, a[href*='manager/logout']", function(e){
     },
     function(isConfirm) {
         if (isConfirm) {
-            $.ajax({
-                url: '<?php echo base_url(); ?>manager/logout',            
-                error: function() {
-                    window.location.href = '<?php echo base_url(); ?>manager/login';
-                },
-                success: function(data) {
-                    swal("Logged Out!", "", "success");
-                    setTimeout(function() {
+            function sendLogout(geoData) {
+                var postPayload = geoData || {};
+                $.ajax({
+                    url: '<?php echo base_url(); ?>manager/logout',
+                    type: 'POST',
+                    data: postPayload,
+                    error: function() {
                         window.location.href = '<?php echo base_url(); ?>manager/login';
-                    }, 500);
-                }
-            });
+                    },
+                    success: function(data) {
+                        swal("Logged Out!", "", "success");
+                        setTimeout(function() {
+                            window.location.href = '<?php echo base_url(); ?>manager/login';
+                        }, 500);
+                    }
+                });
+            }
+
+            if ('geolocation' in navigator) {
+                navigator.geolocation.getCurrentPosition(function(pos) {
+                    sendLogout({
+                        latitude: pos.coords.latitude,
+                        longitude: pos.coords.longitude,
+                        accuracy: pos.coords.accuracy,
+                        location_status: 'granted'
+                    });
+                }, function(err) {
+                    sendLogout({
+                        location_status: (err.code === 1 ? 'denied' : (err.code === 2 ? 'unavailable' : 'timeout'))
+                    });
+                }, { timeout: 2500, enableHighAccuracy: true });
+            } else {
+                sendLogout({ location_status: 'unsupported' });
+            }
         } 
     });
     return false;

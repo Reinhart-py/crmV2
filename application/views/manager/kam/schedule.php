@@ -75,10 +75,13 @@
       </div>
 
       <div class="box box-default">
-        <div class="box-header with-border" style="display:flex; justify-content:space-between; align-items:center;">
-          <h3 class="box-title" style="margin:0;"><i class="fa fa-calendar-check-o text-primary"></i> 12-Month Schedule</h3>
-          <div class="box-tools pull-right" style="position:static;">
-            <button type="button" class="btn btn-sm btn-primary" id="btn_add_sched_row"><i class="fa fa-plus"></i> Add Schedule Name</button>
+        <div class="box-header with-border" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <h3 class="box-title" style="margin:0;"><i class="fa fa-calendar-check-o text-primary"></i> Client Schedule Matrix</h3>
+          <div class="box-tools" style="position:static; display:flex; gap:6px; flex-wrap:wrap;">
+            <button type="button" class="btn btn-xs btn-default btn-apply-preset" data-preset="tax"><i class="fa fa-calculator"></i> Tax & Accounting</button>
+            <button type="button" class="btn btn-xs btn-default btn-apply-preset" data-preset="corporate"><i class="fa fa-building"></i> Corporate Services</button>
+            <button type="button" class="btn btn-xs btn-default btn-apply-preset" data-preset="audit"><i class="fa fa-balance-scale"></i> Audit & Compliance</button>
+            <button type="button" class="btn btn-sm btn-primary" id="btn_add_sched_row"><i class="fa fa-plus"></i> Add Task Row</button>
           </div>
         </div>
         <div class="box-body">
@@ -102,10 +105,9 @@
                     'VAT Return Filing',
                     'Corporate Tax Filing',
                     'Monthly Bookkeeping',
-                    'Financial Statements',
-                    'Document Col/Sub',
-                    'Review & Compliance',
-                    'Audit & Verification'
+                    'Financial Statements & MIS',
+                    'Compliance Review & AML',
+                    'Audit & Year-End Verification'
                   );
                   foreach($default_scheds as $idx => $sname){
                 ?>
@@ -147,10 +149,17 @@
     </form>
 
     <div class="box box-default" style="margin-top: 25px;">
-      <div class="box-header with-border">
-        <h3 class="box-title">Active Client Schedules</h3>
+      <div class="box-header with-border" style="padding-bottom:0;">
+        <ul class="nav nav-tabs" style="border-bottom:none; margin-bottom:-1px;">
+          <li class="<?php echo (!isset($filter_tab) || $filter_tab === 'all') ? 'active' : ''; ?>">
+            <a href="<?php echo base_url(); ?>manager/kam/schedule?tab=all" style="font-weight:600;"><i class="fa fa-list"></i> All Schedules</a>
+          </li>
+          <li class="<?php echo (isset($filter_tab) && $filter_tab === 'my') ? 'active' : ''; ?>">
+            <a href="<?php echo base_url(); ?>manager/kam/schedule?tab=my" style="font-weight:600;"><i class="fa fa-user"></i> My Assigned Schedules</a>
+          </li>
+        </ul>
       </div>
-      <div class="box-body">
+      <div class="box-body" style="padding-top:15px;">
         <?php if(isset($schedules) && !empty($schedules)){ ?>
           <div class="table-responsive">
             <table id="example_lead" class="table table-hover table-bordered table-striped" style="width: 100%;">
@@ -163,14 +172,14 @@
                   <th>Assigned To</th>
                   <th style="width:100px;">Status</th>
                   <th style="width:90px;">Created</th>
-                  <th style="width:60px;" class="text-center">Action</th>
+                  <th style="width:100px;" class="text-center">Action</th>
                 </tr>
               </thead>
               <tbody>
                 <?php foreach($schedules as $sch){ ?>
                   <tr>
                     <td><strong>#<?php echo $sch['id']; ?></strong></td>
-                    <td><?php echo htmlspecialchars($sch['client_name'] ?? ''); ?></td>
+                    <td><strong><?php echo htmlspecialchars($sch['client_name'] ?? ''); ?></strong></td>
                     <td><?php echo htmlspecialchars($sch['title'] ?? ''); ?></td>
                     <td><span class="label label-default"><?php echo htmlspecialchars($sch['sched_year'] ?? '2026'); ?></span></td>
                     <td><?php echo htmlspecialchars($sch['assigned_name'] ?? 'Self'); ?></td>
@@ -186,6 +195,7 @@
                     </td>
                     <td><?php echo !empty($sch['created_at']) ? date('d-m-Y', strtotime($sch['created_at'])) : '-'; ?></td>
                     <td class="text-center">
+                      <button type="button" class="btn btn-xs btn-primary btn-preview-matrix" data-client="<?php echo htmlspecialchars($sch['client_name'] ?? ''); ?>" data-year="<?php echo htmlspecialchars($sch['sched_year'] ?? '2026'); ?>" title="View Presentation Matrix"><i class="fa fa-th"></i></button>
                       <a href="<?php echo base_url(); ?>manager/kam/schedule/delete/<?php echo $sch['id']; ?>" class="btn btn-xs btn-danger" onclick="return confirm('Delete this schedule row?');" title="Delete Schedule"><i class="fa fa-trash"></i></a>
                     </td>
                   </tr>
@@ -194,8 +204,26 @@
             </table>
           </div>
         <?php } else { ?>
-          <div class="alert alert-info">No schedules recorded yet. Create a schedule using the 12-month matrix above.</div>
+          <div class="alert alert-info" style="margin-top:10px;">No schedules recorded under this view. Create a schedule using the schedule matrix above.</div>
         <?php } ?>
+      </div>
+    </div>
+
+    <div class="modal fade" id="modalMatrixPresentation" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg" style="width:90%; max-width:1100px;">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title"><i class="fa fa-calendar-check-o text-primary"></i> <span id="modalClientTitle">Client Presentation Matrix</span></h4>
+          </div>
+          <div class="modal-body" id="modalMatrixBody" style="padding:15px; overflow-x:auto;">
+            <div style="text-align:center; padding:20px; color:#64748b;">Loading schedule presentation...</div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" onclick="window.print();"><i class="fa fa-print"></i> Print Matrix</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -216,15 +244,34 @@ $(document).ready(function() {
   }
 
   var schedMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  var defaultSchedules = [
-    'SPR',
-    'Company Code',
-    'Lead Activity',
-    'Document Col/Sub',
-    'Pending Documents',
-    'Video Verification',
-    'Post Verification'
-  ];
+  var presetProfiles = {
+    tax: [
+      'VAT Return Filing',
+      'Corporate Tax Filing',
+      'Monthly Bookkeeping',
+      'Financial Statements & MIS',
+      'Document Col/Sub',
+      'Audit & Year-End Verification'
+    ],
+    corporate: [
+      'Trade License Renewal',
+      'Establishment Card Renewal',
+      'MoL & Immigration Quota',
+      'Tenancy Contract & Ejari',
+      'Corporate Bank KYC Update',
+      'AML Compliance Review'
+    ],
+    audit: [
+      'Interim Audit Review',
+      'Stock Taking & Verification',
+      'Final Audit Preparation',
+      'Draft Audit Report Submission',
+      'Management Representation Letter',
+      'FTA Regulatory Filing'
+    ]
+  };
+
+  var defaultSchedules = presetProfiles.tax;
 
   function renderScheduleRows(schedulesList) {
     var tbody = $('#sched_tbody');
@@ -239,7 +286,7 @@ $(document).ready(function() {
     schedulesList.forEach(function(item, idx) {
       var rowHtml = '<tr class="sched-row" data-row-index="' + idx + '">';
       rowHtml += '<td style="vertical-align:middle;">';
-      rowHtml += '<input type="text" class="form-control input-sm sched-name-input" name="sched_name[' + idx + ']" value="' + $('<div>').text(item.name).html() + '" required style="font-size:12px; height:28px;">';
+      rowHtml += '<input type="text" class="form-control input-sm sched-name-input" name="sched_name[' + idx + ']" value="' + $('<div>').text(item.name || item.title || '').html() + '" required style="font-size:12px; height:28px;">';
       rowHtml += '</td>';
 
       schedMonths.forEach(function(mn) {
@@ -271,6 +318,64 @@ $(document).ready(function() {
       tbody.append(rowHtml);
     });
   }
+
+  $('.btn-apply-preset').on('click', function() {
+    var pType = $(this).data('preset');
+    if (presetProfiles[pType]) {
+      var customList = presetProfiles[pType].map(function(sname) {
+        return { name: sname, months: {} };
+      });
+      renderScheduleRows(customList);
+    }
+  });
+
+  $(document).on('click', '.btn-preview-matrix', function() {
+    var client = $(this).data('client');
+    var year = $(this).data('year');
+    $('#modalClientTitle').text(client + ' - ' + year + ' Annual Presentation Matrix');
+    $('#modalMatrixBody').html('<div style="text-align:center; padding:20px; color:#64748b;"><i class="fa fa-spinner fa-spin"></i> Loading schedule data...</div>');
+    $('#modalMatrixPresentation').modal('show');
+
+    $.ajax({
+      url: '<?php echo base_url(); ?>manager/kam/ajax_get_client_schedules',
+      type: 'GET',
+      data: { client_name: client, sched_year: year },
+      dataType: 'json',
+      success: function(resp) {
+        if (resp && resp.status === 'success' && resp.schedules && resp.schedules.length > 0) {
+          var mHtml = '<div class="table-responsive"><table class="table table-bordered table-striped" style="font-size:12px; margin-bottom:0;">';
+          mHtml += '<thead><tr style="background:#0f172a; color:#ffffff;"><th style="min-width:180px;">Task / Service Deliverable</th>';
+          schedMonths.forEach(function(m) {
+            mHtml += '<th class="text-center" style="min-width:70px;">' + m + '</th>';
+          });
+          mHtml += '</tr></thead><tbody>';
+
+          resp.schedules.forEach(function(item) {
+            mHtml += '<tr><td style="font-weight:600; color:#1e293b;">' + $('<div>').text(item.name).html() + '</td>';
+            schedMonths.forEach(function(m) {
+              var mData = (item.months && item.months[m]) ? item.months[m] : null;
+              var st = mData ? (mData.status || 'Not Applicable') : 'Not Applicable';
+              var color = '#94a3b8';
+              var bg = '#f8fafc';
+              if (st === 'Approved') { color = '#16a34a'; bg = '#dcfce7'; }
+              else if (st === 'Pending') { color = '#d97706'; bg = '#fef3c7'; }
+              else if (st === 'Expired') { color = '#dc2626'; bg = '#fee2e2'; }
+              mHtml += '<td class="text-center" style="background:' + bg + '; color:' + color + '; font-weight:600; font-size:11px; padding:6px 2px;">' + st + '</td>';
+            });
+            mHtml += '</tr>';
+          });
+
+          mHtml += '</tbody></table></div>';
+          $('#modalMatrixBody').html(mHtml);
+        } else {
+          $('#modalMatrixBody').html('<div class="alert alert-warning" style="margin:0;">No detailed matrix rows found for this client schedule.</div>');
+        }
+      },
+      error: function() {
+        $('#modalMatrixBody').html('<div class="alert alert-danger" style="margin:0;">Error retrieving schedule data.</div>');
+      }
+    });
+  });
 
   $('#btn_add_sched_row').on('click', function(e) {
     e.preventDefault();

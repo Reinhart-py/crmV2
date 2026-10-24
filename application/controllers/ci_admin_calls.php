@@ -8,6 +8,7 @@ class Ci_admin_calls extends CI_Controller
 		$this->load->database();
 		$this->load->library('session');
 		$this->load->library('threecx');
+		$this->load->library('groq_service');
 		$this->load->model('ci_admin_model');
 		$this->load->model('comman_model');
 		$this->load->helper(array('form', 'url', 'text', 'date'));
@@ -582,6 +583,8 @@ class Ci_admin_calls extends CI_Controller
 		$status = isset($payload['status']) ? trim($payload['status']) : (isset($payload['Status']) ? trim($payload['Status']) : 'Completed');
 		$duration = isset($payload['duration']) ? (int)$payload['duration'] : (isset($payload['Duration']) ? (int)$payload['Duration'] : 0);
 		$call_type = isset($payload['type']) ? trim($payload['type']) : 'Inbound 3CX';
+		$call_id = isset($payload['call_id']) ? trim($payload['call_id']) : (isset($payload['CallId']) ? trim($payload['CallId']) : (isset($payload['callid']) ? trim($payload['callid']) : ''));
+		$recording_url = isset($payload['recording_url']) ? trim($payload['recording_url']) : (isset($payload['RecordingUrl']) ? trim($payload['RecordingUrl']) : (isset($payload['recording']) ? trim($payload['recording']) : ''));
 
 		$phone = !empty($caller) ? $caller : $callee;
 		$lead = null;
@@ -605,7 +608,7 @@ class Ci_admin_calls extends CI_Controller
 		$user_id = !empty($lead) ? (int)$lead['lead_assign'] : 1;
 		$customer_name = !empty($lead) ? $lead['customer'] : 'Inbound Caller (' . $phone . ')';
 
-		$this->db->insert('ci_call_logs', array(
+		$log_data = array(
 			'user_id' => $user_id,
 			'lead_id' => $lead_id,
 			'customer_name' => $customer_name,
@@ -615,8 +618,14 @@ class Ci_admin_calls extends CI_Controller
 			'duration' => $duration,
 			'disposition' => $disposition,
 			'notes' => '3CX Webhook CDR: ' . $disposition,
+			'call_id' => !empty($call_id) ? $call_id : null,
+			'recording_url' => !empty($recording_url) ? $recording_url : null,
+			'ai_processing_status' => !empty($recording_url) ? 'pending' : 'pending',
 			'created_at' => date('Y-m-d H:i:s')
-		));
+		);
+
+		$this->db->insert('ci_call_logs', $log_data);
+		$call_log_id = $this->db->insert_id();
 
 		if ($lead_id && $duration == 0) {
 			$this->db->where('id', $lead_id)->update('ci_leads', array(
@@ -626,7 +635,419 @@ class Ci_admin_calls extends CI_Controller
 			));
 		}
 
-		echo json_encode(array('status' => true, 'message' => 'CDR processed'));
+		if (!empty($recording_url) && $call_log_id > 0) {
+			$this->_run_post_call_ai($call_log_id);
+		}
+
+		echo json_encode(array('status' => true, 'message' => 'CDR processed', 'call_log_id' => $call_log_id));
+	}
+
+	public function recording_webhook()
+	{
+		$raw_data = file_get_contents('php://input');
+		$payload = json_decode($raw_data, true);
+		if (empty($payload)) {
+			$payload = $_POST;
+		}
+
+		$call_id = isset($payload['call_id']) ? trim($payload['call_id']) : (isset($payload['CallId']) ? trim($payload['CallId']) : '');
+		$recording_url = isset($payload['recording_url']) ? trim($payload['recording_url']) : (isset($payload['RecordingUrl']) ? trim($payload['RecordingUrl']) : '');
+
+		if (empty($call_id) && empty($recording_url)) {
+			echo json_encode(array('status' => false, 'message' => 'Missing call_id and recording_url'));
+			return;
+		}
+
+		$existing = null;
+		if (!empty($call_id)) {
+			$existing = $this->db->where('call_id', $call_id)->order_by('id', 'DESC')->get('ci_call_logs')->row_array();
+		}
+
+		if (!empty($existing)) {
+			$this->db->where('id', $existing['id'])->update('ci_call_logs', array(
+				'recording_url' => $recording_url,
+				'ai_processing_status' => 'pending'
+			));
+			$this->_run_post_call_ai($existing['id']);
+			echo json_encode(array('status' => true, 'message' => 'Recording attached and AI queued', 'call_log_id' => $existing['id']));
+		} else {
+			echo json_encode(array('status' => false, 'message' => 'Matching call log not found for call_id'));
+		}
+	}
+
+	public function ajax_process_ai()
+	{
+		$call_log_id = (int)$this->input->post('call_log_id');
+		if ($call_log_id <= 0) {
+			echo json_encode(array('status' => false, 'message' => 'Invalid call log ID'));
+			return;
+		}
+
+		$res = $this->_run_post_call_ai($call_log_id);
+		echo json_encode($res);
+	}
+
+	public function ajax_retry_ai()
+	{
+		$this->ajax_process_ai();
+	}
+
+	private function _run_post_call_ai($call_log_id)
+	{
+		$log = $this->db->where('id', $call_log_id)->get('ci_call_logs')->row_array();
+		if (empty($log)) {
+			return array('status' => false, 'message' => 'Call log record not found');
+		}
+
+		$local_file = !empty($log['recording_file']) ? FCPATH . $log['recording_file'] : '';
+		if (empty($local_file) || !file_exists($local_file)) {
+			if (!empty($log['recording_url'])) {
+				$dl_res = $this->groq_service->download_recording($log['recording_url'], $log['call_id']);
+				if ($dl_res['status']) {
+					$local_file = $dl_res['local_path'];
+					$this->db->where('id', $call_log_id)->update('ci_call_logs', array(
+						'recording_file' => $dl_res['relative_path']
+					));
+				} else {
+					$this->db->where('id', $call_log_id)->update('ci_call_logs', array(
+						'ai_processing_status' => 'failed',
+						'ai_error_message' => 'Failed to download recording: ' . $dl_res['message']
+					));
+					return array('status' => false, 'message' => 'Recording download failed: ' . $dl_res['message']);
+				}
+			} else {
+				return array('status' => false, 'message' => 'No recording URL or file attached to this call log');
+			}
+		}
+
+		$this->db->where('id', $call_log_id)->update('ci_call_logs', array(
+			'ai_processing_status' => 'transcribing'
+		));
+
+		$trans_res = $this->groq_service->transcribe_audio($local_file);
+		if (!$trans_res['status']) {
+			$this->db->where('id', $call_log_id)->update('ci_call_logs', array(
+				'ai_processing_status' => 'failed',
+				'ai_error_message' => 'Transcription failed: ' . $trans_res['message']
+			));
+			return array('status' => false, 'message' => 'Transcription failed: ' . $trans_res['message']);
+		}
+
+		$transcript = $trans_res['transcript'];
+		$this->db->where('id', $call_log_id)->update('ci_call_logs', array(
+			'transcript' => $transcript,
+			'ai_processing_status' => 'analyzing'
+		));
+
+		$ai_res = $this->groq_service->analyze_transcript($transcript);
+		if (!$ai_res['status']) {
+			$this->db->where('id', $call_log_id)->update('ci_call_logs', array(
+				'ai_processing_status' => 'failed',
+				'ai_error_message' => 'AI analysis failed: ' . $ai_res['message']
+			));
+			return array('status' => false, 'message' => 'AI analysis failed: ' . $ai_res['message']);
+		}
+
+		$d = $ai_res['data'];
+		$now = date('Y-m-d H:i:s');
+
+		$update_data = array(
+			'ai_summary' => $d['summary'],
+			'ai_remarks' => $d['remarks'],
+			'ai_status' => $d['next_status'],
+			'ai_sentiment' => $d['sentiment'],
+			'ai_follow_up_date' => $d['follow_up_date'],
+			'ai_next_action' => $d['next_action'],
+			'ai_language' => $d['language'],
+			'ai_requirements' => json_encode($d['customer_requirements']),
+			'ai_objections' => json_encode($d['objections']),
+			'ai_raw_json' => $ai_res['raw_json'],
+			'ai_processing_status' => 'completed',
+			'ai_error_message' => null,
+			'ai_processed_at' => $now
+		);
+
+		$this->db->where('id', $call_log_id)->update('ci_call_logs', $update_data);
+
+		if (!empty($log['lead_id'])) {
+			$ai_lead_note = "[AI Generated - {$d['sentiment']}] {$d['summary']} | Next Action: {$d['next_action']}";
+			$this->db->insert('ci_followup', array(
+				'lead_id' => $log['lead_id'],
+				'lead_type' => 'lead',
+				'user_id' => $log['user_id'] ?: (int)$this->session->userdata('manager_id'),
+				'followup_date' => !empty($d['follow_up_date']) ? $d['follow_up_date'] : date('Y-m-d'),
+				'followup_time' => date('H:i:s'),
+				'followup_remark' => $ai_lead_note,
+				'followup_result' => $d['next_status']
+			));
+		}
+
+		return array(
+			'status' => true,
+			'message' => 'Call transcript and AI conversation analysis generated successfully',
+			'data' => $update_data
+		);
+	}
+
+	public function ajax_start_autodial_session()
+	{
+		$user_id = (int)$this->session->userdata('manager_id');
+		$cooldown = (int)$this->input->post('cooldown') ?: 60;
+		$status_filter = trim((string)$this->input->post('status_filter')) ?: 'all';
+
+		$sess = $this->db->where('user_id', $user_id)->get('ci_dialer_sessions')->row_array();
+		$now = date('Y-m-d H:i:s');
+
+		if (empty($sess)) {
+			$this->db->insert('ci_dialer_sessions', array(
+				'user_id' => $user_id,
+				'status' => 'calling',
+				'cooldown_seconds' => $cooldown,
+				'status_filter' => $status_filter,
+				'dialed_lead_ids' => '',
+				'total_dialed' => 0,
+				'created_at' => $now,
+				'updated_at' => $now
+			));
+			$sess_id = $this->db->insert_id();
+			$dialed_arr = array();
+		} else {
+			$sess_id = $sess['id'];
+			$dialed_arr = !empty($sess['dialed_lead_ids']) ? array_filter(array_map('intval', explode(',', $sess['dialed_lead_ids']))) : array();
+			$this->db->where('id', $sess_id)->update('ci_dialer_sessions', array(
+				'status' => 'calling',
+				'cooldown_seconds' => $cooldown,
+				'status_filter' => $status_filter,
+				'updated_at' => $now
+			));
+		}
+
+		$this->db->select('A.id, A.lead_id, A.customer, A.poc, A.poc2, A.contact1, A.alt_contact, A.contact2, A.mobile, A.email, A.status, A.remark, S.status as status_name');
+		$this->db->from('ci_leads as A');
+		$this->db->join('ci_status as S', 'S.id = A.status', 'left');
+		$this->_apply_lead_filters($status_filter);
+		if (!empty($dialed_arr)) {
+			$this->db->where_not_in('A.id', $dialed_arr);
+		}
+		$this->db->order_by('A.id', 'DESC');
+		$this->db->limit(1);
+		$lead = $this->db->get()->row_array();
+
+		if (empty($lead)) {
+			$this->db->where('id', $sess_id)->update('ci_dialer_sessions', array('status' => 'completed', 'updated_at' => $now));
+			echo json_encode(array('status' => false, 'message' => 'No eligible contacts found in queue to auto-dial'));
+			return;
+		}
+
+		$extracted = $this->_extract_lead_phones($lead);
+		$phone = !empty($extracted['primary']) ? $extracted['primary'] : $extracted['alt'];
+		$dispatch = $this->threecx->build_call_dispatch($phone);
+
+		$this->db->where('id', $sess_id)->update('ci_dialer_sessions', array(
+			'current_lead_id' => $lead['id'],
+			'updated_at' => $now
+		));
+
+		$lead['phone_primary'] = $extracted['primary'];
+		$lead['phone_alt'] = $extracted['alt'];
+		$lead['has_two_numbers'] = $extracted['has_two'];
+		$lead['dispatch'] = $dispatch;
+
+		echo json_encode(array(
+			'status' => true,
+			'session_id' => $sess_id,
+			'lead' => $lead,
+			'cooldown_seconds' => $cooldown
+		));
+	}
+
+	public function ajax_autodial_call_ended()
+	{
+		$user_id = (int)$this->session->userdata('manager_id');
+		$sess = $this->db->where('user_id', $user_id)->get('ci_dialer_sessions')->row_array();
+		if (empty($sess) || $sess['status'] === 'stopped') {
+			echo json_encode(array('status' => false, 'message' => 'No active autodial session'));
+			return;
+		}
+
+		$cooldown = !empty($sess['cooldown_seconds']) ? (int)$sess['cooldown_seconds'] : 60;
+		$now_ts = time();
+		$wrapup_ends_ts = $now_ts + $cooldown;
+		$started_at = date('Y-m-d H:i:s', $now_ts);
+		$ends_at = date('Y-m-d H:i:s', $wrapup_ends_ts);
+
+		$this->db->where('id', $sess['id'])->update('ci_dialer_sessions', array(
+			'status' => 'wrapup',
+			'wrapup_started_at' => $started_at,
+			'wrapup_ends_at' => $ends_at,
+			'updated_at' => $started_at
+		));
+
+		echo json_encode(array(
+			'status' => true,
+			'session_status' => 'wrapup',
+			'cooldown_seconds' => $cooldown,
+			'remaining_seconds' => $cooldown,
+			'wrapup_ends_at' => $ends_at
+		));
+	}
+
+	public function ajax_autodial_extend()
+	{
+		$user_id = (int)$this->session->userdata('manager_id');
+		$extra = (int)$this->input->post('seconds') ?: 30;
+
+		$sess = $this->db->where('user_id', $user_id)->get('ci_dialer_sessions')->row_array();
+		if (empty($sess) || $sess['status'] !== 'wrapup') {
+			echo json_encode(array('status' => false, 'message' => 'Session not in wrap-up state'));
+			return;
+		}
+
+		$current_end = !empty($sess['wrapup_ends_at']) ? strtotime($sess['wrapup_ends_at']) : time();
+		if ($current_end < time()) {
+			$current_end = time();
+		}
+		$new_end = $current_end + $extra;
+		$new_ends_at = date('Y-m-d H:i:s', $new_end);
+		$rem = max(0, $new_end - time());
+
+		$this->db->where('id', $sess['id'])->update('ci_dialer_sessions', array(
+			'wrapup_ends_at' => $new_ends_at,
+			'updated_at' => date('Y-m-d H:i:s')
+		));
+
+		echo json_encode(array('status' => true, 'remaining_seconds' => $rem, 'wrapup_ends_at' => $new_ends_at));
+	}
+
+	public function ajax_autodial_pause()
+	{
+		$user_id = (int)$this->session->userdata('manager_id');
+		$this->db->where('user_id', $user_id)->update('ci_dialer_sessions', array(
+			'status' => 'paused',
+			'updated_at' => date('Y-m-d H:i:s')
+		));
+		echo json_encode(array('status' => true, 'session_status' => 'paused'));
+	}
+
+	public function ajax_autodial_resume()
+	{
+		$user_id = (int)$this->session->userdata('manager_id');
+		$sess = $this->db->where('user_id', $user_id)->get('ci_dialer_sessions')->row_array();
+		if (!empty($sess)) {
+			$cooldown = !empty($sess['cooldown_seconds']) ? (int)$sess['cooldown_seconds'] : 60;
+			$ends_at = date('Y-m-d H:i:s', time() + $cooldown);
+			$this->db->where('id', $sess['id'])->update('ci_dialer_sessions', array(
+				'status' => 'wrapup',
+				'wrapup_started_at' => date('Y-m-d H:i:s'),
+				'wrapup_ends_at' => $ends_at,
+				'updated_at' => date('Y-m-d H:i:s')
+			));
+			echo json_encode(array('status' => true, 'session_status' => 'wrapup', 'remaining_seconds' => $cooldown));
+		} else {
+			echo json_encode(array('status' => false, 'message' => 'No session found'));
+		}
+	}
+
+	public function ajax_autodial_stop()
+	{
+		$user_id = (int)$this->session->userdata('manager_id');
+		$this->db->where('user_id', $user_id)->update('ci_dialer_sessions', array(
+			'status' => 'stopped',
+			'current_lead_id' => null,
+			'updated_at' => date('Y-m-d H:i:s')
+		));
+		echo json_encode(array('status' => true, 'session_status' => 'stopped'));
+	}
+
+	public function ajax_autodial_next()
+	{
+		$user_id = (int)$this->session->userdata('manager_id');
+		$sess = $this->db->where('user_id', $user_id)->get('ci_dialer_sessions')->row_array();
+		if (empty($sess) || $sess['status'] === 'stopped') {
+			echo json_encode(array('status' => false, 'message' => 'No active autodial session'));
+			return;
+		}
+
+		$current_lead_id = (int)$sess['current_lead_id'];
+		$dialed_arr = !empty($sess['dialed_lead_ids']) ? array_filter(array_map('intval', explode(',', $sess['dialed_lead_ids']))) : array();
+		if ($current_lead_id > 0 && !in_array($current_lead_id, $dialed_arr)) {
+			$dialed_arr[] = $current_lead_id;
+		}
+
+		$status_filter = !empty($sess['status_filter']) ? $sess['status_filter'] : 'all';
+
+		$this->db->select('A.id, A.lead_id, A.customer, A.poc, A.poc2, A.contact1, A.alt_contact, A.contact2, A.mobile, A.email, A.status, A.remark, S.status as status_name');
+		$this->db->from('ci_leads as A');
+		$this->db->join('ci_status as S', 'S.id = A.status', 'left');
+		$this->_apply_lead_filters($status_filter);
+		if (!empty($dialed_arr)) {
+			$this->db->where_not_in('A.id', $dialed_arr);
+		}
+		$this->db->order_by('A.id', 'DESC');
+		$this->db->limit(1);
+		$next_lead = $this->db->get()->row_array();
+
+		$now = date('Y-m-d H:i:s');
+		if (empty($next_lead)) {
+			$this->db->where('id', $sess['id'])->update('ci_dialer_sessions', array(
+				'status' => 'completed',
+				'dialed_lead_ids' => implode(',', $dialed_arr),
+				'current_lead_id' => null,
+				'updated_at' => $now
+			));
+			echo json_encode(array('status' => true, 'completed' => true, 'message' => 'Auto-dial queue complete. All contacts dialed.'));
+			return;
+		}
+
+		$extracted = $this->_extract_lead_phones($next_lead);
+		$phone = !empty($extracted['primary']) ? $extracted['primary'] : $extracted['alt'];
+		$dispatch = $this->threecx->build_call_dispatch($phone);
+
+		$total_dialed = (int)$sess['total_dialed'] + 1;
+		$this->db->where('id', $sess['id'])->update('ci_dialer_sessions', array(
+			'status' => 'calling',
+			'current_lead_id' => $next_lead['id'],
+			'dialed_lead_ids' => implode(',', $dialed_arr),
+			'total_dialed' => $total_dialed,
+			'updated_at' => $now
+		));
+
+		$next_lead['phone_primary'] = $extracted['primary'];
+		$next_lead['phone_alt'] = $extracted['alt'];
+		$next_lead['has_two_numbers'] = $extracted['has_two'];
+		$next_lead['dispatch'] = $dispatch;
+
+		echo json_encode(array(
+			'status' => true,
+			'completed' => false,
+			'session_status' => 'calling',
+			'lead' => $next_lead,
+			'total_dialed' => $total_dialed
+		));
+	}
+
+	public function ajax_autodial_status()
+	{
+		$user_id = (int)$this->session->userdata('manager_id');
+		$sess = $this->db->where('user_id', $user_id)->get('ci_dialer_sessions')->row_array();
+		if (empty($sess)) {
+			echo json_encode(array('status' => false, 'session_status' => 'idle'));
+			return;
+		}
+
+		$rem = 0;
+		if ($sess['status'] === 'wrapup' && !empty($sess['wrapup_ends_at'])) {
+			$rem = max(0, strtotime($sess['wrapup_ends_at']) - time());
+		}
+
+		echo json_encode(array(
+			'status' => true,
+			'session_status' => $sess['status'],
+			'current_lead_id' => (int)$sess['current_lead_id'],
+			'cooldown_seconds' => (int)$sess['cooldown_seconds'],
+			'remaining_seconds' => $rem,
+			'total_dialed' => (int)$sess['total_dialed']
+		));
 	}
 }
 

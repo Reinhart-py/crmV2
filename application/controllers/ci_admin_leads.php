@@ -391,11 +391,15 @@ function __construct()
 		}
 
 		$now = date('Y-m-d H:i:s');
-		$pipe = $this->db->get_where('ci_pipeline', array('lead_id' => $lead_id))->row_array();
+		$db_ref = (!empty($pipe['db_ref_no'])) ? $pipe['db_ref_no'] : sprintf('D%010d', $lead_id);
+		$lead_ref = (!empty($pipe['lead_ref_no'])) ? $pipe['lead_ref_no'] : sprintf('L%010d', $lead_id);
+
 		if (empty($pipe)) {
 			$this->db->insert('ci_pipeline', array(
 				'lead_id' => $lead_id,
 				'pipeline_stage' => 'lead',
+				'db_ref_no' => $db_ref,
+				'lead_ref_no' => $lead_ref,
 				'conversion_status' => 'approved',
 				'conversion_reason' => $remarks,
 				'conversion_requested_by' => $lead_owner ?: $cur_uid,
@@ -408,6 +412,8 @@ function __construct()
 		} else {
 			$this->db->where('lead_id', $lead_id)->update('ci_pipeline', array(
 				'pipeline_stage' => 'lead',
+				'db_ref_no' => $db_ref,
+				'lead_ref_no' => $lead_ref,
 				'conversion_status' => 'approved',
 				'conversion_reason' => $remarks,
 				'conversion_reviewed_by' => $cur_uid,
@@ -435,7 +441,219 @@ function __construct()
 	public function transfer_to_lead()
 	{
 		$this->convert_to_lead();
-	}	
+	}
+
+	public function request_conversion()
+	{
+		$this->if_not_login();
+		$lead_id = (int)$this->input->post('lead_id');
+		$remarks = trim((string)$this->input->post('remarks'));
+		$cur_uid = (int)$this->session->userdata('manager_id');
+		$cur_name = (string)$this->session->userdata('manager_name');
+
+		if (empty($lead_id)) {
+			$this->session->set_flashdata('error_message', 'Invalid record selected.');
+			redirect('manager/leads');
+			return;
+		}
+
+		$lead = $this->ci_admin_model->getSingleLead($lead_id);
+		if (empty($lead)) {
+			$this->session->set_flashdata('error_message', 'Database record not found.');
+			redirect('manager/leads');
+			return;
+		}
+
+		if (!empty($lead['pipeline_stage']) && $lead['pipeline_stage'] === 'lead') {
+			$this->session->set_flashdata('error_message', 'This record is already a Lead.');
+			redirect('manager/leads/view/' . base64_encode($lead_id));
+			return;
+		}
+
+		$now = date('Y-m-d H:i:s');
+		$pipe = $this->db->get_where('ci_pipeline', array('lead_id' => $lead_id))->row_array();
+		if (empty($pipe)) {
+			$this->db->insert('ci_pipeline', array(
+				'lead_id' => $lead_id,
+				'pipeline_stage' => 'database',
+				'conversion_status' => 'pending',
+				'conversion_reason' => $remarks,
+				'conversion_requested_by' => $cur_uid,
+				'conversion_requested_at' => $now,
+				'created_at' => $now,
+				'updated_at' => $now
+			));
+		} else {
+			$this->db->where('lead_id', $lead_id)->update('ci_pipeline', array(
+				'conversion_status' => 'pending',
+				'conversion_reason' => $remarks,
+				'conversion_requested_by' => $cur_uid,
+				'conversion_requested_at' => $now,
+				'updated_at' => $now
+			));
+		}
+
+		$this->db->insert('ci_pipeline_logs', array(
+			'lead_id' => $lead_id,
+			'action' => 'request_conversion',
+			'stage_from' => 'database',
+			'stage_to' => 'pending_review',
+			'action_by' => $cur_uid,
+			'action_by_name' => $cur_name,
+			'remarks' => !empty($remarks) ? $remarks : 'Submitted conversion request for review',
+			'created_at' => $now
+		));
+
+		$this->ci_admin_model->log_admin_action('request_conversion', "Requested conversion for record #$lead_id", 'SUCCESS', $cur_uid, $cur_name);
+		$this->session->set_flashdata('message', 'Conversion request has been submitted for review.');
+		redirect('manager/leads/view/' . base64_encode($lead_id));
+	}
+
+	public function reject_conversion()
+	{
+		$this->if_not_login();
+		$lead_id = (int)$this->input->post('lead_id');
+		$remarks = trim((string)$this->input->post('remarks'));
+		$cur_uid = (int)$this->session->userdata('manager_id');
+		$cur_role = (int)$this->session->userdata('manager_role');
+		$cur_name = (string)$this->session->userdata('manager_name');
+
+		if (empty($lead_id)) {
+			$this->session->set_flashdata('error_message', 'Invalid record selected.');
+			redirect('manager/leads');
+			return;
+		}
+
+		$lead = $this->ci_admin_model->getSingleLead($lead_id);
+		if (empty($lead)) {
+			$this->session->set_flashdata('error_message', 'Database record not found.');
+			redirect('manager/leads');
+			return;
+		}
+
+		$lead_owner = !empty($lead['lead_assign']) ? (int)$lead['lead_assign'] : (int)$lead['created_by'];
+		$team_members = $this->ci_admin_model->fetchTeamList($cur_uid, '');
+		if (!is_array($team_members)) {
+			$team_members = array();
+		}
+		$can_review = false;
+		if ($cur_role === 1 || $cur_uid === 1 || $cur_role === 4) {
+			$can_review = true;
+		} elseif ($lead_owner > 0 && $cur_uid !== $lead_owner && in_array($lead_owner, array_map('intval', $team_members))) {
+			$can_review = true;
+		}
+
+		if (!$can_review) {
+			$this->session->set_flashdata('error_message', 'Access denied. You do not have permission to review this conversion request.');
+			redirect('manager/leads/view/' . base64_encode($lead_id));
+			return;
+		}
+
+		$now = date('Y-m-d H:i:s');
+		$this->db->where('lead_id', $lead_id)->update('ci_pipeline', array(
+			'conversion_status' => 'rejected',
+			'conversion_reviewed_by' => $cur_uid,
+			'conversion_reviewed_at' => $now,
+			'updated_at' => $now
+		));
+
+		$this->db->insert('ci_pipeline_logs', array(
+			'lead_id' => $lead_id,
+			'action' => 'reject_conversion',
+			'stage_from' => 'pending_review',
+			'stage_to' => 'database',
+			'action_by' => $cur_uid,
+			'action_by_name' => $cur_name,
+			'remarks' => !empty($remarks) ? $remarks : 'Conversion request rejected',
+			'created_at' => $now
+		));
+
+		$this->ci_admin_model->log_admin_action('reject_conversion', "Rejected conversion for record #$lead_id", 'SUCCESS', $cur_uid, $cur_name);
+		$this->session->set_flashdata('message', 'Conversion request has been rejected.');
+		redirect('manager/leads/view/' . base64_encode($lead_id));
+	}
+
+	public function request_order()
+	{
+		$this->if_not_login();
+		$lead_id = (int)$this->input->post('lead_id');
+		$service_requirements = trim((string)$this->input->post('service_requirements'));
+		$remarks = trim((string)$this->input->post('remarks'));
+		$cur_uid = (int)$this->session->userdata('manager_id');
+		$cur_role = (int)$this->session->userdata('manager_role');
+		$cur_name = (string)$this->session->userdata('manager_name');
+
+		if (empty($lead_id)) {
+			$this->session->set_flashdata('error_message', 'Invalid record selected.');
+			redirect('manager/leads/view_leads');
+			return;
+		}
+
+		$lead = $this->ci_admin_model->getSingleLead($lead_id);
+		if (empty($lead)) {
+			$this->session->set_flashdata('error_message', 'Lead record not found.');
+			redirect('manager/leads/view_leads');
+			return;
+		}
+
+		if (empty($lead['pipeline_stage']) || $lead['pipeline_stage'] !== 'lead') {
+			$this->session->set_flashdata('error_message', 'Only approved Leads can be converted to an Order.');
+			redirect('manager/leads/view/' . base64_encode($lead_id));
+			return;
+		}
+
+		if (!empty($lead['order_request_status']) && in_array($lead['order_request_status'], array('pending', 'approved'))) {
+			$this->session->set_flashdata('error_message', 'An Order process is already active for this Lead.');
+			redirect('manager/leads/view/' . base64_encode($lead_id));
+			return;
+		}
+
+		$lead_owner = !empty($lead['lead_assign']) ? (int)$lead['lead_assign'] : (int)$lead['created_by'];
+		$is_collab = (!empty($lead['agents']) && in_array($cur_uid, array_map('intval', explode(',', $lead['agents']))));
+		$team_members = $this->ci_admin_model->fetchTeamList($cur_uid, '');
+		if (!is_array($team_members)) {
+			$team_members = array();
+		}
+		$can_request = ($cur_role === 1 || $cur_uid === 1 || $cur_role === 4 || $cur_uid === $lead_owner || $is_collab || in_array($lead_owner, array_map('intval', $team_members)));
+
+		if (!$can_request) {
+			$this->session->set_flashdata('error_message', 'Access denied. You do not have permission to request Order conversion.');
+			redirect('manager/leads/view/' . base64_encode($lead_id));
+			return;
+		}
+
+		$now = date('Y-m-d H:i:s');
+		$full_remarks = $remarks;
+		if (!empty($service_requirements)) {
+			$full_remarks = 'Service: ' . $service_requirements . ($remarks ? ' | Note: ' . $remarks : '');
+		}
+
+		$this->db->where('lead_id', $lead_id)->update('ci_pipeline', array(
+			'order_request_status' => 'pending',
+			'order_requested_by' => $cur_uid,
+			'order_requested_at' => $now,
+			'order_request_remarks' => $full_remarks,
+			'is_locked' => 1,
+			'locked_reason' => 'Order conversion requested',
+			'locked_at' => $now,
+			'updated_at' => $now
+		));
+
+		$this->db->insert('ci_pipeline_logs', array(
+			'lead_id' => $lead_id,
+			'action' => 'request_order',
+			'stage_from' => 'lead',
+			'stage_to' => 'pending_order_process',
+			'action_by' => $cur_uid,
+			'action_by_name' => $cur_name,
+			'remarks' => !empty($full_remarks) ? $full_remarks : 'Submitted Lead for Order creation and processing',
+			'created_at' => $now
+		));
+
+		$this->ci_admin_model->log_admin_action('request_order', "Submitted Lead #$lead_id for Order creation", 'SUCCESS', $cur_uid, $cur_name);
+		$this->session->set_flashdata('message', 'Lead has been submitted for Order processing. This Lead is now locked for editing.');
+		redirect('manager/leads/view/' . base64_encode($lead_id));
+	}
 
 	public function ajax_get_state()
 	{
@@ -686,8 +904,13 @@ function __construct()
 				} elseif ($lead_owner > 0 && $cur_mgr_id !== $lead_owner && $is_mgr_above_owner) {
 					$can_convert = true;
 				}
+				$is_lead = (!empty($data['p_info']['pipeline_stage']) && $data['p_info']['pipeline_stage'] === 'lead');
+				$conv_status = !empty($data['p_info']['conversion_status']) ? $data['p_info']['conversion_status'] : '';
 				$data['can_convert_to_lead'] = $can_convert;
-				$data['is_already_lead'] = (!empty($data['p_info']['pipeline_stage']) && $data['p_info']['pipeline_stage'] === 'lead');
+				$data['is_already_lead'] = $is_lead;
+				$data['is_pending_review'] = (!$is_lead && $conv_status === 'pending');
+				$data['can_review_conversion'] = ($can_convert && $data['is_pending_review']);
+				$data['can_request_conversion'] = (!$is_lead && $conv_status !== 'pending');
 				$data['pipeline_logs'] = $this->db->where('lead_id', $id)->order_by('id', 'DESC')->get('ci_pipeline_logs')->result_array();
 
 				$data['transfer_history'] = $this->db->select('T.*, U1.name as from_user_name, U2.name as to_user_name, U3.name as transferred_by_name')
@@ -703,6 +926,19 @@ function __construct()
 				$data['bo_list']=$this->comman_model->getAll(array('lead_id'=>$id),'','ci_boleads');
 				$data['follow_list']=$this->comman_model->getAll(array('lead_id'=>$id,'lead_type'=>'lead'),'','ci_followup');
 				$data['m_list']=$this->comman_model->getAll(array('lead_id'=>$id),array('id','desc'),'ci_meetings','first');
+				$data['call_logs'] = $this->db->select('L.*, U.name as agent_name')
+					->from('ci_call_logs as L')
+					->join('ci_user as U', 'U.id = L.user_id', 'left')
+					->where('L.lead_id', $id)
+					->order_by('L.id', 'DESC')
+					->get()
+					->result_array();
+				$data['order_info'] = $this->db->get_where('ci_orders', array('lead_id' => $id))->row_array();
+				$data['db_ref_no'] = !empty($data['p_info']['db_ref_no']) ? $data['p_info']['db_ref_no'] : sprintf('D%010d', $id);
+				$data['lead_ref_no'] = !empty($data['p_info']['lead_ref_no']) ? $data['p_info']['lead_ref_no'] : ((!empty($data['p_info']['pipeline_stage']) && $data['p_info']['pipeline_stage'] === 'lead') ? sprintf('L%010d', $id) : '');
+				$data['order_ref_no'] = !empty($data['order_info']['order_no']) ? $data['order_info']['order_no'] : '';
+				$data['sales_ref_no'] = !empty($data['order_info']['sales_ref_no']) ? $data['order_info']['sales_ref_no'] : '';
+				$data['is_locked'] = (!empty($data['p_info']['is_locked']) && (int)$data['p_info']['is_locked'] === 1);
 				$data['action']= $action;
      	 	   if(empty($data['p_info']))
 
@@ -868,6 +1104,15 @@ function __construct()
 				$lead_id = $this->comman_model->saveData('ci_leads',$list);
 				 
 				$this->comman_model->updateData('id',$lead_id,array('lead_id'=>100000000+$lead_id),'ci_leads');
+				$db_ref = sprintf('D%010d', $lead_id);
+				$this->db->insert('ci_pipeline', array(
+					'lead_id' => $lead_id,
+					'pipeline_stage' => 'database',
+					'db_ref_no' => $db_ref,
+					'conversion_status' => 'none',
+					'created_at' => date('Y-m-d H:i:s'),
+					'updated_at' => date('Y-m-d H:i:s')
+				));
 				$this->ci_admin_model->log_admin_action(
 					'lead_create',
 					"Created lead #$lead_id ($customer)",
@@ -966,6 +1211,14 @@ function __construct()
 		
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$cur_mgr_id = (int)$this->session->userdata('manager_id');
+
+		$pipe_lock = $this->db->get_where('ci_pipeline', array('lead_id' => $id))->row_array();
+		if (!empty($pipe_lock['is_locked']) && (int)$pipe_lock['is_locked'] === 1 && $cur_role !== 1 && $cur_role !== 4) {
+			$this->session->set_flashdata('error_message', 'This Lead is locked because an Order conversion process is active. Editing is disabled.');
+			redirect('manager/leads/view/' . base64_encode($id));
+			return;
+		}
+
 		if ($cur_role !== 1 && $cur_role !== 4) {
 			$lead_owner = !empty($data['list']['lead_assign']) ? (int)$data['list']['lead_assign'] : (int)$data['list']['created_by'];
 			$is_collab = (!empty($data['list']['agents']) && in_array($cur_mgr_id, array_map('intval', explode(',', $data['list']['agents']))));
@@ -1260,6 +1513,14 @@ function __construct()
 			  }else{
 				  redirect('/manager/leads');
 			  }
+		  }  
+
+		  $cur_role = (int)$this->session->userdata('manager_role');
+		  $pipe_lock = $this->db->get_where('ci_pipeline', array('lead_id' => $id))->row_array();
+		  if (!empty($pipe_lock['is_locked']) && (int)$pipe_lock['is_locked'] === 1 && $cur_role !== 1 && $cur_role !== 4) {
+			  $this->session->set_flashdata('error_message', 'This Lead is locked because an Order conversion process is active. Editing is disabled.');
+			  redirect('manager/leads/view/' . base64_encode($id));
+			  return;
 		  }  
 		  
 		

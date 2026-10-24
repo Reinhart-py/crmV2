@@ -78,6 +78,9 @@
   .apple-stage-grid {
     grid-template-columns: 1fr;
   }
+  .apple-dialer-card {
+    order: -1;
+  }
 }
 
 .apple-card {
@@ -741,6 +744,271 @@
   background: rgba(37, 99, 235, 0.15);
   border-color: #2563eb;
 }
+
+.apple-ai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.apple-ai-badge-pos {
+  background: rgba(22, 163, 74, 0.2);
+  color: #4ade80;
+  border: 1px solid rgba(22, 163, 74, 0.4);
+}
+.apple-ai-badge-neu {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+}
+.apple-ai-badge-neg {
+  background: rgba(220, 38, 38, 0.2);
+  color: #f87171;
+  border: 1px solid rgba(220, 38, 38, 0.4);
+}
+
+.apple-log-ai-summary {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: rgba(15, 23, 42, 0.6);
+  border-left: 2px solid #3b82f6;
+  border-radius: 6px;
+  font-size: 11px;
+  color: #cbd5e1;
+  line-height: 1.45;
+}
+
+.apple-transcript-box {
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 6px;
+  font-size: 11px;
+  color: #94a3b8;
+  max-height: 140px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  display: none;
+}
+
+body:not([data-theme="dark"]) .apple-calling-container {
+  background: #f8fafc;
+  color: #0f172a;
+}
+body:not([data-theme="dark"]) .apple-top-nav {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+body:not([data-theme="dark"]) .apple-top-title h2 {
+  color: #0f172a;
+}
+body:not([data-theme="dark"]) .apple-btn-pill {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+body:not([data-theme="dark"]) .apple-btn-pill:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+body:not([data-theme="dark"]) .apple-card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+body:not([data-theme="dark"]) .apple-client-header {
+  border-bottom-color: #e2e8f0;
+}
+body:not([data-theme="dark"]) .apple-client-name {
+  color: #0f172a;
+}
+body:not([data-theme="dark"]) .apple-client-sub {
+  color: #64748b;
+}
+body:not([data-theme="dark"]) .apple-badge {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+  color: #475569;
+}
+body:not([data-theme="dark"]) .apple-badge-cat {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+body:not([data-theme="dark"]) .apple-nav-btn {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+body:not([data-theme="dark"]) .apple-nav-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+body:not([data-theme="dark"]) .apple-phone-card {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+body:not([data-theme="dark"]) .apple-phone-card:hover {
+  background: #f1f5f9;
+  border-color: #93c5fd;
+}
+body:not([data-theme="dark"]) .apple-phone-card.active-target {
+  background: #eff6ff;
+  border-color: #2563eb;
+  box-shadow: 0 0 12px rgba(37,99,235,0.15);
+}
+body:not([data-theme="dark"]) .apple-phone-card-label {
+  color: #64748b;
+}
+body:not([data-theme="dark"]) .apple-phone-card-num {
+  color: #0f172a;
+}
+body:not([data-theme="dark"]) .apple-remarks-preview {
+  background: #f8fafc;
+  border-left-color: #2563eb;
+}
+body:not([data-theme="dark"]) .apple-remarks-preview-label {
+  color: #64748b;
+}
+body:not([data-theme="dark"]) .apple-remarks-preview-text {
+  color: #334155;
+}
+body:not([data-theme="dark"]) .apple-meta-item {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+body:not([data-theme="dark"]) .apple-meta-item-label {
+  color: #64748b;
+}
+body:not([data-theme="dark"]) .apple-meta-item-val {
+  color: #0f172a;
+}
+body:not([data-theme="dark"]) .apple-dialer-screen {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+body:not([data-theme="dark"]) .apple-dialer-input {
+  color: #0f172a;
+}
+body:not([data-theme="dark"]) .apple-dialer-backspace {
+  color: #64748b;
+}
+body:not([data-theme="dark"]) .apple-dialer-backspace:hover {
+  color: #0f172a;
+}
+body:not([data-theme="dark"]) .apple-key-btn {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+body:not([data-theme="dark"]) .apple-key-btn:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+body:not([data-theme="dark"]) .apple-key-btn .apple-key-num,
+body:not([data-theme="dark"]) .apple-key-btn .apple-key-digit {
+  color: #0f172a !important;
+}
+body:not([data-theme="dark"]) .apple-key-btn .apple-key-letters {
+  color: #64748b;
+}
+body:not([data-theme="dark"]) .apple-slide-panel {
+  background: #ffffff;
+  border-left-color: #e2e8f0;
+  box-shadow: -5px 0 25px rgba(0,0,0,0.1);
+}
+body:not([data-theme="dark"]) .apple-slide-header {
+  background: #f8fafc;
+  border-bottom-color: #e2e8f0;
+}
+body:not([data-theme="dark"]) .apple-slide-header h3 {
+  color: #0f172a;
+}
+body:not([data-theme="dark"]) .apple-slide-footer {
+  background: #f8fafc;
+  border-top-color: #e2e8f0;
+}
+body:not([data-theme="dark"]) .apple-form-label {
+  color: #475569;
+}
+body:not([data-theme="dark"]) .apple-form-input,
+body:not([data-theme="dark"]) .apple-form-select,
+body:not([data-theme="dark"]) .apple-form-textarea {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+body:not([data-theme="dark"]) .apple-form-select option {
+  background: #ffffff;
+  color: #0f172a;
+}
+body:not([data-theme="dark"]) .apple-log-item,
+body:not([data-theme="dark"]) .apple-queue-item {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+body:not([data-theme="dark"]) .apple-log-item:hover,
+body:not([data-theme="dark"]) .apple-queue-item:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+body:not([data-theme="dark"]) .apple-log-name,
+body:not([data-theme="dark"]) .apple-queue-name {
+  color: #0f172a;
+}
+body:not([data-theme="dark"]) .apple-transcript-box {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #334155;
+}
+body:not([data-theme="dark"]) #autodialerWrapupBanner {
+  background: #eff6ff !important;
+  border-color: #3b82f6 !important;
+}
+body:not([data-theme="dark"]) #autodialerWrapupBanner > div > div > div:first-child {
+  color: #1e3a8a !important;
+}
+body:not([data-theme="dark"]) #autodialerBannerSub {
+  color: #475569 !important;
+}
+body[data-theme="dark"] .apple-calling-container {
+  background: #0f172a;
+}
+body[data-theme="dark"] .apple-card {
+  background: #1e293b;
+  border-color: #334155;
+}
+body[data-theme="dark"] .apple-top-nav {
+  background: #1e293b;
+  border-color: #334155;
+}
+body[data-theme="dark"] .apple-key-btn {
+  background: #1e293b;
+  border-color: #334155;
+}
+body[data-theme="dark"] .apple-key-btn:hover {
+  background: #334155;
+}
+body[data-theme="dark"] .apple-dialer-screen {
+  background: #0f172a;
+  border-color: #334155;
+}
+body[data-theme="dark"] .apple-slide-panel {
+  background: #1e293b;
+  border-left-color: #334155;
+}
+body[data-theme="dark"] .apple-slide-header,
+body[data-theme="dark"] .apple-slide-footer {
+  background: #0f172a;
+  border-color: #334155;
+}
 </style>
 
 <div class="content-wrapper apple-calling-container">
@@ -751,6 +1019,10 @@
     </div>
 
     <div class="apple-top-actions">
+      <button type="button" class="apple-btn-pill" id="btnToggleAutoDialer" style="border-color:#16a34a; color:#4ade80;">
+        <i class="fa fa-bolt"></i> Auto-Dialer (<span id="autoDialerStatusText">Off</span>)
+      </button>
+
       <button type="button" class="apple-btn-pill" id="btnToggleQueueDrawer">
         <i class="fa fa-list-ul"></i> Queue (<span id="queueCountBadge"><?php echo isset($total_queue) ? (int)$total_queue : 0; ?></span>)
       </button>
@@ -762,6 +1034,24 @@
       <a href="<?php echo base_url(); ?>manager/dashboard" class="apple-btn-pill">
         <i class="fa fa-chevron-left"></i> Exit
       </a>
+    </div>
+  </div>
+
+  <div id="autodialerWrapupBanner" style="display:none; background:linear-gradient(135deg, #0f172a, #1e293b); border:1px solid #3b82f6; border-radius:12px; padding:12px 18px; margin-bottom:16px; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div style="display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; border-radius:50%; background:rgba(59, 130, 246, 0.15); border:2px solid #3b82f6; color:#60a5fa; font-weight:700; font-size:16px;" id="autodialerTimerDisplay">
+        60
+      </div>
+      <div>
+        <div style="font-size:13px; font-weight:600; color:#ffffff;">Auto-Dialer: Post-Call Wrap-up & Notes</div>
+        <div style="font-size:11px; color:#94a3b8;" id="autodialerBannerSub">Take notes and select call outcome. Next contact dials automatically when countdown ends.</div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <button type="button" class="apple-btn-secondary" id="btnAutodialExtend" style="padding:6px 12px; font-size:12px;"><i class="fa fa-plus"></i> +30s Extend</button>
+      <button type="button" class="apple-btn-secondary" id="btnAutodialPause" style="padding:6px 12px; font-size:12px;"><i class="fa fa-pause"></i> Pause</button>
+      <button type="button" class="apple-btn-primary" id="btnAutodialNextNow" style="padding:6px 14px; font-size:12px; background:#16a34a; border-color:#16a34a;"><i class="fa fa-forward"></i> Save & Next Call</button>
+      <button type="button" class="apple-btn-secondary" id="btnAutodialStop" style="padding:6px 12px; font-size:12px; color:#f87171;"><i class="fa fa-stop"></i> Stop</button>
     </div>
   </div>
 
@@ -1394,16 +1684,11 @@ function startCrmCall() {
     var btn = document.getElementById('btnToggleCall');
     btn.className = 'apple-call-btn btn-end';
     btn.innerHTML = '<i class="fa fa-phone-slash"></i>';
-    document.getElementById('liveCallSubtitle').textContent = 'Calling ' + phone + '...';
+    document.getElementById('liveCallSubtitle').textContent = 'Dialing ' + phone + ' via 3CX...';
 
     if (res && res.dispatch && res.dispatch.webclient_url) {
       window.open(res.dispatch.webclient_url, '_blank');
     }
-
-    callTimerInterval = setInterval(function() {
-      callConnectedSeconds++;
-      document.getElementById('liveCallSubtitle').textContent = 'In Call • ' + formatTimer(callConnectedSeconds);
-    }, 1000);
   }).fail(function() {
     showAppleToast('Server communication error');
   });
@@ -1422,11 +1707,168 @@ function endCrmCall() {
   btn.className = 'apple-call-btn btn-start';
   btn.innerHTML = '<i class="fa fa-phone"></i>';
 
-  document.getElementById('liveCallSubtitle').textContent = 'Call Ended • Duration: ' + formatTimer(callConnectedSeconds);
+  document.getElementById('liveCallSubtitle').textContent = 'Call Ended • Ready for notes';
+
+  var leadId = parseInt($('#hiddenLeadId').val(), 10) || 0;
+  if (autoDialerActive) {
+    $.ajax({
+      type: 'POST',
+      url: '<?php echo base_url(); ?>manager/calls/ajax_autodial_call_ended',
+      data: { lead_id: leadId, duration: callConnectedSeconds },
+      dataType: 'json'
+    });
+    startWrapupCountdown(60);
+  }
+
+  if (activeCallLogId > 0) {
+    runAiAnalysis(activeCallLogId, true);
+  }
 
   setTimeout(function() {
     openFollowupPanel();
-  }, 350);
+  }, 250);
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function runAiAnalysis(callLogId, silent) {
+  if (!callLogId) return;
+  if (!silent) {
+    showAppleToast('Analyzing call with Groq AI...');
+  }
+  $.ajax({
+    type: 'POST',
+    url: '<?php echo base_url(); ?>manager/calls/ajax_process_ai',
+    data: { call_log_id: callLogId },
+    dataType: 'json'
+  }).done(function(res) {
+    if (res && res.status) {
+      if (!silent) {
+        showAppleToast('AI Analysis completed: ' + (res.data ? res.data.next_status : ''));
+      }
+      refreshCallLogs();
+    } else if (!silent) {
+      showAppleToast('AI Notice: ' + (res.message || 'Processing queue'));
+    }
+  });
+}
+
+var autoDialerActive = false;
+var autoDialerCountdown = null;
+var autoDialerSeconds = 60;
+var autoDialerPaused = false;
+
+function toggleAutoDialer() {
+  autoDialerActive = !autoDialerActive;
+  var btn = $('#btnToggleAutoDialer');
+  var stText = $('#autoDialerStatusText');
+  if (autoDialerActive) {
+    btn.css({ 'border-color': '#22c55e', 'background': 'rgba(34, 197, 94, 0.2)', 'color': '#ffffff' });
+    stText.text('Active');
+    showAppleToast('Auto-Dialer activated: 60s wrap-up between calls');
+    $.ajax({
+      type: 'POST',
+      url: '<?php echo base_url(); ?>manager/calls/ajax_start_autodial_session',
+      data: { filter_status: $('#selectedStatusInput').val() || 'all' },
+      dataType: 'json'
+    });
+  } else {
+    btn.css({ 'border-color': '#16a34a', 'background': '', 'color': '#4ade80' });
+    stText.text('Off');
+    stopWrapupCountdown();
+    $('#autodialerWrapupBanner').slideUp(180);
+    showAppleToast('Auto-Dialer stopped');
+    $.ajax({
+      type: 'POST',
+      url: '<?php echo base_url(); ?>manager/calls/ajax_autodial_stop',
+      dataType: 'json'
+    });
+  }
+}
+
+function startWrapupCountdown(seconds) {
+  stopWrapupCountdown();
+  autoDialerSeconds = seconds || 60;
+  autoDialerPaused = false;
+  $('#autodialerTimerDisplay').text(autoDialerSeconds);
+  $('#autodialerBannerSub').text('Take notes and select call outcome. Next contact dials in ' + autoDialerSeconds + 's.');
+  $('#autodialerWrapupBanner').slideDown(180);
+
+  autoDialerCountdown = setInterval(function() {
+    if (autoDialerPaused) return;
+    autoDialerSeconds--;
+    $('#autodialerTimerDisplay').text(autoDialerSeconds);
+    $('#autodialerBannerSub').text('Take notes and select call outcome. Next contact dials in ' + autoDialerSeconds + 's.');
+
+    if (autoDialerSeconds <= 0) {
+      stopWrapupCountdown();
+      autoDialNextLead();
+    }
+  }, 1000);
+}
+
+function stopWrapupCountdown() {
+  if (autoDialerCountdown) {
+    clearInterval(autoDialerCountdown);
+    autoDialerCountdown = null;
+  }
+}
+
+function autoDialNextLead() {
+  stopWrapupCountdown();
+  $('#autodialerWrapupBanner').slideUp(180);
+
+  var remarks = $('#followupRemarks').val().trim();
+  if (remarks) {
+    saveCallDetails(function() {
+      dispatchNextAutodialLead();
+    });
+  } else {
+    closeFollowupPanel();
+    dispatchNextAutodialLead();
+  }
+}
+
+function dispatchNextAutodialLead() {
+  $.ajax({
+    type: 'POST',
+    url: '<?php echo base_url(); ?>manager/calls/ajax_autodial_next',
+    dataType: 'json'
+  }).done(function(res) {
+    if (res && res.status && res.lead) {
+      var nextLead = res.lead;
+      var foundIdx = -1;
+      for (var i = 0; i < callingQueue.length; i++) {
+        if (callingQueue[i].id == nextLead.id) {
+          foundIdx = i;
+          break;
+        }
+      }
+      if (foundIdx >= 0) {
+        loadContactAt(foundIdx);
+      } else {
+        callingQueue.unshift(nextLead);
+        loadContactAt(0);
+      }
+      showAppleToast('Auto-Dialing: ' + (nextLead.customer || 'Next Contact'));
+      setTimeout(function() {
+        startCrmCall();
+      }, 600);
+    } else {
+      showAppleToast('Auto-Dialer queue completed');
+      toggleAutoDialer();
+    }
+  }).fail(function() {
+    showAppleToast('Error fetching next auto-dialer lead');
+  });
 }
 
 function refreshCallLogs() {
@@ -1447,27 +1889,61 @@ function refreshCallLogs() {
         var rawPhone = log.phone_number || '';
         var cleanPhone = rawPhone.replace(/[^\d\+]/g, '');
         var dur = parseInt(log.duration || 0, 10);
+        var sentClass = 'apple-ai-badge-neu';
+        if (log.ai_sentiment === 'Positive') sentClass = 'apple-ai-badge-pos';
+        if (log.ai_sentiment === 'Negative') sentClass = 'apple-ai-badge-neg';
+
         html += '<div class="apple-phone-log-item">';
         html += '<div class="apple-phone-log-top">';
-        html += '<span class="apple-phone-log-name">' + (log.customer_name || 'Direct Call') + '</span>';
+        html += '<span class="apple-phone-log-name">' + escapeHtml(log.customer_name || 'Direct Call') + '</span>';
+        html += '<div style="display:flex; align-items:center; gap:6px;">';
+        if (log.ai_sentiment) {
+          html += '<span class="apple-ai-badge ' + sentClass + '">' + escapeHtml(log.ai_sentiment) + '</span>';
+        }
+        if (log.ai_status) {
+          html += '<span class="apple-badge">' + escapeHtml(log.ai_status) + '</span>';
+        }
         html += '<span class="apple-badge">' + dur + 's</span>';
         html += '</div>';
-        html += '<div class="apple-phone-log-meta">';
-        html += '<span><i class="fa fa-phone" style="font-size:10px;"></i> ' + rawPhone + '</span>';
-        html += '<span>•</span>';
-        html += '<span>' + (log.disposition || 'Completed') + '</span>';
-        html += '<span>•</span>';
-        html += '<span>' + (log.created_at || '') + '</span>';
         html += '</div>';
-        html += '<div class="apple-phone-log-actions">';
-        html += '<button type="button" class="apple-log-action-btn btn-dial" onclick="dialFromLog(\'' + cleanPhone + '\', \'' + (log.customer_name || '').replace(/'/g, "\\'") + '\', ' + (log.lead_id || 0) + ')"><i class="fa fa-phone"></i> Call</button>';
+
+        html += '<div class="apple-phone-log-meta">';
+        html += '<span><i class="fa fa-phone" style="font-size:10px;"></i> ' + escapeHtml(rawPhone) + '</span>';
+        html += '<span>•</span>';
+        html += '<span>' + escapeHtml(log.disposition || 'Completed') + '</span>';
+        html += '<span>•</span>';
+        html += '<span>' + escapeHtml(log.created_at || '') + '</span>';
+        html += '</div>';
+
+        if (log.ai_summary) {
+          html += '<div class="apple-log-ai-summary"><strong>AI Summary:</strong> ' + escapeHtml(log.ai_summary) + '</div>';
+        }
+
+        if (log.recording_file || log.recording_url) {
+          var audioSrc = log.recording_file ? ('<?php echo base_url(); ?>' + log.recording_file) : log.recording_url;
+          html += '<div style="margin-top:8px;"><audio controls style="width:100%; height:30px; border-radius:6px;" src="' + audioSrc + '"></audio></div>';
+        }
+
+        html += '<div class="apple-phone-log-actions" style="margin-top:10px; flex-wrap:wrap;">';
+        html += '<button type="button" class="apple-log-action-btn btn-dial" onclick="dialFromLog(\'' + cleanPhone + '\', \'' + escapeHtml(log.customer_name || '').replace(/'/g, "\\'") + '\', ' + (log.lead_id || 0) + ')"><i class="fa fa-phone"></i> Call</button>';
         html += '<button type="button" class="apple-log-action-btn" onclick="copyNumberToClipboard(\'' + cleanPhone + '\')"><i class="fa fa-copy"></i> Copy</button>';
         if (log.lead_id) {
           html += '<a href="<?php echo base_url(); ?>manager/leads/view/' + btoa(log.lead_id) + '" target="_blank" class="apple-log-action-btn"><i class="fa fa-user"></i> View Lead</a>';
         } else {
-          html += '<button type="button" class="apple-log-action-btn" onclick="addUnallottedToDialer(\'' + cleanPhone + '\', \'' + (log.customer_name || '').replace(/'/g, "\\'") + '\')"><i class="fa fa-user-plus"></i> Load</button>';
+          html += '<button type="button" class="apple-log-action-btn" onclick="addUnallottedToDialer(\'' + cleanPhone + '\', \'' + escapeHtml(log.customer_name || '').replace(/'/g, "\\'") + '\')"><i class="fa fa-user-plus"></i> Load</button>';
         }
+
+        if (log.transcript) {
+          html += '<button type="button" class="apple-log-action-btn" onclick="$(this).parent().next(\'.apple-transcript-box\').slideToggle(140);"><i class="fa fa-file-text-o"></i> Transcript</button>';
+        }
+
+        html += '<button type="button" class="apple-log-action-btn" onclick="runAiAnalysis(' + log.id + ', false)"><i class="fa fa-magic"></i> AI Analysis</button>';
         html += '</div>';
+
+        if (log.transcript) {
+          html += '<div class="apple-transcript-box">' + escapeHtml(log.transcript) + '</div>';
+        }
+
         html += '</div>';
       });
       container.innerHTML = html;
@@ -1588,6 +2064,53 @@ $(document).ready(function() {
     saveCallDetails(function() {
       showAppleToast('Details saved for current contact');
     });
+  });
+
+  $('#btnToggleAutoDialer').on('click', function() {
+    toggleAutoDialer();
+  });
+
+  $('#btnAutodialExtend').on('click', function() {
+    autoDialerSeconds += 30;
+    $('#autodialerTimerDisplay').text(autoDialerSeconds);
+    $('#autodialerBannerSub').text('Take notes. Extended by +30s (remaining: ' + autoDialerSeconds + 's).');
+    showAppleToast('Extended wrap-up cooldown by 30 seconds');
+    $.ajax({
+      type: 'POST',
+      url: '<?php echo base_url(); ?>manager/calls/ajax_autodial_extend',
+      dataType: 'json'
+    });
+  });
+
+  $('#btnAutodialPause').on('click', function() {
+    autoDialerPaused = !autoDialerPaused;
+    if (autoDialerPaused) {
+      $(this).html('<i class="fa fa-play"></i> Resume');
+      $('#autodialerBannerSub').text('Cooldown paused. Take your time to write notes.');
+      showAppleToast('Auto-Dialer wrap-up paused');
+      $.ajax({
+        type: 'POST',
+        url: '<?php echo base_url(); ?>manager/calls/ajax_autodial_pause',
+        dataType: 'json'
+      });
+    } else {
+      $(this).html('<i class="fa fa-pause"></i> Pause');
+      $('#autodialerBannerSub').text('Cooldown resumed. Dials next contact when timer finishes.');
+      showAppleToast('Auto-Dialer wrap-up resumed');
+      $.ajax({
+        type: 'POST',
+        url: '<?php echo base_url(); ?>manager/calls/ajax_autodial_resume',
+        dataType: 'json'
+      });
+    }
+  });
+
+  $('#btnAutodialNextNow').on('click', function() {
+    autoDialNextLead();
+  });
+
+  $('#btnAutodialStop').on('click', function() {
+    toggleAutoDialer();
   });
 
   $('#btnCloseFollowupPanel, #drawerBackdrop').on('click', function() {

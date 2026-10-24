@@ -2,6 +2,107 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.65.0] - 2026-10-24
+- **Timestamp**: `2026-10-24 18:20:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Comprehensive dashboard red-to-blue theme standardization, Orders & Sales UI alignment to View Database structure, role-based order scoping & action permissions, Vertical Follow-Up restored in My Zone, and Third-Party API clutter removal with genuine connection testing.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Dashboard Red-to-Blue Theme Migration (`crm-dashboard.css`, `dashboard.php`, `header.php`)**:
+    - Replaced all crimson/red accents (`#b91c1c`) across dashboard components with clean royal blue (`#0072f0` / `#0084ff`).
+    - Updated: Operational Activity and Breakdown title indicator bars (`.dash-section-title-icon span`), projection chart header icons (`.dash-chart-title i`), 12 operational stat card top borders (`.crm-modern-stat-card`), card header icons (`.crm-modern-stat-card .card-title i`), segmented progress bar fills (`.crm-seg-bar .crm-seg`), interactive stat chip hover states, dark mode box container top borders (`[data-theme="dark"] .box`), and search input focus outlines.
+    - Added cache-busting query parameter (`?v=20261024_blue`) to `crm-dashboard.css` in `header.php` ensuring instant stylesheet updates in client browsers.
+  - **2. Orders & Sales Layout Alignment to View Database (`views/manager/orders/index.php`)**:
+    - Completely rebuilt Orders and Sales view to follow the exact structure of View Database (`leadsview.php`).
+    - Standardized page header `<section class="content-header"><h1>...</h1></section>` at top without floating left-hand headers or side accordions.
+    - Implemented standardized Box 1 filter container (`.box.p-4`) with inline inputs, date range picker, green "Search" (`btn-success`), and red "Reset" (`btn-danger`).
+    - Implemented standardized Box 2 data table (`.box > .box-body`) with responsive table (`#example_orders`), badges for status, and clean empty alert (`<div class="alert alert-info"> No Data Found </div>`).
+  - **3. Role-Based Scoping & Action Permissions for Orders (`ci_admin_orders.php`, `header.php`, `routes.php`)**:
+    - **My Zone > Orders** (`manager/orders/my`): Displays only individual user's orders (`O.created_by = $cur_uid`). Action dropdown restricted strictly to "View" only.
+    - **Team > Orders** (`manager/team/orders`): Displays orders of team subordinates with independent team scoping. Action dropdown restricted strictly to "View" only.
+    - **Back Office > View All Orders** (`manager/orders`): Unrestricted company-wide order processing for Back Office personnel and administrators. Action column provides full operational actions: "View", "Make Changes" (`manager/orders/edit_pending/{id}`), and "Accept" (`manager/orders/quick_accept/{id}`).
+    - **My Zone > View Sales** (`manager/sales`): Shows won sales records (`O.status = 'Sales'`) using the exact same View Database layout.
+    - Refined top navigation and sidebar active tab detection in `header.php` so Back Office never falsely highlights when viewing personal or team orders.
+  - **4. Vertical Follow-Up in My Zone (`header.php`, `routes.php`)**:
+    - Restored "Vertical Follow Up" (`manager/verticals/followups`) directly below "View Vertical" in My Zone navigation.
+  - **5. Third-Party Integrations Clean-up & Real Connectivity Logic (`ci_admin_integrations.php`, `views/manager/system/integrations.php`)**:
+    - Stripped cluttered explanatory banners and decorative mock statuses.
+    - Wired genuine backend connectivity diagnostics (`ajax_test_connection`) returning actual live connection health for Groq AI, 3CX Telephony, SMTP Mail, WhatsApp Cloud, and Cron Scheduler.
+
+### [v1.64.0] - 2026-10-24
+- **Timestamp**: `2026-10-24 16:35:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Complete lifecycle implementation for Database -> Lead -> Order -> Sales with separate referral numbering (`D%010d`, `L%010d`, `O%010d`, `S%010d`), backend Lead locking on Order request, updated navigation hierarchies for My Zone, Team, and Back Office, Google Calendar-style Events & Awards in profile dropdown, accurate browser geolocation recording for admin logs, and theme-adaptive dialer UI.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Database -> Lead -> Order -> Sales Complete Workflow & Sequential Referral Numbers**:
+    - **Database to Lead**: Converted records receive sequential referral numbers (`D0000000001` and `L0000000001`). Original `db_ref_no` is preserved across all downstream tables (`ci_pipeline`, `ci_orders`). Converted leads are hidden from Database View (`manager/leads`) and Team Database (`manager/team/database`), displayed in View Leads (`manager/leads/view_leads`) and Team Leads (`manager/team/leads`). Internal customer duplication prevented by reusing single `ci_leads` entry.
+    - **Lead to Order & Locking**: Users can submit an approved Lead for Order processing. Submitting an Order request sets `order_request_status = 'pending'`, `is_locked = 1`, `locked_reason = 'Order conversion requested'`, and greys out the Lead section with disabled inputs. Backend locks enforced in `ci_admin_leads::edit()` and `editLimited()`. Lead remains locked while Back Office processes the Order.
+    - **Order to Sales**: Back Office & Admin can mark completed/won Orders as Sales (`manager/orders/convert_to_sales/{id}`), generating sequential Sales referral number `S0000000001`. Displayed in View Sales (`manager/sales`) and Team Sales (`manager/team/sales`).
+  - **2. Navigation Hierarchy & Verbatim Titles Enforced (`header.php`)**:
+    - **My Zone**: (1) Add Database, (2) View Database, (3) View Leads, (4) View Orders, (5) View Sales, (6) My Follow-Up, (7) My Meetings, (8) Add Vertical, (9) View Vertical, (10) View Internal Task, (11) View External Task, (12) Database Transfer.
+    - **Team**: (1) Database, (2) Leads, (3) Order, (4) Sales, (5) Follow-Up, (6) Meetings, (7) Assign Meetings, (8) Assign Task, (9) Task, (10) Tickets. Member Charts preserved unchanged.
+    - **Back Office**: (1) Pending Leads Approval, (2) Pending Order Process, (3) Onboard Client, (4) Ongoing Orders, (5) Completed Orders, (6) View All Orders.
+    - **Profile Dropdown**: Positioned `Event and Awards` directly above `Change Password`.
+  - **3. Google Calendar-Style Events & Awards (`ci_admin_events.php`, `views/manager/events/index.php`)**:
+    - Combined Events and Awards into a single clean Google Calendar-inspired calendar view.
+    - Removed decorative count cards and stat boxes.
+    - Unified FullCalendar feed returning `ci_events`, `ci_awards` (with reward points and trophy styling), and employee birthdays projected from `ci_user.dob`.
+    - Modal supporting creation and recording of both Events and Awards into the database.
+    - Light and dark theme consistency matching CRM tokens.
+  - **4. Admin Logs Accurate User Geolocation (`ci_admin.php`, `ci_admin_model.php`, `loginpage.php`, `footer.php`, `admin_logs.php`)**:
+    - Login and logout record browser geolocation coordinates, accuracy, and location status when permission is granted.
+    - Never invents coordinates or claims precise location when unavailable.
+    - Admin Logs table displays "Location" column with direct "View Map" link opening `https://www.google.com/maps?q={lat},{lng}`.
+    - Created standalone table `ci_user_live_locations` for live location updates.
+  - **5. Dialer UI Light/Dark Adaptation (`views/manager/calls/dashboard.php`)**:
+    - Removed glossy, nearly black appearance; dialer adapts cleanly to active light and dark CRM modes.
+    - Preserved 3CX integration, 60-second cooldown timer, note-taking during wrap-up, and pause/resume/extend controls.
+
+### [v1.63.0] - 2026-10-24
+- **Timestamp**: `2026-10-24 13:40:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Comprehensive implementation of auto-dialer with 60-second wrap-up gap, post-call AI speech transcription & structured analysis via Groq Cloud, Orders management module, third-party API integrations dashboard, events & awards system, granular role permissions, persistent profile avatars, and dashboard task/ticket/projection reconciliation.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Dialer Automation & 60-Second Post-Call Interval (`ci_admin_calls.php`, `views/manager/calls/dashboard.php`)**:
+    - Created auto-dialer session state engine backed by `ci_dialer_sessions` (`status, current_lead_id, cooldown_seconds, wrapup_started_at, wrapup_ends_at, dialed_lead_ids`).
+    - Implemented a 60-second post-call cooldown timer starting immediately upon call completion for agent wrap-up, remarks, and outcome recording.
+    - Added UI wrap-up countdown bar with real-time controls: `Pause Timer`, `Extend +30s`, `Stop Session`, and `Next Lead Now`.
+    - Session endpoints: `ajax_start_autodial_session`, `ajax_autodial_call_ended`, `ajax_autodial_extend`, `ajax_autodial_pause`, `ajax_autodial_resume`, `ajax_autodial_stop`, `ajax_autodial_next`, `ajax_autodial_status`.
+    - Zero fake timer seconds during dialing or ringing; timer only tracks genuine connected call duration.
+  - **2. Post-Call AI Speech Transcription & Structured Analysis (`Groq_service.php`, `ci_admin_calls.php`, `single_view.php`)**:
+    - Built `Groq_service` library supporting audio download with 3CX bearer token, transcription via Groq Whisper (`whisper-large-v3-turbo`), and conversation analysis via Groq Chat (`openai/gpt-oss-20b` fallback `openai/gpt-oss-120b`, temperature=0).
+    - Enforced strict JSON schema validation for: `summary, remarks, next_status, sentiment, follow_up_date, next_action, language, customer_requirements, objections`.
+    - Extended `ci_call_logs` with all AI analysis and recording metadata.
+    - Added 3CX webhooks: `api/calls/cdr_webhook` and `api/calls/recording_webhook`.
+    - Enhanced Lead Details timeline (`single_view.php`) with audio playback, collapsible full transcript, sentiment badges, AI remarks, and a manual `Regenerate AI Summary` button.
+  - **3. Orders & Back Office Management (`ci_admin_orders.php`, `views/manager/orders/`, `header.php`, `routes.php`)**:
+    - Built dedicated `ci_orders` and `ci_order_history` tables separate from tasks and tickets.
+    - Supported commercial fields: `pricing_amount`, `mrc`, `otc`, `mrr`, `billing_type`, and vertical-specific required documents checklist (JSON).
+    - Added client-centric grouped orders view with filters (Client, Vertical, Service, Status, Department, Staff, Date).
+    - Integrated under `Back Office` -> `Order` (`manager/orders`).
+  - **4. Third-Party API Integrations Navigation (`ci_admin_integrations.php`, `views/manager/system/integrations.php`)**:
+    - Created central integrations manager under `System` -> `Third-Party API` (`manager/system/integrations`).
+    - Configurable services in `ci_integration_settings`: Groq AI, 3CX PBX Telephony, Email SMTP, WhatsApp Business Cloud, Automated Reminders Cron, and Helpdesk Support.
+    - Added genuine connection verification (`ajax_test_connection`) returning actual connectivity statuses.
+  - **5. Events & Employee Awards (`ci_admin_events.php`, `views/manager/events/`)**:
+    - Implemented calendar-style events (`ci_events`) for meetings, reminders, birthdays, and company events under `Team` -> `Events`.
+    - Implemented employee awards system (`ci_awards`) with departmental leaderboards under `Team` -> `Awards`.
+  - **6. User Profile Photos & Avatars (`ci_admin.php`, `profile.php`, `adminprofile.php`, `header.php`)**:
+    - Enabled persistent user photo uploads stored in `assets/uploads/avatars/` and referenced by `ci_user.avatar`.
+    - Added instant AJAX upload in `profile.php` and multipart form upload in `adminprofile.php`.
+    - Profile icon in topbar dynamically updates and persists; vector SVG fallback displayed when no photo is uploaded.
+  - **7. Dashboard Tasks, Tickets, and Projections Reconciliation (`ci_admin_model.php`)**:
+    - `My Tasks` and `My Tickets`: Strictly count personal assignments (`assigned_to = $uid` or `FIND_IN_SET($uid, assigned_users) > 0`).
+    - `Team Tasks` and `Team Tickets`: Strictly count team members' assignments excluding personal assignments.
+    - `My Projection` and `Team Projection`: Restricted strictly to qualified Leads (`ci_pipeline.pipeline_stage = 'lead'`), excluding raw database accounts.
+  - **8. KAM Schedule Matrix & Revenue Separation (`ci_admin_kam.php`, `ci_admin_report.php`)**:
+    - Renamed "12-Month Schedule" to "Client Schedule Matrix" and decoupled from hardcoded telecom presets.
+    - Relocated `Revenue List` and `Company Projections` outside KAM navigation directly into `Reports`.
+  - **9. Granular Role Permissions (`ci_admin_roles.php`, `ci_admin_model.php`, `roles/edit.php`)**:
+    - Expanded permission matrix to include `lead_review, orders, events, awards, integrations`.
+  - **10. Audit Bug Fixes & Zero Comments Enforcement**:
+    - Removed duplicate jQuery inputmask inclusions in `footer.php`.
+    - Cleaned up comments across all modified PHP files; verified with diff comment checker and `php -l`.
+
 ### [v1.62.0] - 2026-10-24
 - **Timestamp**: `2026-10-24 10:55:00 +0530`
 - **Author**: Reinhart-py
