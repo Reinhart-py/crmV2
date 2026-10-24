@@ -205,11 +205,11 @@
       <?php } ?>
 
       <?php if($can_see_review){ ?>
-      <li class="<?php if(($route1=="leads" && $route2=="review_leads") || ($route1=="tasks" && $route2=="external" && isset($_GET['review']))){ echo "active";}else{ echo "";}?>"> 
-        <a href="javascript:void(0);"><i class="fa fa-check-square-o"></i> <span>Review Lead and Orders</span> </a>
+      <li class="<?php if(($route1=="leads" && $route2=="review_leads") || ($route1=="tasks" && $route2=="external" && isset($_GET['review'])) || $route1=="back-office"){ echo "active";}else{ echo "";}?>"> 
+        <a href="javascript:void(0);"><i class="fa fa-briefcase"></i> <span>Back Office</span> </a>
         <ul>
-          <li><a href="<?php echo base_url();?>manager/leads/review_leads"><i class="fa fa-check-square-o"></i>Review Leads</a></li>
-          <li><a href="<?php echo base_url();?>manager/tasks/external"><i class="fa fa-briefcase"></i>Review Orders</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/review_leads"><i class="fa fa-check-square-o"></i>Review Lead</a></li>
+          <li><a href="<?php echo base_url();?>manager/tasks/external"><i class="fa fa-shopping-cart"></i>Order</a></li>
         </ul>
       </li>
       <?php } ?>
@@ -446,11 +446,11 @@ $(function() {
       <?php } ?>
 
       <?php if($can_see_review){ ?>
-      <li class="<?php if(($route1=="leads" && $route2=="review_leads") || ($route1=="tasks" && $route2=="external" && isset($_GET['review']))){ echo "active";}else{ echo "";}?> treeview"> 
-        <a href="javascript:void(0);"><i class="fa fa-check-square-o"></i> <span>Review Lead and Orders</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
+      <li class="<?php if(($route1=="leads" && $route2=="review_leads") || ($route1=="tasks" && $route2=="external" && isset($_GET['review'])) || $route1=="back-office"){ echo "active";}else{ echo "";}?> treeview"> 
+        <a href="javascript:void(0);"><i class="fa fa-briefcase"></i> <span>Back Office</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu">
-          <li><a href="<?php echo base_url();?>manager/leads/review_leads"><i class="fa fa-check-square-o"></i>Review Leads</a></li>
-          <li><a href="<?php echo base_url();?>manager/tasks/external"><i class="fa fa-briefcase"></i>Review Orders</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/review_leads"><i class="fa fa-check-square-o"></i>Review Lead</a></li>
+          <li><a href="<?php echo base_url();?>manager/tasks/external"><i class="fa fa-shopping-cart"></i>Order</a></li>
         </ul>
       </li>
       <?php } ?>

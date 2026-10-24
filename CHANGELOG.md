@@ -12,9 +12,9 @@ All notable changes, features, bug fixes, and refinements for the Seven Strokes 
       - `My Client` (`manager/kam/my-client`)
       - `Onboard Client` (`manager/kam/onboard`)
       - `Create Schedule` (`manager/kam/schedule`) (labeled as "Create Schedule").
-    - **Review Lead and Orders**: Set label to **Review Lead and Orders** containing only review operations:
-      - `Review Leads` (`manager/leads/review_leads`)
-      - `Review Orders` (`manager/tasks/external`)
+    - **Back Office**: Navigation section labeled **Back Office** containing exclusively two dropdown items:
+      - `Review Lead` (`manager/leads/review_leads`)
+      - `Order` (`manager/tasks/external`)
     - **Team**: Kept existing Team navigation and functionality completely unchanged (Members, Chart, Leads, Verticals, Follow up, Meetings, Assigned Meetings, Assign Database, Task, Tickets).
     - **My Zone**: Arranged in the exact 10-item required order:
       1. `Database Add` (`manager/leads/add`)
