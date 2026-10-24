@@ -562,7 +562,7 @@ class Ci_admin_orders extends CI_Controller {
 	{
 		$data = array();
 		$data['info'] = array(
-			'title' => 'Back Office - Pending Order Process',
+			'title' => 'Pending Order Process - Back Office',
 			'page_heading' => 'Pending Order Process'
 		);
 
@@ -580,8 +580,32 @@ class Ci_admin_orders extends CI_Controller {
 		$this->db->join('ci_pipeline P', 'L.id = P.lead_id', 'INNER');
 		$this->db->join('ci_user U', 'P.order_requested_by = U.id', 'LEFT');
 		$this->db->where('P.order_request_status', 'pending');
+
+		$client = trim((string)$this->input->get('client'));
+		if (!empty($client)) {
+			$this->db->group_start();
+			$this->db->like('L.customer', $client);
+			$this->db->or_like('L.company_name', $client);
+			$this->db->or_like('P.db_ref_no', $client);
+			$this->db->or_like('P.lead_ref_no', $client);
+			$this->db->group_end();
+		}
+
+		$d1 = trim((string)$this->input->get('d1'));
+		$d2 = trim((string)$this->input->get('d2'));
+		if (!empty($d1) && !empty($d2)) {
+			$from = date('Y-m-d 00:00:00', strtotime($d1));
+			$to = date('Y-m-d 23:59:59', strtotime($d2));
+			$this->db->where('P.order_requested_at >=', $from);
+			$this->db->where('P.order_requested_at <=', $to);
+		} elseif (!empty($d1)) {
+			$from = date('Y-m-d 00:00:00', strtotime($d1));
+			$this->db->where('P.order_requested_at >=', $from);
+		}
+
 		$this->db->order_by('P.order_requested_at', 'DESC');
 		$data['pending_leads'] = $this->db->get()->result_array();
+		$data['reset_url'] = base_url('manager/orders/pending_process');
 
 		$this->load->view('manager/orders/pending_process', $data);
 	}

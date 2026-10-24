@@ -26,7 +26,13 @@ All notable changes, features, bug fixes, and refinements for the Seven Strokes 
     - Restored "Vertical Follow Up" (`manager/verticals/followups`) directly below "View Vertical" in My Zone navigation.
   - **5. Third-Party Integrations Clean-up & Real Connectivity Logic (`ci_admin_integrations.php`, `views/manager/system/integrations.php`)**:
     - Stripped cluttered explanatory banners and decorative mock statuses.
-    - Wired genuine backend connectivity diagnostics (`ajax_test_connection`) returning actual live connection health for Groq AI, 3CX Telephony, SMTP Mail, WhatsApp Cloud, and Cron Scheduler.
+  - **6. Team Navigation Restoration (`header.php`)**:
+    - Restored the complete suite of Team navigation dropdown options in both the top floating header and mobile drawer sidebar: Members (`manager/team/members`), Chart (`manager/team/chart`), Database (`manager/team/database`), Leads (`manager/team/leads`), Orders (`manager/team/orders`), Verticals (`manager/team/verticals`), Follow up (`manager/team/followups`), Meetings (`manager/team/meetings`), Assigned Meetings (`manager/team/assignmeetings`), Assign Database (`manager/team/assignleads`), Task (`manager/tasks`), and Tickets (`manager/team/tickets`).
+  - **7. Pending Order Process Aligned to View Database UI (`views/manager/orders/pending_process.php`, `ci_admin_orders.php`)**:
+    - Completely rebuilt `Pending Order Process` (`manager/orders/pending_process`) to match the exact dual-box structure of View Database (`leadsview.php`).
+    - Standardized Box 1 search filter with Client/Contact/Ref search, Date range picker, green "Search" (`btn-success`), and red "Reset" (`btn-danger`).
+    - Standardized Box 2 table with Database No, Lead No, Customer, Contact, Requirements & Remarks, Requested By, Request Date, and Action dropdown (View Lead, Process Order).
+    - Replaced custom foreign card and checkmark states with the standard CRM empty alert (`<div class="alert alert-info"> No Data Found </div>`).
 
 ### [v1.64.0] - 2026-10-24
 - **Timestamp**: `2026-10-24 16:35:00 +0530`

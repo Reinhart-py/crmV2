@@ -25,6 +25,8 @@
   17. Scoped My Zone Orders (`manager/orders/my`) and Team Orders (`manager/team/orders`) to View-only action, while Back Office retains View, Make Changes, and Accept.
   18. Restored Vertical Follow-Up in My Zone navigation below View Vertical.
   19. Full Dashboard red-to-blue theme migration (`#0072f0` / `#0084ff`), updating cards, icons, borders, progress bars, dark mode elements, and adding css cache buster query string.
+  20. Restored complete Team navigation dropdown options in both top navbar and mobile drawer: Members, Chart, Database, Leads, Orders, Verticals, Follow up, Meetings, Assigned Meetings, Assign Database, Task, Tickets (`header.php`).
+  21. Rebuilt Pending Order Process (`manager/orders/pending_process`) to match View Database UI with dual-box layout, inline search filters, and DataTables table (`pending_process.php`, `ci_admin_orders.php`).
 
 ---
 

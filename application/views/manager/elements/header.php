@@ -206,7 +206,16 @@
         <ul>
           <li><a href="<?php echo base_url();?>manager/team/members"><i class="fa fa-users"></i>Members</a></li>
           <li><a href="<?php echo base_url();?>manager/team/chart"><i class="fa fa-sitemap"></i>Chart</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/database"><i class="fa fa-database"></i>Database</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/leads"><i class="fa fa-list"></i>Leads</a></li>
           <li><a href="<?php echo base_url();?>manager/team/orders"><i class="fa fa-shopping-cart"></i>Orders</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/verticals"><i class="fa fa-list"></i>Verticals</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/followups"><i class="fa fa-clock-o"></i>Follow up</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/meetings"><i class="fa fa-calendar"></i>Meetings</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/assignmeetings"><i class="fa fa-calendar-check-o"></i>Assigned Meetings</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/assignleads"><i class="fa fa-tasks"></i>Assign Database</a></li>
+          <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-tasks"></i>Task</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/tickets"><i class="fa fa-ticket"></i>Tickets</a></li>
         </ul>
       </li>
       <?php } ?>
@@ -457,7 +466,16 @@ $(function() {
         <ul class="treeview-menu">
           <li><a href="<?php echo base_url();?>manager/team/members"><i class="fa fa-users"></i>Members</a></li>
           <li><a href="<?php echo base_url();?>manager/team/chart"><i class="fa fa-sitemap"></i>Chart</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/database"><i class="fa fa-database"></i>Database</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/leads"><i class="fa fa-list"></i>Leads</a></li>
           <li><a href="<?php echo base_url();?>manager/team/orders"><i class="fa fa-shopping-cart"></i>Orders</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/verticals"><i class="fa fa-list"></i>Verticals</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/followups"><i class="fa fa-clock-o"></i>Follow up</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/meetings"><i class="fa fa-calendar"></i>Meetings</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/assignmeetings"><i class="fa fa-calendar-check-o"></i>Assigned Meetings</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/assignleads"><i class="fa fa-tasks"></i>Assign Database</a></li>
+          <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-tasks"></i>Task</a></li>
+          <li><a href="<?php echo base_url();?>manager/team/tickets"><i class="fa fa-ticket"></i>Tickets</a></li>
         </ul>
       </li>
       <?php } ?>
