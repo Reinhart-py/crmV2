@@ -1419,6 +1419,22 @@ var callConnectedSeconds = 0;
 var activeCallLogId = 0;
 var audioCtx = null;
 var activePhoneType = 'primary';
+var csrfTokenName = '<?php echo $this->security->get_csrf_token_name(); ?>';
+var csrfTokenHash = '<?php echo $this->security->get_csrf_hash(); ?>';
+
+$.ajaxSetup({
+  beforeSend: function(xhr, settings) {
+    if (settings.type === 'POST') {
+      if (typeof settings.data === 'string') {
+        if (settings.data.indexOf(csrfTokenName) === -1) {
+          settings.data += (settings.data ? '&' : '') + encodeURIComponent(csrfTokenName) + '=' + encodeURIComponent(csrfTokenHash);
+        }
+      } else if (typeof settings.data === 'object' && settings.data !== null && !(settings.data instanceof FormData)) {
+        settings.data[csrfTokenName] = csrfTokenHash;
+      }
+    }
+  }
+});
 
 function getAudioContext() {
   if (!audioCtx) {
@@ -1680,11 +1696,29 @@ function startCrmCall() {
     $('#backendOfflineAlert').slideUp(180);
     callState = 'calling';
     callConnectedSeconds = 0;
+    if (callTimerInterval) {
+      clearInterval(callTimerInterval);
+      callTimerInterval = null;
+    }
 
     var btn = document.getElementById('btnToggleCall');
     btn.className = 'apple-call-btn btn-end';
     btn.innerHTML = '<i class="fa fa-phone-slash"></i>';
     document.getElementById('liveCallSubtitle').textContent = 'Dialing ' + phone + ' via 3CX...';
+
+    setTimeout(function() {
+      if (callState === 'calling') {
+        callState = 'connected';
+        document.getElementById('liveCallSubtitle').textContent = 'Connected • 00:00';
+        callTimerInterval = setInterval(function() {
+          if (callState === 'connected') {
+            callConnectedSeconds++;
+            document.getElementById('liveCallSubtitle').textContent = 'Connected • ' + formatTimer(callConnectedSeconds);
+            document.getElementById('hiddenDuration').value = callConnectedSeconds;
+          }
+        }, 1000);
+      }
+    }, 2000);
 
     if (res && res.dispatch && res.dispatch.webclient_url) {
       window.open(res.dispatch.webclient_url, '_blank');

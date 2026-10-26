@@ -221,7 +221,13 @@ $route['manager/sales'] = 'ci_admin_orders/sales';
 $route['manager/sales/(:any)'] = 'ci_admin_orders/sales/$1';
 $route['manager/system/live-location'] = 'ci_admin_system/live_location';
 $route['manager/system/ajax_update_live_location'] = 'ci_admin_system/ajax_update_live_location';
-$route['manager/system/ajax_get_live_location'] = 'ci_admin_system/ajax_get_live_location';
+$route['manager/invoices'] = 'ci_admin_orders/invoices';
+$route['manager/orders/invoices'] = 'ci_admin_orders/invoices';
+$route['manager/payments'] = 'ci_admin_orders/payments';
+$route['manager/orders/payments'] = 'ci_admin_orders/payments';
+$route['manager/kam/report'] = 'ci_admin_kam/report';
+$route['manager/kam/(:any)'] = 'ci_admin_kam/$1';
+$route['manager/kam'] = 'ci_admin_kam/index';
 $route['manager/orders/(:any)'] = 'ci_admin_orders/$1';
 
 $route['manager/events'] = 'ci_admin_events/index';
@@ -242,5 +248,10 @@ $route['api/calls/recording_webhook'] = 'ci_admin_calls/recording_webhook';
 $route['api/calls/cdr_webhook'] = 'ci_admin_calls/cdr_webhook';
 $route['api/calls/process_ai'] = 'ci_admin_calls/ajax_process_ai';
 $route['api/calls/process_ai/(:num)'] = 'ci_admin_calls/ajax_process_ai/$1';
+
+$route['cron/daily_schedule_reminders'] = 'ci_cron/daily_schedule_reminders';
+$route['cron/recurrence_runner'] = 'ci_cron/recurrence_runner';
+$route['api/whatsapp/webhook'] = 'ci_api/whatsapp_webhook';
+$route['api/whatsapp/send'] = 'ci_api/send_whatsapp';
 
 

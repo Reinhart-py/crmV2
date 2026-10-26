@@ -1673,36 +1673,42 @@ public function dashboard_MyPro($table='ci_leads'){
 
 					if(!empty($country))
 					{
-					$multipleWhere= 'FIND_IN_SET(A.country, "'.$country.'")>0 ';
+					$clean_country = $this->db->escape_str($country);
+					$multipleWhere= 'FIND_IN_SET(A.country, "'.$clean_country.'")>0 ';
 					$this->db->where($multipleWhere);
 					}	
 
 					if(!empty($state))
 					{
-					$multipleWhere= 'FIND_IN_SET(A.state, "'.$state.'")>0 ';
+					$clean_state = $this->db->escape_str($state);
+					$multipleWhere= 'FIND_IN_SET(A.state, "'.$clean_state.'")>0 ';
 					$this->db->where($multipleWhere);
 					}				
  
 					if(!empty($category))
 				   {
-				   $multipleWhere= 'FIND_IN_SET(A.s_cat, "'.$category.'")>0 ';
+				   $clean_category = $this->db->escape_str($category);
+				   $multipleWhere= 'FIND_IN_SET(A.s_cat, "'.$clean_category.'")>0 ';
 					$this->db->where($multipleWhere);
 				   }	
 				   
 				    if(!empty($lCat))
 			  {
-			  $multipleWhere= 'FIND_IN_SET(A.lead_cat, "'.$lCat.'")>0 ';
+			  $clean_lCat = $this->db->escape_str($lCat);
+			  $multipleWhere= 'FIND_IN_SET(A.lead_cat, "'.$clean_lCat.'")>0 ';
                $this->db->where($multipleWhere);
 			  }	
 			  			  
 					if(!empty($status))
 				   { 
-					 $multipleWhere= 'FIND_IN_SET(A.status, "'.$status.'")>0 ';
+					 $clean_status = $this->db->escape_str($status);
+					 $multipleWhere= 'FIND_IN_SET(A.status, "'.$clean_status.'")>0 ';
 					$this->db->where($multipleWhere);
 				   }				  
 					if(!empty($search))
 				   {
-					 $where = '(A.lead_id LIKE "%'.$search.'%" OR A.mrr LIKE "%'.$search.'%"  OR A.contact1 LIKE "%'.$search.'%" OR A.id LIKE "%'.$search.'%")';	
+					 $clean_search = $this->db->escape_str($this->db->escape_like_str($search));
+					 $where = '(A.lead_id LIKE "%'.$clean_search.'%" OR A.mrr LIKE "%'.$clean_search.'%"  OR A.contact1 LIKE "%'.$clean_search.'%" OR A.id LIKE "%'.$clean_search.'%")';	
 					$this->db->where($where);
 				   }	
 					   

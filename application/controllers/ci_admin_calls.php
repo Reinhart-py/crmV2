@@ -212,7 +212,7 @@ class Ci_admin_calls extends CI_Controller
 		$this->_apply_lead_filters($status_filter);
 
 		if (!empty($search)) {
-			$escaped_search = $this->db->escape_like_str($search);
+			$escaped_search = $this->db->escape_str($this->db->escape_like_str($search));
 			$this->db->where("(A.customer LIKE '%$escaped_search%' OR A.poc LIKE '%$escaped_search%' OR A.contact1 LIKE '%$escaped_search%' OR A.alt_contact LIKE '%$escaped_search%' OR A.contact2 LIKE '%$escaped_search%' OR A.mobile LIKE '%$escaped_search%' OR A.lead_id LIKE '%$escaped_search%')");
 		}
 
@@ -385,6 +385,9 @@ class Ci_admin_calls extends CI_Controller
 		$vat_trn = trim($this->input->post('vat_trn'));
 		$ct_trn = trim($this->input->post('ct_trn'));
 		$business_category = trim($this->input->post('business_category'));
+		if (empty($business_category)) {
+			$business_category = trim($this->input->post('general_business_cat'));
+		}
 		$industry_category = trim($this->input->post('industry_category'));
 
 		$remarks = trim($this->input->post('remarks'));
@@ -467,7 +470,10 @@ class Ci_admin_calls extends CI_Controller
 				$lead_update['industry_category'] = $industry_category;
 			}
 			if (!empty($vat_trn)) {
-				$lead_update['tl_number'] = $vat_trn;
+				$lead_update['vat_trn'] = $vat_trn;
+			}
+			if (!empty($ct_trn)) {
+				$lead_update['ct_trn'] = $ct_trn;
 			}
 
 			$this->db->where('id', $lead_id);
@@ -519,7 +525,7 @@ class Ci_admin_calls extends CI_Controller
 		if ($role != 1 && $role != 4) {
 			$this->db->where('L.user_id', $manager_id);
 		}
-		$this->db->where_not_in('L.call_status', array('Initiated', 'Dialing'));
+		$this->db->where_not_in('L.call_status', array('Initiated', 'Dialing', 'calling', 'ringing'));
 		$this->db->where('L.created_at <=', date('Y-m-d H:i:s'));
 		$this->db->order_by('L.id', 'DESC');
 		$this->db->limit(60);

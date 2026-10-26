@@ -767,8 +767,36 @@ class Ci_admin_kam extends CI_Controller
 		$data = array();
 		$data['info'] = array(
 			'title' => 'KAM - Report',
-			'page_heading' => 'KAM Reports'
+			'page_heading' => 'Key Account Management Reports'
 		);
+
+		$manager_filter = (int)$this->input->get('manager_id');
+		$search = trim($this->input->get('search'));
+		$d1 = trim($this->input->get('d1'));
+		$d2 = trim($this->input->get('d2'));
+
+		$this->db->select('K.*, L.customer, L.contact1, L.email, L.category, L.mrr, L.r_amount, L.status as lead_status, U.name as account_manager');
+		$this->db->from('ci_kam_client_details K');
+		$this->db->join('ci_leads L', 'L.id = K.lead_id', 'left');
+		$this->db->join('ci_user U', 'U.id = K.executive_id', 'left');
+
+		if ($manager_filter > 0) {
+			$this->db->where('K.executive_id', $manager_filter);
+		}
+		if (!empty($search)) {
+			$clean = $this->db->escape_str($this->db->escape_like_str($search));
+			$this->db->where("(K.client_name LIKE '%$clean%' OR K.group_name LIKE '%$clean%' OR L.customer LIKE '%$clean%')");
+		}
+		if (!empty($d1) && !empty($d2)) {
+			$this->db->where('DATE(K.created_at) >=', $d1);
+			$this->db->where('DATE(K.created_at) <=', $d2);
+		}
+
+		$this->db->order_by('K.id', 'DESC');
+		$data['reports'] = $this->db->get()->result_array();
+
+		$data['managers_list'] = $this->db->select('id, name')->where('status', 1)->get('ci_user')->result_array();
+
 		$this->load->view('manager/kam/report', $data);
 	}
 }

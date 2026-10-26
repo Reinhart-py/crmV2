@@ -123,7 +123,8 @@ class Ci_admin_system extends CI_Controller {
 		$this->db->order_by('L.updated_at', 'DESC');
 		$data['locations'] = $this->db->get()->result_array();
 
-		$this->load->view('manager/system/admin_logs', $data);
+		$data['load_map'] = true;
+		$this->load->view('manager/system/live_location', $data);
 	}
 
 	public function ajax_update_live_location()

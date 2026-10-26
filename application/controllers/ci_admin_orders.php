@@ -751,13 +751,14 @@ class Ci_admin_orders extends CI_Controller {
 			if ($action_type === 'add_remark') {
 				$new_remark = trim($this->input->post('new_remark', true));
 				if (!empty($new_remark)) {
-					$this->db->insert('ci_follow_up', array(
+					$this->db->insert('ci_followup', array(
 						'lead_id' => $id,
+						'lead_type' => 'lead',
 						'user_id' => $cur_uid,
-						'user_name' => $cur_name,
-						'remark' => $new_remark,
-						'status' => 'Review Note',
-						'created' => $now
+						'followup_date' => date('Y-m-d'),
+						'followup_time' => date('H:i:s'),
+						'followup_remark' => $new_remark,
+						'followup_result' => 'Review Note'
 					));
 					$this->session->set_flashdata('message', 'Review remark added successfully.');
 				}
@@ -772,13 +773,14 @@ class Ci_admin_orders extends CI_Controller {
 					'is_locked' => 0,
 					'updated_at' => $now
 				));
-				$this->db->insert('ci_follow_up', array(
+				$this->db->insert('ci_followup', array(
 					'lead_id' => $id,
+					'lead_type' => 'lead',
 					'user_id' => $cur_uid,
-					'user_name' => $cur_name,
-					'remark' => "Order Request Rejected. Reason: " . ($reason ?: 'Not specified'),
-					'status' => 'Rejected',
-					'created' => $now
+					'followup_date' => date('Y-m-d'),
+					'followup_time' => date('H:i:s'),
+					'followup_remark' => "Order Request Rejected. Reason: " . ($reason ?: 'Not specified'),
+					'followup_result' => 'Rejected'
 				));
 				$this->db->insert('ci_pipeline_logs', array(
 					'lead_id' => $id,
@@ -880,7 +882,13 @@ class Ci_admin_orders extends CI_Controller {
 			'page_heading' => 'Process Order Conversion'
 		);
 		$data['lead'] = $lead;
-		$data['remarks_history'] = $this->db->where('lead_id', $id)->order_by('id', 'DESC')->get('ci_follow_up')->result_array();
+		$data['remarks_history'] = $this->db->select('F.*, F.followup_remark as remark, F.followup_result as status, CONCAT(F.followup_date, " ", F.followup_time) as created, U.name as user_name')
+			->from('ci_followup F')
+			->join('ci_user U', 'F.user_id = U.id', 'LEFT')
+			->where('F.lead_id', $id)
+			->order_by('F.id', 'DESC')
+			->get()
+			->result_array();
 		$data['staff_list'] = $this->db->select('id, name, department')->where('status', 1)->order_by('name', 'ASC')->get('ci_user')->result_array();
 
 		$this->load->view('manager/orders/edit_pending', $data);
@@ -902,5 +910,69 @@ class Ci_admin_orders extends CI_Controller {
 	{
 		$_GET['status'] = 'sales';
 		$this->index();
+	}
+
+	public function invoices()
+	{
+		$this->if_not_login();
+		$data = array();
+		$data['info'] = array(
+			'title' => 'Back Office - Invoices',
+			'page_heading' => 'View Invoices'
+		);
+
+		$search = trim($this->input->get('search'));
+		$status = trim($this->input->get('status'));
+		$d1 = trim($this->input->get('d1'));
+		$d2 = trim($this->input->get('d2'));
+
+		$this->db->select('*')->from('ci_invoices');
+		if (!empty($status)) {
+			$this->db->where('status', $status);
+		}
+		if (!empty($search)) {
+			$clean = $this->db->escape_str($this->db->escape_like_str($search));
+			$this->db->where("(invoice_no LIKE '%$clean%' OR customer_name LIKE '%$clean%')");
+		}
+		if (!empty($d1) && !empty($d2)) {
+			$this->db->where('invoice_date >=', $d1);
+			$this->db->where('invoice_date <=', $d2);
+		}
+		$this->db->order_by('id', 'DESC');
+		$data['invoices'] = $this->db->get()->result_array();
+
+		$this->load->view('manager/orders/invoices', $data);
+	}
+
+	public function payments()
+	{
+		$this->if_not_login();
+		$data = array();
+		$data['info'] = array(
+			'title' => 'Back Office - Payments',
+			'page_heading' => 'View Payments'
+		);
+
+		$search = trim($this->input->get('search'));
+		$mode = trim($this->input->get('payment_mode'));
+		$d1 = trim($this->input->get('d1'));
+		$d2 = trim($this->input->get('d2'));
+
+		$this->db->select('*')->from('ci_payments');
+		if (!empty($mode)) {
+			$this->db->where('payment_mode', $mode);
+		}
+		if (!empty($search)) {
+			$clean = $this->db->escape_str($this->db->escape_like_str($search));
+			$this->db->where("(receipt_no LIKE '%$clean%' OR invoice_no LIKE '%$clean%' OR customer_name LIKE '%$clean%')");
+		}
+		if (!empty($d1) && !empty($d2)) {
+			$this->db->where('payment_date >=', $d1);
+			$this->db->where('payment_date <=', $d2);
+		}
+		$this->db->order_by('id', 'DESC');
+		$data['payments'] = $this->db->get()->result_array();
+
+		$this->load->view('manager/orders/payments', $data);
 	}
 }

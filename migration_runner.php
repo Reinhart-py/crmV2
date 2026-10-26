@@ -259,6 +259,8 @@ add_col_if_missing($mysqli, 'ci_leads', 'quote_amount', "DECIMAL(15,2) NULL");
 add_col_if_missing($mysqli, 'ci_leads', 'industry_category', "VARCHAR(150) NULL");
 add_col_if_missing($mysqli, 'ci_leads', 'corporate_tax_status', "VARCHAR(50) NULL");
 add_col_if_missing($mysqli, 'ci_leads', 'vat_status', "VARCHAR(50) NULL");
+add_col_if_missing($mysqli, 'ci_leads', 'vat_trn', "VARCHAR(100) NULL");
+add_col_if_missing($mysqli, 'ci_leads', 'ct_trn', "VARCHAR(100) NULL");
 add_col_if_missing($mysqli, 'ci_leads', 'data_source', "VARCHAR(150) NULL");
 add_col_if_missing($mysqli, 'ci_leads', 'data_batch_referral_no', "VARCHAR(100) NULL");
 add_col_if_missing($mysqli, 'ci_leads', 'database_category', "VARCHAR(100) NULL");

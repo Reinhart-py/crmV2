@@ -673,6 +673,25 @@
                 </select>
               </div>
             </div>
+            <?php 
+              $cur_user_role = (int)$this->session->userdata('manager_role');
+              if ($cur_user_role == 1 || $cur_user_role == 4) { 
+                $owner_id = !empty($list['lead_assign']) ? (int)$list['lead_assign'] : (!empty($list['created_by']) ? (int)$list['created_by'] : (int)$this->session->userdata('manager_id'));
+            ?>
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>Primary Owner</label>
+                <select class="form-control select2" name="primary_owner" style="width: 100%;">
+                  <?php if(isset($u_list) && !empty($u_list)) { 
+                    foreach($u_list as $li){
+                      $is_owner = ((int)$li['id'] === $owner_id);
+                  ?>
+                    <option <?php if($is_owner){ echo "selected"; } ?> value="<?php echo $li['id']; ?>"><?php echo htmlspecialchars($li['name']); ?></option>          
+                  <?php } } ?>
+                </select>
+              </div>
+            </div>
+            <?php } ?>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Database Assigned to Collaborators</label>

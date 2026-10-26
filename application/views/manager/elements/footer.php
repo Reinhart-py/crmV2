@@ -32,7 +32,9 @@
 <script src="<?php echo base_url(); ?>assets/plugins/uploadify/demo-ui.js"></script>
  <script src="https://lipis.github.io/bootstrap-sweetalert/dist/sweetalert.js"></script>
     <link rel="stylesheet" href="https://lipis.github.io/bootstrap-sweetalert/dist/sweetalert.css" />
+<?php if (!empty($load_map)) { ?>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAY0iXbSmvQSxjus3PEJoKnJZreLXQuP1Y&amp;libraries=places"></script> 
+<?php } ?> 
 
 <script>
   $(function () {

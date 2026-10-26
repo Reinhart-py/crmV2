@@ -1008,15 +1008,20 @@ function __construct()
 				}
 
 				$creator_id = (int)$this->session->userdata('manager_id');
-				$assigned_primary = $creator_id;
+				$manager_role = (int)$this->session->userdata('manager_role');
+				if (($manager_role == 1 || $manager_role == 4) && !empty($this->input->post('primary_owner'))) {
+					$assigned_primary = (int)$this->input->post('primary_owner');
+				} else {
+					$assigned_primary = $creator_id;
+				}
 				$assigned_agents = '';
 				if (!empty($lead_assign)) {
 					if (is_array($lead_assign)) {
-						$clean_assigns = array_values(array_diff(array_unique(array_filter(array_map('intval', $lead_assign))), array($creator_id)));
+						$clean_assigns = array_values(array_diff(array_unique(array_filter(array_map('intval', $lead_assign))), array($assigned_primary)));
 						$assigned_agents = implode(',', $clean_assigns);
 					} else {
 						$single_val = (int)$lead_assign;
-						if ($single_val > 0 && $single_val !== $creator_id) {
+						if ($single_val > 0 && $single_val !== $assigned_primary) {
 							$assigned_agents = (string)$single_val;
 						}
 					}
@@ -1261,15 +1266,20 @@ function __construct()
 			extract($_POST);
 
 			$existing_owner = !empty($data['list']['lead_assign']) ? (int)$data['list']['lead_assign'] : (!empty($data['list']['created_by']) ? (int)$data['list']['created_by'] : (int)$this->session->userdata('manager_id'));
-			$assigned_primary = $existing_owner;
+			$manager_role = (int)$this->session->userdata('manager_role');
+			if (($manager_role == 1 || $manager_role == 4) && !empty($this->input->post('primary_owner'))) {
+				$assigned_primary = (int)$this->input->post('primary_owner');
+			} else {
+				$assigned_primary = $existing_owner;
+			}
 			$assigned_agents = '';
 			if (!empty($lead_assign)) {
 				if (is_array($lead_assign)) {
-					$clean_assigns = array_values(array_diff(array_unique(array_filter(array_map('intval', $lead_assign))), array($existing_owner)));
+					$clean_assigns = array_values(array_diff(array_unique(array_filter(array_map('intval', $lead_assign))), array($assigned_primary)));
 					$assigned_agents = implode(',', $clean_assigns);
 				} else {
 					$single_val = (int)$lead_assign;
-					if ($single_val > 0 && $single_val !== $existing_owner) {
+					if ($single_val > 0 && $single_val !== $assigned_primary) {
 						$assigned_agents = (string)$single_val;
 					}
 				}
