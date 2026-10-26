@@ -20,18 +20,17 @@
 
         
         <div class="row">
-            
             <div class="col-lg-3 col-sm-6 col-xs-12">
-                <a href="<?php echo base_url(); ?>manager/leads" class="dash-kpi-card dash-kpi-navy" id="cardMyLeads">
+                <a href="<?php echo base_url(); ?>manager/leads" class="dash-kpi-card dash-kpi-navy" id="cardMyDatabase">
                     <div class="dash-kpi-top">
                         <div>
-                            <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_leads']) ? (int)$dashboard_count['count_leads'] : 0; ?></div>
-                            <div class="dash-kpi-label">My Leads</div>
+                            <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_database']) ? (int)$dashboard_count['count_database'] : 0; ?></div>
+                            <div class="dash-kpi-label">My Database</div>
                         </div>
-                        <div class="dash-kpi-icon"><i class="ion ion-bag"></i></div>
+                        <div class="dash-kpi-icon"><i class="fa fa-database"></i></div>
                     </div>
                     <div class="dash-kpi-footer">
-                        <span>More info</span> <i class="fa fa-arrow-circle-right"></i>
+                        <span>View Database</span> <i class="fa fa-arrow-circle-right"></i>
                     </div>
                 </a>
             </div>
@@ -40,13 +39,13 @@
                 <a href="<?php echo base_url(); ?>manager/verticals" class="dash-kpi-card dash-kpi-forest" id="cardMyVerticals">
                     <div class="dash-kpi-top">
                         <div>
-                            <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_vetricals']) ? (int)$dashboard_count['count_vetricals'] : 0; ?></div>
-                            <div class="dash-kpi-label">My Verticals</div>
+                            <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_verticals']) ? (int)$dashboard_count['count_verticals'] : (isset($dashboard_count['count_vetricals']) ? (int)$dashboard_count['count_vetricals'] : 0); ?></div>
+                            <div class="dash-kpi-label">My Vertical</div>
                         </div>
                         <div class="dash-kpi-icon"><i class="ion ion-stats-bars"></i></div>
                     </div>
                     <div class="dash-kpi-footer">
-                        <span>More info</span> <i class="fa fa-arrow-circle-right"></i>
+                        <span>View Verticals</span> <i class="fa fa-arrow-circle-right"></i>
                     </div>
                 </a>
             </div>
@@ -61,65 +60,34 @@
                         <div class="dash-kpi-icon"><i class="ion ion-person-add"></i></div>
                     </div>
                     <div class="dash-kpi-footer">
-                        <span>More info</span> <i class="fa fa-arrow-circle-right"></i>
+                        <span>View Members</span> <i class="fa fa-arrow-circle-right"></i>
                     </div>
                 </a>
             </div>
 
             <div class="col-lg-3 col-sm-6 col-xs-12">
-                <a href="<?php echo base_url(); ?>manager/team/leads" class="dash-kpi-card dash-kpi-crimson" id="cardTeamLeads">
+                <a href="<?php echo base_url(); ?>manager/team/verticals" class="dash-kpi-card dash-kpi-crimson" id="cardTeamVerticals">
                     <div class="dash-kpi-top">
                         <div>
-                            <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_leads']) ? (int)$dashboard_Tcount['count_leads'] : 0; ?></div>
-                            <div class="dash-kpi-label">Team Leads</div>
+                            <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_verticals']) ? (int)$dashboard_Tcount['count_verticals'] : (isset($dashboard_Tcount['count_vetricals']) ? (int)$dashboard_Tcount['count_vetricals'] : 0); ?></div>
+                            <div class="dash-kpi-label">Team Verticals</div>
                         </div>
-                        <div class="dash-kpi-icon"><i class="ion ion-pie-graph"></i></div>
+                        <div class="dash-kpi-icon"><i class="fa fa-cubes"></i></div>
                     </div>
                     <div class="dash-kpi-footer">
-                        <span>More info</span> <i class="fa fa-arrow-circle-right"></i>
+                        <span>View Verticals</span> <i class="fa fa-arrow-circle-right"></i>
                     </div>
                 </a>
             </div>
         </div>
 
-        <?php
-            $pipe_db_cnt = isset($dashboard_pipeline['database']['count']) ? (int)$dashboard_pipeline['database']['count'] : 0;
-            $pipe_db_val = isset($dashboard_pipeline['database']['value']) ? (float)$dashboard_pipeline['database']['value'] : 0.0;
-            $pipe_lead_cnt = isset($dashboard_pipeline['leads']['count']) ? (int)$dashboard_pipeline['leads']['count'] : 0;
-            $pipe_lead_val = isset($dashboard_pipeline['leads']['value']) ? (float)$dashboard_pipeline['leads']['value'] : 0.0;
-            $pipe_order_cnt = isset($dashboard_pipeline['orders']['count']) ? (int)$dashboard_pipeline['orders']['count'] : 0;
-            $pipe_order_val = isset($dashboard_pipeline['orders']['value']) ? (float)$dashboard_pipeline['orders']['value'] : 0.0;
-            $pipe_sale_cnt = isset($dashboard_pipeline['sales']['count']) ? (int)$dashboard_pipeline['sales']['count'] : 0;
-            $pipe_sale_val = isset($dashboard_pipeline['sales']['value']) ? (float)$dashboard_pipeline['sales']['value'] : 0.0;
-        ?>
-        <div class="row" style="margin-top: 5px; margin-bottom: 5px;">
+        <div class="row" style="margin-top: 10px; margin-bottom: 5px;">
             <div class="col-lg-3 col-sm-6 col-xs-12">
-                <a href="<?php echo base_url(); ?>manager/leads" class="dash-kpi-card" id="cardPipelineDatabase" style="background: linear-gradient(135deg, #0052cc 0%, #0072f0 100%) !important;">
+                <a href="<?php echo base_url(); ?>manager/leads/view_leads" class="dash-kpi-card dash-kpi-navy" id="cardMyLeads">
                     <div class="dash-kpi-top">
                         <div>
-                            <div class="dash-kpi-value"><?php echo number_format($pipe_db_cnt); ?></div>
-                            <div class="dash-kpi-label">Database</div>
-                            <div style="font-size: 13px; font-weight: 700; color: #ffffff; margin-top: 4px; opacity: 0.95;">
-                                Value: AED <?php echo number_format($pipe_db_val, 2); ?>
-                            </div>
-                        </div>
-                        <div class="dash-kpi-icon"><i class="fa fa-database"></i></div>
-                    </div>
-                    <div class="dash-kpi-footer">
-                        <span>View Database</span> <i class="fa fa-arrow-circle-right"></i>
-                    </div>
-                </a>
-            </div>
-
-            <div class="col-lg-3 col-sm-6 col-xs-12">
-                <a href="<?php echo base_url(); ?>manager/leads/view_leads" class="dash-kpi-card" id="cardPipelineLeads" style="background: linear-gradient(135deg, #0062ea 0%, #0084ff 100%) !important;">
-                    <div class="dash-kpi-top">
-                        <div>
-                            <div class="dash-kpi-value"><?php echo number_format($pipe_lead_cnt); ?></div>
-                            <div class="dash-kpi-label">Leads</div>
-                            <div style="font-size: 13px; font-weight: 700; color: #ffffff; margin-top: 4px; opacity: 0.95;">
-                                Value: AED <?php echo number_format($pipe_lead_val, 2); ?>
-                            </div>
+                            <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_leads']) ? (int)$dashboard_count['count_leads'] : 0; ?></div>
+                            <div class="dash-kpi-label">My Leads</div>
                         </div>
                         <div class="dash-kpi-icon"><i class="fa fa-bullseye"></i></div>
                     </div>
@@ -130,14 +98,11 @@
             </div>
 
             <div class="col-lg-3 col-sm-6 col-xs-12">
-                <a href="<?php echo base_url(); ?>manager/orders/open" class="dash-kpi-card" id="cardPipelineOrders" style="background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%) !important;">
+                <a href="<?php echo base_url(); ?>manager/orders/my" class="dash-kpi-card dash-kpi-forest" id="cardMyOrders">
                     <div class="dash-kpi-top">
                         <div>
-                            <div class="dash-kpi-value"><?php echo number_format($pipe_order_cnt); ?></div>
-                            <div class="dash-kpi-label">Orders</div>
-                            <div style="font-size: 13px; font-weight: 700; color: #ffffff; margin-top: 4px; opacity: 0.95;">
-                                Value: AED <?php echo number_format($pipe_order_val, 2); ?>
-                            </div>
+                            <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_orders']) ? (int)$dashboard_count['count_orders'] : 0; ?></div>
+                            <div class="dash-kpi-label">My Orders</div>
                         </div>
                         <div class="dash-kpi-icon"><i class="fa fa-shopping-cart"></i></div>
                     </div>
@@ -148,23 +113,36 @@
             </div>
 
             <div class="col-lg-3 col-sm-6 col-xs-12">
-                <a href="<?php echo base_url(); ?>manager/sales" class="dash-kpi-card" id="cardPipelineSales" style="background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%) !important;">
+                <a href="<?php echo base_url(); ?>manager/team/leads" class="dash-kpi-card dash-kpi-amber" id="cardTeamLeads">
                     <div class="dash-kpi-top">
                         <div>
-                            <div class="dash-kpi-value"><?php echo number_format($pipe_sale_cnt); ?></div>
-                            <div class="dash-kpi-label">Sales</div>
-                            <div style="font-size: 13px; font-weight: 700; color: #ffffff; margin-top: 4px; opacity: 0.95;">
-                                Value: AED <?php echo number_format($pipe_sale_val, 2); ?>
-                            </div>
+                            <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_leads']) ? (int)$dashboard_Tcount['count_leads'] : 0; ?></div>
+                            <div class="dash-kpi-label">Team Leads</div>
                         </div>
-                        <div class="dash-kpi-icon"><i class="fa fa-line-chart"></i></div>
+                        <div class="dash-kpi-icon"><i class="ion ion-pie-graph"></i></div>
                     </div>
                     <div class="dash-kpi-footer">
-                        <span>View Sales</span> <i class="fa fa-arrow-circle-right"></i>
+                        <span>View Leads</span> <i class="fa fa-arrow-circle-right"></i>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-lg-3 col-sm-6 col-xs-12">
+                <a href="<?php echo base_url(); ?>manager/team/orders" class="dash-kpi-card dash-kpi-crimson" id="cardTeamOrders">
+                    <div class="dash-kpi-top">
+                        <div>
+                            <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_orders']) ? (int)$dashboard_Tcount['count_orders'] : 0; ?></div>
+                            <div class="dash-kpi-label">Team Orders</div>
+                        </div>
+                        <div class="dash-kpi-icon"><i class="fa fa-truck"></i></div>
+                    </div>
+                    <div class="dash-kpi-footer">
+                        <span>View Orders</span> <i class="fa fa-arrow-circle-right"></i>
                     </div>
                 </a>
             </div>
         </div>
+
 
         
         <?php

@@ -11,10 +11,16 @@
       </h1>
     </div>
     <div style="display:flex; gap:8px;">
-      <a href="<?php echo base_url(); ?>manager/orders" class="btn btn-default" style="font-weight:600; border-color:#cbd5e1;">
-        <i class="fa fa-arrow-left"></i> Back to Orders
+      <?php 
+        $back_url = base_url('manager/orders');
+        if (empty($can_edit)) {
+          $back_url = ($order['status'] === 'Sales') ? base_url('manager/sales') : base_url('manager/orders/my');
+        }
+      ?>
+      <a href="<?php echo $back_url; ?>" class="btn btn-default" style="font-weight:600; border-color:#cbd5e1;">
+        <i class="fa fa-arrow-left"></i> <?php echo empty($can_edit) ? 'Back' : 'Back to Orders'; ?>
       </a>
-      <?php if($can_approve && $order['approval_status'] === 'pending'){ ?>
+      <?php if(!empty($can_approve) && $order['approval_status'] === 'pending'){ ?>
         <button type="button" class="btn btn-success" data-toggle="modal" data-target="#approveOrderModal" style="background:#16a34a; border-color:#15803d; font-weight:600;">
           <i class="fa fa-check"></i> Approve Order
         </button>
@@ -22,10 +28,12 @@
           <i class="fa fa-times"></i> Reject
         </button>
       <?php } ?>
-      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#updateStatusModal" style="background:#2563eb; border-color:#1d4ed8; font-weight:600;">
-        <i class="fa fa-refresh"></i> Update Status
-      </button>
-      <?php if(($can_approve || $this->session->userdata('manager_role') == 1 || $this->session->userdata('manager_role') == 4) && $order['status'] !== 'Sales'){ ?>
+      <?php if(!empty($can_edit)){ ?>
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#updateStatusModal" style="background:#2563eb; border-color:#1d4ed8; font-weight:600;">
+          <i class="fa fa-refresh"></i> Update Status
+        </button>
+      <?php } ?>
+      <?php if(!empty($can_edit) && !empty($can_approve) && $order['status'] !== 'Sales'){ ?>
         <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#convertToSalesModal" style="background:#f59e0b; border-color:#d97706; font-weight:600; color:#ffffff;">
           <i class="fa fa-line-chart"></i> Convert to Sales
         </button>
@@ -145,7 +153,9 @@
                       <th>Document Item</th>
                       <th style="width:140px;">Collection Status</th>
                       <th style="width:170px;">Last Updated</th>
-                      <th style="width:100px; text-align:right;">Toggle</th>
+                      <?php if(!empty($can_edit)){ ?>
+                        <th style="width:100px; text-align:right;">Toggle</th>
+                      <?php } ?>
                     </tr>
                   </thead>
                   <tbody>
@@ -164,11 +174,13 @@
                         <td style="font-size:11px; color:#64748b; vertical-align:middle;">
                           <?php echo !empty($d_val['updated_at']) ? date('d-m-Y H:i', strtotime($d_val['updated_at'])) : '-'; ?>
                         </td>
-                        <td style="text-align:right; vertical-align:middle;">
-                          <button type="button" class="btn btn-xs btn-default btn-toggle-doc" data-order="<?php echo $order['id']; ?>" data-key="<?php echo $d_key; ?>" data-status="<?php echo $is_col ? 'pending' : 'collected'; ?>" style="font-weight:600; font-size:11px;">
-                            Mark <?php echo $is_col ? 'Pending' : 'Collected'; ?>
-                          </button>
-                        </td>
+                        <?php if(!empty($can_edit)){ ?>
+                          <td style="text-align:right; vertical-align:middle;">
+                            <button type="button" class="btn btn-xs btn-default btn-toggle-doc" data-order="<?php echo $order['id']; ?>" data-key="<?php echo $d_key; ?>" data-status="<?php echo $is_col ? 'pending' : 'collected'; ?>" style="font-weight:600; font-size:11px;">
+                              Mark <?php echo $is_col ? 'Pending' : 'Collected'; ?>
+                            </button>
+                          </td>
+                        <?php } ?>
                       </tr>
                     <?php } ?>
                   </tbody>
@@ -185,16 +197,18 @@
             </h3>
           </div>
           <div class="box-body" style="padding:18px;">
-            <form action="<?php echo base_url(); ?>manager/orders/add_note/<?php echo $order['id']; ?>" method="post" style="margin-bottom:20px;">
-              <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
-              <div class="form-group">
-                <label style="font-weight:600; font-size:12px; color:#475569;">Add Activity Note / Operational Update</label>
-                <textarea name="notes" rows="2" class="form-control" placeholder="Enter status update or client handover notes..." required></textarea>
-              </div>
-              <button type="submit" class="btn btn-sm btn-primary" style="background:#2563eb; border-color:#1d4ed8; font-weight:600;">
-                <i class="fa fa-comment-o"></i> Post Note
-              </button>
-            </form>
+            <?php if(!empty($can_edit)){ ?>
+              <form action="<?php echo base_url(); ?>manager/orders/add_note/<?php echo $order['id']; ?>" method="post" style="margin-bottom:20px;">
+                <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
+                <div class="form-group">
+                  <label style="font-weight:600; font-size:12px; color:#475569;">Add Activity Note / Operational Update</label>
+                  <textarea name="notes" rows="2" class="form-control" placeholder="Enter status update or client handover notes..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-sm btn-primary" style="background:#2563eb; border-color:#1d4ed8; font-weight:600;">
+                  <i class="fa fa-comment-o"></i> Post Note
+                </button>
+              </form>
+            <?php } ?>
 
             <?php if(empty($activity_logs)){ ?>
               <p style="color:#94a3b8; font-size:13px; margin-bottom:0;">No operational history logged yet.</p>
@@ -331,23 +345,23 @@
 
 <div class="modal fade" id="approveOrderModal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
-    <div class="modal-content" style="border-radius:6px;">
+    <div class="modal-content" style="border-radius:6px; border:1px solid #111827;">
       <form action="<?php echo base_url(); ?>manager/orders/approve/<?php echo $order['id']; ?>" method="post">
         <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
-        <div class="modal-header" style="background:#f8fafc; border-bottom:1px solid #e2e8f0; border-radius:6px 6px 0 0;">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title" style="font-weight:700; color:#0f172a;"><i class="fa fa-check-circle" style="color:#16a34a;"></i> Approve Order</h4>
+        <div class="modal-header" style="background:#000000; border-bottom:1px solid #111827; border-radius:6px 6px 0 0;">
+          <button type="button" class="close" data-dismiss="modal" style="color:#ffffff; opacity:0.8;">&times;</button>
+          <h4 class="modal-title" style="font-weight:700; color:#ffffff;"><i class="fa fa-check-circle" style="color:#ffffff;"></i> Approve Order</h4>
         </div>
-        <div class="modal-body" style="padding:20px;">
+        <div class="modal-body" style="padding:20px; background:#ffffff; color:#111827;">
           <p style="font-size:14px; color:#334155;">Confirm Back Office operational approval for <strong><?php echo htmlspecialchars($order['order_no']); ?></strong>.</p>
           <div class="form-group" style="margin-bottom:0;">
             <label style="font-weight:600; color:#334155;">Approval Remarks</label>
             <textarea name="remarks" rows="3" class="form-control" placeholder="Optional approval remarks..."></textarea>
           </div>
         </div>
-        <div class="modal-footer" style="background:#f8fafc; border-top:1px solid #e2e8f0;">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-success" style="background:#16a34a; border-color:#15803d; font-weight:600;">Confirm Approval</button>
+        <div class="modal-footer" style="background:#f9fafb; border-top:1px solid #e5e7eb;">
+          <button type="button" class="btn btn-default" data-dismiss="modal" style="background:#ffffff; border:1px solid #d1d5db; color:#111827;">Cancel</button>
+          <button type="submit" class="btn btn-default" style="background:#000000; border-color:#000000; color:#ffffff; font-weight:600;">Confirm Approval</button>
         </div>
       </form>
     </div>
@@ -356,23 +370,23 @@
 
 <div class="modal fade" id="rejectOrderModal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
-    <div class="modal-content" style="border-radius:6px;">
+    <div class="modal-content" style="border-radius:6px; border:1px solid #111827;">
       <form action="<?php echo base_url(); ?>manager/orders/reject/<?php echo $order['id']; ?>" method="post">
         <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
-        <div class="modal-header" style="background:#f8fafc; border-bottom:1px solid #e2e8f0; border-radius:6px 6px 0 0;">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title" style="font-weight:700; color:#0f172a;"><i class="fa fa-times-circle" style="color:#dc2626;"></i> Reject Order</h4>
+        <div class="modal-header" style="background:#000000; border-bottom:1px solid #111827; border-radius:6px 6px 0 0;">
+          <button type="button" class="close" data-dismiss="modal" style="color:#ffffff; opacity:0.8;">&times;</button>
+          <h4 class="modal-title" style="font-weight:700; color:#ffffff;"><i class="fa fa-times-circle" style="color:#ffffff;"></i> Reject Order</h4>
         </div>
-        <div class="modal-body" style="padding:20px;">
+        <div class="modal-body" style="padding:20px; background:#ffffff; color:#111827;">
           <p style="font-size:14px; color:#334155;">Specify reason for returning order <strong><?php echo htmlspecialchars($order['order_no']); ?></strong> to draft.</p>
           <div class="form-group" style="margin-bottom:0;">
             <label style="font-weight:600; color:#334155;">Rejection Reason</label>
             <textarea name="remarks" rows="3" class="form-control" required placeholder="Specify what is missing or required before approval..."></textarea>
           </div>
         </div>
-        <div class="modal-footer" style="background:#f8fafc; border-top:1px solid #e2e8f0;">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-danger" style="background:#dc2626; border-color:#b91c1c; font-weight:600;">Reject Order</button>
+        <div class="modal-footer" style="background:#f9fafb; border-top:1px solid #e5e7eb;">
+          <button type="button" class="btn btn-default" data-dismiss="modal" style="background:#ffffff; border:1px solid #d1d5db; color:#111827;">Cancel</button>
+          <button type="submit" class="btn btn-default" style="background:#000000; border-color:#000000; color:#ffffff; font-weight:600;">Reject Order</button>
         </div>
       </form>
     </div>
@@ -381,14 +395,14 @@
 
 <div class="modal fade" id="updateStatusModal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
-    <div class="modal-content" style="border-radius:6px;">
+    <div class="modal-content" style="border-radius:6px; border:1px solid #111827;">
       <form action="<?php echo base_url(); ?>manager/orders/update_status/<?php echo $order['id']; ?>" method="post">
         <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
-        <div class="modal-header" style="background:#f8fafc; border-bottom:1px solid #e2e8f0; border-radius:6px 6px 0 0;">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title" style="font-weight:700; color:#0f172a;"><i class="fa fa-refresh" style="color:#2563eb;"></i> Update Operational Status</h4>
+        <div class="modal-header" style="background:#000000; border-bottom:1px solid #111827; border-radius:6px 6px 0 0;">
+          <button type="button" class="close" data-dismiss="modal" style="color:#ffffff; opacity:0.8;">&times;</button>
+          <h4 class="modal-title" style="font-weight:700; color:#ffffff;"><i class="fa fa-refresh" style="color:#ffffff;"></i> Update Operational Status</h4>
         </div>
-        <div class="modal-body" style="padding:20px;">
+        <div class="modal-body" style="padding:20px; background:#ffffff; color:#111827;">
           <div class="form-group">
             <label style="font-weight:600; color:#334155;">New Operational Status</label>
             <select name="status" class="form-control" required>
@@ -411,9 +425,9 @@
             <textarea name="notes" rows="2" class="form-control" placeholder="Optional transition remarks..."></textarea>
           </div>
         </div>
-        <div class="modal-footer" style="background:#f8fafc; border-top:1px solid #e2e8f0;">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary" style="background:#2563eb; border-color:#1d4ed8; font-weight:600;">Update Status</button>
+        <div class="modal-footer" style="background:#f9fafb; border-top:1px solid #e5e7eb;">
+          <button type="button" class="btn btn-default" data-dismiss="modal" style="background:#ffffff; border:1px solid #d1d5db; color:#111827;">Cancel</button>
+          <button type="submit" class="btn btn-default" style="background:#000000; border-color:#000000; color:#ffffff; font-weight:600;">Update Status</button>
         </div>
       </form>
     </div>
@@ -422,14 +436,14 @@
 
 <div class="modal fade" id="convertToSalesModal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
-    <div class="modal-content" style="border-radius:6px;">
+    <div class="modal-content" style="border-radius:6px; border:1px solid #111827;">
       <form action="<?php echo base_url(); ?>manager/orders/convert_to_sales/<?php echo $order['id']; ?>" method="post">
         <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
-        <div class="modal-header" style="background:#fef3c7; border-bottom:1px solid #fde68a; border-radius:6px 6px 0 0;">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title" style="font-weight:700; color:#92400e;"><i class="fa fa-line-chart"></i> Convert Order to Sales</h4>
+        <div class="modal-header" style="background:#000000; border-bottom:1px solid #111827; border-radius:6px 6px 0 0;">
+          <button type="button" class="close" data-dismiss="modal" style="color:#ffffff; opacity:0.8;">&times;</button>
+          <h4 class="modal-title" style="font-weight:700; color:#ffffff;"><i class="fa fa-line-chart" style="color:#ffffff;"></i> Convert Order to Sales</h4>
         </div>
-        <div class="modal-body" style="padding:20px;">
+        <div class="modal-body" style="padding:20px; background:#ffffff; color:#111827;">
           <p style="font-size:14px; color:#334155;">Confirm that Order <strong><?php echo htmlspecialchars($order['order_no']); ?></strong> has completed all client requirements, payment has been received, and documents are verified.</p>
           <div class="alert alert-info" style="font-size:12px; margin-bottom:15px;">
             A unique sequential Sales referral number (e.g. <code><?php echo sprintf('S%010d', $order['id']); ?></code>) will be generated and assigned to this customer record.
@@ -439,14 +453,15 @@
             <textarea name="notes" rows="3" class="form-control" placeholder="Enter deal closure, payment receipt, and document verification notes..."></textarea>
           </div>
         </div>
-        <div class="modal-footer" style="background:#f8fafc; border-top:1px solid #e2e8f0;">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-warning" style="background:#f59e0b; border-color:#d97706; font-weight:600; color:#ffffff;">Confirm Sales Conversion</button>
+        <div class="modal-footer" style="background:#f9fafb; border-top:1px solid #e5e7eb;">
+          <button type="button" class="btn btn-default" data-dismiss="modal" style="background:#ffffff; border:1px solid #d1d5db; color:#111827;">Cancel</button>
+          <button type="submit" class="btn btn-default" style="background:#000000; border-color:#000000; font-weight:600; color:#ffffff;">Confirm Sales Conversion</button>
         </div>
       </form>
     </div>
   </div>
 </div>
+
 
 <script>
 $(function() {

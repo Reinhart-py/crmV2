@@ -52,7 +52,7 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.5/css/responsive.dataTables.min.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/bootstrap/developer.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/multiselect/multiselect.css">
-<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-dashboard.css?v=20261024_blue">
+<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-dashboard.css?v=20261026_monochrome">
 <link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/plugins/table_export/css/tableexport.css" />
 
 <script src="<?php echo base_url();?>assets/plugins/table_export/FileSaver.min.js"></script>
@@ -301,6 +301,21 @@
       <i class="fa fa-phone"></i>
     </a>
     <?php } ?>
+    <div class="notif-dropdown-wrap" style="position:relative; display:inline-block; margin-right:6px;">
+      <button type="button" class="global-theme-btn" id="notifBellToggle" title="Notifications" style="position:relative; display:inline-flex; align-items:center; justify-content:center;">
+        <i class="fa fa-bell-o"></i>
+        <span class="notif-badge" id="notifBadge" style="display:none; position:absolute; top:-4px; right:-4px; background:#dc2626; color:#ffffff; font-size:10px; font-weight:700; border-radius:10px; min-width:16px; height:16px; line-height:16px; text-align:center; padding:0 3px;"></span>
+      </button>
+      <div class="smartphone-notif-dropdown" id="smartphoneNotifDropdown" style="display:none; position:absolute; right:0; top:42px; width:340px; max-width:90vw; background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; box-shadow:0 12px 30px rgba(0,0,0,0.15); z-index:999999; overflow:hidden;">
+        <div style="padding:12px 16px; background:#000000; color:#ffffff; display:flex; align-items:center; justify-content:space-between; font-weight:600; font-size:13px;">
+          <span>Notifications</span>
+          <button type="button" id="btnMarkNotifRead" style="background:transparent; border:none; color:#cbd5e1; font-size:11px; cursor:pointer; padding:0;">Mark all as read</button>
+        </div>
+        <div id="notifListContainer" style="max-height:360px; overflow-y:auto; padding:0;">
+          <div style="padding:20px; text-align:center; color:#94a3b8; font-size:12px;">Loading notifications...</div>
+        </div>
+      </div>
+    </div>
     <button type="button" class="global-theme-btn" id="globalThemeToggle" title="Toggle Dark/Light Mode">
       <i class="fa fa-moon-o"></i>
     </button>
@@ -395,6 +410,70 @@ $(function() {
     if (!$(e.target).closest('.profile-menu-container').length) {
       $('#googleProfileDropdown').fadeOut(120);
     }
+    if (!$(e.target).closest('.notif-dropdown-wrap').length) {
+      $('#smartphoneNotifDropdown').fadeOut(120);
+    }
+  });
+
+  function loadNotifications() {
+    $.ajax({
+      url: '<?php echo base_url(); ?>manager/ajax_get_notifications',
+      type: 'GET',
+      dataType: 'json',
+      success: function(res) {
+        if (res && res.status) {
+          var unread = parseInt(res.unread_count) || 0;
+          if (unread > 0) {
+            $('#notifBadge').text(unread > 99 ? '99+' : unread).show();
+          } else {
+            $('#notifBadge').hide();
+          }
+          var html = '';
+          if (res.notifications && res.notifications.length > 0) {
+            $.each(res.notifications, function(i, n) {
+              var readBg = (n.is_read == 1) ? '#ffffff' : '#f8fafc';
+              html += '<a href="' + (n.link || 'javascript:void(0);') + '" class="notif-item-link" style="display:flex; align-items:flex-start; padding:10px 14px; border-bottom:1px solid #f1f5f9; background:' + readBg + '; text-decoration:none; color:inherit;">';
+              html += '  <div style="width:30px; height:30px; border-radius:50%; background:' + (n.color || '#0072f0') + '15; color:' + (n.color || '#0072f0') + '; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-right:10px; font-size:13px;"><i class="' + (n.icon || 'fa fa-bell') + '"></i></div>';
+              html += '  <div style="flex:1; min-width:0;">';
+              html += '    <div style="font-size:12px; font-weight:600; color:#0f172a; margin-bottom:2px; display:flex; justify-content:space-between;"><span>' + $('<div>').text(n.title).html() + '</span><span style="font-size:10px; color:#94a3b8; font-weight:normal;">' + (n.time_ago || '') + '</span></div>';
+              html += '    <div style="font-size:11px; color:#475569; line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + $('<div>').text(n.message).html() + '</div>';
+              html += '  </div>';
+              html += '</a>';
+            });
+          } else {
+            html = '<div style="padding:24px 16px; text-align:center; color:#94a3b8; font-size:12px;">No notifications yet</div>';
+          }
+          $('#notifListContainer').html(html);
+        }
+      }
+    });
+  }
+
+  loadNotifications();
+  setInterval(loadNotifications, 60000);
+
+  $(document).on('click', '#notifBellToggle', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    $('#googleProfileDropdown').fadeOut(100);
+    $('#smartphoneNotifDropdown').fadeToggle(150);
+  });
+
+  $(document).on('click', '#btnMarkNotifRead', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    $.ajax({
+      url: '<?php echo base_url(); ?>manager/ajax_mark_notifications_read',
+      type: 'POST',
+      data: {
+        '<?php echo $this->security->get_csrf_token_name(); ?>': '<?php echo $this->security->get_csrf_hash(); ?>'
+      },
+      dataType: 'json',
+      success: function() {
+        $('#notifBadge').hide();
+        loadNotifications();
+      }
+    });
   });
 });
 </script>

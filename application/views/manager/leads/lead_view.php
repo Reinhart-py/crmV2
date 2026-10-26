@@ -262,9 +262,9 @@ foreach($st_list as $cli){
                                     <?php foreach($product_list as $k=>$li){ ?>
                                     <tr>
 
-                                        <td><a href="<?php echo base_url(); ?>manager/leads/view_leads/view/<?php echo base64_encode($li['id']); ?>"><strong><?php echo !empty($li['lead_ref_no']) ? htmlspecialchars($li['lead_ref_no']) : ('L' . str_pad($li['id'], 10, '0', STR_PAD_LEFT)); ?></strong></a></td>
+                                        <td><a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>"><strong><?php echo !empty($li['lead_ref_no']) ? htmlspecialchars($li['lead_ref_no']) : ('L' . str_pad($li['id'], 10, '0', STR_PAD_LEFT)); ?></strong></a></td>
                                         <td>
-                                            <a href="<?php echo base_url(); ?>manager/leads/view_leads/view/<?php echo base64_encode($li['id']); ?>"><?php echo $li['customer']; ?></a>
+                                            <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>"><?php echo $li['customer']; ?></a>
                                             <?php if(!empty($li['dnd_status']) && strtolower($li['dnd_status']) == 'yes'){ ?>
                                                 <span class="label label-danger" style="background:#dc2626; color:#ffffff; font-weight:700; padding:1px 5px; border-radius:3px; font-size:10px; margin-left:4px; letter-spacing:0.5px;">DNCR</span>
                                             <?php } ?>
@@ -282,9 +282,6 @@ foreach($st_list as $cli){
                                             if (!empty($cat_label)): ?>
                                                 <br><small class="text-muted" style="font-weight: 500;">Category: <?php echo htmlspecialchars($cat_label); ?></small>
                                             <?php endif; ?>
-                                            <?php if (!empty($li['quote_status'])): ?>
-                                                <br><span class="label label-info" style="font-size: 10px;"><?php echo htmlspecialchars($li['quote_status']); ?></span>
-                                            <?php endif; ?>
                                         </td>
                                         <td>
                                             <div class="btn-group" style="min-width: 85px;">
@@ -295,9 +292,9 @@ foreach($st_list as $cli){
                                                     <span class="sr-only">Toggle Dropdown</span>
                                                 </button>
                                                 <ul class="dropdown-menu" role="menu">
-                                                    <li> <a href="<?php echo base_url(); ?>manager/leads/view_leads/view/<?php echo base64_encode($li['id']); ?>"
+                                                    <li> <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>"
                                                             data-toggle="tooltip" title="View">Preview</a> </li>
-                                                    <li> <a href="<?php echo base_url(); ?>manager/leads/view_leads/edit/<?php echo base64_encode($li['id']); ?>"
+                                                    <li> <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($li['id']); ?>"
                                                             data-toggle="tooltip" title="Edit">Edit</a> </li>
                                                     <?php if(empty($li['pipeline_stage']) || $li['pipeline_stage'] === 'database'){ ?>
                                                     <li> <a href="javascript:void(0);" onclick="transferToLead(<?php echo $li['id']; ?>, '<?php echo htmlspecialchars(addslashes($li['customer'])); ?>')">Transfer to Lead</a> </li>

@@ -15,25 +15,33 @@ html, body {
   display: flex !important;
   flex-direction: column !important;
 }
-.main-footer, .crm-footer {
+.main-sidebar, .left-side, .main-footer, .crm-footer {
   display: none !important;
 }
-.glass-calling-wrapper {
+.content-wrapper.glass-calling-wrapper {
   background: url('<?php echo base_url(); ?>assets/bg-dialer.png') no-repeat center center fixed;
   background-size: cover;
+  position: fixed !important;
+  top: 50px !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
   height: calc(100vh - 50px) !important;
   max-height: calc(100vh - 50px) !important;
+  min-height: 0 !important;
   padding: 12px 18px !important;
   color: #f8fafc;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
   box-sizing: border-box !important;
-  position: relative;
   overflow: hidden !important;
   display: flex !important;
   gap: 16px !important;
   align-items: stretch !important;
   justify-content: center !important;
   margin: 0 !important;
+  z-index: 800 !important;
 }
 
 .glass-side-dock {

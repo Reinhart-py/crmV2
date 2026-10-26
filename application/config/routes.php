@@ -33,6 +33,8 @@ $route['manager/leads'] = "ci_admin_leads/index";
 $route['manager/leads/(:num)'] = 'ci_admin_leads/index/$1';
 $route['manager/leads/view_leads'] = "ci_admin_leads/view_leads";
 $route['manager/leads/view_leads/(:num)'] = 'ci_admin_leads/view_leads/$1';
+$route['manager/leads/view_leads/view/(:any)'] = 'ci_admin_leads/view/$1';
+$route['manager/leads/view_leads/edit/(:any)'] = 'ci_admin_leads/edit/$1';
 $route['manager/leads/review_leads'] = "ci_admin_leads/review_leads";
 $route['manager/leads/review_leads/(:num)'] = "ci_admin_leads/review_leads/$1";
 $route['manager/leads/convert_to_lead'] = "ci_admin_leads/convert_to_lead";
@@ -257,5 +259,5 @@ $route['cron/daily_schedule_reminders'] = 'ci_cron/daily_schedule_reminders';
 $route['cron/recurrence_runner'] = 'ci_cron/recurrence_runner';
 $route['api/whatsapp/webhook'] = 'ci_api/whatsapp_webhook';
 $route['api/whatsapp/send'] = 'ci_api/send_whatsapp';
-
-
+$route['manager/ajax_get_notifications'] = 'ci_admin/ajax_get_notifications';
+$route['manager/ajax_mark_notifications_read'] = 'ci_admin/ajax_mark_notifications_read';

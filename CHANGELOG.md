@@ -2,6 +2,28 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.66.0] - 2026-10-26
+- **Timestamp**: `2026-10-26 18:15:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Comprehensive order & sales permission scoping, historical lead ownership visibility, preview-only restriction for users with KAM/Admin edit controls, 404 route fixes for View Leads, clean past-only Call Logs in Lead View, universal monochrome modal styling, and role-based notification bell system.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Order and Sales Permission Scoping & Preview Enforcement (`ci_admin_orders.php`, `views/manager/orders/index.php`, `views/manager/orders/view.php`)**:
+    - Regular users are strictly restricted to "Preview" action on orders and sales.
+    - Only KAM (role 2, 4, Back Office) and Admin (role 1) can edit, make changes, approve, reject, update status, convert orders to sales, process pending orders, edit documents, or record activity notes.
+    - Orders and Sales remain permanently viewable by the user the source lead historically belonged to, including creators, current agents, transferred owners (`ci_lead_transfers`), and pipeline action performers (`ci_pipeline_logs`).
+  - **2. View Leads 404 Preview/Edit Resolution (`views/manager/leads/lead_view.php`, `application/config/routes.php`)**:
+    - Resolved 404 Not Found error by fixing route links from `manager/leads/view_leads/view/{id}` to canonical `manager/leads/view/{id}` and `manager/leads/edit/{id}`.
+    - Added fallback alias routes in `routes.php` to safeguard direct requests.
+  - **3. Clean Call Logs in Lead View (`views/manager/leads/single_view.php`, `ci_admin_leads.php`)**:
+    - Renamed header from "Call Logs & AI Intelligence" to "Call Logs".
+    - Filtered call logs strictly to past completed/connected calls (`duration > 0`, `call_status IN ('Completed', 'Answered', 'Connected')`), eliminating in-progress dialing clutter and confusing pending AI tags.
+  - **4. Role-Tailored Notifications System (`ci_admin_model.php`, `ci_admin.php`, `header.php`, `crm-dashboard.css`)**:
+    - Added `ci_notifications` table and role-aware backend fetching in `ci_admin_model.php` and `ci_admin.php`.
+    - Added top navigation notification bell icon with real-time unread badge, interactive slide-out notification drawer, and "Mark all as read" functionality.
+    - Fully styled for both light and dark modes in `crm-dashboard.css`.
+  - **5. Universal Monochrome Black & White Modals (`crm-dashboard.css`, `single_view.php`, `orders/view.php`)**:
+    - Standardized all modal dialogs, headers, and primary submit buttons to modern, high-contrast monochrome black & white.
+
 ### [v1.65.0] - 2026-10-24
 - **Timestamp**: `2026-10-24 18:20:00 +0530`
 - **Author**: Reinhart-py

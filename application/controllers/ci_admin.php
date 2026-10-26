@@ -419,7 +419,30 @@ class Ci_admin extends CI_Controller {
 					}
 			$this->load->view('manager/setting/password',$data);
 		 }
- 			
-   
-   
+
+	public function ajax_get_notifications()
+	{
+		$this->if_not_login();
+		$uid = (int)$this->session->userdata('manager_id');
+		$notifs = $this->ci_admin_model->get_user_notifications($uid, 15);
+		$unread_count = 0;
+		if (!empty($notifs)) {
+			foreach ($notifs as $n) {
+				if (isset($n['is_read']) && (int)$n['is_read'] === 0) {
+					$unread_count++;
+				}
+			}
+		}
+		header('Content-Type: application/json');
+		echo json_encode(array('status' => true, 'unread_count' => $unread_count, 'notifications' => $notifs));
+	}
+
+	public function ajax_mark_notifications_read()
+	{
+		$this->if_not_login();
+		$uid = (int)$this->session->userdata('manager_id');
+		$this->db->where('user_id', $uid)->or_where('user_id', 0)->update('ci_notifications', array('is_read' => 1));
+		header('Content-Type: application/json');
+		echo json_encode(array('status' => true));
+	}
 }

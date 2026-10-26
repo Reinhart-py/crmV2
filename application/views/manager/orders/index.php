@@ -28,6 +28,10 @@
                                 <div class="form-group">
                                     <select class="form-control" name="status">
                                         <option value="">All Statuses</option>
+                                        <option value="ongoing" <?php echo ($this->input->get('status') === 'ongoing') ? 'selected' : ''; ?>>Ongoing Orders</option>
+                                        <option value="completed" <?php echo ($this->input->get('status') === 'completed') ? 'selected' : ''; ?>>Completed Orders</option>
+                                        <option value="closed" <?php echo ($this->input->get('status') === 'closed') ? 'selected' : ''; ?>>Closed Orders</option>
+                                        <option value="rejected_lost" <?php echo ($this->input->get('status') === 'rejected_lost') ? 'selected' : ''; ?>>Rejected / Lost Orders</option>
                                         <option value="Submitted" <?php echo ($this->input->get('status') === 'Submitted') ? 'selected' : ''; ?>>Submitted</option>
                                         <option value="Approved" <?php echo ($this->input->get('status') === 'Approved') ? 'selected' : ''; ?>>Approved</option>
                                         <option value="In Progress" <?php echo ($this->input->get('status') === 'In Progress') ? 'selected' : ''; ?>>In Progress</option>
@@ -121,7 +125,7 @@
                                                         <span class="sr-only">Toggle Dropdown</span>
                                                     </button>
                                                     <ul class="dropdown-menu" role="menu">
-                                                        <li><a href="<?php echo base_url(); ?>manager/orders/view/<?php echo $ord['id']; ?>" data-toggle="tooltip" title="View">View</a></li>
+                                                        <li><a href="<?php echo base_url(); ?>manager/orders/view/<?php echo $ord['id']; ?>" data-toggle="tooltip" title="Preview">Preview</a></li>
                                                     </ul>
                                                 </div>
                                             <?php endif; ?>

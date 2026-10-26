@@ -390,11 +390,28 @@ function __construct()
 			return;
 		}
 
-		$now = date('Y-m-d H:i:s');
-		$db_ref = (!empty($pipe['db_ref_no'])) ? $pipe['db_ref_no'] : sprintf('D%010d', $lead_id);
-		$lead_ref = (!empty($pipe['lead_ref_no'])) ? $pipe['lead_ref_no'] : sprintf('L%010d', $lead_id);
+		$pipe = $this->db->get_where('ci_pipeline', array('lead_id' => $lead_id))->row_array();
+		if (empty($remarks)) {
+			$remarks = 'Approved and converted to Lead upon qualification review';
+		}
 
-		if (empty($pipe)) {
+		$now = date('Y-m-d H:i:s');
+		$db_ref = (!empty($pipe['db_ref_no'])) ? $pipe['db_ref_no'] : (!empty($lead['lead_id']) && strpos($lead['lead_id'], 'D') === 0 ? $lead['lead_id'] : sprintf('D%010d', $lead_id));
+		$lead_ref = (!empty($pipe['lead_ref_no'])) ? $pipe['lead_ref_no'] : $this->ci_admin_model->generate_next_ref('lead');
+
+		$exists = $this->db->where('lead_id', $lead_id)->count_all_results('ci_pipeline');
+		if ($exists > 0) {
+			$this->db->where('lead_id', $lead_id)->update('ci_pipeline', array(
+				'pipeline_stage' => 'lead',
+				'db_ref_no' => $db_ref,
+				'lead_ref_no' => $lead_ref,
+				'conversion_status' => 'approved',
+				'conversion_reason' => $remarks,
+				'conversion_reviewed_by' => $cur_uid,
+				'conversion_reviewed_at' => $now,
+				'updated_at' => $now
+			));
+		} else {
 			$this->db->insert('ci_pipeline', array(
 				'lead_id' => $lead_id,
 				'pipeline_stage' => 'lead',
@@ -409,18 +426,11 @@ function __construct()
 				'created_at' => $now,
 				'updated_at' => $now
 			));
-		} else {
-			$this->db->where('lead_id', $lead_id)->update('ci_pipeline', array(
-				'pipeline_stage' => 'lead',
-				'db_ref_no' => $db_ref,
-				'lead_ref_no' => $lead_ref,
-				'conversion_status' => 'approved',
-				'conversion_reason' => $remarks,
-				'conversion_reviewed_by' => $cur_uid,
-				'conversion_reviewed_at' => $now,
-				'updated_at' => $now
-			));
 		}
+
+		$this->db->where('id', $lead_id)->update('ci_leads', array(
+			'lead_id' => $lead_ref
+		));
 
 		$this->db->insert('ci_pipeline_logs', array(
 			'lead_id' => $lead_id,
@@ -429,12 +439,22 @@ function __construct()
 			'stage_to' => 'lead',
 			'action_by' => $cur_uid,
 			'action_by_name' => $cur_name,
-			'remarks' => !empty($remarks) ? $remarks : 'Converted Database record to Lead upon qualification review',
+			'remarks' => $remarks,
 			'created_at' => $now
 		));
 
-		$this->ci_admin_model->log_admin_action('convert_to_lead', "Converted record #$lead_id to Lead", 'SUCCESS', $cur_uid, $cur_name);
-		$this->session->set_flashdata('message', 'Database record has been successfully converted into a Lead.');
+		$this->ci_admin_model->add_notification(
+			$lead_owner ?: $cur_uid,
+			'lead_approved',
+			'Lead Approved',
+			'Record #' . $lead_id . ' (' . (!empty($lead['customer']) ? $lead['customer'] : '') . ') was approved and assigned Lead Ref #' . $lead_ref,
+			base_url('manager/leads/view/' . base64_encode($lead_id)),
+			'fa fa-check-circle',
+			'#16a34a'
+		);
+
+		$this->ci_admin_model->log_admin_action('convert_to_lead', "Converted record #$lead_id to Lead (Ref: $lead_ref)", 'SUCCESS', $cur_uid, $cur_name);
+		$this->session->set_flashdata('message', 'Database record has been successfully converted into a Lead (' . $lead_ref . ').');
 		redirect('manager/leads/view/' . base64_encode($lead_id));
 	}
 
@@ -471,8 +491,8 @@ function __construct()
 		}
 
 		$now = date('Y-m-d H:i:s');
-		$pipe = $this->db->get_where('ci_pipeline', array('lead_id' => $lead_id))->row_array();
-		if (empty($pipe)) {
+		$exists = $this->db->where('lead_id', $lead_id)->count_all_results('ci_pipeline');
+		if ($exists == 0) {
 			$this->db->insert('ci_pipeline', array(
 				'lead_id' => $lead_id,
 				'pipeline_stage' => 'database',
@@ -567,6 +587,16 @@ function __construct()
 			'remarks' => !empty($remarks) ? $remarks : 'Conversion request rejected',
 			'created_at' => $now
 		));
+
+		$this->ci_admin_model->add_notification(
+			$lead_owner ?: $cur_uid,
+			'lead_rejected',
+			'Lead Conversion Rejected',
+			'Conversion request for record #' . $lead_id . ' (' . (!empty($lead['customer']) ? $lead['customer'] : '') . ') was rejected: ' . $remarks,
+			base_url('manager/leads/view/' . base64_encode($lead_id)),
+			'fa fa-times-circle',
+			'#dc2626'
+		);
 
 		$this->ci_admin_model->log_admin_action('reject_conversion', "Rejected conversion for record #$lead_id", 'SUCCESS', $cur_uid, $cur_name);
 		$this->session->set_flashdata('message', 'Conversion request has been rejected.');
@@ -930,6 +960,9 @@ function __construct()
 					->from('ci_call_logs as L')
 					->join('ci_user as U', 'U.id = L.user_id', 'left')
 					->where('L.lead_id', $id)
+					->where('L.duration >', 0)
+					->where_in('L.call_status', array('Completed', 'Answered', 'Connected'))
+					->where_not_in('L.disposition', array('Dialing', 'In Process', 'processing'))
 					->order_by('L.id', 'DESC')
 					->get()
 					->result_array();
@@ -1107,9 +1140,8 @@ function __construct()
 				);		
 				$this->session->set_flashdata('message', 'Lead has been added successfully!');
 				$lead_id = $this->comman_model->saveData('ci_leads',$list);
-				 
-				$this->comman_model->updateData('id',$lead_id,array('lead_id'=>100000000+$lead_id),'ci_leads');
-				$db_ref = sprintf('D%010d', $lead_id);
+				$db_ref = $this->ci_admin_model->generate_next_ref('database');
+				$this->comman_model->updateData('id',$lead_id,array('lead_id'=>$db_ref),'ci_leads');
 				$this->db->insert('ci_pipeline', array(
 					'lead_id' => $lead_id,
 					'pipeline_stage' => 'database',

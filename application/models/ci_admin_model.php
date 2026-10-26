@@ -7,45 +7,77 @@ class Ci_admin_model extends CI_model {
 	}
 	
 	   public function dashboard_countdata(){
+		$manager_id = (int)$this->session->userdata('manager_id');
+		$data = array(
+			'count_database' => 0,
+			'count_verticals' => 0,
+			'count_vetricals' => 0,
+			'count_leads' => 0,
+			'count_orders' => 0
+		);
 
-		$manager_id= $this->session->userdata('manager_id');
+		$sql = "SELECT 
+			(SELECT count(A.id) FROM ci_leads as A 
+			 LEFT JOIN ci_pipeline as P ON A.id = P.lead_id 
+			 WHERE (P.pipeline_stage = 'database' OR (P.pipeline_stage IS NULL AND (A.database_category != 'KAM Onboarded' OR A.database_category IS NULL))) 
+			 AND (A.lead_assign = " . $manager_id . " OR (A.created_by = " . $manager_id . " AND (A.lead_assign = 1 OR A.lead_assign IS NULL)) OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET(" . $manager_id . ", A.agents) > 0)) 
+			 AND (A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)) as count_database,
 
-			$data = array();
-			$today= date('Y-m-d');
-		 $sql="select t1.count_leads,t2.count_vetricals from 
-		 (SELECT count(id) as count_leads FROM ci_leads WHERE (lead_assign=".$manager_id." OR (created_by=".$manager_id." AND (lead_assign=0 OR lead_assign IS NULL)) OR (agents IS NOT NULL AND agents!='' AND FIND_IN_SET(".$manager_id.", agents)>0)) AND (company_status IS NULL OR LOWER(company_status) != 'closed')) as t1,		 
-		 (SELECT count(id) as count_vetricals FROM ci_verticals WHERE created_by=".$manager_id.") as t2";
-		
-		 $rows = $this->db->query($sql);	
-		if($rows && is_object($rows) && $rows->num_rows()>=1){
-			foreach($rows->result_array() as  $row){
-				$data = $row;	
-				}
-			}
-			return $data; 
+			(SELECT count(id) FROM ci_verticals WHERE created_by = " . $manager_id . ") as count_verticals,
+
+			(SELECT count(A.id) FROM ci_leads as A 
+			 LEFT JOIN ci_pipeline as P ON A.id = P.lead_id 
+			 WHERE P.pipeline_stage = 'lead' 
+			 AND (A.lead_assign = " . $manager_id . " OR (A.created_by = " . $manager_id . " AND (A.lead_assign = 1 OR A.lead_assign IS NULL)) OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET(" . $manager_id . ", A.agents) > 0)) 
+			 AND (A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)) as count_leads,
+
+			(SELECT count(id) FROM ci_orders WHERE created_by = " . $manager_id . ") as count_orders";
+
+		$rows = $this->db->query($sql);
+		if ($rows && is_object($rows) && $rows->num_rows() >= 1) {
+			$data = $rows->row_array();
 		}
+		$data['count_vetricals'] = isset($data['count_verticals']) ? $data['count_verticals'] : 0;
+		return $data;
+	   }
 
 		public function dashboard_Tcountdata(){
-
-			$team_array= $this->fetchTeamList($this->session->userdata('manager_id'),'');
-			$team_str= implode(',',$team_array);
-	
-				$data = array();
-				$today= date('Y-m-d');
-			 $sql="select t1.count_user,t2.count_today_birth,t3.count_leads,t4.count_vetricals from 
-			 (SELECT count(id) as count_user FROM ci_user WHERE FIND_IN_SET(id,'".$team_str."')>0) as t1,		
-			 (SELECT count(id) as count_today_birth FROM ci_user WHERE FIND_IN_SET(id,'".$team_str."')>0 AND dob='".$today."') as t2,
-			 (SELECT count(id) as count_leads FROM ci_leads WHERE FIND_IN_SET(created_by,'".$team_str."')>0 AND (company_status IS NULL OR LOWER(company_status) != 'closed')) as t3,
-			 (SELECT count(id) as count_vetricals FROM ci_verticals WHERE FIND_IN_SET(created_by,'".$team_str."')>0) as t4";
-			
-			 $rows = $this->db->query($sql);	
-			if($rows && is_object($rows) && $rows->num_rows()>=1){
-				foreach($rows->result_array() as  $row){
-					$data = $row;	
-					}
-				}
-				return $data; 
+			$manager_id = (int)$this->session->userdata('manager_id');
+			$team_array = $this->fetchTeamList($manager_id, '');
+			if (!is_array($team_array)) {
+				$team_array = array();
 			}
+			$team_clean = array_filter(array_map('intval', $team_array));
+			$team_str = !empty($team_clean) ? implode(',', $team_clean) : '0';
+
+			$data = array(
+				'count_user' => 0,
+				'count_verticals' => 0,
+				'count_vetricals' => 0,
+				'count_leads' => 0,
+				'count_orders' => 0,
+				'count_today_birth' => 0
+			);
+
+			$today = date('Y-m-d');
+			$sql = "SELECT 
+				(SELECT count(id) FROM ci_user WHERE FIND_IN_SET(id, '" . $team_str . "') > 0) as count_user,
+				(SELECT count(id) FROM ci_user WHERE FIND_IN_SET(id, '" . $team_str . "') > 0 AND dob = '" . $today . "') as count_today_birth,
+				(SELECT count(A.id) FROM ci_leads as A 
+				 LEFT JOIN ci_pipeline as P ON A.id = P.lead_id 
+				 WHERE P.pipeline_stage = 'lead' 
+				 AND ((A.lead_assign > 0 AND FIND_IN_SET(A.lead_assign, '" . $team_str . "') > 0) OR ((A.lead_assign = 0 OR A.lead_assign IS NULL) AND FIND_IN_SET(A.created_by, '" . $team_str . "') > 0)) 
+				 AND (A.company_status IS NULL OR LOWER(A.company_status) != 'closed')) as count_leads,
+				(SELECT count(id) FROM ci_verticals WHERE FIND_IN_SET(created_by, '" . $team_str . "') > 0) as count_verticals,
+				(SELECT count(id) FROM ci_orders WHERE FIND_IN_SET(created_by, '" . $team_str . "') > 0) as count_orders";
+
+			$rows = $this->db->query($sql);
+			if ($rows && is_object($rows) && $rows->num_rows() >= 1) {
+				$data = $rows->row_array();
+			}
+			$data['count_vetricals'] = isset($data['count_verticals']) ? $data['count_verticals'] : 0;
+			return $data;
+		}
         public function dashboard_leaddata(){
 			$manager_id = $this->session->userdata('manager_id');
 			if (empty($manager_id)) { $manager_id = 0; }
@@ -705,6 +737,10 @@ public function dashboard_MyPro($table='ci_leads'){
 						   $this->db->where('A.id', -1);
 					   }
 				   }
+			   } elseif ($stage === 'database' || $stage === 'lead') {
+				   $where1 = "(A.lead_assign = $uid OR (A.created_by = $uid AND (A.lead_assign = 0 OR A.lead_assign IS NULL)) OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET($uid, A.agents) > 0))";	
+				   $this->db->where($where1);
+				   $this->db->where("(A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)");
 			   } else {
 				   if ($urole !== 1 && $urole !== 4 && $uid !== 1) {
 					   $where1 = "(A.lead_assign = $uid OR (A.created_by = $uid AND (A.lead_assign = 0 OR A.lead_assign IS NULL)) OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET($uid, A.agents) > 0))";	
@@ -1204,10 +1240,12 @@ public function dashboard_MyPro($table='ci_leads'){
 				 $where = '(A.lead_id LIKE "%'.$search.'%" OR A.mrr LIKE "%'.$search.'%"  OR A.contact1 LIKE "%'.$search.'%" OR A.id LIKE "%'.$search.'%")';	
 				$this->db->where($where);
 			   }	
-			   if ($user_role === 1 || $user_role === 4) {
-				   $where1 = "(A.created_by > 0 OR A.lead_assign > 0)";
+			   $team_clean = array_unique(array_filter(array_map('intval', $team_array)));
+			   if (!empty($team_clean)) {
+				   $team_str = implode(',', $team_clean);
+				   $where1 = "((A.lead_assign > 0 AND FIND_IN_SET(A.lead_assign, '{$team_str}') > 0) OR ((A.lead_assign = 0 OR A.lead_assign IS NULL) AND FIND_IN_SET(A.created_by, '{$team_str}') > 0))";
 			   } else {
-				   $where1 = "((A.lead_assign > 0 AND FIND_IN_SET(A.lead_assign,'".$team_str."')>0) OR ((A.lead_assign = 0 OR A.lead_assign IS NULL) AND FIND_IN_SET(A.created_by,'".$team_str."')>0) OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET('".(int)$this->session->userdata('manager_id')."', A.agents)>0))";
+				   $where1 = "A.id = -1";
 			   }
 			   $this->db->where($where1);
 			 	
@@ -2486,6 +2524,232 @@ public function dashboard_MyPro($table='ci_leads'){
 			'orders'   => array('count' => (int)$order_q['cnt'], 'value' => (float)$order_q['val']),
 			'sales'    => array('count' => (int)$sales_q['cnt'], 'value' => (float)$sales_q['val']),
 		);
+	}
+
+	public function generate_next_ref($type = 'database')
+	{
+		$prefix_map = array(
+			'database' => array('table' => 'ci_pipeline', 'col' => 'db_ref_no', 'prefix' => 'D'),
+			'lead' => array('table' => 'ci_pipeline', 'col' => 'lead_ref_no', 'prefix' => 'L'),
+			'order' => array('table' => 'ci_orders', 'col' => 'order_no', 'prefix' => 'O'),
+			'sales' => array('table' => 'ci_orders', 'col' => 'sales_ref_no', 'prefix' => 'S')
+		);
+		if (!isset($prefix_map[$type])) {
+			$type = 'database';
+		}
+		$conf = $prefix_map[$type];
+		$table = $conf['table'];
+		$col = $conf['col'];
+		$prefix = $conf['prefix'];
+
+		$rows = $this->db->select($col)
+			->like($col, $prefix, 'after')
+			->order_by('id', 'DESC')
+			->limit(100)
+			->get($table)
+			->result_array();
+
+		$max_num = 0;
+		if (!empty($rows)) {
+			foreach ($rows as $r) {
+				$val = isset($r[$col]) ? $r[$col] : '';
+				if (preg_match('/^' . preg_quote($prefix, '/') . '(\d+)$/', $val, $m)) {
+					$num = (int)$m[1];
+					if ($num > $max_num) {
+						$max_num = $num;
+					}
+				}
+			}
+		}
+
+		$candidate_num = $max_num + 1;
+		do {
+			$candidate = sprintf($prefix . '%010d', $candidate_num);
+			$cnt = $this->db->where($col, $candidate)->count_all_results($table);
+			if ($cnt > 0) {
+				$candidate_num++;
+			}
+		} while ($cnt > 0);
+
+		return $candidate;
+	}
+
+	public function add_notification($user_id = 0, $type = 'activity', $title = '', $message = '', $link = '', $icon = 'fa fa-bell', $color = '#0072f0')
+	{
+		$data = array(
+			'user_id' => (int)$user_id,
+			'type' => $type,
+			'title' => $title,
+			'message' => $message,
+			'link' => $link,
+			'icon' => $icon,
+			'color' => $color,
+			'is_read' => 0,
+			'created_at' => date('Y-m-d H:i:s')
+		);
+		$this->db->insert('ci_notifications', $data);
+		return $this->db->insert_id();
+	}
+
+	public function get_user_notifications($user_id = 0, $limit = 12)
+	{
+		$user_id = (int)$user_id;
+		if ($user_id <= 0) {
+			$user_id = (int)$this->session->userdata('manager_id');
+		}
+		$user_role = (int)$this->session->userdata('manager_role');
+		$is_admin = ($user_role === 1 || $user_id === 1);
+		$is_backoffice = ($is_admin || $user_role === 2 || $user_role === 4 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
+
+		$notifs = array();
+
+		$db_notifs = $this->db->select('*')
+			->from('ci_notifications')
+			->where("(user_id = " . $user_id . " OR user_id = 0)")
+			->order_by('id', 'DESC')
+			->limit(15)
+			->get()
+			->result_array();
+
+		if (!empty($db_notifs)) {
+			foreach ($db_notifs as $dn) {
+				$notifs[] = array(
+					'id' => 'notif_' . $dn['id'],
+					'type' => $dn['type'],
+					'icon' => !empty($dn['icon']) ? $dn['icon'] : 'fa fa-bell',
+					'color' => !empty($dn['color']) ? $dn['color'] : '#0072f0',
+					'title' => $dn['title'],
+					'message' => $dn['message'],
+					'time' => $dn['created_at'],
+					'time_ago' => !empty($dn['created_at']) ? date('d M, H:i', strtotime($dn['created_at'])) : '',
+					'link' => !empty($dn['link']) ? $dn['link'] : base_url('manager/dashboard'),
+					'is_read' => (int)($dn['is_read'] ?? 0)
+				);
+			}
+		}
+
+		$this->db->select('P.*, L.customer, L.lead_id as lead_code, L.created_by as lead_owner');
+		$this->db->from('ci_pipeline_logs P');
+		$this->db->join('ci_leads L', 'L.id = P.lead_id', 'LEFT');
+		if (!$is_backoffice) {
+			$this->db->where("(P.conversion_requested_by = {$user_id} OR P.order_requested_by = {$user_id} OR L.created_by = {$user_id})");
+		}
+		$pipeline_logs = $this->db->order_by('P.id', 'DESC')->limit(10)->get()->result_array();
+
+		if (!empty($pipeline_logs)) {
+			foreach ($pipeline_logs as $pl) {
+				$act = $pl['action'];
+				$icon = 'fa fa-info-circle';
+				$color = '#2563eb';
+				$title = 'Pipeline Update';
+				if ($act === 'convert_to_lead') {
+					$icon = 'fa fa-check-circle';
+					$color = '#16a34a';
+					$title = 'Lead Approved';
+				} elseif ($act === 'reject_conversion') {
+					$icon = 'fa fa-times-circle';
+					$color = '#dc2626';
+					$title = 'Lead Approval Rejected';
+				} elseif ($act === 'request_conversion') {
+					$icon = 'fa fa-clock-o';
+					$color = '#d97706';
+					$title = 'Conversion Requested';
+				}
+				$notifs[] = array(
+					'id' => 'pipe_' . $pl['id'],
+					'type' => 'pipeline',
+					'icon' => $icon,
+					'color' => $color,
+					'title' => $title,
+					'message' => (!empty($pl['customer']) ? $pl['customer'] . ': ' : '') . ($pl['remarks'] ?: 'Action updated'),
+					'time' => $pl['created_at'],
+					'time_ago' => !empty($pl['created_at']) ? date('d M, H:i', strtotime($pl['created_at'])) : '',
+					'link' => base_url('manager/leads/view/' . base64_encode($pl['lead_id'])),
+					'is_read' => 0
+				);
+			}
+		}
+
+		$this->db->select('OL.*, O.order_no, O.client_name, O.created_by as ord_creator, O.assigned_to as ord_assigned');
+		$this->db->from('ci_orders_logs OL');
+		$this->db->join('ci_orders O', 'O.id = OL.order_id', 'LEFT');
+		if (!$is_backoffice) {
+			$this->db->where("(O.created_by = {$user_id} OR O.assigned_to = {$user_id} OR O.lead_id IN (SELECT id FROM ci_leads WHERE created_by = {$user_id}))");
+		}
+		$order_logs = $this->db->order_by('OL.id', 'DESC')->limit(10)->get()->result_array();
+
+		if (!empty($order_logs)) {
+			foreach ($order_logs as $ol) {
+				$act = $ol['action'];
+				$icon = 'fa fa-shopping-cart';
+				$color = '#2563eb';
+				$title = 'Order Update';
+				if ($act === 'convert_to_sales') {
+					$icon = 'fa fa-line-chart';
+					$color = '#16a34a';
+					$title = 'Order Converted to Sales';
+				} elseif ($act === 'reject' || $act === 'cancel') {
+					$icon = 'fa fa-ban';
+					$color = '#dc2626';
+					$title = 'Order Rejected/Cancelled';
+				} elseif ($act === 'approve') {
+					$icon = 'fa fa-check-circle';
+					$color = '#16a34a';
+					$title = 'Order Approved';
+				} elseif ($act === 'quick_accept') {
+					$icon = 'fa fa-handshake-o';
+					$color = '#0072f0';
+					$title = 'Order Accepted';
+				}
+				$notifs[] = array(
+					'id' => 'ord_' . $ol['id'],
+					'type' => 'order',
+					'icon' => $icon,
+					'color' => $color,
+					'title' => $title,
+					'message' => (!empty($ol['order_no']) ? '#' . $ol['order_no'] . ' - ' : '') . (!empty($ol['client_name']) ? $ol['client_name'] . ': ' : '') . ($ol['notes'] ?: 'Order status updated'),
+					'time' => $ol['created_at'],
+					'time_ago' => !empty($ol['created_at']) ? date('d M, H:i', strtotime($ol['created_at'])) : '',
+					'link' => base_url('manager/orders/view/' . $ol['order_id']),
+					'is_read' => 0
+				);
+			}
+		}
+
+		if ($is_backoffice) {
+			$admin_logs = $this->db->select('AL.*')
+				->from('ci_admin_logs AL')
+				->where_in('AL.action', array('lead_assign', 'status_change', 'convert_to_lead', 'convert_to_sales', 'order_status_update'))
+				->order_by('AL.id', 'DESC')
+				->limit(10)
+				->get()
+				->result_array();
+
+			if (!empty($admin_logs)) {
+				foreach ($admin_logs as $al) {
+					$notifs[] = array(
+						'id' => 'admin_' . $al['id'],
+						'type' => 'activity',
+						'icon' => 'fa fa-bolt',
+						'color' => '#0084ff',
+						'title' => ucwords(str_replace('_', ' ', $al['action'])),
+						'message' => $al['details'],
+						'time' => $al['created_at'],
+						'time_ago' => !empty($al['created_at']) ? date('d M, H:i', strtotime($al['created_at'])) : '',
+						'link' => base_url('manager/dashboard'),
+						'is_read' => 0
+					);
+				}
+			}
+		}
+
+		usort($notifs, function($a, $b) {
+			$t1 = !empty($a['time']) ? strtotime($a['time']) : 0;
+			$t2 = !empty($b['time']) ? strtotime($b['time']) : 0;
+			return $t2 - $t1;
+		});
+
+		return array_slice($notifs, 0, (int)$limit);
 	}
 }
 

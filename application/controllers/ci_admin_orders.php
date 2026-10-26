@@ -25,7 +25,7 @@ class Ci_admin_orders extends CI_Controller {
 		$data = array();
 		$cur_uid = (int)$this->session->userdata('manager_id');
 		$cur_role = (int)$this->session->userdata('manager_role');
-		$is_backoffice = ($cur_role === 1 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('back_office'));
+		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
 
 		$client_filter = $this->input->get('client', true);
 		$vertical_filter = $this->input->get('vertical', true);
@@ -53,7 +53,7 @@ class Ci_admin_orders extends CI_Controller {
 				'title' => 'My Orders - Seven Strokes CRM',
 				'page_heading' => 'My Orders'
 			);
-			$this->db->where('O.created_by', $cur_uid);
+			$this->db->where("(O.created_by = {$cur_uid} OR O.assigned_to = {$cur_uid} OR A.created_by = {$cur_uid} OR A.manager_id = {$cur_uid} OR FIND_IN_SET({$cur_uid}, A.agents) > 0 OR O.lead_id IN (SELECT lead_id FROM ci_lead_transfers WHERE from_user_id = {$cur_uid} OR to_user_id = {$cur_uid}) OR O.lead_id IN (SELECT lead_id FROM ci_pipeline_logs WHERE conversion_requested_by = {$cur_uid} OR order_requested_by = {$cur_uid} OR action_by = {$cur_uid}))");
 			$can_edit_orders = false;
 			$reset_url = base_url('manager/orders/my');
 		} elseif ($scope === 'team') {
@@ -81,20 +81,46 @@ class Ci_admin_orders extends CI_Controller {
 			);
 			$this->db->where('O.status', 'Sales');
 			if (!$is_backoffice) {
-				$this->db->where('O.created_by', $cur_uid);
+				$this->db->where("(O.created_by = {$cur_uid} OR O.assigned_to = {$cur_uid} OR A.created_by = {$cur_uid} OR A.manager_id = {$cur_uid} OR FIND_IN_SET({$cur_uid}, A.agents) > 0 OR O.lead_id IN (SELECT lead_id FROM ci_lead_transfers WHERE from_user_id = {$cur_uid} OR to_user_id = {$cur_uid}) OR O.lead_id IN (SELECT lead_id FROM ci_pipeline_logs WHERE conversion_requested_by = {$cur_uid} OR order_requested_by = {$cur_uid} OR action_by = {$cur_uid}))");
 				$can_edit_orders = false;
 			} else {
 				$can_edit_orders = true;
 			}
 			$reset_url = base_url('manager/sales');
+		} elseif ($status_filter === 'ongoing') {
+			$data['info'] = array(
+				'title' => 'Ongoing Orders - Back Office',
+				'page_heading' => 'Ongoing Orders'
+			);
+			$this->db->where_not_in('O.status', array('Completed', 'Fulfilled', 'Sales', 'Rejected', 'Lost', 'Cancelled'));
+			$can_edit_orders = $is_backoffice;
+			$reset_url = base_url('manager/orders/ongoing');
 		} elseif ($status_filter === 'completed') {
 			$data['info'] = array(
 				'title' => 'Completed Orders - Back Office',
 				'page_heading' => 'Completed Orders'
 			);
 			$this->db->where_in('O.status', array('Fulfilled', 'Completed'));
+			$this->db->where("(O.sales_ref_no IS NULL OR O.sales_ref_no = '')");
+			$this->db->where("O.status != 'Sales'");
 			$can_edit_orders = $is_backoffice;
-			$reset_url = base_url('manager/orders?status=completed');
+			$reset_url = base_url('manager/orders/completed');
+		} elseif ($status_filter === 'closed') {
+			$data['info'] = array(
+				'title' => 'Closed Orders - Back Office',
+				'page_heading' => 'Closed Orders'
+			);
+			$this->db->where("(O.status = 'Sales' OR (O.sales_ref_no IS NOT NULL AND O.sales_ref_no != ''))");
+			$can_edit_orders = $is_backoffice;
+			$reset_url = base_url('manager/orders/closed');
+		} elseif ($status_filter === 'rejected_lost') {
+			$data['info'] = array(
+				'title' => 'Rejected / Lost Orders - Back Office',
+				'page_heading' => 'Rejected / Lost Orders'
+			);
+			$this->db->where_in('O.status', array('Rejected', 'Lost', 'Cancelled'));
+			$can_edit_orders = $is_backoffice;
+			$reset_url = base_url('manager/orders/rejected_lost');
 		} elseif ($status_filter === 'open') {
 			$data['info'] = array(
 				'title' => 'Open Orders - Back Office',
@@ -194,7 +220,7 @@ class Ci_admin_orders extends CI_Controller {
 				return;
 			}
 
-			$order_no = 'ORD-' . date('ymd') . '-' . strtoupper(substr(uniqid(), -4));
+			$order_no = $this->ci_admin_model->generate_next_ref('order');
 
 			$default_docs = array();
 			if ($vertical_code === 'accounting') {
@@ -346,12 +372,54 @@ class Ci_admin_orders extends CI_Controller {
 
 		$cur_uid = (int)$this->session->userdata('manager_id');
 		$cur_role = (int)$this->session->userdata('manager_role');
+		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
 
-		$can_approve = ($cur_role === 1 || $cur_role === 4);
+		if (!$is_backoffice) {
+			$has_ownership = false;
+			if ((int)$order['created_by'] === $cur_uid || (int)$order['assigned_to'] === $cur_uid) {
+				$has_ownership = true;
+			}
+			if (!$has_ownership && !empty($order['lead_id'])) {
+				$lid = (int)$order['lead_id'];
+				$lead_row = $this->db->select('created_by, manager_id, agents')->where('id', $lid)->get('ci_leads')->row_array();
+				if (!empty($lead_row)) {
+					if ((int)$lead_row['created_by'] === $cur_uid || (int)$lead_row['manager_id'] === $cur_uid) {
+						$has_ownership = true;
+					} elseif (!empty($lead_row['agents']) && in_array((string)$cur_uid, explode(',', $lead_row['agents']))) {
+						$has_ownership = true;
+					}
+				}
+				if (!$has_ownership) {
+					$transfer_exists = $this->db->where('lead_id', $lid)
+						->where("(from_user_id = {$cur_uid} OR to_user_id = {$cur_uid})")
+						->count_all_results('ci_lead_transfers');
+					if ($transfer_exists > 0) {
+						$has_ownership = true;
+					}
+				}
+				if (!$has_ownership) {
+					$pipe_exists = $this->db->where('lead_id', $lid)
+						->where("(conversion_requested_by = {$cur_uid} OR order_requested_by = {$cur_uid} OR action_by = {$cur_uid})")
+						->count_all_results('ci_pipeline_logs');
+					if ($pipe_exists > 0) {
+						$has_ownership = true;
+					}
+				}
+			}
+
+			if (!$has_ownership) {
+				$this->session->set_flashdata('error_message', 'Access denied.');
+				redirect('manager/orders/my');
+				return;
+			}
+		}
+
+		$can_edit = $is_backoffice;
+		$can_approve = ($is_backoffice && ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('back_office') || has_section_perm('kam', 'write')));
 
 		$data = array();
 		$data['info'] = array(
-			'title' => 'Back Office - Order #' . $order['order_no'],
+			'title' => 'Order #' . $order['order_no'],
 			'page_heading' => 'Order Details: ' . $order['order_no']
 		);
 		$data['order'] = $order;
@@ -359,6 +427,7 @@ class Ci_admin_orders extends CI_Controller {
 		$data['approval_history'] = !empty($order['approval_history']) ? json_decode($order['approval_history'], true) : array();
 		$data['activity_logs'] = $this->db->where('order_id', $id)->order_by('id', 'DESC')->get('ci_order_history')->result_array();
 		$data['can_approve'] = $can_approve;
+		$data['can_edit'] = $can_edit;
 		$data['staff_list'] = $this->db->select('id, name, department')->where('status', 1)->order_by('name', 'ASC')->get('ci_user')->result_array();
 
 		$this->load->view('manager/orders/view', $data);
@@ -372,7 +441,8 @@ class Ci_admin_orders extends CI_Controller {
 		$cur_name = (string)$this->session->userdata('manager_name');
 		$remarks = trim((string)$this->input->post('remarks'));
 
-		if ($cur_role !== 1 && $cur_role !== 4) {
+		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
+		if (!$is_backoffice) {
 			$this->session->set_flashdata('error_message', 'Access denied. Only Back Office / Admin can approve orders.');
 			redirect('manager/orders/view/' . $id);
 			return;
@@ -426,7 +496,8 @@ class Ci_admin_orders extends CI_Controller {
 		$cur_name = (string)$this->session->userdata('manager_name');
 		$remarks = trim((string)$this->input->post('remarks'));
 
-		if ($cur_role !== 1 && $cur_role !== 4) {
+		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
+		if (!$is_backoffice) {
 			$this->session->set_flashdata('error_message', 'Access denied.');
 			redirect('manager/orders/view/' . $id);
 			return;
@@ -475,7 +546,15 @@ class Ci_admin_orders extends CI_Controller {
 		$status = trim((string)$this->input->post('status'));
 		$notes = trim((string)$this->input->post('notes'));
 		$cur_uid = (int)$this->session->userdata('manager_id');
+		$cur_role = (int)$this->session->userdata('manager_role');
 		$cur_name = (string)$this->session->userdata('manager_name');
+
+		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
+		if (!$is_backoffice) {
+			$this->session->set_flashdata('error_message', 'Access denied. Only Back Office and Admin can update order status.');
+			redirect('manager/orders/view/' . $id);
+			return;
+		}
 
 		$allowed = array('Draft', 'Submitted', 'Under Review', 'Approved', 'In Progress', 'Fulfilled', 'Cancelled');
 		if (!in_array($status, $allowed)) {
@@ -508,6 +587,14 @@ class Ci_admin_orders extends CI_Controller {
 		$doc_key = trim((string)$this->input->post('doc_key'));
 		$new_status = trim((string)$this->input->post('status'));
 		$cur_uid = (int)$this->session->userdata('manager_id');
+		$cur_role = (int)$this->session->userdata('manager_role');
+		$cur_name = (string)$this->session->userdata('manager_name');
+
+		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
+		if (!$is_backoffice) {
+			echo json_encode(array('success' => false, 'message' => 'Access denied. Only Back Office and Admin can edit order documents.'));
+			return;
+		}
 		$cur_name = (string)$this->session->userdata('manager_name');
 
 		$order = $this->db->where('id', $order_id)->get('ci_orders')->row_array();
@@ -550,7 +637,15 @@ class Ci_admin_orders extends CI_Controller {
 		$id = (int)$id;
 		$notes = trim((string)$this->input->post('notes'));
 		$cur_uid = (int)$this->session->userdata('manager_id');
+		$cur_role = (int)$this->session->userdata('manager_role');
 		$cur_name = (string)$this->session->userdata('manager_name');
+
+		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
+		if (!$is_backoffice) {
+			$this->session->set_flashdata('error_message', 'Access denied.');
+			redirect('manager/orders/view/' . $id);
+			return;
+		}
 
 		if (!empty($notes) && $id > 0) {
 			$this->db->insert('ci_order_history', array(
@@ -577,8 +672,9 @@ class Ci_admin_orders extends CI_Controller {
 		$cur_uid = (int)$this->session->userdata('manager_id');
 		$cur_role = (int)$this->session->userdata('manager_role');
 
-		if ($cur_role !== 1 && $cur_role !== 4 && $cur_uid !== 1) {
-			$this->session->set_flashdata('error_message', 'Access denied. Pending Order Process is restricted to Back Office staff.');
+		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
+		if (!$is_backoffice) {
+			$this->session->set_flashdata('error_message', 'Access denied. Pending Order Process is restricted to Back Office and KAM staff.');
 			redirect('manager/dashboard');
 			return;
 		}
@@ -625,8 +721,9 @@ class Ci_admin_orders extends CI_Controller {
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$cur_name = (string)$this->session->userdata('manager_name');
 
-		if ($cur_role !== 1 && $cur_role !== 4 && $cur_uid !== 1) {
-			$this->session->set_flashdata('error_message', 'Only authorized Back Office staff or Admin can convert an Order to Sales.');
+		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
+		if (!$is_backoffice) {
+			$this->session->set_flashdata('error_message', 'Only authorized KAM, Back Office staff, or Admin can convert an Order to Sales.');
 			redirect('manager/orders/view/' . $id);
 			return;
 		}
@@ -645,7 +742,7 @@ class Ci_admin_orders extends CI_Controller {
 		}
 
 		$now = date('Y-m-d H:i:s');
-		$sales_ref_no = !empty($order['sales_ref_no']) ? $order['sales_ref_no'] : sprintf('S%010d', $id);
+		$sales_ref_no = !empty($order['sales_ref_no']) ? $order['sales_ref_no'] : $this->ci_admin_model->generate_next_ref('sales');
 		$notes = trim((string)$this->input->post('notes'));
 
 		$this->db->where('id', $id)->update('ci_orders', array(
@@ -691,7 +788,8 @@ class Ci_admin_orders extends CI_Controller {
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$cur_name = (string)$this->session->userdata('manager_name');
 
-		if ($cur_role !== 1 && $cur_role !== 4 && $cur_uid !== 1 && !has_section_perm('back_office')) {
+		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
+		if (!$is_backoffice) {
 			$this->session->set_flashdata('error_message', 'Access denied.');
 			redirect('manager/orders');
 			return;
@@ -733,8 +831,9 @@ class Ci_admin_orders extends CI_Controller {
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$cur_name = (string)$this->session->userdata('manager_name');
 
-		if ($cur_role !== 1 && $cur_role !== 4 && $cur_uid !== 1) {
-			$this->session->set_flashdata('error_message', 'Access denied. Order processing is restricted to Back Office administrators.');
+		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
+		if (!$is_backoffice) {
+			$this->session->set_flashdata('error_message', 'Access denied. Order processing is restricted to KAM and Admin.');
 			redirect('manager/dashboard');
 			return;
 		}
@@ -1034,5 +1133,29 @@ class Ci_admin_orders extends CI_Controller {
 		$data['clients_list'] = $this->db->select('id, customer, lead_id')->order_by('customer', 'ASC')->get('ci_leads')->result_array();
 
 		$this->load->view('manager/orders/index', $data);
+	}
+
+	public function ongoing()
+	{
+		$_GET['status'] = 'ongoing';
+		$this->index();
+	}
+
+	public function completed()
+	{
+		$_GET['status'] = 'completed';
+		$this->index();
+	}
+
+	public function closed()
+	{
+		$_GET['status'] = 'closed';
+		$this->index();
+	}
+
+	public function rejected_lost()
+	{
+		$_GET['status'] = 'rejected_lost';
+		$this->index();
 	}
 }

@@ -295,9 +295,6 @@ foreach($st_list as $cli){
                                                 if (!empty($cat_label)): ?>
                                                     <br><small class="text-muted" style="font-weight: 500;">Category: <?php echo htmlspecialchars($cat_label); ?></small>
                                                 <?php endif; ?>
-                                                <?php if (!empty($li['quote_status'])): ?>
-                                                    <br><span class="label label-info" style="font-size: 10px;"><?php echo htmlspecialchars($li['quote_status']); ?></span>
-                                                <?php endif; ?>
                                             </td>
                                             <td>
                                                 <div class="btn-group" style="min-width: 85px;">

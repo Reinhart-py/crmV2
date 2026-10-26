@@ -637,12 +637,11 @@
 
 </div>
 </div>
-</div>
 
 <div class="box box-default">
   <div class="box-header with-border">
     <div class="col-sm-12">
-      <h3 class="box-title"><i class="fa fa-phone" style="margin-right:6px; color:#2563eb;"></i> Call Logs & AI Intelligence</h3>
+      <h3 class="box-title"><i class="fa fa-phone" style="margin-right:6px; color:#0f172a;"></i> Call Logs</h3>
     </div>
   </div>
   <div class="box-body">
@@ -658,39 +657,23 @@
                   <th>Phone / Destination</th>
                   <th>Duration</th>
                   <th>Status</th>
-                  <th>AI Insights</th>
+                  <th>Notes</th>
                   <th>Recording / Transcript</th>
                 </tr>
               </thead>
               <tbody>
-                <?php foreach($call_logs as $cl){ 
-                  $sent_class = 'label-info';
-                  if($cl['ai_sentiment'] === 'Positive') $sent_class = 'label-success';
-                  if($cl['ai_sentiment'] === 'Negative') $sent_class = 'label-danger';
-                ?>
+                <?php foreach($call_logs as $cl){ ?>
                   <tr>
                     <td><?php echo date('d-m-Y H:i', strtotime($cl['created_at'])); ?></td>
                     <td><strong><?php echo htmlspecialchars(!empty($cl['agent_name']) ? $cl['agent_name'] : 'System'); ?></strong></td>
                     <td><?php echo htmlspecialchars($cl['phone_number']); ?></td>
                     <td><span class="badge bg-gray"><?php echo (int)$cl['duration']; ?>s</span></td>
-                    <td><span class="label label-default"><?php echo htmlspecialchars($cl['disposition'] ?: $cl['call_status']); ?></span></td>
+                    <td><span class="label label-default"><?php echo htmlspecialchars($cl['call_status'] ?: 'Completed'); ?></span></td>
                     <td>
-                      <?php if(!empty($cl['ai_sentiment'])){ ?>
-                        <span class="label <?php echo $sent_class; ?>"><?php echo htmlspecialchars($cl['ai_sentiment']); ?></span>
-                      <?php } ?>
-                      <?php if(!empty($cl['ai_status'])){ ?>
-                        <span class="label label-primary" style="margin-left:4px;"><?php echo htmlspecialchars($cl['ai_status']); ?></span>
-                      <?php } ?>
-                      <?php if(!empty($cl['ai_summary'])){ ?>
-                        <div style="margin-top:6px; font-size:12px; color:#334155; line-height:1.4; background:#f8fafc; border-left:3px solid #2563eb; padding:6px 8px; border-radius:4px;">
-                          <strong>Summary:</strong> <?php echo htmlspecialchars($cl['ai_summary']); ?>
-                        </div>
-                      <?php } ?>
-                      <?php if(!empty($cl['ai_next_action'])){ ?>
-                        <div style="margin-top:4px; font-size:11px; color:#64748b;">
-                          <i class="fa fa-arrow-circle-right" style="color:#2563eb;"></i> <strong>Next Action:</strong> <?php echo htmlspecialchars($cl['ai_next_action']); ?>
-                        </div>
-                      <?php } ?>
+                      <?php 
+                        $note_text = !empty($cl['notes']) ? $cl['notes'] : (!empty($cl['ai_summary']) ? $cl['ai_summary'] : '');
+                        echo !empty($note_text) ? htmlspecialchars($note_text) : '-';
+                      ?>
                     </td>
                     <td>
                       <?php if(!empty($cl['recording_file']) || !empty($cl['recording_url'])){ 
@@ -716,8 +699,8 @@
           </div>
         <?php } else { ?>
           <div style="padding:16px; text-align:center; color:#94a3b8; font-size:13px;">
-            <i class="fa fa-phone-square" style="font-size:24px; display:block; margin-bottom:6px; opacity:0.6;"></i>
-            No past calls or AI transcripts recorded for this contact.
+            <i class="fa fa-phone" style="font-size:24px; display:block; margin-bottom:6px; opacity:0.6;"></i>
+            No past connected call records for this contact.
           </div>
         <?php } ?>
       </div>
@@ -973,15 +956,15 @@
 
 <div class="modal fade" id="convertLeadModal" tabindex="-1" role="dialog" aria-labelledby="convertLeadModalLabel">
   <div class="modal-dialog" role="document">
-    <div class="modal-content" style="border-radius:6px;">
+    <div class="modal-content" style="border-radius:6px; border:1px solid #111827;">
       <form action="<?php echo base_url(); ?>manager/leads/convert_to_lead" method="post">
         <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
         <input type="hidden" name="lead_id" value="<?php echo $p_info['id']; ?>">
-        <div class="modal-header" style="border-bottom:1px solid #e2e8f0; background:#f8fafc; border-top-left-radius:6px; border-top-right-radius:6px;">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="convertLeadModalLabel" style="font-weight:600; color:#0f172a;"><i class="fa fa-check-circle" style="color:#16a34a;"></i> Convert to Lead</h4>
+        <div class="modal-header" style="border-bottom:1px solid #111827; background:#000000; border-top-left-radius:6px; border-top-right-radius:6px;">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:#ffffff; opacity:0.8;"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="convertLeadModalLabel" style="font-weight:700; color:#ffffff;"><i class="fa fa-check-circle" style="color:#ffffff;"></i> Convert to Lead</h4>
         </div>
-        <div class="modal-body" style="padding:20px;">
+        <div class="modal-body" style="padding:20px; background:#ffffff; color:#111827;">
           <p style="font-size:14px; color:#334155; margin-bottom:15px;">
             Qualifying <strong><?php echo htmlspecialchars($p_info['customer']); ?></strong> (Record #<?php echo htmlspecialchars($p_info['lead_id']); ?>) as a verified Lead.
           </p>
@@ -990,9 +973,9 @@
             <textarea class="form-control" name="remarks" rows="3" placeholder="Enter qualification remarks or rationale for converting into a Lead..."></textarea>
           </div>
         </div>
-        <div class="modal-footer" style="border-top:1px solid #e2e8f0; background:#f8fafc; border-bottom-left-radius:6px; border-bottom-right-radius:6px;">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-success" style="background:#16a34a; border-color:#15803d; font-weight:600;">Confirm Conversion</button>
+        <div class="modal-footer" style="border-top:1px solid #e5e7eb; background:#f9fafb; border-bottom-left-radius:6px; border-bottom-right-radius:6px;">
+          <button type="button" class="btn btn-default" data-dismiss="modal" style="background:#ffffff; border:1px solid #d1d5db; color:#111827;">Cancel</button>
+          <button type="submit" class="btn btn-default" style="background:#000000; border-color:#000000; color:#ffffff; font-weight:600;">Confirm Conversion</button>
         </div>
       </form>
     </div>
@@ -1001,15 +984,15 @@
 
 <div class="modal fade" id="requestLeadModal" tabindex="-1" role="dialog" aria-labelledby="requestLeadModalLabel">
   <div class="modal-dialog" role="document">
-    <div class="modal-content" style="border-radius:6px;">
+    <div class="modal-content" style="border-radius:6px; border:1px solid #111827;">
       <form action="<?php echo base_url(); ?>manager/leads/request_conversion" method="post">
         <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
         <input type="hidden" name="lead_id" value="<?php echo $p_info['id']; ?>">
-        <div class="modal-header" style="border-bottom:1px solid #e2e8f0; background:#f8fafc; border-top-left-radius:6px; border-top-right-radius:6px;">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="requestLeadModalLabel" style="font-weight:600; color:#0f172a;"><i class="fa fa-paper-plane" style="color:#2563eb;"></i> Request Conversion to Lead</h4>
+        <div class="modal-header" style="border-bottom:1px solid #111827; background:#000000; border-top-left-radius:6px; border-top-right-radius:6px;">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:#ffffff; opacity:0.8;"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="requestLeadModalLabel" style="font-weight:700; color:#ffffff;"><i class="fa fa-paper-plane" style="color:#ffffff;"></i> Request Conversion to Lead</h4>
         </div>
-        <div class="modal-body" style="padding:20px;">
+        <div class="modal-body" style="padding:20px; background:#ffffff; color:#111827;">
           <p style="font-size:14px; color:#334155; margin-bottom:15px;">
             Submit a formal conversion request for <strong><?php echo htmlspecialchars($p_info['customer']); ?></strong> (Record #<?php echo htmlspecialchars($p_info['lead_id']); ?>) to Back Office / Manager review queue.
           </p>
@@ -1018,9 +1001,9 @@
             <textarea class="form-control" name="remarks" rows="3" required placeholder="Enter reasons why this database record qualifies to be a Lead..."></textarea>
           </div>
         </div>
-        <div class="modal-footer" style="border-top:1px solid #e2e8f0; background:#f8fafc; border-bottom-left-radius:6px; border-bottom-right-radius:6px;">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary" style="background:#2563eb; border-color:#1d4ed8; font-weight:600;">Submit Request</button>
+        <div class="modal-footer" style="border-top:1px solid #e5e7eb; background:#f9fafb; border-bottom-left-radius:6px; border-bottom-right-radius:6px;">
+          <button type="button" class="btn btn-default" data-dismiss="modal" style="background:#ffffff; border:1px solid #d1d5db; color:#111827;">Cancel</button>
+          <button type="submit" class="btn btn-default" style="background:#000000; border-color:#000000; color:#ffffff; font-weight:600;">Submit Request</button>
         </div>
       </form>
     </div>
@@ -1029,15 +1012,15 @@
 
 <div class="modal fade" id="rejectLeadModal" tabindex="-1" role="dialog" aria-labelledby="rejectLeadModalLabel">
   <div class="modal-dialog" role="document">
-    <div class="modal-content" style="border-radius:6px;">
+    <div class="modal-content" style="border-radius:6px; border:1px solid #111827;">
       <form action="<?php echo base_url(); ?>manager/leads/reject_conversion" method="post">
         <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
         <input type="hidden" name="lead_id" value="<?php echo $p_info['id']; ?>">
-        <div class="modal-header" style="border-bottom:1px solid #e2e8f0; background:#f8fafc; border-top-left-radius:6px; border-top-right-radius:6px;">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="rejectLeadModalLabel" style="font-weight:600; color:#0f172a;"><i class="fa fa-times-circle" style="color:#dc2626;"></i> Reject Conversion Request</h4>
+        <div class="modal-header" style="border-bottom:1px solid #111827; background:#000000; border-top-left-radius:6px; border-top-right-radius:6px;">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:#ffffff; opacity:0.8;"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="rejectLeadModalLabel" style="font-weight:700; color:#ffffff;"><i class="fa fa-times-circle" style="color:#ffffff;"></i> Reject Conversion Request</h4>
         </div>
-        <div class="modal-body" style="padding:20px;">
+        <div class="modal-body" style="padding:20px; background:#ffffff; color:#111827;">
           <p style="font-size:14px; color:#334155; margin-bottom:15px;">
             Rejecting the conversion request for <strong><?php echo htmlspecialchars($p_info['customer']); ?></strong> (Record #<?php echo htmlspecialchars($p_info['lead_id']); ?>).
           </p>
@@ -1046,9 +1029,9 @@
             <textarea class="form-control" name="remarks" rows="3" required placeholder="Specify why the conversion request is being rejected..."></textarea>
           </div>
         </div>
-        <div class="modal-footer" style="border-top:1px solid #e2e8f0; background:#f8fafc; border-bottom-left-radius:6px; border-bottom-right-radius:6px;">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-danger" style="background:#dc2626; border-color:#b91c1c; font-weight:600;">Reject Request</button>
+        <div class="modal-footer" style="border-top:1px solid #e5e7eb; background:#f9fafb; border-bottom-left-radius:6px; border-bottom-right-radius:6px;">
+          <button type="button" class="btn btn-default" data-dismiss="modal" style="background:#ffffff; border:1px solid #d1d5db; color:#111827;">Cancel</button>
+          <button type="submit" class="btn btn-default" style="background:#000000; border-color:#000000; color:#ffffff; font-weight:600;">Reject Request</button>
         </div>
       </form>
     </div>
@@ -1057,15 +1040,15 @@
 
 <div class="modal fade" id="requestOrderModal" tabindex="-1" role="dialog" aria-labelledby="requestOrderModalLabel">
   <div class="modal-dialog" role="document">
-    <div class="modal-content" style="border-radius:6px;">
+    <div class="modal-content" style="border-radius:6px; border:1px solid #111827;">
       <form action="<?php echo base_url(); ?>manager/leads/request_order" method="post">
         <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
         <input type="hidden" name="lead_id" value="<?php echo $p_info['id']; ?>">
-        <div class="modal-header" style="border-bottom:1px solid #e2e8f0; background:#f8fafc; border-top-left-radius:6px; border-top-right-radius:6px;">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="requestOrderModalLabel" style="font-weight:600; color:#0f172a;"><i class="fa fa-shopping-cart" style="color:#f59e0b;"></i> Request Lead to Order Conversion</h4>
+        <div class="modal-header" style="border-bottom:1px solid #111827; background:#000000; border-top-left-radius:6px; border-top-right-radius:6px;">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:#ffffff; opacity:0.8;"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="requestOrderModalLabel" style="font-weight:700; color:#ffffff;"><i class="fa fa-shopping-cart" style="color:#ffffff;"></i> Request Lead to Order Conversion</h4>
         </div>
-        <div class="modal-body" style="padding:20px;">
+        <div class="modal-body" style="padding:20px; background:#ffffff; color:#111827;">
           <p style="font-size:14px; color:#334155; margin-bottom:15px;">
             Submitting <strong><?php echo htmlspecialchars($p_info['customer']); ?></strong> (Lead Ref: <?php echo htmlspecialchars($lead_ref_no); ?>) for Order creation.
             Once submitted, this Lead will be locked while Back Office processes the Order.
@@ -1079,14 +1062,15 @@
             <textarea class="form-control" name="remarks" rows="3" required placeholder="Enter notes, documents gathered, or special client instructions..."></textarea>
           </div>
         </div>
-        <div class="modal-footer" style="border-top:1px solid #e2e8f0; background:#f8fafc; border-bottom-left-radius:6px; border-bottom-right-radius:6px;">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-warning" style="background:#f59e0b; border-color:#d97706; color:#ffffff; font-weight:600;"><i class="fa fa-paper-plane"></i> Submit Order Request</button>
+        <div class="modal-footer" style="border-top:1px solid #e5e7eb; background:#f9fafb; border-bottom-left-radius:6px; border-bottom-right-radius:6px;">
+          <button type="button" class="btn btn-default" data-dismiss="modal" style="background:#ffffff; border:1px solid #d1d5db; color:#111827;">Cancel</button>
+          <button type="submit" class="btn btn-default" style="background:#000000; border-color:#000000; color:#ffffff; font-weight:600;"><i class="fa fa-paper-plane"></i> Submit Order Request</button>
         </div>
       </form>
     </div>
   </div>
 </div>
+
 
     </div>
   
