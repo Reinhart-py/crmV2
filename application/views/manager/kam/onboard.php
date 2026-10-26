@@ -143,16 +143,17 @@
             </div>
 
             <div class="col-lg-3 col-sm-6">
-              <div class="form-group" style="position: relative;">
+              <div class="form-group">
                 <label>Primary Assignee / Executive <span>*</span></label>
-                <div class="input-group">
-                  <input type="text" id="onboard_assign_input" class="form-control" placeholder="Type 3+ letters to search..." autocomplete="off">
-                  <span class="input-group-btn">
-                    <button class="btn btn-default" type="button" onclick="clearOnboardAssign()"><i class="fa fa-times"></i></button>
-                  </span>
-                </div>
-                <input type="hidden" name="lead_assign" id="onboard_lead_assign_val" value="<?php echo (int)$this->session->userdata('manager_id'); ?>" required>
-                <div id="onboard_assign_dropdown" style="display:none; position:absolute; top:100%; left:0; right:0; z-index:9999; background:#fff; border:1px solid #cbd5e1; border-radius:4px; box-shadow:0 8px 16px rgba(0,0,0,0.12); max-height:220px; overflow-y:auto; margin-top:2px;"></div>
+                <select name="lead_assign" id="onboard_lead_assign_val" class="form-control select2" required style="width: 100%;">
+                  <option value="">Select Primary Assignee / Executive *</option>
+                  <?php if(isset($u_list) && !empty($u_list)) {
+                    foreach($u_list as $u){ ?>
+                      <option value="<?php echo $u['id']; ?>">
+                        <?php echo htmlspecialchars($u['name']); ?> (<?php echo htmlspecialchars($u['department']); ?>)
+                      </option>
+                  <?php } } ?>
+                </select>
               </div>
             </div>
 
@@ -935,91 +936,6 @@ $(document).ready(function() {
   applyTradeLicenseDependencies(true);
 });
 
-var onboardUsers = <?php 
-  $clean_u = array();
-  if(!empty($u_list)){
-    foreach($u_list as $u){
-      $clean_u[] = array(
-        'id' => (int)$u['id'],
-        'name' => htmlspecialchars($u['name']),
-        'email' => htmlspecialchars($u['email'])
-      );
-    }
-  }
-  echo json_encode($clean_u);
-?>;
-
-var curOnboardUserId = <?php echo (int)$this->session->userdata('manager_id'); ?>;
-var curOnboardUserName = "<?php echo addslashes($this->session->userdata('manager_name')); ?>";
-
-document.addEventListener("DOMContentLoaded", function() {
-  var assignInput = document.getElementById("onboard_assign_input");
-  var assignHidden = document.getElementById("onboard_lead_assign_val");
-  var assignDropdown = document.getElementById("onboard_assign_dropdown");
-
-  if (curOnboardUserId > 0 && curOnboardUserName !== "") {
-    assignInput.value = curOnboardUserName;
-  }
-
-  assignInput.addEventListener("input", function() {
-    var query = this.value.trim().toLowerCase();
-    assignDropdown.innerHTML = "";
-    
-    if (query.length < 3) {
-      assignDropdown.style.display = "none";
-      return;
-    }
-
-    var matches = onboardUsers.filter(function(u) {
-      return u.name.toLowerCase().indexOf(query) !== -1 || u.email.toLowerCase().indexOf(query) !== -1;
-    });
-
-    if (matches.length === 0) {
-      assignDropdown.innerHTML = '<div style="padding:10px 14px; color:#64748b; font-size:13px;">No assignee found</div>';
-      assignDropdown.style.display = "block";
-      return;
-    }
-
-    matches.forEach(function(u) {
-      var item = document.createElement("div");
-      item.style.padding = "9px 14px";
-      item.style.cursor = "pointer";
-      item.style.borderBottom = "1px solid #f1f5f9";
-      item.style.fontSize = "13px";
-      item.innerHTML = '<strong>' + u.name + '</strong> <span style="color:#64748b; font-size:12px;">(' + u.email + ')</span>';
-      
-      item.addEventListener("mouseenter", function() {
-        this.style.background = "#eff6ff";
-      });
-      item.addEventListener("mouseleave", function() {
-        this.style.background = "#fff";
-      });
-
-      item.addEventListener("click", function() {
-        assignInput.value = u.name;
-        assignHidden.value = u.id;
-        assignDropdown.style.display = "none";
-      });
-
-      assignDropdown.appendChild(item);
-    });
-
-    assignDropdown.style.display = "block";
-  });
-
-  document.addEventListener("click", function(e) {
-    if (!assignInput.contains(e.target) && !assignDropdown.contains(e.target)) {
-      assignDropdown.style.display = "none";
-    }
-  });
-});
-
-function clearOnboardAssign() {
-  document.getElementById("onboard_assign_input").value = "";
-  document.getElementById("onboard_lead_assign_val").value = "";
-  document.getElementById("onboard_assign_dropdown").style.display = "none";
-  document.getElementById("onboard_assign_input").focus();
-}
 </script>
 
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

@@ -33,7 +33,7 @@
                 <tbody>
                   <?php foreach($product_list as $k=>$li){ ?>
                   <tr>
-                    <td><?php echo ($k+1); ?></td>
+                    <td><span class="label label-primary" style="font-size:11.5px; letter-spacing:0.5px;"><?php echo sprintf('EMP-%05d', $li['id']); ?></span></td>
                     <td style="text-transform:capitalize;"><?php echo $li['name']; ?> </td>
                     <td></td>                   
                     <td><?php echo $li['role']; ?></td>

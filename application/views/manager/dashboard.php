@@ -6,7 +6,7 @@
     
     <div class="dash-header-bar">
         <h1 class="dash-header-title">
-            <i class="fa fa-dashboard" style="color:#0072f0;"></i> Dashboard
+            <svg class="crm-svg-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0072f0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-3px; margin-right:8px;"><rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect></svg> Dashboard
         </h1>
         <div>
             <button type="button" class="dash-theme-btn" id="dashThemeToggle" title="Toggle Light / Dark Mode">

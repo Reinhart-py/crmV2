@@ -41,12 +41,13 @@
   <div class="col-md-6">
       <div class="table-responsive border">
           <table class="table">
-        
+              <tr>
+                <th scope="col">Employee ID</th>
+                <td><span class="label label-primary" style="font-size:12px; letter-spacing:0.5px;"><?php echo sprintf('EMP-%05d', $p_info['id']); ?></span></td>
+              </tr>
               <tr>
                 <th scope="col">Name</th>
                 <td><?php echo $p_info['name']; ?></td>
-
-                
               </tr>
    
             
@@ -344,138 +345,6 @@
 
 
 
-
-<!-- 
-
-    <div class="box product-box-default box-solid">
-      <div class="box-header with-border">  
-        <h3 class="box-title" style="text-transform:capitalize"><b>
-          <?php if((isset($p_info['name']))&&(!empty($p_info['name']))){echo $p_info['name'];}else echo ""; ?>
-          </b></h3>
-          <?php if($this->session->userdata['manager_role']==1){ ?>
-          <div class="pull-right">
-          <a href="<?php echo base_url(); ?>manager/users/edit/<?php echo $p_info['id']; ?>" class="btn btn-danger">Edit User</a>
-         
-         </div>
-          <?php } ?>
-        </div>
-      <div class="box-body">
-        <div class="row user-view-information">
-
-                <div class="col-xs-4 col-md-2">Name</div>
-                <div class="col-xs-8 col-md-4"><?php //echo $p_info['name']; ?></div>
-
-
-                <div class="col-xs-4 col-md-2">Email</div>
-                <div class="col-xs-8 col-md-4"><a href="mailto:<?php //echo $p_info['email']; ?>"><?php echo $p_info['email']; ?></a></div>
-                
-                <div class="col-xs-4 col-md-2">Gender</div>
-                <div class="col-xs-8 col-md-4"><?php //echo $p_info['gender']; ?></div>
-
-                <div class="col-xs-4 col-md-2">DOB</div>
-                <div class="col-xs-8 col-md-4"><?php //echo $p_info['dob']; ?></div>
-
-
-
-                <div class="col-xs-4 col-md-2">Mobile</div>
-                <div class="col-xs-8 col-md-4"><?php //echo $p_info['mobile']; ?></div>
-
-                <div class="col-xs-4 col-md-3">UAE Alternate Contect No</div>
-                <div class="col-xs-8 col-md-3"><?php //echo $p_info['uae_mobile']; ?></div>
-
-
-                <div class="col-xs-4 col-md-2">Address</div>
-                <div class="col-xs-8 col-md-4"><?php //echo $p_info['address']; ?></div>
-
-                <div class="col-xs-4 col-md-2">City</div>
-                <div class="col-xs-8 col-md-4"><?php //echo $p_info['city']; ?></div>
-
-                <div class="col-xs-4 col-md-2">Country</div>
-                <div class="col-xs-8 col-md-4"><?php //echo $p_info['country_name']; ?></div>
-
-                <div class="col-xs-4 col-md-2">State / Province / Emirate</div>
-                <div class="col-xs-8 col-md-4"><?php //echo $p_info['state_name']; ?></div>
-
-
-                <div class="col-xs-4 col-md-2">User Name</div>
-                <div class="col-xs-8 col-md-4"><a href="mailto:<?php //echo $p_info['c_username']; ?>"><?php //echo $p_info['c_username']; ?></a></div>
-                <div class="col-xs-4 col-md-2">Employee ID</div>
-                <div class="col-xs-8 col-md-4"><?php //echo $p_info['emp_id']; ?></div>
-                <div class="col-xs-4 col-md-2">Salary</div>
-                <div class="col-xs-8 col-md-4"><?php //echo $p_info['c_salary']; ?></div>
-                <div class="col-xs-4 col-md-2">Date of Joining</div>
-                <div class="col-xs-8 col-md-4"><?php// echo $p_info['c_doj']; ?></div>
-                <div class="col-xs-4 col-md-2">Date of Leaving</div>
-                <div class="col-xs-8 col-md-4"><?php //echo $p_info['c_dol']; ?></div>
-                <div class="col-xs-4 col-md-2">Department</div>
-                <div class="col-xs-8 col-md-4"><?php //echo $p_info['department']; ?></div>
-                <div class="col-xs-4 col-md-2">Office Code / Work Location</div>
-                <div class="col-xs-8 col-md-4"><?php //echo $p_info['office']; ?></div>
-                <div class="col-xs-4 col-md-2">Nationality</div>
-                <div class="col-xs-8 col-md-4"><?php //echo $p_info['national']; ?></div>
-                <div class="col-xs-4 col-md-2">Blood Group</div>
-                <div class="col-xs-8 col-md-4"><?php //echo $p_info['blood']; ?></div>
-                <div class="col-xs-4 col-md-2">Passport Number</div>
-                <div class="col-xs-8 col-md-4"><?php //echo $p_info['p_no']; ?></div>
-
-
-                <div class="col-xs-4 col-md-2">Passport Expiry Date</div>
-                <div class="col-xs-8 col-md-4"><?php //echo $p_info['p_exdate']; ?></div>
-
-                <div class="col-xs-4 col-md-2">Visa Type</div>
-                <div class="col-xs-8 col-md-4"><?php //echo $p_info['visa_type']; ?></div>
-
-
-                <div class="col-xs-4 col-md-2">Visa Reference No.</div>
-                <div class="col-xs-8 col-md-4"><?php //echo $p_info['visa_no']; ?></div>
-
-                <div class="col-xs-4 col-md-2">Visa Issue By</div>
-                <div class="col-xs-8 col-md-4"><?php //echo $p_info['visa_by']; ?></div>
-
-                <div class="col-xs-4 col-md-2">Visa Expiry Date</div>
-                <div class="col-xs-8 col-md-4"><?php //echo $p_info['visa_expiry']; ?></div>
-
-                <div class="col-xs-4 col-md-2">National ID / EID Number</div>
-                <div class="col-xs-8 col-md-4"><?php //echo $p_info['eid_no']; ?></div>
-
-                <div class="col-xs-4 col-md-2">EID Expiry Date</div>
-                <div class="col-xs-8 col-md-4"><?php //echo $p_info['eid_expiry']; ?></div>
-
-                <div class="col-xs-4 col-md-3">Emg. Contact Person Name</div>
-                <div class="col-xs-8 col-md-3"><?php //echo $p_info['h_contact_name']; ?></div>
-
-
-                <div class="col-xs-4 col-md-3">Emg. Contact Person Relation</div>
-                <div class="col-xs-8 col-md-3"><?php //echo $p_info['h_contact_relation']; ?></div>
-
-                <div class="col-xs-4 col-md-3">Emg. Contact Person Contact No.</div>
-                <div class="col-xs-8 col-md-3"><?php //echo $p_info['h_contact_no']; ?></div>
-
-                <div class="col-xs-4 col-md-3">Emg. Contact Person Alternate Contact No.</div>
-                <div class="col-xs-8 col-md-3"><?php //echo $p_info['h_contact_no2']; ?></div>
-
-                <div class="col-xs-4 col-md-2">Bank Name</div>
-                <div class="col-xs-8 col-md-4"><?php //echo $p_info['bank']; ?></div>
-
-                <div class="col-xs-4 col-md-2">Bank Country</div>
-                <div class="col-xs-8 col-md-4"><?php //echo $p_info['bank_country']; ?></div>
-
-                <div class="col-xs-4 col-md-2">Bank Account Number</div>
-                <div class="col-xs-8 col-md-4"><?php // $p_info['bank_no']; ?></div>
-
-                <div class="col-xs-4 col-md-3">IFSC/Sort Code/Branch Code</div>
-                <div class="col-xs-8 col-md-3"><?php //echo $p_info['ifsc']; ?></div>
-
-                <div class="col-xs-4 col-md-2">IBAN</div>
-                <div class="col-xs-8 col-md-4"><?php// echo $p_info['iban']; ?></div>
-
-                <div class="col-xs-4 col-md-2">SWIFT</div>
-                <div class="col-xs-8 col-md-4"><?php //echo $p_info['swift']; ?></div>
-                </div>
-        </div>
-      </div>
-    </div>
-    -->
   </section>
 </div>
 

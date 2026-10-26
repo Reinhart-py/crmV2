@@ -6,30 +6,41 @@ class Ci_admin_roles extends CI_Controller {
 	$this->load->library(array('Session'));
 	$this->load->helper(array('form','url','text'));
 	$this->load->model(array('ci_admin_model','comman_model'));
-	 	header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT"); 
-		 header("Cache-Control: no-store, no-cache, must-revalidate"); 
-		 header("Cache-Control: post-check=0, pre-check=0", false);
-		 header("Pragma: no-cache");
-		 header('Cache-Control: no-cache');
-  
+ 	header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT"); 
+ 	header("Cache-Control: no-store, no-cache, must-revalidate"); 
+ 	header("Cache-Control: post-check=0, pre-check=0", false);
+ 	header("Pragma: no-cache");
+ 	header('Cache-Control: no-cache');
+
+	$mgr_id = (int)$this->session->userdata('manager_id');
+	$mgr_role = (int)$this->session->userdata('manager_role');
+	if (empty($mgr_id)) {
+		redirect('manager/login');
+		exit;
 	}
-	
+	if ($mgr_role !== 1 && $mgr_id !== 1) {
+		$this->session->set_flashdata('error_message', 'Access denied. Only Administrators can manage roles and permissions.');
+		redirect('manager/dashboard');
+		exit;
+	}
+	}
 	
 	public function if_not_login($url = '')
     {
-        if ($this->session->userdata('manager_id') == '') {
+        $mgr_id = (int)$this->session->userdata('manager_id');
+        $mgr_role = (int)$this->session->userdata('manager_role');
+        if (empty($mgr_id)) {
             if ($url != '') {
                 redirect($url);
             } else {
                 redirect('/manager/login');
             }
-        } elseif ($this->session->userdata('manager_role') != 1) {
-        	$this->session->set_flashdata('error_message', 'Unauthorized Access!');
-        		redirect('/manager/dashboard');
-
-        }else {
+        } elseif ($mgr_role !== 1 && $mgr_id !== 1) {
+        	$this->session->set_flashdata('error_message', 'Access denied. Only Administrators can manage roles and permissions.');
+        	redirect('/manager/dashboard');
+        } else {
             $data = array();
-           return $data;
+            return $data;
         }
     } 
 	

@@ -163,7 +163,7 @@
         }
       ?>
       <?php if($is_admin || has_section_perm('dashboard')){ ?>
-      <li class="<?php if($route1=="dashboard"){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/dashboard"> <i class="fa fa-tachometer"></i> <span>Dashboard</span>  </a> </li>
+      <li class="<?php if($route1=="dashboard"){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/dashboard"> <svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:4px;"><rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect></svg> <span>Dashboard</span>  </a> </li>
       <?php } ?>
 
       <?php if($is_admin || has_section_perm('my_zone') || has_section_perm('database') || has_section_perm('leads') || has_section_perm('tasks') || has_section_perm('internal_tasks') || has_section_perm('external_tasks')){ ?>
@@ -256,7 +256,7 @@
           <?php if($is_admin || has_section_perm('users')){ ?>
             <li><a href="<?php echo base_url();?>manager/users"><i class="fa fa-list"></i>User View</a></li>
           <?php } ?>
-          <?php if($is_admin || has_section_perm('roles')){ ?>
+          <?php if($is_admin){ ?>
             <li><a href="<?php echo base_url();?>manager/roles"><i class="fa fa-list"></i>Roles</a></li>
           <?php } ?>
           <?php if($is_admin){ ?>
@@ -421,7 +421,7 @@ $(function() {
       ?>
       <?php if($is_admin || has_section_perm('dashboard')){ ?>
       <li class="<?php if($route1=="dashboard"){ echo "active";}else{ echo "";}?>"> 
-        <a href="<?php echo base_url();?>manager/dashboard"> <i class="fa fa-tachometer"></i> <span>Dashboard</span> </a> 
+        <a href="<?php echo base_url();?>manager/dashboard"> <svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:6px;"><rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect></svg> <span>Dashboard</span> </a> 
       </li>
       <?php } ?>
 
@@ -516,7 +516,7 @@ $(function() {
           <?php if($is_admin || has_section_perm('users')){ ?>
             <li><a href="<?php echo base_url();?>manager/users"><i class="fa fa-list"></i>User View</a></li>
           <?php } ?>
-          <?php if($is_admin || has_section_perm('roles')){ ?>
+          <?php if($is_admin){ ?>
             <li><a href="<?php echo base_url();?>manager/roles"><i class="fa fa-list"></i>Roles</a></li>
           <?php } ?>
           <?php if($is_admin){ ?>

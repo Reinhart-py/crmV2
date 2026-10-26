@@ -1,5 +1,4 @@
 <footer class="crm-footer">
-<span>&copy; 2026 Seven Strokes CRM Platform. All rights reserved.</span>
 </footer>
 </div>
 </div>
