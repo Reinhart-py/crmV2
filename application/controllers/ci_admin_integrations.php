@@ -165,6 +165,8 @@ class Ci_admin_integrations extends CI_Controller {
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 			curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Bearer ' . $key));
 			curl_setopt($ch, CURLOPT_TIMEOUT, 8);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 			$res = curl_exec($ch);
 			$code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 			$err = curl_error($ch);
@@ -233,6 +235,8 @@ class Ci_admin_integrations extends CI_Controller {
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 			curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Bearer ' . $token));
 			curl_setopt($ch, CURLOPT_TIMEOUT, 6);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 			$res = curl_exec($ch);
 			$code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 			curl_close($ch);

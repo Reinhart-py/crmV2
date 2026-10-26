@@ -94,6 +94,8 @@ class Ci_api extends CI_Controller {
 			'Content-Type: application/json'
 		));
 		curl_setopt($ch, CURLOPT_TIMEOUT, 8);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 		$res = curl_exec($ch);
 		$code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		curl_close($ch);
