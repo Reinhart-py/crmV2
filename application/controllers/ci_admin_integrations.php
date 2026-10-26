@@ -93,7 +93,7 @@ class Ci_admin_integrations extends CI_Controller {
 		$api_key = trim($this->input->post('api_key', true));
 		$api_secret = trim($this->input->post('api_secret', true));
 		$status = (int)$this->input->post('status', true);
-		$config = $this->input->post('config', true);
+		$config = $this->input->post('config');
 		if (!is_array($config)) {
 			$config = array();
 		}
