@@ -194,7 +194,6 @@ class Ci_admin_calls extends CI_Controller
 		$data['manager_department'] = $manager_dept;
 		$data['threecx_config'] = $this->threecx->get_config();
 		$data['is_backend_configured'] = (!empty($data['threecx_config']['pbx_fqdn']) && !empty($data['threecx_config']['client_id']));
-		$data['autodialer_seconds'] = !empty($data['threecx_config']['autodialer_seconds']) ? (int)$data['threecx_config']['autodialer_seconds'] : 60;
 
 		$this->load->view('manager/calls/dashboard', $data);
 	}
@@ -553,8 +552,7 @@ class Ci_admin_calls extends CI_Controller
 			'client_secret' => trim($this->input->post('client_secret')),
 			'default_extension' => trim($this->input->post('default_extension')),
 			'multiple_lines' => trim($this->input->post('multiple_lines')),
-			'auto_open_webclient' => $this->input->post('auto_open_webclient') ? 1 : 0,
-			'autodialer_seconds' => (int)$this->input->post('autodialer_seconds')
+			'auto_open_webclient' => $this->input->post('auto_open_webclient') ? 1 : 0
 		);
 
 		$result = $this->threecx->save_config($data);
@@ -873,23 +871,36 @@ class Ci_admin_calls extends CI_Controller
 	{
 		$user_id = (int)$this->session->userdata('manager_id');
 		$sess = $this->db->where('user_id', $user_id)->get('ci_dialer_sessions')->row_array();
-		if (empty($sess) || $sess['status'] === 'stopped') {
-			echo json_encode(array('status' => false, 'message' => 'No active autodial session'));
-			return;
-		}
-
-		$cooldown = !empty($sess['cooldown_seconds']) ? (int)$sess['cooldown_seconds'] : 60;
 		$now_ts = time();
-		$wrapup_ends_ts = $now_ts + $cooldown;
 		$started_at = date('Y-m-d H:i:s', $now_ts);
-		$ends_at = date('Y-m-d H:i:s', $wrapup_ends_ts);
 
-		$this->db->where('id', $sess['id'])->update('ci_dialer_sessions', array(
-			'status' => 'wrapup',
-			'wrapup_started_at' => $started_at,
-			'wrapup_ends_at' => $ends_at,
-			'updated_at' => $started_at
-		));
+		if (empty($sess)) {
+			$cooldown = 60;
+			$wrapup_ends_ts = $now_ts + $cooldown;
+			$ends_at = date('Y-m-d H:i:s', $wrapup_ends_ts);
+			$this->db->insert('ci_dialer_sessions', array(
+				'user_id' => $user_id,
+				'status' => 'wrapup',
+				'cooldown_seconds' => $cooldown,
+				'status_filter' => 'all',
+				'dialed_lead_ids' => '',
+				'total_dialed' => 0,
+				'wrapup_started_at' => $started_at,
+				'wrapup_ends_at' => $ends_at,
+				'created_at' => $started_at,
+				'updated_at' => $started_at
+			));
+		} else {
+			$cooldown = !empty($sess['cooldown_seconds']) ? (int)$sess['cooldown_seconds'] : 60;
+			$wrapup_ends_ts = $now_ts + $cooldown;
+			$ends_at = date('Y-m-d H:i:s', $wrapup_ends_ts);
+			$this->db->where('id', $sess['id'])->update('ci_dialer_sessions', array(
+				'status' => 'wrapup',
+				'wrapup_started_at' => $started_at,
+				'wrapup_ends_at' => $ends_at,
+				'updated_at' => $started_at
+			));
+		}
 
 		echo json_encode(array(
 			'status' => true,
@@ -972,8 +983,25 @@ class Ci_admin_calls extends CI_Controller
 		$user_id = (int)$this->session->userdata('manager_id');
 		$sess = $this->db->where('user_id', $user_id)->get('ci_dialer_sessions')->row_array();
 		if (empty($sess) || $sess['status'] === 'stopped') {
-			echo json_encode(array('status' => false, 'message' => 'No active autodial session'));
-			return;
+			if (empty($sess)) {
+				$this->db->insert('ci_dialer_sessions', array(
+					'user_id' => $user_id,
+					'status' => 'calling',
+					'cooldown_seconds' => 60,
+					'status_filter' => 'all',
+					'dialed_lead_ids' => '',
+					'total_dialed' => 0,
+					'created_at' => date('Y-m-d H:i:s'),
+					'updated_at' => date('Y-m-d H:i:s')
+				));
+				$sess = $this->db->where('id', $this->db->insert_id())->get('ci_dialer_sessions')->row_array();
+			} else {
+				$this->db->where('id', $sess['id'])->update('ci_dialer_sessions', array(
+					'status' => 'calling',
+					'updated_at' => date('Y-m-d H:i:s')
+				));
+				$sess['status'] = 'calling';
+			}
 		}
 
 		$current_lead_id = (int)$sess['current_lead_id'];

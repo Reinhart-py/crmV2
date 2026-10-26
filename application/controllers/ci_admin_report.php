@@ -796,12 +796,13 @@ class Ci_admin_report extends CI_Controller {
 
 		$orders_data = array();
 		if ($filter_type !== 'projected') {
-			$this->db->select('O.*, C.customer as lead_customer, C.poc as lead_poc');
+			$this->db->select('O.*, C.customer as lead_customer, C.poc as lead_poc, Staff.name as assigned_staff_name');
 			$this->db->from('ci_orders as O');
 			$this->db->join('ci_leads as C', 'C.id = O.lead_id', 'left');
+			$this->db->join('ci_user as Staff', 'Staff.id = O.assigned_to', 'left');
 			if (!empty($d1) && !empty($d2)) {
-				$this->db->where('DATE(O.created_at) >=', db_date($d1));
-				$this->db->where('DATE(O.created_at) <=', db_date($d2));
+				$this->db->where('DATE(O.created_at) >=', date('Y-m-d', strtotime($d1)));
+				$this->db->where('DATE(O.created_at) <=', date('Y-m-d', strtotime($d2)));
 			}
 			if (!empty($client)) {
 				$this->db->like('O.client_name', $client);
@@ -822,14 +823,15 @@ class Ci_admin_report extends CI_Controller {
 
 		$leads_data = array();
 		if ($filter_type !== 'confirmed') {
-			$this->db->select('L.*, S.status as status_title, U.name as owner_name');
+			$this->db->select('L.*, S.status as status_title, U.name as owner_name, P.pipeline_stage, P.lead_ref_no');
 			$this->db->from('ci_leads as L');
+			$this->db->join('ci_pipeline as P', 'P.lead_id = L.id', 'left');
 			$this->db->join('ci_status as S', 'S.id = L.status', 'left');
 			$this->db->join('ci_user as U', 'U.id = L.lead_assign', 'left');
-			$this->db->where('L.pipeline_stage', 'lead');
+			$this->db->where('P.pipeline_stage', 'lead');
 			if (!empty($d1) && !empty($d2)) {
-				$this->db->where('L.created >=', db_date($d1));
-				$this->db->where('L.created <=', db_date($d2));
+				$this->db->where('DATE(L.created) >=', date('Y-m-d', strtotime($d1)));
+				$this->db->where('DATE(L.created) <=', date('Y-m-d', strtotime($d2)));
 			}
 			if (!empty($client)) {
 				$this->db->like('L.customer', $client);
@@ -898,16 +900,17 @@ class Ci_admin_report extends CI_Controller {
 		$search = trim($this->input->get('search'));
 		$user_id = (int)$this->input->get('user_id');
 
-		$this->db->select('L.*, S.status as status_title, U.name as owner_name');
+		$this->db->select('L.*, S.status as status_title, U.name as owner_name, P.pipeline_stage, P.lead_ref_no');
 		$this->db->from('ci_leads as L');
+		$this->db->join('ci_pipeline as P', 'P.lead_id = L.id', 'left');
 		$this->db->join('ci_status as S', 'S.id = L.status', 'left');
 		$this->db->join('ci_user as U', 'U.id = L.lead_assign', 'left');
-		$this->db->where('L.pipeline_stage', 'lead');
+		$this->db->where('P.pipeline_stage', 'lead');
 		$this->db->where('L.customer IS NOT NULL AND L.customer != ""');
 
 		if (!empty($d1) && !empty($d2)) {
-			$this->db->where('L.created >=', db_date($d1));
-			$this->db->where('L.created <=', db_date($d2));
+			$this->db->where('DATE(L.created) >=', date('Y-m-d', strtotime($d1)));
+			$this->db->where('DATE(L.created) <=', date('Y-m-d', strtotime($d2)));
 		}
 		if (!empty($search)) {
 			$this->db->group_start();

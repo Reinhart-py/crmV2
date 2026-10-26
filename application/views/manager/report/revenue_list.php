@@ -134,7 +134,7 @@
                     <td><span class="label label-success"><i class="fa fa-check"></i> Confirmed Order</span></td>
                     <td><strong><?php echo htmlspecialchars($ord['order_no']); ?></strong></td>
                     <td><strong><?php echo htmlspecialchars($ord['client_name']); ?></strong></td>
-                    <td><?php echo htmlspecialchars($ord['vertical_name']); ?></td>
+                    <td><?php echo !empty($ord['vertical_code']) ? htmlspecialchars($ord['vertical_code']) : (!empty($ord['service_title']) ? htmlspecialchars($ord['service_title']) : 'General'); ?></td>
                     <td><strong style="color:#16a34a;">AED <?php echo number_format($omrr, 2); ?></strong></td>
                     <td>AED <?php echo number_format($ootc, 2); ?></td>
                     <td>AED <?php echo number_format($ototal, 2); ?></td>
@@ -165,7 +165,7 @@
                     <td><?php echo htmlspecialchars($ld['owner_name'] ?: 'Unassigned'); ?></td>
                     <td><?php echo !empty($ld['created']) ? date('d-m-Y', strtotime($ld['created'])) : '-'; ?></td>
                     <td class="text-center">
-                      <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo $ld['id']; ?>" class="btn btn-xs btn-default" title="View Lead"><i class="fa fa-eye"></i></a>
+                      <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($ld['id']); ?>" class="btn btn-xs btn-default" title="View Lead"><i class="fa fa-eye"></i></a>
                     </td>
                   </tr>
                 <?php } ?>
@@ -198,7 +198,7 @@
                   <tr>
                     <td><strong><?php echo htmlspecialchars($ord['order_no']); ?></strong></td>
                     <td><strong><?php echo htmlspecialchars($ord['client_name']); ?></strong></td>
-                    <td><?php echo htmlspecialchars($ord['vertical_name']); ?></td>
+                    <td><?php echo !empty($ord['vertical_code']) ? htmlspecialchars($ord['vertical_code']) : (!empty($ord['service_title']) ? htmlspecialchars($ord['service_title']) : 'General'); ?></td>
                     <td><strong style="color:#16a34a;">AED <?php echo number_format($omrr, 2); ?></strong></td>
                     <td>AED <?php echo number_format($ootc, 2); ?></td>
                     <td><span class="label label-primary"><?php echo htmlspecialchars($ord['status']); ?></span></td>
@@ -248,7 +248,7 @@
                     <td><?php echo htmlspecialchars($ld['owner_name'] ?: 'Unassigned'); ?></td>
                     <td><?php echo !empty($ld['created']) ? date('d-m-Y', strtotime($ld['created'])) : '-'; ?></td>
                     <td class="text-center">
-                      <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo $ld['id']; ?>" class="btn btn-xs btn-default" title="View Lead"><i class="fa fa-eye"></i></a>
+                      <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($ld['id']); ?>" class="btn btn-xs btn-default" title="View Lead"><i class="fa fa-eye"></i></a>
                     </td>
                   </tr>
                 <?php } ?>

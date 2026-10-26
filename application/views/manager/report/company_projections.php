@@ -172,7 +172,7 @@
                               <td><?php echo !empty($cld['close_date']) ? date('d-m-Y', strtotime($cld['close_date'])) : '-'; ?></td>
                               <td><?php echo !empty($cld['created']) ? date('d-m-Y', strtotime($cld['created'])) : '-'; ?></td>
                               <td>
-                                <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo $cld['id']; ?>" class="btn btn-xs btn-primary" target="_blank"><i class="fa fa-external-link"></i> View</a>
+                                <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($cld['id']); ?>" class="btn btn-xs btn-primary" target="_blank"><i class="fa fa-external-link"></i> View</a>
                               </td>
                             </tr>
                           <?php } ?>

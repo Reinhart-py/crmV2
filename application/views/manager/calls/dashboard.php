@@ -1,38 +1,59 @@
 <?php require_once(APPPATH . "views/manager/elements/header.php"); ?>
 
 <style>
+html, body {
+  height: 100vh !important;
+  max-height: 100vh !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.wrapper {
+  height: 100vh !important;
+  max-height: 100vh !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+.main-footer, .crm-footer {
+  display: none !important;
+}
 .glass-calling-wrapper {
   background: url('<?php echo base_url(); ?>assets/bg-dialer.png') no-repeat center center fixed;
   background-size: cover;
-  min-height: calc(100vh - 80px);
-  padding: 24px 20px;
+  height: calc(100vh - 50px) !important;
+  max-height: calc(100vh - 50px) !important;
+  padding: 12px 18px !important;
   color: #f8fafc;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
   position: relative;
-  overflow-x: hidden;
-  display: flex;
-  gap: 20px;
-  align-items: flex-start;
-  justify-content: center;
+  overflow: hidden !important;
+  display: flex !important;
+  gap: 16px !important;
+  align-items: stretch !important;
+  justify-content: center !important;
+  margin: 0 !important;
 }
 
 .glass-side-dock {
   width: 76px;
   flex-shrink: 0;
+  height: 100% !important;
+  max-height: 100% !important;
   background: rgba(18, 18, 24, 0.72);
   backdrop-filter: blur(28px);
   -webkit-backdrop-filter: blur(28px);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 26px;
-  padding: 16px 8px;
+  padding: 14px 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   box-shadow: 0 20px 45px rgba(0, 0, 0, 0.55);
-  position: sticky;
-  top: 24px;
+  box-sizing: border-box !important;
+  overflow-y: auto;
   z-index: 100;
 }
 
@@ -109,10 +130,39 @@
 
 .glass-main-stage {
   flex: 1 1 960px;
-  max-width: 1020px;
+  max-width: 1080px;
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
+  box-sizing: border-box !important;
+}
+
+#viewCardDialer,
+#viewCardDetailFill {
+  flex: 1 1 auto;
+  height: calc(100vh - 120px) !important;
+  max-height: calc(100vh - 120px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding-right: 4px;
+}
+
+#viewCardDialer::-webkit-scrollbar,
+#viewCardDetailFill::-webkit-scrollbar,
+.glass-side-dock::-webkit-scrollbar,
+.glass-slide-body::-webkit-scrollbar {
+  width: 5px;
+}
+
+#viewCardDialer::-webkit-scrollbar-thumb,
+#viewCardDetailFill::-webkit-scrollbar-thumb,
+.glass-side-dock::-webkit-scrollbar-thumb,
+.glass-slide-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 10px;
 }
 
 .glass-top-tabs {
@@ -784,14 +834,10 @@
       </div>
     </div>
 
-    <div id="autodialerWrapupBanner" class="glass-banner">
-      <div style="display:flex; align-items:center; gap:14px;">
+    <div id="autodialerWrapupBanner" class="glass-banner" style="display:none; padding:10px 18px;">
+      <div style="display:flex; align-items:center; gap:12px;">
         <div class="glass-timer-circle" id="autodialerTimerDisplay">
           <?php echo (int)$autodialer_seconds; ?>
-        </div>
-        <div>
-          <div style="font-size:14px; font-weight:700; color:#ffffff;">Auto-Dialer Active: Next Call Countdown</div>
-          <div style="font-size:12px; color:#cbd5e1;" id="autodialerBannerSub">Take notes or fill details. The next contact automatically dials when countdown finishes.</div>
         </div>
       </div>
       <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
@@ -1533,14 +1579,12 @@ function startWrapupCountdown(seconds) {
   autoDialerSeconds = seconds || configuredDialerSeconds;
   autoDialerPaused = false;
   $('#autodialerTimerDisplay').text(autoDialerSeconds);
-  $('#autodialerBannerSub').text('Take notes or fill details. Next contact automatically dials in ' + autoDialerSeconds + 's.');
   $('#autodialerWrapupBanner').slideDown(180);
 
   autoDialerCountdown = setInterval(function() {
     if (autoDialerPaused) return;
     autoDialerSeconds--;
     $('#autodialerTimerDisplay').text(autoDialerSeconds);
-    $('#autodialerBannerSub').text('Take notes or fill details. Next contact automatically dials in ' + autoDialerSeconds + 's.');
 
     if (autoDialerSeconds <= 0) {
       stopWrapupCountdown();
@@ -1560,14 +1604,9 @@ function autoDialNextLead() {
   stopWrapupCountdown();
   $('#autodialerWrapupBanner').slideUp(180);
 
-  var remarks = $('#followupRemarks').val().trim();
-  if (remarks) {
-    saveCallDetails(function() {
-      dispatchNextAutodialLead();
-    });
-  } else {
+  saveCallDetails(function() {
     dispatchNextAutodialLead();
-  }
+  }, true);
 }
 
 function dispatchNextAutodialLead() {
@@ -1596,11 +1635,27 @@ function dispatchNextAutodialLead() {
       setTimeout(function() {
         startCrmCall();
       }, 700);
+    } else if (currentIndex < callingQueue.length - 1) {
+      loadContactAt(currentIndex + 1);
+      switchToCard('dialer');
+      showAppleToast('Auto-Dialing: ' + (callingQueue[currentIndex].customer || 'Next Contact'));
+      setTimeout(function() {
+        startCrmCall();
+      }, 700);
     } else {
       showAppleToast('Auto-Dialer queue completed');
     }
   }).fail(function() {
-    showAppleToast('Error fetching next auto-dialer lead');
+    if (currentIndex < callingQueue.length - 1) {
+      loadContactAt(currentIndex + 1);
+      switchToCard('dialer');
+      showAppleToast('Auto-Dialing: ' + (callingQueue[currentIndex].customer || 'Next Contact'));
+      setTimeout(function() {
+        startCrmCall();
+      }, 700);
+    } else {
+      showAppleToast('Auto-Dialer queue completed');
+    }
   });
 }
 
@@ -1651,13 +1706,18 @@ function refreshCallLogs() {
   });
 }
 
-function saveCallDetails(callbackAfterSave) {
+function saveCallDetails(callbackAfterSave, isAuto) {
   var form = $('#formCallFollowup');
   var remarks = $('#followupRemarks').val().trim();
   if (!remarks) {
-    showAppleToast('Please enter call remarks');
-    $('#followupRemarks').focus();
-    return;
+    if (isAuto) {
+      remarks = 'Auto-logged call completion';
+      $('#followupRemarks').val(remarks);
+    } else {
+      showAppleToast('Please enter call remarks');
+      $('#followupRemarks').focus();
+      return;
+    }
   }
 
   var formData = form.serialize();
@@ -1684,10 +1744,16 @@ function saveCallDetails(callbackAfterSave) {
       }
     } else {
       showAppleToast('Error saving call log');
+      if (isAuto && typeof callbackAfterSave === 'function') {
+        callbackAfterSave(null);
+      }
     }
   }).fail(function() {
     btnNext.prop('disabled', false).html('<span>Save & Next Contact</span> <i class="fa fa-arrow-right"></i>');
     showAppleToast('Network error while saving');
+    if (isAuto && typeof callbackAfterSave === 'function') {
+      callbackAfterSave(null);
+    }
   });
 }
 
@@ -1794,8 +1860,7 @@ $(document).ready(function() {
   $('#btnAutodialExtend').on('click', function() {
     autoDialerSeconds += 30;
     $('#autodialerTimerDisplay').text(autoDialerSeconds);
-    $('#autodialerBannerSub').text('Extended by +30s (remaining: ' + autoDialerSeconds + 's).');
-    showAppleToast('Extended wrap-up cooldown by 30 seconds');
+    showAppleToast('Extended by +30 seconds');
     $.ajax({
       type: 'POST',
       url: '<?php echo base_url(); ?>manager/calls/ajax_autodial_extend',
@@ -1807,8 +1872,7 @@ $(document).ready(function() {
     autoDialerPaused = !autoDialerPaused;
     if (autoDialerPaused) {
       $(this).html('<i class="fa fa-play"></i> Resume');
-      $('#autodialerBannerSub').text('Cooldown paused. Take your time to write notes.');
-      showAppleToast('Auto-Dialer wrap-up paused');
+      showAppleToast('Timer paused');
       $.ajax({
         type: 'POST',
         url: '<?php echo base_url(); ?>manager/calls/ajax_autodial_pause',
@@ -1816,8 +1880,7 @@ $(document).ready(function() {
       });
     } else {
       $(this).html('<i class="fa fa-pause"></i> Pause');
-      $('#autodialerBannerSub').text('Cooldown resumed. Dials next contact when timer finishes.');
-      showAppleToast('Auto-Dialer wrap-up resumed');
+      showAppleToast('Timer resumed');
       $.ajax({
         type: 'POST',
         url: '<?php echo base_url(); ?>manager/calls/ajax_autodial_resume',
@@ -1881,7 +1944,6 @@ $(document).ready(function() {
 
   if (callingQueue.length > 0) {
     loadContactAt(0);
-    startWrapupCountdown(configuredDialerSeconds);
   }
 });
 </script>
