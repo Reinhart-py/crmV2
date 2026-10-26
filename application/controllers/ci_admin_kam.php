@@ -799,4 +799,28 @@ class Ci_admin_kam extends CI_Controller
 
 		$this->load->view('manager/kam/report', $data);
 	}
+
+	public function task_followup()
+	{
+		$data = array();
+		$data['info'] = array(
+			'title' => 'KAM - Task Follow-up',
+			'page_heading' => 'Task Follow-up'
+		);
+		$data['tasks'] = array();
+		$data['reset_url'] = base_url('manager/kam/task-followup');
+		$this->load->view('manager/kam/task_followup', $data);
+	}
+
+	public function reminders()
+	{
+		$data = array();
+		$data['info'] = array(
+			'title' => 'KAM - Reminders',
+			'page_heading' => 'Reminders'
+		);
+		$data['reminders'] = array();
+		$data['reset_url'] = base_url('manager/kam/reminders');
+		$this->load->view('manager/kam/reminders', $data);
+	}
 }

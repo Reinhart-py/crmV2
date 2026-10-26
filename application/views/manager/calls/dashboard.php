@@ -1,117 +1,286 @@
 <?php require_once(APPPATH . "views/manager/elements/header.php"); ?>
 
 <style>
-.apple-calling-container {
-  background: #090a0f radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.12), transparent 60%);
-  min-height: calc(100vh - 100px);
-  padding: 16px 20px;
+.glass-calling-wrapper {
+  background: url('<?php echo base_url(); ?>assets/bg-dialer.png') no-repeat center center fixed;
+  background-size: cover;
+  min-height: calc(100vh - 80px);
+  padding: 24px 20px;
   color: #f8fafc;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
   box-sizing: border-box;
   position: relative;
   overflow-x: hidden;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  justify-content: center;
 }
 
-.apple-top-nav {
+.glass-side-dock {
+  width: 76px;
+  flex-shrink: 0;
+  background: rgba(18, 18, 24, 0.72);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 26px;
+  padding: 16px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.55);
+  position: sticky;
+  top: 24px;
+  z-index: 100;
+}
+
+.glass-dock-brand {
+  width: 48px;
+  height: 48px;
+  border-radius: 18px;
+  background: #ffffff;
+  color: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  margin-bottom: 8px;
+  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.25);
+}
+
+.glass-dock-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-decoration: none;
+  position: relative;
+  user-select: none;
+}
+
+.glass-dock-btn span.dock-lbl {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: #cbd5e1;
+}
+
+.glass-dock-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.glass-dock-btn.active {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: #000000;
+}
+
+.glass-dock-btn.active span.dock-lbl {
+  color: #000000;
+}
+
+.glass-dock-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #000000;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  line-height: 1.2;
+}
+
+.glass-main-stage {
+  flex: 1 1 960px;
+  max-width: 1020px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.glass-top-tabs {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(18, 18, 24, 0.72);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 5px;
+  gap: 6px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  align-self: flex-start;
+}
+
+.glass-tab-pill {
+  padding: 8px 20px;
+  border-radius: 16px;
+  background: transparent;
+  border: none;
+  color: #cbd5e1;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.18s ease;
+  user-select: none;
+}
+
+.glass-tab-pill:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.glass-tab-pill.active {
+  background: #ffffff;
+  color: #000000;
+  box-shadow: 0 4px 14px rgba(255, 255, 255, 0.2);
+}
+
+.glass-card {
+  background: rgba(22, 20, 26, 0.72);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 28px;
+  padding: 24px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  position: relative;
+}
+
+.glass-banner {
+  background: rgba(18, 18, 24, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 20px;
+  padding: 14px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(18, 24, 38, 0.75);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 10px 18px;
-  margin-bottom: 18px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  gap: 14px;
+  flex-wrap: wrap;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.45);
 }
 
-.apple-top-title h2 {
-  margin: 0;
-  font-size: 17px;
-  font-weight: 600;
+.glass-timer-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #000000;
+  border: 2px solid #ffffff;
   color: #ffffff;
-  letter-spacing: -0.2px;
-}
-
-.apple-top-actions {
-  display: flex;
+  font-size: 18px;
+  font-weight: 800;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
 }
 
-.apple-btn-pill {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #f1f5f9;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 500;
+.glass-btn-white {
+  background: #ffffff;
+  border: 1px solid #ffffff;
+  color: #000000;
+  padding: 8px 18px;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   transition: all 0.18s ease;
+  text-decoration: none;
 }
 
-.apple-btn-pill:hover {
-  background: rgba(255, 255, 255, 0.12);
+.glass-btn-white:hover {
+  background: #e2e8f0;
+  color: #000000;
+  transform: translateY(-1px);
+}
+
+.glass-btn-dark {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.18s ease;
+  text-decoration: none;
+}
+
+.glass-btn-dark:hover {
+  background: rgba(255, 255, 255, 0.18);
   color: #ffffff;
 }
 
-.apple-btn-pill.active {
-  background: #2563eb;
-  border-color: #2563eb;
-  color: #ffffff;
-}
-
-.apple-stage-grid {
+.glass-dialer-grid {
   display: grid;
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: 1fr 390px;
   gap: 20px;
-  max-width: 1100px;
-  margin: 0 auto;
 }
 
-@media (max-width: 900px) {
-  .apple-stage-grid {
+@media (max-width: 991px) {
+  .glass-calling-wrapper {
+    flex-direction: column;
+  }
+  .glass-side-dock {
+    width: 100%;
+    flex-direction: row;
+    justify-content: center;
+    position: relative;
+    top: 0;
+  }
+  .glass-dialer-grid {
     grid-template-columns: 1fr;
   }
-  .apple-dialer-card {
-    order: -1;
-  }
 }
 
-.apple-card {
-  background: rgba(18, 24, 38, 0.75);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 22px;
-  padding: 24px;
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
-  position: relative;
-}
-
-.apple-client-header {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  padding-bottom: 18px;
+.glass-client-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 16px;
   margin-bottom: 18px;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
 }
 
-.apple-client-name {
-  font-size: 22px;
+.glass-client-name {
+  font-size: 24px;
   font-weight: 700;
   color: #ffffff;
-  margin: 0 0 4px 0;
+  margin: 0 0 6px 0;
   letter-spacing: -0.3px;
 }
 
-.apple-client-sub {
+.glass-client-sub {
   font-size: 13px;
   color: #94a3b8;
   display: flex;
@@ -120,178 +289,149 @@
   flex-wrap: wrap;
 }
 
-.apple-badge {
+.glass-badge {
   background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 2px 8px;
-  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 3px 10px;
+  border-radius: 8px;
   font-size: 11px;
-  color: #cbd5e1;
+  color: #ffffff;
   font-weight: 500;
 }
 
-.apple-badge-cat {
-  background: rgba(37, 99, 235, 0.18);
-  border-color: rgba(37, 99, 235, 0.35);
-  color: #93c5fd;
+.glass-badge.active-badge {
+  background: #ffffff;
+  color: #000000;
+  border-color: #ffffff;
+  font-weight: 700;
 }
 
-.apple-queue-nav {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: #94a3b8;
-}
-
-.apple-nav-btn {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #f1f5f9;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.apple-nav-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.apple-dual-phones-row {
+.glass-dual-phones-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
-@media (max-width: 600px) {
-  .apple-dual-phones-row {
-    grid-template-columns: 1fr;
-  }
-}
-
-.apple-phone-card {
-  background: rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  padding: 10px 14px;
+.glass-phone-card {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  padding: 12px 16px;
   cursor: pointer;
   transition: all 0.15s ease;
-  position: relative;
 }
 
-.apple-phone-card:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(37, 99, 235, 0.5);
+.glass-phone-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
-.apple-phone-card.active-target {
-  background: rgba(37, 99, 235, 0.15);
-  border-color: #2563eb;
-  box-shadow: 0 0 14px rgba(37, 99, 235, 0.25);
+.glass-phone-card.active-target {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: #ffffff;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.18);
 }
 
-.apple-phone-card-label {
+.glass-phone-card-label {
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 700;
   color: #94a3b8;
   text-transform: uppercase;
   margin-bottom: 4px;
+  letter-spacing: 0.5px;
 }
 
-.apple-phone-card-num {
-  font-size: 16px;
+.glass-phone-card-num {
+  font-size: 17px;
   font-weight: 600;
   color: #ffffff;
   letter-spacing: 0.5px;
 }
 
-.apple-remarks-preview {
-  background: rgba(255, 255, 255, 0.03);
-  border-left: 3px solid #2563eb;
-  padding: 12px 16px;
-  border-radius: 0 12px 12px 0;
-  margin-bottom: 16px;
+.glass-remarks-preview {
+  background: rgba(0, 0, 0, 0.3);
+  border-left: 3px solid #ffffff;
+  padding: 14px 18px;
+  border-radius: 0 16px 16px 0;
+  margin-bottom: 18px;
 }
 
-.apple-remarks-preview-label {
+.glass-remarks-preview-label {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 4px;
 }
 
-.apple-remarks-preview-text {
+.glass-remarks-preview-text {
   font-size: 13px;
   color: #e2e8f0;
-  line-height: 1.45;
+  line-height: 1.5;
   margin: 0;
-  max-height: 60px;
+  max-height: 70px;
   overflow-y: auto;
 }
 
-.apple-meta-strip {
+.glass-meta-strip {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
+  margin-bottom: 18px;
 }
 
-.apple-meta-item {
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: 10px;
-  padding: 8px 12px;
+.glass-meta-item {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 10px 14px;
 }
 
-.apple-meta-item-label {
+.glass-meta-item-label {
   font-size: 10px;
-  color: #64748b;
+  color: #94a3b8;
   text-transform: uppercase;
   margin-bottom: 2px;
+  font-weight: 600;
 }
 
-.apple-meta-item-val {
-  font-size: 12px;
+.glass-meta-item-val {
+  font-size: 13px;
   font-weight: 600;
-  color: #f1f5f9;
+  color: #ffffff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.apple-dialer-card {
+.glass-dialer-card {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 }
 
-.apple-dialer-screen {
+.glass-dialer-screen {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  padding: 10px 14px;
-  margin-bottom: 14px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  padding: 12px 18px;
+  margin-bottom: 16px;
 }
 
-.apple-dialer-input {
+.glass-dialer-input {
   background: transparent;
   border: none;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 600;
   color: #ffffff;
   outline: none;
@@ -300,46 +440,33 @@
   letter-spacing: 1px;
 }
 
-.apple-dialer-backspace {
+.glass-dialer-backspace {
   background: transparent;
   border: none;
-  color: #64748b;
-  font-size: 16px;
+  color: #94a3b8;
+  font-size: 18px;
   cursor: pointer;
   padding: 4px;
   transition: color 0.15s ease;
 }
 
-.apple-dialer-backspace:hover {
+.glass-dialer-backspace:hover {
   color: #ffffff;
 }
 
-.apple-backend-alert {
-  width: 100%;
-  background: rgba(220, 38, 38, 0.12);
-  border: 1px solid rgba(220, 38, 38, 0.3);
-  border-radius: 12px;
-  padding: 10px 14px;
-  margin-bottom: 14px;
-  font-size: 12px;
-  color: #fca5a5;
-  text-align: center;
-  display: none;
-}
-
-.apple-keypad-grid {
+.glass-keypad-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 14px;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 
-.apple-key-btn {
-  width: 68px;
-  height: 68px;
+.glass-key-btn {
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   color: #ffffff;
   display: flex;
   flex-direction: column;
@@ -348,117 +475,164 @@
   cursor: pointer;
   transition: all 0.12s ease;
   user-select: none;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
-.apple-key-btn:hover {
-  background: rgba(255, 255, 255, 0.14);
+.glass-key-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
   transform: translateY(-1px);
 }
 
-.apple-key-btn:active {
+.glass-key-btn:active {
   transform: scale(0.94);
-  background: rgba(255, 255, 255, 0.22);
+  background: #ffffff;
+  color: #000000;
 }
 
-.apple-key-digit {
-  font-size: 22px;
-  font-weight: 500;
+.glass-key-btn:active .glass-key-digit,
+.glass-key-btn:active .glass-key-letters {
+  color: #000000;
+}
+
+.glass-key-digit {
+  font-size: 24px;
+  font-weight: 600;
   line-height: 1;
+  color: #ffffff;
 }
 
-.apple-key-letters {
+.glass-key-letters {
   font-size: 8px;
   color: #94a3b8;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   margin-top: 3px;
+  font-weight: 700;
 }
 
-.apple-call-action-row {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-}
-
-.apple-call-btn {
-  width: 70px;
-  height: 70px;
+.glass-call-btn {
+  width: 76px;
+  height: 76px;
   border-radius: 50%;
   border: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 26px;
-  color: #ffffff;
+  font-size: 28px;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.4);
+  user-select: none;
 }
 
-.apple-call-btn.btn-start {
-  background: #22c55e;
+.glass-call-btn.btn-start {
+  background: #ffffff;
+  color: #000000;
+  box-shadow: 0 10px 30px rgba(255, 255, 255, 0.35);
 }
 
-.apple-call-btn.btn-start:hover {
-  background: #16a34a;
-  transform: scale(1.05);
-  box-shadow: 0 10px 30px rgba(34, 197, 94, 0.55);
+.glass-call-btn.btn-start:hover {
+  background: #f1f5f9;
+  transform: scale(1.06);
+  box-shadow: 0 14px 38px rgba(255, 255, 255, 0.5);
 }
 
-.apple-call-btn.btn-end {
-  background: #ef4444;
-  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4);
-  animation: applePulseRed 1.8s infinite;
+.glass-call-btn.btn-end {
+  background: #000000;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  animation: glassPulseWhite 1.8s infinite;
 }
 
-.apple-call-btn.btn-end:hover {
-  background: #dc2626;
-  transform: scale(1.05);
-  box-shadow: 0 10px 30px rgba(239, 68, 68, 0.55);
+.glass-call-btn.btn-end:hover {
+  background: #111111;
+  transform: scale(1.06);
 }
 
-@keyframes applePulseRed {
-  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
-  70% { box-shadow: 0 0 0 14px rgba(239, 68, 68, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+@keyframes glassPulseWhite {
+  0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.6); }
+  70% { box-shadow: 0 0 0 14px rgba(255, 255, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
 }
 
-.apple-drawer-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  z-index: 1050;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
+.glass-form-group {
+  margin-bottom: 16px;
 }
 
-.apple-drawer-backdrop.show {
-  opacity: 1;
-  visibility: visible;
+.glass-form-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #cbd5e1;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.apple-slide-panel {
+.glass-form-input,
+.glass-form-select,
+.glass-form-textarea {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #ffffff;
+  outline: none;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+}
+
+.glass-form-input:focus,
+.glass-form-select:focus,
+.glass-form-textarea:focus {
+  border-color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
+}
+
+.glass-form-select option {
+  background: #12141a;
+  color: #ffffff;
+}
+
+.glass-radio-pill {
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  font-size: 12px;
+  color: #ffffff;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+.glass-radio-pill:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.glass-radio-pill.selected,
+.glass-radio-pill.active {
+  background: #ffffff;
+  color: #000000;
+  border-color: #ffffff;
+  font-weight: 700;
+}
+
+.glass-slide-panel {
   position: fixed;
   top: 0;
   right: 0;
   bottom: 0;
-  width: 540px;
+  width: 520px;
   max-width: 100vw;
   height: 100vh;
-  max-height: 100vh;
-  background: #0f131d;
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: -15px 0 40px rgba(0, 0, 0, 0.7);
+  background: rgba(18, 18, 24, 0.95);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: -15px 0 50px rgba(0, 0, 0, 0.7);
   z-index: 1060;
   transform: translateX(100%);
   transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
@@ -467,943 +641,509 @@
   overflow: hidden;
 }
 
-.apple-slide-panel.show {
+.glass-slide-panel.show {
   transform: translateX(0);
 }
 
-.apple-slide-header {
-  flex-shrink: 0;
-  padding: 16px 20px;
-  background: rgba(18, 24, 38, 0.98);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.apple-slide-header h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #ffffff;
-}
-
-.apple-close-btn {
-  background: transparent;
-  border: none;
-  color: #94a3b8;
-  font-size: 18px;
-  cursor: pointer;
-  padding: 4px;
-}
-
-.apple-close-btn:hover {
-  color: #ffffff;
-}
-
-.apple-slide-body {
-  flex: 1 1 auto;
-  padding: 18px 20px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-}
-
-.apple-slide-footer {
-  flex-shrink: 0;
-  padding: 14px 20px;
-  background: #0f131d;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  position: sticky;
-  bottom: 0;
-  z-index: 10;
-}
-
-.apple-form-group {
-  margin-bottom: 14px;
-}
-
-.apple-form-label {
-  display: block;
-  font-size: 11px;
-  font-weight: 600;
-  color: #cbd5e1;
-  margin-bottom: 5px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.apple-form-input,
-.apple-form-select,
-.apple-form-textarea {
-  width: 100%;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
-  padding: 9px 12px;
-  font-size: 13px;
-  color: #ffffff;
-  outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-  box-sizing: border-box;
-}
-
-.apple-form-input:focus,
-.apple-form-select:focus,
-.apple-form-textarea:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
-}
-
-.apple-form-select option {
-  background: #111827;
-  color: #ffffff;
-}
-
-.apple-btn-primary {
-  background: #2563eb;
-  border: 1px solid #2563eb;
-  color: #ffffff;
-  padding: 10px 18px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.15s ease;
-}
-
-.apple-btn-primary:hover {
-  background: #1d4ed8;
-  border-color: #1d4ed8;
-}
-
-.apple-btn-secondary {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #cbd5e1;
-  padding: 10px 16px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.apple-btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
-}
-
-.apple-pills-row {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.apple-radio-pill {
-  padding: 5px 10px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  font-size: 11px;
-  color: #cbd5e1;
-  cursor: pointer;
-  user-select: none;
-  transition: all 0.15s ease;
-}
-
-.apple-radio-pill:hover {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.apple-radio-pill.selected {
-  background: #2563eb;
-  border-color: #2563eb;
-  color: #ffffff;
-  font-weight: 600;
-}
-
-.apple-toast {
+.glass-drawer-backdrop {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
-  background: rgba(18, 24, 38, 0.95);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 14px;
-  padding: 12px 18px;
-  font-size: 13px;
-  color: #ffffff;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  z-index: 2000;
-  display: none;
-  align-items: center;
-  gap: 10px;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1050;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
 }
 
-.apple-phone-log-item {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 14px;
+.glass-drawer-backdrop.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.glass-slide-header {
+  padding: 18px 22px;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.glass-slide-body {
+  flex: 1 1 auto;
+  padding: 18px 22px;
+  overflow-y: auto;
+}
+
+.glass-phone-log-item,
+.glass-queue-item {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
   padding: 14px 16px;
   margin-bottom: 10px;
   transition: all 0.15s ease;
 }
 
-.apple-phone-log-item:hover {
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(255, 255, 255, 0.12);
+.glass-phone-log-item:hover,
+.glass-queue-item:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
-.apple-phone-log-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 4px;
+.glass-queue-item.active {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: #ffffff;
 }
 
-.apple-phone-log-name {
-  font-size: 14px;
+.glass-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #000000;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 14px;
+  padding: 12px 20px;
+  font-size: 13px;
   font-weight: 600;
-  color: #ffffff;
-}
-
-.apple-phone-log-meta {
-  font-size: 11px;
-  color: #94a3b8;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 10px;
-}
-
-.apple-phone-log-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.apple-log-action-btn {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  color: #e2e8f0;
-  padding: 5px 10px;
-  border-radius: 8px;
-  font-size: 11px;
-  font-weight: 500;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  transition: all 0.15s ease;
-}
-
-.apple-log-action-btn:hover {
-  background: rgba(255, 255, 255, 0.14);
-  color: #ffffff;
-}
-
-.apple-log-action-btn.btn-dial {
-  background: rgba(34, 197, 94, 0.18);
-  border-color: rgba(34, 197, 94, 0.35);
-  color: #4ade80;
-}
-
-.apple-log-action-btn.btn-dial:hover {
-  background: #22c55e;
-  color: #ffffff;
-}
-
-.apple-queue-item {
-  padding: 12px 14px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  margin-bottom: 8px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.apple-queue-item:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(37, 99, 235, 0.4);
-}
-
-.apple-queue-item.active {
-  background: rgba(37, 99, 235, 0.15);
-  border-color: #2563eb;
-}
-
-.apple-ai-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 7px;
-  border-radius: 9999px;
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-.apple-ai-badge-pos {
-  background: rgba(22, 163, 74, 0.2);
-  color: #4ade80;
-  border: 1px solid rgba(22, 163, 74, 0.4);
-}
-.apple-ai-badge-neu {
-  background: rgba(59, 130, 246, 0.2);
-  color: #60a5fa;
-  border: 1px solid rgba(59, 130, 246, 0.4);
-}
-.apple-ai-badge-neg {
-  background: rgba(220, 38, 38, 0.2);
-  color: #f87171;
-  border: 1px solid rgba(220, 38, 38, 0.4);
-}
-
-.apple-log-ai-summary {
-  margin-top: 8px;
-  padding: 8px 10px;
-  background: rgba(15, 23, 42, 0.6);
-  border-left: 2px solid #3b82f6;
-  border-radius: 6px;
-  font-size: 11px;
-  color: #cbd5e1;
-  line-height: 1.45;
-}
-
-.apple-transcript-box {
-  margin-top: 6px;
-  padding: 8px 10px;
-  background: rgba(0, 0, 0, 0.4);
-  border-radius: 6px;
-  font-size: 11px;
-  color: #94a3b8;
-  max-height: 140px;
-  overflow-y: auto;
-  white-space: pre-wrap;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  z-index: 2000;
   display: none;
-}
-
-body:not([data-theme="dark"]) .apple-calling-container {
-  background: #f8fafc;
-  color: #0f172a;
-}
-body:not([data-theme="dark"]) .apple-top-nav {
-  background: #ffffff;
-  border-color: #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-body:not([data-theme="dark"]) .apple-top-title h2 {
-  color: #0f172a;
-}
-body:not([data-theme="dark"]) .apple-btn-pill {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
-  color: #334155;
-}
-body:not([data-theme="dark"]) .apple-btn-pill:hover {
-  background: #e2e8f0;
-  color: #0f172a;
-}
-body:not([data-theme="dark"]) .apple-card {
-  background: #ffffff;
-  border-color: #e2e8f0;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-}
-body:not([data-theme="dark"]) .apple-client-header {
-  border-bottom-color: #e2e8f0;
-}
-body:not([data-theme="dark"]) .apple-client-name {
-  color: #0f172a;
-}
-body:not([data-theme="dark"]) .apple-client-sub {
-  color: #64748b;
-}
-body:not([data-theme="dark"]) .apple-badge {
-  background: #f1f5f9;
-  border-color: #e2e8f0;
-  color: #475569;
-}
-body:not([data-theme="dark"]) .apple-badge-cat {
-  background: #eff6ff;
-  border-color: #bfdbfe;
-  color: #1d4ed8;
-}
-body:not([data-theme="dark"]) .apple-nav-btn {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
-  color: #334155;
-}
-body:not([data-theme="dark"]) .apple-nav-btn:hover {
-  background: #e2e8f0;
-  color: #0f172a;
-}
-body:not([data-theme="dark"]) .apple-phone-card {
-  background: #f8fafc;
-  border-color: #e2e8f0;
-}
-body:not([data-theme="dark"]) .apple-phone-card:hover {
-  background: #f1f5f9;
-  border-color: #93c5fd;
-}
-body:not([data-theme="dark"]) .apple-phone-card.active-target {
-  background: #eff6ff;
-  border-color: #2563eb;
-  box-shadow: 0 0 12px rgba(37,99,235,0.15);
-}
-body:not([data-theme="dark"]) .apple-phone-card-label {
-  color: #64748b;
-}
-body:not([data-theme="dark"]) .apple-phone-card-num {
-  color: #0f172a;
-}
-body:not([data-theme="dark"]) .apple-remarks-preview {
-  background: #f8fafc;
-  border-left-color: #2563eb;
-}
-body:not([data-theme="dark"]) .apple-remarks-preview-label {
-  color: #64748b;
-}
-body:not([data-theme="dark"]) .apple-remarks-preview-text {
-  color: #334155;
-}
-body:not([data-theme="dark"]) .apple-meta-item {
-  background: #f8fafc;
-  border-color: #e2e8f0;
-}
-body:not([data-theme="dark"]) .apple-meta-item-label {
-  color: #64748b;
-}
-body:not([data-theme="dark"]) .apple-meta-item-val {
-  color: #0f172a;
-}
-body:not([data-theme="dark"]) .apple-dialer-screen {
-  background: #f8fafc;
-  border-color: #cbd5e1;
-}
-body:not([data-theme="dark"]) .apple-dialer-input {
-  color: #0f172a;
-}
-body:not([data-theme="dark"]) .apple-dialer-backspace {
-  color: #64748b;
-}
-body:not([data-theme="dark"]) .apple-dialer-backspace:hover {
-  color: #0f172a;
-}
-body:not([data-theme="dark"]) .apple-key-btn {
-  background: #ffffff;
-  border-color: #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-body:not([data-theme="dark"]) .apple-key-btn:hover {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
-}
-body:not([data-theme="dark"]) .apple-key-btn .apple-key-num,
-body:not([data-theme="dark"]) .apple-key-btn .apple-key-digit {
-  color: #0f172a !important;
-}
-body:not([data-theme="dark"]) .apple-key-btn .apple-key-letters {
-  color: #64748b;
-}
-body:not([data-theme="dark"]) .apple-slide-panel {
-  background: #ffffff;
-  border-left-color: #e2e8f0;
-  box-shadow: -5px 0 25px rgba(0,0,0,0.1);
-}
-body:not([data-theme="dark"]) .apple-slide-header {
-  background: #f8fafc;
-  border-bottom-color: #e2e8f0;
-}
-body:not([data-theme="dark"]) .apple-slide-header h3 {
-  color: #0f172a;
-}
-body:not([data-theme="dark"]) .apple-slide-footer {
-  background: #f8fafc;
-  border-top-color: #e2e8f0;
-}
-body:not([data-theme="dark"]) .apple-form-label {
-  color: #475569;
-}
-body:not([data-theme="dark"]) .apple-form-input,
-body:not([data-theme="dark"]) .apple-form-select,
-body:not([data-theme="dark"]) .apple-form-textarea {
-  background: #ffffff;
-  border-color: #cbd5e1;
-  color: #0f172a;
-}
-body:not([data-theme="dark"]) .apple-form-select option {
-  background: #ffffff;
-  color: #0f172a;
-}
-body:not([data-theme="dark"]) .apple-log-item,
-body:not([data-theme="dark"]) .apple-queue-item {
-  background: #ffffff;
-  border-color: #e2e8f0;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-}
-body:not([data-theme="dark"]) .apple-log-item:hover,
-body:not([data-theme="dark"]) .apple-queue-item:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
-}
-body:not([data-theme="dark"]) .apple-log-name,
-body:not([data-theme="dark"]) .apple-queue-name {
-  color: #0f172a;
-}
-body:not([data-theme="dark"]) .apple-transcript-box {
-  background: #f8fafc;
-  border-color: #e2e8f0;
-  color: #334155;
-}
-body:not([data-theme="dark"]) #autodialerWrapupBanner {
-  background: #eff6ff !important;
-  border-color: #3b82f6 !important;
-}
-body:not([data-theme="dark"]) #autodialerWrapupBanner > div > div > div:first-child {
-  color: #1e3a8a !important;
-}
-body:not([data-theme="dark"]) #autodialerBannerSub {
-  color: #475569 !important;
-}
-body[data-theme="dark"] .apple-calling-container {
-  background: #0f172a;
-}
-body[data-theme="dark"] .apple-card {
-  background: #1e293b;
-  border-color: #334155;
-}
-body[data-theme="dark"] .apple-top-nav {
-  background: #1e293b;
-  border-color: #334155;
-}
-body[data-theme="dark"] .apple-key-btn {
-  background: #1e293b;
-  border-color: #334155;
-}
-body[data-theme="dark"] .apple-key-btn:hover {
-  background: #334155;
-}
-body[data-theme="dark"] .apple-dialer-screen {
-  background: #0f172a;
-  border-color: #334155;
-}
-body[data-theme="dark"] .apple-slide-panel {
-  background: #1e293b;
-  border-left-color: #334155;
-}
-body[data-theme="dark"] .apple-slide-header,
-body[data-theme="dark"] .apple-slide-footer {
-  background: #0f172a;
-  border-color: #334155;
+  align-items: center;
+  gap: 10px;
 }
 </style>
 
-<div class="content-wrapper apple-calling-container">
+<div class="content-wrapper glass-calling-wrapper">
 
-  <div class="apple-top-nav">
-    <div class="apple-top-title">
-      <h2>Calling Center</h2>
+  <div class="glass-side-dock">
+    <div class="glass-dock-brand" title="Calling Center">
+      <i class="fa fa-phone"></i>
     </div>
 
-    <div class="apple-top-actions">
-      <button type="button" class="apple-btn-pill" id="btnToggleAutoDialer" style="border-color:#16a34a; color:#4ade80;">
-        <i class="fa fa-bolt"></i> Auto-Dialer (<span id="autoDialerStatusText">Off</span>)
-      </button>
+    <button type="button" class="glass-dock-btn active" id="dockBtnDialer" title="Dialer Screen">
+      <i class="fa fa-keyboard-o"></i>
+      <span class="dock-lbl">Dialer</span>
+    </button>
 
-      <button type="button" class="apple-btn-pill" id="btnToggleQueueDrawer">
-        <i class="fa fa-list-ul"></i> Queue (<span id="queueCountBadge"><?php echo isset($total_queue) ? (int)$total_queue : 0; ?></span>)
-      </button>
+    <button type="button" class="glass-dock-btn" id="dockBtnDetails" title="Fill Client Details">
+      <i class="fa fa-pencil-square-o"></i>
+      <span class="dock-lbl">Details</span>
+    </button>
 
-      <button type="button" class="apple-btn-pill" id="btnToggleLogsDrawer">
-        <i class="fa fa-history"></i> Call Logs
-      </button>
+    <button type="button" class="glass-dock-btn" id="dockBtnQueue" title="Calling Queue">
+      <i class="fa fa-list-ul"></i>
+      <span class="dock-lbl">Queue</span>
+      <span class="glass-dock-badge" id="queueCountBadge"><?php echo isset($total_queue) ? (int)$total_queue : 0; ?></span>
+    </button>
 
-      <a href="<?php echo base_url(); ?>manager/dashboard" class="apple-btn-pill">
-        <i class="fa fa-chevron-left"></i> Exit
-      </a>
-    </div>
+    <button type="button" class="glass-dock-btn" id="dockBtnLogs" title="Call Logs">
+      <i class="fa fa-history"></i>
+      <span class="dock-lbl">Logs</span>
+    </button>
+
+    <button type="button" class="glass-dock-btn" id="dockBtnAutoDialToggle" title="Auto-Dialer Mode">
+      <i class="fa fa-bolt"></i>
+      <span class="dock-lbl" id="autoDialDockLbl">60s</span>
+    </button>
+
+    <a href="<?php echo base_url(); ?>manager/dashboard" class="glass-dock-btn" style="margin-top:auto;" title="Exit Calling Center">
+      <i class="fa fa-arrow-left"></i>
+      <span class="dock-lbl">Exit</span>
+    </a>
   </div>
 
-  <div id="autodialerWrapupBanner" style="display:none; background:linear-gradient(135deg, #0f172a, #1e293b); border:1px solid #3b82f6; border-radius:12px; padding:12px 18px; margin-bottom:16px; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
-    <div style="display:flex; align-items:center; gap:12px;">
-      <div style="display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; border-radius:50%; background:rgba(59, 130, 246, 0.15); border:2px solid #3b82f6; color:#60a5fa; font-weight:700; font-size:16px;" id="autodialerTimerDisplay">
-        60
+  <div class="glass-main-stage">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+      <div class="glass-top-tabs">
+        <button type="button" class="glass-tab-pill active" id="pillTabDialer">
+          <i class="fa fa-phone"></i> Dialer Screen
+        </button>
+        <button type="button" class="glass-tab-pill" id="pillTabDetails">
+          <i class="fa fa-pencil-square-o"></i> Detail Fill & Outcome
+        </button>
       </div>
-      <div>
-        <div style="font-size:13px; font-weight:600; color:#ffffff;">Auto-Dialer: Post-Call Wrap-up & Notes</div>
-        <div style="font-size:11px; color:#94a3b8;" id="autodialerBannerSub">Take notes and select call outcome. Next contact dials automatically when countdown ends.</div>
+
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="glass-badge" id="queueNavIndicator">
+          Contact 1 of <?php echo max(1, (int)$total_queue); ?>
+        </span>
+        <button type="button" class="glass-btn-dark" id="btnPrevLead" style="padding:6px 12px;">
+          <i class="fa fa-chevron-left"></i>
+        </button>
+        <button type="button" class="glass-btn-dark" id="btnNextLead" style="padding:6px 12px;">
+          <i class="fa fa-chevron-right"></i>
+        </button>
       </div>
     </div>
-    <div style="display:flex; align-items:center; gap:8px;">
-      <button type="button" class="apple-btn-secondary" id="btnAutodialExtend" style="padding:6px 12px; font-size:12px;"><i class="fa fa-plus"></i> +30s Extend</button>
-      <button type="button" class="apple-btn-secondary" id="btnAutodialPause" style="padding:6px 12px; font-size:12px;"><i class="fa fa-pause"></i> Pause</button>
-      <button type="button" class="apple-btn-primary" id="btnAutodialNextNow" style="padding:6px 14px; font-size:12px; background:#16a34a; border-color:#16a34a;"><i class="fa fa-forward"></i> Save & Next Call</button>
-      <button type="button" class="apple-btn-secondary" id="btnAutodialStop" style="padding:6px 12px; font-size:12px; color:#f87171;"><i class="fa fa-stop"></i> Stop</button>
-    </div>
-  </div>
 
-  <div class="apple-stage-grid">
-
-    <div class="apple-card">
-
-      <div class="apple-client-header">
+    <div id="autodialerWrapupBanner" class="glass-banner">
+      <div style="display:flex; align-items:center; gap:14px;">
+        <div class="glass-timer-circle" id="autodialerTimerDisplay">
+          <?php echo (int)$autodialer_seconds; ?>
+        </div>
         <div>
-          <h1 class="apple-client-name" id="displayCustomerName">
-            <?php echo !empty($active_lead['customer']) ? htmlspecialchars($active_lead['customer']) : 'No Contact Selected'; ?>
-          </h1>
-          <div class="apple-client-sub">
-            <span id="displayLeadCode" class="apple-badge">
-              #<?php echo !empty($active_lead['lead_id']) ? htmlspecialchars($active_lead['lead_id']) : '—'; ?>
-            </span>
-            <span id="displayCategoryPill" class="apple-badge apple-badge-cat">
-              <?php echo !empty($active_lead['category']) ? htmlspecialchars($active_lead['category']) : 'General Contact'; ?>
-            </span>
-            <span id="displayLeadStatus" class="apple-badge">
-              <?php echo !empty($active_lead['status_name']) ? htmlspecialchars($active_lead['status_name']) : 'Open'; ?>
-            </span>
-          </div>
-        </div>
-
-        <div class="apple-queue-nav">
-          <button type="button" class="apple-nav-btn" id="btnPrevLead" title="Previous Contact">
-            <i class="fa fa-chevron-left"></i>
-          </button>
-          <span id="queuePositionText">1 of <?php echo max(1, (int)$total_queue); ?></span>
-          <button type="button" class="apple-nav-btn" id="btnNextLead" title="Next Contact">
-            <i class="fa fa-chevron-right"></i>
-          </button>
+          <div style="font-size:14px; font-weight:700; color:#ffffff;">Auto-Dialer Active: Next Call Countdown</div>
+          <div style="font-size:12px; color:#cbd5e1;" id="autodialerBannerSub">Take notes or fill details. The next contact automatically dials when countdown finishes.</div>
         </div>
       </div>
-
-      <div class="apple-dual-phones-row">
-        <div class="apple-phone-card active-target" id="cardPrimaryPhone" onclick="selectPhoneTarget('primary')">
-          <div class="apple-phone-card-label">
-            <span>Primary Contact</span>
-            <span id="badgePrimaryActive" class="apple-badge" style="background:#2563eb; color:#fff; border-color:#2563eb;">Selected</span>
-          </div>
-          <div class="apple-phone-card-num" id="displayPrimaryPhone">
-            <?php echo !empty($active_lead['phone_primary']) ? htmlspecialchars($active_lead['phone_primary']) : (!empty($active_lead['contact1']) ? htmlspecialchars($active_lead['contact1']) : 'No Number'); ?>
-          </div>
-        </div>
-
-        <div class="apple-phone-card" id="cardAltPhone" onclick="selectPhoneTarget('alt')">
-          <div class="apple-phone-card-label">
-            <span>Secondary / Alt</span>
-            <span id="badgeAltActive" class="apple-badge" style="display:none;">Selected</span>
-          </div>
-          <div class="apple-phone-card-num" id="displayAltPhone">
-            <?php echo !empty($active_lead['phone_alt']) ? htmlspecialchars($active_lead['phone_alt']) : '—'; ?>
-          </div>
-        </div>
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <button type="button" class="glass-btn-dark" id="btnAutodialExtend"><i class="fa fa-plus"></i> +30s Extend</button>
+        <button type="button" class="glass-btn-dark" id="btnAutodialPause"><i class="fa fa-pause"></i> Pause</button>
+        <button type="button" class="glass-btn-white" id="btnAutodialNextNow"><i class="fa fa-forward"></i> Dial Next Now</button>
+        <button type="button" class="glass-btn-dark" id="btnAutodialStop" style="border-color:rgba(255,255,255,0.3);"><i class="fa fa-stop"></i> Stop</button>
       </div>
-
-      <div class="apple-remarks-preview">
-        <div class="apple-remarks-preview-label"><i class="fa fa-commenting-o"></i> Previous Call Remarks</div>
-        <p class="apple-remarks-preview-text" id="displayPreviousRemarks">
-          <?php echo !empty($active_lead['remark']) ? htmlspecialchars($active_lead['remark']) : 'No previous call notes recorded for this contact.'; ?>
-        </p>
-      </div>
-
-      <div class="apple-meta-strip">
-        <div class="apple-meta-item">
-          <div class="apple-meta-item-label">POC Name</div>
-          <div class="apple-meta-item-val" id="displayPoc">
-            <?php echo !empty($active_lead['poc']) ? htmlspecialchars($active_lead['poc']) : '—'; ?>
-          </div>
-        </div>
-
-        <div class="apple-meta-item">
-          <div class="apple-meta-item-label">Authority / Emirate</div>
-          <div class="apple-meta-item-val" id="displayAuthority">
-            <?php 
-              $loc = array();
-              if(!empty($active_lead['tl_authority'])) $loc[] = $active_lead['tl_authority'];
-              if(!empty($active_lead['tl_emirate'])) $loc[] = $active_lead['tl_emirate'];
-              echo !empty($loc) ? htmlspecialchars(implode(', ', $loc)) : '—';
-            ?>
-          </div>
-        </div>
-
-        <div class="apple-meta-item">
-          <div class="apple-meta-item-label">Sales Department</div>
-          <div class="apple-meta-item-val" id="displayUserDept">
-            <?php echo htmlspecialchars($manager_department); ?>
-          </div>
-        </div>
-      </div>
-
     </div>
 
-    <div class="apple-card apple-dialer-card">
+    <div id="viewCardDialer">
+      <div class="glass-dialer-grid">
 
-      <div class="apple-dialer-screen">
-        <input type="text" id="dialerInput" class="apple-dialer-input" placeholder="Enter Phone..." autocomplete="off" value="<?php echo !empty($active_lead['phone_primary']) ? htmlspecialchars($active_lead['phone_primary']) : (!empty($active_lead['contact1']) ? htmlspecialchars($active_lead['contact1']) : ''); ?>">
-        <button type="button" id="btnDialerBackspace" class="apple-dialer-backspace" title="Delete">
-          <i class="fa fa-times-circle"></i>
-        </button>
-      </div>
+        <div class="glass-card">
+          <div class="glass-client-header">
+            <div>
+              <h1 class="glass-client-name" id="displayCustomerName">
+                <?php echo !empty($active_lead['customer']) ? htmlspecialchars($active_lead['customer']) : 'No Contact Selected'; ?>
+              </h1>
+              <div class="glass-client-sub">
+                <span id="displayLeadCode" class="glass-badge">
+                  #<?php echo !empty($active_lead['lead_id']) ? htmlspecialchars($active_lead['lead_id']) : '—'; ?>
+                </span>
+                <span id="displayCategoryPill" class="glass-badge">
+                  <?php echo !empty($active_lead['category']) ? htmlspecialchars($active_lead['category']) : 'General Contact'; ?>
+                </span>
+                <span id="displayLeadStatus" class="glass-badge">
+                  <?php echo !empty($active_lead['status_name']) ? htmlspecialchars($active_lead['status_name']) : 'Open'; ?>
+                </span>
+              </div>
+            </div>
+          </div>
 
-      <div id="backendOfflineAlert" class="apple-backend-alert">
-        <i class="fa fa-exclamation-triangle" style="margin-right:4px;"></i>
-        <span id="backendOfflineMsg">Calling backend is not configured (API key / PBX missing).</span>
-        <div style="margin-top:6px;">
-          <a id="btnFallbackTel" href="tel:" class="apple-log-action-btn btn-dial" style="font-weight:600; padding:4px 10px;">
-            <i class="fa fa-phone"></i> Launch Phone Dialer (tel:)
-          </a>
+          <div class="glass-dual-phones-row">
+            <div class="glass-phone-card active-target" id="cardPrimaryPhone" onclick="selectPhoneTarget('primary')">
+              <div class="glass-phone-card-label">
+                <span>Primary Contact</span>
+                <span id="badgePrimaryActive" class="glass-badge active-badge">Selected</span>
+              </div>
+              <div class="glass-phone-card-num" id="displayPrimaryPhone">
+                <?php echo !empty($active_lead['phone_primary']) ? htmlspecialchars($active_lead['phone_primary']) : (!empty($active_lead['contact1']) ? htmlspecialchars($active_lead['contact1']) : 'No Number'); ?>
+              </div>
+            </div>
+
+            <div class="glass-phone-card" id="cardAltPhone" onclick="selectPhoneTarget('alt')">
+              <div class="glass-phone-card-label">
+                <span>Secondary / Alt</span>
+                <span id="badgeAltActive" class="glass-badge active-badge" style="display:none;">Selected</span>
+              </div>
+              <div class="glass-phone-card-num" id="displayAltPhone">
+                <?php echo !empty($active_lead['phone_alt']) ? htmlspecialchars($active_lead['phone_alt']) : '—'; ?>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-remarks-preview">
+            <div class="glass-remarks-preview-label"><i class="fa fa-commenting-o"></i> Previous Call Remarks</div>
+            <p class="glass-remarks-preview-text" id="displayPreviousRemarks">
+              <?php echo !empty($active_lead['remark']) ? htmlspecialchars($active_lead['remark']) : 'No previous call notes recorded for this contact.'; ?>
+            </p>
+          </div>
+
+          <div class="glass-meta-strip">
+            <div class="glass-meta-item">
+              <div class="glass-meta-item-label">POC Name</div>
+              <div class="glass-meta-item-val" id="displayPoc">
+                <?php echo !empty($active_lead['poc']) ? htmlspecialchars($active_lead['poc']) : '—'; ?>
+              </div>
+            </div>
+
+            <div class="glass-meta-item">
+              <div class="glass-meta-item-label">Authority / Emirate</div>
+              <div class="glass-meta-item-val" id="displayAuthority">
+                <?php 
+                  $loc = array();
+                  if(!empty($active_lead['tl_authority'])) $loc[] = $active_lead['tl_authority'];
+                  if(!empty($active_lead['tl_emirate'])) $loc[] = $active_lead['tl_emirate'];
+                  echo !empty($loc) ? htmlspecialchars(implode(', ', $loc)) : '—';
+                ?>
+              </div>
+            </div>
+
+            <div class="glass-meta-item">
+              <div class="glass-meta-item-label">Sales Department</div>
+              <div class="glass-meta-item-val" id="displayUserDept">
+                <?php echo htmlspecialchars($manager_department); ?>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; border-top:1px solid rgba(255,255,255,0.08); padding-top:14px;">
+            <span style="font-size:12px; color:#94a3b8;">Want to take call notes or set follow-up?</span>
+            <button type="button" class="glass-btn-white" onclick="switchToCard('details')">
+              <span>Go to Detail Fill Page</span> <i class="fa fa-arrow-right"></i>
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div class="apple-keypad-grid">
-        <div class="apple-key-btn" data-key="1"><div class="apple-key-digit">1</div><div class="apple-key-letters"></div></div>
-        <div class="apple-key-btn" data-key="2"><div class="apple-key-digit">2</div><div class="apple-key-letters">ABC</div></div>
-        <div class="apple-key-btn" data-key="3"><div class="apple-key-digit">3</div><div class="apple-key-letters">DEF</div></div>
-        <div class="apple-key-btn" data-key="4"><div class="apple-key-digit">4</div><div class="apple-key-letters">GHI</div></div>
-        <div class="apple-key-btn" data-key="5"><div class="apple-key-digit">5</div><div class="apple-key-letters">JKL</div></div>
-        <div class="apple-key-btn" data-key="6"><div class="apple-key-digit">6</div><div class="apple-key-letters">MNO</div></div>
-        <div class="apple-key-btn" data-key="7"><div class="apple-key-digit">7</div><div class="apple-key-letters">PQRS</div></div>
-        <div class="apple-key-btn" data-key="8"><div class="apple-key-digit">8</div><div class="apple-key-letters">TUV</div></div>
-        <div class="apple-key-btn" data-key="9"><div class="apple-key-digit">9</div><div class="apple-key-letters">WXYZ</div></div>
-        <div class="apple-key-btn" data-key="*"><div class="apple-key-digit">*</div><div class="apple-key-letters"></div></div>
-        <div class="apple-key-btn" data-key="0"><div class="apple-key-digit">0</div><div class="apple-key-letters">+</div></div>
-        <div class="apple-key-btn" data-key="#"><div class="apple-key-digit">#</div><div class="apple-key-letters"></div></div>
-      </div>
+        <div class="glass-card glass-dialer-card">
+          <div class="glass-dialer-screen">
+            <input type="text" id="dialerInput" class="glass-dialer-input" placeholder="Enter Phone..." autocomplete="off" value="<?php echo !empty($active_lead['phone_primary']) ? htmlspecialchars($active_lead['phone_primary']) : (!empty($active_lead['contact1']) ? htmlspecialchars($active_lead['contact1']) : ''); ?>">
+            <button type="button" id="btnDialerBackspace" class="glass-dialer-backspace" title="Delete">
+              <i class="fa fa-times-circle"></i>
+            </button>
+          </div>
 
-      <div class="apple-call-action-row">
-        <button type="button" id="btnToggleCall" class="apple-call-btn btn-start" title="Call">
-          <i class="fa fa-phone"></i>
-        </button>
-        <div id="liveCallSubtitle" style="font-size:12px; color:#94a3b8; height:18px;">Tap to place call</div>
-      </div>
+          <div id="backendOfflineAlert" style="display:none; width:100%; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.3); border-radius:14px; padding:10px 14px; margin-bottom:14px; font-size:12px; text-align:center;">
+            <i class="fa fa-exclamation-triangle" style="margin-right:4px;"></i>
+            <span id="backendOfflineMsg">Calling backend is not configured (API key / PBX missing).</span>
+            <div style="margin-top:6px;">
+              <a id="btnFallbackTel" href="tel:" class="glass-btn-white" style="font-size:11px; padding:4px 10px;">
+                <i class="fa fa-phone"></i> Launch Device Dialer (tel:)
+              </a>
+            </div>
+          </div>
 
+          <div class="glass-keypad-grid">
+            <div class="glass-key-btn" data-key="1"><div class="glass-key-digit">1</div><div class="glass-key-letters"></div></div>
+            <div class="glass-key-btn" data-key="2"><div class="glass-key-digit">2</div><div class="glass-key-letters">ABC</div></div>
+            <div class="glass-key-btn" data-key="3"><div class="glass-key-digit">3</div><div class="glass-key-letters">DEF</div></div>
+            <div class="glass-key-btn" data-key="4"><div class="glass-key-digit">4</div><div class="glass-key-letters">GHI</div></div>
+            <div class="glass-key-btn" data-key="5"><div class="glass-key-digit">5</div><div class="glass-key-letters">JKL</div></div>
+            <div class="glass-key-btn" data-key="6"><div class="glass-key-digit">6</div><div class="glass-key-letters">MNO</div></div>
+            <div class="glass-key-btn" data-key="7"><div class="glass-key-digit">7</div><div class="glass-key-letters">PQRS</div></div>
+            <div class="glass-key-btn" data-key="8"><div class="glass-key-digit">8</div><div class="glass-key-letters">TUV</div></div>
+            <div class="glass-key-btn" data-key="9"><div class="glass-key-digit">9</div><div class="glass-key-letters">WXYZ</div></div>
+            <div class="glass-key-btn" data-key="*"><div class="glass-key-digit">*</div><div class="glass-key-letters"></div></div>
+            <div class="glass-key-btn" data-key="0"><div class="glass-key-digit">0</div><div class="glass-key-letters">+</div></div>
+            <div class="glass-key-btn" data-key="#"><div class="glass-key-digit">#</div><div class="glass-key-letters"></div></div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+            <button type="button" id="btnToggleCall" class="glass-call-btn btn-start" title="Call Contact">
+              <i class="fa fa-phone"></i>
+            </button>
+            <div id="liveCallSubtitle" style="font-size:12px; color:#cbd5e1; height:18px;">Tap to place call</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div id="viewCardDetailFill" style="display:none;">
+      <div class="glass-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:14px;">
+          <div>
+            <h2 style="font-size:20px; font-weight:700; margin:0 0 4px 0; color:#ffffff;">Manual Detail Fill & Call Outcome</h2>
+            <div style="font-size:12px; color:#94a3b8;">
+              Active: <strong id="detailsCardCustomer" style="color:#ffffff;"><?php echo !empty($active_lead['customer']) ? htmlspecialchars($active_lead['customer']) : 'No Contact'; ?></strong>
+              • Duration: <span id="followupCallDurationBadge">00:00</span>
+            </div>
+          </div>
+          <button type="button" class="glass-btn-dark" onclick="switchToCard('dialer')">
+            <i class="fa fa-arrow-left"></i> Back to Dialer
+          </button>
+        </div>
+
+        <form id="formCallFollowup" onsubmit="return false;">
+          <input type="hidden" name="lead_id" id="hiddenLeadId" value="<?php echo !empty($active_lead['id']) ? (int)$active_lead['id'] : 0; ?>">
+          <input type="hidden" name="call_log_id" id="hiddenCallLogId" value="0">
+          <input type="hidden" name="customer_name" id="hiddenCustomerName" value="<?php echo !empty($active_lead['customer']) ? htmlspecialchars($active_lead['customer']) : ''; ?>">
+          <input type="hidden" name="phone" id="hiddenPhone" value="<?php echo !empty($active_lead['phone_primary']) ? htmlspecialchars($active_lead['phone_primary']) : ''; ?>">
+          <input type="hidden" name="call_duration" id="hiddenDuration" value="0">
+          <input type="hidden" name="call_disposition" id="hiddenDisposition" value="Connected">
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="glass-form-group">
+                <label class="glass-form-label">Call Outcome / Status</label>
+                <select name="status" id="followupStatusSelect" class="glass-form-select" required>
+                  <?php if(!empty($statuses)){
+                    foreach($statuses as $st){ ?>
+                      <option value="<?php echo $st['id']; ?>" <?php echo (!empty($active_lead['status']) && $active_lead['status'] == $st['id']) ? 'selected' : ''; ?>>
+                        <?php echo htmlspecialchars($st['status']); ?>
+                      </option>
+                  <?php } } ?>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div id="followupScheduleBlock" class="glass-form-group" style="display:none;">
+                <label class="glass-form-label"><i class="fa fa-calendar"></i> Next Follow-up Schedule</label>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                  <input type="text" name="next_followup" id="nextFollowupDate" class="glass-form-input datepicker" placeholder="YYYY-MM-DD" autocomplete="off">
+                  <input type="text" name="next_followup_time" id="nextFollowupTime" class="glass-form-input timepicker" placeholder="11:00 AM" value="11:00 AM">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-form-group">
+            <label class="glass-form-label">Discussion Remarks / Call Notes</label>
+            <textarea name="remarks" id="followupRemarks" class="glass-form-textarea" rows="3" placeholder="Key points discussed during the call..." required></textarea>
+          </div>
+
+          <div class="glass-form-group">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <label class="glass-form-label" style="margin:0;">Vertical Information</label>
+              <div style="display:flex; gap:6px;">
+                <span class="glass-radio-pill active" id="tabVerticalAccounting" onclick="switchVerticalTab('accounting')">Accounting & Tax</span>
+                <span class="glass-radio-pill" id="tabVerticalTelecom" onclick="switchVerticalTab('telecom')">Telecom</span>
+                <span class="glass-radio-pill" id="tabVerticalGeneral" onclick="switchVerticalTab('general')">General</span>
+              </div>
+            </div>
+
+            <div id="verticalAccountingSection" style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); padding:16px; border-radius:18px;">
+              <div class="row">
+                <div class="col-md-6" style="margin-bottom:10px;">
+                  <label class="glass-form-label" style="font-size:10px;">VAT Registration</label>
+                  <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px;">
+                    <span class="glass-radio-pill vat-pill" data-val="Registered">Registered</span>
+                    <span class="glass-radio-pill vat-pill" data-val="Not Registered">Not Registered</span>
+                    <span class="glass-radio-pill vat-pill" data-val="Pending">Pending</span>
+                    <span class="glass-radio-pill vat-pill" data-val="Exempt">Exempt</span>
+                  </div>
+                  <input type="hidden" name="vat_status" id="vatStatusVal" value="">
+                  <input type="text" name="vat_trn" id="vatTrnInput" class="glass-form-input" placeholder="VAT TRN Number (if registered)...">
+                </div>
+
+                <div class="col-md-6" style="margin-bottom:10px;">
+                  <label class="glass-form-label" style="font-size:10px;">Corporate Tax (CT)</label>
+                  <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px;">
+                    <span class="glass-radio-pill ct-pill" data-val="Registered">Registered</span>
+                    <span class="glass-radio-pill ct-pill" data-val="Not Registered">Not Registered</span>
+                    <span class="glass-radio-pill ct-pill" data-val="Pending">Pending</span>
+                    <span class="glass-radio-pill ct-pill" data-val="Exempt">Exempt</span>
+                  </div>
+                  <input type="hidden" name="corporate_tax_status" id="corporateTaxStatusVal" value="">
+                  <input type="text" name="ct_trn" id="ctTrnInput" class="glass-form-input" placeholder="Corporate Tax TRN / Ref (if registered)...">
+                </div>
+              </div>
+            </div>
+
+            <div id="verticalTelecomSection" style="display:none; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); padding:16px; border-radius:18px;">
+              <div class="row">
+                <div class="col-md-6" style="margin-bottom:10px;">
+                  <label class="glass-form-label" style="font-size:10px;">Current Telecom Provider</label>
+                  <select name="business_category" id="telecomProviderSelect" class="glass-form-select">
+                    <option value="">-- Select Provider --</option>
+                    <option value="Etisalat">Etisalat by e&</option>
+                    <option value="du">du Telecom</option>
+                    <option value="Virgin">Virgin Mobile</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div class="col-md-6" style="margin-bottom:10px;">
+                  <label class="glass-form-label" style="font-size:10px;">Lines / Monthly Spend</label>
+                  <input type="text" name="industry_category" id="telecomLinesInput" class="glass-form-input" placeholder="e.g. 15 Lines | AED 2,500/mo">
+                </div>
+              </div>
+            </div>
+
+            <div id="verticalGeneralSection" style="display:none; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); padding:16px; border-radius:18px;">
+              <div>
+                <label class="glass-form-label" style="font-size:10px;">Business Category</label>
+                <input type="text" name="general_business_cat" id="generalBusinessCatInput" class="glass-form-input" placeholder="e.g. Real Estate, Retail, Consulting...">
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.1); padding-top:16px;">
+            <button type="button" class="glass-btn-dark" id="btnSaveOnly">
+              <i class="fa fa-check"></i> Save Details
+            </button>
+            <button type="button" class="glass-btn-white" id="btnSaveAndNextContact">
+              <span>Save & Next Contact</span> <i class="fa fa-arrow-right"></i>
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
 
   </div>
 
-  <div id="drawerBackdrop" class="apple-drawer-backdrop"></div>
+  <div id="drawerBackdrop" class="glass-drawer-backdrop"></div>
 
-  <div id="followupSlidePanel" class="apple-slide-panel">
-    <div class="apple-slide-header">
-      <div>
-        <h3>Call Follow-up & Outcome</h3>
-        <span id="followupCallDurationBadge" class="apple-badge" style="margin-top:4px; display:inline-block;">Duration: 00:00</span>
-      </div>
-      <button type="button" class="apple-close-btn" id="btnCloseFollowupPanel">
-        <i class="fa fa-times"></i>
-      </button>
+  <div id="queueSlidePanel" class="glass-slide-panel">
+    <div class="glass-slide-header">
+      <h3 style="margin:0; font-size:16px; font-weight:700; color:#fff;">Calling Queue (<span id="panelQueueCount"><?php echo count($queue); ?></span>)</h3>
+      <button type="button" class="glass-dialer-backspace" id="btnCloseQueueDrawer"><i class="fa fa-times"></i></button>
     </div>
-
-    <form id="formCallFollowup" onsubmit="return false;" style="display:flex; flex-direction:column; height:calc(100% - 65px);">
-      <input type="hidden" name="lead_id" id="hiddenLeadId" value="<?php echo !empty($active_lead['id']) ? (int)$active_lead['id'] : 0; ?>">
-      <input type="hidden" name="call_log_id" id="hiddenCallLogId" value="0">
-      <input type="hidden" name="customer_name" id="hiddenCustomerName" value="<?php echo !empty($active_lead['customer']) ? htmlspecialchars($active_lead['customer']) : ''; ?>">
-      <input type="hidden" name="phone" id="hiddenPhone" value="<?php echo !empty($active_lead['phone_primary']) ? htmlspecialchars($active_lead['phone_primary']) : ''; ?>">
-      <input type="hidden" name="call_duration" id="hiddenDuration" value="0">
-      <input type="hidden" name="call_disposition" id="hiddenDisposition" value="Connected">
-
-      <div class="apple-slide-body">
-
-        <div class="apple-form-group">
-          <label class="apple-form-label">Call Outcome / Status</label>
-          <select name="status" id="followupStatusSelect" class="apple-form-select" required>
-            <?php if(!empty($statuses)){
-              foreach($statuses as $st){ ?>
-                <option value="<?php echo $st['id']; ?>" <?php echo (!empty($active_lead['status']) && $active_lead['status'] == $st['id']) ? 'selected' : ''; ?>>
-                  <?php echo htmlspecialchars($st['status']); ?>
-                </option>
-            <?php } } ?>
-          </select>
-        </div>
-
-        <div id="followupScheduleBlock" class="apple-form-group" style="display:none; background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.06); padding:12px; border-radius:12px;">
-          <label class="apple-form-label"><i class="fa fa-calendar"></i> Next Follow-up Schedule</label>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <div>
-              <input type="text" name="next_followup" id="nextFollowupDate" class="apple-form-input datepicker" placeholder="YYYY-MM-DD" autocomplete="off">
-            </div>
-            <div>
-              <div class="input-group bootstrap-timepicker timepicker" style="width:100%;">
-                <input type="text" name="next_followup_time" id="nextFollowupTime" class="form-control input-small timepicker apple-form-input" placeholder="11:00 AM" value="11:00 AM">
-                <span class="input-group-addon" style="background:#1e293b; border-color:rgba(255,255,255,0.12); color:#94a3b8; cursor:pointer;"><i class="glyphicon glyphicon-time"></i></span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="apple-form-group">
-          <label class="apple-form-label">Discussion Remarks</label>
-          <textarea name="remarks" id="followupRemarks" class="apple-form-textarea" rows="3" placeholder="Key points discussed during the call..." required></textarea>
-        </div>
-
-        <div class="apple-form-group">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <label class="apple-form-label" style="margin:0;">Vertical Information</label>
-            <div class="apple-pills-row">
-              <span class="apple-radio-pill active" id="tabVerticalAccounting" onclick="switchVerticalTab('accounting')">Accounting & Tax</span>
-              <span class="apple-radio-pill" id="tabVerticalTelecom" onclick="switchVerticalTab('telecom')">Telecom</span>
-              <span class="apple-radio-pill" id="tabVerticalGeneral" onclick="switchVerticalTab('general')">General</span>
-            </div>
-          </div>
-
-          <div id="verticalAccountingSection" style="background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.06); padding:12px; border-radius:12px;">
-            <div style="margin-bottom:10px;">
-              <label class="apple-form-label" style="font-size:10px;">VAT Registration</label>
-              <div class="apple-pills-row" style="margin-bottom:6px;">
-                <span class="apple-radio-pill vat-pill" data-val="Registered">Registered</span>
-                <span class="apple-radio-pill vat-pill" data-val="Not Registered">Not Registered</span>
-                <span class="apple-radio-pill vat-pill" data-val="Pending">Pending</span>
-                <span class="apple-radio-pill vat-pill" data-val="Exempt">Exempt</span>
-              </div>
-              <input type="hidden" name="vat_status" id="vatStatusVal" value="">
-              <input type="text" name="vat_trn" id="vatTrnInput" class="apple-form-input" placeholder="VAT TRN Number (if registered)...">
-            </div>
-
-            <div>
-              <label class="apple-form-label" style="font-size:10px;">Corporate Tax (CT)</label>
-              <div class="apple-pills-row" style="margin-bottom:6px;">
-                <span class="apple-radio-pill ct-pill" data-val="Registered">Registered</span>
-                <span class="apple-radio-pill ct-pill" data-val="Not Registered">Not Registered</span>
-                <span class="apple-radio-pill ct-pill" data-val="Pending">Pending</span>
-                <span class="apple-radio-pill ct-pill" data-val="Exempt">Exempt</span>
-              </div>
-              <input type="hidden" name="corporate_tax_status" id="corporateTaxStatusVal" value="">
-              <input type="text" name="ct_trn" id="ctTrnInput" class="apple-form-input" placeholder="Corporate Tax TRN / Ref (if registered)...">
-            </div>
-          </div>
-
-          <div id="verticalTelecomSection" style="display:none; background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.06); padding:12px; border-radius:12px;">
-            <div style="margin-bottom:10px;">
-              <label class="apple-form-label" style="font-size:10px;">Current Telecom Provider</label>
-              <select name="business_category" id="telecomProviderSelect" class="apple-form-select">
-                <option value="">-- Select Provider --</option>
-                <option value="Etisalat">Etisalat by e&</option>
-                <option value="du">du Telecom</option>
-                <option value="Virgin">Virgin Mobile</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label class="apple-form-label" style="font-size:10px;">Lines / Monthly Spend</label>
-              <input type="text" name="industry_category" id="telecomLinesInput" class="apple-form-input" placeholder="e.g. 15 Lines | AED 2,500/mo">
-            </div>
-          </div>
-
-          <div id="verticalGeneralSection" style="display:none; background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.06); padding:12px; border-radius:12px;">
-            <div>
-              <label class="apple-form-label" style="font-size:10px;">Business Category</label>
-              <input type="text" name="general_business_cat" id="generalBusinessCatInput" class="apple-form-input" placeholder="e.g. Real Estate, Retail, Consulting...">
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <div class="apple-slide-footer">
-        <button type="button" class="apple-btn-secondary" id="btnSaveOnly">
-          <i class="fa fa-check"></i> Save Details
-        </button>
-        <button type="button" class="apple-btn-primary" id="btnSaveAndNextContact">
-          <span>Save & Next Contact</span> <i class="fa fa-arrow-right"></i>
-        </button>
-      </div>
-    </form>
-  </div>
-
-  <div id="queueSlidePanel" class="apple-slide-panel">
-    <div class="apple-slide-header">
-      <h3>Calling Queue (<span id="panelQueueCount"><?php echo count($queue); ?></span>)</h3>
-      <button type="button" class="apple-close-btn" id="btnCloseQueueDrawer">
-        <i class="fa fa-times"></i>
-      </button>
-    </div>
-    <div class="apple-slide-body">
+    <div class="glass-slide-body">
       <div style="margin-bottom:14px;">
-        <input type="text" id="queueSearchInput" class="apple-form-input" placeholder="Search contact, phone or company...">
+        <input type="text" id="queueSearchInput" class="glass-form-input" placeholder="Search contact, phone or company...">
       </div>
       <div id="queueListContainer">
         <?php if(!empty($queue)){
           foreach($queue as $idx => $q){ ?>
-            <div class="apple-queue-item <?php echo $idx === 0 ? 'active' : ''; ?>" data-lead-idx="<?php echo $idx; ?>">
+            <div class="glass-queue-item <?php echo $idx === 0 ? 'active' : ''; ?>" data-lead-idx="<?php echo $idx; ?>">
               <div>
-                <div style="font-size:13px; font-weight:600; color:#fff;"><?php echo htmlspecialchars($q['customer']); ?></div>
+                <div style="font-size:14px; font-weight:700; color:#fff;"><?php echo htmlspecialchars($q['customer']); ?></div>
                 <div style="font-size:11px; color:#94a3b8;"><?php echo !empty($q['phone_primary']) ? htmlspecialchars($q['phone_primary']) : htmlspecialchars($q['contact1']); ?></div>
               </div>
               <div>
-                <span class="apple-badge"><?php echo !empty($q['status_name']) ? htmlspecialchars($q['status_name']) : 'Open'; ?></span>
+                <span class="glass-badge"><?php echo !empty($q['status_name']) ? htmlspecialchars($q['status_name']) : 'Open'; ?></span>
               </div>
             </div>
         <?php } } else { ?>
-          <div style="padding:20px; text-align:center; color:#64748b;">No contacts currently in queue</div>
+          <div style="padding:20px; text-align:center; color:#94a3b8;">No contacts in queue</div>
         <?php } ?>
       </div>
     </div>
   </div>
 
-  <div id="logsSlidePanel" class="apple-slide-panel">
-    <div class="apple-slide-header">
-      <h3>Call Logs</h3>
-      <button type="button" class="apple-close-btn" id="btnCloseLogsDrawer">
-        <i class="fa fa-times"></i>
-      </button>
+  <div id="logsSlidePanel" class="glass-slide-panel">
+    <div class="glass-slide-header">
+      <h3 style="margin:0; font-size:16px; font-weight:700; color:#fff;">Past Call History</h3>
+      <button type="button" class="glass-dialer-backspace" id="btnCloseLogsDrawer"><i class="fa fa-times"></i></button>
     </div>
-    <div class="apple-slide-body">
+    <div class="glass-slide-body">
       <div id="logsListContainer">
         <?php if(!empty($recent_logs)){
           foreach($recent_logs as $log){ 
             $raw_phone = !empty($log['phone_number']) ? $log['phone_number'] : '';
             $clean_phone = preg_replace('/[^\d\+]/', '', $raw_phone);
           ?>
-            <div class="apple-phone-log-item">
-              <div class="apple-phone-log-top">
-                <span class="apple-phone-log-name"><?php echo htmlspecialchars($log['customer_name']); ?></span>
-                <span class="apple-badge"><?php echo (int)$log['duration'] > 0 ? (int)$log['duration'] . 's' : '0s'; ?></span>
+            <div class="glass-phone-log-item">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">
+                <span style="font-size:14px; font-weight:700; color:#ffffff;"><?php echo htmlspecialchars($log['customer_name']); ?></span>
+                <span class="glass-badge"><?php echo (int)$log['duration'] > 0 ? (int)$log['duration'] . 's' : '0s'; ?></span>
               </div>
-              <div class="apple-phone-log-meta">
-                <span><i class="fa fa-phone" style="font-size:10px;"></i> <?php echo htmlspecialchars($raw_phone); ?></span>
+              <div style="font-size:11px; color:#94a3b8; margin-bottom:10px;">
+                <span><i class="fa fa-phone"></i> <?php echo htmlspecialchars($raw_phone); ?></span>
                 <span>•</span>
                 <span><?php echo htmlspecialchars($log['disposition']); ?></span>
                 <span>•</span>
                 <span><?php echo date('M d, H:i', strtotime($log['created_at'])); ?></span>
               </div>
-              <div class="apple-phone-log-actions">
-                <button type="button" class="apple-log-action-btn btn-dial" onclick="dialFromLog('<?php echo htmlspecialchars(addslashes($clean_phone)); ?>', '<?php echo htmlspecialchars(addslashes($log['customer_name'])); ?>', <?php echo !empty($log['lead_id']) ? (int)$log['lead_id'] : 0; ?>)">
+              <div style="display:flex; gap:8px;">
+                <button type="button" class="glass-btn-white" style="padding:4px 10px; font-size:11px;" onclick="dialFromLog('<?php echo htmlspecialchars(addslashes($clean_phone)); ?>', '<?php echo htmlspecialchars(addslashes($log['customer_name'])); ?>', <?php echo !empty($log['lead_id']) ? (int)$log['lead_id'] : 0; ?>)">
                   <i class="fa fa-phone"></i> Call
                 </button>
-                <button type="button" class="apple-log-action-btn" onclick="copyNumberToClipboard('<?php echo htmlspecialchars(addslashes($clean_phone)); ?>')">
+                <button type="button" class="glass-btn-dark" style="padding:4px 10px; font-size:11px;" onclick="copyNumberToClipboard('<?php echo htmlspecialchars(addslashes($clean_phone)); ?>')">
                   <i class="fa fa-copy"></i> Copy
                 </button>
                 <?php if(!empty($log['lead_id'])){ ?>
-                  <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($log['lead_id']); ?>" target="_blank" class="apple-log-action-btn">
+                  <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($log['lead_id']); ?>" target="_blank" class="glass-btn-dark" style="padding:4px 10px; font-size:11px;">
                     <i class="fa fa-user"></i> View Lead
                   </a>
-                <?php } else { ?>
-                  <button type="button" class="apple-log-action-btn" onclick="addUnallottedToDialer('<?php echo htmlspecialchars(addslashes($clean_phone)); ?>', '<?php echo htmlspecialchars(addslashes($log['customer_name'])); ?>')">
-                    <i class="fa fa-user-plus"></i> Load
-                  </button>
                 <?php } ?>
               </div>
             </div>
         <?php } } else { ?>
-          <div style="padding:20px; text-align:center; color:#64748b;">No past completed calls recorded</div>
+          <div style="padding:20px; text-align:center; color:#94a3b8;">No past completed calls recorded</div>
         <?php } ?>
       </div>
     </div>
   </div>
 
-  <div id="appleToast" class="apple-toast">
-    <i class="fa fa-info-circle" style="color:#38bdf8;"></i>
+  <div id="appleToast" class="glass-toast">
+    <i class="fa fa-info-circle"></i>
     <span id="appleToastText">Notice message</span>
   </div>
 
@@ -1412,6 +1152,7 @@ body[data-theme="dark"] .apple-slide-footer {
 <script>
 var callingQueue = <?php echo json_encode(!empty($queue) ? $queue : array()); ?>;
 var isBackendConfigured = <?php echo !empty($is_backend_configured) ? 'true' : 'false'; ?>;
+var configuredDialerSeconds = <?php echo !empty($autodialer_seconds) ? (int)$autodialer_seconds : 60; ?>;
 var currentIndex = 0;
 var callState = 'idle';
 var callTimerInterval = null;
@@ -1419,6 +1160,10 @@ var callConnectedSeconds = 0;
 var activeCallLogId = 0;
 var audioCtx = null;
 var activePhoneType = 'primary';
+var autoDialerActive = true;
+var autoDialerCountdown = null;
+var autoDialerSeconds = configuredDialerSeconds;
+var autoDialerPaused = false;
 var csrfTokenName = '<?php echo $this->security->get_csrf_token_name(); ?>';
 var csrfTokenHash = '<?php echo $this->security->get_csrf_hash(); ?>';
 
@@ -1521,6 +1266,25 @@ function formatTimer(secs) {
   return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
 }
 
+function switchToCard(cardName) {
+  if (cardName === 'details') {
+    $('#viewCardDialer').hide();
+    $('#viewCardDetailFill').fadeIn(150);
+    $('#pillTabDialer').removeClass('active');
+    $('#pillTabDetails').addClass('active');
+    $('#dockBtnDialer').removeClass('active');
+    $('#dockBtnDetails').addClass('active');
+    checkFollowupScheduleRequirement();
+  } else {
+    $('#viewCardDetailFill').hide();
+    $('#viewCardDialer').fadeIn(150);
+    $('#pillTabDetails').removeClass('active');
+    $('#pillTabDialer').addClass('active');
+    $('#dockBtnDetails').removeClass('active');
+    $('#dockBtnDialer').addClass('active');
+  }
+}
+
 function selectPhoneTarget(type) {
   activePhoneType = type;
   var lead = callingQueue[currentIndex] || {};
@@ -1530,13 +1294,13 @@ function selectPhoneTarget(type) {
     num = lead.phone_alt || '';
     $('#cardAltPhone').addClass('active-target');
     $('#cardPrimaryPhone').removeClass('active-target');
-    $('#badgeAltActive').show().css({'background':'#2563eb', 'color':'#fff', 'border-color':'#2563eb'});
+    $('#badgeAltActive').show();
     $('#badgePrimaryActive').hide();
   } else {
     num = lead.phone_primary || lead.contact1 || '';
     $('#cardPrimaryPhone').addClass('active-target');
     $('#cardAltPhone').removeClass('active-target');
-    $('#badgePrimaryActive').show().css({'background':'#2563eb', 'color':'#fff', 'border-color':'#2563eb'});
+    $('#badgePrimaryActive').show();
     $('#badgeAltActive').hide();
   }
 
@@ -1555,6 +1319,7 @@ function loadContactAt(idx) {
 
   var lead = callingQueue[currentIndex];
   document.getElementById('displayCustomerName').textContent = lead.customer || 'Unnamed Contact';
+  document.getElementById('detailsCardCustomer').textContent = lead.customer || 'Unnamed Contact';
   document.getElementById('displayLeadCode').textContent = '#' + (lead.lead_id || lead.id || '—');
   document.getElementById('displayCategoryPill').textContent = lead.category || lead.p_cat || 'General Contact';
   document.getElementById('displayLeadStatus').textContent = lead.status_name || 'Open';
@@ -1575,13 +1340,13 @@ function loadContactAt(idx) {
   if (lead.tl_emirate) locParts.push(lead.tl_emirate);
   document.getElementById('displayAuthority').textContent = locParts.length ? locParts.join(', ') : '—';
 
-  document.getElementById('queuePositionText').textContent = (currentIndex + 1) + ' of ' + callingQueue.length;
+  document.getElementById('queueNavIndicator').textContent = 'Contact ' + (currentIndex + 1) + ' of ' + callingQueue.length;
 
   document.getElementById('hiddenLeadId').value = lead.id || 0;
   document.getElementById('hiddenCustomerName').value = lead.customer || '';
 
-  $('.apple-queue-item').removeClass('active');
-  $('.apple-queue-item[data-lead-idx="' + currentIndex + '"]').addClass('active');
+  $('.glass-queue-item').removeClass('active');
+  $('.glass-queue-item[data-lead-idx="' + currentIndex + '"]').addClass('active');
 
   var catLower = (lead.category || lead.p_cat || '').toLowerCase();
   if (catLower.indexOf('telecom') !== -1) {
@@ -1592,7 +1357,7 @@ function loadContactAt(idx) {
 }
 
 function switchVerticalTab(tabName) {
-  $('.apple-radio-pill#tabVerticalAccounting, .apple-radio-pill#tabVerticalTelecom, .apple-radio-pill#tabVerticalGeneral').removeClass('active');
+  $('.glass-radio-pill#tabVerticalAccounting, .glass-radio-pill#tabVerticalTelecom, .glass-radio-pill#tabVerticalGeneral').removeClass('active');
   $('#verticalAccountingSection, #verticalTelecomSection, #verticalGeneralSection').hide();
 
   if (tabName === 'telecom') {
@@ -1605,19 +1370,6 @@ function switchVerticalTab(tabName) {
     $('#tabVerticalAccounting').addClass('active');
     $('#verticalAccountingSection').show();
   }
-}
-
-function openFollowupPanel() {
-  document.getElementById('drawerBackdrop').classList.add('show');
-  document.getElementById('followupSlidePanel').classList.add('show');
-  document.getElementById('followupCallDurationBadge').textContent = 'Duration: ' + formatTimer(callConnectedSeconds);
-  document.getElementById('hiddenDuration').value = callConnectedSeconds;
-  checkFollowupScheduleRequirement();
-}
-
-function closeFollowupPanel() {
-  document.getElementById('drawerBackdrop').classList.remove('show');
-  document.getElementById('followupSlidePanel').classList.remove('show');
 }
 
 function checkFollowupScheduleRequirement() {
@@ -1637,25 +1389,14 @@ function dialFromLog(phone, customerName, leadId) {
 
   document.getElementById('dialerInput').value = phone;
   document.getElementById('displayCustomerName').textContent = customerName || 'Direct Dial';
+  document.getElementById('detailsCardCustomer').textContent = customerName || 'Direct Dial';
   document.getElementById('displayPrimaryPhone').textContent = phone;
   document.getElementById('hiddenPhone').value = phone;
   document.getElementById('hiddenCustomerName').value = customerName || 'Direct Dial';
   document.getElementById('hiddenLeadId').value = leadId || 0;
 
+  switchToCard('dialer');
   startCrmCall();
-}
-
-function addUnallottedToDialer(phone, customerName) {
-  $('#logsSlidePanel').removeClass('show');
-  $('#drawerBackdrop').removeClass('show');
-
-  document.getElementById('dialerInput').value = phone;
-  document.getElementById('displayPrimaryPhone').textContent = phone;
-  document.getElementById('displayCustomerName').textContent = customerName || 'Direct Dial';
-  document.getElementById('hiddenPhone').value = phone;
-  document.getElementById('hiddenCustomerName').value = customerName || 'Direct Dial';
-  document.getElementById('hiddenLeadId').value = 0;
-  showAppleToast('Loaded contact into dialer');
 }
 
 function startCrmCall() {
@@ -1664,6 +1405,9 @@ function startCrmCall() {
     showAppleToast('Please enter or select a phone number');
     return;
   }
+
+  stopWrapupCountdown();
+  $('#autodialerWrapupBanner').slideUp(180);
 
   var leadId = document.getElementById('hiddenLeadId').value;
   var customer = document.getElementById('hiddenCustomerName').value;
@@ -1702,7 +1446,7 @@ function startCrmCall() {
     }
 
     var btn = document.getElementById('btnToggleCall');
-    btn.className = 'apple-call-btn btn-end';
+    btn.className = 'glass-call-btn btn-end';
     btn.innerHTML = '<i class="fa fa-phone-slash"></i>';
     document.getElementById('liveCallSubtitle').textContent = 'Dialing ' + phone + ' via 3CX...';
 
@@ -1715,6 +1459,7 @@ function startCrmCall() {
             callConnectedSeconds++;
             document.getElementById('liveCallSubtitle').textContent = 'Connected • ' + formatTimer(callConnectedSeconds);
             document.getElementById('hiddenDuration').value = callConnectedSeconds;
+            document.getElementById('followupCallDurationBadge').textContent = formatTimer(callConnectedSeconds);
           }
         }, 1000);
       }
@@ -1738,7 +1483,7 @@ function endCrmCall() {
   }
 
   var btn = document.getElementById('btnToggleCall');
-  btn.className = 'apple-call-btn btn-start';
+  btn.className = 'glass-call-btn btn-start';
   btn.innerHTML = '<i class="fa fa-phone"></i>';
 
   document.getElementById('liveCallSubtitle').textContent = 'Call Ended • Ready for notes';
@@ -1751,26 +1496,14 @@ function endCrmCall() {
       data: { lead_id: leadId, duration: callConnectedSeconds },
       dataType: 'json'
     });
-    startWrapupCountdown(60);
+    startWrapupCountdown(configuredDialerSeconds);
   }
 
   if (activeCallLogId > 0) {
     runAiAnalysis(activeCallLogId, true);
   }
 
-  setTimeout(function() {
-    openFollowupPanel();
-  }, 250);
-}
-
-function escapeHtml(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+  switchToCard('details');
 }
 
 function runAiAnalysis(callLogId, silent) {
@@ -1795,52 +1528,19 @@ function runAiAnalysis(callLogId, silent) {
   });
 }
 
-var autoDialerActive = false;
-var autoDialerCountdown = null;
-var autoDialerSeconds = 60;
-var autoDialerPaused = false;
-
-function toggleAutoDialer() {
-  autoDialerActive = !autoDialerActive;
-  var btn = $('#btnToggleAutoDialer');
-  var stText = $('#autoDialerStatusText');
-  if (autoDialerActive) {
-    btn.css({ 'border-color': '#22c55e', 'background': 'rgba(34, 197, 94, 0.2)', 'color': '#ffffff' });
-    stText.text('Active');
-    showAppleToast('Auto-Dialer activated: 60s wrap-up between calls');
-    $.ajax({
-      type: 'POST',
-      url: '<?php echo base_url(); ?>manager/calls/ajax_start_autodial_session',
-      data: { filter_status: $('#selectedStatusInput').val() || 'all' },
-      dataType: 'json'
-    });
-  } else {
-    btn.css({ 'border-color': '#16a34a', 'background': '', 'color': '#4ade80' });
-    stText.text('Off');
-    stopWrapupCountdown();
-    $('#autodialerWrapupBanner').slideUp(180);
-    showAppleToast('Auto-Dialer stopped');
-    $.ajax({
-      type: 'POST',
-      url: '<?php echo base_url(); ?>manager/calls/ajax_autodial_stop',
-      dataType: 'json'
-    });
-  }
-}
-
 function startWrapupCountdown(seconds) {
   stopWrapupCountdown();
-  autoDialerSeconds = seconds || 60;
+  autoDialerSeconds = seconds || configuredDialerSeconds;
   autoDialerPaused = false;
   $('#autodialerTimerDisplay').text(autoDialerSeconds);
-  $('#autodialerBannerSub').text('Take notes and select call outcome. Next contact dials in ' + autoDialerSeconds + 's.');
+  $('#autodialerBannerSub').text('Take notes or fill details. Next contact automatically dials in ' + autoDialerSeconds + 's.');
   $('#autodialerWrapupBanner').slideDown(180);
 
   autoDialerCountdown = setInterval(function() {
     if (autoDialerPaused) return;
     autoDialerSeconds--;
     $('#autodialerTimerDisplay').text(autoDialerSeconds);
-    $('#autodialerBannerSub').text('Take notes and select call outcome. Next contact dials in ' + autoDialerSeconds + 's.');
+    $('#autodialerBannerSub').text('Take notes or fill details. Next contact automatically dials in ' + autoDialerSeconds + 's.');
 
     if (autoDialerSeconds <= 0) {
       stopWrapupCountdown();
@@ -1866,7 +1566,6 @@ function autoDialNextLead() {
       dispatchNextAutodialLead();
     });
   } else {
-    closeFollowupPanel();
     dispatchNextAutodialLead();
   }
 }
@@ -1892,13 +1591,13 @@ function dispatchNextAutodialLead() {
         callingQueue.unshift(nextLead);
         loadContactAt(0);
       }
+      switchToCard('dialer');
       showAppleToast('Auto-Dialing: ' + (nextLead.customer || 'Next Contact'));
       setTimeout(function() {
         startCrmCall();
-      }, 600);
+      }, 700);
     } else {
       showAppleToast('Auto-Dialer queue completed');
-      toggleAutoDialer();
     }
   }).fail(function() {
     showAppleToast('Error fetching next auto-dialer lead');
@@ -1915,7 +1614,7 @@ function refreshCallLogs() {
       var container = document.getElementById('logsListContainer');
       if (!container) return;
       if (resp.logs.length === 0) {
-        container.innerHTML = '<div style="padding:20px; text-align:center; color:#64748b;">No past completed calls recorded</div>';
+        container.innerHTML = '<div style="padding:20px; text-align:center; color:#94a3b8;">No past completed calls recorded</div>';
         return;
       }
       var html = '';
@@ -1923,61 +1622,28 @@ function refreshCallLogs() {
         var rawPhone = log.phone_number || '';
         var cleanPhone = rawPhone.replace(/[^\d\+]/g, '');
         var dur = parseInt(log.duration || 0, 10);
-        var sentClass = 'apple-ai-badge-neu';
-        if (log.ai_sentiment === 'Positive') sentClass = 'apple-ai-badge-pos';
-        if (log.ai_sentiment === 'Negative') sentClass = 'apple-ai-badge-neg';
 
-        html += '<div class="apple-phone-log-item">';
-        html += '<div class="apple-phone-log-top">';
-        html += '<span class="apple-phone-log-name">' + escapeHtml(log.customer_name || 'Direct Call') + '</span>';
-        html += '<div style="display:flex; align-items:center; gap:6px;">';
-        if (log.ai_sentiment) {
-          html += '<span class="apple-ai-badge ' + sentClass + '">' + escapeHtml(log.ai_sentiment) + '</span>';
-        }
-        if (log.ai_status) {
-          html += '<span class="apple-badge">' + escapeHtml(log.ai_status) + '</span>';
-        }
-        html += '<span class="apple-badge">' + dur + 's</span>';
-        html += '</div>';
+        html += '<div class="glass-phone-log-item">';
+        html += '<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">';
+        html += '<span style="font-size:14px; font-weight:700; color:#ffffff;">' + (log.customer_name || 'Direct Call') + '</span>';
+        html += '<span class="glass-badge">' + dur + 's</span>';
         html += '</div>';
 
-        html += '<div class="apple-phone-log-meta">';
-        html += '<span><i class="fa fa-phone" style="font-size:10px;"></i> ' + escapeHtml(rawPhone) + '</span>';
+        html += '<div style="font-size:11px; color:#94a3b8; margin-bottom:10px;">';
+        html += '<span><i class="fa fa-phone"></i> ' + rawPhone + '</span>';
         html += '<span>•</span>';
-        html += '<span>' + escapeHtml(log.disposition || 'Completed') + '</span>';
+        html += '<span>' + (log.disposition || 'Completed') + '</span>';
         html += '<span>•</span>';
-        html += '<span>' + escapeHtml(log.created_at || '') + '</span>';
+        html += '<span>' + (log.created_at || '') + '</span>';
         html += '</div>';
 
-        if (log.ai_summary) {
-          html += '<div class="apple-log-ai-summary"><strong>AI Summary:</strong> ' + escapeHtml(log.ai_summary) + '</div>';
-        }
-
-        if (log.recording_file || log.recording_url) {
-          var audioSrc = log.recording_file ? ('<?php echo base_url(); ?>' + log.recording_file) : log.recording_url;
-          html += '<div style="margin-top:8px;"><audio controls style="width:100%; height:30px; border-radius:6px;" src="' + audioSrc + '"></audio></div>';
-        }
-
-        html += '<div class="apple-phone-log-actions" style="margin-top:10px; flex-wrap:wrap;">';
-        html += '<button type="button" class="apple-log-action-btn btn-dial" onclick="dialFromLog(\'' + cleanPhone + '\', \'' + escapeHtml(log.customer_name || '').replace(/'/g, "\\'") + '\', ' + (log.lead_id || 0) + ')"><i class="fa fa-phone"></i> Call</button>';
-        html += '<button type="button" class="apple-log-action-btn" onclick="copyNumberToClipboard(\'' + cleanPhone + '\')"><i class="fa fa-copy"></i> Copy</button>';
+        html += '<div style="display:flex; gap:8px;">';
+        html += '<button type="button" class="glass-btn-white" style="padding:4px 10px; font-size:11px;" onclick="dialFromLog(\'' + cleanPhone + '\', \'' + (log.customer_name || '').replace(/'/g, "\\'") + '\', ' + (log.lead_id || 0) + ')"><i class="fa fa-phone"></i> Call</button>';
+        html += '<button type="button" class="glass-btn-dark" style="padding:4px 10px; font-size:11px;" onclick="copyNumberToClipboard(\'' + cleanPhone + '\')"><i class="fa fa-copy"></i> Copy</button>';
         if (log.lead_id) {
-          html += '<a href="<?php echo base_url(); ?>manager/leads/view/' + btoa(log.lead_id) + '" target="_blank" class="apple-log-action-btn"><i class="fa fa-user"></i> View Lead</a>';
-        } else {
-          html += '<button type="button" class="apple-log-action-btn" onclick="addUnallottedToDialer(\'' + cleanPhone + '\', \'' + escapeHtml(log.customer_name || '').replace(/'/g, "\\'") + '\')"><i class="fa fa-user-plus"></i> Load</button>';
+          html += '<a href="<?php echo base_url(); ?>manager/leads/view/' + btoa(log.lead_id) + '" target="_blank" class="glass-btn-dark" style="padding:4px 10px; font-size:11px;"><i class="fa fa-user"></i> View Lead</a>';
         }
-
-        if (log.transcript) {
-          html += '<button type="button" class="apple-log-action-btn" onclick="$(this).parent().next(\'.apple-transcript-box\').slideToggle(140);"><i class="fa fa-file-text-o"></i> Transcript</button>';
-        }
-
-        html += '<button type="button" class="apple-log-action-btn" onclick="runAiAnalysis(' + log.id + ', false)"><i class="fa fa-magic"></i> AI Analysis</button>';
         html += '</div>';
-
-        if (log.transcript) {
-          html += '<div class="apple-transcript-box">' + escapeHtml(log.transcript) + '</div>';
-        }
-
         html += '</div>';
       });
       container.innerHTML = html;
@@ -2011,7 +1677,6 @@ function saveCallDetails(callbackAfterSave) {
     if (resp && resp.status) {
       showAppleToast('Call details saved successfully');
       $('#followupRemarks').val('');
-      closeFollowupPanel();
       refreshCallLogs();
 
       if (typeof callbackAfterSave === 'function') {
@@ -2034,7 +1699,7 @@ $(document).ready(function() {
     todayHighlight: true
   });
 
-  $('.apple-key-btn').on('click', function() {
+  $('.glass-key-btn').on('click', function() {
     var key = $(this).data('key');
     playKeyTone(key);
     var input = document.getElementById('dialerInput');
@@ -2053,6 +1718,14 @@ $(document).ready(function() {
     } else {
       endCrmCall();
     }
+  });
+
+  $('#pillTabDialer, #dockBtnDialer').on('click', function() {
+    switchToCard('dialer');
+  });
+
+  $('#pillTabDetails, #dockBtnDetails').on('click', function() {
+    switchToCard('details');
   });
 
   $('#btnPrevLead').on('click', function() {
@@ -2087,7 +1760,11 @@ $(document).ready(function() {
     saveCallDetails(function(resp) {
       if (currentIndex < callingQueue.length - 1) {
         loadContactAt(currentIndex + 1);
+        switchToCard('dialer');
         showAppleToast('Loaded next contact: ' + (callingQueue[currentIndex].customer || ''));
+        if (autoDialerActive) {
+          startWrapupCountdown(configuredDialerSeconds);
+        }
       } else {
         showAppleToast('You have reached the end of the calling queue');
       }
@@ -2100,14 +1777,24 @@ $(document).ready(function() {
     });
   });
 
-  $('#btnToggleAutoDialer').on('click', function() {
-    toggleAutoDialer();
+  $('#dockBtnAutoDialToggle').on('click', function() {
+    autoDialerActive = !autoDialerActive;
+    if (autoDialerActive) {
+      $('#autoDialDockLbl').text(configuredDialerSeconds + 's');
+      showAppleToast('Auto-Dialer active (' + configuredDialerSeconds + 's countdown)');
+      startWrapupCountdown(configuredDialerSeconds);
+    } else {
+      $('#autoDialDockLbl').text('Off');
+      stopWrapupCountdown();
+      $('#autodialerWrapupBanner').slideUp(180);
+      showAppleToast('Auto-Dialer stopped');
+    }
   });
 
   $('#btnAutodialExtend').on('click', function() {
     autoDialerSeconds += 30;
     $('#autodialerTimerDisplay').text(autoDialerSeconds);
-    $('#autodialerBannerSub').text('Take notes. Extended by +30s (remaining: ' + autoDialerSeconds + 's).');
+    $('#autodialerBannerSub').text('Extended by +30s (remaining: ' + autoDialerSeconds + 's).');
     showAppleToast('Extended wrap-up cooldown by 30 seconds');
     $.ajax({
       type: 'POST',
@@ -2144,27 +1831,25 @@ $(document).ready(function() {
   });
 
   $('#btnAutodialStop').on('click', function() {
-    toggleAutoDialer();
+    autoDialerActive = false;
+    $('#autoDialDockLbl').text('Off');
+    stopWrapupCountdown();
+    $('#autodialerWrapupBanner').slideUp(180);
+    showAppleToast('Auto-Dialer stopped');
   });
 
-  $('#btnCloseFollowupPanel, #drawerBackdrop').on('click', function() {
-    closeFollowupPanel();
+  $('#dockBtnQueue').on('click', function() {
+    $('#drawerBackdrop').addClass('show');
+    $('#queueSlidePanel').addClass('show');
+  });
+
+  $('#btnCloseQueueDrawer, #drawerBackdrop').on('click', function() {
     $('#queueSlidePanel').removeClass('show');
     $('#logsSlidePanel').removeClass('show');
     $('#drawerBackdrop').removeClass('show');
   });
 
-  $('#btnToggleQueueDrawer').on('click', function() {
-    $('#drawerBackdrop').addClass('show');
-    $('#queueSlidePanel').addClass('show');
-  });
-
-  $('#btnCloseQueueDrawer').on('click', function() {
-    $('#queueSlidePanel').removeClass('show');
-    $('#drawerBackdrop').removeClass('show');
-  });
-
-  $('#btnToggleLogsDrawer').on('click', function() {
+  $('#dockBtnLogs').on('click', function() {
     refreshCallLogs();
     $('#drawerBackdrop').addClass('show');
     $('#logsSlidePanel').addClass('show');
@@ -2175,7 +1860,7 @@ $(document).ready(function() {
     $('#drawerBackdrop').removeClass('show');
   });
 
-  $(document).on('click', '.apple-queue-item', function() {
+  $(document).on('click', '.glass-queue-item', function() {
     var idx = parseInt($(this).data('lead-idx'), 10);
     loadContactAt(idx);
     $('#queueSlidePanel').removeClass('show');
@@ -2184,7 +1869,7 @@ $(document).ready(function() {
 
   $('#queueSearchInput').on('input', function() {
     var q = $(this).val().toLowerCase().trim();
-    $('.apple-queue-item').each(function() {
+    $('.glass-queue-item').each(function() {
       var txt = $(this).text().toLowerCase();
       if (!q || txt.indexOf(q) !== -1) {
         $(this).show();
@@ -2194,10 +1879,9 @@ $(document).ready(function() {
     });
   });
 
-  $('#nextFollowupTime').timepicker({ showInputs: false });
-
   if (callingQueue.length > 0) {
     loadContactAt(0);
+    startWrapupCountdown(configuredDialerSeconds);
   }
 });
 </script>

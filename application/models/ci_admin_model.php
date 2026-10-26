@@ -2452,6 +2452,41 @@ public function dashboard_MyPro($table='ci_leads'){
 			'total' => $total
 		);
 	}
+
+	public function dashboard_pipeline_summary() {
+		$manager_id = (int)$this->session->userdata('manager_id');
+		$role = (int)$this->session->userdata('manager_role');
+		$is_admin = ($role === 1 || $role === 4 || $manager_id === 1);
+
+		$team_array = $this->fetchTeamList($manager_id, '');
+		if (!is_array($team_array)) {
+			$team_array = array();
+		}
+		$team_array[] = $manager_id;
+		$team_array = array_unique(array_filter(array_map('intval', $team_array)));
+		$team_str = implode(',', $team_array);
+
+		$db_scope = '';
+		$lead_scope = '';
+		$order_scope = '';
+		if (!$is_admin) {
+			$db_scope = " AND (L.lead_assign = {$manager_id} OR (L.created_by = {$manager_id} AND (L.lead_assign = 0 OR L.lead_assign IS NULL)) OR (L.agents IS NOT NULL AND L.agents != '' AND FIND_IN_SET({$manager_id}, L.agents) > 0) OR FIND_IN_SET(L.created_by, '{$team_str}') > 0 OR FIND_IN_SET(L.lead_assign, '{$team_str}') > 0)";
+			$lead_scope = " AND (L.lead_assign = {$manager_id} OR (L.created_by = {$manager_id} AND (L.lead_assign = 0 OR L.lead_assign IS NULL)) OR (L.agents IS NOT NULL AND L.agents != '' AND FIND_IN_SET({$manager_id}, L.agents) > 0) OR FIND_IN_SET(L.created_by, '{$team_str}') > 0 OR FIND_IN_SET(L.lead_assign, '{$team_str}') > 0)";
+			$order_scope = " AND (O.created_by = {$manager_id} OR O.assigned_to = {$manager_id} OR FIND_IN_SET(O.created_by, '{$team_str}') > 0 OR FIND_IN_SET(O.assigned_to, '{$team_str}') > 0)";
+		}
+
+		$db_q = $this->db->query("SELECT COUNT(L.id) as cnt, COALESCE(SUM(CAST(L.mrr AS DECIMAL(10,2))), 0) as val FROM ci_leads L INNER JOIN ci_pipeline P ON P.lead_id = L.id WHERE P.pipeline_stage = 'database' AND (L.company_status IS NULL OR LOWER(L.company_status) != 'closed') {$db_scope}")->row_array();
+		$lead_q = $this->db->query("SELECT COUNT(L.id) as cnt, COALESCE(SUM(CAST(L.mrr AS DECIMAL(10,2))), 0) as val FROM ci_leads L INNER JOIN ci_pipeline P ON P.lead_id = L.id WHERE P.pipeline_stage = 'lead' AND (L.company_status IS NULL OR LOWER(L.company_status) != 'closed') {$lead_scope}")->row_array();
+		$order_q = $this->db->query("SELECT COUNT(O.id) as cnt, COALESCE(SUM(CAST(O.pricing_amount AS DECIMAL(10,2))), 0) as val FROM ci_orders O WHERE O.status != 'Sales' AND O.status != 'Cancelled' {$order_scope}")->row_array();
+		$sales_q = $this->db->query("SELECT COUNT(O.id) as cnt, COALESCE(SUM(CAST(O.pricing_amount AS DECIMAL(10,2))), 0) as val FROM ci_orders O WHERE O.status = 'Sales' {$order_scope}")->row_array();
+
+		return array(
+			'database' => array('count' => (int)$db_q['cnt'], 'value' => (float)$db_q['val']),
+			'leads'    => array('count' => (int)$lead_q['cnt'], 'value' => (float)$lead_q['val']),
+			'orders'   => array('count' => (int)$order_q['cnt'], 'value' => (float)$order_q['val']),
+			'sales'    => array('count' => (int)$sales_q['cnt'], 'value' => (float)$sales_q['val']),
+		);
+	}
 }
 
 if (!function_exists('has_section_perm')) {

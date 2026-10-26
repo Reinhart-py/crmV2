@@ -146,6 +146,7 @@ class Ci_admin extends CI_Controller {
 		
 		$data['dashboard_TeamPro']=$this->ci_admin_model->dashboard_TeamPro();
 		$data['dashboard_MyPro']=$this->ci_admin_model->dashboard_MyPro();
+		$data['dashboard_pipeline'] = $this->ci_admin_model->dashboard_pipeline_summary();
 
 		$this->load->view('manager/dashboard',$data);
 	}

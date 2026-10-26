@@ -59,11 +59,19 @@
           </div>
         </div>
 
-        <div style="margin-bottom: 20px;">
-          <label style="font-size: 13px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 6px;">
-            Multiple Lines / Agent Extension Mapping
-          </label>
-          <textarea name="multiple_lines" id="multiple_lines" class="form-control" rows="3" style="border-color: #cbd5e1; font-size: 12px; font-family: monospace;" placeholder="user_id=extension (e.g. 1=101, 2=102)"><?php echo htmlspecialchars(!empty($threecx_config['multiple_lines']) ? $threecx_config['multiple_lines'] : ''); ?></textarea>
+        <div class="row">
+          <div class="col-md-6" style="margin-bottom: 20px;">
+            <label style="font-size: 13px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 6px;">
+              Auto-Dialer Countdown Timer (Seconds) <span style="color: #ef4444;">*</span>
+            </label>
+            <input type="number" name="autodialer_seconds" id="autodialer_seconds" min="10" max="300" class="form-control" style="border-color: #cbd5e1; font-size: 13px;" placeholder="60" value="<?php echo htmlspecialchars(!empty($threecx_config['autodialer_seconds']) ? (int)$threecx_config['autodialer_seconds'] : 60); ?>" required />
+          </div>
+          <div class="col-md-6" style="margin-bottom: 20px;">
+            <label style="font-size: 13px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 6px;">
+              Multiple Lines / Agent Extension Mapping
+            </label>
+            <textarea name="multiple_lines" id="multiple_lines" class="form-control" rows="2" style="border-color: #cbd5e1; font-size: 12px; font-family: monospace;" placeholder="user_id=extension (e.g. 1=101, 2=102)"><?php echo htmlspecialchars(!empty($threecx_config['multiple_lines']) ? $threecx_config['multiple_lines'] : ''); ?></textarea>
+          </div>
         </div>
 
         <div id="testConnectionStatus" style="display: none; margin-bottom: 20px; padding: 12px 16px; border-radius: 8px; font-size: 13px; font-weight: 500;"></div>

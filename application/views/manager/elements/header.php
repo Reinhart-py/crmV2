@@ -227,6 +227,8 @@
           <li><a href="<?php echo base_url();?>manager/leads/review_leads"><i class="fa fa-check-square-o"></i>Pending Leads Approval</a></li>
           <li><a href="<?php echo base_url();?>manager/orders/pending_process"><i class="fa fa-hourglass-half"></i>Pending Order Process</a></li>
           <li><a href="<?php echo base_url();?>manager/kam/onboard"><i class="fa fa-user-plus"></i>Onboard Client</a></li>
+          <li><a href="<?php echo base_url();?>manager/orders/open"><i class="fa fa-folder-open-o"></i>Open Orders</a></li>
+          <li><a href="<?php echo base_url();?>manager/orders/followups"><i class="fa fa-calendar-check-o"></i>Orders Follow-up</a></li>
           <li><a href="<?php echo base_url();?>manager/orders?status=completed"><i class="fa fa-check-circle"></i>Completed Orders</a></li>
           <li><a href="<?php echo base_url();?>manager/orders"><i class="fa fa-list"></i>View All Orders</a></li>
         </ul>
@@ -242,6 +244,8 @@
           <li><a href="<?php echo base_url();?>manager/kam/onboard"><i class="fa fa-user-plus"></i>Onboard Client</a></li>
           <?php } ?>
           <li><a href="<?php echo base_url();?>manager/kam/schedule"><i class="fa fa-calendar"></i>Create Schedule</a></li>
+          <li><a href="<?php echo base_url();?>manager/kam/task-followup"><i class="fa fa-tasks"></i>Task Follow-up</a></li>
+          <li><a href="<?php echo base_url();?>manager/kam/reminders"><i class="fa fa-bell-o"></i>Reminders</a></li>
         </ul>
       </li>
       <?php } ?>
@@ -487,6 +491,8 @@ $(function() {
           <li><a href="<?php echo base_url();?>manager/leads/review_leads"><i class="fa fa-check-square-o"></i>Pending Leads Approval</a></li>
           <li><a href="<?php echo base_url();?>manager/orders/pending_process"><i class="fa fa-hourglass-half"></i>Pending Order Process</a></li>
           <li><a href="<?php echo base_url();?>manager/kam/onboard"><i class="fa fa-user-plus"></i>Onboard Client</a></li>
+          <li><a href="<?php echo base_url();?>manager/orders/open"><i class="fa fa-folder-open-o"></i>Open Orders</a></li>
+          <li><a href="<?php echo base_url();?>manager/orders/followups"><i class="fa fa-calendar-check-o"></i>Orders Follow-up</a></li>
           <li><a href="<?php echo base_url();?>manager/orders?status=completed"><i class="fa fa-check-circle"></i>Completed Orders</a></li>
           <li><a href="<?php echo base_url();?>manager/orders"><i class="fa fa-list"></i>View All Orders</a></li>
         </ul>
@@ -502,6 +508,8 @@ $(function() {
           <li><a href="<?php echo base_url();?>manager/kam/onboard"><i class="fa fa-user-plus"></i>Onboard Client</a></li>
           <?php } ?>
           <li><a href="<?php echo base_url();?>manager/kam/schedule"><i class="fa fa-calendar"></i>Create Schedule</a></li>
+          <li><a href="<?php echo base_url();?>manager/kam/task-followup"><i class="fa fa-tasks"></i>Task Follow-up</a></li>
+          <li><a href="<?php echo base_url();?>manager/kam/reminders"><i class="fa fa-bell-o"></i>Reminders</a></li>
         </ul>
       </li>
       <?php } ?>

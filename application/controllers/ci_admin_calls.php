@@ -194,6 +194,7 @@ class Ci_admin_calls extends CI_Controller
 		$data['manager_department'] = $manager_dept;
 		$data['threecx_config'] = $this->threecx->get_config();
 		$data['is_backend_configured'] = (!empty($data['threecx_config']['pbx_fqdn']) && !empty($data['threecx_config']['client_id']));
+		$data['autodialer_seconds'] = !empty($data['threecx_config']['autodialer_seconds']) ? (int)$data['threecx_config']['autodialer_seconds'] : 60;
 
 		$this->load->view('manager/calls/dashboard', $data);
 	}
@@ -552,7 +553,8 @@ class Ci_admin_calls extends CI_Controller
 			'client_secret' => trim($this->input->post('client_secret')),
 			'default_extension' => trim($this->input->post('default_extension')),
 			'multiple_lines' => trim($this->input->post('multiple_lines')),
-			'auto_open_webclient' => $this->input->post('auto_open_webclient') ? 1 : 0
+			'auto_open_webclient' => $this->input->post('auto_open_webclient') ? 1 : 0,
+			'autodialer_seconds' => (int)$this->input->post('autodialer_seconds')
 		);
 
 		$result = $this->threecx->save_config($data);

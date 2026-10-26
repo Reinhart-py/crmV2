@@ -95,6 +95,14 @@ class Ci_admin_orders extends CI_Controller {
 			$this->db->where_in('O.status', array('Fulfilled', 'Completed'));
 			$can_edit_orders = $is_backoffice;
 			$reset_url = base_url('manager/orders?status=completed');
+		} elseif ($status_filter === 'open') {
+			$data['info'] = array(
+				'title' => 'Open Orders - Back Office',
+				'page_heading' => 'Open Orders'
+			);
+			$this->db->where_not_in('O.status', array('Fulfilled', 'Completed', 'Sales', 'Cancelled', 'Rejected'));
+			$can_edit_orders = $is_backoffice;
+			$reset_url = base_url('manager/orders/open');
 		} else {
 			if (!$is_backoffice) {
 				redirect('manager/orders/my');
@@ -117,7 +125,7 @@ class Ci_admin_orders extends CI_Controller {
 		if (!empty($service_filter)) {
 			$this->db->like('O.service_title', $service_filter);
 		}
-		if (!empty($status_filter) && $status_filter !== 'sales' && $status_filter !== 'Sales' && $status_filter !== 'completed') {
+		if (!empty($status_filter) && $status_filter !== 'sales' && $status_filter !== 'Sales' && $status_filter !== 'completed' && $status_filter !== 'open') {
 			if ($status_filter === 'ongoing') {
 				$this->db->where_in('O.status', array('Approved', 'In Progress', 'Under Review'));
 			} else {
@@ -974,5 +982,57 @@ class Ci_admin_orders extends CI_Controller {
 		$data['payments'] = $this->db->get()->result_array();
 
 		$this->load->view('manager/orders/payments', $data);
+	}
+
+	public function open()
+	{
+		$_GET['status'] = 'open';
+		$this->index();
+	}
+
+	public function followups()
+	{
+		$data = array();
+		$cur_uid = (int)$this->session->userdata('manager_id');
+		$cur_role = (int)$this->session->userdata('manager_role');
+		$is_backoffice = ($cur_role === 1 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('back_office'));
+		if (!$is_backoffice) {
+			redirect('manager/orders/my');
+			return;
+		}
+
+		$data['info'] = array(
+			'title' => 'Orders Follow-up - Back Office',
+			'page_heading' => 'Orders Follow-up'
+		);
+		$data['reset_url'] = base_url('manager/orders/followups');
+
+		$this->db->select('O.*, U.name as staff_name, A.customer as lead_customer, A.lead_id as lead_code');
+		$this->db->from('ci_orders O');
+		$this->db->join('ci_user U', 'O.assigned_to = U.id', 'LEFT');
+		$this->db->join('ci_leads A', 'O.lead_id = A.id', 'LEFT');
+		$this->db->where_not_in('O.status', array('Completed', 'Fulfilled', 'Sales', 'Cancelled', 'Rejected'));
+
+		$client_filter = $this->input->get('client', true);
+		if (!empty($client_filter)) {
+			$this->db->where('(O.client_name LIKE "%'.$this->db->escape_like_str($client_filter).'%" OR O.order_no LIKE "%'.$this->db->escape_like_str($client_filter).'%" OR O.client_id = '.(int)$client_filter.')');
+		}
+		$d1 = $this->input->get('d1', true);
+		$d2 = $this->input->get('d2', true);
+		if (!empty($d1) && !empty($d2)) {
+			$d1_clean = date('Y-m-d 00:00:00', strtotime($d1));
+			$d2_clean = date('Y-m-d 23:59:59', strtotime($d2));
+			$this->db->where("O.created_at >= '{$d1_clean}' AND O.created_at <= '{$d2_clean}'");
+		}
+
+		$this->db->order_by('O.id', 'DESC');
+		$data['orders_list'] = $this->db->get()->result_array();
+		$data['can_edit_orders'] = true;
+		$data['status_filter'] = 'followups';
+		$data['scope_filter'] = 'backoffice';
+		$data['staff_list'] = $this->db->select('id, name, department')->where('status', 1)->order_by('name', 'ASC')->get('ci_user')->result_array();
+		$data['clients_list'] = $this->db->select('id, customer, lead_id')->order_by('customer', 'ASC')->get('ci_leads')->result_array();
+
+		$this->load->view('manager/orders/index', $data);
 	}
 }

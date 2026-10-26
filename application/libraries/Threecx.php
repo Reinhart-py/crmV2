@@ -19,7 +19,8 @@ class Threecx
 			'client_secret' => getenv('THREECX_CLIENT_SECRET') ? getenv('THREECX_CLIENT_SECRET') : '',
 			'default_extension' => getenv('THREECX_EXTENSION') ? getenv('THREECX_EXTENSION') : '',
 			'multiple_lines' => '',
-			'auto_open_webclient' => true
+			'auto_open_webclient' => true,
+			'autodialer_seconds' => 60
 		);
 
 		if (file_exists($this->config_file)) {
@@ -46,6 +47,10 @@ class Threecx
 		$clean_fqdn = isset($data['pbx_fqdn']) ? trim($data['pbx_fqdn']) : '';
 		$clean_fqdn = preg_replace('#^https?://#i', '', $clean_fqdn);
 		$clean_fqdn = rtrim($clean_fqdn, '/');
+		$seconds = isset($data['autodialer_seconds']) ? (int)$data['autodialer_seconds'] : 60;
+		if ($seconds <= 0) {
+			$seconds = 60;
+		}
 
 		$new_config = array(
 			'pbx_fqdn' => $clean_fqdn,
@@ -54,6 +59,7 @@ class Threecx
 			'default_extension' => isset($data['default_extension']) ? trim($data['default_extension']) : '',
 			'multiple_lines' => isset($data['multiple_lines']) ? trim($data['multiple_lines']) : '',
 			'auto_open_webclient' => !empty($data['auto_open_webclient']) ? true : false,
+			'autodialer_seconds' => $seconds,
 			'updated_at' => date('Y-m-d H:i:s')
 		);
 

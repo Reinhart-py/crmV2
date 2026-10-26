@@ -82,6 +82,90 @@
             </div>
         </div>
 
+        <?php
+            $pipe_db_cnt = isset($dashboard_pipeline['database']['count']) ? (int)$dashboard_pipeline['database']['count'] : 0;
+            $pipe_db_val = isset($dashboard_pipeline['database']['value']) ? (float)$dashboard_pipeline['database']['value'] : 0.0;
+            $pipe_lead_cnt = isset($dashboard_pipeline['leads']['count']) ? (int)$dashboard_pipeline['leads']['count'] : 0;
+            $pipe_lead_val = isset($dashboard_pipeline['leads']['value']) ? (float)$dashboard_pipeline['leads']['value'] : 0.0;
+            $pipe_order_cnt = isset($dashboard_pipeline['orders']['count']) ? (int)$dashboard_pipeline['orders']['count'] : 0;
+            $pipe_order_val = isset($dashboard_pipeline['orders']['value']) ? (float)$dashboard_pipeline['orders']['value'] : 0.0;
+            $pipe_sale_cnt = isset($dashboard_pipeline['sales']['count']) ? (int)$dashboard_pipeline['sales']['count'] : 0;
+            $pipe_sale_val = isset($dashboard_pipeline['sales']['value']) ? (float)$dashboard_pipeline['sales']['value'] : 0.0;
+        ?>
+        <div class="row" style="margin-top: 5px; margin-bottom: 5px;">
+            <div class="col-lg-3 col-sm-6 col-xs-12">
+                <a href="<?php echo base_url(); ?>manager/leads" class="dash-kpi-card" id="cardPipelineDatabase" style="background: linear-gradient(135deg, #0052cc 0%, #0072f0 100%) !important;">
+                    <div class="dash-kpi-top">
+                        <div>
+                            <div class="dash-kpi-value"><?php echo number_format($pipe_db_cnt); ?></div>
+                            <div class="dash-kpi-label">Database</div>
+                            <div style="font-size: 13px; font-weight: 700; color: #ffffff; margin-top: 4px; opacity: 0.95;">
+                                Value: AED <?php echo number_format($pipe_db_val, 2); ?>
+                            </div>
+                        </div>
+                        <div class="dash-kpi-icon"><i class="fa fa-database"></i></div>
+                    </div>
+                    <div class="dash-kpi-footer">
+                        <span>View Database</span> <i class="fa fa-arrow-circle-right"></i>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-lg-3 col-sm-6 col-xs-12">
+                <a href="<?php echo base_url(); ?>manager/leads/view_leads" class="dash-kpi-card" id="cardPipelineLeads" style="background: linear-gradient(135deg, #0062ea 0%, #0084ff 100%) !important;">
+                    <div class="dash-kpi-top">
+                        <div>
+                            <div class="dash-kpi-value"><?php echo number_format($pipe_lead_cnt); ?></div>
+                            <div class="dash-kpi-label">Leads</div>
+                            <div style="font-size: 13px; font-weight: 700; color: #ffffff; margin-top: 4px; opacity: 0.95;">
+                                Value: AED <?php echo number_format($pipe_lead_val, 2); ?>
+                            </div>
+                        </div>
+                        <div class="dash-kpi-icon"><i class="fa fa-bullseye"></i></div>
+                    </div>
+                    <div class="dash-kpi-footer">
+                        <span>View Leads</span> <i class="fa fa-arrow-circle-right"></i>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-lg-3 col-sm-6 col-xs-12">
+                <a href="<?php echo base_url(); ?>manager/orders/open" class="dash-kpi-card" id="cardPipelineOrders" style="background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%) !important;">
+                    <div class="dash-kpi-top">
+                        <div>
+                            <div class="dash-kpi-value"><?php echo number_format($pipe_order_cnt); ?></div>
+                            <div class="dash-kpi-label">Orders</div>
+                            <div style="font-size: 13px; font-weight: 700; color: #ffffff; margin-top: 4px; opacity: 0.95;">
+                                Value: AED <?php echo number_format($pipe_order_val, 2); ?>
+                            </div>
+                        </div>
+                        <div class="dash-kpi-icon"><i class="fa fa-shopping-cart"></i></div>
+                    </div>
+                    <div class="dash-kpi-footer">
+                        <span>View Orders</span> <i class="fa fa-arrow-circle-right"></i>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-lg-3 col-sm-6 col-xs-12">
+                <a href="<?php echo base_url(); ?>manager/sales" class="dash-kpi-card" id="cardPipelineSales" style="background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%) !important;">
+                    <div class="dash-kpi-top">
+                        <div>
+                            <div class="dash-kpi-value"><?php echo number_format($pipe_sale_cnt); ?></div>
+                            <div class="dash-kpi-label">Sales</div>
+                            <div style="font-size: 13px; font-weight: 700; color: #ffffff; margin-top: 4px; opacity: 0.95;">
+                                Value: AED <?php echo number_format($pipe_sale_val, 2); ?>
+                            </div>
+                        </div>
+                        <div class="dash-kpi-icon"><i class="fa fa-line-chart"></i></div>
+                    </div>
+                    <div class="dash-kpi-footer">
+                        <span>View Sales</span> <i class="fa fa-arrow-circle-right"></i>
+                    </div>
+                </a>
+            </div>
+        </div>
+
         
         <?php
             $my_lead_total = 0;
