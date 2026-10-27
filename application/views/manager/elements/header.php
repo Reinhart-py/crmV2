@@ -276,7 +276,7 @@
           <?php if($is_admin || $is_support){ ?>
           <li><a href="<?php echo base_url();?>manager/system/calling-api"><i class="fa fa-phone-square"></i>Calling API</a></li>
           <?php } ?>
-          <?php if($is_admin || has_perm('integrations')){ ?>
+          <?php if($is_admin || has_section_perm('integrations')){ ?>
           <li><a href="<?php echo base_url();?>manager/system/integrations"><i class="fa fa-plug"></i>Third-Party API</a></li>
           <?php } ?>
         </ul>
@@ -620,7 +620,7 @@ $(function() {
           <?php if($is_admin || $is_support){ ?>
           <li><a href="<?php echo base_url();?>manager/system/calling-api"><i class="fa fa-phone-square"></i>Calling API</a></li>
           <?php } ?>
-          <?php if($is_admin || has_perm('integrations')){ ?>
+          <?php if($is_admin || has_section_perm('integrations')){ ?>
           <li><a href="<?php echo base_url();?>manager/system/integrations"><i class="fa fa-plug"></i>Third-Party API</a></li>
           <?php } ?>
         </ul>

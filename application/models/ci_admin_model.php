@@ -2823,3 +2823,9 @@ if (!function_exists('has_section_perm')) {
 		return $ci->ci_admin_model->check_permission($section, $required);
 	}
 }
+
+if (!function_exists('has_perm')) {
+	function has_perm($section, $required = 'read') {
+		return has_section_perm($section, $required);
+	}
+}
