@@ -22,6 +22,18 @@ $route['manager/users/cedit/(:num)'] = 'ci_admin_user/cedit/$1';
 $route['manager/users/view/(:num)'] = 'ci_admin_user/view/$1';
 $route['manager/users/report'] = "ci_admin_report/users";
 
+$route['manager/roles'] = "ci_admin_roles/index";
+$route['manager/roles/add'] = "ci_admin_roles/add";
+$route['manager/roles/edit/(:num)'] = "ci_admin_roles/edit/$1";
+$route['manager/roles/delete/(:num)'] = "ci_admin_roles/delete/$1";
+$route['manager/roles/(:any)'] = "ci_admin_roles/$1";
+
+$route['manager/terms'] = "ci_admin_terms/index";
+$route['manager/terms/add'] = "ci_admin_terms/add";
+$route['manager/terms/edit/(:num)'] = "ci_admin_terms/edit/$1";
+$route['manager/terms/delete/(:num)'] = "ci_admin_terms/delete/$1";
+$route['manager/terms/(:any)'] = "ci_admin_terms/$1";
+
 $route['manager/leads/import'] = "ci_admin_leads/import";
 $route['manager/leads/import_action'] = "ci_admin_leads/import_action";
 $route['manager/leads/export'] = "ci_admin_leads/export";

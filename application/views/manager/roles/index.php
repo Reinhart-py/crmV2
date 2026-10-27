@@ -3,57 +3,46 @@
 .roles-page-container {
     padding: 0 16px 40px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    color: #0f172a;
+    color: #000000;
 }
 .role-list-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     overflow: hidden;
 }
 .role-list-header {
-    padding: 20px 24px;
-    border-bottom: 1px solid #f1f5f9;
+    padding: 18px 24px;
+    border-bottom: 1px solid #e2e8f0;
     display: flex;
     justify-content: space-between;
     align-items: center;
     background: #ffffff;
 }
 .role-list-title {
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 700;
-    color: #0f172a;
+    color: #000000;
     margin: 0;
-    letter-spacing: -0.01em;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.role-list-subtitle {
-    font-size: 13px;
-    color: #64748b;
-    margin-top: 4px;
 }
 .btn-add-role {
-    background: #0072f0;
+    background: #000000;
     color: #ffffff !important;
-    border: 1px solid #0060d0;
-    border-radius: 8px;
-    padding: 9px 20px;
+    border: 1px solid #000000;
+    border-radius: 6px;
+    padding: 8px 18px;
     font-size: 13px;
     font-weight: 600;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     text-decoration: none !important;
-    box-shadow: 0 2px 6px rgba(0, 114, 240, 0.2);
     transition: all 0.15s ease;
 }
 .btn-add-role:hover {
-    background: #0060d0;
-    border-color: #0050b5;
-    box-shadow: 0 4px 12px rgba(0, 114, 240, 0.3);
+    background: #262626;
+    border-color: #262626;
 }
 .role-table {
     width: 100%;
@@ -62,19 +51,19 @@
 }
 .role-table th {
     background: #f8fafc;
-    color: #64748b;
-    font-size: 11.5px;
-    font-weight: 600;
+    color: #000000;
+    font-size: 12px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.03em;
     padding: 12px 20px;
     border-bottom: 1px solid #e2e8f0;
 }
 .role-table td {
     padding: 14px 20px;
     border-bottom: 1px solid #f1f5f9;
-    font-size: 13px;
-    color: #0f172a;
+    font-size: 13.5px;
+    color: #000000;
     vertical-align: middle;
 }
 .role-table tr:last-child td {
@@ -86,21 +75,19 @@
 .role-status-badge {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
     padding: 3px 10px;
-    border-radius: 980px;
+    border-radius: 4px;
     font-size: 11.5px;
     font-weight: 600;
 }
 .status-active {
-    background: #dcfce7;
-    color: #15803d;
-    border: 1px solid #bbf7d0;
+    background: #000000;
+    color: #ffffff;
 }
 .status-disabled {
-    background: #f1f5f9;
+    background: #ffffff;
     color: #64748b;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #cbd5e1;
 }
 .role-action-btn {
     display: inline-flex;
@@ -109,22 +96,22 @@
     width: 32px;
     height: 32px;
     border-radius: 6px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #cbd5e1;
     background: #ffffff;
-    color: #475569;
+    color: #000000;
     transition: all 0.15s ease;
     margin-left: 6px;
     text-decoration: none !important;
 }
 .role-action-btn:hover {
-    background: #eff6ff;
-    border-color: #bfdbfe;
-    color: #0072f0;
+    background: #000000;
+    border-color: #000000;
+    color: #ffffff;
 }
 .role-action-btn.btn-delete:hover {
-    background: #fef2f2;
-    border-color: #fecaca;
-    color: #dc2626;
+    background: #000000;
+    border-color: #000000;
+    color: #ffffff;
 }
 </style>
 
@@ -132,13 +119,13 @@
   <section class="content-header" style="padding: 20px 0 16px 0;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
       <div>
-        <h1 style="font-size: 24px; font-weight: 700; color: #0f172a; margin:0; letter-spacing: -0.02em;">
-          <?php echo htmlspecialchars($info['page_heading']); ?>
+        <h1 style="font-size: 22px; font-weight: 700; color: #000000; margin:0; letter-spacing: -0.02em;">
+          All Roles
         </h1>
       </div>
       <div>
         <a href="<?php echo base_url(); ?>manager/roles/add" class="btn-add-role">
-          <i class="fa fa-plus"></i> Add New Role
+          <i class="fa fa-plus"></i> Add Role
         </a>
       </div>
     </div>
@@ -153,13 +140,10 @@
         <div class="role-list-card">
           <div class="role-list-header">
             <div>
-              <h2 class="role-list-title">
-                <i class="fa fa-shield" style="color: #0072f0;"></i> System Roles &amp; Security Tiers
-              </h2>
-              <div class="role-list-subtitle">Manage granular module permissions and access control for company staff</div>
+              <h2 class="role-list-title">All Roles</h2>
             </div>
             <div style="font-size: 13px; color: #64748b;">
-              Total Configured Roles: <strong style="color:#0f172a; font-weight:700;"><?php echo !empty($user_list) ? count($user_list) : 0; ?></strong>
+              Total Roles: <strong style="color:#000000; font-weight:700;"><?php echo !empty($user_list) ? count($user_list) : 0; ?></strong>
             </div>
           </div>
 
@@ -179,32 +163,32 @@
               <tbody>
                 <?php foreach($user_list as $k=>$li) { ?>
                 <tr>
-                  <td style="color:#94a3b8; font-weight:500;"><?php echo $k+1; ?></td>
+                  <td style="color:#64748b; font-weight:500;"><?php echo $k+1; ?></td>
                   <td>
-                    <strong style="font-weight:600; font-size:14px; color:#0f172a;"><?php echo htmlspecialchars($li['title']); ?></strong>
+                    <strong style="font-weight:600; font-size:14px; color:#000000;"><?php echo htmlspecialchars($li['title']); ?></strong>
                     <?php if ((int)$li['id'] === 1) { ?>
-                      <span style="font-size:11px; background:#eff6ff; color:#0072f0; border:1px solid #bfdbfe; padding:2px 8px; border-radius:12px; margin-left:8px; font-weight:600;">
-                        <i class="fa fa-star"></i> Administrator
+                      <span style="font-size:11px; background:#000000; color:#ffffff; padding:2px 8px; border-radius:4px; margin-left:8px; font-weight:600;">
+                        Administrator
                       </span>
                     <?php } elseif ((int)$li['id'] === 2) { ?>
-                      <span style="font-size:11px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; padding:2px 8px; border-radius:12px; margin-left:8px; font-weight:600;">
-                        <i class="fa fa-cogs"></i> Operations Control
+                      <span style="font-size:11px; background:#f1f5f9; color:#000000; border:1px solid #cbd5e1; padding:2px 8px; border-radius:4px; margin-left:8px; font-weight:600;">
+                        Back Office
                       </span>
                     <?php } ?>
                   </td>      
                   <td>
-                    <span style="background:#f1f5f9; color:#475569; padding:3px 8px; border-radius:6px; font-size:12px; font-weight:600;">
+                    <span style="background:#f1f5f9; color:#000000; border:1px solid #e2e8f0; padding:3px 8px; border-radius:4px; font-size:12px; font-weight:600;">
                       Level <?php echo (int)$li['level']; ?>
                     </span>
                   </td> 
                   <td>
                     <?php if($li['status']==0) { ?>
                       <span class="role-status-badge status-disabled">
-                        <i class="fa fa-ban"></i> Disabled
+                        Disabled
                       </span>
                     <?php } else { ?>
                       <span class="role-status-badge status-active">
-                        <i class="fa fa-check-circle"></i> Active
+                        Active
                       </span>
                     <?php } ?>
                   </td>

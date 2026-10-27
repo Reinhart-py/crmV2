@@ -702,27 +702,17 @@ public function dashboard_MyPro($table='ci_leads'){
 
 			   $uid = (int)$this->session->userdata('manager_id');
 			   $urole = (int)$this->session->userdata('manager_role');
-			   if ($urole == 2 || $urole == 5) {
+			   if ($urole == 5) {
 				   if ($stage !== 'back_office') {
 					   $this->db->where('A.id', -1);
 				   }
-			   } elseif ($stage === 'pending_approval') {
-				   if ($urole !== 1 && $urole !== 4 && $uid !== 1) {
-					   $team_members = $this->fetchTeamList($uid, '');
-					   if (!is_array($team_members)) $team_members = array();
-					   if (!empty($team_members)) {
-						   $this->db->where_in('P.conversion_requested_by', $team_members);
-					   } else {
-						   $this->db->where('A.id', -1);
-					   }
-				   }
-			   } elseif ($stage === 'review_leads') {
-				   if ($urole !== 1 && $urole !== 4 && $uid !== 1) {
+			   } elseif ($stage === 'pending_approval' || $stage === 'review_leads') {
+				   if ($urole !== 1 && $urole !== 2 && $urole !== 4 && $uid !== 1 && !has_section_perm('lead_review') && !has_section_perm('back_office')) {
 					   $team_members = $this->fetchTeamList($uid, '');
 					   if (!is_array($team_members)) $team_members = array();
 					   if (!empty($team_members)) {
 						   $team_str = implode(',', array_map('intval', $team_members));
-						   $this->db->where("(A.created_by IN ($team_str) OR A.lead_assign IN ($team_str))");
+						   $this->db->where("(A.created_by IN ($team_str) OR A.lead_assign IN ($team_str) OR P.conversion_requested_by IN ($team_str))");
 					   } else {
 						   $this->db->where('A.id', -1);
 					   }
@@ -1338,7 +1328,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			  
 				$cur_role = (int)$this->session->userdata('manager_role');
 				$cur_id = (int)$this->session->userdata('manager_id');
-				if ($cur_role === 1 || $cur_role === 4) {
+				if ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || has_section_perm('lead_review') || has_section_perm('back_office')) {
 					if (isset($_GET['assign_scope']) && $_GET['assign_scope'] === 'unassigned') {
 						$this->db->where('(A.lead_assign = 0 OR A.lead_assign IS NULL)');
 					} else if (isset($_GET['assign_scope']) && is_numeric($_GET['assign_scope']) && (int)$_GET['assign_scope'] > 0) {

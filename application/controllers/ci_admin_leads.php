@@ -290,7 +290,8 @@ function __construct()
 		$cur_uid = (int)$this->session->userdata('manager_id');
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$team = $this->ci_admin_model->fetchTeamList($cur_uid, '');
-		if ($cur_role !== 1 && $cur_role !== 4 && $cur_uid !== 1 && empty($team)) {
+		$is_authorized = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('lead_review') || has_section_perm('back_office') || !empty($team));
+		if (!$is_authorized) {
 			$this->session->set_flashdata('error_message', 'Access denied. You do not have permission to review leads.');
 			redirect('manager/dashboard');
 			return;
@@ -378,7 +379,7 @@ function __construct()
 			$team_members = array();
 		}
 		$can_convert = false;
-		if ($cur_role === 1 || $cur_uid === 1 || $cur_role === 4) {
+		if ($cur_role === 1 || $cur_uid === 1 || $cur_role === 2 || $cur_role === 4 || has_section_perm('lead_review', 'write') || has_section_perm('back_office', 'write')) {
 			$can_convert = true;
 		} elseif ($lead_owner > 0 && $cur_uid !== $lead_owner && in_array($lead_owner, array_map('intval', $team_members))) {
 			$can_convert = true;
@@ -557,7 +558,7 @@ function __construct()
 			$team_members = array();
 		}
 		$can_review = false;
-		if ($cur_role === 1 || $cur_uid === 1 || $cur_role === 4) {
+		if ($cur_role === 1 || $cur_uid === 1 || $cur_role === 2 || $cur_role === 4 || has_section_perm('lead_review', 'write') || has_section_perm('back_office', 'write')) {
 			$can_review = true;
 		} elseif ($lead_owner > 0 && $cur_uid !== $lead_owner && in_array($lead_owner, array_map('intval', $team_members))) {
 			$can_review = true;
