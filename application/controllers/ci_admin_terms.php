@@ -13,7 +13,7 @@ class Ci_admin_terms extends CI_Controller {
 		 header('Cache-Control: no-cache');
 		$mgr_id = (int)$this->session->userdata('manager_id');
 		$mgr_role = (int)$this->session->userdata('manager_role');
-		if (!empty($mgr_id) && $mgr_role !== 1 && $mgr_id !== 1) {
+		if (!empty($mgr_id) && $mgr_role !== 1 && $mgr_id !== 1 && !has_section_perm('terms')) {
 			$this->session->set_flashdata('error_message', 'Access denied. Only Administrators can manage Categories.');
 			redirect('manager/dashboard');
 			exit;
@@ -30,7 +30,7 @@ class Ci_admin_terms extends CI_Controller {
             } else {
                 redirect('/manager/login');
             }
-        } elseif ($mgr_role !== 1 && $mgr_id !== 1) {
+        } elseif ($mgr_role !== 1 && $mgr_id !== 1 && !has_section_perm('terms')) {
             $this->session->set_flashdata('error_message', 'Access denied. Only Administrators can manage Categories.');
             redirect('manager/dashboard');
             exit;

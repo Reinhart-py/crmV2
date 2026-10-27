@@ -253,27 +253,34 @@
       </li>
       <?php } ?>
 
+      <?php if($is_admin || has_section_perm('system')){ ?>
       <li class="<?php if($route1=="roles" || $route1=="terms" || $route1=="users" || $route1=="assigned-leads" || $route1=="admin-logs" || ($route1=="system" && ($route2=="calling-api" || $route2=="calling_api" || $route2=="integrations")) || $route1=="integrations" || ($route1=="leads" && in_array($route2, array("import", "export")))){ echo "active";}else{ echo "";}?>"> 
         <a href="<?php echo ($is_admin)? base_url().'manager/roles' : base_url().'manager/assigned-leads'; ?>"><i class="fa fa-paperclip"></i> <span>System</span> </a>
         <ul>        
-          <?php if($is_admin){ ?>
+          <?php if($is_admin || has_section_perm('users')){ ?>
           <li><a href="<?php echo base_url();?>manager/users/add"><i class="fa fa-plus"></i>User Add</a></li>
           <li><a href="<?php echo base_url();?>manager/users"><i class="fa fa-list"></i>User View</a></li>
+          <?php } ?>
+          <?php if($is_admin || has_section_perm('roles')){ ?>
           <li><a href="<?php echo base_url();?>manager/roles"><i class="fa fa-list"></i>Roles</a></li>
+          <?php } ?>
+          <?php if($is_admin || has_section_perm('terms')){ ?>
           <li><a href="<?php echo base_url();?>manager/terms"><i class="fa fa-list"></i>Category</a></li>
           <?php } ?>
-          <?php if($is_admin || $is_support){ ?>
+          <?php if($is_admin || has_section_perm('leads_import')){ ?>
           <li><a href="<?php echo base_url();?>manager/leads/import"><i class="fa fa-upload"></i>Import Leads</a></li>
           <?php } ?>
-          <?php if($is_admin){ ?>
+          <?php if($is_admin || has_section_perm('leads_export')){ ?>
           <li><a href="<?php echo base_url();?>manager/leads/export"><i class="fa fa-download"></i>Export Leads</a></li>
           <?php } ?>
+          <?php if($is_admin || has_section_perm('assigned_leads')){ ?>
           <li><a href="<?php echo base_url();?>manager/assigned-leads"><i class="fa fa-tasks"></i>Allotted Database</a></li>
           <li><a href="<?php echo base_url();?>manager/assigned-leads?alloc_filter=non_allotted"><i class="fa fa-folder-open-o"></i>Non-Allotted Database</a></li>
-          <?php if($is_admin){ ?>
+          <?php } ?>
+          <?php if($is_admin || has_section_perm('admin_logs')){ ?>
           <li><a href="<?php echo base_url();?>manager/admin-logs"><i class="fa fa-history"></i>Admin Logs</a></li>
           <?php } ?>
-          <?php if($is_admin || $is_support){ ?>
+          <?php if($is_admin || has_section_perm('calling_api')){ ?>
           <li><a href="<?php echo base_url();?>manager/system/calling-api"><i class="fa fa-phone-square"></i>Calling API</a></li>
           <?php } ?>
           <?php if($is_admin || has_section_perm('integrations')){ ?>
@@ -281,6 +288,7 @@
           <?php } ?>
         </ul>
       </li>
+      <?php } ?>
 
       <?php if($is_admin || has_section_perm('reports')){ ?>
       <li class="<?php if($route1=="reports" || $route1=="download-report" || $route1=="admin-reports" || $route1=="revenue-list" || $route1=="company-projections"){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/download-report"><i class="fa fa-bar-chart"></i> <span>Reports</span> </a>
@@ -597,27 +605,34 @@ $(function() {
       </li>
       <?php } ?>
 
+      <?php if($is_admin || has_section_perm('system')){ ?>
       <li class="<?php if($route1=="roles" || $route1=="terms" || $route1=="users" || $route1=="assigned-leads" || $route1=="admin-logs" || ($route1=="system" && ($route2=="calling-api" || $route2=="calling_api" || $route2=="integrations")) || $route1=="integrations" || ($route1=="leads" && in_array($route2, array("import", "export")))){ echo "active";}else{ echo "";}?> treeview"> 
         <a href="javascript:void(0);"><i class="fa fa-paperclip"></i> <span>System</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu">        
-          <?php if($is_admin){ ?>
+          <?php if($is_admin || has_section_perm('users')){ ?>
           <li><a href="<?php echo base_url();?>manager/users/add"><i class="fa fa-plus"></i>User Add</a></li>
           <li><a href="<?php echo base_url();?>manager/users"><i class="fa fa-list"></i>User View</a></li>
+          <?php } ?>
+          <?php if($is_admin || has_section_perm('roles')){ ?>
           <li><a href="<?php echo base_url();?>manager/roles"><i class="fa fa-list"></i>Roles</a></li>
+          <?php } ?>
+          <?php if($is_admin || has_section_perm('terms')){ ?>
           <li><a href="<?php echo base_url();?>manager/terms"><i class="fa fa-list"></i>Category</a></li>
           <?php } ?>
-          <?php if($is_admin || $is_support){ ?>
+          <?php if($is_admin || has_section_perm('leads_import')){ ?>
           <li><a href="<?php echo base_url();?>manager/leads/import"><i class="fa fa-upload"></i>Import Leads</a></li>
           <?php } ?>
-          <?php if($is_admin){ ?>
+          <?php if($is_admin || has_section_perm('leads_export')){ ?>
           <li><a href="<?php echo base_url();?>manager/leads/export"><i class="fa fa-download"></i>Export Leads</a></li>
           <?php } ?>
+          <?php if($is_admin || has_section_perm('assigned_leads')){ ?>
           <li><a href="<?php echo base_url();?>manager/assigned-leads"><i class="fa fa-tasks"></i>Allotted Database</a></li>
           <li><a href="<?php echo base_url();?>manager/assigned-leads?alloc_filter=non_allotted"><i class="fa fa-folder-open-o"></i>Non-Allotted Database</a></li>
-          <?php if($is_admin){ ?>
+          <?php } ?>
+          <?php if($is_admin || has_section_perm('admin_logs')){ ?>
           <li><a href="<?php echo base_url();?>manager/admin-logs"><i class="fa fa-history"></i>Admin Logs</a></li>
           <?php } ?>
-          <?php if($is_admin || $is_support){ ?>
+          <?php if($is_admin || has_section_perm('calling_api')){ ?>
           <li><a href="<?php echo base_url();?>manager/system/calling-api"><i class="fa fa-phone-square"></i>Calling API</a></li>
           <?php } ?>
           <?php if($is_admin || has_section_perm('integrations')){ ?>
@@ -625,6 +640,7 @@ $(function() {
           <?php } ?>
         </ul>
       </li>
+      <?php } ?>
 
       <?php if($is_admin || has_section_perm('reports')){ ?>
       <li class="<?php if($route1=="reports" || $route1=="download-report" || $route1=="admin-reports" || $route1=="revenue-list" || $route1=="company-projections"){ echo "active menu-open";}else{ echo "";}?> treeview"> 

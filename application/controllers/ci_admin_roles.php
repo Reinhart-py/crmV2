@@ -18,7 +18,7 @@ class Ci_admin_roles extends CI_Controller {
 		redirect('manager/login');
 		exit;
 	}
-	if ($mgr_role !== 1 && $mgr_id !== 1) {
+	if ($mgr_role !== 1 && $mgr_id !== 1 && !has_section_perm('roles')) {
 		$this->session->set_flashdata('error_message', 'Access denied. Only Administrators can manage roles and permissions.');
 		redirect('manager/dashboard');
 		exit;
@@ -35,7 +35,7 @@ class Ci_admin_roles extends CI_Controller {
             } else {
                 redirect('/manager/login');
             }
-        } elseif ($mgr_role !== 1 && $mgr_id !== 1) {
+        } elseif ($mgr_role !== 1 && $mgr_id !== 1 && !has_section_perm('roles')) {
         	$this->session->set_flashdata('error_message', 'Access denied. Only Administrators can manage roles and permissions.');
         	redirect('/manager/dashboard');
         } else {
@@ -97,13 +97,7 @@ class Ci_admin_roles extends CI_Controller {
 						 	$level=1;
 						 }
 
-						 $raw_perms = $this->input->post('permissions');
-						 $clean_perms = array();
-						 if (is_array($raw_perms)) {
-							 foreach ($raw_perms as $sec => $val) {
-								 $clean_perms[$sec] = in_array($val, array('no_access', 'read', 'write')) ? $val : 'no_access';
-							 }
-						 }
+						 $clean_perms = $this->_normalize_permissions($this->input->post('permissions'));
 					 
 		                 $save= array(	                 		
 							'title'=>$title,
@@ -159,13 +153,7 @@ class Ci_admin_roles extends CI_Controller {
 						 	$level=1;
 						 }
 
-						 $raw_perms = $this->input->post('permissions');
-						 $clean_perms = array();
-						 if (is_array($raw_perms)) {
-							 foreach ($raw_perms as $sec => $val) {
-								 $clean_perms[$sec] = in_array($val, array('no_access', 'read', 'write')) ? $val : 'no_access';
-							 }
-						 }
+						 $clean_perms = $this->_normalize_permissions($this->input->post('permissions'));
 
 		                 $save= array(	                 		
 							'title'=>$title,
@@ -210,4 +198,39 @@ class Ci_admin_roles extends CI_Controller {
 								
 		
    
+	private function _normalize_permissions($raw_perms)
+	{
+		$clean = array();
+		if (is_array($raw_perms)) {
+			foreach ($raw_perms as $sec => $val) {
+				$clean[$sec] = in_array($val, array('no_access', 'read', 'write')) ? $val : 'no_access';
+			}
+		}
+
+		$derive = function($keys, $map) {
+			$has_write = false;
+			$has_read = false;
+			foreach ($keys as $k) {
+				if (isset($map[$k])) {
+					if ($map[$k] === 'write') {
+						$has_write = true;
+					} elseif ($map[$k] === 'read') {
+						$has_read = true;
+					}
+				}
+			}
+			if ($has_write) return 'write';
+			if ($has_read) return 'read';
+			return 'no_access';
+		};
+
+		$clean['my_zone'] = $derive(array('database', 'leads', 'orders', 'sales', 'followups', 'meetings', 'verticals', 'vertical_followups', 'internal_tasks', 'external_tasks', 'database_transfer'), $clean);
+		$clean['team'] = $derive(array('team_members', 'team_chart', 'team_database', 'team_leads', 'team_orders', 'team_verticals', 'team_followups', 'team_meetings', 'team_assignmeetings', 'team_assignleads', 'team_tasks', 'team_tickets'), $clean);
+		$clean['back_office'] = $derive(array('lead_review', 'orders_pending', 'kam_onboard', 'orders_management'), $clean);
+		$clean['kam'] = $derive(array('kam_clients', 'kam_schedule', 'kam_task_followup', 'kam_reminders'), $clean);
+		$clean['reports'] = $derive(array('reports_revenue', 'reports_projections', 'reports_download'), $clean);
+		$clean['system'] = $derive(array('users', 'roles', 'terms', 'leads_import', 'leads_export', 'assigned_leads', 'admin_logs', 'calling_api', 'integrations'), $clean);
+
+		return $clean;
+	}
 }
