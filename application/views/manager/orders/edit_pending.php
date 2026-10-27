@@ -32,13 +32,13 @@
                 <tr>
                   <th style="width:30%; background:#f8fafc; font-size:12px;">Database Ref</th>
                   <td style="font-size:13px; font-weight:700; font-family:monospace; color:#0f172a;">
-                    <?php echo htmlspecialchars($lead['db_ref_no'] ?: ('D' . str_pad($lead['id'], 10, '0', STR_PAD_LEFT))); ?>
+                    <?php echo htmlspecialchars($lead['db_ref_no'] ?: '-'); ?>
                   </td>
                 </tr>
                 <tr>
                   <th style="background:#f8fafc; font-size:12px;">Lead Ref</th>
-                  <td style="font-size:13px; font-weight:700; font-family:monospace; color:#2563eb;">
-                    <?php echo htmlspecialchars($lead['lead_ref_no'] ?: ('L' . str_pad($lead['id'], 10, '0', STR_PAD_LEFT))); ?>
+                  <td style="font-size:13px; font-weight:700; font-family:monospace; color:#0072f0;">
+                    <?php echo htmlspecialchars($lead['lead_ref_no'] ?: '-'); ?>
                   </td>
                 </tr>
                 <tr>
@@ -71,7 +71,7 @@
                   <th style="background:#f8fafc; font-size:12px;">Service Vertical</th>
                   <td>
                     <span class="label" style="background:#e0e7ff; color:#3730a3; font-weight:600; padding:3px 7px; font-size:11px;">
-                      <?php echo htmlspecialchars($lead['servicecat'] ?: 'General'); ?>
+                      <?php echo htmlspecialchars(!empty($lead['servicecat']) ? $lead['servicecat'] : 'General'); ?>
                     </span>
                   </td>
                 </tr>
@@ -127,6 +127,7 @@
           </div>
           <div class="box-footer" style="background:#f8fafc; border-top:1px solid #e2e8f0; padding:12px 15px;">
             <form action="<?php echo base_url(); ?>manager/orders/edit_pending/<?php echo $lead['id']; ?>" method="post">
+              <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
               <input type="hidden" name="action_type" value="add_remark">
               <div class="form-group" style="margin-bottom:8px;">
                 <label style="font-size:12px; font-weight:600;">Add Review Remark</label>
@@ -146,6 +147,7 @@
             <h3 class="box-title" style="font-size:15px; font-weight:700;">Process &amp; Create Order</h3>
           </div>
           <form action="<?php echo base_url(); ?>manager/orders/edit_pending/<?php echo $lead['id']; ?>" method="post">
+            <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
             <input type="hidden" name="action_type" value="approve_order">
             <div class="box-body" style="padding:15px;">
               <div class="form-group">
@@ -161,7 +163,7 @@
 
               <div class="form-group">
                 <label style="font-size:12px; font-weight:600;">Service Scope Title *</label>
-                <input type="text" name="service_title" class="form-control input-sm" value="<?php echo htmlspecialchars($lead['servicecat'] ?: 'Standard Service Scope'); ?>" required>
+                <input type="text" name="service_title" class="form-control input-sm" value="<?php echo htmlspecialchars(!empty($lead['servicecat']) ? $lead['servicecat'] : 'Standard Service Scope'); ?>" required>
               </div>
 
               <div class="form-group">
@@ -224,24 +226,25 @@
 </div>
 
 <div class="modal fade" id="rejectModal" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog" role="document" style="max-width:420px;">
-    <div class="modal-content" style="border-radius:6px;">
+  <div class="modal-dialog" role="document" style="max-width:440px;">
+    <div class="modal-content" style="border-radius:12px; border:1px solid #e2e8f0; box-shadow:0 20px 40px rgba(0,0,0,0.12); overflow:hidden;">
       <form action="<?php echo base_url(); ?>manager/orders/edit_pending/<?php echo $lead['id']; ?>" method="post">
+        <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
         <input type="hidden" name="action_type" value="reject_order">
-        <div class="modal-header" style="background:#fef2f2; border-bottom:1px solid #fee2e2;">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title" style="font-size:15px; font-weight:700; color:#991b1b;">Reject Order Request</h4>
+        <div class="modal-header" style="background:#000000; color:#ffffff; padding:14px 18px; border-bottom:1px solid #1e293b;">
+          <button type="button" class="close" data-dismiss="modal" style="color:#ffffff; opacity:0.8;">&times;</button>
+          <h4 class="modal-title" style="font-size:15px; font-weight:700; color:#ffffff; margin:0;">Reject Order Request</h4>
         </div>
-        <div class="modal-body" style="padding:15px;">
-          <p style="font-size:13px; color:#475569;">Please specify the reason for rejecting this Lead-to-Order conversion request. The lead will be unlocked.</p>
-          <div class="form-group">
-            <label style="font-size:12px; font-weight:600;">Reason *</label>
-            <textarea name="reject_reason" class="form-control" rows="3" placeholder="State reason for rejection..." required></textarea>
+        <div class="modal-body" style="padding:20px;">
+          <p style="font-size:13px; color:#475569; margin-bottom:14px;">Please specify the reason for rejecting this Lead-to-Order conversion request. The lead will be returned to normal state and unlocked.</p>
+          <div class="form-group" style="margin-bottom:0;">
+            <label style="font-size:12px; font-weight:600; color:#0f172a;">Rejection Reason *</label>
+            <textarea name="reject_reason" class="form-control" rows="3" placeholder="Provide clear reason for rejection..." required style="border-radius:6px; resize:vertical;"></textarea>
           </div>
         </div>
-        <div class="modal-footer" style="padding:10px 15px; background:#f8fafc;">
-          <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-danger btn-sm" style="font-weight:600;">Confirm Rejection</button>
+        <div class="modal-footer" style="padding:12px 18px; background:#f8fafc; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-end; gap:8px;">
+          <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" style="font-weight:600; border-radius:6px;">Cancel</button>
+          <button type="submit" class="btn btn-danger btn-sm" style="font-weight:600; border-radius:6px;">Confirm Rejection</button>
         </div>
       </form>
     </div>

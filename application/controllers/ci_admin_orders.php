@@ -361,7 +361,11 @@ class Ci_admin_orders extends CI_Controller {
 		$this->db->from('ci_orders O');
 		$this->db->join('ci_user U', 'O.assigned_to = U.id', 'LEFT');
 		$this->db->join('ci_leads A', 'O.lead_id = A.id', 'LEFT');
-		$this->db->where('O.id', $id);
+		if (is_numeric($id)) {
+			$this->db->where('O.id', (int)$id);
+		} else {
+			$this->db->where('O.order_no', $id);
+		}
 		$order = $this->db->get()->row_array();
 
 		if (empty($order)) {
@@ -838,10 +842,11 @@ class Ci_admin_orders extends CI_Controller {
 			return;
 		}
 
-		$this->db->select('L.*, P.db_ref_no, P.lead_ref_no, P.order_request_status, P.order_requested_at, P.order_request_remarks, P.order_requested_by, U.name as requested_by_name');
+		$this->db->select("L.*, COALESCE(NULLIF(E.title, ''), NULLIF(P.vertical_code, ''), 'General') as servicecat, P.db_ref_no, P.lead_ref_no, P.order_request_status, P.order_requested_at, P.order_request_remarks, P.order_requested_by, U.name as requested_by_name", FALSE);
 		$this->db->from('ci_leads L');
 		$this->db->join('ci_pipeline P', 'L.id = P.lead_id', 'INNER');
 		$this->db->join('ci_user U', 'P.order_requested_by = U.id', 'LEFT');
+		$this->db->join('ci_terms E', 'L.p_cat = E.id', 'LEFT');
 		$this->db->where('L.id', $id);
 		$lead = $this->db->get()->row_array();
 
@@ -915,12 +920,10 @@ class Ci_admin_orders extends CI_Controller {
 				$assigned_to = (int)$this->input->post('assigned_to', true);
 				$approval_notes = trim($this->input->post('approval_notes', true));
 
-				$last_ord = $this->db->select_max('id')->get('ci_orders')->row_array();
-				$next_id = !empty($last_ord['id']) ? ((int)$last_ord['id'] + 1) : 1;
-				$order_no = sprintf('O%010d', $next_id);
+				$order_no = $this->ci_admin_model->generate_next_ref('order');
 
-				$db_ref = !empty($lead['db_ref_no']) ? $lead['db_ref_no'] : sprintf('D%010d', $id);
-				$lead_ref = !empty($lead['lead_ref_no']) ? $lead['lead_ref_no'] : sprintf('L%010d', $id);
+				$db_ref = !empty($lead['db_ref_no']) ? $lead['db_ref_no'] : '';
+				$lead_ref = !empty($lead['lead_ref_no']) ? $lead['lead_ref_no'] : '';
 
 				$order_data = array(
 					'order_no' => $order_no,
@@ -989,7 +992,7 @@ class Ci_admin_orders extends CI_Controller {
 			'page_heading' => 'Process Order Conversion'
 		);
 		$data['lead'] = $lead;
-		$data['remarks_history'] = $this->db->select('F.*, F.followup_remark as remark, F.followup_result as status, CONCAT(F.followup_date, " ", F.followup_time) as created, U.name as user_name')
+		$data['remarks_history'] = $this->db->select("F.*, F.followup_remark as remark, F.followup_result as status, CONCAT(F.followup_date, ' ', F.followup_time) as created, U.name as user_name", FALSE)
 			->from('ci_followup F')
 			->join('ci_user U', 'F.user_id = U.id', 'LEFT')
 			->where('F.lead_id', $id)

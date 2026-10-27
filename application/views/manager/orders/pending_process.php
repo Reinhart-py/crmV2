@@ -53,8 +53,8 @@
                                 <tbody>
                                     <?php foreach($pending_leads as $p){ ?>
                                     <tr>
-                                        <td><strong><?php echo htmlspecialchars($p['db_ref_no'] ?: ('D' . str_pad($p['id'], 10, '0', STR_PAD_LEFT))); ?></strong></td>
-                                        <td><strong><?php echo htmlspecialchars($p['lead_ref_no'] ?: ('L' . str_pad($p['id'], 10, '0', STR_PAD_LEFT))); ?></strong></td>
+                                        <td><strong><?php echo htmlspecialchars($p['db_ref_no'] ?: '-'); ?></strong></td>
+                                        <td><strong><?php echo htmlspecialchars($p['lead_ref_no'] ?: '-'); ?></strong></td>
                                         <td>
                                             <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($p['id']); ?>"><strong><?php echo htmlspecialchars($p['customer'] ?: 'Client'); ?></strong></a>
                                             <?php if(!empty($p['company_name'])){ ?>

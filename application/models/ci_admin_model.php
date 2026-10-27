@@ -2407,7 +2407,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			'awards', 'integrations', 'system', 'users', 'roles'
 		);
 
-		if ($role_id === 1) {
+		if ($role_id === 1 || $role_id === 2) {
 			$res = array();
 			foreach ($sections as $s) {
 				$res[$s] = 'write';
@@ -2433,7 +2433,8 @@ public function dashboard_MyPro($table='ci_leads'){
 	public function check_permission($section, $required = 'read', $redirect = false)
 	{
 		$role = (int)$this->session->userdata('manager_role');
-		if ($role === 1) {
+		$user_id = (int)$this->session->userdata('manager_id');
+		if ($role === 1 || $role === 2 || $user_id === 1) {
 			return true;
 		}
 
@@ -2542,24 +2543,22 @@ public function dashboard_MyPro($table='ci_leads'){
 		$col = $conf['col'];
 		$prefix = $conf['prefix'];
 
-		$rows = $this->db->select($col)
-			->like($col, $prefix, 'after')
-			->order_by('id', 'DESC')
-			->limit(100)
-			->get($table)
-			->result_array();
-
 		$max_num = 0;
-		if (!empty($rows)) {
-			foreach ($rows as $r) {
-				$val = isset($r[$col]) ? $r[$col] : '';
-				if (preg_match('/^' . preg_quote($prefix, '/') . '(\d+)$/', $val, $m)) {
-					$num = (int)$m[1];
-					if ($num > $max_num) {
-						$max_num = $num;
-					}
-				}
-			}
+		if ($type === 'database') {
+			$q1 = $this->db->query("SELECT MAX(CAST(SUBSTRING(db_ref_no, 2) AS UNSIGNED)) as max_num FROM ci_pipeline WHERE db_ref_no REGEXP '^D[0-9]{10}$'")->row_array();
+			$d1 = !empty($q1['max_num']) ? (int)$q1['max_num'] : 0;
+			$q2 = $this->db->query("SELECT MAX(CAST(SUBSTRING(db_ref_no, 9) AS UNSIGNED)) as max_num FROM ci_pipeline WHERE db_ref_no REGEXP '^DB-10000[0-9]+$'")->row_array();
+			$d2 = !empty($q2['max_num']) ? (int)$q2['max_num'] : 0;
+			$max_num = max($d1, $d2);
+		} elseif ($type === 'lead') {
+			$q = $this->db->query("SELECT MAX(CAST(SUBSTRING(lead_ref_no, 2) AS UNSIGNED)) as max_num FROM ci_pipeline WHERE lead_ref_no REGEXP '^L[0-9]{10}$'")->row_array();
+			$max_num = !empty($q['max_num']) ? (int)$q['max_num'] : 0;
+		} elseif ($type === 'order') {
+			$q = $this->db->query("SELECT MAX(CAST(SUBSTRING(order_no, 2) AS UNSIGNED)) as max_num FROM ci_orders WHERE order_no REGEXP '^O[0-9]{10}$'")->row_array();
+			$max_num = !empty($q['max_num']) ? (int)$q['max_num'] : 0;
+		} elseif ($type === 'sales') {
+			$q = $this->db->query("SELECT MAX(CAST(SUBSTRING(sales_ref_no, 2) AS UNSIGNED)) as max_num FROM ci_orders WHERE sales_ref_no REGEXP '^S[0-9]{10}$'")->row_array();
+			$max_num = !empty($q['max_num']) ? (int)$q['max_num'] : 0;
 		}
 
 		$candidate_num = $max_num + 1;

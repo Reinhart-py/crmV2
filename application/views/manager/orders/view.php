@@ -51,13 +51,13 @@
           <div>
             <span style="font-size:11px; text-transform:uppercase; color:#64748b; font-weight:700; letter-spacing:0.5px; display:block;">Database Ref</span>
             <span class="label" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; font-family:monospace; font-size:12px;">
-              <?php echo htmlspecialchars($order['db_ref_no'] ?: ('D' . str_pad($order['lead_id'] ?: $order['id'], 10, '0', STR_PAD_LEFT))); ?>
+              <?php echo htmlspecialchars($order['db_ref_no'] ?: '-'); ?>
             </span>
           </div>
           <div>
             <span style="font-size:11px; text-transform:uppercase; color:#64748b; font-weight:700; letter-spacing:0.5px; display:block;">Lead Ref</span>
             <span class="label" style="background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; font-family:monospace; font-size:12px;">
-              <?php echo htmlspecialchars($order['lead_ref_no'] ?: ('L' . str_pad($order['lead_id'] ?: $order['id'], 10, '0', STR_PAD_LEFT))); ?>
+              <?php echo htmlspecialchars($order['lead_ref_no'] ?: '-'); ?>
             </span>
           </div>
           <div>

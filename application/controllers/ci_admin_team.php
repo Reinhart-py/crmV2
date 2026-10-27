@@ -560,9 +560,40 @@ class Ci_admin_team extends CI_Controller {
 			$data['main_user'] = $this->comman_model->getpostdata2(array('id'=>$id),'','ci_user');
 
 		}
-		$main_user_id = (!empty($data['main_user']) && isset($data['main_user']['id'])) ? $data['main_user']['id'] : 0;
+		$main_user_id = (!empty($data['main_user']) && isset($data['main_user']['id'])) ? (int)$data['main_user']['id'] : 0;
 	    $data['List2']= $this->comman_model->getAll(array('manager'=>$main_user_id),'','ci_user');
 		$data['back_user'] = $this->comman_model->getpostdata2(array('id'=>$main_user_id),'','ci_user');
+
+		$tree_builder = function($user_id, $depth = 0, $max_depth = 5) use (&$tree_builder) {
+			if ($depth > $max_depth || empty($user_id)) {
+				return array();
+			}
+			$subs = $this->db->select('id, name, manager, department, office, avatar, user_level, user_type')
+				->from('ci_user')
+				->where('manager', (int)$user_id)
+				->where('id !=', (int)$user_id)
+				->where('status', 1)
+				->order_by('name', 'ASC')
+				->get()
+				->result_array();
+			$nodes = array();
+			foreach ($subs as $sub) {
+				$sub['children'] = $tree_builder($sub['id'], $depth + 1, $max_depth);
+				$nodes[] = $sub;
+			}
+			return $nodes;
+		};
+
+		$data['team_tree'] = array(
+			'id' => isset($data['main_user']['id']) ? (int)$data['main_user']['id'] : 0,
+			'name' => isset($data['main_user']['name']) ? $data['main_user']['name'] : '',
+			'manager' => isset($data['main_user']['manager']) ? (int)$data['main_user']['manager'] : 0,
+			'department' => isset($data['main_user']['department']) ? $data['main_user']['department'] : '',
+			'office' => isset($data['main_user']['office']) ? $data['main_user']['office'] : '',
+			'avatar' => isset($data['main_user']['avatar']) ? $data['main_user']['avatar'] : '',
+			'user_type' => isset($data['main_user']['user_type']) ? $data['main_user']['user_type'] : '',
+			'children' => $tree_builder($main_user_id, 0, 5)
+		);
 
 		$this->load->view('manager/team/chart',$data);
 	}

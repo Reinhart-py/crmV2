@@ -967,8 +967,8 @@ function __construct()
 					->get()
 					->result_array();
 				$data['order_info'] = $this->db->get_where('ci_orders', array('lead_id' => $id))->row_array();
-				$data['db_ref_no'] = !empty($data['p_info']['db_ref_no']) ? $data['p_info']['db_ref_no'] : sprintf('D%010d', $id);
-				$data['lead_ref_no'] = !empty($data['p_info']['lead_ref_no']) ? $data['p_info']['lead_ref_no'] : ((!empty($data['p_info']['pipeline_stage']) && $data['p_info']['pipeline_stage'] === 'lead') ? sprintf('L%010d', $id) : '');
+				$data['db_ref_no'] = !empty($data['p_info']['db_ref_no']) ? $data['p_info']['db_ref_no'] : '';
+				$data['lead_ref_no'] = !empty($data['p_info']['lead_ref_no']) ? $data['p_info']['lead_ref_no'] : '';
 				$data['order_ref_no'] = !empty($data['order_info']['order_no']) ? $data['order_info']['order_no'] : '';
 				$data['sales_ref_no'] = !empty($data['order_info']['sales_ref_no']) ? $data['order_info']['sales_ref_no'] : '';
 				$data['is_locked'] = (!empty($data['p_info']['is_locked']) && (int)$data['p_info']['is_locked'] === 1);

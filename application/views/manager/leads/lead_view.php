@@ -262,7 +262,7 @@ foreach($st_list as $cli){
                                     <?php foreach($product_list as $k=>$li){ ?>
                                     <tr>
 
-                                        <td><a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>"><strong><?php echo !empty($li['lead_ref_no']) ? htmlspecialchars($li['lead_ref_no']) : ('L' . str_pad($li['id'], 10, '0', STR_PAD_LEFT)); ?></strong></a></td>
+                                        <td><a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>"><strong><?php echo !empty($li['lead_ref_no']) ? htmlspecialchars($li['lead_ref_no']) : '-'; ?></strong></a></td>
                                         <td>
                                             <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>"><?php echo $li['customer']; ?></a>
                                             <?php if(!empty($li['dnd_status']) && strtolower($li['dnd_status']) == 'yes'){ ?>

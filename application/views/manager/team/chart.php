@@ -1,637 +1,459 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 <style>
-    /************************************************/
-    /* Convenient global rules             [STABLE] */
-    /************************************************/
-    [outlines="1"] * {
-        outline: 1px dashed
-    }
-
-    /* for debugging */
-
-    * {
-        -webkit-box-sizing: border-box;
-        box-sizing: border-box
-    }
-
-    a {
-        text-decoration: none;
-        color: currentColor
-    }
-
-    [band] {
-        display: flex;
-        flex-flow: row wrap;
-        justify-content: center;
-        align-content: center;
-        padding: calc(5vh + 48px) calc(19.5vw - 54.4px)
-    }
-
-    /* generic flexbox shortcuts */
-    [F] {
-        display: flex
-    }
-
-    [R] {
-        flex-direction: row
-    }
-
-    /* horizontal: row of 1:N columns (FBL default) */
-    [C] {
-        flex-direction: column
-    }
-
-    /* vertical: column of 1:N rows   */
-    [W] {
-        flex-wrap: wrap
-    }
-
-
-    /*
-   KNOT LOGIC
-   'branch' - 1:N 'node',1:N 'node.step' and 1:N 'step'
-   'node'   - 1:N 'node' and 1:N 'step'
-   'step'   - 1 data-symbol
-
-   You can use flexbox shortcut attributes R (horizontal) and C (vertical) to 
-   determine the nesting direction of 'branch'es and 'node's. (R) is optional
-   as horizontal is the default direction. 
-
-   (Depending on orientation of the knots, all kinds of nestings might work,
-    but that will require trial and error, fiddling.)
-
-   SPECIFICATIONS
-   1) 'branch' has no specific rules, but acts as a container for 'node's
-      and to distinguish from 'node' and 'step'. 
-      Add your own rules for specific 'branch' styling like fonts,colors,border,spacing.
-
-   2) 'node' and 'step' only use :before and :after to position and draw
-      connecting lines.
-
-      'node'      horizontal line attachement
-      'step'      vertical
-      'node.step' both
-
-   3) 'node.step' can be empty (no 'data-symbol'), in which case it will only
-      draw cross lines.
-
-   4) 'start' and 'stop' values are used to prevent drawing of
-      starting and ending lines.
-
-   5) Knot 'lft', 'ctr' and 'rgt' values define how sibling nodes are connected
-      'lft' - left hand node, only one
-      'ctr' - center nodes, can be more than one 
-      'rgt' - right hand node, only one
-
-   My motivation for use of 'data-* attributes' instead of classes is they
-   are easy accessible as javascript variables:
-
-   someElement.dataset.chart
-   someElement.dataset.knot
-   someElement.dataset.symbol
-   
-*/
-
-    /***************/
-    /* Chart Setup */
-    /***************/
-    /* If you want the knots distributed as-is, remove 'align-items' */
-    [data-chart] {
-        display: flex;
-        align-items: center
-    }
-
-    /* align [OPTIONAL], try! */
-    [data-knot] {
-        display: flex;
-        flex-grow: 1
-    }
-
-    /* [MANDATORY] */
-
-    /* default alignments */
-    [data-knot] {
-        justify-content: center
-    }
-
-    [data-knot*="node"] {
-        align-items: stretch
-    }
-
-    [data-knot*="step"] {
-        align-items: flex-start
-    }
-
-    /* this code keeps the lines connect to the symbols */
-    [data-knot] {
-        position: relative;
-        z-index: 1
-    }
-
-    /* new stacking context */
-    [data-knot]:before,
-    [data-knot]:after {
-        position: absolute;
-        z-index: -1;
-        content: ''
-    }
-
-    /* put some character in 'content' to keep track when debugging */
-
-    /* Horizontal lines ('node') setup */
-    [data-knot]:before {
-        top: 1px
-    }
-
-    /* adjust -+1 for thickess of outlines */
-    [data-knot]:after {
-        bottom: -1px
-    }
-
-    [data-knot*="node"]:before,
-    [data-knot*="node"]:after {
-        height: 0px
-            /* for IE11 */
-        ;
-        width: 50%
-    }
-
-    /* Vertical lines ('step') setup */
-    [data-knot*="step"]:before,
-    [data-knot*="step"]:after {
-        width: 0px
-            /* for IE11 */
-        ;
-        left: 50%;
-        right: 50%
-    }
-
-    /* positioning of the lines ('lft','ctr','rgt') */
-    [data-knot*="ctr"]:before,
-    [data-knot*="ctr"]:after {
-        width: 100%;
-        left: 0
-    }
-
-    /* (EITHER) Handles document reading direction (dir="ltr" in <body>), default is 'ltr' */
-    [dir="ltr"] [data-knot*="lft"]:before,
-    [dir="ltr"] [data-knot*="lft"]:after {
-        left: 50%
-    }
-
-    [dir="ltr"] [data-knot*="rgt"]:before,
-    [dir="ltr"] [data-knot*="rgt"]:after {
-        right: 50%
-    }
-
-    [dir="rtl"] [data-knot*="lft"]:before,
-    [dir="rtl"] [data-knot*="lft"]:after {
-        right: 50%
-    }
-
-    [dir="rtl"] [data-knot*="rgt"]:before,
-    [dir="rtl"] [data-knot*="rgt"]:after {
-        left: 50%
-    }
-
-    /* (OR) For use without [dir]
-[data-knot*="lft"]:before, [data-knot*="lft"]:after { left : 50% }
-[data-knot*="rgt"]:before, [data-knot*="rgt"]:after { right: 50% }
-*/
-
-    /* line coloring */
-    [data-knot*="node"]:before,
-    /*[data-knot*="node.step"]:after,/* REMOVE */
-    [data-knot*="step"]:before,
-    [data-knot*="step"]:after {
-        outline: 1px solid #666
-    }
-
-    /* no line drawing cases */
-    [data-knot="step"]:after,
-    /* notice the missing '*' */
-    [data-knot*="start"]:before,
-    [data-knot*="stop"]:after {
-        outline: none
-    }
-
-    /*
-   responsive sizes: T/B p1(320,6) p2(1280,24) and L/R p1(320,4) p2(1280,16)
-   modify these to meet specific requirements.
-*/
-    [data-knot*="step"] {
-        padding: 1.875vmin 1.25vmin
-    }
-
-    [data-knot*="step"]:before {
-        height: 1.875vmin
-    }
-
-    /* Same height as [data-step] T/B padding */
-    [data-knot*="step"]:after {
-        height: calc(100% - 1.875vmin)
-    }
-
-    /* pct to from below (minus T/B padding) */
-
-    /****************/
-    /* Symbol Setup */
-    /****************/
-    /*
-   Chart 'data-symbol's, flexbox intended use
-
-   FBL (V)     FBL (H)      Any
-   --------    -------      -------
-   (S)ymbol -> (H)eader  -> content
-            -> (C)ontent -> content
-            -> (F)ooter  -> content
-*/
-    [data-symbol],
-    [data-symbol]>* {
-        display: flex
-    }
-
-    /* S,H,C,F are flexbox parent containers */
-    [data-symbol]>*>* {
-        flex-grow: 1
-    }
-
-    /* sets default to 'fill' for content of H,C,F */
-
-    [data-symbol] {
-        flex-direction: column
-    }
-
-    /* a column of 1:N rows */
-    [data-symbol]>.header {
-        align-items: center
-    }
-
-    /* styling */
-    [data-symbol] {
-        text-decoration: none;
-
-        color: currentColor;
-        border: 1px solid gray;
-
-        background-color: #efefef;
-        border-radius: 50%;
-        /* [OPTIONAL], only when using bg color. Make equal to br .header below */
-    }
-
-    [data-symbol]>.header {
-        padding: .25rem .5rem;
-        text-align: center;
-        border-radius: 50%;
-
-        /* responsive sizes: p1(320,50) p2(1920,180) */
-        width: calc(8.125vmin + 24px);
-        height: calc(8.125vmin + 24px);
-
-        /*
-       responsive fontsize: p1(320,6) p2(1920,20)
-       Whether this works as expected depends on the minimum browser
-       fontsize set by the user (content may overflow .header when set >6px)
-
-       Tested defaults on W10:
-       Edge2020 overflows, while Chrome, Firefox and IE11 do not
-   */
-        font-size: calc(.875vmin + 3.2px)
-    }
-
-    /**************************************/
-    /* Google Material Component inspired */
-    /**************************************/
-    [icon] {
-        display: inline-flex;
-        justify-content: center;
-        align-content: center;
-        align-items: center;
-
-        /* responsive sizes: p1(320,14) p2(1280,32) */
-        width: calc(1.875vmin + 8px);
-        height: calc(1.875vmin + 8px);
-        line-height: calc(1.875vmin + 8px);
-        font-size: calc(1.875vmin + 8px);
-        /*
-       A bit overdone for just one icon, use inline SVG instead,
-       or create a small (subset) iconfont at https://icomoon.io
-
-       icon list: https://material.io/resources/icons/?style=baseline
-   */
-        font-family: 'Material Icons';
-
-        font-weight: normal;
-        font-style: normal;
-        letter-spacing: normal;
-        text-transform: none;
-        white-space: nowrap;
-        word-wrap: normal;
-
-        opacity: 1;
-        /* GMC uses <1 here and 1 on :hover */
-
-        -moz-font-feature-settings: 'liga';
-        font-feature-settings: 'liga';
-        -moz-osx-font-smoothing: grayscale;
-    }
-
-    [clr="0"] {
-        background-color: Gainsboro;
-        color: black
-    }
-
-    .header,
-    /* .header here saves coding html */
-    [clr="1"] {
-        background-color: #fefefe;
-        color: #1e1e1e
-    }
-
-    [clr="2"] {
-        background-color: #1e1e1e;
-        color: Yellow;
-        font-weight: bolder
-    }
-
-    [clr="3"] {
-        background-color: #ffcc01;
-        color: #1e1e1e;
-        font-weight: bolder
-    }
-
-    /*************************************/
-    /* Generic [S]hading and [A]nimation */
-    /*************************************/
-    /* Element [S]hading custom properties */
-    [S] {
-        /* defaults */
-        --clr-shadow: 0 0% 0%;
-        /* HSL Black */
-
-        /* GMD elevation 1dp, d - default + 0.1 */
-        --elevate-d: 0px 2px 1px -1px hsl(var(--clr-shadow) / .20),
-            0px 1px 1px 0px hsl(var(--clr-shadow) / .14),
-            0px 1px 3px 0px hsl(var(--clr-shadow) / .12);
-
-        /* when hovered */
-        /* GMD elevation 3dp, h - hovered + 0.1 */
-        --elevate-h: 0px 3px 3px -2px hsl(var(--clr-shadow) / .20),
-            0px 3px 4px 0px hsl(var(--clr-shadow) / .14),
-            0px 1px 8px 0px hsl(var(--clr-shadow) / .12);
-    }
-
-    [S="alt1" i] {
-        /* some alternative shading, just testing */
-        --elevate-d: 0 2px 30px 0 hsl(var(--clr-shadow) / .25);
-        --elevate-h: 0 2px 50px 0 hsl(var(--clr-shadow) / .7);
-    }
-
-    /* Element [A]nimation custom properties */
-    [A] {
-        /* defaults */
-        --clr-inset: 0 0% 0% / 1;
-        /* M3 theme default, black inset as outline (a11y) */
-
-        --a-opa-d: 1;
-        /* opacity, set to < 1 if you want some default transparency */
-        --a-scale-d: 1;
-        /* scale */
-
-        /* when hovered */
-        --a-opa-h: 1;
-        /* opacity when animated hover */
-        --a-scale-h: 1.02;
-        /* scale when animated and hovered, tweak to your needs */
-
-        --outline-d: inset 0 0 0 2px transparent;
-        /* default */
-        --outline-h: inset 0 0 0 2px hsl(var(--clr-inset));
-        /* hover   */
-    }
-
-    /* [S]hading and [A]nimation defaults */
-    [S] {
-        box-shadow: var(--elevate-d)
-    }
-
-    [A] {
-        opacity: var(--a-opa-d)
-    }
-
-    [S][A] {
-        box-shadow: var(--elevate-d), var(--outline-d)
-    }
-
-    /* [A]nimation actions */
-    [A]:hover {
-        opacity: var(--a-opa-h);
-        transform: scale(var(--a-scale-h));
-        text-shadow: none
-    }
-
-    [A]:active:not(:focus),
-    [A]:focus {
-        transform: scale(var(--a-scale-d))
-    }
-
-    /* [S]hading actions, but only when [A]nimated */
-    [S][A]:hover {
-        box-shadow: var(--elevate-h)
-    }
-
-    [S][A]:active:not(:focus),
-    [S][A]:focus {
-        box-shadow: var(--elevate-d), var(--outline-h)
-    }
-
-    [S][A]:active:not(:focus) header,
-    [S][A]:active:not(:focus) footer {
-        box-shadow: var(--outline-h);
-    }
-
-    /* outline only, no shadow below/above */
-
-    /************************************************/
-    /* HTML CURSOR OVERRIDES               [STABLE] */
-    /************************************************/
-    body {
-        cursor: default
-    }
-
-    /* plain arrow for everything, but */
-    input {
-        cursor: auto
-    }
-
-    /* use HTML default cursor on inputs, unless: */
-
-    input:is([list="datalist"],
-        [type="button"],
-        [type="checkbox"],
-        [type="radio"],
-        [type="color"],
-        [type="range"],
-        [type="reset"],
-        [type="file"],
-        [type="submit"]),
-    label:not([for=""]),
-    a,
-    button,
-    select,
-    keygen {
-        cursor: pointer
-    }
-
-    [contenteditable="true"] {
-        cursor: text
-    }
+.chart-fullscreen-container {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    height: calc(100vh - 170px);
+    min-height: 720px;
+    position: relative;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.chart-toolbar {
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid #e2e8f0;
+    padding: 10px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.chart-toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.chart-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.chart-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #0f172a;
+    transition: all 0.15s ease;
+    cursor: pointer;
+    text-decoration: none !important;
+}
+.chart-btn:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+    color: #0f172a;
+}
+.chart-btn.btn-dark-pill {
+    background: #0f172a;
+    border-color: #0f172a;
+    color: #ffffff;
+}
+.chart-btn.btn-dark-pill:hover {
+    background: #1e293b;
+    border-color: #1e293b;
+    color: #ffffff;
+}
+.chart-canvas {
+    flex: 1;
+    min-width: 100%;
+    min-height: 100%;
+    padding: 40px 30px 80px;
+    transform-origin: top center;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    display: inline-block;
+    box-sizing: border-box;
+}
+.tree-node-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+.tree-card {
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 10px 14px;
+    min-width: 170px;
+    max-width: 220px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    transition: all 0.2s ease;
+    text-decoration: none !important;
+    color: #0f172a;
+    position: relative;
+    z-index: 5;
+    cursor: pointer;
+}
+.tree-card:hover {
+    border-color: #0072f0;
+    box-shadow: 0 6px 16px rgba(0, 114, 240, 0.12);
+    transform: translateY(-2px);
+    color: #0f172a;
+}
+.tree-card.root-card {
+    background: linear-gradient(135deg, #0072f0 0%, #0056b3 100%);
+    border-color: #0056b3;
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(0, 114, 240, 0.25);
+}
+.tree-card.root-card .node-name {
+    color: #ffffff;
+    font-weight: 600;
+}
+.tree-card.root-card .node-sub {
+    color: rgba(255, 255, 255, 0.85);
+}
+.node-avatar-circle {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    color: #334155;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+.tree-card.root-card .node-avatar-circle {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+.node-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.node-info-text {
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+}
+.node-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+}
+.node-sub {
+    font-size: 11px;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+}
+.node-count-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #0f172a;
+    color: #ffffff;
+    border: 2px solid #ffffff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+.tree-children-container {
+    display: flex;
+    justify-content: center;
+    padding-top: 36px;
+    position: relative;
+    margin: 0 auto;
+}
+.tree-children-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 2px;
+    height: 36px;
+    background: #cbd5e1;
+    transform: translateX(-50%);
+}
+.tree-child-branch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    padding: 0 14px;
+}
+.tree-child-branch::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 2px;
+    height: 24px;
+    background: #cbd5e1;
+    transform: translateX(-50%);
+}
+.tree-children-container > .tree-child-branch::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: #cbd5e1;
+}
+.tree-children-container > .tree-child-branch:first-child::after {
+    left: 50%;
+    width: 50%;
+}
+.tree-children-container > .tree-child-branch:last-child::after {
+    width: 50%;
+}
+.tree-children-container > .tree-child-branch:only-child::after {
+    display: none;
+}
+.tree-subchildren-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 28px;
+    position: relative;
+    width: 100%;
+    align-items: center;
+}
+.tree-subchildren-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 2px;
+    height: 28px;
+    background: #cbd5e1;
+    transform: translateX(-50%);
+}
+.tree-subcard {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 7px 10px;
+    width: 100%;
+    min-width: 150px;
+    max-width: 180px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    text-decoration: none !important;
+    color: #334155;
+    transition: all 0.15s ease;
+}
+.tree-subcard:hover {
+    border-color: #0072f0;
+    color: #0072f0;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0, 114, 240, 0.1);
+}
+.tree-subcard .sub-name {
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.empty-children-pill {
+    margin-top: 10px;
+    font-size: 10px;
+    color: #94a3b8;
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
 </style>
-<!-- Content Wrapper. Contains page content -->
-<div class="content-wrapper px-4">
-    <!-- Content Header (Page header) -->
-    <section class="content-header">
-        <h1>
-            <?php echo $info['page_heading']; ?>
-        </h1>
-    </section>
-    <!-- Main content -->
 
-    <section class="content">
-        <!-- /.row -->
+<div class="content-wrapper px-4">
+    <section class="content-header" style="padding-bottom: 8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h1 style="margin:0; font-size:22px; font-weight:600; color:#0f172a;">
+                <?php echo htmlspecialchars($info['page_heading']); ?>
+            </h1>
+            <div style="font-size:13px; color:#64748b;">
+                Viewing hierarchy for: <strong style="color:#0f172a;"><?php echo htmlspecialchars($main_user['name']); ?></strong>
+            </div>
+        </div>
+    </section>
+
+    <section class="content" style="padding-top: 6px;">
         <div class="row">
-            <!-- form close-->
             <div class="col-xs-12">
-                <div class="box">
-                        <div class="pull-right">
+                <div class="chart-fullscreen-container" id="chartContainer">
+                    <div class="chart-toolbar">
+                        <div class="chart-toolbar-left">
+                            <?php if (!empty($back_user['manager']) && (int)$back_user['manager'] !== (int)$main_user['id']) { ?>
+                            <a href="<?php echo base_url(); ?>manager/team/chart?id=<?php echo (int)$back_user['manager']; ?>" class="chart-btn btn-dark-pill" title="Navigate to upline manager">
+                                <i class="fa fa-arrow-up"></i> Go to Manager
+                            </a>
+                            <?php } ?>
+                            <a href="<?php echo base_url(); ?>manager/team/chart" class="chart-btn" title="Reset to my own hierarchy root">
+                                <i class="fa fa-home"></i> My Team Root
+                            </a>
+                            <a href="<?php echo base_url(); ?>manager/team/members" class="chart-btn">
+                                <i class="fa fa-list"></i> Table View
+                            </a>
+                        </div>
+                        <div class="chart-toolbar-right">
+                            <span style="font-size:12px; color:#64748b; margin-right:8px;">Zoom: <strong id="zoomLevel">100%</strong></span>
+                            <button type="button" class="chart-btn" onclick="zoomChart(-0.1)" title="Zoom Out"><i class="fa fa-search-minus"></i></button>
+                            <button type="button" class="chart-btn" onclick="resetZoom()" title="Reset Zoom"><i class="fa fa-undo"></i> 100%</button>
+                            <button type="button" class="chart-btn" onclick="zoomChart(0.1)" title="Zoom In"><i class="fa fa-search-plus"></i></button>
+                            <button type="button" class="chart-btn" onclick="toggleFullscreen()" title="Toggle Browser Fullscreen"><i class="fa fa-arrows-alt" id="fsIcon"></i> Fullscreen</button>
                         </div>
                     </div>
-                    <div class="box-body">
 
-                        <div data-chart="OC" C>
+                    <div class="chart-canvas" id="chartCanvas">
+                        <div class="tree-node-wrapper">
+                            <div class="tree-card root-card" title="Click to refresh root">
+                                <div class="node-avatar-circle">
+                                    <?php if (!empty($main_user['avatar']) && file_exists(FCPATH . $main_user['avatar'])) { ?>
+                                        <img src="<?php echo base_url() . $main_user['avatar']; ?>" class="node-avatar-img" alt="<?php echo htmlspecialchars($main_user['name']); ?>" />
+                                    <?php } else { ?>
+                                        <?php echo strtoupper(substr($main_user['name'], 0, 1)); ?>
+                                    <?php } ?>
+                                </div>
+                                <div class="node-info-text">
+                                    <div class="node-name"><?php echo htmlspecialchars($main_user['name']); ?></div>
+                                    <div class="node-sub"><?php echo !empty($main_user['department']) ? htmlspecialchars($main_user['department']) : 'Team Leader'; ?></div>
+                                </div>
+                                <?php if (!empty($team_tree['children'])) { ?>
+                                    <span class="node-count-badge" title="Direct team members"><?php echo count($team_tree['children']); ?></span>
+                                <?php } ?>
+                            </div>
 
-                            <div data-knot="branch" C>
-
-                                <div data-knot="node.step">
-                                    <a data-symbol s a href="<?php echo base_url(); ?>manager/team/chart?id=<?php echo $back_user['manager']; ?>">
-                                        <div class="header" clr="3">
-                                            <div><br>
-                                                <?php echo $main_user['name']; ?>
-                                            </div>
+                            <?php if (!empty($team_tree['children'])) { ?>
+                            <div class="tree-children-container">
+                                <?php foreach ($team_tree['children'] as $child) { 
+                                    $sub_count = !empty($child['children']) ? count($child['children']) : 0;
+                                ?>
+                                <div class="tree-child-branch">
+                                    <a href="<?php echo base_url(); ?>manager/team/chart?id=<?php echo $child['id']; ?>" class="tree-card" title="Click to view full branch of <?php echo htmlspecialchars($child['name']); ?>">
+                                        <div class="node-avatar-circle">
+                                            <?php if (!empty($child['avatar']) && file_exists(FCPATH . $child['avatar'])) { ?>
+                                                <img src="<?php echo base_url() . $child['avatar']; ?>" class="node-avatar-img" alt="<?php echo htmlspecialchars($child['name']); ?>" />
+                                            <?php } else { ?>
+                                                <?php echo strtoupper(substr($child['name'], 0, 1)); ?>
+                                            <?php } ?>
                                         </div>
+                                        <div class="node-info-text">
+                                            <div class="node-name"><?php echo htmlspecialchars($child['name']); ?></div>
+                                            <div class="node-sub"><?php echo !empty($child['department']) ? htmlspecialchars($child['department']) : 'Team Member'; ?></div>
+                                        </div>
+                                        <?php if ($sub_count > 0) { ?>
+                                            <span class="node-count-badge" title="<?php echo $sub_count; ?> subordinate members"><?php echo $sub_count; ?></span>
+                                        <?php } ?>
                                     </a>
-                                </div>
-                            </div>
 
-
-                            <div data-knot="branch">
-                                <?php if(isset($List2) && !empty($List2)) { ?>
-                                <?php foreach($List2 as $k=>$li){ ?>
-                                    <a href="<?php echo base_url(); ?>manager/team/chart?id=<?php echo $li['id']; ?>">
-                                <div data-knot="node.ctr">
-                                    <div data-knot="step">
-                                        <div data-symbol>
-                                            <div class="header">
-                                                <div>
-                                                    <?php echo $li['name']; ?>
-                                                </div>
+                                    <?php if ($sub_count > 0) { ?>
+                                    <div class="tree-subchildren-container">
+                                        <?php foreach ($child['children'] as $subc) { ?>
+                                        <a href="<?php echo base_url(); ?>manager/team/chart?id=<?php echo $subc['id']; ?>" class="tree-subcard" title="Subordinate under <?php echo htmlspecialchars($child['name']); ?>">
+                                            <div class="node-avatar-circle" style="width:24px; height:24px; font-size:11px;">
+                                                <?php echo strtoupper(substr($subc['name'], 0, 1)); ?>
                                             </div>
-                                        </div>
+                                            <div style="flex:1; min-width:0;">
+                                                <div class="sub-name"><?php echo htmlspecialchars($subc['name']); ?></div>
+                                            </div>
+                                            <?php if (!empty($subc['children'])) { ?>
+                                                <span style="font-size:9px; background:#e2e8f0; color:#334155; padding:1px 5px; border-radius:6px; font-weight:600;"><?php echo count($subc['children']); ?></span>
+                                            <?php } ?>
+                                        </a>
+                                        <?php } ?>
                                     </div>
+                                    <?php } else { ?>
+                                    <span class="empty-children-pill">No reportees</span>
+                                    <?php } ?>
                                 </div>
-                                </a>
-                                <?php }} ?>
-
+                                <?php } ?>
                             </div>
-
-
-
-
-
+                            <?php } else { ?>
+                            <div style="margin-top: 40px; padding: 20px 30px; background: #ffffff; border: 1px dashed #cbd5e1; border-radius: 12px; color: #64748b; font-size: 14px;">
+                                <i class="fa fa-info-circle" style="margin-right: 6px;"></i> No direct team members report to this user.
+                            </div>
+                            <?php } ?>
                         </div>
                     </div>
                 </div>
-                <!-- /.box -->
             </div>
         </div>
     </section>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/leader-line-new@1.1.9/leader-line.min.js"></script>
 
 <script>
-    function do_confirm() {
-        job = confirm("Are you sure to delete this record... ");
-        if (job != true) {
-            return false;
+var currentZoom = 1;
+function updateZoom() {
+    var canvas = document.getElementById('chartCanvas');
+    var label = document.getElementById('zoomLevel');
+    if (canvas) {
+        canvas.style.transform = 'scale(' + currentZoom + ')';
+    }
+    if (label) {
+        label.innerText = Math.round(currentZoom * 100) + '%';
+    }
+}
+function zoomChart(delta) {
+    currentZoom = Math.min(Math.max(0.4, currentZoom + delta), 2.0);
+    updateZoom();
+}
+function resetZoom() {
+    currentZoom = 1;
+    updateZoom();
+}
+function toggleFullscreen() {
+    var elem = document.getElementById('chartContainer');
+    var icon = document.getElementById('fsIcon');
+    if (!document.fullscreenElement) {
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) {
+            elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) {
+            elem.msRequestFullscreen();
         }
-    }</script>
-<script type="text/javascript">
-
-
-    $(document).ready(function () {
-
-        $("#example_user").DataTable({
-            "pageLength": 50,
-            rowReorder: {
-                selector: 'td:nth-child(2)'
-            },
-            responsive: true
-        });
-
-
-        $(document).on("click", "#btn_block", function () {
-
-            var id = $(this).data("id");
-            var admin_status = $(this).data("admin_status");
-
-            if (confirm("Are you sure to unblock User?")) {
-
-                $.ajax({
-                    type: "POST",
-                    url: '<?php  echo base_url(); ?>ci_admin_user/ajax_edit_status',
-                    data: "admin_status=" + admin_status + "&id=" + id, // as you are getting in php $_POST['action1'] 
-
-                }).done(function (msg) {
-
-                    if (msg == 'success' || msg == 'ok') {
-                        location.reload();
-                    }
-                    else {
-                        alert("Error : Not update Confirm status")
-                    }
-                });
-            }
-        });
-
-    });
-
-    $(document).ready(function () {
-        $(document).on("click", "#btn_unblock", function () {
-
-            var id = $(this).data("id");
-            var admin_status = $(this).data("admin_status");
-
-            if (confirm("Are you sure to block User?")) {
-
-                $.ajax({
-                    type: "POST",
-                    url: '<?php  echo base_url(); ?>ci_admin_user/ajax_edit_status',
-                    data: "admin_status=" + admin_status + "&id=" + id, // as you are getting in php $_POST['action1'] 
-
-                }).done(function (msg) {
-
-                    if (msg == 'success' || msg == 'ok') {
-                        location.reload();
-                    }
-                    else {
-                        alert("Error : Not update Confirm status")
-                    }
-                });
-            }
-        });
-
-    });
-
-
+        if (icon) {
+            icon.className = 'fa fa-compress';
+        }
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        }
+        if (icon) {
+            icon.className = 'fa fa-arrows-alt';
+        }
+    }
+}
+document.addEventListener('fullscreenchange', function() {
+    var icon = document.getElementById('fsIcon');
+    if (!document.fullscreenElement && icon) {
+        icon.className = 'fa fa-arrows-alt';
+    }
+});
 </script>
+
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

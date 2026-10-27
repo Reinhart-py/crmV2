@@ -1,144 +1,323 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
+<style>
+.roles-page-container {
+    padding: 0 10px 40px;
+}
+.apple-card {
+    background: #ffffff;
+    border: 1px solid #e5e5ea;
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+    padding: 24px;
+}
+.apple-form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1d1d1f;
+    margin-bottom: 6px;
+    display: block;
+}
+.apple-input, .apple-select {
+    width: 100%;
+    height: 40px;
+    background: #ffffff;
+    border: 1px solid #d2d2d7;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 14px;
+    color: #1d1d1f;
+    transition: all 0.15s ease;
+    outline: none;
+    box-sizing: border-box;
+}
+.apple-input:focus, .apple-select:focus {
+    border-color: #000000;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
+}
+.apple-btn-black {
+    background: #000000;
+    color: #ffffff !important;
+    border: 1px solid #000000;
+    border-radius: 980px;
+    padding: 9px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none !important;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.apple-btn-black:hover {
+    background: #2c2c2e;
+    border-color: #2c2c2e;
+}
+.apple-btn-ghost {
+    background: transparent;
+    color: #6e6e73 !important;
+    border: 1px solid #d2d2d7;
+    border-radius: 980px;
+    padding: 9px 22px;
+    font-size: 14px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none !important;
+    margin-left: 10px;
+    transition: all 0.15s ease;
+}
+.apple-btn-ghost:hover {
+    color: #1d1d1f !important;
+    border-color: #86868b;
+    background: #f5f5f7;
+}
+.perm-matrix-card {
+    background: #ffffff;
+    border: 1px solid #e5e5ea;
+    border-radius: 12px;
+    margin-top: 24px;
+    margin-bottom: 24px;
+    overflow: hidden;
+}
+.perm-matrix-header {
+    background: #fafafa;
+    border-bottom: 1px solid #e5e5ea;
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.perm-matrix-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d1d1f;
+    margin: 0;
+}
+.apple-pill-btn {
+    background: #ffffff;
+    border: 1px solid #d2d2d7;
+    border-radius: 980px;
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #1d1d1f;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.apple-pill-btn:hover {
+    background: #000000;
+    border-color: #000000;
+    color: #ffffff;
+}
+.perm-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.perm-table th {
+    padding: 10px 18px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #86868b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    background: #fafafa;
+    border-bottom: 1px solid #e5e5ea;
+}
+.perm-table td {
+    padding: 12px 18px;
+    border-bottom: 1px solid #f2f2f7;
+    vertical-align: middle;
+}
+.perm-table tr:last-child td {
+    border-bottom: none;
+}
+.perm-seg-control {
+    display: inline-flex;
+    background: #f2f2f7;
+    border-radius: 980px;
+    padding: 2px;
+    border: 1px solid #e5e5ea;
+}
+.perm-seg-label {
+    margin: 0;
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #6e6e73;
+    border-radius: 980px;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.perm-seg-label input[type="radio"] {
+    display: none;
+}
+.perm-seg-label.active {
+    background: #000000;
+    color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+</style>
 
-<div class="content-wrapper"> 
-  <section class="content-header">
-    <h1><?php echo $info['page_heading']; ?></h1>
+<div class="content-wrapper px-4"> 
+  <section class="content-header" style="padding-bottom: 14px;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <h1 style="font-size: 24px; font-weight: 600; color: #1d1d1f; margin:0; letter-spacing: -0.02em;"><?php echo htmlspecialchars($info['page_heading']); ?></h1>
+      </div>
+      <div>
+        <a href="<?php echo base_url(); ?>manager/roles" class="apple-btn-ghost">
+          <i class="fa fa-arrow-left" style="margin-right:6px;"></i> Back to Roles
+        </a>
+      </div>
+    </div>
   </section>
 
-  <section class="content">
-    <div class="container">
-      <div class="row"> 
-        <div class="col-md-12">
-          <div class="nav-tabs-custom">
-            <div class="tab-content">
-              <div class="active tab-pane" style="padding: 15px;">              
-                <div class="form-group success_alert"> 
-                  <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?> 
-                  <?php echo get_message($this->session->flashdata('message'),'message'); ?> 
-                </div>
+  <section class="content roles-page-container">
+    <div class="row"> 
+      <div class="col-xs-12">
+        <div class="form-group success_alert"> 
+          <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?> 
+          <?php echo get_message($this->session->flashdata('message'),'message'); ?> 
+        </div>
 
-                <form method="post" action="<?php echo base_url(); ?>manager/roles/add">
-                  <div class="row">
-                    <div class="col-sm-6">
-                      <div class="form-group">
-                        <label>Parent Role<span class="text-danger">*</span></label>
-                        <select class="form-control" name="parent_id">
-                          <option value="0">Root</option>
-                          <?php if(isset($r_list) && !empty($r_list)){
-                            foreach($r_list as $cli){ ?>
-                            <option value="<?php echo $cli['id']; ?>"><?php echo htmlspecialchars($cli['title']); ?></option>
-                          <?php } } ?>
-                        </select>
-                      </div> 
+        <div class="apple-card">
+          <form method="post" action="<?php echo base_url(); ?>manager/roles/add">
+            <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
+            <div class="row">
+              <div class="col-md-6 col-sm-6">
+                <div class="form-group">
+                  <label class="apple-form-label">Parent Hierarchy Role</label>
+                  <select class="apple-select" name="parent_id">
+                    <option value="0">Root Level</option>
+                    <?php if(isset($r_list) && !empty($r_list)){
+                      foreach($r_list as $cli){ ?>
+                      <option value="<?php echo $cli['id']; ?>"><?php echo htmlspecialchars($cli['title']); ?></option>
+                    <?php } } ?>
+                  </select>
+                </div> 
+              </div>
 
-                      <div class="form-group">
-                        <label>Role Name<span class="text-danger">*</span></label>
-                        <input type="text" name="title" class="form-control" placeholder="New Role Name" required="required" />
-                      </div>             
+              <div class="col-md-6 col-sm-6">
+                <div class="form-group">
+                  <label class="apple-form-label">Role Name *</label>
+                  <input type="text" name="title" class="apple-input" placeholder="e.g. Finance Specialist" required="required" />
+                </div>                  
+              </div>
+
+              <?php
+                $sections = array(
+                  'dashboard'      => 'Dashboard & Key Metrics',
+                  'my_zone'        => 'My Zone Portal',
+                  'database'       => 'Database Records',
+                  'leads'          => 'Leads & Pipeline',
+                  'lead_review'    => 'Lead Approvals & Conversion',
+                  'orders'         => 'Orders & Back Office Processing',
+                  'calls'          => 'Calls & Softphone Dialer',
+                  'team'           => 'Team Management & Chart',
+                  'kam'            => 'KAM Schedules & Accounts',
+                  'tasks'          => 'Tasks Management',
+                  'tickets'        => 'Tickets & Support',
+                  'internal_tasks' => 'Internal Tasks',
+                  'external_tasks' => 'External Tasks',
+                  'reports'        => 'Reports & Projections',
+                  'events'         => 'Events Calendar',
+                  'awards'         => 'Awards & Achievements',
+                  'integrations'   => 'Third-Party API & Integrations',
+                  'system'         => 'System Settings & Health',
+                  'users'          => 'User Accounts Management',
+                  'roles'          => 'Role Access Permissions'
+                );
+              ?>
+
+              <div class="col-sm-12">
+                <div class="perm-matrix-card">
+                  <div class="perm-matrix-header">
+                    <div>
+                      <h3 class="perm-matrix-title">Section Access Matrix</h3>
+                      <div style="font-size:12px; color:#86868b; margin-top:2px;">Select default access level for each functional area</div>
                     </div>
-
-                    <?php
-                      $sections = array(
-                        'dashboard'      => 'Dashboard',
-                        'my_zone'        => 'My Zone',
-                        'database'       => 'Database Records',
-                        'leads'          => 'Leads',
-                        'lead_review'    => 'Lead Review',
-                        'orders'         => 'Orders & Back Office',
-                        'calls'          => 'Calls & Auto-Dialer',
-                        'team'           => 'Team',
-                        'kam'            => 'KAM Schedules',
-                        'tasks'          => 'Tasks',
-                        'tickets'        => 'Tickets',
-                        'internal_tasks' => 'Internal Tasks',
-                        'external_tasks' => 'External Tasks',
-                        'reports'        => 'Reports & Projections',
-                        'events'         => 'Events Calendar',
-                        'awards'         => 'Awards & Achievements',
-                        'integrations'   => 'Third-Party API',
-                        'system'         => 'System',
-                        'users'          => 'User Management',
-                        'roles'          => 'Role Management'
-                      );
-                    ?>
-
-                    <div class="col-sm-12">
-                      <div class="box box-solid" style="border:1px solid #e2e8f0; border-radius:6px; margin-top:15px; margin-bottom:20px;">
-                        <div class="box-header with-border" style="background:#f8fafc; padding:10px 15px;">
-                          <div class="row align-items-center">
-                            <div class="col-xs-6">
-                              <h3 class="box-title" style="font-size:15px; font-weight:600; color:#1e293b; margin:4px 0;">Section Permissions</h3>
-                            </div>
-                            <div class="col-xs-6 text-right">
-                              <div class="btn-group btn-group-xs">
-                                <button type="button" class="btn btn-default" onclick="setAllPerms('no_access')">All No Access</button>
-                                <button type="button" class="btn btn-default" onclick="setAllPerms('read')">All Read</button>
-                                <button type="button" class="btn btn-default" onclick="setAllPerms('write')">All Write</button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="box-body table-responsive no-padding">
-                          <table class="table table-hover table-bordered" style="margin-bottom:0;">
-                            <thead>
-                              <tr style="background:#f1f5f9;">
-                                <th style="width:40%;">CRM Section</th>
-                                <th style="width:20%; text-align:center;">No Access</th>
-                                <th style="width:20%; text-align:center;">Read</th>
-                                <th style="width:20%; text-align:center;">Write</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <?php foreach ($sections as $s_key => $s_title) { ?>
-                              <tr>
-                                <td style="vertical-align:middle;"><strong><?php echo htmlspecialchars($s_title); ?></strong></td>
-                                <td style="text-align:center; vertical-align:middle;">
-                                  <label style="cursor:pointer; font-weight:normal; margin-bottom:0; display:inline-block; padding:4px 8px;">
-                                    <input type="radio" name="permissions[<?php echo $s_key; ?>]" value="no_access" class="perm-radio perm-no-access"> No Access
-                                  </label>
-                                </td>
-                                <td style="text-align:center; vertical-align:middle;">
-                                  <label style="cursor:pointer; font-weight:normal; margin-bottom:0; display:inline-block; padding:4px 8px;">
-                                    <input type="radio" name="permissions[<?php echo $s_key; ?>]" value="read" class="perm-radio perm-read" checked> Read
-                                  </label>
-                                </td>
-                                <td style="text-align:center; vertical-align:middle;">
-                                  <label style="cursor:pointer; font-weight:normal; margin-bottom:0; display:inline-block; padding:4px 8px;">
-                                    <input type="radio" name="permissions[<?php echo $s_key; ?>]" value="write" class="perm-radio perm-write"> Write
-                                  </label>
-                                </td>
-                              </tr>
-                              <?php } ?>
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="col-sm-12">
-                      <div class="form-group">                   
-                        <button type="submit" name="submit" class="btn btn-primary" style="background:#2563eb; border-color:#2563eb; padding:8px 24px; font-weight:600;">Create Role</button>
-                        <a href="<?php echo base_url(); ?>manager/roles" class="btn btn-default" style="margin-left:8px;">Cancel</a>
-                      </div>
+                    <div style="display:flex; gap:6px;">
+                      <button type="button" class="apple-pill-btn" onclick="bulkSetPerms('no_access')">No Access All</button>
+                      <button type="button" class="apple-pill-btn" onclick="bulkSetPerms('read')">Read All</button>
+                      <button type="button" class="apple-pill-btn" onclick="bulkSetPerms('write')">Write All</button>
                     </div>
                   </div>
-                </form>
 
-                <script>
-                function setAllPerms(val) {
-                  var radios = document.querySelectorAll('.perm-' + (val === 'no_access' ? 'no-access' : val));
-                  radios.forEach(function(r) {
-                    r.checked = true;
-                  });
-                }
-                </script>
+                  <div class="table-responsive">
+                    <table class="perm-table">
+                      <thead>
+                        <tr>
+                          <th style="width: 50%;">CRM Section</th>
+                          <th style="width: 50%; text-align:right;">Access Permission</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <?php foreach ($sections as $s_key => $s_title) { ?>
+                        <tr>
+                          <td>
+                            <strong style="font-size:13px; color:#1d1d1f; font-weight:600;"><?php echo htmlspecialchars($s_title); ?></strong>
+                          </td>
+                          <td style="text-align:right;">
+                            <div class="perm-seg-control">
+                              <label class="perm-seg-label">
+                                <input type="radio" name="permissions[<?php echo $s_key; ?>]" value="no_access" onchange="updateSegmentUI(this)">
+                                No Access
+                              </label>
+                              <label class="perm-seg-label active">
+                                <input type="radio" name="permissions[<?php echo $s_key; ?>]" value="read" checked onchange="updateSegmentUI(this)">
+                                Read
+                              </label>
+                              <label class="perm-seg-label">
+                                <input type="radio" name="permissions[<?php echo $s_key; ?>]" value="write" onchange="updateSegmentUI(this)">
+                                Write
+                              </label>
+                            </div>
+                          </td>
+                        </tr>
+                        <?php } ?>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-sm-12" style="padding-top:10px;">
+                <button type="submit" name="submit" class="apple-btn-black">
+                  Create Role
+                </button>
+                <a href="<?php echo base_url(); ?>manager/roles" class="apple-btn-ghost">Cancel</a>
               </div>
             </div>
-          </div>
+          </form>
         </div>
       </div>
     </div>
   </section>
 </div>
+
+<script>
+function updateSegmentUI(input) {
+  var parentControl = input.closest('.perm-seg-control');
+  if (parentControl) {
+    var labels = parentControl.querySelectorAll('.perm-seg-label');
+    labels.forEach(function(l) { l.classList.remove('active'); });
+    input.closest('.perm-seg-label').classList.add('active');
+  }
+}
+
+function bulkSetPerms(level) {
+  var inputs = document.querySelectorAll('input[type="radio"][value="' + level + '"]');
+  inputs.forEach(function(inp) {
+    inp.checked = true;
+    updateSegmentUI(inp);
+  });
+}
+</script>
 
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

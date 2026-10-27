@@ -105,8 +105,7 @@
             $m_role = 1;
         }
         $is_admin = ($m_role === 1 || $current_user_id === 1);
-        $user_team_count = count($this->ci_admin_model->fetchTeamList($current_user_id, ''));
-        $can_see_review = ($is_admin || $m_role === 4 || has_section_perm('back_office') || has_section_perm('operations') || $user_team_count > 0);
+        $can_see_review = ($is_admin || $m_role === 2 || $m_role === 4 || has_section_perm('back_office') || has_section_perm('operations') || $user_team_count > 0);
 
         $current_user_name = '';
         $current_user_gender = '';
@@ -499,8 +498,7 @@ $(function() {
             $m_role = 1;
         }
         $is_admin = ($m_role === 1 || $current_user_id === 1);
-        $user_team_count = count($this->ci_admin_model->fetchTeamList($current_user_id, ''));
-        $can_see_review = ($is_admin || $m_role === 4 || has_section_perm('back_office') || has_section_perm('operations') || $user_team_count > 0);
+        $can_see_review = ($is_admin || $m_role === 2 || $m_role === 4 || has_section_perm('back_office') || has_section_perm('operations') || $user_team_count > 0);
       ?>
       <?php if($is_admin || has_section_perm('dashboard')){ ?>
       <li class="<?php if($route1=="dashboard"){ echo "active";}else{ echo "";}?>"> 
