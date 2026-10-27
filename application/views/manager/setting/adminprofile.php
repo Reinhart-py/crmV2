@@ -33,7 +33,7 @@
    
      <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?> <?php echo get_message($this->session->flashdata('message'),'message'); ?>
      
-      <form role="form" action="<?php echo base_url(); ?>manager/profile" method="post" name="edit_form" enctype="multipart/form-data">
+      <form role="form" action="<?php echo base_url(); ?>manager/profile?edit=1" method="post" name="edit_form" enctype="multipart/form-data">
 
       
        <div class="box box-default">

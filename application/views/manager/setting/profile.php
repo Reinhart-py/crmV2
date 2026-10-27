@@ -22,6 +22,9 @@
       <h3 class="box-title" style="text-transform:capitalize; margin:0 0 4px 0; font-weight:700;">
         <?php if((isset($p_info['name']))&&(!empty($p_info['name']))){echo htmlspecialchars($p_info['name']);}else echo ""; ?>
       </h3>
+      <?php if (!empty($p_info['role_title'])) { ?>
+        <div style="font-size:12px; font-weight:700; color:#0072f0; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;"><?php echo htmlspecialchars($p_info['role_title']); ?></div>
+      <?php } ?>
       <span style="font-size:12px; color:#64748b;"><?php echo htmlspecialchars($p_info['email'] ?? ''); ?></span>
     </div>
   </div>
@@ -42,9 +45,14 @@
               <tr>
                 <th scope="col">Name</th>
                 <td><?php echo $p_info['name']; ?></td>
-
-                
               </tr>
+
+              <?php if (!empty($p_info['role_title'])) { ?>
+              <tr>
+                <th scope="col">Role</th>
+                <td><span class="label label-primary" style="background:#0072f0; font-size:11px; padding:3px 8px;"><?php echo htmlspecialchars($p_info['role_title']); ?></span></td>
+              </tr>
+              <?php } ?>
    
             
               <tr>

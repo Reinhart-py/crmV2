@@ -928,15 +928,17 @@ function __construct()
 					$id = $decoded;
 				}
 			}
+			$id = (int)$id;
 			$data['p_info']=$this->ci_admin_model->getSingleLead($id);
 			$data['p_team']= $this->ci_admin_model->fetchTeamList($this->session->userdata('manager_id'),'');
 			if(!empty($data['p_info'])){
 				$cur_mgr_id = (int)$this->session->userdata('manager_id');
 				$cur_mgr_role = (int)$this->session->userdata('manager_role');
+				$is_bo = ($cur_mgr_role === 1 || $cur_mgr_role === 2 || $cur_mgr_role === 4 || $cur_mgr_id === 1 || has_section_perm('back_office') || has_section_perm('lead_review'));
 				$lead_owner = !empty($data['p_info']['lead_assign']) ? (int)$data['p_info']['lead_assign'] : (int)$data['p_info']['created_by'];
 				$team_members = is_array($data['p_team']) ? array_map('intval', $data['p_team']) : array();
 				$is_mgr_above_owner = (!empty($team_members) && in_array($lead_owner, $team_members));
-				if ($cur_mgr_role != 1 && $cur_mgr_role != 4 && $cur_mgr_id !== 1) {
+				if (!$is_bo) {
 					$is_collab = (!empty($data['p_info']['agents']) && in_array($cur_mgr_id, array_map('intval', explode(',', $data['p_info']['agents']))));
 					if ($lead_owner !== $cur_mgr_id && !$is_collab && !$is_mgr_above_owner) {
 						$this->session->set_flashdata('error_message', 'You do not have access to this lead.');
@@ -947,7 +949,7 @@ function __construct()
 				}
 
 				$can_convert = false;
-				if ($cur_mgr_role === 1 || $cur_mgr_id === 1 || $cur_mgr_role === 4) {
+				if ($is_bo) {
 					$can_convert = true;
 				} elseif ($lead_owner > 0 && $cur_mgr_id !== $lead_owner && $is_mgr_above_owner) {
 					$can_convert = true;
@@ -1250,13 +1252,17 @@ function __construct()
 			'page_heading'=>'Edit Lead'
 		);
 		$data['info2']=$this->if_not_login();
-		$id= base64_decode($id);		      
+		if (!is_numeric($id)) {
+			$decoded = base64_decode($id, true);
+			if ($decoded !== false && is_numeric($decoded)) {
+				$id = $decoded;
+			}
+		}
+		$id = (int)$id;
 		$data['list']=$this->comman_model->getAll(array('id'=>$id),'','ci_leads','first');
 		
 		$data['slist']=$this->ci_admin_model->getSingleLead($id);
 		$data['v_list'] =$this->ci_admin_model->getShortVerticals($this->session->userdata('manager_id'));
-		
-		
 
 		if(empty($data['list'])){
 			$this->session->set_flashdata('error_message', 'Not allowed');
@@ -1265,22 +1271,26 @@ function __construct()
 			}else{
 				redirect('/manager/leads');
 			}
+			return;
 		}  
 		
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$cur_mgr_id = (int)$this->session->userdata('manager_id');
+		$is_bo = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_mgr_id === 1 || has_section_perm('back_office', 'write') || has_section_perm('lead_review', 'write'));
 
 		$pipe_lock = $this->db->get_where('ci_pipeline', array('lead_id' => $id))->row_array();
-		if (!empty($pipe_lock['is_locked']) && (int)$pipe_lock['is_locked'] === 1 && $cur_role !== 1 && $cur_role !== 4) {
+		if (!empty($pipe_lock['is_locked']) && (int)$pipe_lock['is_locked'] === 1 && !$is_bo) {
 			$this->session->set_flashdata('error_message', 'This Lead is locked because an Order conversion process is active. Editing is disabled.');
 			redirect('manager/leads/view/' . base64_encode($id));
 			return;
 		}
 
-		if ($cur_role !== 1 && $cur_role !== 4) {
+		if (!$is_bo) {
 			$lead_owner = !empty($data['list']['lead_assign']) ? (int)$data['list']['lead_assign'] : (int)$data['list']['created_by'];
 			$is_collab = (!empty($data['list']['agents']) && in_array($cur_mgr_id, array_map('intval', explode(',', $data['list']['agents']))));
-			if ($lead_owner !== $cur_mgr_id && !$is_collab) {
+			$subordinates = $this->ci_admin_model->fetchTeamList($cur_mgr_id, '');
+			$is_team_lead = (is_array($subordinates) && in_array($lead_owner, array_map('intval', $subordinates)));
+			if ($lead_owner !== $cur_mgr_id && !$is_collab && !$is_team_lead) {
 				$this->session->set_flashdata('error_message', 'You do not have permission to edit this lead.');
 				redirect($action == 'tm' ? '/manager/team/leads' : '/manager/leads');
 				return;
@@ -1561,14 +1571,18 @@ function __construct()
 			  'page_heading'=>'Edit Meeting'
 		  );
 		  $data['info2']=$this->if_not_login();
-		  $id= base64_decode($id);		      
+		  if (!is_numeric($id)) {
+			  $decoded = base64_decode($id, true);
+			  if ($decoded !== false && is_numeric($decoded)) {
+				  $id = $decoded;
+			  }
+		  }
+		  $id = (int)$id;
 		  $data['list']=$this->comman_model->getAll(array('id'=>$id),'','ci_leads','first');
 		  
 		  $data['slist']=$this->ci_admin_model->getSingleLead($id);
 		  $data['v_list'] =$this->ci_admin_model->getShortVerticals($this->session->userdata('manager_id'));
-		  
-		  
-  
+
 		  if(empty($data['list'])){
 			  $this->session->set_flashdata('error_message', 'Not allowed');
 			  if($action=='tm'){
@@ -1576,11 +1590,14 @@ function __construct()
 			  }else{
 				  redirect('/manager/leads');
 			  }
+			  return;
 		  }  
 
 		  $cur_role = (int)$this->session->userdata('manager_role');
+		  $cur_mgr_id = (int)$this->session->userdata('manager_id');
+		  $is_bo = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_mgr_id === 1 || has_section_perm('back_office', 'write') || has_section_perm('lead_review', 'write'));
 		  $pipe_lock = $this->db->get_where('ci_pipeline', array('lead_id' => $id))->row_array();
-		  if (!empty($pipe_lock['is_locked']) && (int)$pipe_lock['is_locked'] === 1 && $cur_role !== 1 && $cur_role !== 4) {
+		  if (!empty($pipe_lock['is_locked']) && (int)$pipe_lock['is_locked'] === 1 && !$is_bo) {
 			  $this->session->set_flashdata('error_message', 'This Lead is locked because an Order conversion process is active. Editing is disabled.');
 			  redirect('manager/leads/view/' . base64_encode($id));
 			  return;

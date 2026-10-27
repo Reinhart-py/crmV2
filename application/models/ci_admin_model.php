@@ -1795,13 +1795,14 @@ public function dashboard_MyPro($table='ci_leads'){
 	 public function getSingleUser($id)
 	 {
 			  $result=array();
-			  $this->db->select(array('A.*','D.name as country_name','E.name as state_name'));
+			  $this->db->select(array('A.*','D.name as country_name','E.name as state_name','R.title as role_title'));
 			  $this->db->from('ci_user as A');			
 			  $this->db->join('countries as D','A.country=D.id','LEFT');
 			  $this->db->join('states as E','A.state=E.id','LEFT');
+			  $this->db->join('ci_roles as R','A.user_type=R.id','LEFT');
 			 $this->db->where('A.id',$id);
 			
-			  $this->db->limit(5);
+			  $this->db->limit(1);
 			  $data = $this->db->get();
 				foreach($data->result_array() as $row)
 				{
@@ -2372,11 +2373,16 @@ public function dashboard_MyPro($table='ci_leads'){
 		return $query->result_array();
 	}
 
+	private static $_role_perms_cache = array();
+
 	public function get_role_permissions($role_id)
 	{
 		$role_id = (int)$role_id;
+		if (isset(self::$_role_perms_cache[$role_id])) {
+			return self::$_role_perms_cache[$role_id];
+		}
 		$sections = array(
-			'dashboard', 'my_zone', 'database', 'leads', 'lead_review',
+			'dashboard', 'my_zone', 'database', 'leads', 'lead_review', 'back_office',
 			'orders', 'calls', 'team', 'kam', 'tasks', 'tickets',
 			'internal_tasks', 'external_tasks', 'reports', 'events',
 			'awards', 'integrations', 'system', 'users', 'roles'
@@ -2387,13 +2393,16 @@ public function dashboard_MyPro($table='ci_leads'){
 			foreach ($sections as $s) {
 				$res[$s] = 'write';
 			}
+			self::$_role_perms_cache[$role_id] = $res;
 			return $res;
 		}
 
-		$role_row = $this->db->select('permissions')->get_where('ci_roles', array('id' => $role_id))->row_array();
+		$q = $this->db->query("SELECT permissions FROM ci_roles WHERE id = " . (int)$role_id);
+		$role_row = ($q && $q->num_rows() > 0) ? $q->row_array() : null;
 		if (!empty($role_row['permissions'])) {
 			$decoded = json_decode($role_row['permissions'], true);
 			if (is_array($decoded)) {
+				self::$_role_perms_cache[$role_id] = $decoded;
 				return $decoded;
 			}
 		}
@@ -2402,6 +2411,7 @@ public function dashboard_MyPro($table='ci_leads'){
 		foreach ($sections as $s) {
 			$res[$s] = 'read';
 		}
+		self::$_role_perms_cache[$role_id] = $res;
 		return $res;
 	}
 

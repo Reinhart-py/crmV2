@@ -107,18 +107,21 @@
         $is_admin = ($m_role === 1 || $current_user_id === 1);
         $is_support = ($m_role === 4);
         $user_team_count = $current_user_id ? count($this->ci_admin_model->fetchTeamList($current_user_id, '')) : 0;
-        $can_see_review = ($is_admin || $m_role === 2 || $m_role === 4 || has_section_perm('back_office') || has_section_perm('operations') || $user_team_count > 0);
+        $can_see_review = ($is_admin || $m_role === 2 || $m_role === 4 || has_section_perm('back_office') || has_section_perm('lead_review'));
 
         $current_user_name = '';
         $current_user_gender = '';
         $current_user_email = '';
+        $current_user_role_name = '';
         $custom_avatar = '';
         if ($current_user_id) {
-          $u_row = $this->db->select('name, gender, email, c_email, avatar')->get_where('ci_user', array('id' => $current_user_id))->row_array();
+          $u_q = $this->db->query("SELECT U.name, U.gender, U.email, U.c_email, U.avatar, R.title as role_title FROM ci_user U LEFT JOIN ci_roles R ON U.user_type = R.id WHERE U.id = " . (int)$current_user_id);
+          $u_row = ($u_q && $u_q->num_rows() > 0) ? $u_q->row_array() : null;
           if (!empty($u_row)) {
             $current_user_name = !empty($u_row['name']) ? $u_row['name'] : '';
             $current_user_gender = !empty($u_row['gender']) ? trim($u_row['gender']) : '';
-            $current_user_email = !empty($u_row['email']) ? $u_row['email'] : (!empty($u_row['c_email']) ? $u_row['c_email'] : '');
+            $current_user_email = !empty($u_row['c_email']) ? $u_row['c_email'] : (!empty($u_row['email']) ? $u_row['email'] : '');
+            $current_user_role_name = !empty($u_row['role_title']) ? $u_row['role_title'] : '';
             if (!empty($u_row['avatar']) && file_exists(FCPATH . $u_row['avatar'])) {
               $custom_avatar = $u_row['avatar'];
             }
@@ -340,6 +343,9 @@
             <img src="<?php echo base_url() . $user_avatar; ?>" alt="<?php echo htmlspecialchars($current_user_name); ?>" class="google-profile-large-img" />
           </div>
           <div class="google-greeting-name">Hi, <?php echo htmlspecialchars($current_user_name); ?></div>
+          <?php if (!empty($current_user_role_name)) { ?>
+            <div class="google-user-role" style="font-size:12px; font-weight:700; color:#0072f0; margin-top:2px; text-transform:uppercase; letter-spacing:0.5px;"><?php echo htmlspecialchars($current_user_role_name); ?></div>
+          <?php } ?>
           <?php if (!empty($current_user_email)) { ?>
             <div class="google-user-email"><?php echo htmlspecialchars($current_user_email); ?></div>
           <?php } ?>
@@ -510,7 +516,7 @@ $(function() {
         $is_admin = ($m_role === 1 || $current_user_id === 1);
         $is_support = ($m_role === 4);
         $user_team_count = $current_user_id ? count($this->ci_admin_model->fetchTeamList($current_user_id, '')) : 0;
-        $can_see_review = ($is_admin || $m_role === 2 || $m_role === 4 || has_section_perm('back_office') || has_section_perm('operations') || $user_team_count > 0);
+        $can_see_review = ($is_admin || $m_role === 2 || $m_role === 4 || has_section_perm('back_office') || has_section_perm('lead_review'));
       ?>
       <?php if($is_admin || has_section_perm('dashboard')){ ?>
       <li class="<?php if($route1=="dashboard"){ echo "active";}else{ echo "";}?>"> 

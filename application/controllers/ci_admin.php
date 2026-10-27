@@ -280,82 +280,80 @@ class Ci_admin extends CI_Controller {
 		$data['info2']=$this->if_not_login();
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$cur_uid = (int)$this->session->userdata('manager_id');
-		if($cur_role == 1 || $cur_uid == 1 || $this->input->get('edit') == 1){ 
+		$is_editing = ($cur_role == 1 || $cur_uid == 1 || $this->input->get('edit') == 1 || $this->input->server('REQUEST_METHOD') === 'POST');
 
-		$data['list']=$this->comman_model->getAll(array('id'=>$cur_uid),'','ci_user','first');
-		$data['c_list'] =$this->comman_model->getAll('',array('id','ASC'),'countries');
+		if ($is_editing) {
+			$data['list'] = $this->ci_admin_model->getSingleUser($cur_uid);
+			if (empty($data['list'])) {
+				$data['list'] = $this->comman_model->getAll(array('id' => $cur_uid), '', 'ci_user', 'first');
+			}
+			$data['c_list'] = $this->comman_model->getAll('', array('id', 'ASC'), 'countries');
 
-					if($this->input->server('REQUEST_METHOD')==='POST')
-		            {   
-		                extract($_POST);
-						 $save= array(		
-
-			'name'=>$name,
-			'gender' => $gender,
-     		'address'=>$address,
-			'city'=>$city,
-			'mobile' =>$mobile,
-			'email'=>$email,
-			'dob'=>$dob,
-			'uae_mobile'=>$uae_mobile,
-			'emp_id'=>$emp_id,
-			'c_email'=>$c_email,			
-			'c_mobile'=>$c_mobile,
-			'c_salary'=>$c_salary,
-			'c_doj'=>$c_doj,
-			'c_dol'=>$c_dol,
-			'national'=>$national,
-			'p_no'=>$p_no,
-			'p_date'=>$p_date,
-			'p_exdate'=>$p_exdate,
-			'visa_no'=>$visa_no,
-			'eid_no'=>$eid_no,
-			'h_contact_name'=>$h_contact_name,
-			'h_contact_no'=>$h_contact_no,
-			'blood'=>$blood,
-			'no_d_uae'=>$no_d_uae,
-			'bank'=>$bank,
-			'iban'=>$iban,
-			'bank_no'=>$bank_no,						
-			'modified'=>date('Y-m-d')
-			
-				);			
-						  
-						if (isset($_FILES['avatar']) && !empty($_FILES['avatar']['name']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
-							$f_name = $_FILES['avatar']['name'];
-							$ext = strtolower(pathinfo($f_name, PATHINFO_EXTENSION));
-							if (in_array($ext, array('jpg', 'jpeg', 'png', 'webp'))) {
-								$upload_dir = FCPATH . 'assets/uploads/avatars/';
-								if (!is_dir($upload_dir)) {
-									mkdir($upload_dir, 0777, true);
-								}
-								$new_filename = 'avatar_' . $cur_uid . '_' . time() . '.' . $ext;
-								$dest_path = $upload_dir . $new_filename;
-								if (move_uploaded_file($_FILES['avatar']['tmp_name'], $dest_path)) {
-									$old_user = $this->db->select('avatar')->where('id', $cur_uid)->get('ci_user')->row_array();
-									if (!empty($old_user['avatar']) && file_exists(FCPATH . $old_user['avatar']) && strpos($old_user['avatar'], 'assets/uploads/avatars/') !== false) {
-										@unlink(FCPATH . $old_user['avatar']);
-									}
-									$save['avatar'] = 'assets/uploads/avatars/' . $new_filename;
-								}
-							}
+			if ($this->input->server('REQUEST_METHOD') === 'POST') {
+				extract($_POST);
+				$save = array(
+					'name' => isset($name) ? $name : '',
+					'gender' => isset($gender) ? $gender : '',
+					'address' => isset($address) ? $address : '',
+					'city' => isset($city) ? $city : '',
+					'mobile' => isset($mobile) ? $mobile : '',
+					'email' => isset($email) ? $email : '',
+					'dob' => isset($dob) ? $dob : '',
+					'uae_mobile' => isset($uae_mobile) ? $uae_mobile : '',
+					'emp_id' => isset($emp_id) ? $emp_id : '',
+					'c_email' => isset($c_email) ? $c_email : '',
+					'c_mobile' => isset($c_mobile) ? $c_mobile : '',
+					'national' => isset($national) ? $national : '',
+					'p_no' => isset($p_no) ? $p_no : '',
+					'p_date' => isset($p_date) ? $p_date : '',
+					'p_exdate' => isset($p_exdate) ? $p_exdate : '',
+					'visa_no' => isset($visa_no) ? $visa_no : '',
+					'eid_no' => isset($eid_no) ? $eid_no : '',
+					'h_contact_name' => isset($h_contact_name) ? $h_contact_name : '',
+					'h_contact_no' => isset($h_contact_no) ? $h_contact_no : '',
+					'blood' => isset($blood) ? $blood : '',
+					'no_d_uae' => isset($no_d_uae) ? $no_d_uae : '',
+					'bank' => isset($bank) ? $bank : '',
+					'iban' => isset($iban) ? $iban : '',
+					'bank_no' => isset($bank_no) ? $bank_no : '',
+					'modified' => date('Y-m-d')
+				);
+				if ($cur_role === 1 || $cur_uid === 1) {
+					if (isset($c_salary)) $save['c_salary'] = $c_salary;
+					if (isset($c_doj)) $save['c_doj'] = $c_doj;
+					if (isset($c_dol)) $save['c_dol'] = $c_dol;
+				}
+				if (isset($_FILES['avatar']) && !empty($_FILES['avatar']['name']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
+					$f_name = $_FILES['avatar']['name'];
+					$ext = strtolower(pathinfo($f_name, PATHINFO_EXTENSION));
+					if (in_array($ext, array('jpg', 'jpeg', 'png', 'webp'))) {
+						$upload_dir = FCPATH . 'assets/uploads/avatars/';
+						if (!is_dir($upload_dir)) {
+							mkdir($upload_dir, 0777, true);
 						}
-
-			              $response= $this->comman_model->updateData('id',$cur_uid,$save,'ci_user');
-							if($response)
-							{
-							 $this->session->set_flashdata('message', 'Your information updated successfully!');
-						    	redirect('manager/profile');
-								
+						$new_filename = 'avatar_' . $cur_uid . '_' . time() . '.' . $ext;
+						$dest_path = $upload_dir . $new_filename;
+						if (move_uploaded_file($_FILES['avatar']['tmp_name'], $dest_path)) {
+							$old_user = $this->db->select('avatar')->where('id', $cur_uid)->get('ci_user')->row_array();
+							if (!empty($old_user['avatar']) && file_exists(FCPATH . $old_user['avatar']) && strpos($old_user['avatar'], 'assets/uploads/avatars/') !== false) {
+								@unlink(FCPATH . $old_user['avatar']);
 							}
-	                 } 
-	                $this->load->view('manager/setting/adminprofile',$data);
-	            }else{
-
-					$data['p_info']=$this->ci_admin_model->getSingleUser($cur_uid);
-					
-	            	$this->load->view('manager/setting/profile',$data);
-	            }
+							$save['avatar'] = 'assets/uploads/avatars/' . $new_filename;
+						}
+					}
+				}
+				$response = $this->comman_model->updateData('id', $cur_uid, $save, 'ci_user');
+				if ($response) {
+					$this->session->set_flashdata('message', 'Your information updated successfully!');
+					redirect('manager/profile');
+					return;
+				}
+			}
+			$this->load->view('manager/setting/adminprofile', $data);
+		} else {
+			$data['p_info'] = $this->ci_admin_model->getSingleUser($cur_uid);
+			$this->load->view('manager/setting/profile', $data);
+		}
 				
 			}
 
