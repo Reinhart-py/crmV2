@@ -174,15 +174,14 @@
 
         <div class="dash-section-divider" style="margin-top: 18px; margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center;">
             <div>
-                <h3 class="dash-section-title" style="margin-bottom:2px;">
+                <h3 class="dash-section-title" style="margin-bottom:0;">
                     <span class="dash-section-title-icon">
                         <span></span><span></span>
                     </span>
                     <span id="titleStates">Database State</span>
                 </h3>
-                <span class="dash-section-subtitle" id="subtitleStates">Page 1 of 2: Database Pipeline (Statuses 37-44)</span>
             </div>
-            <div class="crm-pager-controls" data-track="#pagerTrackStates" data-title="#titleStates" data-sub="#subtitleStates" data-t1="Database State" data-t2="Lead State" data-s1="Page 1 of 2: Database Pipeline (Statuses 37-44)" data-s2="Page 2 of 2: Lead Pipeline (Statuses 45-50)">
+            <div class="crm-pager-controls" data-track="#pagerTrackStates" data-title="#titleStates" data-t1="Database State" data-t2="Lead State">
                 <div class="crm-pager-dots">
                     <span class="crm-pager-dot active" data-page="0" title="Database State"></span>
                     <span class="crm-pager-dot" data-page="1" title="Lead State"></span>
@@ -342,15 +341,14 @@
 
         <div class="dash-section-divider" style="margin-top: 10px; margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center;">
             <div>
-                <h3 class="dash-section-title" style="margin-bottom:2px;">
+                <h3 class="dash-section-title" style="margin-bottom:0;">
                     <span class="dash-section-title-icon">
                         <span></span><span></span>
                     </span>
                     <span id="titleProj">Projections</span>
                 </h3>
-                <span class="dash-section-subtitle" id="subtitleProj">Page 1 of 2: Forecast Projections (My &amp; Team)</span>
             </div>
-            <div class="crm-pager-controls" data-track="#pagerTrackProj" data-title="#titleProj" data-sub="#subtitleProj" data-t1="Projections" data-t2="Historical Achievement vs Target" data-s1="Page 1 of 2: Forecast Projections (My &amp; Team)" data-s2="Page 2 of 2: Past 10 Months Revenue vs Target">
+            <div class="crm-pager-controls" data-track="#pagerTrackProj" data-title="#titleProj" data-t1="Projections" data-t2="Historical Achievement vs Target">
                 <div class="crm-pager-dots">
                     <span class="crm-pager-dot active" data-page="0" title="Projections Forecast"></span>
                     <span class="crm-pager-dot" data-page="1" title="Historical Achievement"></span>
@@ -422,15 +420,14 @@
 
         <div class="dash-section-divider" style="display:flex; justify-content:space-between; align-items:center;">
             <div>
-                <h3 class="dash-section-title" style="margin-bottom:2px;">
+                <h3 class="dash-section-title" style="margin-bottom:0;">
                     <span class="dash-section-title-icon">
                         <span></span><span></span>
                     </span>
                     <span id="titleOps">Operational Activity and Breakdown</span>
                 </h3>
-                <span class="dash-section-subtitle" id="subtitleOps">Page 1 of 2: Tickets, Tasks, Followups, Meetings, Vertical FU</span>
             </div>
-            <div class="crm-pager-controls" data-track="#pagerTrackOps" data-title="#titleOps" data-sub="#subtitleOps" data-t1="Operational Activity and Breakdown" data-t2="Database &amp; Lead Operations" data-s1="Page 1 of 2: Tickets, Tasks, Followups, Meetings, Vertical FU" data-s2="Page 2 of 2: Database, Leads, and Closures Follow-Up Pipeline">
+            <div class="crm-pager-controls" data-track="#pagerTrackOps" data-title="#titleOps" data-t1="Operational Activity and Breakdown" data-t2="Database &amp; Lead Operations">
                 <div class="crm-pager-dots">
                     <span class="crm-pager-dot active" data-page="0" title="Core Operations"></span>
                     <span class="crm-pager-dot" data-page="1" title="Database &amp; Lead Operations"></span>
