@@ -938,7 +938,7 @@ class Ci_admin_orders extends CI_Controller {
 					'pricing_amount' => $pricing_amount,
 					'currency' => 'AED',
 					'mrr' => $mrr,
-					'billing_cycle' => 'monthly',
+					'billing_type' => 'monthly',
 					'assigned_to' => ($assigned_to > 0) ? $assigned_to : $cur_uid,
 					'assigned_dept' => $assigned_dept ?: 'Back Office',
 					'status' => 'Approved',

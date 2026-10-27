@@ -196,8 +196,11 @@
                   <label style="font-size:12px; font-weight:600;">Assigned Staff</label>
                   <select name="assigned_to" class="form-control input-sm">
                     <option value="0">Unassigned</option>
-                    <?php foreach($staff_list as $st){ ?>
-                      <option value="<?php echo $st['id']; ?>" <?php echo ((int)$lead['assigned_to'] === (int)$st['id']) ? 'selected' : ''; ?>>
+                    <?php 
+                      $cur_assigned = !empty($lead['assigned_to']) ? (int)$lead['assigned_to'] : (!empty($lead['lead_assign']) ? (int)$lead['lead_assign'] : 0);
+                      foreach($staff_list as $st){ 
+                    ?>
+                      <option value="<?php echo $st['id']; ?>" <?php echo ($cur_assigned === (int)$st['id']) ? 'selected' : ''; ?>>
                         <?php echo htmlspecialchars($st['name']); ?>
                       </option>
                     <?php } ?>
