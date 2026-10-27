@@ -102,13 +102,8 @@ class Ci_admin_model extends CI_model {
 				if (!is_array($team_array)) {
 					$team_array = array();
 				}
-				if (!in_array($manager_id, $team_array)) {
-					$team_array[] = $manager_id;
-				}
-				$team_str = implode(',', $team_array);
-				if (empty($team_str)) {
-					$team_str = (string)$manager_id;
-				}
+				$team_clean = array_filter(array_map('intval', $team_array));
+				$team_str = !empty($team_clean) ? implode(',', $team_clean) : '0';
 				$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(id) FROM ci_leads WHERE (FIND_IN_SET(created_by,'".$team_str."')>0 OR (lead_assign > 0 AND FIND_IN_SET(lead_assign,'".$team_str."')>0)) AND status = A.id AND (company_status IS NULL OR LOWER(company_status) != 'closed')) as lead_count FROM ci_status as A ORDER BY A.id ASC";
 			}
 			$data = array();
@@ -206,13 +201,8 @@ public function dashboard_TeamPro($table='ci_leads'){
 	if (!is_array($team_array)) {
 		$team_array = array();
 	}
-	if (!in_array($manager_id, $team_array)) {
-		$team_array[] = $manager_id;
-	}
-	$team_str = implode(',', array_filter(array_map('intval', $team_array)));
-	if (empty($team_str)) {
-		$team_str = (string)$manager_id;
-	}
+	$team_clean = array_filter(array_map('intval', $team_array));
+	$team_str = !empty($team_clean) ? implode(',', $team_clean) : '0';
 			
 	$loop = array();	
 	$loop1 = array();
@@ -1139,13 +1129,8 @@ public function dashboard_MyPro($table='ci_leads'){
 		if (!is_array($team_array)) {
 			$team_array = array();
 		}
-		if (!in_array($manager_id, $team_array)) {
-			$team_array[] = $manager_id;
-		}
-		$team_str = implode(',', $team_array);
-		if (empty($team_str)) {
-			$team_str = (string)$manager_id;
-		}
+		$team_clean = array_unique(array_filter(array_map('intval', $team_array)));
+		$team_str = !empty($team_clean) ? implode(',', $team_clean) : '';
 
 				  $date1=date("Y-m-d",strtotime($d1) );
 				  $date2=date("Y-m-d",strtotime($d2) );
@@ -2602,6 +2587,66 @@ public function dashboard_MyPro($table='ci_leads'){
 
 		$notifs = array();
 
+		if ($is_backoffice) {
+			$pending_leads_count = $this->db->where('pipeline_stage', 'pending_lead')->count_all_results('ci_pipeline');
+			if ($pending_leads_count > 0) {
+				$notifs[] = array(
+					'id' => 'action_pending_leads',
+					'type' => 'action_required',
+					'icon' => 'fa fa-check-square-o',
+					'color' => '#000000',
+					'title' => 'Pending Leads Approval',
+					'message' => $pending_leads_count . ' database lead' . ($pending_leads_count == 1 ? '' : 's') . ' awaiting approval',
+					'time' => date('Y-m-d H:i:s'),
+					'time_ago' => 'Action Required',
+					'link' => base_url('manager/leads/review_leads'),
+					'is_read' => 0
+				);
+			}
+
+			$pending_orders_count = $this->db->where("(order_request_status = 'pending' OR (is_locked = 1 AND approval_status = 'pending'))")->count_all_results('ci_leads');
+			if ($pending_orders_count > 0) {
+				$notifs[] = array(
+					'id' => 'action_pending_orders',
+					'type' => 'action_required',
+					'icon' => 'fa fa-hourglass-half',
+					'color' => '#000000',
+					'title' => 'Pending Order Process',
+					'message' => $pending_orders_count . ' order request' . ($pending_orders_count == 1 ? '' : 's') . ' awaiting processing',
+					'time' => date('Y-m-d H:i:s'),
+					'time_ago' => 'Action Required',
+					'link' => base_url('manager/orders/pending_process'),
+					'is_read' => 0
+				);
+			}
+		}
+
+		$due_followups = $this->db->select('O.id, O.order_no, O.client_name, O.followup_date, O.followup_time')
+			->from('ci_orders O')
+			->where_in('O.status', array('Approved', 'In Progress', 'Under Review'))
+			->where('O.followup_date IS NOT NULL', null, false)
+			->where('O.followup_date <=', date('Y-m-d'))
+			->where("(O.assigned_to = {$user_id} OR O.created_by = {$user_id})")
+			->limit(5)
+			->get()
+			->result_array();
+		if (!empty($due_followups)) {
+			foreach ($due_followups as $df) {
+				$notifs[] = array(
+					'id' => 'order_fu_' . $df['id'],
+					'type' => 'followup_due',
+					'icon' => 'fa fa-clock-o',
+					'color' => '#000000',
+					'title' => 'Order Follow-up Due',
+					'message' => '#' . $df['order_no'] . ' - ' . $df['client_name'] . ' (Due: ' . date('d M', strtotime($df['followup_date'])) . ')',
+					'time' => $df['followup_date'] . ' ' . (!empty($df['followup_time']) ? $df['followup_time'] : '09:00:00'),
+					'time_ago' => 'Due Today',
+					'link' => base_url('manager/orders/followups'),
+					'is_read' => 0
+				);
+			}
+		}
+
 		$db_notifs = $this->db->select('*')
 			->from('ci_notifications')
 			->where("(user_id = " . $user_id . " OR user_id = 0)")
@@ -2749,6 +2794,23 @@ public function dashboard_MyPro($table='ci_leads'){
 		});
 
 		return array_slice($notifs, 0, (int)$limit);
+	}
+
+	public function get_accessible_user_ids($manager_id = 0)
+	{
+		$manager_id = (int)$manager_id;
+		if (!$manager_id) {
+			$manager_id = (int)$this->session->userdata('manager_id');
+		}
+		$team = $this->fetchTeamList($manager_id, '');
+		if (!is_array($team)) {
+			$team = array();
+		}
+		$clean = array_unique(array_filter(array_map('intval', $team)));
+		if (!in_array($manager_id, $clean)) {
+			$clean[] = $manager_id;
+		}
+		return array_values($clean);
 	}
 }
 

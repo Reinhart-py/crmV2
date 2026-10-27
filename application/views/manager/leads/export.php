@@ -1,28 +1,41 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
-
-<div class="content-wrapper px-4">
-  <section class="content-header" style="padding: 16px 0 10px 0;">
-    <h1 style="font-weight: 700; font-size: 22px; color: var(--crm-text, #0f172a);">
-      <i class="fa fa-download" style="margin-right: 8px;"></i> Export Leads Data
-      <small style="font-size: 13px; color: var(--crm-text-muted, #64748b);">Admin Exclusive: Filter and download leads database in CSV format</small>
+<div class="content-wrapper" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <section class="content-header" style="padding: 20px 24px 10px 24px;">
+    <h1 style="font-size: 22px; font-weight: 700; color: #0f172a; margin: 0; letter-spacing: -0.02em;">
+      Export Leads
     </h1>
-    <ol class="breadcrumb" style="background: transparent;">
-      <li><a href="<?php echo base_url(); ?>manager/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
-      <li><a href="<?php echo base_url(); ?>manager/leads">Leads</a></li>
-      <li class="active">Export</li>
-    </ol>
   </section>
 
-  <section class="content" style="padding-top: 10px;">
+  <section class="content" style="padding: 16px 24px;">
     <?php echo get_message($this->session->flashdata('error_message'), 'error_message'); ?>
     <?php echo get_message($this->session->flashdata('message'), 'message'); ?>
 
     <div class="row">
       <div class="col-md-8 col-md-offset-2 col-sm-12">
-        <div class="box box-default" style="border-radius: 8px; border: 1px solid var(--crm-border, #e2e8f0); box-shadow: 0 4px 16px rgba(0,0,0,0.06); overflow: hidden;">
-          <div class="box-header with-border" style="padding: 18px 24px; background: var(--crm-card-bg, #ffffff); border-bottom: 1px solid var(--crm-border, #e2e8f0);">
-            <h3 class="box-title" style="font-weight: 700; font-size: 16px; color: var(--crm-text, #0f172a);">
-              <i class="fa fa-filter" style="margin-right: 6px;"></i> Configure Leads Export
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+          <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+            <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: #64748b; margin-bottom: 6px;">
+              Total Leads Database
+            </div>
+            <div style="font-size: 26px; font-weight: 700; color: #0f172a; line-height: 1;">
+              <?php echo number_format((int)$total_count); ?>
+            </div>
+          </div>
+          <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+            <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: #64748b; margin-bottom: 6px;">
+              Unassigned Leads
+            </div>
+            <div style="font-size: 26px; font-weight: 700; color: #0f172a; line-height: 1;">
+              <?php echo number_format((int)$unassigned_count); ?>
+            </div>
+          </div>
+        </div>
+
+        <div class="box" style="background: #ffffff; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.04); overflow: hidden;">
+          <div class="box-header" style="padding: 18px 24px; border-bottom: 1px solid #e2e8f0;">
+            <h3 class="box-title" style="font-size: 15px; font-weight: 700; color: #0f172a; margin: 0;">
+              Export Database
             </h3>
           </div>
 
@@ -30,53 +43,36 @@
             <input type="hidden" name="download" value="1">
 
             <div class="box-body" style="padding: 24px;">
-              <p style="color: var(--crm-text-muted, #64748b); font-size: 13px; line-height: 1.6; margin-bottom: 22px;">
-                As an Administrator, you can export the full leads database or filter downloads by a specific user. Select your target user below to generate a real-time CSV spreadsheet.
-              </p>
-
-              <div class="form-group" style="margin-bottom: 24px;">
-                <label style="font-weight: 700; font-size: 13px; margin-bottom: 8px; display: block; color: var(--crm-text, #0f172a);">
-                  Select Data Scope / User Filter:
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 10px;">
+                  Export Scope
                 </label>
-                <select name="user_id" class="form-control select2" style="width: 100%; height: 42px; font-size: 14px;">
-                  <option value="all" selected>All Users (Complete Leads Database &mdash; <?php echo (int)$total_count; ?> Total Leads)</option>
-                  <option value="unassigned">Unassigned Leads Only (Not Assigned to Anyone &mdash; <?php echo (int)$unassigned_count; ?> Leads)</option>
+                <select name="user_id" class="form-control select2" style="width: 100%; height: 42px; font-size: 14px; border-radius: 6px; border-color: #cbd5e1;">
+                  <option value="all" selected>All Users (Complete Database &mdash; <?php echo number_format((int)$total_count); ?> Leads)</option>
+                  <option value="unassigned">Unassigned Leads (<?php echo number_format((int)$unassigned_count); ?> Leads)</option>
                   
                   <?php if (!empty($users)) { ?>
-                    <optgroup label="Export by Assigned User / Sales Rep">
+                    <optgroup label="Export by Assigned User">
                       <?php foreach ($users as $u) { 
                         $lead_cnt = isset($user_counts[$u['id']]) ? (int)$user_counts[$u['id']] : 0;
                       ?>
                         <option value="<?php echo $u['id']; ?>">
-                          <?php echo htmlspecialchars($u['name']); ?> (<?php echo htmlspecialchars($u['email']); ?>) &mdash; <?php echo $lead_cnt; ?> leads
+                          <?php echo htmlspecialchars($u['name']); ?> (<?php echo htmlspecialchars($u['email']); ?>) &mdash; <?php echo number_format($lead_cnt); ?> leads
                         </option>
                       <?php } ?>
                     </optgroup>
                   <?php } ?>
                 </select>
               </div>
-
-              <!-- Information Callout Box -->
-              <div class="callout callout-info" style="border-radius: 6px; background: #f8fafc; border-left: 4px solid #000000; color: #1e293b; padding: 14px 18px; margin-bottom: 20px;">
-                <h5 style="margin-top: 0; font-weight: 700; color: #000000;">
-                  <i class="fa fa-info-circle"></i> Export Guidelines
-                </h5>
-                <ul style="padding-left: 18px; font-size: 12.5px; margin-bottom: 0; line-height: 1.6;">
-                  <li>Only verified Administrators have authorization to export data.</li>
-                  <li>Selecting an individual user exports exclusively the leads currently assigned to them.</li>
-                  <li>The exported file includes all contact details, MRR calculations, vertical statuses, and follow-up dates.</li>
-                </ul>
-              </div>
-
             </div>
 
-            <div class="box-footer" style="padding: 16px 24px; background: #f8fafc; border-top: 1px solid var(--crm-border, #e2e8f0); display: flex; justify-content: space-between; align-items: center;">
-              <a href="<?php echo base_url(); ?>manager/leads" class="btn btn-default" style="border-radius: 4px; font-weight: 600;">
-                <i class="fa fa-arrow-left"></i> Back to Leads
-              </a>
-              <button type="submit" class="btn btn-primary" style="border-radius: 4px; font-weight: 700; padding: 8px 22px; background: #000000; border-color: #000000;">
-                <i class="fa fa-download" style="margin-right: 6px;"></i> Download CSV Export
+            <div class="box-footer" style="padding: 16px 24px; background: #ffffff; border-top: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: flex-start; gap: 12px;">
+              <button type="submit" class="btn" style="background: #000000; color: #ffffff; border: 1px solid #000000; font-size: 13px; font-weight: 600; padding: 9px 24px; border-radius: 6px;">
+                <i class="fa fa-download" style="margin-right: 6px;"></i> Download CSV
               </button>
+              <a href="<?php echo base_url(); ?>manager/leads" class="btn" style="background: #ffffff; color: #475569; border: 1px solid #e2e8f0; font-size: 13px; font-weight: 600; padding: 9px 20px; border-radius: 6px;">
+                Cancel
+              </a>
             </div>
           </form>
 

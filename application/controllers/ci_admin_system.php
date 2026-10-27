@@ -59,8 +59,9 @@ class Ci_admin_system extends CI_Controller {
 		);
 		$data['info2'] = $this->if_not_login();
 		
-		$role = $this->session->userdata('manager_role');
-		if ($role != 1) {
+		$role = (int)$this->session->userdata('manager_role');
+		$cur_uid = (int)$this->session->userdata('manager_id');
+		if ($role !== 1 && $cur_uid !== 1) {
 			$this->session->set_flashdata('error_message', 'Access denied. Admin logs are restricted to administrators.');
 			redirect('manager/dashboard');
 			return;

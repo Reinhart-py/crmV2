@@ -45,9 +45,12 @@
           
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>Customer Name<span>*</span></label>
+                <label>Company Name <span class="text-danger">*</span></label>
                 <select name="customer" id="company_customer_select" class="form-control select2-company-ajax" style="width: 100%;" required>
-                  <option value=""></option>
+                  <option value="">Select or type company name...</option>
+                  <?php if (!empty($company_list)) { foreach ($company_list as $cmp) { if (!empty($cmp['customer'])) { ?>
+                  <option value="<?php echo htmlspecialchars($cmp['customer']); ?>"><?php echo htmlspecialchars($cmp['customer']); ?></option>
+                  <?php } } } ?>
                 </select>
               </div>
             </div>

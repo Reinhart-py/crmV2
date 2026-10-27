@@ -53,7 +53,7 @@ class Ci_admin_orders extends CI_Controller {
 				'title' => 'My Orders - Seven Strokes CRM',
 				'page_heading' => 'My Orders'
 			);
-			$this->db->where("(O.created_by = {$cur_uid} OR O.assigned_to = {$cur_uid} OR A.created_by = {$cur_uid} OR A.manager_id = {$cur_uid} OR FIND_IN_SET({$cur_uid}, A.agents) > 0 OR O.lead_id IN (SELECT lead_id FROM ci_lead_transfers WHERE from_user_id = {$cur_uid} OR to_user_id = {$cur_uid}) OR O.lead_id IN (SELECT lead_id FROM ci_pipeline_logs WHERE conversion_requested_by = {$cur_uid} OR order_requested_by = {$cur_uid} OR action_by = {$cur_uid}))");
+			$this->db->where("(O.created_by = {$cur_uid} OR O.assigned_to = {$cur_uid} OR A.created_by = {$cur_uid} OR A.lead_assign = {$cur_uid} OR FIND_IN_SET({$cur_uid}, A.agents) > 0 OR O.lead_id IN (SELECT lead_id FROM ci_lead_transfers WHERE from_user_id = {$cur_uid} OR to_user_id = {$cur_uid}) OR O.lead_id IN (SELECT lead_id FROM ci_pipeline WHERE conversion_requested_by = {$cur_uid} OR order_requested_by = {$cur_uid}) OR O.lead_id IN (SELECT lead_id FROM ci_pipeline_logs WHERE action_by = {$cur_uid}))");
 			$can_edit_orders = false;
 			$reset_url = base_url('manager/orders/my');
 		} elseif ($scope === 'team') {
@@ -81,7 +81,7 @@ class Ci_admin_orders extends CI_Controller {
 			);
 			$this->db->where('O.status', 'Sales');
 			if (!$is_backoffice) {
-				$this->db->where("(O.created_by = {$cur_uid} OR O.assigned_to = {$cur_uid} OR A.created_by = {$cur_uid} OR A.manager_id = {$cur_uid} OR FIND_IN_SET({$cur_uid}, A.agents) > 0 OR O.lead_id IN (SELECT lead_id FROM ci_lead_transfers WHERE from_user_id = {$cur_uid} OR to_user_id = {$cur_uid}) OR O.lead_id IN (SELECT lead_id FROM ci_pipeline_logs WHERE conversion_requested_by = {$cur_uid} OR order_requested_by = {$cur_uid} OR action_by = {$cur_uid}))");
+				$this->db->where("(O.created_by = {$cur_uid} OR O.assigned_to = {$cur_uid} OR A.created_by = {$cur_uid} OR A.lead_assign = {$cur_uid} OR FIND_IN_SET({$cur_uid}, A.agents) > 0 OR O.lead_id IN (SELECT lead_id FROM ci_lead_transfers WHERE from_user_id = {$cur_uid} OR to_user_id = {$cur_uid}) OR O.lead_id IN (SELECT lead_id FROM ci_pipeline WHERE conversion_requested_by = {$cur_uid} OR order_requested_by = {$cur_uid}) OR O.lead_id IN (SELECT lead_id FROM ci_pipeline_logs WHERE action_by = {$cur_uid}))");
 				$can_edit_orders = false;
 			} else {
 				$can_edit_orders = true;
@@ -151,7 +151,8 @@ class Ci_admin_orders extends CI_Controller {
 		if (!empty($service_filter)) {
 			$this->db->like('O.service_title', $service_filter);
 		}
-		if (!empty($status_filter) && $status_filter !== 'sales' && $status_filter !== 'Sales' && $status_filter !== 'completed' && $status_filter !== 'open') {
+		$preset_filters = array('sales', 'Sales', 'completed', 'closed', 'rejected_lost', 'open', 'followups');
+		if (!empty($status_filter) && !in_array($status_filter, $preset_filters)) {
 			if ($status_filter === 'ongoing') {
 				$this->db->where_in('O.status', array('Approved', 'In Progress', 'Under Review'));
 			} else {
@@ -1160,5 +1161,65 @@ class Ci_admin_orders extends CI_Controller {
 	{
 		$_GET['status'] = 'rejected_lost';
 		$this->index();
+	}
+
+	public function ajax_save_followup()
+	{
+		$cur_uid = (int)$this->session->userdata('manager_id');
+		$cur_name = (string)$this->session->userdata('manager_name');
+
+		$order_id = (int)$this->input->post('order_id');
+		$remarks = trim((string)$this->input->post('remarks'));
+		$followup_date = trim((string)$this->input->post('followup_date'));
+		$followup_time = trim((string)$this->input->post('followup_time'));
+		$order_status = trim((string)$this->input->post('order_status'));
+
+		if (!$order_id) {
+			header('Content-Type: application/json');
+			echo json_encode(array('success' => false, 'message' => 'Invalid order ID'));
+			exit;
+		}
+
+		$order = $this->db->where('id', $order_id)->get('ci_orders')->row_array();
+		if (empty($order)) {
+			header('Content-Type: application/json');
+			echo json_encode(array('success' => false, 'message' => 'Order not found'));
+			exit;
+		}
+
+		$now = date('Y-m-d H:i:s');
+		$update_data = array(
+			'updated_at' => $now
+		);
+
+		if (!empty($followup_date)) {
+			$update_data['followup_date'] = date('Y-m-d', strtotime($followup_date));
+		}
+		if (!empty($followup_time)) {
+			$update_data['followup_time'] = $followup_time;
+		}
+		if (!empty($order_status) && in_array($order_status, array('Approved', 'In Progress', 'Under Review', 'Completed', 'Fulfilled', 'Sales', 'Rejected', 'Lost', 'Cancelled'))) {
+			$update_data['status'] = $order_status;
+		}
+		if (!empty($remarks)) {
+			$update_data['operational_instructions'] = $remarks;
+		}
+
+		$this->db->where('id', $order_id)->update('ci_orders', $update_data);
+
+		if (!empty($remarks)) {
+			$this->db->insert('ci_order_history', array(
+				'order_id' => $order_id,
+				'action' => 'followup',
+				'notes' => $remarks . (!empty($followup_date) ? " (Next Follow-up: {$followup_date} {$followup_time})" : ""),
+				'action_by' => $cur_uid,
+				'action_by_name' => $cur_name,
+				'created_at' => $now
+			));
+		}
+
+		header('Content-Type: application/json');
+		echo json_encode(array('success' => true, 'message' => 'Follow-up saved successfully'));
+		exit;
 	}
 }

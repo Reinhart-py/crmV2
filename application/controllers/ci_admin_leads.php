@@ -856,13 +856,30 @@ function __construct()
 
 	public function ajax_search_companies()
 	{
-		$term = $this->input->get('term');
+		$term = trim((string)$this->input->get('term', true));
 		if (empty($term)) {
-			$term = $this->input->get('q');
+			$term = trim((string)$this->input->get('q', true));
 		}
-		$companies = $this->ci_admin_model->search_companies($term);
+		$results = array();
+		if (strlen($term) >= 1) {
+			$this->db->select('DISTINCT(customer) as company', false);
+			$this->db->from('ci_leads');
+			$this->db->like('customer', $term);
+			$this->db->where('customer IS NOT NULL', null, false);
+			$this->db->where("customer != ''", null, false);
+			$this->db->limit(30);
+			$query = $this->db->get();
+			if ($query && $query->num_rows() > 0) {
+				foreach ($query->result_array() as $row) {
+					$c = trim((string)$row['company']);
+					if (!empty($c) && !in_array($c, $results)) {
+						$results[] = $c;
+					}
+				}
+			}
+		}
 		header('Content-Type: application/json');
-		echo json_encode($companies);
+		echo json_encode($results);
 		exit;
 	}
 
@@ -1013,11 +1030,14 @@ function __construct()
 		$data['business_categories'] = $this->comman_model->getAll(array('cat_type'=>'business_cat','status'=>1),'','ci_terms');
 		$data['data_sources'] = $this->comman_model->getAll(array('cat_type'=>'data_source','status'=>1),'','ci_terms');
 		$data['database_categories'] = $this->comman_model->getAll(array('cat_type'=>'database_cat','status'=>1),'','ci_terms');
+		$data['company_list'] = $this->db->distinct()->select('customer')->from('ci_leads')->where('customer IS NOT NULL', null, false)->where("customer != ''", null, false)->order_by('customer', 'ASC')->limit(500)->get()->result_array();
 
 		if($this->input->server('REQUEST_METHOD')==='POST')
 		{	 			
 
 				extract($_POST);
+
+				$customer_val = !empty($this->input->post('customer')) ? trim($this->input->post('customer')) : (!empty($this->input->post('company_name')) ? trim($this->input->post('company_name')) : '');
 
 				$lead_assign = $this->input->post('lead_assign');
 
@@ -1062,7 +1082,7 @@ function __construct()
 
 				$list= array(				
 				'lead_id'=> 100000000,
-				'customer'=>$customer,
+				'customer'=>$customer_val,
 				'category'=>isset($category) ? $category : '',
 				'vertical_id'=>$vertical_id,
 				'a_number'=>$a_number,
@@ -1723,9 +1743,11 @@ $data['info2']=$this->if_not_login();
 	public function export()
 	{
 		$this->if_not_login();
-		$role = $this->session->userdata('manager_role');
-		if ($role != 1) {
-			show_error('Access Denied: Only Administrators have permission to export Leads data.', 403);
+		$role = (int)$this->session->userdata('manager_role');
+		$mgr_id = (int)$this->session->userdata('manager_id');
+		if ($role !== 1 && $mgr_id !== 1) {
+			$this->session->set_flashdata('error_message', 'Access denied. Only Administrators have permission to export Leads data.');
+			redirect('manager/dashboard');
 			return;
 		}
 
