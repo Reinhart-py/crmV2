@@ -9,7 +9,10 @@ application/logs/*
 !application/logs/.htaccess
 
 cookie.txt
+cookies.txt
 *.tmp
+scratch/
+assets/uploads/
 
 # Agent Memory & Local Preferences (strictly ignored from Git)
 project_memory.md

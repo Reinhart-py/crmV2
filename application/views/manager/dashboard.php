@@ -146,30 +146,130 @@
 
         
         <?php
+            $my_db_total = 0;
+            if (!empty($dashboard_db_state)) {
+                foreach($dashboard_db_state as $item) {
+                    $my_db_total += (int)$item['lead_count'];
+                }
+            }
+            $team_db_total = 0;
+            if (!empty($dashboard_db_state_team)) {
+                foreach($dashboard_db_state_team as $item) {
+                    $team_db_total += (int)$item['lead_count'];
+                }
+            }
             $my_lead_total = 0;
-            if (!empty($dashboard_lead)) {
-                foreach($dashboard_lead as $item) {
+            if (!empty($dashboard_lead_state)) {
+                foreach($dashboard_lead_state as $item) {
                     $my_lead_total += (int)$item['lead_count'];
                 }
             }
             $team_lead_total = 0;
-            if (!empty($dashboard_lead_team)) {
-                foreach($dashboard_lead_team as $item) {
+            if (!empty($dashboard_lead_state_team)) {
+                foreach($dashboard_lead_state_team as $item) {
                     $team_lead_total += (int)$item['lead_count'];
                 }
             }
         ?>
-        <div class="row" style="margin-top: 15px;">
-            
+
+        <div class="dash-section-divider" style="margin-top: 18px; margin-bottom: 12px;">
+            <h3 class="dash-section-title">
+                <span class="dash-section-title-icon">
+                    <span></span><span></span>
+                </span>
+                DATABASE STATE
+            </h3>
+            <span class="dash-section-subtitle">Real-time Database Pipeline Distribution</span>
+        </div>
+
+        <div class="row">
             <div class="col-md-6 col-xs-12">
                 <div class="crm-modern-stat-card" style="margin-bottom: 20px;">
                     <div class="card-top">
-                        <h4 class="card-title"><i class="fa fa-list"></i> My Lead Stats</h4>
+                        <h4 class="card-title"><i class="fa fa-database" style="color:#0072f0;"></i> My Database State</h4>
+                        <span class="card-total-pill"><?php echo number_format($my_db_total); ?> Total</span>
+                    </div>
+                    <div class="crm-seg-bar">
+                        <?php if (!empty($dashboard_db_state) && $my_db_total > 0) {
+                            foreach($dashboard_db_state as $li) {
+                                $pct = round(((int)$li['lead_count'] / $my_db_total) * 100, 1);
+                                if ($pct > 0) {
+                                    echo '<div class="crm-seg" style="width:' . $pct . '%; opacity:0.85;" title="' . htmlspecialchars($li['status']) . ': ' . (int)$li['lead_count'] . '"></div>';
+                                }
+                            }
+                        } else { ?>
+                            <div class="crm-seg" style="width:100%; opacity:0.3;"></div>
+                        <?php } ?>
+                    </div>
+                    <ul class="crm-modern-stat-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:6px;">
+                        <?php if (!empty($dashboard_db_state)) { foreach($dashboard_db_state as $li) { ?>
+                            <li style="margin:0;">
+                                <a href="<?php echo base_url(); ?>manager/leads?status%5B%5D=<?php echo $li['status_id']; ?>" class="crm-modern-stat-chip" style="padding:6px 9px;">
+                                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;" title="<?php echo htmlspecialchars($li['status']); ?>"><?php echo htmlspecialchars($li['status']); ?></span>
+                                    <span class="badge" style="background:var(--crm-card-bg, #ffffff); color:var(--crm-text, #0f172a); border:1px solid var(--crm-border, #cbd5e1); font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;"><?php echo (int)$li['lead_count']; ?></span>
+                                </a>
+                            </li>
+                        <?php } } else { ?>
+                            <li style="grid-column: 1 / -1;"><span class="text-muted" style="font-size:12px;">No database records found</span></li>
+                        <?php } ?>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xs-12">
+                <div class="crm-modern-stat-card" style="margin-bottom: 20px;">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-database" style="color:#0072f0;"></i> Team Database State</h4>
+                        <span class="card-total-pill"><?php echo number_format($team_db_total); ?> Total</span>
+                    </div>
+                    <div class="crm-seg-bar">
+                        <?php if (!empty($dashboard_db_state_team) && $team_db_total > 0) {
+                            foreach($dashboard_db_state_team as $li) {
+                                $pct = round(((int)$li['lead_count'] / $team_db_total) * 100, 1);
+                                if ($pct > 0) {
+                                    echo '<div class="crm-seg" style="width:' . $pct . '%; opacity:0.85;" title="' . htmlspecialchars($li['status']) . ': ' . (int)$li['lead_count'] . '"></div>';
+                                }
+                            }
+                        } else { ?>
+                            <div class="crm-seg" style="width:100%; opacity:0.3;"></div>
+                        <?php } ?>
+                    </div>
+                    <ul class="crm-modern-stat-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:6px;">
+                        <?php if (!empty($dashboard_db_state_team)) { foreach($dashboard_db_state_team as $li) { ?>
+                            <li style="margin:0;">
+                                <a href="<?php echo base_url(); ?>manager/team/database?status%5B%5D=<?php echo $li['status_id']; ?>" class="crm-modern-stat-chip" style="padding:6px 9px;">
+                                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;" title="<?php echo htmlspecialchars($li['status']); ?>"><?php echo htmlspecialchars($li['status']); ?></span>
+                                    <span class="badge" style="background:var(--crm-card-bg, #ffffff); color:var(--crm-text, #0f172a); border:1px solid var(--crm-border, #cbd5e1); font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;"><?php echo (int)$li['lead_count']; ?></span>
+                                </a>
+                            </li>
+                        <?php } } else { ?>
+                            <li style="grid-column: 1 / -1;"><span class="text-muted" style="font-size:12px;">No team database records found</span></li>
+                        <?php } ?>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="dash-section-divider" style="margin-top: 5px; margin-bottom: 12px;">
+            <h3 class="dash-section-title">
+                <span class="dash-section-title-icon">
+                    <span></span><span></span>
+                </span>
+                LEAD STATE
+            </h3>
+            <span class="dash-section-subtitle">Real-time Lead Pipeline Distribution</span>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-xs-12">
+                <div class="crm-modern-stat-card" style="margin-bottom: 20px;">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-bullseye" style="color:#0072f0;"></i> My Lead State</h4>
                         <span class="card-total-pill"><?php echo number_format($my_lead_total); ?> Total</span>
                     </div>
                     <div class="crm-seg-bar">
-                        <?php if (!empty($dashboard_lead) && $my_lead_total > 0) {
-                            foreach($dashboard_lead as $li) {
+                        <?php if (!empty($dashboard_lead_state) && $my_lead_total > 0) {
+                            foreach($dashboard_lead_state as $li) {
                                 $pct = round(((int)$li['lead_count'] / $my_lead_total) * 100, 1);
                                 if ($pct > 0) {
                                     echo '<div class="crm-seg" style="width:' . $pct . '%; opacity:0.85;" title="' . htmlspecialchars($li['status']) . ': ' . (int)$li['lead_count'] . '"></div>';
@@ -180,9 +280,9 @@
                         <?php } ?>
                     </div>
                     <ul class="crm-modern-stat-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:6px;">
-                        <?php if (!empty($dashboard_lead)) { foreach($dashboard_lead as $li) { ?>
+                        <?php if (!empty($dashboard_lead_state)) { foreach($dashboard_lead_state as $li) { ?>
                             <li style="margin:0;">
-                                <a href="<?php echo base_url(); ?>manager/leads?d1=&d2=&status%5B%5D=<?php echo $li['status_id']; ?>" class="crm-modern-stat-chip" style="padding:6px 9px;">
+                                <a href="<?php echo base_url(); ?>manager/leads/view_leads?status%5B%5D=<?php echo $li['status_id']; ?>" class="crm-modern-stat-chip" style="padding:6px 9px;">
                                     <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;" title="<?php echo htmlspecialchars($li['status']); ?>"><?php echo htmlspecialchars($li['status']); ?></span>
                                     <span class="badge" style="background:var(--crm-card-bg, #ffffff); color:var(--crm-text, #0f172a); border:1px solid var(--crm-border, #cbd5e1); font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;"><?php echo (int)$li['lead_count']; ?></span>
                                 </a>
@@ -194,16 +294,15 @@
                 </div>
             </div>
 
-            
             <div class="col-md-6 col-xs-12">
                 <div class="crm-modern-stat-card" style="margin-bottom: 20px;">
                     <div class="card-top">
-                        <h4 class="card-title"><i class="fa fa-users"></i> Team Lead Stats</h4>
+                        <h4 class="card-title"><i class="fa fa-bullseye" style="color:#0072f0;"></i> Team Lead State</h4>
                         <span class="card-total-pill"><?php echo number_format($team_lead_total); ?> Total</span>
                     </div>
                     <div class="crm-seg-bar">
-                        <?php if (!empty($dashboard_lead_team) && $team_lead_total > 0) {
-                            foreach($dashboard_lead_team as $li) {
+                        <?php if (!empty($dashboard_lead_state_team) && $team_lead_total > 0) {
+                            foreach($dashboard_lead_state_team as $li) {
                                 $pct = round(((int)$li['lead_count'] / $team_lead_total) * 100, 1);
                                 if ($pct > 0) {
                                     echo '<div class="crm-seg" style="width:' . $pct . '%; opacity:0.85;" title="' . htmlspecialchars($li['status']) . ': ' . (int)$li['lead_count'] . '"></div>';
@@ -214,9 +313,9 @@
                         <?php } ?>
                     </div>
                     <ul class="crm-modern-stat-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:6px;">
-                        <?php if (!empty($dashboard_lead_team)) { foreach($dashboard_lead_team as $li) { ?>
+                        <?php if (!empty($dashboard_lead_state_team)) { foreach($dashboard_lead_state_team as $li) { ?>
                             <li style="margin:0;">
-                                <a href="<?php echo base_url(); ?>manager/team/leads?d1=&d2=&status%5B%5D=<?php echo $li['status_id']; ?>" class="crm-modern-stat-chip" style="padding:6px 9px;">
+                                <a href="<?php echo base_url(); ?>manager/team/leads?status%5B%5D=<?php echo $li['status_id']; ?>" class="crm-modern-stat-chip" style="padding:6px 9px;">
                                     <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;" title="<?php echo htmlspecialchars($li['status']); ?>"><?php echo htmlspecialchars($li['status']); ?></span>
                                     <span class="badge" style="background:var(--crm-card-bg, #ffffff); color:var(--crm-text, #0f172a); border:1px solid var(--crm-border, #cbd5e1); font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;"><?php echo (int)$li['lead_count']; ?></span>
                                 </a>
@@ -229,15 +328,29 @@
             </div>
         </div>
 
+        <div class="dash-section-divider" style="margin-top: 10px; margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <h3 class="dash-section-title" style="margin-bottom:2px;">
+                    <span class="dash-section-title-icon">
+                        <span></span><span></span>
+                    </span>
+                    Projections &amp; Performance
+                </h3>
+                <span class="dash-section-subtitle">Forecast and Historical Target vs Achievement</span>
+            </div>
+            <div>
+                <button type="button" class="btn btn-sm btn-primary" id="btnToggleProjection" style="background:#0072f0; border-color:#0072f0; border-radius:20px; font-weight:600; padding:5px 14px; box-shadow:0 2px 6px rgba(0,114,240,0.25);">
+                    <i class="fa fa-exchange" style="margin-right:4px;"></i> <span id="toggleProjText">Swap &amp; View Achievement</span>
+                </button>
+            </div>
+        </div>
 
-        
-        <div class="row">
-            
-            <div class="col-md-6 col-xs-12">
-                <div class="dash-chart-card">
+        <div class="row dash-chart-swap-transition" id="projRowContainer">
+            <div class="col-md-6 col-xs-12" id="projColLeft">
+                <div class="dash-chart-card" id="cardChartLeft">
                     <div class="dash-chart-header">
-                        <h4 class="dash-chart-title">
-                            <i class="fa fa-line-chart"></i> My Projection
+                        <h4 class="dash-chart-title" id="titleChartLeft">
+                            <i class="fa fa-line-chart"></i> <span id="textChartLeft">My Projection</span>
                         </h4>
                     </div>
                     <div class="dash-chart-body">
@@ -246,16 +359,21 @@
                 </div>
             </div>
 
-            
-            <div class="col-md-6 col-xs-12">
-                <div class="dash-chart-card">
-                    <div class="dash-chart-header">
-                        <h4 class="dash-chart-title">
-                            <i class="fa fa-line-chart"></i> Team Projection
+            <div class="col-md-6 col-xs-12" id="projColRight">
+                <div class="dash-chart-card" id="cardChartRight">
+                    <div class="dash-chart-header" style="display:flex; justify-content:space-between; align-items:center;">
+                        <h4 class="dash-chart-title" id="titleChartRight">
+                            <i class="fa fa-line-chart"></i> <span id="textChartRight">Team Projection</span>
                         </h4>
+                        <div id="achieveLegend" style="display:none; gap:12px; font-size:11px; font-weight:600;">
+                            <span><span style="display:inline-block; width:10px; height:10px; background:#0072f0; border-radius:2px; vertical-align:-1px; margin-right:4px;"></span>Target</span>
+                            <span><span style="display:inline-block; width:10px; height:10px; background:#16a34a; border-radius:2px; vertical-align:-1px; margin-right:4px;"></span>Met</span>
+                            <span><span style="display:inline-block; width:10px; height:10px; background:#dc2626; border-radius:2px; vertical-align:-1px; margin-right:4px;"></span>Below</span>
+                        </div>
                     </div>
                     <div class="dash-chart-body">
                         <canvas id="barChart4" height="230"></canvas>
+                        <canvas id="barChartAchieve" height="230" style="display:none;"></canvas>
                     </div>
                 </div>
             </div>
@@ -272,23 +390,227 @@
             <span class="dash-section-subtitle">Real-time Overview</span>
         </div>
 
+        <div class="crm-op-slider-wrap">
+            <div class="crm-op-slider-header">
+                <h4 style="margin:0; font-size:14px; font-weight:700; color:var(--crm-text, #0f172a);">
+                    <i class="fa fa-sliders" style="color:#0072f0; margin-right:6px;"></i> Database &amp; Lead Follow-Up Operations
+                </h4>
+                <div class="crm-op-slider-controls">
+                    <button type="button" class="crm-op-nav-btn" id="opSliderPrev" title="Scroll Left"><i class="fa fa-chevron-left"></i></button>
+                    <button type="button" class="crm-op-nav-btn" id="opSliderNext" title="Scroll Right"><i class="fa fa-chevron-right"></i></button>
+                </div>
+            </div>
+
+            <div class="crm-op-slider-track" id="opSliderTrack">
+                <div class="crm-op-slide-item">
+                    <div class="crm-modern-stat-card">
+                        <div class="card-top">
+                            <h4 class="card-title"><i class="fa fa-database" style="color:#0072f0;"></i> My Database</h4>
+                            <span class="card-total-pill"><?php echo (int)$dashboard_db_ops_my['total_all']; ?> Total</span>
+                        </div>
+                        <div class="crm-seg-bar">
+                            <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
+                            <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
+                            <div class="crm-seg seg-today" style="width:16%;" title="Today"></div>
+                            <div class="crm-seg seg-next7" style="width:20%;" title="Next 7 Days"></div>
+                            <div class="crm-seg seg-future" style="width:30%;" title="All Future"></div>
+                        </div>
+                        <ul class="crm-modern-stat-grid">
+                            <li>
+                                <a href="<?php echo base_url(); ?>manager/leads/followups?type=1&stage=database" class="crm-modern-stat-chip">
+                                    <span>All Missed</span>
+                                    <span class="badge bg-red"><?php echo (int)$dashboard_db_ops_my['total_missed']; ?></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="<?php echo base_url(); ?>manager/leads/followups?type=2&stage=database" class="crm-modern-stat-chip">
+                                    <span>Last 7 Days</span>
+                                    <span class="badge bg-orange"><?php echo (int)$dashboard_db_ops_my['total_lastweek']; ?></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="<?php echo base_url(); ?>manager/leads/followups?type=3&stage=database" class="crm-modern-stat-chip">
+                                    <span>Today</span>
+                                    <span class="badge bg-skyblue"><?php echo (int)$dashboard_db_ops_my['total_today']; ?></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="<?php echo base_url(); ?>manager/leads/followups?type=4&stage=database" class="crm-modern-stat-chip">
+                                    <span>Next 7 Days</span>
+                                    <span class="badge bg-blue"><?php echo (int)$dashboard_db_ops_my['total_nextweek']; ?></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="<?php echo base_url(); ?>manager/leads/followups?type=5&stage=database" class="crm-modern-stat-chip">
+                                    <span>All Future</span>
+                                    <span class="badge bg-green"><?php echo (int)$dashboard_db_ops_my['total_future']; ?></span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="crm-op-slide-item">
+                    <div class="crm-modern-stat-card">
+                        <div class="card-top">
+                            <h4 class="card-title"><i class="fa fa-database" style="color:#0072f0;"></i> Team Database</h4>
+                            <span class="card-total-pill"><?php echo (int)$dashboard_db_ops_team['total_all']; ?> Total</span>
+                        </div>
+                        <div class="crm-seg-bar">
+                            <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
+                            <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
+                            <div class="crm-seg seg-today" style="width:16%;" title="Today"></div>
+                            <div class="crm-seg seg-next7" style="width:20%;" title="Next 7 Days"></div>
+                            <div class="crm-seg seg-future" style="width:30%;" title="All Future"></div>
+                        </div>
+                        <ul class="crm-modern-stat-grid">
+                            <li>
+                                <a href="<?php echo base_url(); ?>manager/team/followups?type=1&stage=database" class="crm-modern-stat-chip">
+                                    <span>All Missed</span>
+                                    <span class="badge bg-red"><?php echo (int)$dashboard_db_ops_team['total_missed']; ?></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="<?php echo base_url(); ?>manager/team/followups?type=2&stage=database" class="crm-modern-stat-chip">
+                                    <span>Last 7 Days</span>
+                                    <span class="badge bg-orange"><?php echo (int)$dashboard_db_ops_team['total_lastweek']; ?></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="<?php echo base_url(); ?>manager/team/followups?type=3&stage=database" class="crm-modern-stat-chip">
+                                    <span>Today</span>
+                                    <span class="badge bg-skyblue"><?php echo (int)$dashboard_db_ops_team['total_today']; ?></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="<?php echo base_url(); ?>manager/team/followups?type=4&stage=database" class="crm-modern-stat-chip">
+                                    <span>Next 7 Days</span>
+                                    <span class="badge bg-blue"><?php echo (int)$dashboard_db_ops_team['total_nextweek']; ?></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="<?php echo base_url(); ?>manager/team/followups?type=5&stage=database" class="crm-modern-stat-chip">
+                                    <span>All Future</span>
+                                    <span class="badge bg-green"><?php echo (int)$dashboard_db_ops_team['total_future']; ?></span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="crm-op-slide-item">
+                    <div class="crm-modern-stat-card">
+                        <div class="card-top">
+                            <h4 class="card-title"><i class="fa fa-bullseye" style="color:#0072f0;"></i> My Leads</h4>
+                            <span class="card-total-pill"><?php echo (int)$dashboard_lead_ops_my['total_all']; ?> Total</span>
+                        </div>
+                        <div class="crm-seg-bar">
+                            <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
+                            <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
+                            <div class="crm-seg seg-today" style="width:16%;" title="Today"></div>
+                            <div class="crm-seg seg-next7" style="width:20%;" title="Next 7 Days"></div>
+                            <div class="crm-seg seg-future" style="width:30%;" title="All Future"></div>
+                        </div>
+                        <ul class="crm-modern-stat-grid">
+                            <li>
+                                <a href="<?php echo base_url(); ?>manager/leads/followups?type=1&stage=lead" class="crm-modern-stat-chip">
+                                    <span>All Missed</span>
+                                    <span class="badge bg-red"><?php echo (int)$dashboard_lead_ops_my['total_missed']; ?></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="<?php echo base_url(); ?>manager/leads/followups?type=2&stage=lead" class="crm-modern-stat-chip">
+                                    <span>Last 7 Days</span>
+                                    <span class="badge bg-orange"><?php echo (int)$dashboard_lead_ops_my['total_lastweek']; ?></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="<?php echo base_url(); ?>manager/leads/followups?type=3&stage=lead" class="crm-modern-stat-chip">
+                                    <span>Today</span>
+                                    <span class="badge bg-skyblue"><?php echo (int)$dashboard_lead_ops_my['total_today']; ?></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="<?php echo base_url(); ?>manager/leads/followups?type=4&stage=lead" class="crm-modern-stat-chip">
+                                    <span>Next 7 Days</span>
+                                    <span class="badge bg-blue"><?php echo (int)$dashboard_lead_ops_my['total_nextweek']; ?></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="<?php echo base_url(); ?>manager/leads/followups?type=5&stage=lead" class="crm-modern-stat-chip">
+                                    <span>All Future</span>
+                                    <span class="badge bg-green"><?php echo (int)$dashboard_lead_ops_my['total_future']; ?></span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="crm-op-slide-item">
+                    <div class="crm-modern-stat-card">
+                        <div class="card-top">
+                            <h4 class="card-title"><i class="fa fa-bullseye" style="color:#0072f0;"></i> Team Leads</h4>
+                            <span class="card-total-pill"><?php echo (int)$dashboard_lead_ops_team['total_all']; ?> Total</span>
+                        </div>
+                        <div class="crm-seg-bar">
+                            <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
+                            <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
+                            <div class="crm-seg seg-today" style="width:16%;" title="Today"></div>
+                            <div class="crm-seg seg-next7" style="width:20%;" title="Next 7 Days"></div>
+                            <div class="crm-seg seg-future" style="width:30%;" title="All Future"></div>
+                        </div>
+                        <ul class="crm-modern-stat-grid">
+                            <li>
+                                <a href="<?php echo base_url(); ?>manager/team/followups?type=1&stage=lead" class="crm-modern-stat-chip">
+                                    <span>All Missed</span>
+                                    <span class="badge bg-red"><?php echo (int)$dashboard_lead_ops_team['total_missed']; ?></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="<?php echo base_url(); ?>manager/team/followups?type=2&stage=lead" class="crm-modern-stat-chip">
+                                    <span>Last 7 Days</span>
+                                    <span class="badge bg-orange"><?php echo (int)$dashboard_lead_ops_team['total_lastweek']; ?></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="<?php echo base_url(); ?>manager/team/followups?type=3&stage=lead" class="crm-modern-stat-chip">
+                                    <span>Today</span>
+                                    <span class="badge bg-skyblue"><?php echo (int)$dashboard_lead_ops_team['total_today']; ?></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="<?php echo base_url(); ?>manager/team/followups?type=4&stage=lead" class="crm-modern-stat-chip">
+                                    <span>Next 7 Days</span>
+                                    <span class="badge bg-blue"><?php echo (int)$dashboard_lead_ops_team['total_nextweek']; ?></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="<?php echo base_url(); ?>manager/team/followups?type=5&stage=lead" class="crm-modern-stat-chip">
+                                    <span>All Future</span>
+                                    <span class="badge bg-green"><?php echo (int)$dashboard_lead_ops_team['total_future']; ?></span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <?php
             $total_my_tickets = !empty($dashboard_tickets['total_all']) ? (int)$dashboard_tickets['total_all'] : 0;
             $total_my_tasks = !empty($dashboard_tasks['total_all']) ? (int)$dashboard_tasks['total_all'] : (!empty($dashboard_tasks) ? (int)array_sum(array_slice($dashboard_tasks, 0, 5)) : 0);
             $total_my_f = !empty($dashboard_f) ? (int)array_sum(array_slice($dashboard_f, 0, 5)) : 0;
             $total_my_m = !empty($dashboard_m) ? (int)array_sum(array_slice($dashboard_m, 0, 5)) : 0;
-            $total_my_c = !empty($dashboard_c['total_all']) ? (int)$dashboard_c['total_all'] : (!empty($dashboard_c) ? (int)array_sum(array_slice($dashboard_c, 0, 5)) : 0);
             $total_my_vfu = !empty($dashboard_vfu) ? (int)array_sum(array_slice($dashboard_vfu, 0, 5)) : 0;
 
             $total_team_tickets = !empty($dashboard_Ttickets['total_all']) ? (int)$dashboard_Ttickets['total_all'] : 0;
             $total_team_tasks = !empty($dashboard_Ttasks['total_all']) ? (int)$dashboard_Ttasks['total_all'] : (!empty($dashboard_Ttasks) ? (int)array_sum(array_slice($dashboard_Ttasks, 0, 5)) : 0);
             $total_team_f = !empty($dashboard_Tf) ? (int)array_sum(array_slice($dashboard_Tf, 0, 5)) : 0;
             $total_team_m = !empty($dashboard_Tm) ? (int)array_sum(array_slice($dashboard_Tm, 0, 5)) : 0;
-            $total_team_c = !empty($dashboard_Tc['total_all']) ? (int)$dashboard_Tc['total_all'] : (!empty($dashboard_Tc) ? (int)array_sum(array_slice($dashboard_Tc, 0, 5)) : 0);
             $total_team_vfu = !empty($dashboard_Tvfu) ? (int)array_sum(array_slice($dashboard_Tvfu, 0, 5)) : 0; ?>
 
-        <div class="row crm-row-6cols">
-            <div class="crm-col-6 col-xs-12">
+        <div class="row crm-row-5cols">
+            <div class="crm-col-5 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title">
@@ -346,7 +668,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-6 col-xs-12">
+            <div class="crm-col-5 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><a href="<?php echo base_url(); ?>manager/tasks?team=0" style="color:inherit; text-decoration:none;"><i class="fa fa-tasks"></i> My Tasks</a></h4>
@@ -394,7 +716,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-6 col-xs-12">
+            <div class="crm-col-5 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-calendar-check-o"></i> My Followups</h4>
@@ -442,7 +764,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-6 col-xs-12">
+            <div class="crm-col-5 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-handshake-o"></i> My Meetings</h4>
@@ -490,55 +812,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-6 col-xs-12">
-                <div class="crm-modern-stat-card">
-                    <div class="card-top">
-                        <h4 class="card-title"><i class="fa fa-trophy"></i> My Closures</h4>
-                        <span class="card-total-pill"><?php echo $total_my_c; ?> Total</span>
-                    </div>
-                    <div class="crm-seg-bar">
-                        <div class="crm-seg seg-missed" style="width:16%;" title="Missed"></div>
-                        <div class="crm-seg seg-last7" style="width:16%;" title="Last 7 Days"></div>
-                        <div class="crm-seg seg-today" style="width:16%;" title="Today"></div>
-                        <div class="crm-seg seg-next7" style="width:20%;" title="Next 7 Days"></div>
-                        <div class="crm-seg seg-future" style="width:32%;" title="All Future"></div>
-                    </div>
-                    <ul class="crm-modern-stat-grid">
-                        <li>
-                            <a href="<?php echo base_url(); ?>manager/leads?closure=1" class="crm-modern-stat-chip" data-drilldown="my_closures" data-type="1" data-label="My Closures - All Missed">
-                                <span>All Missed</span>
-                                <span class="badge bg-red"><?php echo isset($dashboard_c['total_missed']) ? $dashboard_c['total_missed'] : 0; ?></span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<?php echo base_url(); ?>manager/leads?closure=2" class="crm-modern-stat-chip" data-drilldown="my_closures" data-type="2" data-label="My Closures - Last 7 Days">
-                                <span>Last 7 Days</span>
-                                <span class="badge bg-orange"><?php echo isset($dashboard_c['total_lastweek']) ? $dashboard_c['total_lastweek'] : 0; ?></span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<?php echo base_url(); ?>manager/leads?closure=3" class="crm-modern-stat-chip" data-drilldown="my_closures" data-type="3" data-label="My Closures - Today">
-                                <span>Today</span>
-                                <span class="badge bg-skyblue"><?php echo isset($dashboard_c['total_today']) ? $dashboard_c['total_today'] : 0; ?></span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<?php echo base_url(); ?>manager/leads?closure=4" class="crm-modern-stat-chip" data-drilldown="my_closures" data-type="4" data-label="My Closures - Next 7 Days">
-                                <span>Next 7 Days</span>
-                                <span class="badge bg-blue"><?php echo isset($dashboard_c['total_nextweek']) ? $dashboard_c['total_nextweek'] : 0; ?></span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<?php echo base_url(); ?>manager/leads?closure=5" class="crm-modern-stat-chip" data-drilldown="my_closures" data-type="5" data-label="My Closures - All Future">
-                                <span>All Future</span>
-                                <span class="badge bg-green"><?php echo isset($dashboard_c['total_future']) ? $dashboard_c['total_future'] : 0; ?></span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="crm-col-6 col-xs-12">
+            <div class="crm-col-5 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-briefcase"></i> My Vertical FU</h4>
@@ -587,8 +861,8 @@
             </div>
         </div>
 
-        <div class="row crm-row-6cols">
-            <div class="crm-col-6 col-xs-12">
+        <div class="row crm-row-5cols">
+            <div class="crm-col-5 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title">
@@ -646,7 +920,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-6 col-xs-12">
+            <div class="crm-col-5 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><a href="<?php echo base_url(); ?>manager/tasks?team=1" style="color:inherit; text-decoration:none;"><i class="fa fa-tasks"></i> Team Tasks</a></h4>
@@ -694,7 +968,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-6 col-xs-12">
+            <div class="crm-col-5 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-calendar-check-o"></i> Team Followups</h4>
@@ -742,7 +1016,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-6 col-xs-12">
+            <div class="crm-col-5 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-handshake-o"></i> Team Meetings</h4>
@@ -790,55 +1064,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-6 col-xs-12">
-                <div class="crm-modern-stat-card">
-                    <div class="card-top">
-                        <h4 class="card-title"><i class="fa fa-trophy"></i> Team Closures</h4>
-                        <span class="card-total-pill"><?php echo $total_team_c; ?> Total</span>
-                    </div>
-                    <div class="crm-seg-bar">
-                        <div class="crm-seg seg-missed" style="width:15%;" title="Missed"></div>
-                        <div class="crm-seg seg-last7" style="width:10%;" title="Last 7 Days"></div>
-                        <div class="crm-seg seg-today" style="width:10%;" title="Today"></div>
-                        <div class="crm-seg seg-next7" style="width:15%;" title="Next 7 Days"></div>
-                        <div class="crm-seg seg-future" style="width:50%;" title="All Future"></div>
-                    </div>
-                    <ul class="crm-modern-stat-grid">
-                        <li>
-                            <a href="<?php echo base_url(); ?>manager/team/leads?closure=1" class="crm-modern-stat-chip" data-drilldown="team_closures" data-type="1" data-label="Team Closures - All Missed">
-                                <span>All Missed</span>
-                                <span class="badge bg-red"><?php echo isset($dashboard_Tc['total_missed']) ? $dashboard_Tc['total_missed'] : 0; ?></span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<?php echo base_url(); ?>manager/team/leads?closure=2" class="crm-modern-stat-chip" data-drilldown="team_closures" data-type="2" data-label="Team Closures - Last 7 Days">
-                                <span>Last 7 Days</span>
-                                <span class="badge bg-orange"><?php echo isset($dashboard_Tc['total_lastweek']) ? $dashboard_Tc['total_lastweek'] : 0; ?></span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<?php echo base_url(); ?>manager/team/leads?closure=3" class="crm-modern-stat-chip" data-drilldown="team_closures" data-type="3" data-label="Team Closures - Today">
-                                <span>Today</span>
-                                <span class="badge bg-skyblue"><?php echo isset($dashboard_Tc['total_today']) ? $dashboard_Tc['total_today'] : 0; ?></span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<?php echo base_url(); ?>manager/team/leads?closure=4" class="crm-modern-stat-chip" data-drilldown="team_closures" data-type="4" data-label="Team Closures - Next 7 Days">
-                                <span>Next 7 Days</span>
-                                <span class="badge bg-blue"><?php echo isset($dashboard_Tc['total_nextweek']) ? $dashboard_Tc['total_nextweek'] : 0; ?></span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<?php echo base_url(); ?>manager/team/leads?closure=5" class="crm-modern-stat-chip" data-drilldown="team_closures" data-type="5" data-label="Team Closures - All Future">
-                                <span>All Future</span>
-                                <span class="badge bg-green"><?php echo isset($dashboard_Tc['total_future']) ? $dashboard_Tc['total_future'] : 0; ?></span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="crm-col-6 col-xs-12">
+            <div class="crm-col-5 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-briefcase"></i> Team Vertical FU</h4>
@@ -1018,12 +1244,20 @@ $(function () {
 
     var monthDates = <?php echo json_encode(!empty($dashboard_MyPro['month_dates']) ? $dashboard_MyPro['month_dates'] : array()); ?>;
     var teamMonthDates = <?php echo json_encode(!empty($dashboard_TeamPro['month_dates']) ? $dashboard_TeamPro['month_dates'] : array()); ?>;
+    var achieveMonths = <?php echo json_encode(!empty($dashboard_achievement_team['labels']) ? $dashboard_achievement_team['labels'] : array()); ?>;
+    var achieveTarget = <?php echo json_encode(!empty($dashboard_achievement_team['target']) ? $dashboard_achievement_team['target'] : array()); ?>;
+    var achieveData = <?php echo json_encode(!empty($dashboard_achievement_team['achievement']) ? $dashboard_achievement_team['achievement'] : array()); ?>;
+    var achieveDates = <?php echo json_encode(!empty($dashboard_achievement_team['month_dates']) ? $dashboard_achievement_team['month_dates'] : array()); ?>;
+
+    var isSwapped = false;
+    var chartInstanceAchieve = null;
 
     var canvas2 = document.getElementById('barChart2');
+    var chartInstance2 = null;
     if (canvas2) {
         canvas2.style.cursor = 'pointer';
         var ctx2 = canvas2.getContext('2d');
-        var chartInstance2 = new Chart(ctx2).Bar({
+        chartInstance2 = new Chart(ctx2).Bar({
             labels: months,
             datasets: [{
                 label: 'My Projection',
@@ -1041,8 +1275,12 @@ $(function () {
                 if (activeBars && activeBars.length > 0) {
                     var barLabel = activeBars[0].label;
                     var idx = months.indexOf(barLabel);
-                    if (idx !== -1 && monthDates[idx]) {
-                        window.location.href = '<?php echo base_url(); ?>manager/leads?exp_d1=' + encodeURIComponent(monthDates[idx].d1) + '&exp_d2=' + encodeURIComponent(monthDates[idx].d2);
+                    if (idx !== -1) {
+                        if (isSwapped && teamMonthDates[idx]) {
+                            window.location.href = '<?php echo base_url(); ?>manager/team/leads?exp_d1=' + encodeURIComponent(teamMonthDates[idx].d1) + '&exp_d2=' + encodeURIComponent(teamMonthDates[idx].d2);
+                        } else if (!isSwapped && monthDates[idx]) {
+                            window.location.href = '<?php echo base_url(); ?>manager/leads?exp_d1=' + encodeURIComponent(monthDates[idx].d1) + '&exp_d2=' + encodeURIComponent(monthDates[idx].d2);
+                        }
                     }
                 }
             }
@@ -1050,10 +1288,11 @@ $(function () {
     }
 
     var canvas4 = document.getElementById('barChart4');
+    var chartInstance4 = null;
     if (canvas4) {
         canvas4.style.cursor = 'pointer';
         var ctx4 = canvas4.getContext('2d');
-        var chartInstance4 = new Chart(ctx4).Bar({
+        chartInstance4 = new Chart(ctx4).Bar({
             labels: months,
             datasets: [{
                 label: 'Team Projection',
@@ -1078,6 +1317,131 @@ $(function () {
             }
         };
     }
+
+    function initOrUpdateAchieveChart() {
+        if (!chartInstanceAchieve) {
+            var canvasAchieve = document.getElementById('barChartAchieve');
+            if (canvasAchieve) {
+                canvasAchieve.style.cursor = 'pointer';
+                var ctxAchieve = canvasAchieve.getContext('2d');
+                var achieveOptions = $.extend({}, chartOptions, {
+                    scaleLabel: "<%= 'AED ' + Number(value).toLocaleString() %>",
+                    tooltipTemplate: "<%if (label){%><%=label%>: <%}%><%= 'AED ' + Number(value).toLocaleString() %>",
+                    multiTooltipTemplate: "<%= datasetLabel %>: <%= 'AED ' + Number(value).toLocaleString() %>"
+                });
+                chartInstanceAchieve = new Chart(ctxAchieve).Bar({
+                    labels: achieveMonths,
+                    datasets: [
+                        {
+                            label: 'Target',
+                            fillColor: 'rgba(0, 114, 240, 0.85)',
+                            strokeColor: '#0072f0',
+                            highlightFill: 'rgba(0, 114, 240, 1)',
+                            highlightStroke: '#0072f0',
+                            data: achieveTarget
+                        },
+                        {
+                            label: 'Achievement',
+                            fillColor: 'rgba(22, 163, 74, 0.85)',
+                            strokeColor: '#16a34a',
+                            highlightFill: 'rgba(22, 163, 74, 1)',
+                            highlightStroke: '#16a34a',
+                            data: achieveData
+                        }
+                    ]
+                }, achieveOptions);
+
+                if (chartInstanceAchieve && chartInstanceAchieve.datasets && chartInstanceAchieve.datasets[1]) {
+                    for (var b = 0; b < chartInstanceAchieve.datasets[1].bars.length; b++) {
+                        var val = Number(achieveData[b]) || 0;
+                        var tgt = Number(achieveTarget[b]) || 0;
+                        if (val < tgt) {
+                            chartInstanceAchieve.datasets[1].bars[b].fillColor = '#dc2626';
+                            chartInstanceAchieve.datasets[1].bars[b].strokeColor = '#b91c1c';
+                            chartInstanceAchieve.datasets[1].bars[b].highlightFill = '#ef4444';
+                            chartInstanceAchieve.datasets[1].bars[b].highlightStroke = '#b91c1c';
+                        } else {
+                            chartInstanceAchieve.datasets[1].bars[b].fillColor = '#16a34a';
+                            chartInstanceAchieve.datasets[1].bars[b].strokeColor = '#15803d';
+                            chartInstanceAchieve.datasets[1].bars[b].highlightFill = '#22c55e';
+                            chartInstanceAchieve.datasets[1].bars[b].highlightStroke = '#15803d';
+                        }
+                    }
+                    chartInstanceAchieve.update();
+                }
+
+                canvasAchieve.onclick = function(evt) {
+                    if (chartInstanceAchieve && typeof chartInstanceAchieve.getBarsAtEvent === 'function') {
+                        var activeBars = chartInstanceAchieve.getBarsAtEvent(evt);
+                        if (activeBars && activeBars.length > 0) {
+                            var barLabel = activeBars[0].label;
+                            var idx = achieveMonths.indexOf(barLabel);
+                            if (idx !== -1 && achieveDates[idx]) {
+                                window.location.href = '<?php echo base_url(); ?>manager/team/leads?exp_d1=' + encodeURIComponent(achieveDates[idx].d1) + '&exp_d2=' + encodeURIComponent(achieveDates[idx].d2);
+                            }
+                        }
+                    }
+                };
+            }
+        }
+    }
+
+    $('#btnToggleProjection').on('click', function(e) {
+        e.preventDefault();
+        var $row = $('#projRowContainer');
+        $row.addClass('swapping');
+        setTimeout(function() {
+            isSwapped = !isSwapped;
+            if (isSwapped) {
+                $('#btnToggleProjection').html('<i class="fa fa-refresh" style="margin-right:4px;"></i> <span id="toggleProjText">Reset Projections View</span>');
+                $('#textChartLeft').text('Team Projection');
+                $('#textChartRight').text('Achievement vs Target (Past 10 Months)');
+                $('#achieveLegend').css('display', 'flex');
+                
+                $('#barChart4').hide();
+                $('#barChartAchieve').show();
+                initOrUpdateAchieveChart();
+
+                if (chartInstance2 && teamProData) {
+                    for (var i = 0; i < chartInstance2.datasets[0].bars.length; i++) {
+                        chartInstance2.datasets[0].bars[i].value = teamProData[i] || 0;
+                    }
+                    chartInstance2.update();
+                }
+            } else {
+                $('#btnToggleProjection').html('<i class="fa fa-exchange" style="margin-right:4px;"></i> <span id="toggleProjText">Swap &amp; View Achievement</span>');
+                $('#textChartLeft').text('My Projection');
+                $('#textChartRight').text('Team Projection');
+                $('#achieveLegend').hide();
+                $('#barChartAchieve').hide();
+                $('#barChart4').show();
+
+                if (chartInstance2 && myProData) {
+                    for (var j = 0; j < chartInstance2.datasets[0].bars.length; j++) {
+                        chartInstance2.datasets[0].bars[j].value = myProData[j] || 0;
+                    }
+                    chartInstance2.update();
+                }
+            }
+            $row.removeClass('swapping');
+        }, 180);
+    });
+
+    $('#opSliderPrev').on('click', function(e) {
+        e.preventDefault();
+        var track = document.getElementById('opSliderTrack');
+        if (track) {
+            track.scrollBy({ left: -320, behavior: 'smooth' });
+        }
+    });
+
+    $('#opSliderNext').on('click', function(e) {
+        e.preventDefault();
+        var track = document.getElementById('opSliderTrack');
+        if (track) {
+            track.scrollBy({ left: 320, behavior: 'smooth' });
+        }
+    });
 
     $('.crm-modern-stat-chip').on('click', function(e) {
         var targetUrl = $(this).attr('href');

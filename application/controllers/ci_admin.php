@@ -131,6 +131,16 @@ class Ci_admin extends CI_Controller {
 		$data['dashboard_Tcount']=$this->ci_admin_model->dashboard_Tcountdata();
 		$data['dashboard_lead']=$this->ci_admin_model->dashboard_leaddata();
 		$data['dashboard_lead_team']=$this->ci_admin_model->dashboard_leaddataT();
+		$data['dashboard_db_state']=$this->ci_admin_model->dashboard_db_state(0);
+		$data['dashboard_db_state_team']=$this->ci_admin_model->dashboard_db_state(1);
+		$data['dashboard_lead_state']=$this->ci_admin_model->dashboard_lead_state(0);
+		$data['dashboard_lead_state_team']=$this->ci_admin_model->dashboard_lead_state(1);
+		$data['dashboard_achievement_my']=$this->ci_admin_model->dashboard_achievement_graph(0);
+		$data['dashboard_achievement_team']=$this->ci_admin_model->dashboard_achievement_graph(1);
+		$data['dashboard_db_ops_my']=$this->ci_admin_model->dashboard_stage_followups(0, 'database');
+		$data['dashboard_db_ops_team']=$this->ci_admin_model->dashboard_stage_followups(1, 'database');
+		$data['dashboard_lead_ops_my']=$this->ci_admin_model->dashboard_stage_followups(0, 'lead');
+		$data['dashboard_lead_ops_team']=$this->ci_admin_model->dashboard_stage_followups(1, 'lead');
 		$data['dashboard_f']=$this->ci_admin_model->dashboard_followups(0);
 		$data['dashboard_Tf']=$this->ci_admin_model->dashboard_followups(1);
 		$data['dashboard_m']=$this->ci_admin_model->dashboard_meetings(0);

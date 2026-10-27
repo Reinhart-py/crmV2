@@ -2367,3 +2367,105 @@ table.dataTable {
   color: #a1a1aa !important;
 }
 
+.crm-row-5cols {
+  margin-left: -6px !important;
+  margin-right: -6px !important;
+}
+.crm-row-5cols > .crm-col-5 {
+  width: 20% !important;
+  float: left !important;
+  padding-left: 6px !important;
+  padding-right: 6px !important;
+  position: relative !important;
+  min-height: 1px !important;
+}
+@media (max-width: 1280px) and (min-width: 992px) {
+  .crm-row-5cols > .crm-col-5 {
+    width: 33.333333% !important;
+    margin-bottom: 12px !important;
+  }
+}
+@media (max-width: 991px) and (min-width: 768px) {
+  .crm-row-5cols > .crm-col-5 {
+    width: 50% !important;
+    margin-bottom: 12px !important;
+  }
+}
+@media (max-width: 767px) {
+  .crm-row-5cols > .crm-col-5 {
+    width: 100% !important;
+    float: none !important;
+    margin-bottom: 12px !important;
+  }
+}
+
+.crm-op-slider-wrap {
+  position: relative;
+  margin-bottom: 18px;
+}
+.crm-op-slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.crm-op-slider-controls {
+  display: flex;
+  gap: 8px;
+}
+.crm-op-nav-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--crm-border, #cbd5e1);
+  background: var(--crm-card-bg, #ffffff);
+  color: var(--crm-text, #0f172a);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.crm-op-nav-btn:hover {
+  background: #0072f0;
+  color: #ffffff;
+  border-color: #0072f0;
+  transform: translateY(-1px);
+}
+.crm-op-slider-track {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 2px 8px 2px;
+  scrollbar-width: none;
+}
+.crm-op-slider-track::-webkit-scrollbar {
+  display: none;
+}
+.crm-op-slider-track > .crm-op-slide-item {
+  flex: 0 0 calc(25% - 9px);
+  min-width: 270px;
+}
+@media (max-width: 1200px) {
+  .crm-op-slider-track > .crm-op-slide-item {
+    flex: 0 0 calc(50% - 6px);
+  }
+}
+@media (max-width: 640px) {
+  .crm-op-slider-track > .crm-op-slide-item {
+    flex: 0 0 100%;
+  }
+}
+
+.dash-chart-swap-transition {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.dash-chart-swap-transition.swapping {
+  opacity: 0;
+  transform: scale(0.98);
+}
+
+

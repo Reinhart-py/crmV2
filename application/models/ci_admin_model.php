@@ -116,6 +116,174 @@ class Ci_admin_model extends CI_model {
 			return $data; 
 		}
 
+		public function dashboard_db_state($is_team = 0){
+			$manager_id = (int)$this->session->userdata('manager_id');
+			$user_role = (int)$this->session->userdata('user_role');
+			if ($user_role === 0) {
+				$user_role = (int)$this->session->userdata('manager_role');
+			}
+			if ($is_team == 0) {
+				$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(DISTINCT l.id) FROM ci_leads l LEFT JOIN ci_pipeline p ON p.lead_id = l.id WHERE l.status = A.id AND (p.pipeline_stage = 'database' OR p.pipeline_stage IS NULL) AND (l.lead_assign = ".$manager_id." OR (l.created_by = ".$manager_id." AND (l.lead_assign = 0 OR l.lead_assign IS NULL)) OR (l.agents IS NOT NULL AND l.agents != '' AND FIND_IN_SET(".$manager_id.", l.agents) > 0)) AND (l.company_status IS NULL OR LOWER(l.company_status) != 'closed')) as lead_count FROM ci_status as A WHERE A.id BETWEEN 37 AND 44 ORDER BY A.id ASC";
+			} else {
+				if ($user_role === 1 || $user_role === 4) {
+					$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(DISTINCT l.id) FROM ci_leads l LEFT JOIN ci_pipeline p ON p.lead_id = l.id WHERE l.status = A.id AND (p.pipeline_stage = 'database' OR p.pipeline_stage IS NULL) AND (l.company_status IS NULL OR LOWER(l.company_status) != 'closed')) as lead_count FROM ci_status as A WHERE A.id BETWEEN 37 AND 44 ORDER BY A.id ASC";
+				} else {
+					$team_array = $this->fetchTeamList($manager_id, '');
+					$team_clean = !empty($team_array) && is_array($team_array) ? array_filter(array_map('intval', $team_array)) : array(0);
+					$team_str = implode(',', $team_clean);
+					$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(DISTINCT l.id) FROM ci_leads l LEFT JOIN ci_pipeline p ON p.lead_id = l.id WHERE (FIND_IN_SET(l.created_by,'".$team_str."')>0 OR (l.lead_assign > 0 AND FIND_IN_SET(l.lead_assign,'".$team_str."')>0)) AND l.status = A.id AND (p.pipeline_stage = 'database' OR p.pipeline_stage IS NULL) AND (l.company_status IS NULL OR LOWER(l.company_status) != 'closed')) as lead_count FROM ci_status as A WHERE A.id BETWEEN 37 AND 44 ORDER BY A.id ASC";
+				}
+			}
+			$data = array();
+			$rows = $this->db->query($sql);
+			if($rows && is_object($rows) && $rows->num_rows()>=1){
+				foreach($rows->result_array() as $row){
+					$data[] = $row;
+				}
+			}
+			return $data;
+		}
+
+		public function dashboard_lead_state($is_team = 0){
+			$manager_id = (int)$this->session->userdata('manager_id');
+			$user_role = (int)$this->session->userdata('user_role');
+			if ($user_role === 0) {
+				$user_role = (int)$this->session->userdata('manager_role');
+			}
+			if ($is_team == 0) {
+				$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(DISTINCT l.id) FROM ci_leads l INNER JOIN ci_pipeline p ON p.lead_id = l.id AND p.pipeline_stage = 'lead' WHERE l.status = A.id AND (l.lead_assign = ".$manager_id." OR (l.created_by = ".$manager_id." AND (l.lead_assign = 0 OR l.lead_assign IS NULL)) OR (l.agents IS NOT NULL AND l.agents != '' AND FIND_IN_SET(".$manager_id.", l.agents) > 0)) AND (l.company_status IS NULL OR LOWER(l.company_status) != 'closed')) as lead_count FROM ci_status as A WHERE A.id BETWEEN 45 AND 50 ORDER BY A.id ASC";
+			} else {
+				if ($user_role === 1 || $user_role === 4) {
+					$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(DISTINCT l.id) FROM ci_leads l INNER JOIN ci_pipeline p ON p.lead_id = l.id AND p.pipeline_stage = 'lead' WHERE l.status = A.id AND (l.company_status IS NULL OR LOWER(l.company_status) != 'closed')) as lead_count FROM ci_status as A WHERE A.id BETWEEN 45 AND 50 ORDER BY A.id ASC";
+				} else {
+					$team_array = $this->fetchTeamList($manager_id, '');
+					$team_clean = !empty($team_array) && is_array($team_array) ? array_filter(array_map('intval', $team_array)) : array(0);
+					$team_str = implode(',', $team_clean);
+					$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(DISTINCT l.id) FROM ci_leads l INNER JOIN ci_pipeline p ON p.lead_id = l.id AND p.pipeline_stage = 'lead' WHERE (FIND_IN_SET(l.created_by,'".$team_str."')>0 OR (l.lead_assign > 0 AND FIND_IN_SET(l.lead_assign,'".$team_str."')>0)) AND l.status = A.id AND (l.company_status IS NULL OR LOWER(l.company_status) != 'closed')) as lead_count FROM ci_status as A WHERE A.id BETWEEN 45 AND 50 ORDER BY A.id ASC";
+				}
+			}
+			$data = array();
+			$rows = $this->db->query($sql);
+			if($rows && is_object($rows) && $rows->num_rows()>=1){
+				foreach($rows->result_array() as $row){
+					$data[] = $row;
+				}
+			}
+			return $data;
+		}
+
+		public function dashboard_stage_followups($is_team = 0, $stage = 'database'){
+			$manager_id = (int)$this->session->userdata('manager_id');
+			$user_role = (int)$this->session->userdata('user_role');
+			if ($user_role === 0) {
+				$user_role = (int)$this->session->userdata('manager_role');
+			}
+			$today = date('Y-m-d');
+			$last_date = date('Y-m-d', strtotime("-7 day"));
+			$next_date = date('Y-m-d', strtotime("+7 day"));
+
+			$stage_cond = ($stage === 'lead') ? "p.pipeline_stage = 'lead'" : "(p.pipeline_stage = 'database' OR p.pipeline_stage IS NULL)";
+
+			if ($is_team == 0) {
+				$scope = "(a.lead_assign = ".$manager_id." OR (a.created_by = ".$manager_id." AND (a.lead_assign = 0 OR a.lead_assign IS NULL)) OR (a.agents IS NOT NULL AND a.agents != '' AND FIND_IN_SET(".$manager_id.", a.agents) > 0))";
+			} else {
+				if ($user_role === 1 || $user_role === 4) {
+					$scope = "1=1";
+				} else {
+					$team_array = $this->fetchTeamList($manager_id, '');
+					$team_clean = !empty($team_array) && is_array($team_array) ? array_filter(array_map('intval', $team_array)) : array(0);
+					$team_str = implode(',', $team_clean);
+					$scope = "(FIND_IN_SET(a.created_by, '".$team_str."') > 0 OR (a.lead_assign > 0 AND FIND_IN_SET(a.lead_assign, '".$team_str."') > 0))";
+				}
+			}
+
+			$join_type = ($stage === 'lead') ? "INNER JOIN" : "LEFT JOIN";
+
+			$sql = "SELECT 
+				(SELECT COUNT(DISTINCT a.id) FROM ci_leads a $join_type ci_pipeline p ON p.lead_id = a.id WHERE $stage_cond AND a.followup_date < '$today' AND a.status NOT IN (42,43,44) AND a.followup_date != '' AND a.followup_date != '0000-00-00' AND $scope AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS total_missed,
+				(SELECT COUNT(DISTINCT a.id) FROM ci_leads a $join_type ci_pipeline p ON p.lead_id = a.id WHERE $stage_cond AND a.followup_date < '$today' AND a.followup_date >= '$last_date' AND a.status NOT IN (42,43,44) AND a.followup_date != '' AND a.followup_date != '0000-00-00' AND $scope AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS total_lastweek,
+				(SELECT COUNT(DISTINCT a.id) FROM ci_leads a $join_type ci_pipeline p ON p.lead_id = a.id WHERE $stage_cond AND a.followup_date = '$today' AND a.status NOT IN (42,43,44) AND a.followup_date != '' AND a.followup_date != '0000-00-00' AND $scope AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS total_today,
+				(SELECT COUNT(DISTINCT a.id) FROM ci_leads a $join_type ci_pipeline p ON p.lead_id = a.id WHERE $stage_cond AND a.followup_date > '$today' AND a.followup_date <= '$next_date' AND a.status NOT IN (42,43,44) AND a.followup_date != '' AND a.followup_date != '0000-00-00' AND $scope AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS total_nextweek,
+				(SELECT COUNT(DISTINCT a.id) FROM ci_leads a $join_type ci_pipeline p ON p.lead_id = a.id WHERE $stage_cond AND a.followup_date > '$today' AND a.status NOT IN (42,43,44) AND a.followup_date != '' AND a.followup_date != '0000-00-00' AND $scope AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS total_future";
+
+			$row = $this->db->query($sql)->row_array();
+			if (empty($row)) {
+				$row = array('total_missed' => 0, 'total_lastweek' => 0, 'total_today' => 0, 'total_nextweek' => 0, 'total_future' => 0);
+			}
+			$row['total_all'] = (int)$row['total_missed'] + (int)$row['total_today'] + (int)$row['total_future'];
+			return $row;
+		}
+
+		public function dashboard_achievement_graph($is_team = 0){
+			$manager_id = (int)$this->session->userdata('manager_id');
+			$user_role = (int)$this->session->userdata('user_role');
+			if ($user_role === 0) {
+				$user_role = (int)$this->session->userdata('manager_role');
+			}
+			$labels = array();
+			$target_data = array();
+			$achieve_data = array();
+			$colors = array();
+			$month_dates = array();
+
+			$monthly_target = 50000;
+			if ($is_team == 0) {
+				$u = $this->db->query("SELECT c_salary FROM ci_user WHERE id = " . $manager_id)->row_array();
+				if (!empty($u['c_salary']) && (float)$u['c_salary'] > 0) {
+					$monthly_target = (float)$u['c_salary'];
+				}
+			} else {
+				if ($user_role === 1 || $user_role === 4) {
+					$tot = $this->db->query("SELECT SUM(CASE WHEN c_salary > 0 THEN CAST(c_salary AS DECIMAL(10,2)) ELSE 50000 END) as s FROM ci_user WHERE status = 1")->row_array();
+					$monthly_target = !empty($tot['s']) ? (float)$tot['s'] : 250000;
+				} else {
+					$team_array = $this->fetchTeamList($manager_id, '');
+					if (!empty($team_array) && is_array($team_array)) {
+						$team_clean = array_filter(array_map('intval', $team_array));
+						$team_str = implode(',', $team_clean);
+						$tot = $this->db->query("SELECT SUM(CASE WHEN c_salary > 0 THEN CAST(c_salary AS DECIMAL(10,2)) ELSE 50000 END) as s FROM ci_user WHERE id IN ($team_str)")->row_array();
+						$monthly_target = !empty($tot['s']) ? (float)$tot['s'] : (count($team_clean) * 50000);
+					}
+				}
+			}
+
+			for ($i = 9; $i >= 0; $i--) {
+				$d1 = date("Y-m-01", strtotime("-$i month"));
+				$d2 = date("Y-m-t", strtotime("-$i month"));
+				$label = strtoupper(date("M y", strtotime("-$i month")));
+				$labels[] = $label;
+				$month_dates[] = array('d1' => $d1, 'd2' => $d2);
+				$target_data[] = $monthly_target;
+
+				if ($is_team == 0) {
+					$lq = $this->db->query("SELECT COALESCE(SUM(CAST(mrr AS DECIMAL(10,2))), 0) as val FROM ci_leads WHERE close_date >= '$d1' AND close_date <= '$d2' AND close_date != '' AND close_date != '0000-00-00' AND status IN (39, 42) AND (created_by = $manager_id OR lead_assign = $manager_id)")->row_array();
+					$oq = $this->db->query("SELECT COALESCE(SUM(CAST(pricing_amount AS DECIMAL(10,2))), 0) as val FROM ci_orders WHERE created_at >= '$d1 00:00:00' AND created_at <= '$d2 23:59:59' AND status IN ('completed', 'accepted', 'active', 'processing') AND created_by = $manager_id")->row_array();
+				} else {
+					if ($user_role === 1 || $user_role === 4) {
+						$lq = $this->db->query("SELECT COALESCE(SUM(CAST(mrr AS DECIMAL(10,2))), 0) as val FROM ci_leads WHERE close_date >= '$d1' AND close_date <= '$d2' AND close_date != '' AND close_date != '0000-00-00' AND status IN (39, 42)")->row_array();
+						$oq = $this->db->query("SELECT COALESCE(SUM(CAST(pricing_amount AS DECIMAL(10,2))), 0) as val FROM ci_orders WHERE created_at >= '$d1 00:00:00' AND created_at <= '$d2 23:59:59' AND status IN ('completed', 'accepted', 'active', 'processing')")->row_array();
+					} else {
+						$team_array = $this->fetchTeamList($manager_id, '');
+						$team_clean = !empty($team_array) && is_array($team_array) ? array_filter(array_map('intval', $team_array)) : array(0);
+						$team_str = implode(',', $team_clean);
+						$lq = $this->db->query("SELECT COALESCE(SUM(CAST(mrr AS DECIMAL(10,2))), 0) as val FROM ci_leads WHERE close_date >= '$d1' AND close_date <= '$d2' AND close_date != '' AND close_date != '0000-00-00' AND status IN (39, 42) AND (FIND_IN_SET(created_by, '$team_str') > 0 OR FIND_IN_SET(lead_assign, '$team_str') > 0)")->row_array();
+						$oq = $this->db->query("SELECT COALESCE(SUM(CAST(pricing_amount AS DECIMAL(10,2))), 0) as val FROM ci_orders WHERE created_at >= '$d1 00:00:00' AND created_at <= '$d2 23:59:59' AND status IN ('completed', 'accepted', 'active', 'processing') AND FIND_IN_SET(created_by, '$team_str') > 0")->row_array();
+					}
+				}
+				$achieved = (float)$lq['val'] + (float)$oq['val'];
+				$achieve_data[] = $achieved;
+				$colors[] = ($achieved >= $monthly_target) ? '#16a34a' : '#dc2626';
+			}
+
+			return array(
+				'labels' => $labels,
+				'target' => $target_data,
+				'achievement' => $achieve_data,
+				'colors' => $colors,
+				'month_dates' => $month_dates
+			);
+		}
+
 	
 		public function dashboard_followups($type){
 			$manager_id= $this->session->userdata('manager_id');
