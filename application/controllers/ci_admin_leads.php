@@ -987,8 +987,20 @@ function __construct()
 					->get()
 					->result_array();
 				$data['order_info'] = $this->db->get_where('ci_orders', array('lead_id' => $id))->row_array();
-				$data['db_ref_no'] = !empty($data['p_info']['db_ref_no']) ? $data['p_info']['db_ref_no'] : '';
-				$data['lead_ref_no'] = !empty($data['p_info']['lead_ref_no']) ? $data['p_info']['lead_ref_no'] : '';
+				$raw_db_ref = !empty($data['p_info']['db_ref_no']) ? $data['p_info']['db_ref_no'] : '';
+				if (!empty($raw_db_ref) && preg_match('/^D[0-9]{10}$/', $raw_db_ref)) {
+					$data['db_ref_no'] = $raw_db_ref;
+				} else {
+					$data['db_ref_no'] = sprintf('D%010d', $id);
+				}
+				$raw_lead_ref = !empty($data['p_info']['lead_ref_no']) ? $data['p_info']['lead_ref_no'] : (!empty($data['p_info']['lead_id']) ? $data['p_info']['lead_id'] : '');
+				if (!empty($raw_lead_ref) && preg_match('/^L[0-9]{10}$/', $raw_lead_ref)) {
+					$data['lead_ref_no'] = $raw_lead_ref;
+				} elseif (!empty($data['is_already_lead']) && !empty($raw_lead_ref)) {
+					$data['lead_ref_no'] = $raw_lead_ref;
+				} else {
+					$data['lead_ref_no'] = '';
+				}
 				$data['order_ref_no'] = !empty($data['order_info']['order_no']) ? $data['order_info']['order_no'] : '';
 				$data['sales_ref_no'] = !empty($data['order_info']['sales_ref_no']) ? $data['order_info']['sales_ref_no'] : '';
 				$data['is_locked'] = (!empty($data['p_info']['is_locked']) && (int)$data['p_info']['is_locked'] === 1);

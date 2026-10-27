@@ -37,12 +37,21 @@
             <span class="btn btn-default" style="cursor:default; background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; font-weight:600; margin-right:5px;">
               <i class="fa fa-check-circle" style="color:#10b981;"></i> Converted to Lead
             </span>
-            <?php if (!empty($p_info['order_request_status']) && in_array($p_info['order_request_status'], array('pending', 'approved'))) { ?>
-              <span class="btn btn-default" style="cursor:default; background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; font-weight:600; margin-right:5px;">
-                <i class="fa fa-hourglass-half" style="color:#2563eb;"></i> Order <?php echo ucfirst($p_info['order_request_status']); ?>
+            <?php if (!empty($sales_ref_no)) { ?>
+              <span class="btn btn-default" style="cursor:default; background:#f0fdf4; color:#15803d; border:1px solid #86efac; font-weight:600; margin-right:5px;">
+                <i class="fa fa-trophy" style="color:#16a34a;"></i> Converted to Sales (<?php echo htmlspecialchars($sales_ref_no); ?>)
               </span>
-              <?php if (!empty($order_ref_no)) { ?>
-              <a href="<?php echo base_url(); ?>manager/orders/view/<?php echo !empty($order_info['id']) ? $order_info['id'] : ''; ?>" class="btn btn-default" style="background:#f8fafc; color:#2563eb; border:1px solid #cbd5e1; font-weight:600; margin-right:5px;">
+              <?php if (!empty($order_info['id'])) { ?>
+              <a href="<?php echo base_url(); ?>manager/orders/view/<?php echo $order_info['id']; ?>" class="btn btn-default" style="background:#f8fafc; color:#2563eb; border:1px solid #cbd5e1; font-weight:600; margin-right:5px;">
+                <i class="fa fa-shopping-cart"></i> View Order (<?php echo htmlspecialchars($order_ref_no); ?>)
+              </a>
+              <?php } ?>
+            <?php } elseif (!empty($order_ref_no) || (!empty($p_info['order_request_status']) && in_array($p_info['order_request_status'], array('pending', 'approved', 'processed', 'ordered')))) { ?>
+              <span class="btn btn-default" style="cursor:default; background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; font-weight:600; margin-right:5px;">
+                <i class="fa fa-hourglass-half" style="color:#2563eb;"></i> Order <?php echo !empty($order_ref_no) ? htmlspecialchars($order_ref_no) : 'Pending Process'; ?>
+              </span>
+              <?php if (!empty($order_info['id'])) { ?>
+              <a href="<?php echo base_url(); ?>manager/orders/view/<?php echo $order_info['id']; ?>" class="btn btn-default" style="background:#f8fafc; color:#2563eb; border:1px solid #cbd5e1; font-weight:600; margin-right:5px;">
                 <i class="fa fa-shopping-cart"></i> View Order (<?php echo htmlspecialchars($order_ref_no); ?>)
               </a>
               <?php } ?>

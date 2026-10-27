@@ -1920,7 +1920,7 @@ public function dashboard_MyPro($table='ci_leads'){
 	 public function getSingleLead($id)
 	 {
 			  $result=array();
-			  $this->db->select(array('A.*','B.user_level','B.name as created_name','D.name as country_name','E.name as state_name','F.title as pcat_name','G.title as psubcat_name','H.name as assigned_name','P.pipeline_stage','P.vertical_code','P.conversion_status','P.conversion_reason','P.conversion_requested_by','P.conversion_requested_at','P.conversion_reviewed_by','P.conversion_reviewed_at','P.bo_remarks','P.vertical_data','P.bo_status','P.work_order_no','ReqU.name as requested_by_name'));
+			  $this->db->select(array('A.*','B.user_level','B.name as created_name','D.name as country_name','E.name as state_name','F.title as pcat_name','G.title as psubcat_name','H.name as assigned_name','P.pipeline_stage','P.vertical_code','P.conversion_status','P.conversion_reason','P.conversion_requested_by','P.conversion_requested_at','P.conversion_reviewed_by','P.conversion_reviewed_at','P.bo_remarks','P.vertical_data','P.bo_status','P.work_order_no','P.db_ref_no','P.lead_ref_no','P.order_request_status','P.order_requested_by','P.order_requested_at','P.order_request_remarks','P.is_locked','P.locked_reason','P.locked_at','ReqU.name as requested_by_name'));
 			  $this->db->from('ci_leads as A');
 			  $this->db->join('ci_pipeline as P','P.lead_id=A.id','LEFT');
 			  $this->db->join('ci_user as B','A.created_by=B.id','LEFT');
