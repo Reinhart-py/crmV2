@@ -427,14 +427,14 @@
                     <span id="titleOps">Operational Activity and Breakdown</span>
                 </h3>
             </div>
-            <div class="crm-pager-controls" data-track="#pagerTrackOps" data-title="#titleOps" data-t1="Operational Activity and Breakdown" data-t2="Database &amp; Lead Operations">
+            <div class="crm-pager-controls" data-track="#opCarouselTrack">
                 <div class="crm-pager-dots">
                     <span class="crm-pager-dot active" data-page="0" title="Core Operations"></span>
-                    <span class="crm-pager-dot" data-page="1" title="Database &amp; Lead Operations"></span>
+                    <span class="crm-pager-dot" data-page="1" title="Database &amp; Leads"></span>
                 </div>
                 <div class="crm-pager-arrows">
-                    <button type="button" class="crm-pager-arrow btn-prev" title="Previous Page"><i class="fa fa-chevron-left"></i></button>
-                    <button type="button" class="crm-pager-arrow btn-next" title="Next Page"><i class="fa fa-chevron-right"></i></button>
+                    <button type="button" class="crm-pager-arrow btn-prev" title="Previous"><i class="fa fa-chevron-left"></i></button>
+                    <button type="button" class="crm-pager-arrow btn-next" title="Next"><i class="fa fa-chevron-right"></i></button>
                 </div>
             </div>
         </div>
@@ -452,12 +452,11 @@
             $total_team_m = !empty($dashboard_Tm) ? (int)array_sum(array_slice($dashboard_Tm, 0, 5)) : 0;
             $total_team_vfu = !empty($dashboard_Tvfu) ? (int)array_sum(array_slice($dashboard_Tvfu, 0, 5)) : 0; ?>
 
-        <div class="crm-pager-container" style="position:relative;">
-            <button type="button" class="crm-side-float-arrow arrow-right" data-track="#pagerTrackOps" data-dir="next" title="Swipe to Database & Leads"><i class="fa fa-chevron-right"></i></button>
-            <button type="button" class="crm-side-float-arrow arrow-left" data-track="#pagerTrackOps" data-dir="prev" style="display:none;" title="Swipe to Core Operations"><i class="fa fa-chevron-left"></i></button>
-            <div class="crm-pager-track" id="pagerTrackOps" data-page="0">
-                <div class="crm-pager-page">
-        <div class="row crm-row-5cols">
+        <div class="crm-op-carousel-container" style="position:relative;">
+            <button type="button" class="crm-side-float-arrow arrow-right" data-track="#opCarouselTrack" data-dir="next" title="Scroll Right to Database & Leads"><i class="fa fa-chevron-right"></i></button>
+            <button type="button" class="crm-side-float-arrow arrow-left" data-track="#opCarouselTrack" data-dir="prev" style="display:none;" title="Scroll Left to Core Operations"><i class="fa fa-chevron-left"></i></button>
+            <div class="crm-op-carousel-track" id="opCarouselTrack" data-page="0">
+                <div class="crm-op-row-track">
             <div class="crm-col-5 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
@@ -707,9 +706,55 @@
                     </ul>
                 </div>
             </div>
+
+            <div class="crm-col-5 crm-op-col">
+                <div class="crm-modern-stat-card">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-database" style="color:#0072f0;"></i> My Database</h4>
+                        <span class="card-total-pill"><?php echo (int)$dashboard_db_ops_my['total_all']; ?> Total</span>
+                    </div>
+                    <div class="crm-seg-bar">
+                        <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
+                        <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
+                        <div class="crm-seg seg-today" style="width:16%;" title="Today"></div>
+                        <div class="crm-seg seg-next7" style="width:20%;" title="Next 7 Days"></div>
+                        <div class="crm-seg seg-future" style="width:30%;" title="All Future"></div>
+                    </div>
+                    <ul class="crm-modern-stat-grid">
+                        <li><a href="<?php echo base_url(); ?>manager/leads/followups?type=1&stage=database" class="crm-modern-stat-chip"><span>All Missed</span><span class="badge bg-red"><?php echo (int)$dashboard_db_ops_my['total_missed']; ?></span></a></li>
+                        <li><a href="<?php echo base_url(); ?>manager/leads/followups?type=2&stage=database" class="crm-modern-stat-chip"><span>Last 7 Days</span><span class="badge bg-orange"><?php echo (int)$dashboard_db_ops_my['total_lastweek']; ?></span></a></li>
+                        <li><a href="<?php echo base_url(); ?>manager/leads/followups?type=3&stage=database" class="crm-modern-stat-chip"><span>Today</span><span class="badge bg-skyblue"><?php echo (int)$dashboard_db_ops_my['total_today']; ?></span></a></li>
+                        <li><a href="<?php echo base_url(); ?>manager/leads/followups?type=4&stage=database" class="crm-modern-stat-chip"><span>Next 7 Days</span><span class="badge bg-blue"><?php echo (int)$dashboard_db_ops_my['total_nextweek']; ?></span></a></li>
+                        <li><a href="<?php echo base_url(); ?>manager/leads/followups?type=5&stage=database" class="crm-modern-stat-chip"><span>All Future</span><span class="badge bg-green"><?php echo (int)$dashboard_db_ops_my['total_future']; ?></span></a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="crm-col-5 crm-op-col">
+                <div class="crm-modern-stat-card">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-bullseye" style="color:#0072f0;"></i> My Leads</h4>
+                        <span class="card-total-pill"><?php echo (int)$dashboard_lead_ops_my['total_all']; ?> Total</span>
+                    </div>
+                    <div class="crm-seg-bar">
+                        <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
+                        <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
+                        <div class="crm-seg seg-today" style="width:16%;" title="Today"></div>
+                        <div class="crm-seg seg-next7" style="width:20%;" title="Next 7 Days"></div>
+                        <div class="crm-seg seg-future" style="width:30%;" title="All Future"></div>
+                    </div>
+                    <ul class="crm-modern-stat-grid">
+                        <li><a href="<?php echo base_url(); ?>manager/leads/followups?type=1&stage=lead" class="crm-modern-stat-chip"><span>All Missed</span><span class="badge bg-red"><?php echo (int)$dashboard_lead_ops_my['total_missed']; ?></span></a></li>
+                        <li><a href="<?php echo base_url(); ?>manager/leads/followups?type=2&stage=lead" class="crm-modern-stat-chip"><span>Last 7 Days</span><span class="badge bg-orange"><?php echo (int)$dashboard_lead_ops_my['total_lastweek']; ?></span></a></li>
+                        <li><a href="<?php echo base_url(); ?>manager/leads/followups?type=3&stage=lead" class="crm-modern-stat-chip"><span>Today</span><span class="badge bg-skyblue"><?php echo (int)$dashboard_lead_ops_my['total_today']; ?></span></a></li>
+                        <li><a href="<?php echo base_url(); ?>manager/leads/followups?type=4&stage=lead" class="crm-modern-stat-chip"><span>Next 7 Days</span><span class="badge bg-blue"><?php echo (int)$dashboard_lead_ops_my['total_nextweek']; ?></span></a></li>
+                        <li><a href="<?php echo base_url(); ?>manager/leads/followups?type=5&stage=lead" class="crm-modern-stat-chip"><span>All Future</span><span class="badge bg-green"><?php echo (int)$dashboard_lead_ops_my['total_future']; ?></span></a></li>
+                    </ul>
+                </div>
+            </div>
         </div>
 
-        <div class="row crm-row-5cols">
+        <div class="crm-op-row-track">
             <div class="crm-col-5 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
@@ -959,154 +1004,55 @@
                     </ul>
                 </div>
             </div>
-        </div>
+
+            <div class="crm-col-5 crm-op-col">
+                <div class="crm-modern-stat-card">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-database" style="color:#0072f0;"></i> Team Database</h4>
+                        <span class="card-total-pill"><?php echo (int)$dashboard_db_ops_team['total_all']; ?> Total</span>
+                    </div>
+                    <div class="crm-seg-bar">
+                        <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
+                        <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
+                        <div class="crm-seg seg-today" style="width:16%;" title="Today"></div>
+                        <div class="crm-seg seg-next7" style="width:20%;" title="Next 7 Days"></div>
+                        <div class="crm-seg seg-future" style="width:30%;" title="All Future"></div>
+                    </div>
+                    <ul class="crm-modern-stat-grid">
+                        <li><a href="<?php echo base_url(); ?>manager/team/followups?type=1&stage=database" class="crm-modern-stat-chip"><span>All Missed</span><span class="badge bg-red"><?php echo (int)$dashboard_db_ops_team['total_missed']; ?></span></a></li>
+                        <li><a href="<?php echo base_url(); ?>manager/team/followups?type=2&stage=database" class="crm-modern-stat-chip"><span>Last 7 Days</span><span class="badge bg-orange"><?php echo (int)$dashboard_db_ops_team['total_lastweek']; ?></span></a></li>
+                        <li><a href="<?php echo base_url(); ?>manager/team/followups?type=3&stage=database" class="crm-modern-stat-chip"><span>Today</span><span class="badge bg-skyblue"><?php echo (int)$dashboard_db_ops_team['total_today']; ?></span></a></li>
+                        <li><a href="<?php echo base_url(); ?>manager/team/followups?type=4&stage=database" class="crm-modern-stat-chip"><span>Next 7 Days</span><span class="badge bg-blue"><?php echo (int)$dashboard_db_ops_team['total_nextweek']; ?></span></a></li>
+                        <li><a href="<?php echo base_url(); ?>manager/team/followups?type=5&stage=database" class="crm-modern-stat-chip"><span>All Future</span><span class="badge bg-green"><?php echo (int)$dashboard_db_ops_team['total_future']; ?></span></a></li>
+                    </ul>
                 </div>
+            </div>
 
-                <div class="crm-pager-page">
-                    <div class="row" style="margin-left:-6px; margin-right:-6px;">
-                        <div class="col-md-4 col-sm-6 col-xs-12" style="padding-left:6px; padding-right:6px;">
-                            <div class="crm-modern-stat-card" style="margin-bottom:12px;">
-                                <div class="card-top">
-                                    <h4 class="card-title"><i class="fa fa-database" style="color:#0072f0;"></i> My Database</h4>
-                                    <span class="card-total-pill"><?php echo (int)$dashboard_db_ops_my['total_all']; ?> Total</span>
-                                </div>
-                                <div class="crm-seg-bar">
-                                    <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
-                                    <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
-                                    <div class="crm-seg seg-today" style="width:16%;" title="Today"></div>
-                                    <div class="crm-seg seg-next7" style="width:20%;" title="Next 7 Days"></div>
-                                    <div class="crm-seg seg-future" style="width:30%;" title="All Future"></div>
-                                </div>
-                                <ul class="crm-modern-stat-grid">
-                                    <li><a href="<?php echo base_url(); ?>manager/leads/followups?type=1&stage=database" class="crm-modern-stat-chip"><span>All Missed</span><span class="badge bg-red"><?php echo (int)$dashboard_db_ops_my['total_missed']; ?></span></a></li>
-                                    <li><a href="<?php echo base_url(); ?>manager/leads/followups?type=2&stage=database" class="crm-modern-stat-chip"><span>Last 7 Days</span><span class="badge bg-orange"><?php echo (int)$dashboard_db_ops_my['total_lastweek']; ?></span></a></li>
-                                    <li><a href="<?php echo base_url(); ?>manager/leads/followups?type=3&stage=database" class="crm-modern-stat-chip"><span>Today</span><span class="badge bg-skyblue"><?php echo (int)$dashboard_db_ops_my['total_today']; ?></span></a></li>
-                                    <li><a href="<?php echo base_url(); ?>manager/leads/followups?type=4&stage=database" class="crm-modern-stat-chip"><span>Next 7 Days</span><span class="badge bg-blue"><?php echo (int)$dashboard_db_ops_my['total_nextweek']; ?></span></a></li>
-                                    <li><a href="<?php echo base_url(); ?>manager/leads/followups?type=5&stage=database" class="crm-modern-stat-chip"><span>All Future</span><span class="badge bg-green"><?php echo (int)$dashboard_db_ops_my['total_future']; ?></span></a></li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <div class="col-md-4 col-sm-6 col-xs-12" style="padding-left:6px; padding-right:6px;">
-                            <div class="crm-modern-stat-card" style="margin-bottom:12px;">
-                                <div class="card-top">
-                                    <h4 class="card-title"><i class="fa fa-bullseye" style="color:#0072f0;"></i> My Leads</h4>
-                                    <span class="card-total-pill"><?php echo (int)$dashboard_lead_ops_my['total_all']; ?> Total</span>
-                                </div>
-                                <div class="crm-seg-bar">
-                                    <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
-                                    <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
-                                    <div class="crm-seg seg-today" style="width:16%;" title="Today"></div>
-                                    <div class="crm-seg seg-next7" style="width:20%;" title="Next 7 Days"></div>
-                                    <div class="crm-seg seg-future" style="width:30%;" title="All Future"></div>
-                                </div>
-                                <ul class="crm-modern-stat-grid">
-                                    <li><a href="<?php echo base_url(); ?>manager/leads/followups?type=1&stage=lead" class="crm-modern-stat-chip"><span>All Missed</span><span class="badge bg-red"><?php echo (int)$dashboard_lead_ops_my['total_missed']; ?></span></a></li>
-                                    <li><a href="<?php echo base_url(); ?>manager/leads/followups?type=2&stage=lead" class="crm-modern-stat-chip"><span>Last 7 Days</span><span class="badge bg-orange"><?php echo (int)$dashboard_lead_ops_my['total_lastweek']; ?></span></a></li>
-                                    <li><a href="<?php echo base_url(); ?>manager/leads/followups?type=3&stage=lead" class="crm-modern-stat-chip"><span>Today</span><span class="badge bg-skyblue"><?php echo (int)$dashboard_lead_ops_my['total_today']; ?></span></a></li>
-                                    <li><a href="<?php echo base_url(); ?>manager/leads/followups?type=4&stage=lead" class="crm-modern-stat-chip"><span>Next 7 Days</span><span class="badge bg-blue"><?php echo (int)$dashboard_lead_ops_my['total_nextweek']; ?></span></a></li>
-                                    <li><a href="<?php echo base_url(); ?>manager/leads/followups?type=5&stage=lead" class="crm-modern-stat-chip"><span>All Future</span><span class="badge bg-green"><?php echo (int)$dashboard_lead_ops_my['total_future']; ?></span></a></li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <div class="col-md-4 col-sm-6 col-xs-12" style="padding-left:6px; padding-right:6px;">
-                            <div class="crm-modern-stat-card" style="margin-bottom:12px;">
-                                <div class="card-top">
-                                    <h4 class="card-title"><i class="fa fa-check-circle" style="color:#0072f0;"></i> My Closures</h4>
-                                    <span class="card-total-pill"><?php echo !empty($dashboard_c['total_all']) ? (int)$dashboard_c['total_all'] : 0; ?> Total</span>
-                                </div>
-                                <div class="crm-seg-bar">
-                                    <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
-                                    <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
-                                    <div class="crm-seg seg-today" style="width:16%;" title="Today"></div>
-                                    <div class="crm-seg seg-next7" style="width:20%;" title="Next 7 Days"></div>
-                                    <div class="crm-seg seg-future" style="width:30%;" title="All Future"></div>
-                                </div>
-                                <ul class="crm-modern-stat-grid">
-                                    <li><a href="<?php echo base_url(); ?>manager/leads?closer=1" class="crm-modern-stat-chip"><span>All Missed</span><span class="badge bg-red"><?php echo isset($dashboard_c['total_missed']) ? (int)$dashboard_c['total_missed'] : 0; ?></span></a></li>
-                                    <li><a href="<?php echo base_url(); ?>manager/leads?closer=2" class="crm-modern-stat-chip"><span>Last 7 Days</span><span class="badge bg-orange"><?php echo isset($dashboard_c['total_lastweek']) ? (int)$dashboard_c['total_lastweek'] : 0; ?></span></a></li>
-                                    <li><a href="<?php echo base_url(); ?>manager/leads?closer=3" class="crm-modern-stat-chip"><span>Today</span><span class="badge bg-skyblue"><?php echo isset($dashboard_c['total_today']) ? (int)$dashboard_c['total_today'] : 0; ?></span></a></li>
-                                    <li><a href="<?php echo base_url(); ?>manager/leads?closer=4" class="crm-modern-stat-chip"><span>Next 7 Days</span><span class="badge bg-blue"><?php echo isset($dashboard_c['total_nextweek']) ? (int)$dashboard_c['total_nextweek'] : 0; ?></span></a></li>
-                                    <li><a href="<?php echo base_url(); ?>manager/leads?closer=5" class="crm-modern-stat-chip"><span>All Future</span><span class="badge bg-green"><?php echo isset($dashboard_c['total_future']) ? (int)$dashboard_c['total_future'] : 0; ?></span></a></li>
-                                </ul>
-                            </div>
-                        </div>
+            <div class="crm-col-5 crm-op-col">
+                <div class="crm-modern-stat-card">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-bullseye" style="color:#0072f0;"></i> Team Leads</h4>
+                        <span class="card-total-pill"><?php echo (int)$dashboard_lead_ops_team['total_all']; ?> Total</span>
                     </div>
-
-                    <div class="row" style="margin-left:-6px; margin-right:-6px;">
-                        <div class="col-md-4 col-sm-6 col-xs-12" style="padding-left:6px; padding-right:6px;">
-                            <div class="crm-modern-stat-card" style="margin-bottom:12px;">
-                                <div class="card-top">
-                                    <h4 class="card-title"><i class="fa fa-database" style="color:#0072f0;"></i> Team Database</h4>
-                                    <span class="card-total-pill"><?php echo (int)$dashboard_db_ops_team['total_all']; ?> Total</span>
-                                </div>
-                                <div class="crm-seg-bar">
-                                    <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
-                                    <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
-                                    <div class="crm-seg seg-today" style="width:16%;" title="Today"></div>
-                                    <div class="crm-seg seg-next7" style="width:20%;" title="Next 7 Days"></div>
-                                    <div class="crm-seg seg-future" style="width:30%;" title="All Future"></div>
-                                </div>
-                                <ul class="crm-modern-stat-grid">
-                                    <li><a href="<?php echo base_url(); ?>manager/team/followups?type=1&stage=database" class="crm-modern-stat-chip"><span>All Missed</span><span class="badge bg-red"><?php echo (int)$dashboard_db_ops_team['total_missed']; ?></span></a></li>
-                                    <li><a href="<?php echo base_url(); ?>manager/team/followups?type=2&stage=database" class="crm-modern-stat-chip"><span>Last 7 Days</span><span class="badge bg-orange"><?php echo (int)$dashboard_db_ops_team['total_lastweek']; ?></span></a></li>
-                                    <li><a href="<?php echo base_url(); ?>manager/team/followups?type=3&stage=database" class="crm-modern-stat-chip"><span>Today</span><span class="badge bg-skyblue"><?php echo (int)$dashboard_db_ops_team['total_today']; ?></span></a></li>
-                                    <li><a href="<?php echo base_url(); ?>manager/team/followups?type=4&stage=database" class="crm-modern-stat-chip"><span>Next 7 Days</span><span class="badge bg-blue"><?php echo (int)$dashboard_db_ops_team['total_nextweek']; ?></span></a></li>
-                                    <li><a href="<?php echo base_url(); ?>manager/team/followups?type=5&stage=database" class="crm-modern-stat-chip"><span>All Future</span><span class="badge bg-green"><?php echo (int)$dashboard_db_ops_team['total_future']; ?></span></a></li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <div class="col-md-4 col-sm-6 col-xs-12" style="padding-left:6px; padding-right:6px;">
-                            <div class="crm-modern-stat-card" style="margin-bottom:12px;">
-                                <div class="card-top">
-                                    <h4 class="card-title"><i class="fa fa-bullseye" style="color:#0072f0;"></i> Team Leads</h4>
-                                    <span class="card-total-pill"><?php echo (int)$dashboard_lead_ops_team['total_all']; ?> Total</span>
-                                </div>
-                                <div class="crm-seg-bar">
-                                    <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
-                                    <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
-                                    <div class="crm-seg seg-today" style="width:16%;" title="Today"></div>
-                                    <div class="crm-seg seg-next7" style="width:20%;" title="Next 7 Days"></div>
-                                    <div class="crm-seg seg-future" style="width:30%;" title="All Future"></div>
-                                </div>
-                                <ul class="crm-modern-stat-grid">
-                                    <li><a href="<?php echo base_url(); ?>manager/team/followups?type=1&stage=lead" class="crm-modern-stat-chip"><span>All Missed</span><span class="badge bg-red"><?php echo (int)$dashboard_lead_ops_team['total_missed']; ?></span></a></li>
-                                    <li><a href="<?php echo base_url(); ?>manager/team/followups?type=2&stage=lead" class="crm-modern-stat-chip"><span>Last 7 Days</span><span class="badge bg-orange"><?php echo (int)$dashboard_lead_ops_team['total_lastweek']; ?></span></a></li>
-                                    <li><a href="<?php echo base_url(); ?>manager/team/followups?type=3&stage=lead" class="crm-modern-stat-chip"><span>Today</span><span class="badge bg-skyblue"><?php echo (int)$dashboard_lead_ops_team['total_today']; ?></span></a></li>
-                                    <li><a href="<?php echo base_url(); ?>manager/team/followups?type=4&stage=lead" class="crm-modern-stat-chip"><span>Next 7 Days</span><span class="badge bg-blue"><?php echo (int)$dashboard_lead_ops_team['total_nextweek']; ?></span></a></li>
-                                    <li><a href="<?php echo base_url(); ?>manager/team/followups?type=5&stage=lead" class="crm-modern-stat-chip"><span>All Future</span><span class="badge bg-green"><?php echo (int)$dashboard_lead_ops_team['total_future']; ?></span></a></li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <div class="col-md-4 col-sm-6 col-xs-12" style="padding-left:6px; padding-right:6px;">
-                            <div class="crm-modern-stat-card" style="margin-bottom:12px;">
-                                <div class="card-top">
-                                    <h4 class="card-title"><i class="fa fa-check-circle" style="color:#0072f0;"></i> Team Closures</h4>
-                                    <span class="card-total-pill"><?php echo !empty($dashboard_Tc['total_all']) ? (int)$dashboard_Tc['total_all'] : 0; ?> Total</span>
-                                </div>
-                                <div class="crm-seg-bar">
-                                    <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
-                                    <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
-                                    <div class="crm-seg seg-today" style="width:16%;" title="Today"></div>
-                                    <div class="crm-seg seg-next7" style="width:20%;" title="Next 7 Days"></div>
-                                    <div class="crm-seg seg-future" style="width:30%;" title="All Future"></div>
-                                </div>
-                                <ul class="crm-modern-stat-grid">
-                                    <li><a href="<?php echo base_url(); ?>manager/team/leads?closer=1" class="crm-modern-stat-chip"><span>All Missed</span><span class="badge bg-red"><?php echo isset($dashboard_Tc['total_missed']) ? (int)$dashboard_Tc['total_missed'] : 0; ?></span></a></li>
-                                    <li><a href="<?php echo base_url(); ?>manager/team/leads?closer=2" class="crm-modern-stat-chip"><span>Last 7 Days</span><span class="badge bg-orange"><?php echo isset($dashboard_Tc['total_lastweek']) ? (int)$dashboard_Tc['total_lastweek'] : 0; ?></span></a></li>
-                                    <li><a href="<?php echo base_url(); ?>manager/team/leads?closer=3" class="crm-modern-stat-chip"><span>Today</span><span class="badge bg-skyblue"><?php echo isset($dashboard_Tc['total_today']) ? (int)$dashboard_Tc['total_today'] : 0; ?></span></a></li>
-                                    <li><a href="<?php echo base_url(); ?>manager/team/leads?closer=4" class="crm-modern-stat-chip"><span>Next 7 Days</span><span class="badge bg-blue"><?php echo isset($dashboard_Tc['total_nextweek']) ? (int)$dashboard_Tc['total_nextweek'] : 0; ?></span></a></li>
-                                    <li><a href="<?php echo base_url(); ?>manager/team/leads?closer=5" class="crm-modern-stat-chip"><span>All Future</span><span class="badge bg-green"><?php echo isset($dashboard_Tc['total_future']) ? (int)$dashboard_Tc['total_future'] : 0; ?></span></a></li>
-                                </ul>
-                            </div>
-                        </div>
+                    <div class="crm-seg-bar">
+                        <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
+                        <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
+                        <div class="crm-seg seg-today" style="width:16%;" title="Today"></div>
+                        <div class="crm-seg seg-next7" style="width:20%;" title="Next 7 Days"></div>
+                        <div class="crm-seg seg-future" style="width:30%;" title="All Future"></div>
                     </div>
+                    <ul class="crm-modern-stat-grid">
+                        <li><a href="<?php echo base_url(); ?>manager/team/followups?type=1&stage=lead" class="crm-modern-stat-chip"><span>All Missed</span><span class="badge bg-red"><?php echo (int)$dashboard_lead_ops_team['total_missed']; ?></span></a></li>
+                        <li><a href="<?php echo base_url(); ?>manager/team/followups?type=2&stage=lead" class="crm-modern-stat-chip"><span>Last 7 Days</span><span class="badge bg-orange"><?php echo (int)$dashboard_lead_ops_team['total_lastweek']; ?></span></a></li>
+                        <li><a href="<?php echo base_url(); ?>manager/team/followups?type=3&stage=lead" class="crm-modern-stat-chip"><span>Today</span><span class="badge bg-skyblue"><?php echo (int)$dashboard_lead_ops_team['total_today']; ?></span></a></li>
+                        <li><a href="<?php echo base_url(); ?>manager/team/followups?type=4&stage=lead" class="crm-modern-stat-chip"><span>Next 7 Days</span><span class="badge bg-blue"><?php echo (int)$dashboard_lead_ops_team['total_nextweek']; ?></span></a></li>
+                        <li><a href="<?php echo base_url(); ?>manager/team/followups?type=5&stage=lead" class="crm-modern-stat-chip"><span>All Future</span><span class="badge bg-green"><?php echo (int)$dashboard_lead_ops_team['total_future']; ?></span></a></li>
+                    </ul>
                 </div>
             </div>
         </div>
+    </div>
+</div>
 
         
         <div class="dash-drilldown-panel" id="dashDrilldownPanel">
@@ -1399,7 +1345,7 @@ $(function () {
                 if (subSel) $(subSel).text($controls.attr('data-s2') || '');
             }
         }
-        var $container = $track.closest('.crm-pager-container');
+        var $container = $track.closest('.crm-pager-container, .crm-op-carousel-container');
         if ($container.length) {
             var $btnLeft = $container.children('.crm-side-float-arrow.arrow-left');
             var $btnRight = $container.children('.crm-side-float-arrow.arrow-right');
@@ -1439,10 +1385,10 @@ $(function () {
         switchPagerPage(trackId, newPage);
     });
 
-    $('.crm-pager-container').each(function() {
+    $('.crm-pager-container, .crm-op-carousel-container').each(function() {
         var startX = 0;
         var container = this;
-        var $track = $(container).children('.crm-pager-track');
+        var $track = $(container).children('.crm-pager-track, .crm-op-carousel-track');
         if (!$track.length) return;
         var trackId = '#' + $track.attr('id');
         container.addEventListener('touchstart', function(e) {
@@ -1455,6 +1401,27 @@ $(function () {
                 switchPagerPage(trackId, diff > 0 ? 1 : 0);
             }
         }, { passive: true });
+    });
+
+    var $lastActiveTrack = $('#opCarouselTrack');
+    $('.crm-pager-container, .crm-op-carousel-container').on('mouseenter', function() {
+        var $t = $(this).children('.crm-pager-track, .crm-op-carousel-track');
+        if ($t.length) {
+            $lastActiveTrack = $t;
+        }
+    });
+
+    $(document).on('keydown', function(e) {
+        if ($(e.target).is('input, textarea, select')) return;
+        if (e.which === 39) {
+            if ($lastActiveTrack && $lastActiveTrack.length) {
+                switchPagerPage('#' + $lastActiveTrack.attr('id'), 1);
+            }
+        } else if (e.which === 37) {
+            if ($lastActiveTrack && $lastActiveTrack.length) {
+                switchPagerPage('#' + $lastActiveTrack.attr('id'), 0);
+            }
+        }
     });
 
     $('.crm-modern-stat-chip').on('click', function(e) {
