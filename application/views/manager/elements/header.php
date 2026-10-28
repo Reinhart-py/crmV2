@@ -337,16 +337,16 @@
         <i class="fa fa-bell-o"></i>
         <span class="notif-badge" id="notifBadge" style="display:none; position:absolute; top:-4px; right:-4px; background:#dc2626; color:#ffffff; font-size:10px; font-weight:700; border-radius:10px; min-width:16px; height:16px; line-height:16px; text-align:center; padding:0 3px;"></span>
       </button>
-      <div class="smartphone-notif-dropdown" id="smartphoneNotifDropdown" style="display:none; position:absolute; right:0; top:42px; width:340px; max-width:90vw; background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; box-shadow:0 12px 30px rgba(0,0,0,0.15); z-index:999999; overflow:hidden;">
-        <div style="padding:12px 16px; background:#000000; color:#ffffff; display:flex; align-items:center; justify-content:space-between; font-weight:600; font-size:13px;">
-          <span>Notifications</span>
+      <div class="smartphone-notif-dropdown" id="smartphoneNotifDropdown" style="display:none; position:absolute; right:0; top:44px; width:440px; max-width:calc(100vw - 24px); background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; box-shadow:0 20px 50px rgba(0,0,0,0.18); z-index:999999; overflow:hidden;">
+        <div style="padding:14px 18px; background:#0f172a; color:#ffffff; display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-weight:700; font-size:13.5px; letter-spacing:-0.2px;">Notification Centre</span>
           <div style="display:flex; align-items:center; gap:8px;">
-            <button type="button" id="btnRequestNotifPerm" style="background:transparent; border:none; color:#38bdf8; font-size:11px; cursor:pointer; padding:0; display:none;">Enable Alerts</button>
-            <button type="button" id="btnMarkNotifRead" style="background:transparent; border:none; color:#cbd5e1; font-size:11px; cursor:pointer; padding:0;">Mark all as read</button>
+            <button type="button" id="btnRequestNotifPerm" style="background:rgba(255,255,255,0.12); border:none; color:#38bdf8; font-size:11px; font-weight:600; padding:4px 10px; border-radius:6px; cursor:pointer; display:none;">Enable Alerts</button>
+            <button type="button" id="btnMarkNotifRead" style="background:rgba(255,255,255,0.12); border:none; color:#cbd5e1; font-size:11px; font-weight:600; padding:4px 10px; border-radius:6px; cursor:pointer;">Mark all as read</button>
           </div>
         </div>
-        <div id="notifListContainer" style="max-height:360px; overflow-y:auto; padding:0;">
-          <div style="padding:20px; text-align:center; color:#94a3b8; font-size:12px;">Loading notifications...</div>
+        <div id="notifListContainer" style="max-height:440px; overflow-y:auto; padding:8px 10px; background:#f8fafc;">
+          <div style="padding:28px 16px; text-align:center; color:#94a3b8; font-size:12px;">Loading notifications...</div>
         </div>
       </div>
     </div>
@@ -534,12 +534,17 @@ $(function() {
               if (notifInitialized && n.is_read == 0 && nid > lastSeenNotifId) {
                 newArrivals.push(n);
               }
-              var readBg = (n.is_read == 1) ? '#ffffff' : '#f8fafc';
-              html += '<a href="' + (n.link || 'javascript:void(0);') + '" class="notif-item-link" style="display:flex; align-items:flex-start; padding:10px 14px; border-bottom:1px solid #f1f5f9; background:' + readBg + '; text-decoration:none; color:inherit;">';
-              html += '  <div style="width:30px; height:30px; border-radius:50%; background:' + (n.color || '#0072f0') + '15; color:' + (n.color || '#0072f0') + '; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-right:10px; font-size:13px;"><i class="' + (n.icon || 'fa fa-bell') + '"></i></div>';
+              var isUnread = (n.is_read == 0);
+              var cardBorder = isUnread ? 'border:1px solid #bfdbfe; border-left:3px solid #0072f0;' : 'border:1px solid #e2e8f0;';
+              var cardBg = isUnread ? '#ffffff' : '#f8fafc';
+              html += '<a href="' + (n.link || 'javascript:void(0);') + '" class="notif-item-link" style="display:flex; align-items:flex-start; margin-bottom:8px; padding:12px 14px; border-radius:12px; background:' + cardBg + '; ' + cardBorder + ' box-shadow:0 1px 3px rgba(0,0,0,0.03); text-decoration:none; color:inherit; transition:background 0.15s ease;">';
+              html += '  <div style="width:34px; height:34px; border-radius:8px; background:' + (n.color || '#0072f0') + '18; color:' + (n.color || '#0072f0') + '; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-right:12px; font-size:14px;"><i class="' + (n.icon || 'fa fa-bell') + '"></i></div>';
               html += '  <div style="flex:1; min-width:0;">';
-              html += '    <div style="font-size:12px; font-weight:600; color:#0f172a; margin-bottom:2px; display:flex; justify-content:space-between;"><span>' + $('<div>').text(n.title).html() + '</span><span style="font-size:10px; color:#94a3b8; font-weight:normal;">' + (n.time_ago || '') + '</span></div>';
-              html += '    <div style="font-size:11px; color:#475569; line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + $('<div>').text(n.message).html() + '</div>';
+              html += '    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">';
+              html += '      <span style="font-size:12.5px; font-weight:700; color:#0f172a; letter-spacing:-0.2px;">' + $('<div>').text(n.title).html() + '</span>';
+              html += '      <span style="font-size:10.5px; color:#94a3b8; font-weight:500; margin-left:8px; white-space:nowrap;">' + (n.time_ago || '') + '</span>';
+              html += '    </div>';
+              html += '    <div style="font-size:12px; color:#334155; line-height:1.45; white-space:normal; word-wrap:break-word; word-break:break-word;">' + $('<div>').text(n.message).html() + '</div>';
               html += '  </div>';
               html += '</a>';
             });

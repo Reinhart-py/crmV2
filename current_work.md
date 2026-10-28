@@ -108,6 +108,18 @@
       - Synchronized HR Clock-In / Clock-Out (`ajax_clock`) with `ci_user_live_locations` and `ci_admin_logs`.
       - Verified all 13 HR, Report, and Admin routes return HTTP 200 OK cleanly.
       - Verified strictly ZERO comments across all modified PHP files.
+  33. iOS Notification Centre, Universal Gratuity / Severance Calculator & 100% Full Width HR Layout (`header.php`, `hr/index.php`, `ci_admin_model.php`):
+      - Redesigned navbar notifications into an Apple iOS-style Notification Centre with 440px width (`max-width: calc(100vw - 24px)`), rounded-square icon badges, and full multi-line wrapped text (`white-space: normal; word-break: break-word`) eliminating all truncation ellipsis.
+      - Removed UAE-only hardcoding and converted HR into a Universal Gratuity & Severance Calculator with dynamic preset standards:
+        - Universal Standard (Custom Days/Year)
+        - India (Payment of Gratuity Act, 1972: 15/26 days per year with statutory cap)
+        - UAE Labour Law (Decree Law No. 33: 21 days first 5y, 30 days after)
+        - Custom Multiplier
+      - Added Currency Selector (`INR ₹`, `USD $`, `AED`, `EUR €`, `GBP £`, `SAR`, `SGD $`, `CAD $`) with live formula breakdown and currency formatting.
+      - Converted Document Vault to universal global identification: National ID (Aadhaar / Emirates ID / SSN / PAN), Passport, Work Permit / Visa, Employment Contract, Tax Documents (Form 16 / PAN), Educational Certificates, and Bank/Payroll Docs.
+      - Expanded HR management view to 100% viewport width: removed restrictive Bootstrap `.container` (`1170px`) wrapper so all HR tabs render at comfortable 100% screen size matching View Database (`leadsview.php`).
+      - Resolved database error 1054 in `get_user_notifications`: corrected `order_request_status` to target `ci_pipeline` and `ci_admin_logs` column to `activity`.
+      - Verified 0 comments across all PHP files and zero syntax errors with `php -l`.
 
 ---
 

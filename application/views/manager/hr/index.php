@@ -1,7 +1,6 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
-<div class="container">
-<div class="content-wrapper">
+<div class="content-wrapper px-4">
 
   <section class="content-header">
     <h1><?php echo htmlspecialchars($info['page_heading'] ?? 'HR Management'); ?></h1>
@@ -939,36 +938,69 @@
         <div class="col-md-6">
           <div class="box box-default">
             <div class="box-header with-border">
-              <h3 class="box-title">UAE Labour Law Gratuity Calculator</h3>
+              <h3 class="box-title">Universal Gratuity & Severance Calculator</h3>
             </div>
             <div class="box-body">
               <div class="form-group">
-                <label>Monthly Basic Salary (AED)</label>
-                <input type="number" id="calc_basic_salary" class="form-control" value="10000">
-              </div>
-              <div class="form-group">
-                <label>Total Completed Years of Service</label>
-                <input type="number" step="0.1" id="calc_service_years" class="form-control" value="3.5">
-              </div>
-              <div class="form-group">
-                <label>Contract Type</label>
-                <select id="calc_contract_type" class="form-control">
-                  <option value="limited">Limited Term Contract</option>
-                  <option value="unlimited">Unlimited Contract</option>
+                <label>Calculation Preset / Formula Standard</label>
+                <select id="calc_formula_preset" class="form-control">
+                  <option value="universal" selected>Universal Standard (Custom Days / Year)</option>
+                  <option value="india">India (Payment of Gratuity Act, 1972: 15/26 days/yr)</option>
+                  <option value="uae">UAE Labour Law (Decree Law No. 33: 21d first 5y, 30d after)</option>
+                  <option value="custom">Custom Multiplier</option>
                 </select>
+              </div>
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label>Currency</label>
+                    <select id="calc_currency" class="form-control">
+                      <option value="INR ₹">INR (₹)</option>
+                      <option value="USD $">USD ($)</option>
+                      <option value="AED" selected>AED</option>
+                      <option value="EUR €">EUR (€)</option>
+                      <option value="GBP £">GBP (£)</option>
+                      <option value="SAR">SAR</option>
+                      <option value="SGD $">SGD ($)</option>
+                      <option value="CAD $">CAD ($)</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label>Entitlement Days / Year</label>
+                    <input type="number" id="calc_days_per_year" class="form-control" value="21">
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label>Monthly Basic Salary</label>
+                    <input type="number" id="calc_basic_salary" class="form-control" value="10000">
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label>Completed Years of Service</label>
+                    <input type="number" step="0.1" id="calc_service_years" class="form-control" value="3.5">
+                  </div>
+                </div>
               </div>
               <div class="form-group">
                 <label>Reason for Separation</label>
                 <select id="calc_separation_reason" class="form-control">
                   <option value="termination">Termination by Employer</option>
                   <option value="resignation">Resignation by Employee</option>
+                  <option value="retirement">Retirement / Superannuation</option>
+                  <option value="contract_end">Contract Completion</option>
                 </select>
               </div>
-              <button type="button" id="btnCalculateGratuity" class="btn btn-primary btn-block"><i class="fa fa-calculator"></i> Calculate End of Service Benefit</button>
+              <button type="button" id="btnCalculateGratuity" class="btn btn-primary btn-block"><i class="fa fa-calculator"></i> Calculate Gratuity & Severance Benefit</button>
 
               <div id="gratuityResultBox" style="margin-top:20px; padding:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; display:none;">
                 <div style="font-size:12px; color:#64748b; text-transform:uppercase;">Estimated Gratuity Payable</div>
-                <div id="gratuityResultValue" style="font-size:24px; font-weight:700; color:#0072f0; margin-top:4px;">AED 0.00</div>
+                <div id="gratuityResultValue" style="font-size:24px; font-weight:700; color:#0072f0; margin-top:4px;">0.00</div>
                 <div id="gratuityResultFormula" style="font-size:11px; color:#475569; margin-top:4px;"></div>
               </div>
             </div>
@@ -978,7 +1010,7 @@
         <div class="col-md-6">
           <div class="box box-default">
             <div class="box-header with-border">
-              <h3 class="box-title">Taxation & Payroll Deduction Overview</h3>
+              <h3 class="box-title">Universal Taxation & Payroll Overview</h3>
             </div>
             <div class="box-body table-responsive no-padding">
               <table class="table table-hover table-hr">
@@ -995,23 +1027,27 @@
                   </tr>
                   <tr>
                     <td>Total Gross Payroll (All-Time)</td>
-                    <td><strong>AED <?php echo number_format($totGross, 2); ?></strong></td>
+                    <td><strong><?php echo number_format($totGross, 2); ?></strong></td>
                   </tr>
                   <tr>
                     <td>Total Statutory / Policy Deductions</td>
-                    <td class="text-danger"><strong>AED <?php echo number_format($totDeduct, 2); ?></strong></td>
+                    <td class="text-danger"><strong><?php echo number_format($totDeduct, 2); ?></strong></td>
                   </tr>
                   <tr>
                     <td>Total Net Disbursed</td>
-                    <td class="text-success"><strong>AED <?php echo number_format($totNet, 2); ?></strong></td>
+                    <td class="text-success"><strong><?php echo number_format($totNet, 2); ?></strong></td>
                   </tr>
                   <tr>
-                    <td>UAE Corporate Tax Rate Applicability</td>
-                    <td><span class="label label-info">Standard 9% (AED 375k+ profits)</span></td>
+                    <td>Taxation & Compliance Framework</td>
+                    <td><span class="label label-info">Universal Multi-Jurisdiction</span></td>
                   </tr>
                   <tr>
-                    <td>Individual Employee Income Tax</td>
-                    <td><span class="label label-success">0% (UAE Personal Tax Free)</span></td>
+                    <td>Statutory Deductions & Slabs</td>
+                    <td><span class="label label-success">Configurable per Territory</span></td>
+                  </tr>
+                  <tr>
+                    <td>Severance & Gratuity Model</td>
+                    <td><span class="label label-primary">Accrual Enabled</span></td>
                   </tr>
                 </tbody>
               </table>
@@ -1220,21 +1256,23 @@
                 <div class="form-group">
                   <label>Document Type <span class="text-danger">*</span></label>
                   <select name="doc_type" class="form-control" required>
+                    <option value="National ID">National ID (Aadhaar / Emirates ID / SSN / PAN)</option>
                     <option value="Passport">Passport</option>
-                    <option value="Visa">Visa / Residency</option>
-                    <option value="Emirates ID">Emirates ID</option>
-                    <option value="Labour Contract">Labour Contract</option>
-                    <option value="Education Certificate">Education Certificate</option>
-                    <option value="Other">Other</option>
+                    <option value="Work Permit / Visa">Work Permit / Visa / Residency</option>
+                    <option value="Employment Contract">Employment / Labour Contract</option>
+                    <option value="Tax Document">Tax Document / Form 16 / PAN</option>
+                    <option value="Educational Certificate">Educational / Degree Certificate</option>
+                    <option value="Bank / Payroll Document">Bank / Payroll Document</option>
+                    <option value="Other">Other Document</option>
                   </select>
                 </div>
                 <div class="form-group">
                   <label>Document Title <span class="text-danger">*</span></label>
-                  <input type="text" name="title" class="form-control" placeholder="e.g. UAE Residence Visa Copy" required>
+                  <input type="text" name="title" class="form-control" placeholder="e.g. Identification Card / Work Permit / Contract Copy" required>
                 </div>
                 <div class="form-group">
                   <label>Document Number</label>
-                  <input type="text" name="doc_number" class="form-control" placeholder="e.g. 784-1990-1234567-1">
+                  <input type="text" name="doc_number" class="form-control" placeholder="e.g. ID or Registration Number">
                 </div>
                 <div class="row">
                   <div class="col-sm-6">
@@ -1262,7 +1300,6 @@
     <?php endif; ?>
 
   </section>
-</div>
 </div>
 
 <script>
@@ -1339,42 +1376,69 @@ $(function() {
     performGeoClock('out');
   });
 
+  $('#calc_formula_preset').on('change', function() {
+    var p = $(this).val();
+    if (p === 'india') {
+      $('#calc_currency').val('INR ₹');
+      $('#calc_days_per_year').val(15);
+    } else if (p === 'uae') {
+      $('#calc_currency').val('AED');
+      $('#calc_days_per_year').val(21);
+    } else if (p === 'universal') {
+      $('#calc_days_per_year').val(21);
+    }
+  });
+
   $('#btnCalculateGratuity').on('click', function() {
     var basic = parseFloat($('#calc_basic_salary').val()) || 0;
     var years = parseFloat($('#calc_service_years').val()) || 0;
     var reason = $('#calc_separation_reason').val();
+    var preset = $('#calc_formula_preset').val();
+    var cur = $('#calc_currency').val() || 'AED';
+    var daysPerYear = parseFloat($('#calc_days_per_year').val()) || 15;
 
-    if (years < 1) {
-      $('#gratuityResultValue').text('AED 0.00');
-      $('#gratuityResultFormula').text('Less than 1 year of continuous service: No gratuity entitlement under UAE Labour Law.');
-      $('#gratuityResultBox').slideDown();
-      return;
-    }
-
-    var dailyWage = basic / 30;
     var totalGratuity = 0;
+    var formulaText = '';
 
-    if (years <= 5) {
-      totalGratuity = (21 * dailyWage) * years;
-    } else {
-      totalGratuity = (21 * dailyWage * 5) + (30 * dailyWage * (years - 5));
-    }
-
-    var maxGratuity = basic * 24;
-    if (totalGratuity > maxGratuity) {
-      totalGratuity = maxGratuity;
-    }
-
-    if (reason === 'resignation') {
-      if (years >= 1 && years < 3) {
-        totalGratuity = totalGratuity * (1 / 3);
-      } else if (years >= 3 && years < 5) {
-        totalGratuity = totalGratuity * (2 / 3);
+    if (preset === 'india') {
+      if (years < 5 && reason !== 'death_disability') {
+        formulaText = 'In India (Payment of Gratuity Act, 1972), minimum 5 years continuous service is standard for gratuity entitlement.';
       }
+      totalGratuity = (15 * basic * years) / 26;
+      if (totalGratuity > 2000000) {
+        totalGratuity = 2000000;
+        formulaText = 'Statutory ceiling cap of ₹2,000,000 applied under Indian Payment of Gratuity Act.';
+      } else if (!formulaText) {
+        formulaText = 'Calculated using Indian Gratuity Formula: (15 × Basic × Years) ÷ 26.';
+      }
+    } else if (preset === 'uae') {
+      if (years < 1) {
+        totalGratuity = 0;
+        formulaText = 'Less than 1 year continuous service: No gratuity entitlement under UAE Labour Law.';
+      } else {
+        var dailyWage = basic / 30;
+        if (years <= 5) {
+          totalGratuity = (21 * dailyWage) * years;
+        } else {
+          totalGratuity = (21 * dailyWage * 5) + (30 * dailyWage * (years - 5));
+        }
+        var maxGratuity = basic * 24;
+        if (totalGratuity > maxGratuity) totalGratuity = maxGratuity;
+        if (reason === 'resignation') {
+          if (years >= 1 && years < 3) totalGratuity = totalGratuity * (1 / 3);
+          else if (years >= 3 && years < 5) totalGratuity = totalGratuity * (2 / 3);
+        }
+        formulaText = 'Calculated per UAE Labour Law (Decree Law No. 33) based on ' + years + ' years at ' + cur + ' ' + basic.toFixed(2) + ' basic salary.';
+      }
+    } else {
+      var dailyWage = basic / 30;
+      totalGratuity = (daysPerYear * dailyWage) * years;
+      formulaText = 'Calculated using Universal Formula: (' + daysPerYear + ' days wage/year × ' + years + ' years). Daily wage = ' + cur + ' ' + dailyWage.toFixed(2) + '.';
     }
 
-    $('#gratuityResultValue').text('AED ' + totalGratuity.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-    $('#gratuityResultFormula').text('Calculated based on ' + years + ' years service at AED ' + basic.toFixed(2) + ' monthly basic wage.');
+    var formatted = cur + ' ' + totalGratuity.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    $('#gratuityResultValue').text(formatted);
+    $('#gratuityResultFormula').text(formulaText);
     $('#gratuityResultBox').slideDown();
   });
 });

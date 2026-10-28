@@ -2,6 +2,38 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.74.0] - 2026-10-28
+- **Timestamp**: `2026-10-28 16:45:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Implemented iOS-style Notification Centre with full message text wrapping (no ellipsis truncation) and expanded dropdown card layout; removed region-specific hardcoding from HR Taxation & Gratuity, transforming it into a Universal Gratuity & Severance Calculator supporting Universal (custom days/year), India (Payment of Gratuity Act 1972: 15/26 days/yr), UAE (Decree Law 33: 21d/30d), and Custom formulas with multi-currency support; updated Document Vault with universal global identification options; expanded HR management layout to 100% full viewport width by eliminating restrictive Bootstrap `.container` (1170px) wrapper; fixed MySQL error 1054 in `ci_admin_model.php` `get_user_notifications`.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Apple iOS Notification Centre & Full Text Wrapping (`header.php`)**:
+    - Expanded notification dropdown width from `340px` to `440px` (`max-width: calc(100vw - 24px)`) with `18px` rounded borders and soft elevation shadow matching Apple iOS Notification Centre design.
+    - Replaced truncated notification rows (`white-space: nowrap; overflow: hidden; text-overflow: ellipsis;`) with iOS-style rounded notification cards featuring `white-space: normal; word-break: break-word;` ensuring complete message visibility without clipping.
+    - Updated card elements with iOS app-style rounded square icon badges (`border-radius: 8px`), bold titles, timestamps, and subtle blue accent borders for unread notifications.
+    - Renamed dropdown header to "Notification Centre" with clean "Mark all as read" button.
+  - **2. Universal Gratuity & Severance Calculator (`hr/index.php`)**:
+    - Removed UAE-only hardcoding and replaced with a dynamic **Calculation Preset / Formula Standard** selector:
+      - *Universal Standard*: customizable entitlement days per year (default 21 days) with daily wage calculation (`basic / 30 * days * years`).
+      - *India (Payment of Gratuity Act, 1972)*: standard formula `(15 * Basic * Years) / 26` with 5-year qualification checks and statutory cap of ₹2,000,000.
+      - *UAE Labour Law (Decree Law No. 33)*: 21 days per year for first 5 years, 30 days per year thereafter, capped at 24 months basic wage.
+      - *Custom Multiplier*: flexible multiplier for non-standard severance schemes.
+    - Added **Currency Selector** supporting `INR ₹`, `USD $`, `AED`, `EUR €`, `GBP £`, `SAR`, `SGD $`, `CAD $`, dynamically formatting calculations and formula breakdowns.
+    - Added dynamic event listener on preset change to automatically set appropriate default days and currency while allowing custom edits.
+  - **3. Universal Document Vault (`hr/index.php`)**:
+    - Expanded Document Vault type selector to universal options: `National ID (Aadhaar / Emirates ID / SSN / PAN)`, `Passport`, `Work Permit / Visa / Residency`, `Employment / Labour Contract`, `Tax Document / Form 16 / PAN`, `Educational / Degree Certificate`, `Bank / Payroll Document`, and `Other Document`.
+    - Made placeholders universal (`Identification Card / Work Permit / Contract Copy`, `ID or Registration Number`).
+  - **4. 100% Full Width Comfortable HR View (`hr/index.php`)**:
+    - Removed restrictive Bootstrap `<div class="container">` (`1170px` max-width) and its matching closing tag, adopting standard `<div class="content-wrapper px-4">`.
+    - Allowed all HR sections (Overview, Targets, Lifecycle, Attendance, Shifts, Leaves, Payroll, Taxation, Appraisals, Documents) to stretch comfortably across 100% of the screen, matching the standard layout of View Database (`leadsview.php`).
+  - **5. Database Notification Query Fixes (`ci_admin_model.php`)**:
+    - Corrected `pending_orders_count` query in `get_user_notifications` to target `ci_pipeline` where `order_request_status` column exists (was previously querying `ci_leads`).
+    - Corrected `admin_logs` query in `get_user_notifications` to target `AL.activity` instead of non-existent `AL.action`, resolving HTTP 500 error on `manager/ajax_get_notifications`.
+  - **6. Verification & Standards**:
+    - Verified strict 0 comments rule across all modified PHP files with `verify_zero_comments.php`.
+    - Verified syntax with `php -l` on all modified files (0 errors).
+    - Verified clean HTTP 200 responses on all HR routes, notification endpoint, and reports.
+
 ### [v1.73.0] - 2026-10-28
 - **Timestamp**: `2026-10-28 16:20:00 +0530`
 - **Author**: Reinhart-py

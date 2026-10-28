@@ -2797,7 +2797,7 @@ public function dashboard_MyPro($table='ci_leads'){
 				);
 			}
 
-			$pending_orders_count = $this->db->where("(order_request_status = 'pending' OR (is_locked = 1 AND approval_status = 'pending'))")->count_all_results('ci_leads');
+			$pending_orders_count = $this->db->where('order_request_status', 'pending')->count_all_results('ci_pipeline');
 			if ($pending_orders_count > 0) {
 				$notifs[] = array(
 					'id' => 'action_pending_orders',
@@ -2956,7 +2956,7 @@ public function dashboard_MyPro($table='ci_leads'){
 		if ($is_backoffice) {
 			$admin_logs = $this->db->select('AL.*')
 				->from('ci_admin_logs AL')
-				->where_in('AL.action', array('lead_assign', 'status_change', 'convert_to_lead', 'convert_to_sales', 'order_status_update'))
+				->where_in('AL.activity', array('lead_transfer', 'transfer_to_lead', 'convert_to_lead', 'convert_to_sales', 'request_conversion', 'reject_conversion', 'request_order', 'convert_to_order'))
 				->order_by('AL.id', 'DESC')
 				->limit(10)
 				->get()
@@ -2969,8 +2969,8 @@ public function dashboard_MyPro($table='ci_leads'){
 						'type' => 'activity',
 						'icon' => 'fa fa-bolt',
 						'color' => '#0084ff',
-						'title' => ucwords(str_replace('_', ' ', $al['action'])),
-						'message' => $al['details'],
+						'title' => ucwords(str_replace('_', ' ', $al['activity'])),
+						'message' => !empty($al['details']) ? $al['details'] : $al['activity'],
 						'time' => $al['created_at'],
 						'time_ago' => !empty($al['created_at']) ? date('d M, H:i', strtotime($al['created_at'])) : '',
 						'link' => base_url('manager/dashboard'),
