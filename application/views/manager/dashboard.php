@@ -172,33 +172,16 @@
             }
         ?>
 
-        <div class="dash-section-divider" style="margin-top: 18px; margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center;">
-            <div>
-                <h3 class="dash-section-title" style="margin-bottom:0;">
-                    <span class="dash-section-title-icon">
-                        <span></span><span></span>
-                    </span>
-                    <span id="titleStates">Database State</span>
-                </h3>
-            </div>
-            <div class="crm-pager-controls" data-track="#pagerTrackStates" data-title="#titleStates" data-t1="Database State" data-t2="Lead State">
-                <div class="crm-pager-dots">
-                    <span class="crm-pager-dot active" data-page="0" title="Database State"></span>
-                    <span class="crm-pager-dot" data-page="1" title="Lead State"></span>
-                </div>
-                <div class="crm-pager-arrows">
-                    <button type="button" class="crm-pager-arrow btn-prev" title="Previous Page"><i class="fa fa-chevron-left"></i></button>
-                    <button type="button" class="crm-pager-arrow btn-next" title="Next Page"><i class="fa fa-chevron-right"></i></button>
-                </div>
-            </div>
+        <div class="dash-section-divider" style="margin-top: 18px; margin-bottom: 12px;">
+            <h3 class="dash-section-title" style="margin-bottom:0;">
+                <span class="dash-section-title-icon">
+                    <span></span><span></span>
+                </span>
+                <span>Database &amp; Lead States</span>
+            </h3>
         </div>
 
-        <div class="crm-pager-container" style="position:relative; margin-bottom:12px;">
-            <button type="button" class="crm-side-float-arrow arrow-right" data-track="#pagerTrackStates" data-dir="next" title="Swipe to Lead State"><i class="fa fa-chevron-right"></i></button>
-            <button type="button" class="crm-side-float-arrow arrow-left" data-track="#pagerTrackStates" data-dir="prev" style="display:none;" title="Swipe to Database State"><i class="fa fa-chevron-left"></i></button>
-            <div class="crm-pager-track" id="pagerTrackStates" data-page="0">
-                <div class="crm-pager-page">
-                    <div class="row">
+        <div class="row">
                         <div class="col-md-6 col-xs-12">
                             <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
                                 <div class="card-top">
@@ -265,10 +248,8 @@
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="crm-pager-page">
-                    <div class="row">
+                    <div class="row" style="margin-top: 6px;">
                         <div class="col-md-6 col-xs-12">
                             <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
                                 <div class="card-top">
@@ -335,108 +316,79 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
+
+        <div class="dash-section-divider" style="margin-top: 10px; margin-bottom: 12px;">
+            <h3 class="dash-section-title" style="margin-bottom:0;">
+                <span class="dash-section-title-icon">
+                    <span></span><span></span>
+                </span>
+                <span>Projections &amp; Achievement</span>
+            </h3>
         </div>
 
-        <div class="dash-section-divider" style="margin-top: 10px; margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center;">
-            <div>
-                <h3 class="dash-section-title" style="margin-bottom:0;">
-                    <span class="dash-section-title-icon">
-                        <span></span><span></span>
-                    </span>
-                    <span id="titleProj">Projections</span>
-                </h3>
-            </div>
-            <div class="crm-pager-controls" data-track="#pagerTrackProj" data-title="#titleProj" data-t1="Projections" data-t2="Historical Achievement vs Target">
-                <div class="crm-pager-dots">
-                    <span class="crm-pager-dot active" data-page="0" title="Projections Forecast"></span>
-                    <span class="crm-pager-dot" data-page="1" title="Historical Achievement"></span>
-                </div>
-                <div class="crm-pager-arrows">
-                    <button type="button" class="crm-pager-arrow btn-prev" title="Previous Page"><i class="fa fa-chevron-left"></i></button>
-                    <button type="button" class="crm-pager-arrow btn-next" title="Next Page"><i class="fa fa-chevron-right"></i></button>
-                </div>
-            </div>
-        </div>
-
-        <div class="crm-pager-container" style="position:relative; margin-bottom:12px;">
-            <button type="button" class="crm-side-float-arrow arrow-right" data-track="#pagerTrackProj" data-dir="next" title="Swipe to Achievement Graph"><i class="fa fa-chevron-right"></i></button>
-            <button type="button" class="crm-side-float-arrow arrow-left" data-track="#pagerTrackProj" data-dir="prev" style="display:none;" title="Swipe to Projections"><i class="fa fa-chevron-left"></i></button>
-            <div class="crm-pager-track" id="pagerTrackProj" data-page="0">
-                <div class="crm-pager-page">
-                    <div class="row">
-                        <div class="col-md-6 col-xs-12">
-                            <div class="dash-chart-card">
-                                <div class="dash-chart-header">
-                                    <h4 class="dash-chart-title">
-                                        <i class="fa fa-line-chart"></i> My Projection
-                                    </h4>
-                                </div>
-                                <div class="dash-chart-body">
-                                    <canvas id="barChart2" height="230"></canvas>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 col-xs-12">
-                            <div class="dash-chart-card">
-                                <div class="dash-chart-header">
-                                    <h4 class="dash-chart-title">
-                                        <i class="fa fa-line-chart"></i> Team Projection
-                                    </h4>
-                                </div>
-                                <div class="dash-chart-body">
-                                    <canvas id="barChart4" height="230"></canvas>
-                                </div>
-                            </div>
-                        </div>
+        <div class="row">
+            <div class="col-md-6 col-xs-12">
+                <div class="dash-chart-card">
+                    <div class="dash-chart-header">
+                        <h4 class="dash-chart-title">
+                            <i class="fa fa-line-chart"></i> My Projection
+                        </h4>
+                    </div>
+                    <div class="dash-chart-body">
+                        <canvas id="barChart2" height="230"></canvas>
                     </div>
                 </div>
+            </div>
 
-                <div class="crm-pager-page">
-                    <div class="row">
-                        <div class="col-md-12 col-xs-12">
-                            <div class="dash-chart-card">
-                                <div class="dash-chart-header" style="display:flex; justify-content:space-between; align-items:center;">
-                                    <h4 class="dash-chart-title">
-                                        <i class="fa fa-bar-chart"></i> Past 10 Months Achievement vs Target (Team)
-                                    </h4>
-                                    <div style="display:flex; gap:12px; font-size:11px; font-weight:600;">
-                                        <span><span style="display:inline-block; width:10px; height:10px; background:#0072f0; border-radius:2px; vertical-align:-1px; margin-right:4px;"></span>Target</span>
-                                        <span><span style="display:inline-block; width:10px; height:10px; background:#16a34a; border-radius:2px; vertical-align:-1px; margin-right:4px;"></span>Met Target</span>
-                                        <span><span style="display:inline-block; width:10px; height:10px; background:#dc2626; border-radius:2px; vertical-align:-1px; margin-right:4px;"></span>Below Target</span>
-                                    </div>
-                                </div>
-                                <div class="dash-chart-body">
-                                    <canvas id="barChartAchieve" height="230"></canvas>
-                                </div>
-                            </div>
-                        </div>
+            <div class="col-md-6 col-xs-12">
+                <div class="dash-chart-card">
+                    <div class="dash-chart-header">
+                        <h4 class="dash-chart-title">
+                            <i class="fa fa-line-chart"></i> Team Projection
+                        </h4>
+                    </div>
+                    <div class="dash-chart-body">
+                        <canvas id="barChart4" height="230"></canvas>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="dash-section-divider" style="display:flex; justify-content:space-between; align-items:center;">
-            <div>
-                <h3 class="dash-section-title" style="margin-bottom:0;">
-                    <span class="dash-section-title-icon">
-                        <span></span><span></span>
-                    </span>
-                    <span id="titleOps">Operational Activity and Breakdown</span>
-                </h3>
-            </div>
-            <div class="crm-pager-controls" data-track="#opCarouselTrack">
-                <div class="crm-pager-dots">
-                    <span class="crm-pager-dot active" data-page="0" title="Core Operations"></span>
-                    <span class="crm-pager-dot" data-page="1" title="Database &amp; Leads"></span>
-                </div>
-                <div class="crm-pager-arrows">
-                    <button type="button" class="crm-pager-arrow btn-prev" title="Previous"><i class="fa fa-chevron-left"></i></button>
-                    <button type="button" class="crm-pager-arrow btn-next" title="Next"><i class="fa fa-chevron-right"></i></button>
+        <div class="row" style="margin-top: 14px;">
+            <div class="col-md-6 col-xs-12">
+                <div class="dash-chart-card">
+                    <div class="dash-chart-header">
+                        <h4 class="dash-chart-title">
+                            <i class="fa fa-bar-chart"></i> My Achievement
+                        </h4>
+                    </div>
+                    <div class="dash-chart-body">
+                        <canvas id="barChartAchieveMy" height="230"></canvas>
+                    </div>
                 </div>
             </div>
+
+            <div class="col-md-6 col-xs-12">
+                <div class="dash-chart-card">
+                    <div class="dash-chart-header">
+                        <h4 class="dash-chart-title">
+                            <i class="fa fa-bar-chart"></i> Team Achievement
+                        </h4>
+                    </div>
+                    <div class="dash-chart-body">
+                        <canvas id="barChartAchieveTeam" height="230"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dash-section-divider" style="margin-top: 18px; margin-bottom: 12px;">
+            <h3 class="dash-section-title" style="margin-bottom:0;">
+                <span class="dash-section-title-icon">
+                    <span></span><span></span>
+                </span>
+                <span>Operational Activity and Breakdown</span>
+            </h3>
         </div>
 
         <?php
@@ -452,12 +404,8 @@
             $total_team_m = !empty($dashboard_Tm) ? (int)array_sum(array_slice($dashboard_Tm, 0, 5)) : 0;
             $total_team_vfu = !empty($dashboard_Tvfu) ? (int)array_sum(array_slice($dashboard_Tvfu, 0, 5)) : 0; ?>
 
-        <div class="crm-op-carousel-container" style="position:relative;">
-            <button type="button" class="crm-side-float-arrow arrow-right" data-track="#opCarouselTrack" data-dir="next" title="Scroll Right to Database & Leads"><i class="fa fa-chevron-right"></i></button>
-            <button type="button" class="crm-side-float-arrow arrow-left" data-track="#opCarouselTrack" data-dir="prev" style="display:none;" title="Scroll Left to Core Operations"><i class="fa fa-chevron-left"></i></button>
-            <div class="crm-op-carousel-track" id="opCarouselTrack" data-page="0">
-                <div class="crm-op-row-track">
-            <div class="crm-col-5 col-xs-12">
+        <div class="crm-op-7col-row">
+            <div class="crm-col-7 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title">
@@ -515,7 +463,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-5 col-xs-12">
+            <div class="crm-col-7 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><a href="<?php echo base_url(); ?>manager/tasks?team=0" style="color:inherit; text-decoration:none;"><i class="fa fa-tasks"></i> My Tasks</a></h4>
@@ -563,7 +511,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-5 col-xs-12">
+            <div class="crm-col-7 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-calendar-check-o"></i> My Followups</h4>
@@ -611,7 +559,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-5 col-xs-12">
+            <div class="crm-col-7 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-handshake-o"></i> My Meetings</h4>
@@ -659,7 +607,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-5 col-xs-12">
+            <div class="crm-col-7 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-briefcase"></i> My Vertical FU</h4>
@@ -707,7 +655,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-5 crm-op-col">
+            <div class="crm-col-7 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-database" style="color:#0072f0;"></i> My Database</h4>
@@ -730,7 +678,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-5 crm-op-col">
+            <div class="crm-col-7 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-bullseye" style="color:#0072f0;"></i> My Leads</h4>
@@ -754,8 +702,8 @@
             </div>
         </div>
 
-        <div class="crm-op-row-track">
-            <div class="crm-col-5 col-xs-12">
+        <div class="crm-op-7col-row" style="margin-top:10px;">
+            <div class="crm-col-7 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title">
@@ -813,7 +761,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-5 col-xs-12">
+            <div class="crm-col-7 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><a href="<?php echo base_url(); ?>manager/tasks?team=1" style="color:inherit; text-decoration:none;"><i class="fa fa-tasks"></i> Team Tasks</a></h4>
@@ -861,7 +809,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-5 col-xs-12">
+            <div class="crm-col-7 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-calendar-check-o"></i> Team Followups</h4>
@@ -909,7 +857,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-5 col-xs-12">
+            <div class="crm-col-7 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-handshake-o"></i> Team Meetings</h4>
@@ -957,7 +905,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-5 col-xs-12">
+            <div class="crm-col-7 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-briefcase"></i> Team Vertical FU</h4>
@@ -1005,7 +953,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-5 crm-op-col">
+            <div class="crm-col-7 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-database" style="color:#0072f0;"></i> Team Database</h4>
@@ -1028,7 +976,7 @@
                 </div>
             </div>
 
-            <div class="crm-col-5 crm-op-col">
+            <div class="crm-col-7 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-bullseye" style="color:#0072f0;"></i> Team Leads</h4>
@@ -1051,8 +999,6 @@
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
         
         <div class="dash-drilldown-panel" id="dashDrilldownPanel">
@@ -1185,13 +1131,16 @@ $(function () {
 
     var monthDates = <?php echo json_encode(!empty($dashboard_MyPro['month_dates']) ? $dashboard_MyPro['month_dates'] : array()); ?>;
     var teamMonthDates = <?php echo json_encode(!empty($dashboard_TeamPro['month_dates']) ? $dashboard_TeamPro['month_dates'] : array()); ?>;
-    var achieveMonths = <?php echo json_encode(!empty($dashboard_achievement_team['labels']) ? $dashboard_achievement_team['labels'] : array()); ?>;
-    var achieveTarget = <?php echo json_encode(!empty($dashboard_achievement_team['target']) ? $dashboard_achievement_team['target'] : array()); ?>;
-    var achieveData = <?php echo json_encode(!empty($dashboard_achievement_team['achievement']) ? $dashboard_achievement_team['achievement'] : array()); ?>;
-    var achieveDates = <?php echo json_encode(!empty($dashboard_achievement_team['month_dates']) ? $dashboard_achievement_team['month_dates'] : array()); ?>;
 
-    var isSwapped = false;
-    var chartInstanceAchieve = null;
+    var achieveMonthsMy = <?php echo json_encode(!empty($dashboard_achievement_my['labels']) ? $dashboard_achievement_my['labels'] : array()); ?>;
+    var achieveTargetMy = <?php echo json_encode(!empty($dashboard_achievement_my['target']) ? $dashboard_achievement_my['target'] : array()); ?>;
+    var achieveDataMy = <?php echo json_encode(!empty($dashboard_achievement_my['achievement']) ? $dashboard_achievement_my['achievement'] : array()); ?>;
+    var achieveDatesMy = <?php echo json_encode(!empty($dashboard_achievement_my['month_dates']) ? $dashboard_achievement_my['month_dates'] : array()); ?>;
+
+    var achieveMonthsTeam = <?php echo json_encode(!empty($dashboard_achievement_team['labels']) ? $dashboard_achievement_team['labels'] : array()); ?>;
+    var achieveTargetTeam = <?php echo json_encode(!empty($dashboard_achievement_team['target']) ? $dashboard_achievement_team['target'] : array()); ?>;
+    var achieveDataTeam = <?php echo json_encode(!empty($dashboard_achievement_team['achievement']) ? $dashboard_achievement_team['achievement'] : array()); ?>;
+    var achieveDatesTeam = <?php echo json_encode(!empty($dashboard_achievement_team['month_dates']) ? $dashboard_achievement_team['month_dates'] : array()); ?>;
 
     var canvas2 = document.getElementById('barChart2');
     var chartInstance2 = null;
@@ -1216,12 +1165,8 @@ $(function () {
                 if (activeBars && activeBars.length > 0) {
                     var barLabel = activeBars[0].label;
                     var idx = months.indexOf(barLabel);
-                    if (idx !== -1) {
-                        if (isSwapped && teamMonthDates[idx]) {
-                            window.location.href = '<?php echo base_url(); ?>manager/team/leads?exp_d1=' + encodeURIComponent(teamMonthDates[idx].d1) + '&exp_d2=' + encodeURIComponent(teamMonthDates[idx].d2);
-                        } else if (!isSwapped && monthDates[idx]) {
-                            window.location.href = '<?php echo base_url(); ?>manager/leads?exp_d1=' + encodeURIComponent(monthDates[idx].d1) + '&exp_d2=' + encodeURIComponent(monthDates[idx].d2);
-                        }
+                    if (idx !== -1 && monthDates[idx]) {
+                        window.location.href = '<?php echo base_url(); ?>manager/leads?exp_d1=' + encodeURIComponent(monthDates[idx].d1) + '&exp_d2=' + encodeURIComponent(monthDates[idx].d2);
                     }
                 }
             }
@@ -1259,170 +1204,74 @@ $(function () {
         };
     }
 
-    function initOrUpdateAchieveChart() {
-        if (!chartInstanceAchieve) {
-            var canvasAchieve = document.getElementById('barChartAchieve');
-            if (canvasAchieve) {
-                canvasAchieve.style.cursor = 'pointer';
-                var ctxAchieve = canvasAchieve.getContext('2d');
-                var achieveOptions = $.extend({}, chartOptions, {
-                    scaleLabel: "<%= 'AED ' + Number(value).toLocaleString() %>",
-                    tooltipTemplate: "<%if (label){%><%=label%>: <%}%><%= 'AED ' + Number(value).toLocaleString() %>",
-                    multiTooltipTemplate: "<%= datasetLabel %>: <%= 'AED ' + Number(value).toLocaleString() %>"
-                });
-                chartInstanceAchieve = new Chart(ctxAchieve).Bar({
-                    labels: achieveMonths,
-                    datasets: [
-                        {
-                            label: 'Target',
-                            fillColor: 'rgba(0, 114, 240, 0.85)',
-                            strokeColor: '#0072f0',
-                            highlightFill: 'rgba(0, 114, 240, 1)',
-                            highlightStroke: '#0072f0',
-                            data: achieveTarget
-                        },
-                        {
-                            label: 'Achievement',
-                            fillColor: 'rgba(22, 163, 74, 0.85)',
-                            strokeColor: '#16a34a',
-                            highlightFill: 'rgba(22, 163, 74, 1)',
-                            highlightStroke: '#16a34a',
-                            data: achieveData
-                        }
-                    ]
-                }, achieveOptions);
-
-                if (chartInstanceAchieve && chartInstanceAchieve.datasets && chartInstanceAchieve.datasets[1]) {
-                    for (var b = 0; b < chartInstanceAchieve.datasets[1].bars.length; b++) {
-                        var val = Number(achieveData[b]) || 0;
-                        var tgt = Number(achieveTarget[b]) || 0;
-                        if (val < tgt) {
-                            chartInstanceAchieve.datasets[1].bars[b].fillColor = '#dc2626';
-                            chartInstanceAchieve.datasets[1].bars[b].strokeColor = '#b91c1c';
-                            chartInstanceAchieve.datasets[1].bars[b].highlightFill = '#ef4444';
-                            chartInstanceAchieve.datasets[1].bars[b].highlightStroke = '#b91c1c';
-                        } else {
-                            chartInstanceAchieve.datasets[1].bars[b].fillColor = '#16a34a';
-                            chartInstanceAchieve.datasets[1].bars[b].strokeColor = '#15803d';
-                            chartInstanceAchieve.datasets[1].bars[b].highlightFill = '#22c55e';
-                            chartInstanceAchieve.datasets[1].bars[b].highlightStroke = '#15803d';
-                        }
-                    }
-                    chartInstanceAchieve.update();
+    function renderAchieveChart(canvasId, labels, target, achieve, dates, baseUrl) {
+        var canvas = document.getElementById(canvasId);
+        if (!canvas) return null;
+        canvas.style.cursor = 'pointer';
+        var ctx = canvas.getContext('2d');
+        var achieveOptions = $.extend({}, chartOptions, {
+            scaleLabel: "<%= 'AED ' + Number(value).toLocaleString() %>",
+            tooltipTemplate: "<%if (label){%><%=label%>: <%}%><%= 'AED ' + Number(value).toLocaleString() %>",
+            multiTooltipTemplate: "<%= datasetLabel %>: <%= 'AED ' + Number(value).toLocaleString() %>"
+        });
+        var inst = new Chart(ctx).Bar({
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Target',
+                    fillColor: 'rgba(0, 114, 240, 0.85)',
+                    strokeColor: '#0072f0',
+                    highlightFill: 'rgba(0, 114, 240, 1)',
+                    highlightStroke: '#0072f0',
+                    data: target
+                },
+                {
+                    label: 'Achievement',
+                    fillColor: 'rgba(22, 163, 74, 0.85)',
+                    strokeColor: '#16a34a',
+                    highlightFill: 'rgba(22, 163, 74, 1)',
+                    highlightStroke: '#16a34a',
+                    data: achieve
                 }
+            ]
+        }, achieveOptions);
 
-                canvasAchieve.onclick = function(evt) {
-                    if (chartInstanceAchieve && typeof chartInstanceAchieve.getBarsAtEvent === 'function') {
-                        var activeBars = chartInstanceAchieve.getBarsAtEvent(evt);
-                        if (activeBars && activeBars.length > 0) {
-                            var barLabel = activeBars[0].label;
-                            var idx = achieveMonths.indexOf(barLabel);
-                            if (idx !== -1 && achieveDates[idx]) {
-                                window.location.href = '<?php echo base_url(); ?>manager/team/leads?exp_d1=' + encodeURIComponent(achieveDates[idx].d1) + '&exp_d2=' + encodeURIComponent(achieveDates[idx].d2);
-                            }
-                        }
+        if (inst && inst.datasets && inst.datasets[1]) {
+            for (var b = 0; b < inst.datasets[1].bars.length; b++) {
+                var val = Number(achieve[b]) || 0;
+                var tgt = Number(target[b]) || 0;
+                if (val < tgt) {
+                    inst.datasets[1].bars[b].fillColor = '#dc2626';
+                    inst.datasets[1].bars[b].strokeColor = '#b91c1c';
+                    inst.datasets[1].bars[b].highlightFill = '#ef4444';
+                    inst.datasets[1].bars[b].highlightStroke = '#b91c1c';
+                } else {
+                    inst.datasets[1].bars[b].fillColor = '#16a34a';
+                    inst.datasets[1].bars[b].strokeColor = '#15803d';
+                    inst.datasets[1].bars[b].highlightFill = '#22c55e';
+                    inst.datasets[1].bars[b].highlightStroke = '#15803d';
+                }
+            }
+            inst.update();
+        }
+
+        canvas.onclick = function(evt) {
+            if (inst && typeof inst.getBarsAtEvent === 'function') {
+                var activeBars = inst.getBarsAtEvent(evt);
+                if (activeBars && activeBars.length > 0) {
+                    var barLabel = activeBars[0].label;
+                    var idx = labels.indexOf(barLabel);
+                    if (idx !== -1 && dates && dates[idx]) {
+                        window.location.href = baseUrl + '?exp_d1=' + encodeURIComponent(dates[idx].d1) + '&exp_d2=' + encodeURIComponent(dates[idx].d2);
                     }
-                };
+                }
             }
-        }
+        };
+        return inst;
     }
 
-    function switchPagerPage(trackId, pageIndex) {
-        var $track = $(trackId);
-        if (!$track.length) return;
-        $track.attr('data-page', pageIndex);
-        var $controls = $('.crm-pager-controls[data-track="' + trackId + '"]');
-        if ($controls.length) {
-            $controls.find('.crm-pager-dot').removeClass('active');
-            $controls.find('.crm-pager-dot[data-page="' + pageIndex + '"]').addClass('active');
-            var titleSel = $controls.attr('data-title');
-            var subSel = $controls.attr('data-sub');
-            if (pageIndex === 0) {
-                if (titleSel) $(titleSel).text($controls.attr('data-t1') || '');
-                if (subSel) $(subSel).text($controls.attr('data-s1') || '');
-            } else {
-                if (titleSel) $(titleSel).text($controls.attr('data-t2') || '');
-                if (subSel) $(subSel).text($controls.attr('data-s2') || '');
-            }
-        }
-        var $container = $track.closest('.crm-pager-container, .crm-op-carousel-container');
-        if ($container.length) {
-            var $btnLeft = $container.children('.crm-side-float-arrow.arrow-left');
-            var $btnRight = $container.children('.crm-side-float-arrow.arrow-right');
-            if (pageIndex === 0) {
-                $btnLeft.hide();
-                $btnRight.show();
-            } else {
-                $btnLeft.show();
-                $btnRight.hide();
-            }
-        }
-        if (trackId === '#pagerTrackProj' && pageIndex === 1) {
-            initOrUpdateAchieveChart();
-        }
-    }
-
-    $(document).on('click', '.crm-pager-dot', function(e) {
-        e.preventDefault();
-        var page = parseInt($(this).attr('data-page'), 10) || 0;
-        var trackId = $(this).closest('.crm-pager-controls').attr('data-track');
-        switchPagerPage(trackId, page);
-    });
-
-    $(document).on('click', '.crm-pager-arrow', function(e) {
-        e.preventDefault();
-        var $controls = $(this).closest('.crm-pager-controls');
-        var trackId = $controls.attr('data-track');
-        var newPage = $(this).hasClass('btn-next') ? 1 : 0;
-        switchPagerPage(trackId, newPage);
-    });
-
-    $(document).on('click', '.crm-side-float-arrow', function(e) {
-        e.preventDefault();
-        var trackId = $(this).attr('data-track');
-        var dir = $(this).attr('data-dir');
-        var newPage = (dir === 'next') ? 1 : 0;
-        switchPagerPage(trackId, newPage);
-    });
-
-    $('.crm-pager-container, .crm-op-carousel-container').each(function() {
-        var startX = 0;
-        var container = this;
-        var $track = $(container).children('.crm-pager-track, .crm-op-carousel-track');
-        if (!$track.length) return;
-        var trackId = '#' + $track.attr('id');
-        container.addEventListener('touchstart', function(e) {
-            startX = e.changedTouches[0].screenX;
-        }, { passive: true });
-        container.addEventListener('touchend', function(e) {
-            var endX = e.changedTouches[0].screenX;
-            var diff = startX - endX;
-            if (Math.abs(diff) > 40) {
-                switchPagerPage(trackId, diff > 0 ? 1 : 0);
-            }
-        }, { passive: true });
-    });
-
-    var $lastActiveTrack = $('#opCarouselTrack');
-    $('.crm-pager-container, .crm-op-carousel-container').on('mouseenter', function() {
-        var $t = $(this).children('.crm-pager-track, .crm-op-carousel-track');
-        if ($t.length) {
-            $lastActiveTrack = $t;
-        }
-    });
-
-    $(document).on('keydown', function(e) {
-        if ($(e.target).is('input, textarea, select')) return;
-        if (e.which === 39) {
-            if ($lastActiveTrack && $lastActiveTrack.length) {
-                switchPagerPage('#' + $lastActiveTrack.attr('id'), 1);
-            }
-        } else if (e.which === 37) {
-            if ($lastActiveTrack && $lastActiveTrack.length) {
-                switchPagerPage('#' + $lastActiveTrack.attr('id'), 0);
-            }
-        }
-    });
+    renderAchieveChart('barChartAchieveMy', achieveMonthsMy, achieveTargetMy, achieveDataMy, achieveDatesMy, '<?php echo base_url(); ?>manager/leads');
+    renderAchieveChart('barChartAchieveTeam', achieveMonthsTeam, achieveTargetTeam, achieveDataTeam, achieveDatesTeam, '<?php echo base_url(); ?>manager/team/leads');
 
     $('.crm-modern-stat-chip').on('click', function(e) {
         var targetUrl = $(this).attr('href');

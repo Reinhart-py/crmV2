@@ -2591,6 +2591,10 @@ public function dashboard_MyPro($table='ci_leads'){
 			return true;
 		}
 
+		if ($section === 'calls' && $user_id > 0) {
+			return true;
+		}
+
 		$perms = $this->get_role_permissions($role);
 		$user_perm = isset($perms[$section]) ? $perms[$section] : 'no_access';
 
@@ -2743,6 +2747,27 @@ public function dashboard_MyPro($table='ci_leads'){
 		return $this->db->insert_id();
 	}
 
+	public function notify_role($role_id, $type = 'activity', $title = '', $message = '', $link = '', $icon = 'fa fa-bell', $color = '#0072f0')
+	{
+		$roles = is_array($role_id) ? array_map('intval', $role_id) : array((int)$role_id);
+		$users = $this->db->select('id')->where_in('user_type', $roles)->where('status', 1)->get('ci_user')->result_array();
+		if (!empty($users)) {
+			foreach ($users as $u) {
+				$this->add_notification((int)$u['id'], $type, $title, $message, $link, $icon, $color);
+			}
+		}
+	}
+
+	public function notify_users($user_ids, $type = 'activity', $title = '', $message = '', $link = '', $icon = 'fa fa-bell', $color = '#0072f0')
+	{
+		$ids = is_array($user_ids) ? array_unique(array_filter(array_map('intval', $user_ids))) : array((int)$user_ids);
+		foreach ($ids as $uid) {
+			if ($uid > 0) {
+				$this->add_notification($uid, $type, $title, $message, $link, $icon, $color);
+			}
+		}
+	}
+
 	public function get_user_notifications($user_id = 0, $limit = 12)
 	{
 		$user_id = (int)$user_id;
@@ -2844,7 +2869,7 @@ public function dashboard_MyPro($table='ci_leads'){
 		$this->db->from('ci_pipeline_logs P');
 		$this->db->join('ci_leads L', 'L.id = P.lead_id', 'LEFT');
 		if (!$is_backoffice) {
-			$this->db->where("(P.conversion_requested_by = {$user_id} OR P.order_requested_by = {$user_id} OR L.created_by = {$user_id})");
+			$this->db->where("(P.action_by = {$user_id} OR L.created_by = {$user_id} OR L.lead_assign = {$user_id})");
 		}
 		$pipeline_logs = $this->db->order_by('P.id', 'DESC')->limit(10)->get()->result_array();
 
@@ -2883,10 +2908,10 @@ public function dashboard_MyPro($table='ci_leads'){
 		}
 
 		$this->db->select('OL.*, O.order_no, O.client_name, O.created_by as ord_creator, O.assigned_to as ord_assigned');
-		$this->db->from('ci_orders_logs OL');
+		$this->db->from('ci_order_history OL');
 		$this->db->join('ci_orders O', 'O.id = OL.order_id', 'LEFT');
 		if (!$is_backoffice) {
-			$this->db->where("(O.created_by = {$user_id} OR O.assigned_to = {$user_id} OR O.lead_id IN (SELECT id FROM ci_leads WHERE created_by = {$user_id}))");
+			$this->db->where("(O.created_by = {$user_id} OR O.assigned_to = {$user_id} OR O.lead_id IN (SELECT id FROM ci_leads WHERE created_by = {$user_id} OR lead_assign = {$user_id}))");
 		}
 		$order_logs = $this->db->order_by('OL.id', 'DESC')->limit(10)->get()->result_array();
 

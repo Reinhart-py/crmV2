@@ -117,13 +117,37 @@ class Ci_admin_system extends CI_Controller {
 			'page_heading' => 'Staff Live Location'
 		);
 
-		$this->db->select('L.*, U.name, U.email, U.department, U.mobile');
-		$this->db->from('ci_user_live_locations L');
-		$this->db->join('ci_user U', 'L.user_id = U.id', 'INNER');
-		$this->db->where('L.tracking_active', 1);
-		$this->db->order_by('L.updated_at', 'DESC');
-		$data['locations'] = $this->db->get()->result_array();
+		$search = trim((string)$this->input->get('search'));
+		$dept = trim((string)$this->input->get('department'));
 
+		$sql = "SELECT U.id as user_id, U.name, U.email, U.department, U.mobile, U.is_online,
+			COALESCE(L.latitude, A.latitude) as latitude,
+			COALESCE(L.longitude, A.longitude) as longitude,
+			COALESCE(L.accuracy, A.accuracy) as accuracy,
+			COALESCE(L.updated_at, A.created_at) as last_seen,
+			L.tracking_active,
+			A.in_time as clock_in_time,
+			A.out_time as clock_out_time,
+			A.location_address,
+			A.status as attendance_status,
+			R.title as role_title
+		FROM ci_user U
+		LEFT JOIN ci_roles R ON R.id = U.user_type
+		LEFT JOIN ci_user_live_locations L ON L.user_id = U.id
+		LEFT JOIN ci_attendance A ON A.user_id = U.id AND A.attendance_date = CURDATE()
+		WHERE U.status = 1";
+
+		if (!empty($search)) {
+			$sql .= " AND U.name LIKE " . $this->db->escape('%' . $search . '%');
+		}
+		if (!empty($dept)) {
+			$sql .= " AND U.department = " . $this->db->escape($dept);
+		}
+
+		$sql .= " ORDER BY U.name ASC";
+		$data['locations'] = $this->db->query($sql)->result_array();
+
+		$data['departments'] = $this->db->query("SELECT DISTINCT department FROM ci_user WHERE department IS NOT NULL AND department != '' ORDER BY department ASC")->result_array();
 		$data['load_map'] = true;
 		$this->load->view('manager/system/live_location', $data);
 	}
@@ -175,12 +199,24 @@ class Ci_admin_system extends CI_Controller {
 			exit();
 		}
 
-		$this->db->select('L.*, U.name, U.email, U.department, U.mobile');
-		$this->db->from('ci_user_live_locations L');
-		$this->db->join('ci_user U', 'L.user_id = U.id', 'INNER');
-		$this->db->where('L.tracking_active', 1);
-		$this->db->order_by('L.updated_at', 'DESC');
-		$rows = $this->db->get()->result_array();
+		$sql = "SELECT U.id as user_id, U.name, U.email, U.department, U.mobile, U.is_online,
+			COALESCE(L.latitude, A.latitude) as latitude,
+			COALESCE(L.longitude, A.longitude) as longitude,
+			COALESCE(L.accuracy, A.accuracy) as accuracy,
+			COALESCE(L.updated_at, A.created_at) as last_seen,
+			L.tracking_active,
+			A.in_time as clock_in_time,
+			A.out_time as clock_out_time,
+			A.location_address,
+			A.status as attendance_status,
+			R.title as role_title
+		FROM ci_user U
+		LEFT JOIN ci_roles R ON R.id = U.user_type
+		LEFT JOIN ci_user_live_locations L ON L.user_id = U.id
+		LEFT JOIN ci_attendance A ON A.user_id = U.id AND A.attendance_date = CURDATE()
+		WHERE U.status = 1
+		ORDER BY U.name ASC";
+		$rows = $this->db->query($sql)->result_array();
 
 		header('Content-Type: application/json');
 		echo json_encode(array('success' => true, 'locations' => $rows));

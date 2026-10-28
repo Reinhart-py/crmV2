@@ -298,6 +298,27 @@
               'dashboard'           => 'Dashboard'
             )
           ),
+          'calls' => array(
+            'title' => 'Phone Dialer & Calling',
+            'icon'  => 'fa fa-phone',
+            'pages' => array(
+              'calls'               => 'Phone Dialer & Softphone'
+            )
+          ),
+          'hr' => array(
+            'title' => 'HR & People Management',
+            'icon'  => 'fa fa-user-circle-o',
+            'pages' => array(
+              'hr'                  => 'HR Management',
+              'hr_targets'          => 'Assign Targets',
+              'hr_attendance'       => 'Attendance & Geolocation',
+              'hr_shifts'           => 'Shift Management',
+              'hr_leaves'           => 'Leave & Holidays',
+              'hr_payroll'          => 'Payroll & Compensation',
+              'hr_appraisals'       => 'Performance & Appraisals',
+              'hr_lifecycle'        => 'Employee Lifecycle'
+            )
+          ),
           'my_zone' => array(
             'title' => 'My Zone',
             'icon'  => 'fa fa-th-large',

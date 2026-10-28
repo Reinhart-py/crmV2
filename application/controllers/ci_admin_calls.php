@@ -177,6 +177,15 @@ class Ci_admin_calls extends CI_Controller
 		$manager_dept = !empty($user_dept_row['department']) ? $user_dept_row['department'] : 'Sales';
 		$active_lead = !empty($queue) ? $queue[0] : null;
 
+		$p_cat = $this->comman_model->getAll(array('parent_id' => 0, 'status' => 1, 'cat_type' => 'p_cat'), '', 'ci_terms');
+		$s_cat = $this->comman_model->getAll(array('parent_id' => 0, 'status' => 1, 'cat_type' => 's_cat'), '', 'ci_terms');
+		if (empty($s_cat)) {
+			$s_cat = $p_cat;
+		}
+		$business_categories = $this->comman_model->getAll(array('cat_type' => 'business_cat', 'status' => 1), '', 'ci_terms');
+		$database_categories = $this->comman_model->getAll(array('cat_type' => 'database_cat', 'status' => 1), '', 'ci_terms');
+		$threecx_cfg = $this->threecx->get_config();
+
 		$data = array();
 		$data['info'] = array('title' => 'Calls & Dialer', 'page_heading' => 'Calling Center');
 		$data['queue'] = $queue;
@@ -187,29 +196,112 @@ class Ci_admin_calls extends CI_Controller
 		$data['active_lead'] = $active_lead;
 		$data['selected_status'] = $selected_status;
 		$data['statuses'] = $allowed_statuses;
+		$data['p_cat'] = $p_cat;
+		$data['s_cat'] = $s_cat;
+		$data['business_categories'] = $business_categories;
+		$data['database_categories'] = $database_categories;
 		$data['recent_logs'] = $recent_logs;
 		$data['manager_role'] = $role;
 		$data['manager_id'] = $manager_id;
 		$data['manager_name'] = $this->session->userdata('manager_name');
 		$data['manager_department'] = $manager_dept;
-		$data['threecx_config'] = $this->threecx->get_config();
-		$data['is_backend_configured'] = (!empty($data['threecx_config']['pbx_fqdn']) && !empty($data['threecx_config']['client_id']));
+		$data['manager_phone'] = !empty($user_dept_row['phone']) ? $user_dept_row['phone'] : '';
+		$data['threecx_config'] = $threecx_cfg;
+		$data['is_backend_configured'] = (!empty($threecx_cfg['pbx_fqdn']) && !empty($threecx_cfg['client_id']));
+		$data['autodialer_seconds'] = !empty($threecx_cfg['autodialer_seconds']) ? (int)$threecx_cfg['autodialer_seconds'] : 60;
 
 		$this->load->view('manager/calls/dashboard', $data);
 	}
 
 	public function ajax_get_queue()
 	{
-		$status_filter = trim($this->input->get('status'));
-		if (empty($status_filter)) {
-			$status_filter = 'all';
+		$manager_id = (int)$this->session->userdata('manager_id');
+		$role = (int)$this->session->userdata('manager_role');
+
+		$type = trim($this->input->get('type'));
+		if (empty($type)) {
+			$type = 'all';
 		}
+		$filter = trim($this->input->get('filter'));
+		$status_param = trim($this->input->get('status'));
 		$search = trim($this->input->get('search'));
 
-		$this->db->select('A.id, A.lead_id, A.customer, A.poc, A.poc2, A.contact1, A.alt_contact, A.contact2, A.mobile, A.email, A.status, A.remark, S.status as status_name');
+		$today = date('Y-m-d');
+		$last_date = date('Y-m-d', strtotime('-7 day'));
+		$next_date = date('Y-m-d', strtotime('+7 day'));
+
+		$this->db->select('A.id, A.lead_id, A.customer, A.poc, A.poc2, A.contact1, A.alt_contact, A.contact2, A.mobile, A.email, A.location, A.address, A.category, A.status, A.remark, A.followup_date, A.followup_time, A.dnd_status, A.dnd_check_date, A.tl_number, A.tl_authority, A.tl_emirate, A.tl_zone, A.s_cat, A.p_cat, A.p_details, A.industry_category, A.business_category, A.qty, A.mrc, A.revenue, A.mrr, A.quote_status, A.quote_mode, A.quote_amount, A.status_category, A.status_remarks, A.close_date, S.status as status_name, P.pipeline_stage');
 		$this->db->from('ci_leads as A');
 		$this->db->join('ci_status as S', 'S.id = A.status', 'left');
-		$this->_apply_lead_filters($status_filter);
+		$this->db->join('ci_pipeline as P', 'P.lead_id = A.id', 'left');
+
+		if ($role != 1 && $role != 4) {
+			$this->db->where('A.lead_assign', $manager_id);
+		} else {
+			$assigned_row = $this->db->query("SELECT COUNT(*) AS total FROM ci_leads WHERE lead_assign = " . (int)$manager_id . " AND (contact1 != '' OR alt_contact != '' OR mobile != '' OR contact2 != '')")->row_array();
+			$assigned_cnt = !empty($assigned_row['total']) ? (int)$assigned_row['total'] : 0;
+			if ($assigned_cnt > 0) {
+				$this->db->where('A.lead_assign', $manager_id);
+			}
+		}
+
+		$this->db->where('(A.contact1 != "" OR A.alt_contact != "" OR A.mobile != "" OR A.contact2 != "")');
+		$this->db->where_not_in('A.status', array(43, 44));
+		$this->db->where('(A.remark IS NULL OR LOWER(A.remark) NOT LIKE "%lost%")');
+		$this->db->where('(A.status_category IS NULL OR LOWER(A.status_category) NOT LIKE "%lost%")');
+		$this->db->where_not_in('A.status', array(39, 42));
+		$this->db->where('(A.company_status IS NULL OR LOWER(A.company_status) != "closed")');
+		$this->db->where('(A.status_category IS NULL OR (LOWER(A.status_category) NOT LIKE "%won%" AND LOWER(A.status_category) NOT LIKE "%closed%"))');
+
+		if ($type === 'followup') {
+			$this->db->where('(P.pipeline_stage = "database" OR P.pipeline_stage IS NULL)');
+			if ($filter === 'missed') {
+				$this->db->where('A.followup_date <', $today);
+				$this->db->where('A.followup_date !=', '');
+				$this->db->where('A.followup_date !=', '0000-00-00');
+			} elseif ($filter === 'today') {
+				$this->db->where('A.followup_date =', $today);
+			} elseif ($filter === 'last7') {
+				$this->db->where('A.followup_date <', $today);
+				$this->db->where('A.followup_date >=', $last_date);
+				$this->db->where('A.followup_date !=', '');
+				$this->db->where('A.followup_date !=', '0000-00-00');
+			} elseif ($filter === 'next7') {
+				$this->db->where('A.followup_date >', $today);
+				$this->db->where('A.followup_date <=', $next_date);
+				$this->db->where('A.followup_date !=', '');
+				$this->db->where('A.followup_date !=', '0000-00-00');
+			} else {
+				$this->db->where('A.followup_date !=', '');
+				$this->db->where('A.followup_date !=', '0000-00-00');
+			}
+		} elseif ($type === 'database') {
+			$this->db->where('(P.pipeline_stage = "database" OR P.pipeline_stage IS NULL)');
+			if (!empty($status_param) && $status_param !== 'all') {
+				if (is_numeric($status_param)) {
+					$this->db->where('A.status', (int)$status_param);
+				} else {
+					$this->_apply_lead_filters($status_param);
+				}
+			}
+		} elseif ($type === 'lead') {
+			$this->db->where('P.pipeline_stage', 'lead');
+			if (!empty($status_param) && $status_param !== 'all') {
+				if (is_numeric($status_param)) {
+					$this->db->where('A.status', (int)$status_param);
+				} else {
+					$this->_apply_lead_filters($status_param);
+				}
+			}
+		} else {
+			if (!empty($status_param) && $status_param !== 'all') {
+				if (is_numeric($status_param)) {
+					$this->db->where('A.status', (int)$status_param);
+				} else {
+					$this->_apply_lead_filters($status_param);
+				}
+			}
+		}
 
 		if (!empty($search)) {
 			$escaped_search = $this->db->escape_str($this->db->escape_like_str($search));
@@ -217,7 +309,7 @@ class Ci_admin_calls extends CI_Controller
 		}
 
 		$this->db->order_by('A.id', 'DESC');
-		$this->db->limit(120);
+		$this->db->limit(150);
 		$leads = $this->db->get()->result_array();
 
 		foreach ($leads as &$l_item) {
@@ -230,6 +322,8 @@ class Ci_admin_calls extends CI_Controller
 
 		echo json_encode(array(
 			'status' => true,
+			'type' => $type,
+			'filter' => $filter,
 			'count' => count($leads),
 			'leads' => $leads
 		));
@@ -316,16 +410,26 @@ class Ci_admin_calls extends CI_Controller
 			$customer_name = 'Direct Call (' . $phone . ')';
 		}
 
+		$is_internal = (int)$this->input->post('is_internal');
+		$call_category = trim($this->input->post('call_category'));
+		if ($is_internal === 1) {
+			$call_category = 'internal';
+		} elseif (empty($call_category)) {
+			$call_category = ($lead_id > 0) ? 'new_call' : 'direct';
+		}
+
 		$log_data = array(
 			'user_id' => $manager_id,
 			'lead_id' => ($lead_id > 0) ? $lead_id : null,
 			'customer_name' => $customer_name,
 			'phone_number' => $phone,
-			'call_type' => 'Outbound 3CX',
+			'call_type' => ($is_internal === 1) ? 'Internal Team' : 'Outbound 3CX',
 			'call_status' => 'Initiated',
 			'duration' => 0,
 			'disposition' => 'Dialing',
 			'notes' => '',
+			'is_internal' => $is_internal,
+			'call_category' => $call_category,
 			'created_at' => date('Y-m-d H:i:s')
 		);
 		$this->db->insert('ci_call_logs', $log_data);
@@ -340,6 +444,7 @@ class Ci_admin_calls extends CI_Controller
 			'call_log_id' => $call_log_id,
 			'phone' => $phone,
 			'customer_name' => $customer_name,
+			'is_internal' => $is_internal,
 			'dispatch' => $dispatch,
 			'message' => $is_configured ? 'Call initiated via Calling API backend' : 'Calling backend not configured'
 		));
@@ -352,6 +457,14 @@ class Ci_admin_calls extends CI_Controller
 		$lead_id = (int)$this->input->post('lead_id');
 		$customer_name = trim($this->input->post('customer_name'));
 		$phone = trim($this->input->post('phone'));
+
+		$is_internal = (int)$this->input->post('is_internal');
+		$call_category = trim($this->input->post('call_category'));
+		if ($is_internal === 1) {
+			$call_category = 'internal';
+		} elseif (empty($call_category)) {
+			$call_category = ($lead_id > 0) ? 'new_call' : 'direct';
+		}
 
 		$status_id = (int)$this->input->post('status');
 		$outcome = trim($this->input->post('call_disposition'));
@@ -372,7 +485,7 @@ class Ci_admin_calls extends CI_Controller
 		}
 
 		if (empty($outcome)) {
-			$outcome = 'Connected';
+			$outcome = ($is_internal === 1) ? 'Connected' : 'Connected';
 		}
 
 		$lower_outcome = strtolower($outcome);
@@ -401,7 +514,9 @@ class Ci_admin_calls extends CI_Controller
 				'call_status' => 'Completed',
 				'duration' => $duration,
 				'disposition' => $outcome,
-				'notes' => $remarks
+				'notes' => $remarks,
+				'is_internal' => $is_internal,
+				'call_category' => $call_category
 			));
 		} else {
 			$this->db->insert('ci_call_logs', array(
@@ -409,16 +524,18 @@ class Ci_admin_calls extends CI_Controller
 				'lead_id' => ($lead_id > 0) ? $lead_id : null,
 				'customer_name' => !empty($customer_name) ? $customer_name : 'Direct Call',
 				'phone_number' => !empty($phone) ? $phone : 'Unknown',
-				'call_type' => 'Outbound Call',
+				'call_type' => ($is_internal === 1) ? 'Internal Team' : 'Outbound Call',
 				'call_status' => 'Completed',
 				'duration' => $duration,
 				'disposition' => $outcome,
 				'notes' => $remarks,
+				'is_internal' => $is_internal,
+				'call_category' => $call_category,
 				'created_at' => date('Y-m-d H:i:s')
 			));
 		}
 
-		if ($lead_id > 0) {
+		if ($lead_id > 0 && $is_internal !== 1) {
 			$extra_tags = array();
 			if (!empty($vat_status)) {
 				$extra_tags[] = "VAT: " . $vat_status . (!empty($vat_trn) ? " (TRN: $vat_trn)" : "");
@@ -532,6 +649,326 @@ class Ci_admin_calls extends CI_Controller
 		$logs = $this->db->get()->result_array();
 
 		echo json_encode(array('status' => true, 'logs' => $logs));
+	}
+
+	public function ajax_get_team_colleagues()
+	{
+		$manager_id = (int)$this->session->userdata('manager_id');
+		$this->db->select('U.id, U.name, U.email, U.mobile, U.uae_mobile, U.c_mobile, U.emp_id, U.department, U.avatar, U.gender, R.title as role_name');
+		$this->db->from('ci_user as U');
+		$this->db->join('ci_roles as R', 'R.id = U.user_type', 'left');
+		$this->db->where('U.status', 1);
+		$this->db->where('U.id !=', $manager_id);
+		$this->db->order_by('U.name', 'ASC');
+		$colleagues = $this->db->get()->result_array();
+
+		$clean = array();
+		foreach ($colleagues as $c) {
+			$ext = !empty($c['emp_id']) ? trim($c['emp_id']) : '';
+			$phone = !empty($c['uae_mobile']) ? trim($c['uae_mobile']) : (!empty($c['mobile']) ? trim($c['mobile']) : trim($c['c_mobile']));
+			$clean[] = array(
+				'id' => (int)$c['id'],
+				'name' => $c['name'],
+				'department' => !empty($c['department']) ? $c['department'] : (!empty($c['role_name']) ? $c['role_name'] : 'Team Member'),
+				'extension' => $ext,
+				'phone' => $phone,
+				'dial_target' => !empty($ext) ? $ext : $phone,
+				'email' => !empty($c['email']) ? $c['email'] : ''
+			);
+		}
+
+		echo json_encode(array('status' => true, 'colleagues' => $clean));
+	}
+
+	public function ajax_get_daily_logs()
+	{
+		$manager_id = (int)$this->session->userdata('manager_id');
+		$role = (int)$this->session->userdata('manager_role');
+		$period = trim($this->input->get('period'));
+		if (!in_array($period, array('day', 'week', 'month', 'year'))) {
+			$period = 'day';
+		}
+
+		$date_clause = "L.created_at >= CURDATE()";
+		if ($period === 'week') {
+			$date_clause = "L.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
+		} elseif ($period === 'month') {
+			$date_clause = "L.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
+		} elseif ($period === 'year') {
+			$date_clause = "L.created_at >= DATE_SUB(NOW(), INTERVAL 365 DAY)";
+		}
+
+		$user_clause = ($role != 1 && $role != 4) ? "L.user_id = $manager_id AND " : "";
+
+		$stats_sql = "SELECT 
+			COUNT(*) AS total_calls,
+			SUM(CASE WHEN (L.disposition = 'Connected' OR L.duration > 0) THEN 1 ELSE 0 END) AS connected_calls,
+			SUM(CASE WHEN (L.disposition != 'Connected' AND L.duration = 0) THEN 1 ELSE 0 END) AS missed_calls,
+			SUM(CASE WHEN L.call_category = 'followup' THEN 1 ELSE 0 END) AS followup_calls,
+			SUM(CASE WHEN (L.call_category = 'new_call' OR L.call_category IS NULL OR L.call_category = 'database') THEN 1 ELSE 0 END) AS new_calls,
+			COALESCE(SUM(L.duration), 0) AS total_duration
+			FROM ci_call_logs AS L
+			WHERE {$user_clause} (L.is_internal = 0 OR L.is_internal IS NULL) AND {$date_clause}";
+		$stats = $this->db->query($stats_sql)->row_array();
+
+		$breakdown_sql = "SELECT 
+			COALESCE(NULLIF(TRIM(L.disposition), ''), 'Unknown') AS status_name,
+			COUNT(*) AS total_calls,
+			SUM(CASE WHEN (L.call_category = 'new_call' OR L.call_category IS NULL OR L.call_category = 'database') THEN 1 ELSE 0 END) AS new_calls,
+			SUM(CASE WHEN L.call_category = 'followup' THEN 1 ELSE 0 END) AS followup_calls
+			FROM ci_call_logs AS L
+			WHERE {$user_clause} (L.is_internal = 0 OR L.is_internal IS NULL) AND {$date_clause}
+			GROUP BY status_name
+			ORDER BY total_calls DESC";
+		$status_breakdown = $this->db->query($breakdown_sql)->result_array();
+
+		$tot = !empty($stats['total_calls']) ? (int)$stats['total_calls'] : 0;
+		foreach ($status_breakdown as &$sb) {
+			$st_tot = (int)$sb['total_calls'];
+			$sb['percentage'] = ($tot > 0) ? round(($st_tot / $tot) * 100, 1) : 0;
+		}
+		unset($sb);
+
+		$logs_sql = "SELECT L.*, C.customer AS lead_customer, C.lead_id AS lead_code
+			FROM ci_call_logs AS L
+			LEFT JOIN ci_leads AS C ON C.id = L.lead_id
+			WHERE {$user_clause} (L.is_internal = 0 OR L.is_internal IS NULL) AND {$date_clause}
+			ORDER BY L.id DESC
+			LIMIT 50";
+		$logs = $this->db->query($logs_sql)->result_array();
+
+		$user_row = $this->db->query("SELECT name, emp_id, uae_mobile, mobile, department FROM ci_user WHERE id = " . (int)$manager_id)->row_array();
+		$threecx_cfg = $this->threecx->get_config();
+
+		$agent_info = array(
+			'agent_name' => !empty($user_row['name']) ? $user_row['name'] : 'Agent',
+			'default_extension' => !empty($user_row['emp_id']) ? $user_row['emp_id'] : '101',
+			'pbx_fqdn' => !empty($threecx_cfg['pbx_fqdn']) ? $threecx_cfg['pbx_fqdn'] : 'Local PBX',
+			'caller_id' => !empty($user_row['uae_mobile']) ? $user_row['uae_mobile'] : (!empty($user_row['mobile']) ? $user_row['mobile'] : 'Outbound Line')
+		);
+
+		echo json_encode(array(
+			'status' => true,
+			'period' => $period,
+			'stats' => $stats,
+			'status_breakdown' => $status_breakdown,
+			'logs' => $logs,
+			'agent_info' => $agent_info
+		));
+	}
+
+	public function ajax_save_record_details()
+	{
+		$manager_id = (int)$this->session->userdata('manager_id');
+		$lead_id = (int)$this->input->post('lead_id');
+		$call_log_id = (int)$this->input->post('call_log_id');
+
+		if ($lead_id <= 0) {
+			echo json_encode(array('status' => false, 'message' => 'Invalid Record ID'));
+			return;
+		}
+
+		$lead_update = array(
+			'edited_by' => $manager_id,
+			'modified' => date('Y-m-d')
+		);
+
+		if ($this->input->post('customer') !== null) {
+			$lead_update['customer'] = trim($this->input->post('customer'));
+		}
+		if ($this->input->post('poc') !== null) {
+			$lead_update['poc'] = trim($this->input->post('poc'));
+		}
+		if ($this->input->post('contact1') !== null) {
+			$lead_update['contact1'] = trim($this->input->post('contact1'));
+		}
+		if ($this->input->post('alt_contact') !== null) {
+			$lead_update['alt_contact'] = trim($this->input->post('alt_contact'));
+		}
+		if ($this->input->post('email') !== null) {
+			$lead_update['email'] = trim($this->input->post('email'));
+		}
+		if ($this->input->post('location') !== null) {
+			$lead_update['location'] = trim($this->input->post('location'));
+		}
+		if ($this->input->post('address') !== null) {
+			$lead_update['address'] = trim($this->input->post('address'));
+		}
+		if ($this->input->post('tl_authority') !== null) {
+			$lead_update['tl_authority'] = trim($this->input->post('tl_authority'));
+		}
+		if ($this->input->post('tl_emirate') !== null) {
+			$lead_update['tl_emirate'] = trim($this->input->post('tl_emirate'));
+		}
+		if ($this->input->post('tl_zone') !== null) {
+			$lead_update['tl_zone'] = trim($this->input->post('tl_zone'));
+		}
+		if ($this->input->post('tl_number') !== null) {
+			$lead_update['tl_number'] = trim($this->input->post('tl_number'));
+		}
+
+		$dnd_status = trim($this->input->post('dnd_status'));
+		if (!empty($dnd_status)) {
+			$lead_update['dnd_status'] = $dnd_status;
+			if ($dnd_status === 'Yes') {
+				$dnd_date = trim($this->input->post('dnd_check_date'));
+				$lead_update['dnd_check_date'] = !empty($dnd_date) ? db_date($dnd_date) : date('Y-m-d');
+			} else {
+				$lead_update['dnd_check_date'] = null;
+			}
+		}
+
+		if ($this->input->post('s_cat') !== null) {
+			$lead_update['s_cat'] = trim($this->input->post('s_cat'));
+		}
+		if ($this->input->post('p_cat') !== null) {
+			$lead_update['p_cat'] = trim($this->input->post('p_cat'));
+		}
+		if ($this->input->post('p_details') !== null) {
+			$lead_update['p_details'] = trim($this->input->post('p_details'));
+		}
+		if ($this->input->post('industry_category') !== null) {
+			$ind_cat = trim($this->input->post('industry_category'));
+			$lead_update['industry_category'] = $ind_cat;
+			$lead_update['business_category'] = $ind_cat;
+		}
+
+		$qty = $this->input->post('qty');
+		if ($qty !== null && $qty !== '') {
+			$lead_update['qty'] = (int)$qty;
+		}
+		$mrc = $this->input->post('mrc');
+		if ($mrc !== null && $mrc !== '') {
+			$lead_update['mrc'] = floatval($mrc);
+		}
+		$revenue = $this->input->post('revenue');
+		if ($revenue !== null && $revenue !== '') {
+			$lead_update['revenue'] = floatval($revenue);
+		}
+		$mrr = floatval(isset($lead_update['mrc']) ? $lead_update['mrc'] : 0) + floatval(isset($lead_update['revenue']) ? $lead_update['revenue'] : 0);
+		if ($this->input->post('mrr') !== null && is_numeric($this->input->post('mrr'))) {
+			$lead_update['mrr'] = floatval($this->input->post('mrr'));
+		} else if ($mrr > 0) {
+			$lead_update['mrr'] = $mrr;
+		}
+
+		if ($this->input->post('quote_status') !== null) {
+			$lead_update['quote_status'] = trim($this->input->post('quote_status'));
+		}
+		if ($this->input->post('quote_mode') !== null) {
+			$lead_update['quote_mode'] = trim($this->input->post('quote_mode'));
+		}
+		if ($this->input->post('quote_amount') !== null && is_numeric($this->input->post('quote_amount'))) {
+			$lead_update['quote_amount'] = floatval($this->input->post('quote_amount'));
+		}
+
+		$status_id = (int)$this->input->post('status');
+		$outcome = trim($this->input->post('call_disposition'));
+		if (empty($outcome)) {
+			$outcome = trim($this->input->post('outcome'));
+		}
+		if ($status_id > 0) {
+			$st_obj = $this->db->select('status')->where('id', $status_id)->get('ci_status')->row_array();
+			if (!empty($st_obj['status'])) {
+				$outcome = $st_obj['status'];
+				$lead_update['status'] = $status_id;
+				$lead_update['call_status'] = $outcome;
+			}
+		} elseif (!empty($outcome)) {
+			$st_obj = $this->db->select('id')->where('status', $outcome)->get('ci_status')->row_array();
+			if (!empty($st_obj['id'])) {
+				$status_id = (int)$st_obj['id'];
+				$lead_update['status'] = $status_id;
+				$lead_update['call_status'] = $outcome;
+			}
+		}
+
+		if ($this->input->post('status_category') !== null) {
+			$stat_cat = trim($this->input->post('status_category'));
+			$lead_update['status_category'] = $stat_cat;
+			$lead_update['lost_reason'] = $stat_cat;
+		}
+		if ($this->input->post('status_remarks') !== null) {
+			$lead_update['status_remarks'] = trim($this->input->post('status_remarks'));
+		}
+
+		$close_date = trim($this->input->post('close_date'));
+		if (!empty($close_date)) {
+			$lead_update['close_date'] = db_date($close_date);
+		}
+
+		$remarks = trim($this->input->post('remark'));
+		if (empty($remarks)) {
+			$remarks = trim($this->input->post('remarks'));
+		}
+		if (!empty($remarks)) {
+			$lead_update['remark'] = $remarks;
+		}
+
+		$next_date = trim($this->input->post('next_followup'));
+		$next_time = trim($this->input->post('next_followup_time'));
+		if (!empty($next_date)) {
+			$lead_update['followup_date'] = db_date($next_date);
+		}
+		if (!empty($next_time)) {
+			$lead_update['followup_time'] = $next_time;
+		}
+
+		$duration = (int)$this->input->post('call_duration');
+
+		$this->db->where('id', $lead_id);
+		$this->db->update('ci_leads', $lead_update);
+
+		if (!empty($remarks) || !empty($next_date) || !empty($outcome)) {
+			$followup_data = array(
+				'lead_id' => $lead_id,
+				'lead_type' => 'lead',
+				'user_id' => $manager_id,
+				'followup_date' => !empty($next_date) ? db_date($next_date) : date('Y-m-d'),
+				'followup_time' => !empty($next_time) ? $next_time : date('H:i:s'),
+				'followup_remark' => !empty($remarks) ? $remarks : (!empty($outcome) ? "Call Outcome: $outcome" : "Updated via Dialer"),
+				'followup_result' => !empty($outcome) ? $outcome : 'Updated'
+			);
+			$this->db->insert('ci_followup', $followup_data);
+		}
+
+		if ($call_log_id > 0) {
+			$this->db->where('id', $call_log_id);
+			$this->db->update('ci_call_logs', array(
+				'call_status' => 'Completed',
+				'duration' => $duration,
+				'disposition' => !empty($outcome) ? $outcome : 'Completed',
+				'notes' => $remarks
+			));
+		} elseif ($duration > 0 || !empty($outcome)) {
+			$customer_name = !empty($lead_update['customer']) ? $lead_update['customer'] : trim($this->input->post('customer_name'));
+			$phone_val = !empty($lead_update['contact1']) ? $lead_update['contact1'] : trim($this->input->post('phone'));
+			$this->db->insert('ci_call_logs', array(
+				'user_id' => $manager_id,
+				'lead_id' => $lead_id,
+				'customer_name' => !empty($customer_name) ? $customer_name : 'Direct Call',
+				'phone_number' => !empty($phone_val) ? $phone_val : 'Unknown',
+				'call_type' => 'Outbound Call',
+				'call_status' => 'Completed',
+				'duration' => $duration,
+				'disposition' => !empty($outcome) ? $outcome : 'Completed',
+				'notes' => $remarks,
+				'created_at' => date('Y-m-d H:i:s')
+			));
+		}
+
+		$this->ci_admin_model->log_admin_action(
+			'dialer_record_save',
+			"Updated Lead #$lead_id from Dialer UI",
+			'SUCCESS',
+			$manager_id,
+			$this->session->userdata('manager_name')
+		);
+
+		echo json_encode(array(
+			'status' => true,
+			'message' => 'Record saved successfully'
+		));
 	}
 
 	public function ajax_test_3cx()

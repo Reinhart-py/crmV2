@@ -1,8 +1,13 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
 <div class="content-wrapper px-4">
-  <section class="content-header">
-    <h1> <?php echo !empty($info['page_heading']) ? $info['page_heading'] : 'Admin Logs'; ?> </h1>
+  <section class="content-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+    <h1 style="margin:0;"> <?php echo !empty($info['page_heading']) ? $info['page_heading'] : 'Admin Logs'; ?> </h1>
+    <div>
+      <a href="<?php echo base_url(); ?>manager/system/live-location" class="btn btn-primary" style="font-weight:600; display:inline-flex; align-items:center; gap:6px;">
+        <i class="fa fa-map-marker"></i> Staff Live Location
+      </a>
+    </div>
   </section>
   <section class="content">
     <div class="row">

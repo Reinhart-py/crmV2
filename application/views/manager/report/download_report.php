@@ -1,11 +1,22 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
 <style>
+#reportsContainer {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    align-items: start;
+}
+@media (max-width: 991px) {
+    #reportsContainer {
+        grid-template-columns: 1fr;
+    }
+}
 .report-section-card {
     background: #ffffff;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
-    margin-bottom: 22px;
+    margin-bottom: 0;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     overflow: hidden;
     transition: box-shadow 0.2s ease, border-color 0.2s ease;

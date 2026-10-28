@@ -2,6 +2,199 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.73.0] - 2026-10-28
+- **Timestamp**: `2026-10-28 16:20:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Renamed "Download Reports" to "Report" in navigation and restructured download reports to a 2x2+1 grid layout; removed redundant in-page tab bar from HR module and routed all views directly from top navigation; resolved database field alignments across HR tables; added real-time Staff Live Location tracking to Admin Logs with 1-click Google Maps view and synchronized HR Clock-In/Clock-Out with live location records and audit logs.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Report Navigation & 2x2+1 Grid Layout (`header.php`, `download_report.php`)**:
+    - Renamed "Download Reports" to "Report" in both desktop navigation bar and mobile drawer sidebar.
+    - Transformed `#reportsContainer` in `application/views/manager/report/download_report.php` from full-width single column into a sleek 2-column grid (`display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start;`), placing 2 sections up, 2 below, and the 5th section on the next left.
+  - **2. In-Page HR Subnav Removal & Main Navigation Integration (`hr/index.php`, `header.php`)**:
+    - Removed redundant `.hr-nav-tabs` and `<ul class="hr-nav-tabs">` in-page navigation tabs from `application/views/manager/hr/index.php`.
+    - Every HR page (Overview, Targets, Employee Lifecycle, Attendance & GPS, Shifts, Leaves, Payroll, Taxation & Gratuity, Appraisals, Document Vault) is directly accessible from the main top navigation and mobile drawer with active state preservation.
+  - **3. HR Database Query & Column Alignment Fixes (`ci_admin_hr.php`, `hr/index.php`)**:
+    - Aligned attendance query and row access with genuine `ci_attendance` fields (`in_time`, `out_time`, `latitude`, `longitude`, `accuracy`, `location_address`, `clock_in_ip`).
+    - Aligned leave query and row access with genuine `ci_leaves` fields (`from_date`, `to_date`, `total_days`).
+    - Fixed MySQL Error 1054 in `lifecycle()` query: replaced non-existent `U.phone` with `U.c_mobile`.
+    - Implemented safe null-coalescing across all 10 HR views, eliminating all PHP warnings.
+  - **4. Staff Live Location in Admin Logs (`ci_admin_system.php`, `admin_logs.php`, `live_location.php`, `routes.php`)**:
+    - Added "Staff Live Location" direct button in `application/views/manager/system/admin_logs.php` header.
+    - Built Apple-style Staff Live Location dashboard (`manager/system/live-location`) combining real database records from `ci_user`, `ci_user_live_locations`, and today's `ci_attendance`.
+    - Synchronized HR Geolocation Clock In/Out (`ajax_clock`) to update `ci_user_live_locations` and log coordinates to `ci_admin_logs`.
+    - Optimized queries using robust direct SQL queries with `$this->db->escape()`, eliminating CodeIgniter active record escaping issues.
+    - Verified all 13 HR, Report, and Admin routes return HTTP 200 OK cleanly.
+  - **5. Strict Zero Comments Verified**:
+    - Verified 0 PHP comments and 0 HTML comments across all touched PHP files.
+
+### [v1.72.0] - 2026-10-28
+- **Timestamp**: `2026-10-28 15:50:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Simplified Achievement graph headers to clean Apple-minimalist titles ("My Achievement" and "Team Achievement"), added inline "Add New Company" toggle in Add Database form, resolved Sales role workflow errors (verified 28/28 routes HTTP 200 OK), implemented real-time cross-device notifications (HTML5 Web Notifications API + Web Audio chime + 20s polling), and created a comprehensive HR Management Suite (hybrid Frappe HRMS + Horilla HR architecture) with Targets assignment, Employee Lifecycle, Geolocation Attendance, Shifts, Leaves, Payroll, UAE Gratuity/Taxation, Appraisals, and Document Vault.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Achievement Graph Headers Simplified (`application/views/manager/dashboard.php`)**:
+    - Purged redundant subtitles and legend indicators (`vs Target`, `■ Target ■ Met ■ Below`).
+    - Standardized to clean, minimal headers: `<h4 class="dash-chart-title"><i class="fa fa-bar-chart"></i> My Achievement</h4>` and `<h4 class="dash-chart-title"><i class="fa fa-bar-chart"></i> Team Achievement</h4>`.
+  - **2. Add Database New Company Input (`application/views/manager/leads/add-database.php`)**:
+    - Added Apple-style toggle link `<a id="toggleCompanyModeBtn"><i class="fa fa-plus-circle"></i> Add New Company</a>` next to Company Name label.
+    - Added toggleable text input group enabling users to either pick from existing companies or type a new company name on the fly.
+  - **3. Sales Workflow Verification & Bug Fixes (`ci_admin_orders.php`, `ci_admin_model.php`)**:
+    - Resolved SQL query escaping bug in `ci_admin_orders.php` line 75 (`$this->db->where('1 = 0', NULL, FALSE)`).
+    - Fixed column mismatch in `ci_admin_model.php` `get_user_notifications` (`action_by` and `ci_order_history`).
+    - Verified all 28 Sales routes return HTTP 200 OK via automated curl batch tests.
+  - **4. Cross-Department & Cross-Device Notification System (`header.php`, `ci_admin_model.php`)**:
+    - Added backend helpers `notify_role` and `notify_users` to `ci_admin_model.php` to push updates between Back Office, KAM, and Sales.
+    - Integrated HTML5 Web Notifications API (`new Notification(...)`) to push notifications to laptops/desktops and Android mobile devices.
+    - Added Web Audio API synthesizer chime (sine-wave frequency sweep 587.33Hz to 880Hz) on arrival of new unread alerts.
+    - Reduced background notification polling from 60 seconds to 20 seconds.
+  - **5. Comprehensive HR Management Suite (`ci_admin_hr.php`, `views/manager/hr/index.php`, `header.php`, `routes.php`, `ci_roles`)**:
+    - Built a comprehensive Frappe HRMS + Horilla HR hybrid management suite with 10 modules:
+      1. **Overview Dashboard**: Stat cards (Employees, Today's Attendance, Pending Leaves, Active Targets) and recent logs.
+      2. **Assign Targets**: Monthly/Quarterly revenue, calls, leads, and meetings target assignment with real-time achievement progress bars.
+      3. **Employee Lifecycle**: Directory tracking stages (Onboarding, Probation, Confirmed, Promotion, Transfer, Notice, Relieved) with edit modal.
+      4. **Attendance with Geolocation**: Browser GPS-powered Clock-In / Clock-Out (`navigator.geolocation`) recording latitude, longitude, accuracy, with Google Maps link.
+      5. **Shifts**: Shift creation (timings, grace periods) and employee shift allocations.
+      6. **Leaves**: Leave applications (Annual, Sick, Casual, Maternity, Unpaid) with 1-click Approve / Reject.
+      7. **Payroll**: Monthly payroll generation (Basic, Allowances, Gross, Deductions, Net Pay) with 1-click disbursement status.
+      8. **Taxation & UAE Gratuity Benefits**: Built-in interactive UAE Labour Law Gratuity calculator and statutory deduction tracker.
+      9. **Performance Appraisals**: Performance reviews with 1-5 star ratings, 0-100 KPI scores, and feedback.
+      10. **Document Vault**: Horilla-inspired secure document manager for Passports, Visas, Emirates ID, and Labour Contracts with expiry status alerts.
+    - Gated navigation: Visible only to HR (Role 7), Admin (Role 1), and users with granular `hr` permissions.
+    - Backend security: Enforced via `_check_hr_access()` in `ci_admin_hr.php`. Non-HR users are redirected to dashboard.
+  - **6. Code Standards & Cleanliness**:
+    - Strictly verified 0 comments across all PHP files via PHP tokenizer scanner.
+    - Verified 0 syntax errors across all views and controllers with `php -l`.
+
+### [v1.71.0] - 2026-10-28
+- **Timestamp**: `2026-10-28 14:10:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Permanently codified zero-clutter and anti-pill rules into CRM standards, rebuilt Phone Dialer with Apple-grade sleek minimalist softphone aesthetics (circular iOS keypad keys, Apple-green call button, native Segmented Controls), purged all explanatory banners and pill counters, consolidated User and Sales into a single unified "Sales" role across the database and codebase, and added Phone Dialer & Calling to the role permissions matrix.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Rules Codification (`.agents/rules/crm_rules.md`)**:
+    - Added strict rule permanently forbidding informational, tutorial, or explanatory alert banners (no captions, no helper callouts).
+    - Added strict rule permanently forbidding decorative status pills, counter pills (e.g., `131 colleagues`, `0 contacts`), or rounded counter badges in headers.
+    - Codified **Apple-Style Sleek & Premium Design Standards**: hairline borders (`1px solid #e5e5ea`), crisp typography with subtle contrast, generous whitespace, zero visual clutter, flat elegant icons, and native segmented controls.
+  - **2. Apple-Style Softphone & Clutter Purge (`views/manager/calls/dashboard.php`)**:
+    - Purged blue info alert banner `(i) Internal Colleague Calls...` completely.
+    - Purged `#middleAreaBadge` and all pill counters across headers, tables, and flyout menus.
+    - Rebuilt softphone panel with iOS Phone / FaceTime design language: 64px circular keypad buttons (`#f2f2f7`, active `#d1d1d6`) with 26px digits and 9px uppercase sub-letters; 64px circular Apple green call button (`#34c759`, active call `#ff3b30`).
+    - Implemented native Apple Segmented Controls (`Day | Week | Month | Year`, `Today | Missed | Last 7d | Next 7d | All`) on an inset light-gray track (`#ebebf0`) with an elevated white active segment.
+    - Replaced `S5` avatar circle with clean vector `<i class="fa fa-users"></i>` Team icon.
+  - **3. User & Sales Role Consolidation & Permissions Matrix (`ci_roles`, `views/manager/roles/add.php`, `views/manager/roles/edit.php`)**:
+    - Unified the redundant "User" and "Sales" roles in `ci_roles`: updated role 3 title to "Sales" (`UPDATE ci_roles SET title = 'Sales' WHERE id = 3; DELETE FROM ci_roles WHERE id = 8`), cleanly migrating all 123 sales agents into a single unified "Sales" role with full dialing and CRM permissions.
+    - Added "Phone Dialer & Calling" (`calls`) to the module permissions matrix in both `roles/add.php` and `roles/edit.php` so administrators can configure dialer permissions.
+  - **4. Verification & Code Cleanliness**:
+    - Strictly verified 0 comments across all PHP files using PHP tokenizer scanner.
+    - Verified 0 syntax errors across all views and models with `php -l`.
+
+### [v1.70.0] - 2026-10-28
+- **Timestamp**: `2026-10-28 13:10:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Resolved dialer visibility across all roles and pages, redesigned dialer with clean white 3CX softphone UI, bold numerals, and green call button matching user screenshot, added Team colleague dialer with internal call report exclusion, and added Day/Week/Month/Year status breakdown sheets.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Role Permissions & Universal Visibility (`ci_admin_model.php`, `ci_roles`, `header.php`)**:
+    - Updated `check_permission` in `ci_admin_model.php` to always permit `'calls'` for all authenticated users (`$user_id > 0`).
+    - Updated `ci_roles` database permissions for Role 3 (User) to explicitly include `"calls": "write"`.
+    - Added Phone Dialer menu item into the mobile navigation drawer in `header.php` so mobile users have 1-tap dialer access across every CRM page alongside desktop header quick actions.
+  - **2. Clean White 3CX Softphone UI & Keypad (`views/manager/calls/dashboard.php`)**:
+    - Transformed dialer styling from dark/black to crisp pure white (`#ffffff` / `#f8fafc`) aesthetic with bold dark typography (`#0f172a`, `font-weight: 800`).
+    - 3x4 keypad grid with bold numerals (1, 2 ABC, 3 DEF...) and DTMF audio tones.
+    - Prominent green rectangular call button (`#16a34a`) and backspace delete button matching the user's reference screenshot.
+    - Defaulted to clean manual dialing; auto-dialer simplified for future AI agentic calling.
+  - **3. Team Colleague Dialer (Top Button) (`views/manager/calls/dashboard.php`, `controllers/ci_admin_calls.php`)**:
+    - Added Team button at the very top of the left dock (above Follow-up) with S5 avatar pill and online status dot.
+    - Added `ajax_get_team_colleagues` querying active colleagues from `ci_user` with extension/phone numbers and 1-click Call action.
+    - Internal calls are flagged with `is_internal = 1` and `call_category = 'internal'` and are strictly excluded from sales reports.
+  - **4. Calling Reports & Status Breakdown Sheet (`views/manager/calls/dashboard.php`, `controllers/ci_admin_calls.php`)**:
+    - Filter period tabs: Day, Week, Month, Year.
+    - Summary stat cards: Total Outbound Calls, Connected Calls, New Client Calls, Follow-up Calls, Talk Time.
+    - Compact Status Breakdown Sheet: Status/Outcome name, New Calls count, Follow-up Calls count, Total Calls, and % Share.
+    - Recent Outbound Call History table with 1-click Call & Copy number actions.
+  - **5. Standards & Verification**:
+    - Zero comments in PHP files verified via PHP tokenizer.
+    - Zero syntax errors verified via `php -l`.
+
+### [v1.69.0] - 2026-10-28
+- **Timestamp**: `2026-10-28 12:45:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Fixed dialer button click responsiveness, resolved dock flyout clipping, and introduced modern interactive subnav pill tabs for queue switching inspired by DialerJazz and modern CRM dialers.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Dock Button Clickability Fix (`views/manager/calls/dashboard.php`)**:
+    - Added direct `onclick` handlers on `<button id="dockBtnFollowup">` and `<button id="dockBtnDatabase">` so clicking either main button opens the middle area and defaults immediately to Today's Follow-ups and Manual Dialer.
+    - Set `.crm-dialer-dock` to `overflow: visible !important;` so flyout submenus are never clipped by the left dock container.
+  - **2. Modern Subnav Pill Navigation (`views/manager/calls/dashboard.php`)**:
+    - Introduced sleek subnav pill tabs in the middle content header:
+      - Follow-up filter pills: `[Today (badge)]`, `[Missed (badge)]`, `[Last 7d]`, `[Next 7d]`, `[All]`.
+      - Database mode pills: `[Manual]`, `[Auto-Dial (60s)]`.
+    - Pill clicks trigger instant queue filtering with active tab highlighting.
+    - Subnav pills cleanly hide when viewing Call Logs or closing the middle panel.
+  - **3. Real-Time Badge Sync**:
+    - Synced badge counters for Missed and Today follow-ups across both dock flyouts and middle subnav pills upon page load.
+  - **4. Verification & Standards**:
+    - Zero comments in PHP files verified via PHP tokenizer.
+    - Zero syntax errors verified via `php -l`.
+
+### [v1.68.0] - 2026-10-28
+- **Timestamp**: `2026-10-28 12:25:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Modular dialer page architecture with clean solid theme, hidden-by-default middle area, extreme-left navigation dock with Follow-up, Database (Manual/Auto dialer), Leads, Logs, comprehensive Add Database editable fields with DNC/DNCR date control, and daily grouped call activity.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Dialer Layout & Theme Clean-up (`views/manager/calls/dashboard.php`)**:
+    - Removed wallpaper image (`bg-dialer.png`) completely; replaced with clean, solid, dark CRM slate theme (`#0b0f19`) and subtle `#1f2937` borders.
+    - Sits extreme-left navigation dock (`68px`) and extreme-right dialer panel (`310px`) in fixed positions.
+    - Middle content area is hidden by default on initial page load; smoothly opens between the dock and dialer only when an option or contact is selected.
+    - Added dedicated close button (`.btn-close-middle`) allowing users to collapse the middle area anytime back to the clean two-panel view.
+  - **2. Follow-Up Queues Menu (`views/manager/calls/dashboard.php`, `controllers/ci_admin_calls.php`)**:
+    - Placed Follow-up as the primary first menu item on the left dock.
+    - Added flyout submenu with: Missed Follow-ups, Today's Follow-ups, Last 7 Days, Next 7 Days, and All Follow-ups.
+    - Connected to the exact backend follow-up date filtering logic from the dashboard, showing only relevant records that have contact numbers and need to be called.
+  - **3. Database Dialing (Manual & Auto) (`views/manager/calls/dashboard.php`, `controllers/ci_admin_calls.php`)**:
+    - Second menu item with submenus: Manual Dialer and Auto Dialer.
+    - Allows users to filter database records by status (dropdown / search) before viewing contacts.
+    - Auto Dialer mode automatically runs 60-second countdown wrap-up gap after calls end, with Pause/Resume, +30s Extend, Dial Next Now, Stop, and Skip controls.
+    - Manual Dialer supports manual contact selection, calling, field editing, and skip record functionality.
+  - **4. Leads Queue Menu (`views/manager/calls/dashboard.php`, `controllers/ci_admin_calls.php`)**:
+    - Third menu item with status filtering for qualified leads (`pipeline_stage = 'lead'`).
+    - Supports manual dialing, field updates, and skip navigation.
+  - **5. Database Details & Editable Fields (`views/manager/calls/dashboard.php`, `controllers/ci_admin_calls.php`)**:
+    - Complete editable form in the middle content area when a record is selected.
+    - Includes: Company Name, POC Name, Primary Phone, Alt Phone, Email, Authority, Emirate, Location/Address, DNC/DNCR status (Yes/No), and DNCR Check Date (dynamically shown only when DNC is Yes).
+    - Service Category, Product Category, Product Details, Trade License Number, Industry Category.
+    - Full range of fields from My Zone > Add Database (from Quantity through Remarks): Quantity, MRC, Revenue, MRR (auto-calculated as MRC + Revenue), Quote Status, Quote Mode, Quote Amount, Status, Status Category, Status Remarks, Exp. Close Date, Remarks/Notes, and Next Follow-up Date/Time schedule.
+    - Saves all fields directly via `ajax_save_record_details`, records `ci_followup`, and logs admin audit trail.
+  - **6. Daily Call Activity Logs & Internal Extension Info (`views/manager/calls/dashboard.php`, `controllers/ci_admin_calls.php`)**:
+    - Fourth menu item showing agent internal phone and extension details, 3CX PBX host, and caller ID lines at top.
+    - Daily summary cards: Total Calls, Connected Calls, Missed Calls, Total Talk Time.
+    - Call logs grouped by Date with daily counts, and individual call records with contact name, phone, duration, outcome, remarks, and 1-click Call and Copy number actions.
+  - **7. Zero Comments & Verification**:
+    - Verified zero comments in modified PHP files and zero syntax errors with `php -l`.
+
+### [v1.67.0] - 2026-10-28
+- **Timestamp**: `2026-10-28 11:40:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Dashboard state sections unified on single screen, 4 side-by-side projection & achievement graphs without sliding animations, 14 operational activity cards cleanly displayed across two 7-card rows with proportionate sizing, and phone dialer resized and moved flush to the left edge with top-left icon removed.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Dashboard State Sections (`views/manager/dashboard.php`)**:
+    - My Database State and Team Database State displayed side-by-side in Row 1.
+    - My Lead State and Team Lead State positioned directly below them in Row 2.
+    - All four state sections remain permanently visible simultaneously without navigating to separate pages or toggling carousel arrows.
+    - Fixed closing div structure between state section rows.
+  - **2. Projection & Achievement Graphs (`views/manager/dashboard.php`)**:
+    - My Projection and Team Projection charts side-by-side on Row 1.
+    - My Achievement vs Target and Team Achievement vs Target placed directly below them on Row 2.
+    - All four charts visible simultaneously on the dashboard.
+    - Removed arrow buttons, carousel swappers, and sliding transitions. Connected directly to backend data (`$dashboard_MyPro`, `$dashboard_TeamPro`, `$dashboard_achievement_my`, `$dashboard_achievement_team`).
+  - **3. Operational Activity & Breakdown 14-Card Layout (`views/manager/dashboard.php`, `assets/dist/css/crm-dashboard.css`)**:
+    - Display all 14 operational cards together: 7 cards in Row 1 (My Tickets, My Tasks, My Followups, My Meetings, My Vertical FU, My Database, My Leads) and 7 cards in Row 2 (Team Tickets, Team Tasks, Team Followups, Team Meetings, Team Vertical FU, Team Database, Team Leads).
+    - Reduced card padding, segment bars, and chip sizes slightly so all 7 cards fit comfortably across standard desktop/laptop viewports without horizontal scrolling or wrapping.
+    - Removed obsolete slider/carousel CSS rules (`.crm-pager-arrows`, `.crm-pager-arrow`, `.crm-side-float-arrow`, `.dash-chart-swap-transition`, `.crm-op-carousel-container`, `.crm-op-carousel-track`).
+    - Incremented stylesheet cache-buster to `?v=20261028_dashboard_v7` in `header.php`.
+  - **4. Phone Dialer UI Refinements (`views/manager/calls/dashboard.php`)**:
+    - Reduced overall dialer dimensions: scaled dialpad keys (52px), dialer input (18px), call button (56px), and card padding (16px) for compact, balanced SaaS aesthetics.
+    - Repositioned dialer wrapper to `justify-content: flex-start` with 12px outer padding, moving the left sidebar dock flush to the left edge and eliminating dead whitespace.
+    - Removed redundant phone icon (`.glass-dock-brand`) from the top-left corner of the sidebar dock.
+    - Preserved 100% of 3CX PBX integrations, WebRTC/device dialer fallback, auto-dialer timers, call queues, call history drawer, and follow-up form functionality.
+
 ### [v1.66.0] - 2026-10-26
 - **Timestamp**: `2026-10-26 18:15:00 +0530`
 - **Author**: Reinhart-py

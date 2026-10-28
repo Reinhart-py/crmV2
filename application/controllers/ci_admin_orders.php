@@ -72,7 +72,7 @@ class Ci_admin_orders extends CI_Controller {
 				$team_str = implode(',', $team_members);
 				$this->db->where("(FIND_IN_SET(O.created_by, '{$team_str}') > 0 OR FIND_IN_SET(O.assigned_to, '{$team_str}') > 0)");
 			} else {
-				$this->db->where('1 = 0');
+				$this->db->where('1 = 0', NULL, FALSE);
 			}
 		} elseif ($status_filter === 'sales' || $status_filter === 'Sales') {
 			$data['info'] = array(

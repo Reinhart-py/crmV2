@@ -52,7 +52,7 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.5/css/responsive.dataTables.min.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/bootstrap/developer.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/multiselect/multiselect.css">
-<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-dashboard.css?v=20261027_dashboard_v6">
+<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-dashboard.css?v=20261028_dashboard_v7">
 <link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/plugins/table_export/css/tableexport.css" />
 
 <script src="<?php echo base_url();?>assets/plugins/table_export/FileSaver.min.js"></script>
@@ -108,6 +108,7 @@
         $is_support = ($m_role === 4);
         $user_team_count = $current_user_id ? count($this->ci_admin_model->fetchTeamList($current_user_id, '')) : 0;
         $can_see_review = ($is_admin || $m_role === 2 || $m_role === 4 || has_section_perm('back_office') || has_section_perm('lead_review'));
+        $is_hr = ($is_admin || $m_role === 7 || has_section_perm('hr'));
 
         $current_user_name = '';
         $current_user_gender = '';
@@ -256,6 +257,24 @@
       </li>
       <?php } ?>
 
+      <?php if($is_hr){ ?>
+      <li class="<?php if($route1=="hr"){ echo "active";}else{ echo "";}?>"> 
+        <a href="<?php echo base_url();?>manager/hr"><i class="fa fa-id-card-o"></i> <span>HR</span> </a>
+        <ul>
+          <li><a href="<?php echo base_url();?>manager/hr"><i class="fa fa-th-large"></i>Overview</a></li>
+          <li><a href="<?php echo base_url();?>manager/hr/targets"><i class="fa fa-crosshairs"></i>Targets</a></li>
+          <li><a href="<?php echo base_url();?>manager/hr/lifecycle"><i class="fa fa-user-circle"></i>Employee Lifecycle</a></li>
+          <li><a href="<?php echo base_url();?>manager/hr/attendance"><i class="fa fa-map-marker"></i>Attendance & GPS</a></li>
+          <li><a href="<?php echo base_url();?>manager/hr/shifts"><i class="fa fa-clock-o"></i>Shifts</a></li>
+          <li><a href="<?php echo base_url();?>manager/hr/leaves"><i class="fa fa-calendar-check-o"></i>Leaves</a></li>
+          <li><a href="<?php echo base_url();?>manager/hr/payroll"><i class="fa fa-money"></i>Payroll</a></li>
+          <li><a href="<?php echo base_url();?>manager/hr/taxation"><i class="fa fa-calculator"></i>Taxation & Gratuity</a></li>
+          <li><a href="<?php echo base_url();?>manager/hr/appraisals"><i class="fa fa-star-o"></i>Appraisals</a></li>
+          <li><a href="<?php echo base_url();?>manager/hr/documents"><i class="fa fa-folder-open-o"></i>Document Vault</a></li>
+        </ul>
+      </li>
+      <?php } ?>
+
       <?php if($is_admin || has_section_perm('system')){ ?>
       <li class="<?php if($route1=="roles" || $route1=="terms" || $route1=="users" || $route1=="assigned-leads" || $route1=="admin-logs" || ($route1=="system" && ($route2=="calling-api" || $route2=="calling_api" || $route2=="integrations")) || $route1=="integrations" || ($route1=="leads" && in_array($route2, array("import", "export")))){ echo "active";}else{ echo "";}?>"> 
         <a href="<?php echo ($is_admin)? base_url().'manager/roles' : base_url().'manager/assigned-leads'; ?>"><i class="fa fa-paperclip"></i> <span>System</span> </a>
@@ -299,7 +318,7 @@
           <li><a href="<?php echo base_url();?>manager/reports/revenue-list"><i class="fa fa-money"></i>Revenue List</a></li>
           <li><a href="<?php echo base_url();?>manager/reports/company-projections"><i class="fa fa-line-chart"></i>Company Projections</a></li>
           <li><a href="https://7strokes.maxvendor47.workers.dev/" target="_blank"><i class="fa fa-database"></i>Generate Data</a></li>
-          <li><a href="<?php echo base_url();?>manager/download-report"><i class="fa fa-file-pdf-o"></i>Download Reports</a></li>
+          <li><a href="<?php echo base_url();?>manager/download-report"><i class="fa fa-file-pdf-o"></i>Report</a></li>
         </ul>
       </li>
       <?php } ?>
@@ -321,7 +340,10 @@
       <div class="smartphone-notif-dropdown" id="smartphoneNotifDropdown" style="display:none; position:absolute; right:0; top:42px; width:340px; max-width:90vw; background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; box-shadow:0 12px 30px rgba(0,0,0,0.15); z-index:999999; overflow:hidden;">
         <div style="padding:12px 16px; background:#000000; color:#ffffff; display:flex; align-items:center; justify-content:space-between; font-weight:600; font-size:13px;">
           <span>Notifications</span>
-          <button type="button" id="btnMarkNotifRead" style="background:transparent; border:none; color:#cbd5e1; font-size:11px; cursor:pointer; padding:0;">Mark all as read</button>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button type="button" id="btnRequestNotifPerm" style="background:transparent; border:none; color:#38bdf8; font-size:11px; cursor:pointer; padding:0; display:none;">Enable Alerts</button>
+            <button type="button" id="btnMarkNotifRead" style="background:transparent; border:none; color:#cbd5e1; font-size:11px; cursor:pointer; padding:0;">Mark all as read</button>
+          </div>
         </div>
         <div id="notifListContainer" style="max-height:360px; overflow-y:auto; padding:0;">
           <div style="padding:20px; text-align:center; color:#94a3b8; font-size:12px;">Loading notifications...</div>
@@ -430,6 +452,65 @@ $(function() {
     }
   });
 
+  var lastSeenNotifId = 0;
+  var notifInitialized = false;
+
+  function playAlertChime() {
+    try {
+      var AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      var ctx = new AudioContext();
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12);
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.28);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.3);
+    } catch (e) {}
+  }
+
+  function triggerSystemNotification(n) {
+    if (window.Notification && Notification.permission === 'granted') {
+      try {
+        var notif = new Notification(n.title, {
+          body: n.message,
+          icon: '<?php echo base_url(); ?>assets/logo-7strokes.png'
+        });
+        notif.onclick = function() {
+          window.focus();
+          if (n.link && n.link !== '#' && n.link !== 'javascript:void(0);') {
+            window.location.href = n.link;
+          }
+          notif.close();
+        };
+      } catch (err) {}
+    }
+  }
+
+  function checkNotifPermBtn() {
+    if (window.Notification && Notification.permission === 'default') {
+      $('#btnRequestNotifPerm').show();
+    } else {
+      $('#btnRequestNotifPerm').hide();
+    }
+  }
+  checkNotifPermBtn();
+
+  $(document).on('click', '#btnRequestNotifPerm', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (window.Notification && Notification.permission === 'default') {
+      Notification.requestPermission().then(function() {
+        checkNotifPermBtn();
+      });
+    }
+  });
+
   function loadNotifications() {
     $.ajax({
       url: '<?php echo base_url(); ?>manager/ajax_get_notifications',
@@ -444,8 +525,15 @@ $(function() {
             $('#notifBadge').hide();
           }
           var html = '';
+          var maxId = 0;
           if (res.notifications && res.notifications.length > 0) {
+            var newArrivals = [];
             $.each(res.notifications, function(i, n) {
+              var nid = parseInt(n.id) || 0;
+              if (nid > maxId) maxId = nid;
+              if (notifInitialized && n.is_read == 0 && nid > lastSeenNotifId) {
+                newArrivals.push(n);
+              }
               var readBg = (n.is_read == 1) ? '#ffffff' : '#f8fafc';
               html += '<a href="' + (n.link || 'javascript:void(0);') + '" class="notif-item-link" style="display:flex; align-items:flex-start; padding:10px 14px; border-bottom:1px solid #f1f5f9; background:' + readBg + '; text-decoration:none; color:inherit;">';
               html += '  <div style="width:30px; height:30px; border-radius:50%; background:' + (n.color || '#0072f0') + '15; color:' + (n.color || '#0072f0') + '; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-right:10px; font-size:13px;"><i class="' + (n.icon || 'fa fa-bell') + '"></i></div>';
@@ -455,9 +543,18 @@ $(function() {
               html += '  </div>';
               html += '</a>';
             });
+
+            if (newArrivals.length > 0) {
+              playAlertChime();
+              triggerSystemNotification(newArrivals[0]);
+            }
           } else {
             html = '<div style="padding:24px 16px; text-align:center; color:#94a3b8; font-size:12px;">No notifications yet</div>';
           }
+          if (maxId > lastSeenNotifId) {
+            lastSeenNotifId = maxId;
+          }
+          notifInitialized = true;
           $('#notifListContainer').html(html);
         }
       }
@@ -465,11 +562,16 @@ $(function() {
   }
 
   loadNotifications();
-  setInterval(loadNotifications, 60000);
+  setInterval(loadNotifications, 20000);
 
   $(document).on('click', '#notifBellToggle', function(e) {
     e.preventDefault();
     e.stopPropagation();
+    if (window.Notification && Notification.permission === 'default') {
+      Notification.requestPermission().then(function() {
+        checkNotifPermBtn();
+      });
+    }
     $('#googleProfileDropdown').fadeOut(100);
     $('#smartphoneNotifDropdown').fadeToggle(150);
   });
@@ -523,6 +625,10 @@ $(function() {
         <a href="<?php echo base_url();?>manager/dashboard"> <svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:6px;"><rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect></svg> <span>Dashboard</span> </a> 
       </li>
       <?php } ?>
+
+      <li class="<?php if($route1=="calls"){ echo "active";}else{ echo "";}?>"> 
+        <a href="<?php echo base_url();?>manager/calls"> <i class="fa fa-phone" style="margin-right:6px; color:#2563eb;"></i> <span>Phone Dialer</span> </a> 
+      </li>
 
       <?php if($is_admin || has_section_perm('my_zone') || has_section_perm('database') || has_section_perm('leads') || has_section_perm('tasks') || has_section_perm('internal_tasks') || has_section_perm('external_tasks')){ ?>
       <li class="<?php if(($route1=="leads" && $route2!="review_leads") || $route1=="verticals" || $route1=="database-transfer" || in_array($route1, array('tasks')) || ($route1=="orders" && ($route2=="my" || (isset($_GET['scope']) && $_GET['scope']=="my"))) || $route1=="sales"){ echo "active";}else{ echo "";}?> treeview"> 
@@ -611,6 +717,24 @@ $(function() {
       </li>
       <?php } ?>
 
+      <?php if($is_hr){ ?>
+      <li class="<?php if($route1=="hr"){ echo "active menu-open";}else{ echo "";}?> treeview"> 
+        <a href="javascript:void(0);"><i class="fa fa-id-card-o"></i> <span>HR</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
+        <ul class="treeview-menu" style="<?php if($route1=="hr"){ echo "display: block;"; } ?>">
+          <li><a href="<?php echo base_url();?>manager/hr"><i class="fa fa-th-large"></i>Overview</a></li>
+          <li><a href="<?php echo base_url();?>manager/hr/targets"><i class="fa fa-crosshairs"></i>Targets</a></li>
+          <li><a href="<?php echo base_url();?>manager/hr/lifecycle"><i class="fa fa-user-circle"></i>Employee Lifecycle</a></li>
+          <li><a href="<?php echo base_url();?>manager/hr/attendance"><i class="fa fa-map-marker"></i>Attendance & GPS</a></li>
+          <li><a href="<?php echo base_url();?>manager/hr/shifts"><i class="fa fa-clock-o"></i>Shifts</a></li>
+          <li><a href="<?php echo base_url();?>manager/hr/leaves"><i class="fa fa-calendar-check-o"></i>Leaves</a></li>
+          <li><a href="<?php echo base_url();?>manager/hr/payroll"><i class="fa fa-money"></i>Payroll</a></li>
+          <li><a href="<?php echo base_url();?>manager/hr/taxation"><i class="fa fa-calculator"></i>Taxation & Gratuity</a></li>
+          <li><a href="<?php echo base_url();?>manager/hr/appraisals"><i class="fa fa-star-o"></i>Appraisals</a></li>
+          <li><a href="<?php echo base_url();?>manager/hr/documents"><i class="fa fa-folder-open-o"></i>Document Vault</a></li>
+        </ul>
+      </li>
+      <?php } ?>
+
       <?php if($is_admin || has_section_perm('system')){ ?>
       <li class="<?php if($route1=="roles" || $route1=="terms" || $route1=="users" || $route1=="assigned-leads" || $route1=="admin-logs" || ($route1=="system" && ($route2=="calling-api" || $route2=="calling_api" || $route2=="integrations")) || $route1=="integrations" || ($route1=="leads" && in_array($route2, array("import", "export")))){ echo "active";}else{ echo "";}?> treeview"> 
         <a href="javascript:void(0);"><i class="fa fa-paperclip"></i> <span>System</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
@@ -655,7 +779,7 @@ $(function() {
           <li><a href="<?php echo base_url();?>manager/reports/revenue-list"><i class="fa fa-money"></i>Revenue List</a></li>
           <li><a href="<?php echo base_url();?>manager/reports/company-projections"><i class="fa fa-line-chart"></i>Company Projections</a></li>
           <li><a href="https://7strokes.maxvendor47.workers.dev/" target="_blank"><i class="fa fa-database"></i>Generate Data</a></li>
-          <li><a href="<?php echo base_url();?>manager/download-report"><i class="fa fa-file-pdf-o"></i>Download Reports</a></li>
+          <li><a href="<?php echo base_url();?>manager/download-report"><i class="fa fa-file-pdf-o"></i>Report</a></li>
         </ul>
       </li>
       <?php } ?>

@@ -7,6 +7,7 @@ html, body {
   overflow: hidden !important;
   margin: 0 !important;
   padding: 0 !important;
+  background: #f2f2f7 !important;
 }
 .wrapper {
   height: 100vh !important;
@@ -14,13 +15,13 @@ html, body {
   overflow: hidden !important;
   display: flex !important;
   flex-direction: column !important;
+  background: #f2f2f7 !important;
 }
 .main-sidebar, .left-side, .main-footer, .crm-footer {
   display: none !important;
 }
 .content-wrapper.glass-calling-wrapper {
-  background: url('<?php echo base_url(); ?>assets/bg-dialer.png') no-repeat center center fixed;
-  background-size: cover;
+  background: #f2f2f7 !important;
   position: fixed !important;
   top: 50px !important;
   left: 0 !important;
@@ -31,1219 +32,1178 @@ html, body {
   height: calc(100vh - 50px) !important;
   max-height: calc(100vh - 50px) !important;
   min-height: 0 !important;
-  padding: 12px 18px !important;
-  color: #f8fafc;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  padding: 12px !important;
+  color: #1d1d1f;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
   box-sizing: border-box !important;
   overflow: hidden !important;
   display: flex !important;
-  gap: 16px !important;
+  gap: 12px !important;
   align-items: stretch !important;
-  justify-content: center !important;
+  justify-content: flex-start !important;
   margin: 0 !important;
   z-index: 800 !important;
 }
 
-.glass-side-dock {
-  width: 76px;
+.crm-dialer-dock {
+  width: 68px;
   flex-shrink: 0;
   height: 100% !important;
-  max-height: 100% !important;
-  background: rgba(18, 18, 24, 0.72);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 26px;
-  padding: 14px 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.55);
-  box-sizing: border-box !important;
-  overflow-y: auto;
-  z-index: 100;
-}
-
-.glass-dock-brand {
-  width: 48px;
-  height: 48px;
-  border-radius: 18px;
   background: #ffffff;
-  color: #000000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  margin-bottom: 8px;
-  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.25);
-}
-
-.glass-dock-btn {
-  width: 52px;
-  height: 52px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+  border: 1px solid #e5e5ea;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  padding: 10px 6px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 3px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.18s ease;
-  text-decoration: none;
+  gap: 8px;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+  z-index: 1000;
   position: relative;
-  user-select: none;
 }
 
-.glass-dock-btn span.dock-lbl {
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-  color: #cbd5e1;
-}
-
-.glass-dock-btn:hover {
-  background: rgba(255, 255, 255, 0.16);
-  color: #ffffff;
-  transform: translateY(-1px);
-}
-
-.glass-dock-btn.active {
-  background: #ffffff;
-  border-color: #ffffff;
-  color: #000000;
-}
-
-.glass-dock-btn.active span.dock-lbl {
-  color: #000000;
-}
-
-.glass-dock-badge {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  background: #000000;
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 10px;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 1px 6px;
-  line-height: 1.2;
-}
-
-.glass-main-stage {
-  flex: 1 1 960px;
-  max-width: 1080px;
-  height: 100% !important;
-  max-height: 100% !important;
-  overflow: hidden !important;
+.dock-item-wrapper {
+  position: relative;
+  width: 100%;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  box-sizing: border-box !important;
+  justify-content: center;
 }
 
-#viewCardDialer,
-#viewCardDetailFill {
-  flex: 1 1 auto;
-  height: calc(100vh - 120px) !important;
-  max-height: calc(100vh - 120px) !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  padding-right: 4px;
-}
-
-#viewCardDialer::-webkit-scrollbar,
-#viewCardDetailFill::-webkit-scrollbar,
-.glass-side-dock::-webkit-scrollbar,
-.glass-slide-body::-webkit-scrollbar {
-  width: 5px;
-}
-
-#viewCardDialer::-webkit-scrollbar-thumb,
-#viewCardDetailFill::-webkit-scrollbar-thumb,
-.glass-side-dock::-webkit-scrollbar-thumb,
-.glass-slide-body::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.22);
-  border-radius: 10px;
-}
-
-.glass-top-tabs {
-  display: inline-flex;
-  align-items: center;
-  background: rgba(18, 18, 24, 0.72);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 20px;
-  padding: 5px;
-  gap: 6px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-  align-self: flex-start;
-}
-
-.glass-tab-pill {
-  padding: 8px 20px;
-  border-radius: 16px;
+.crm-dock-btn {
+  width: 54px;
+  height: 52px;
+  border-radius: 12px;
   background: transparent;
   border: none;
-  color: #cbd5e1;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
+  color: #636366;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  transition: all 0.18s ease;
-  user-select: none;
-}
-
-.glass-tab-pill:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.glass-tab-pill.active {
-  background: #ffffff;
-  color: #000000;
-  box-shadow: 0 4px 14px rgba(255, 255, 255, 0.2);
-}
-
-.glass-card {
-  background: rgba(22, 20, 26, 0.72);
-  backdrop-filter: blur(32px);
-  -webkit-backdrop-filter: blur(32px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 28px;
-  padding: 24px;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.14s ease;
   position: relative;
+  text-decoration: none !important;
 }
 
-.glass-banner {
-  background: rgba(18, 18, 24, 0.85);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 20px;
-  padding: 14px 20px;
+.crm-dock-btn:hover {
+  background: #f2f2f7;
+  color: #0072f0;
+}
+
+.crm-dock-btn.active {
+  background: #0072f0 !important;
+  color: #ffffff !important;
+  box-shadow: 0 3px 12px rgba(0, 114, 240, 0.35);
+}
+
+.crm-dock-btn i {
+  font-size: 18px;
+}
+
+.crm-dock-btn .dock-lbl {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1px;
+}
+
+.dock-flyout-menu {
+  display: none;
+  position: absolute;
+  left: 64px;
+  top: 0;
+  min-width: 180px;
+  background: #ffffff;
+  border: 1px solid #e5e5ea;
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  z-index: 10000;
+}
+
+.dock-item-wrapper:hover .dock-flyout-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dock-flyout-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  flex-wrap: wrap;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.45);
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: #1d1d1f;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none !important;
+  transition: all 0.12s ease;
+  background: transparent;
 }
 
-.glass-timer-circle {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: #000000;
-  border: 2px solid #ffffff;
-  color: #ffffff;
-  font-size: 18px;
-  font-weight: 800;
+.dock-flyout-item:hover {
+  background: #f2f2f7;
+  color: #0072f0;
+}
+
+.apple-segmented-group {
+  display: inline-flex;
+  align-items: center;
+  background: #ebebf0;
+  border-radius: 9px;
+  padding: 2px;
+  gap: 2px;
+  border: none;
+}
+
+.apple-segment-btn {
+  padding: 5px 12px;
+  border-radius: 7px;
+  background: transparent;
+  border: none;
+  color: #636366;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+  transition: all 0.14s ease;
 }
 
-.glass-btn-white {
+.apple-segment-btn:hover {
+  color: #1d1d1f;
+}
+
+.apple-segment-btn.active {
+  background: #ffffff !important;
+  color: #1d1d1f !important;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+#middleContentArea {
+  display: none;
+  flex: 1;
+  min-width: 0;
+  height: 100% !important;
   background: #ffffff;
-  border: 1px solid #ffffff;
-  color: #000000;
-  padding: 8px 18px;
+  border: 1px solid #e5e5ea;
   border-radius: 14px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.18s ease;
-  text-decoration: none;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.03);
+  box-sizing: border-box !important;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 900;
 }
 
-.glass-btn-white:hover {
-  background: #e2e8f0;
-  color: #000000;
-  transform: translateY(-1px);
-}
-
-.glass-btn-dark {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  color: #ffffff;
-  padding: 8px 16px;
-  border-radius: 14px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.18s ease;
-  text-decoration: none;
-}
-
-.glass-btn-dark:hover {
-  background: rgba(255, 255, 255, 0.18);
-  color: #ffffff;
-}
-
-.glass-dialer-grid {
-  display: grid;
-  grid-template-columns: 1fr 390px;
-  gap: 20px;
-}
-
-@media (max-width: 991px) {
-  .glass-calling-wrapper {
-    flex-direction: column;
-  }
-  .glass-side-dock {
-    width: 100%;
-    flex-direction: row;
-    justify-content: center;
-    position: relative;
-    top: 0;
-  }
-  .glass-dialer-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.glass-client-header {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 16px;
-  margin-bottom: 18px;
+.middle-header {
+  padding: 14px 20px;
+  background: #ffffff;
+  border-bottom: 1px solid #f2f2f7;
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: flex-start;
+  gap: 12px;
+  flex-shrink: 0;
 }
 
-.glass-client-name {
+.middle-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.middle-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1d1d1f;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.btn-close-middle {
+  background: #f2f2f7;
+  border: none;
+  color: #8e8e93;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.14s ease;
+  font-size: 13px;
+}
+
+.btn-close-middle:hover {
+  background: #e5e5ea;
+  color: #1d1d1f;
+}
+
+.middle-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 18px 20px;
+  box-sizing: border-box !important;
+  background: #ffffff;
+}
+
+.middle-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.dialer-filter-select {
+  background: #f2f2f7;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #1d1d1f;
+  font-size: 12.5px;
+  font-weight: 500;
+  padding: 8px 14px;
+  outline: none;
+  transition: all 0.14s ease;
+}
+
+.dialer-search-input {
+  flex: 1;
+  background: #f2f2f7;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #1d1d1f;
+  font-size: 13px;
+  font-weight: 400;
+  padding: 8px 14px;
+  outline: none;
+  transition: all 0.14s ease;
+}
+
+.dialer-search-input:focus, .dialer-filter-select:focus {
+  background: #ffffff;
+  border-color: #0072f0;
+  box-shadow: 0 0 0 3px rgba(0, 114, 240, 0.12);
+}
+
+.queue-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 12.5px;
+}
+
+.queue-table th {
+  background: #fafafc;
+  color: #8e8e93;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e5e5ea;
+  text-align: left;
+}
+
+.queue-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #f2f2f7;
+  color: #1d1d1f;
+  vertical-align: middle;
+}
+
+.queue-table tr:hover td {
+  background: #fafafc;
+}
+
+.queue-table tr.active-row td {
+  background: #f0f7ff !important;
+}
+
+.apple-quick-call-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #34c759;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  box-shadow: 0 2px 6px rgba(52, 199, 89, 0.35);
+  transition: transform 0.1s ease, background 0.1s ease;
+}
+
+.apple-quick-call-btn:hover {
+  background: #30b753;
+  transform: scale(1.05);
+}
+
+.apple-quick-call-btn:active {
+  transform: scale(0.95);
+}
+
+.btn-edit-row {
+  background: #f2f2f7;
+  color: #1d1d1f;
+  border: none;
+  border-radius: 7px;
+  padding: 6px 12px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 6px;
+  transition: all 0.12s ease;
+}
+
+.btn-edit-row:hover {
+  background: #e5e5ea;
+}
+
+.colleague-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid #f2f2f7;
+  background: #ffffff;
+  margin-bottom: 8px;
+  transition: all 0.12s ease;
+}
+
+.colleague-card:hover {
+  background: #fafafc;
+  border-color: #e5e5ea;
+}
+
+.colleague-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #f2f2f7;
+  color: #1d1d1f;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sheet-stat-card {
+  background: #fafafc;
+  border: 1px solid #f2f2f7;
+  border-radius: 12px;
+  padding: 14px 16px;
+  text-align: center;
+}
+
+.sheet-stat-val {
   font-size: 24px;
   font-weight: 700;
-  color: #ffffff;
-  margin: 0 0 6px 0;
-  letter-spacing: -0.3px;
+  color: #1d1d1f;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
 }
 
-.glass-client-sub {
-  font-size: 13px;
-  color: #94a3b8;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.glass-badge {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  padding: 3px 10px;
-  border-radius: 8px;
+.sheet-stat-lbl {
   font-size: 11px;
-  color: #ffffff;
+  font-weight: 600;
+  color: #8e8e93;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-top: 4px;
+}
+
+.sheet-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 12.5px;
+  border: 1px solid #e5e5ea;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.sheet-table th {
+  background: #fafafc;
+  color: #8e8e93;
+  font-weight: 600;
+  font-size: 11px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e5e5ea;
+  text-align: left;
+}
+
+.sheet-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #f2f2f7;
+  color: #1d1d1f;
   font-weight: 500;
 }
 
-.glass-badge.active-badge {
+.sheet-table tr:last-child td {
+  border-bottom: none;
+}
+
+.crm-dialer-panel {
+  width: 340px;
+  flex-shrink: 0;
+  height: 100% !important;
   background: #ffffff;
-  color: #000000;
-  border-color: #ffffff;
-  font-weight: 700;
-}
-
-.glass-dual-phones-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 18px;
-}
-
-.glass-phone-card {
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 18px;
-  padding: 12px 16px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.glass-phone-card:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-.glass-phone-card.active-target {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: #ffffff;
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.18);
-}
-
-.glass-phone-card-label {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 10px;
-  font-weight: 700;
-  color: #94a3b8;
-  text-transform: uppercase;
-  margin-bottom: 4px;
-  letter-spacing: 0.5px;
-}
-
-.glass-phone-card-num {
-  font-size: 17px;
-  font-weight: 600;
-  color: #ffffff;
-  letter-spacing: 0.5px;
-}
-
-.glass-remarks-preview {
-  background: rgba(0, 0, 0, 0.3);
-  border-left: 3px solid #ffffff;
-  padding: 14px 18px;
-  border-radius: 0 16px 16px 0;
-  margin-bottom: 18px;
-}
-
-.glass-remarks-preview-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: #94a3b8;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
-}
-
-.glass-remarks-preview-text {
-  font-size: 13px;
-  color: #e2e8f0;
-  line-height: 1.5;
-  margin: 0;
-  max-height: 70px;
-  overflow-y: auto;
-}
-
-.glass-meta-strip {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 18px;
-}
-
-.glass-meta-item {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid #e5e5ea;
   border-radius: 14px;
-  padding: 10px 14px;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.03);
+  box-sizing: border-box !important;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 950;
+  margin-left: auto;
 }
 
-.glass-meta-item-label {
-  font-size: 10px;
-  color: #94a3b8;
-  text-transform: uppercase;
-  margin-bottom: 2px;
-  font-weight: 600;
+.dialer-window-header {
+  padding: 14px 18px 10px 18px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.glass-meta-item-val {
-  font-size: 13px;
+.dialer-window-header-icons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #8e8e93;
+  font-size: 14px;
+}
+
+.dialer-top-display {
+  padding: 10px 18px 16px 18px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.dialer-active-chip {
+  display: none;
+  font-size: 12px;
   font-weight: 600;
-  color: #ffffff;
+  color: #0072f0;
+  align-items: center;
+  gap: 6px;
+  max-width: 90%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.glass-dialer-card {
+.dialer-num-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: #1d1d1f;
+  font-size: 32px;
+  font-weight: 500;
+  text-align: center;
+  outline: none;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  padding: 4px 0;
+}
+
+.dialer-num-input::placeholder {
+  color: #c7c7cc;
+  font-weight: 400;
+  font-size: 18px;
+}
+
+.dialer-status-sub {
+  font-size: 12px;
+  font-weight: 500;
+  color: #8e8e93;
+  min-height: 16px;
+}
+
+.dialer-suggestions-popover {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #e5e5ea;
+  border-radius: 12px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 10000;
+  margin-top: 6px;
+  padding: 4px;
+  text-align: left;
+}
+
+.dialer-suggestion-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.dialer-suggestion-row:hover {
+  background: #f2f2f7;
+}
+
+.dialer-suggestion-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f2f2f7;
+  color: #1d1d1f;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dialer-keypad-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 16px;
+}
+
+.dialer-keypad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px 18px;
+  width: 100%;
+  max-width: 270px;
+}
+
+.dialer-key-btn {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #f2f2f7;
+  border: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  transition: transform 0.08s ease, background 0.08s ease;
+  user-select: none;
+  margin: 0 auto;
 }
 
-.glass-dialer-screen {
-  width: 100%;
+.dialer-key-btn:hover {
+  background: #e5e5ea;
+}
+
+.dialer-key-btn:active {
+  background: #d1d1d6;
+  transform: scale(0.94);
+}
+
+.dialer-key-digit {
+  font-size: 26px;
+  font-weight: 500;
+  color: #1d1d1f;
+  line-height: 1;
+}
+
+.dialer-key-sub {
+  font-size: 9px;
+  font-weight: 600;
+  color: #8e8e93;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-top: 1px;
+  line-height: 1;
+}
+
+.dialer-bottom-actions {
+  padding: 16px 24px 20px 24px;
+  background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 18px;
-  padding: 12px 18px;
-  margin-bottom: 16px;
 }
 
-.glass-dialer-input {
-  background: transparent;
-  border: none;
-  font-size: 24px;
-  font-weight: 600;
-  color: #ffffff;
-  outline: none;
-  width: 100%;
-  text-align: center;
-  letter-spacing: 1px;
-}
-
-.glass-dialer-backspace {
-  background: transparent;
-  border: none;
-  color: #94a3b8;
-  font-size: 18px;
-  cursor: pointer;
-  padding: 4px;
-  transition: color 0.15s ease;
-}
-
-.glass-dialer-backspace:hover {
-  color: #ffffff;
-}
-
-.glass-keypad-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  margin-bottom: 20px;
-}
-
-.glass-key-btn {
-  width: 72px;
-  height: 72px;
+.keypad-tool-btn {
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #ffffff;
+  background: transparent;
+  border: none;
+  color: #8e8e93;
+  font-size: 18px;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.12s ease;
-  user-select: none;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
-.glass-key-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-1px);
+.keypad-tool-btn:hover {
+  background: #f2f2f7;
+  color: #1d1d1f;
 }
 
-.glass-key-btn:active {
-  transform: scale(0.94);
-  background: #ffffff;
-  color: #000000;
-}
-
-.glass-key-btn:active .glass-key-digit,
-.glass-key-btn:active .glass-key-letters {
-  color: #000000;
-}
-
-.glass-key-digit {
-  font-size: 24px;
-  font-weight: 600;
-  line-height: 1;
-  color: #ffffff;
-}
-
-.glass-key-letters {
-  font-size: 8px;
-  color: #94a3b8;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  margin-top: 3px;
-  font-weight: 700;
-}
-
-.glass-call-btn {
-  width: 76px;
-  height: 76px;
+.btn-green-call {
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
+  background: #34c759;
   border: none;
-  display: inline-flex;
+  color: #ffffff;
+  font-size: 24px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  user-select: none;
+  transition: transform 0.12s ease, background 0.12s ease;
+  box-shadow: 0 4px 14px rgba(52, 199, 89, 0.4);
 }
 
-.glass-call-btn.btn-start {
-  background: #ffffff;
-  color: #000000;
-  box-shadow: 0 10px 30px rgba(255, 255, 255, 0.35);
+.btn-green-call:hover {
+  background: #30b753;
+  transform: scale(1.04);
 }
 
-.glass-call-btn.btn-start:hover {
-  background: #f1f5f9;
-  transform: scale(1.06);
-  box-shadow: 0 14px 38px rgba(255, 255, 255, 0.5);
+.btn-green-call:active {
+  transform: scale(0.95);
 }
 
-.glass-call-btn.btn-end {
-  background: #000000;
-  color: #ffffff;
-  border: 2px solid #ffffff;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-  animation: glassPulseWhite 1.8s infinite;
+.btn-green-call.btn-connected {
+  background: #ff3b30 !important;
+  box-shadow: 0 4px 14px rgba(255, 59, 48, 0.4) !important;
 }
 
-.glass-call-btn.btn-end:hover {
-  background: #111111;
-  transform: scale(1.06);
+.btn-green-call.btn-calling {
+  background: #ff9500 !important;
+  box-shadow: 0 4px 14px rgba(255, 149, 0, 0.4) !important;
 }
 
-@keyframes glassPulseWhite {
-  0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.6); }
-  70% { box-shadow: 0 0 0 14px rgba(255, 255, 255, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
-}
-
-.glass-form-group {
-  margin-bottom: 16px;
-}
-
-.glass-form-label {
-  display: block;
-  font-size: 11px;
-  font-weight: 700;
-  color: #cbd5e1;
-  margin-bottom: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.glass-form-input,
-.glass-form-select,
-.glass-form-textarea {
-  width: 100%;
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 14px;
-  padding: 10px 14px;
-  font-size: 13px;
-  color: #ffffff;
-  outline: none;
-  transition: all 0.15s ease;
-  box-sizing: border-box;
-}
-
-.glass-form-input:focus,
-.glass-form-select:focus,
-.glass-form-textarea:focus {
-  border-color: #ffffff;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
-}
-
-.glass-form-select option {
-  background: #12141a;
-  color: #ffffff;
-}
-
-.glass-radio-pill {
-  padding: 6px 14px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 12px;
-  font-size: 12px;
-  color: #ffffff;
-  cursor: pointer;
-  user-select: none;
-  transition: all 0.15s ease;
-}
-
-.glass-radio-pill:hover {
-  background: rgba(255, 255, 255, 0.18);
-}
-
-.glass-radio-pill.selected,
-.glass-radio-pill.active {
-  background: #ffffff;
-  color: #000000;
-  border-color: #ffffff;
-  font-weight: 700;
-}
-
-.glass-slide-panel {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 520px;
-  max-width: 100vw;
-  height: 100vh;
-  background: rgba(18, 18, 24, 0.95);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  border-left: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: -15px 0 50px rgba(0, 0, 0, 0.7);
-  z-index: 1060;
-  transform: translateX(100%);
-  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.glass-slide-panel.show {
-  transform: translateX(0);
-}
-
-.glass-drawer-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  z-index: 1050;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-}
-
-.glass-drawer-backdrop.show {
-  opacity: 1;
-  visibility: visible;
-}
-
-.glass-slide-header {
-  padding: 18px 22px;
-  background: rgba(0, 0, 0, 0.3);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.glass-slide-body {
-  flex: 1 1 auto;
-  padding: 18px 22px;
-  overflow-y: auto;
-}
-
-.glass-phone-log-item,
-.glass-queue-item {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 14px 16px;
-  margin-bottom: 10px;
-  transition: all 0.15s ease;
-}
-
-.glass-phone-log-item:hover,
-.glass-queue-item:hover {
-  background: rgba(255, 255, 255, 0.09);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.glass-queue-item.active {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: #ffffff;
-}
-
-.glass-toast {
+.dialer-toast {
   position: fixed;
   bottom: 24px;
   right: 24px;
-  background: #000000;
+  background: rgba(29, 29, 31, 0.92);
+  backdrop-filter: blur(10px);
   color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 14px;
-  padding: 12px 20px;
+  padding: 10px 18px;
+  border-radius: 10px;
   font-size: 13px;
-  font-weight: 600;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-  z-index: 2000;
+  font-weight: 500;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
   display: none;
-  align-items: center;
-  gap: 10px;
+  z-index: 99999;
 }
 </style>
 
 <div class="content-wrapper glass-calling-wrapper">
 
-  <div class="glass-side-dock">
-    <div class="glass-dock-brand" title="Calling Center">
-      <i class="fa fa-phone"></i>
+  <div class="crm-dialer-dock">
+
+    <div class="dock-item-wrapper">
+      <button type="button" class="crm-dock-btn" id="dockBtnTeam" title="Team Colleagues" onclick="openTeamColleagues()">
+        <i class="fa fa-users"></i>
+        <span class="dock-lbl">Team</span>
+      </button>
     </div>
 
-    <button type="button" class="glass-dock-btn active" id="dockBtnDialer" title="Dialer Screen">
-      <i class="fa fa-keyboard-o"></i>
-      <span class="dock-lbl">Dialer</span>
-    </button>
+    <div class="dock-item-wrapper">
+      <button type="button" class="crm-dock-btn" id="dockBtnFollowup" title="Follow-up" onclick="openMenuQueue('followup', 'today', 'Today Follow-ups')">
+        <i class="fa fa-calendar-check-o"></i>
+        <span class="dock-lbl">Follow-up</span>
+      </button>
+      <div class="dock-flyout-menu" id="flyoutFollowup">
+        <a href="javascript:void(0)" class="dock-flyout-item" onclick="openMenuQueue('followup', 'missed', 'Missed Follow-ups')">
+          <span>Missed</span>
+        </a>
+        <a href="javascript:void(0)" class="dock-flyout-item" onclick="openMenuQueue('followup', 'today', 'Today Follow-ups')">
+          <span>Today</span>
+        </a>
+        <a href="javascript:void(0)" class="dock-flyout-item" onclick="openMenuQueue('followup', 'last7', 'Last 7 Days')">
+          <span>Last 7 Days</span>
+        </a>
+        <a href="javascript:void(0)" class="dock-flyout-item" onclick="openMenuQueue('followup', 'next7', 'Next 7 Days')">
+          <span>Next 7 Days</span>
+        </a>
+        <a href="javascript:void(0)" class="dock-flyout-item" onclick="openMenuQueue('followup', 'all', 'All Follow-ups')">
+          <span>All Follow-ups</span>
+        </a>
+      </div>
+    </div>
 
-    <button type="button" class="glass-dock-btn" id="dockBtnDetails" title="Fill Client Details">
-      <i class="fa fa-pencil-square-o"></i>
-      <span class="dock-lbl">Details</span>
-    </button>
+    <div class="dock-item-wrapper">
+      <button type="button" class="crm-dock-btn" id="dockBtnDatabase" title="Database" onclick="openMenuQueue('database', 'all', 'Database Records')">
+        <i class="fa fa-address-book-o"></i>
+        <span class="dock-lbl">Database</span>
+      </button>
+    </div>
 
-    <button type="button" class="glass-dock-btn" id="dockBtnQueue" title="Calling Queue">
-      <i class="fa fa-list-ul"></i>
-      <span class="dock-lbl">Queue</span>
-      <span class="glass-dock-badge" id="queueCountBadge"><?php echo isset($total_queue) ? (int)$total_queue : 0; ?></span>
-    </button>
+    <div class="dock-item-wrapper">
+      <button type="button" class="crm-dock-btn" id="dockBtnLeads" title="Leads" onclick="openMenuQueue('lead', 'all', 'Qualified Leads')">
+        <i class="fa fa-bullhorn"></i>
+        <span class="dock-lbl">Leads</span>
+      </button>
+    </div>
 
-    <button type="button" class="glass-dock-btn" id="dockBtnLogs" title="Call Logs">
-      <i class="fa fa-history"></i>
-      <span class="dock-lbl">Logs</span>
-    </button>
+    <div class="dock-item-wrapper">
+      <button type="button" class="crm-dock-btn" id="dockBtnLogs" title="Reports" onclick="openMenuLogs()">
+        <i class="fa fa-bar-chart"></i>
+        <span class="dock-lbl">Reports</span>
+      </button>
+    </div>
 
-    <button type="button" class="glass-dock-btn" id="dockBtnAutoDialToggle" title="Auto-Dialer Mode">
-      <i class="fa fa-bolt"></i>
-      <span class="dock-lbl" id="autoDialDockLbl">60s</span>
-    </button>
-
-    <a href="<?php echo base_url(); ?>manager/dashboard" class="glass-dock-btn" style="margin-top:auto;" title="Exit Calling Center">
+    <a href="<?php echo base_url(); ?>manager/dashboard" class="crm-dock-btn" style="margin-top:auto;" title="Exit">
       <i class="fa fa-arrow-left"></i>
       <span class="dock-lbl">Exit</span>
     </a>
+
   </div>
 
-  <div class="glass-main-stage">
+  <div id="middleContentArea">
 
-    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-      <div class="glass-top-tabs">
-        <button type="button" class="glass-tab-pill active" id="pillTabDialer">
-          <i class="fa fa-phone"></i> Dialer Screen
-        </button>
-        <button type="button" class="glass-tab-pill" id="pillTabDetails">
-          <i class="fa fa-pencil-square-o"></i> Detail Fill & Outcome
-        </button>
+    <div class="middle-header">
+      <div class="middle-header-left">
+        <h2 class="middle-title" id="middleAreaTitle">Queue Records</h2>
       </div>
 
-      <div style="display:flex; align-items:center; gap:8px;">
-        <span class="glass-badge" id="queueNavIndicator">
-          Contact 1 of <?php echo max(1, (int)$total_queue); ?>
-        </span>
-        <button type="button" class="glass-btn-dark" id="btnPrevLead" style="padding:6px 12px;">
-          <i class="fa fa-chevron-left"></i>
-        </button>
-        <button type="button" class="glass-btn-dark" id="btnNextLead" style="padding:6px 12px;">
-          <i class="fa fa-chevron-right"></i>
+      <div class="apple-segmented-group" id="subnavFollowup" style="display:none;">
+        <button type="button" class="apple-segment-btn active" data-filter="today" onclick="openMenuQueue('followup', 'today', 'Today Follow-ups')">Today</button>
+        <button type="button" class="apple-segment-btn" data-filter="missed" onclick="openMenuQueue('followup', 'missed', 'Missed Follow-ups')">Missed</button>
+        <button type="button" class="apple-segment-btn" data-filter="last7" onclick="openMenuQueue('followup', 'last7', 'Last 7 Days')">Last 7d</button>
+        <button type="button" class="apple-segment-btn" data-filter="next7" onclick="openMenuQueue('followup', 'next7', 'Next 7 Days')">Next 7d</button>
+        <button type="button" class="apple-segment-btn" data-filter="all" onclick="openMenuQueue('followup', 'all', 'All Follow-ups')">All</button>
+      </div>
+
+      <div class="apple-segmented-group" id="subnavLogsPeriod" style="display:none;">
+        <button type="button" class="apple-segment-btn active" data-period="day" onclick="changeLogsPeriod('day')">Day</button>
+        <button type="button" class="apple-segment-btn" data-period="week" onclick="changeLogsPeriod('week')">Week</button>
+        <button type="button" class="apple-segment-btn" data-period="month" onclick="changeLogsPeriod('month')">Month</button>
+        <button type="button" class="apple-segment-btn" data-period="year" onclick="changeLogsPeriod('year')">Year</button>
+      </div>
+
+      <div>
+        <button type="button" class="btn-close-middle" id="btnCloseMiddleArea" onclick="closeMiddleArea()" title="Close">
+          <i class="fa fa-times"></i>
         </button>
       </div>
     </div>
 
-    <div id="autodialerWrapupBanner" class="glass-banner" style="display:none; padding:10px 18px;">
-      <div style="display:flex; align-items:center; gap:12px;">
-        <div class="glass-timer-circle" id="autodialerTimerDisplay">
-          <?php echo (int)$autodialer_seconds; ?>
+    <div class="middle-body">
+
+      <div id="middleViewTeam" style="display:none;">
+        <div class="middle-filter-bar">
+          <input type="text" id="inputTeamSearch" class="dialer-search-input" placeholder="Type at least 3 letters to search colleague or department..." oninput="filterTeamCards()">
+        </div>
+        <div id="teamColleaguesContainer">
+          <div id="teamSearchPrompt" style="text-align:center; padding:50px 20px; color:#8e8e93; font-size:13px; font-weight:500;">Type at least 3 letters to search colleagues or departments</div>
         </div>
       </div>
-      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-        <button type="button" class="glass-btn-dark" id="btnAutodialExtend"><i class="fa fa-plus"></i> +30s Extend</button>
-        <button type="button" class="glass-btn-dark" id="btnAutodialPause"><i class="fa fa-pause"></i> Pause</button>
-        <button type="button" class="glass-btn-white" id="btnAutodialNextNow"><i class="fa fa-forward"></i> Dial Next Now</button>
-        <button type="button" class="glass-btn-dark" id="btnAutodialStop" style="border-color:rgba(255,255,255,0.3);"><i class="fa fa-stop"></i> Stop</button>
+
+      <div id="middleViewList">
+        <div class="middle-filter-bar">
+          <div id="statusFilterContainer" style="display:none;">
+            <select id="selectQueueStatus" class="dialer-filter-select" onchange="reloadCurrentQueue()">
+              <option value="all">All Statuses</option>
+              <?php if(!empty($statuses)){
+                foreach($statuses as $st){ ?>
+                  <option value="<?php echo $st['id']; ?>"><?php echo htmlspecialchars($st['status']); ?></option>
+              <?php } } ?>
+            </select>
+          </div>
+
+          <input type="text" id="inputQueueSearch" class="dialer-search-input" placeholder="Search by name, phone or company..." onkeyup="filterQueueTable()">
+        </div>
+
+        <div style="overflow-x:auto;">
+          <table class="queue-table" id="tableQueueRecords">
+            <thead>
+              <tr>
+                <th>Company / Contact</th>
+                <th>Phone Numbers</th>
+                <th>Status</th>
+                <th>Schedule</th>
+                <th style="text-align:right;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyQueueRecords">
+              <tr><td colspan="5" style="text-align:center; padding:25px; color:#8e8e93;">Loading records...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
 
-    <div id="viewCardDialer">
-      <div class="glass-dialer-grid">
-
-        <div class="glass-card">
-          <div class="glass-client-header">
-            <div>
-              <h1 class="glass-client-name" id="displayCustomerName">
-                <?php echo !empty($active_lead['customer']) ? htmlspecialchars($active_lead['customer']) : 'No Contact Selected'; ?>
-              </h1>
-              <div class="glass-client-sub">
-                <span id="displayLeadCode" class="glass-badge">
-                  #<?php echo !empty($active_lead['lead_id']) ? htmlspecialchars($active_lead['lead_id']) : '—'; ?>
-                </span>
-                <span id="displayCategoryPill" class="glass-badge">
-                  <?php echo !empty($active_lead['category']) ? htmlspecialchars($active_lead['category']) : 'General Contact'; ?>
-                </span>
-                <span id="displayLeadStatus" class="glass-badge">
-                  <?php echo !empty($active_lead['status_name']) ? htmlspecialchars($active_lead['status_name']) : 'Open'; ?>
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div class="glass-dual-phones-row">
-            <div class="glass-phone-card active-target" id="cardPrimaryPhone" onclick="selectPhoneTarget('primary')">
-              <div class="glass-phone-card-label">
-                <span>Primary Contact</span>
-                <span id="badgePrimaryActive" class="glass-badge active-badge">Selected</span>
-              </div>
-              <div class="glass-phone-card-num" id="displayPrimaryPhone">
-                <?php echo !empty($active_lead['phone_primary']) ? htmlspecialchars($active_lead['phone_primary']) : (!empty($active_lead['contact1']) ? htmlspecialchars($active_lead['contact1']) : 'No Number'); ?>
-              </div>
-            </div>
-
-            <div class="glass-phone-card" id="cardAltPhone" onclick="selectPhoneTarget('alt')">
-              <div class="glass-phone-card-label">
-                <span>Secondary / Alt</span>
-                <span id="badgeAltActive" class="glass-badge active-badge" style="display:none;">Selected</span>
-              </div>
-              <div class="glass-phone-card-num" id="displayAltPhone">
-                <?php echo !empty($active_lead['phone_alt']) ? htmlspecialchars($active_lead['phone_alt']) : '—'; ?>
-              </div>
-            </div>
-          </div>
-
-          <div class="glass-remarks-preview">
-            <div class="glass-remarks-preview-label"><i class="fa fa-commenting-o"></i> Previous Call Remarks</div>
-            <p class="glass-remarks-preview-text" id="displayPreviousRemarks">
-              <?php echo !empty($active_lead['remark']) ? htmlspecialchars($active_lead['remark']) : 'No previous call notes recorded for this contact.'; ?>
-            </p>
-          </div>
-
-          <div class="glass-meta-strip">
-            <div class="glass-meta-item">
-              <div class="glass-meta-item-label">POC Name</div>
-              <div class="glass-meta-item-val" id="displayPoc">
-                <?php echo !empty($active_lead['poc']) ? htmlspecialchars($active_lead['poc']) : '—'; ?>
-              </div>
-            </div>
-
-            <div class="glass-meta-item">
-              <div class="glass-meta-item-label">Authority / Emirate</div>
-              <div class="glass-meta-item-val" id="displayAuthority">
-                <?php 
-                  $loc = array();
-                  if(!empty($active_lead['tl_authority'])) $loc[] = $active_lead['tl_authority'];
-                  if(!empty($active_lead['tl_emirate'])) $loc[] = $active_lead['tl_emirate'];
-                  echo !empty($loc) ? htmlspecialchars(implode(', ', $loc)) : '—';
-                ?>
-              </div>
-            </div>
-
-            <div class="glass-meta-item">
-              <div class="glass-meta-item-label">Sales Department</div>
-              <div class="glass-meta-item-val" id="displayUserDept">
-                <?php echo htmlspecialchars($manager_department); ?>
-              </div>
-            </div>
-          </div>
-
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; border-top:1px solid rgba(255,255,255,0.08); padding-top:14px;">
-            <span style="font-size:12px; color:#94a3b8;">Want to take call notes or set follow-up?</span>
-            <button type="button" class="glass-btn-white" onclick="switchToCard('details')">
-              <span>Go to Detail Fill Page</span> <i class="fa fa-arrow-right"></i>
-            </button>
-          </div>
+      <div id="middleViewDetails" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <h3 style="font-size:16px; font-weight:700; color:#1d1d1f; margin:0;" id="detailsHeaderName">Contact Details</h3>
+          <button type="button" class="btn-edit-row" onclick="backToListFromDetails()"><i class="fa fa-arrow-left"></i> Back</button>
         </div>
 
-        <div class="glass-card glass-dialer-card">
-          <div class="glass-dialer-screen">
-            <input type="text" id="dialerInput" class="glass-dialer-input" placeholder="Enter Phone..." autocomplete="off" value="<?php echo !empty($active_lead['phone_primary']) ? htmlspecialchars($active_lead['phone_primary']) : (!empty($active_lead['contact1']) ? htmlspecialchars($active_lead['contact1']) : ''); ?>">
-            <button type="button" id="btnDialerBackspace" class="glass-dialer-backspace" title="Delete">
-              <i class="fa fa-times-circle"></i>
-            </button>
-          </div>
-
-          <div id="backendOfflineAlert" style="display:none; width:100%; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.3); border-radius:14px; padding:10px 14px; margin-bottom:14px; font-size:12px; text-align:center;">
-            <i class="fa fa-exclamation-triangle" style="margin-right:4px;"></i>
-            <span id="backendOfflineMsg">Calling backend is not configured (API key / PBX missing).</span>
-            <div style="margin-top:6px;">
-              <a id="btnFallbackTel" href="tel:" class="glass-btn-white" style="font-size:11px; padding:4px 10px;">
-                <i class="fa fa-phone"></i> Launch Device Dialer (tel:)
-              </a>
-            </div>
-          </div>
-
-          <div class="glass-keypad-grid">
-            <div class="glass-key-btn" data-key="1"><div class="glass-key-digit">1</div><div class="glass-key-letters"></div></div>
-            <div class="glass-key-btn" data-key="2"><div class="glass-key-digit">2</div><div class="glass-key-letters">ABC</div></div>
-            <div class="glass-key-btn" data-key="3"><div class="glass-key-digit">3</div><div class="glass-key-letters">DEF</div></div>
-            <div class="glass-key-btn" data-key="4"><div class="glass-key-digit">4</div><div class="glass-key-letters">GHI</div></div>
-            <div class="glass-key-btn" data-key="5"><div class="glass-key-digit">5</div><div class="glass-key-letters">JKL</div></div>
-            <div class="glass-key-btn" data-key="6"><div class="glass-key-digit">6</div><div class="glass-key-letters">MNO</div></div>
-            <div class="glass-key-btn" data-key="7"><div class="glass-key-digit">7</div><div class="glass-key-letters">PQRS</div></div>
-            <div class="glass-key-btn" data-key="8"><div class="glass-key-digit">8</div><div class="glass-key-letters">TUV</div></div>
-            <div class="glass-key-btn" data-key="9"><div class="glass-key-digit">9</div><div class="glass-key-letters">WXYZ</div></div>
-            <div class="glass-key-btn" data-key="*"><div class="glass-key-digit">*</div><div class="glass-key-letters"></div></div>
-            <div class="glass-key-btn" data-key="0"><div class="glass-key-digit">0</div><div class="glass-key-letters">+</div></div>
-            <div class="glass-key-btn" data-key="#"><div class="glass-key-digit">#</div><div class="glass-key-letters"></div></div>
-          </div>
-
-          <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
-            <button type="button" id="btnToggleCall" class="glass-call-btn btn-start" title="Call Contact">
-              <i class="fa fa-phone"></i>
-            </button>
-            <div id="liveCallSubtitle" style="font-size:12px; color:#cbd5e1; height:18px;">Tap to place call</div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <div id="viewCardDetailFill" style="display:none;">
-      <div class="glass-card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:14px;">
-          <div>
-            <h2 style="font-size:20px; font-weight:700; margin:0 0 4px 0; color:#ffffff;">Manual Detail Fill & Call Outcome</h2>
-            <div style="font-size:12px; color:#94a3b8;">
-              Active: <strong id="detailsCardCustomer" style="color:#ffffff;"><?php echo !empty($active_lead['customer']) ? htmlspecialchars($active_lead['customer']) : 'No Contact'; ?></strong>
-              • Duration: <span id="followupCallDurationBadge">00:00</span>
-            </div>
-          </div>
-          <button type="button" class="glass-btn-dark" onclick="switchToCard('dialer')">
-            <i class="fa fa-arrow-left"></i> Back to Dialer
-          </button>
-        </div>
-
-        <form id="formCallFollowup" onsubmit="return false;">
-          <input type="hidden" name="lead_id" id="hiddenLeadId" value="<?php echo !empty($active_lead['id']) ? (int)$active_lead['id'] : 0; ?>">
-          <input type="hidden" name="call_log_id" id="hiddenCallLogId" value="0">
-          <input type="hidden" name="customer_name" id="hiddenCustomerName" value="<?php echo !empty($active_lead['customer']) ? htmlspecialchars($active_lead['customer']) : ''; ?>">
-          <input type="hidden" name="phone" id="hiddenPhone" value="<?php echo !empty($active_lead['phone_primary']) ? htmlspecialchars($active_lead['phone_primary']) : ''; ?>">
-          <input type="hidden" name="call_duration" id="hiddenDuration" value="0">
-          <input type="hidden" name="call_disposition" id="hiddenDisposition" value="Connected">
+        <form id="formRecordDetails">
+          <input type="hidden" name="lead_id" id="editLeadId" value="0">
+          <input type="hidden" name="call_log_id" id="editCallLogId" value="0">
+          <input type="hidden" name="call_duration" id="editCallDuration" value="0">
 
           <div class="row">
             <div class="col-md-6">
-              <div class="glass-form-group">
-                <label class="glass-form-label">Call Outcome / Status</label>
-                <select name="status" id="followupStatusSelect" class="glass-form-select" required>
+              <div class="form-group" style="margin-bottom:12px;">
+                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Company Name</label>
+                <input type="text" name="customer" id="editCustomer" class="form-control" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group" style="margin-bottom:12px;">
+                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Point of Contact</label>
+                <input type="text" name="poc" id="editPoc" class="form-control" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group" style="margin-bottom:12px;">
+                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Primary Phone</label>
+                <input type="text" name="contact1" id="editContact1" class="form-control" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group" style="margin-bottom:12px;">
+                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Alt Phone</label>
+                <input type="text" name="alt_contact" id="editAltContact" class="form-control" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group" style="margin-bottom:12px;">
+                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Email Address</label>
+                <input type="email" name="email" id="editEmail" class="form-control" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group" style="margin-bottom:12px;">
+                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Authority</label>
+                <select name="tl_authority" id="editAuthority" class="form-control" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
+                  <option value="">Select Authority</option>
+                  <option value="DED">DED</option>
+                  <option value="DMCC">DMCC</option>
+                  <option value="SHAMS">SHAMS</option>
+                  <option value="IFZA">IFZA</option>
+                  <option value="RAKEZ">RAKEZ</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group" style="margin-bottom:12px;">
+                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Location</label>
+                <input type="text" name="location" id="editLocation" class="form-control" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group" style="margin-bottom:12px;">
+                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">DNCR Registry</label>
+                <select name="dnd_status" id="editDndStatus" class="form-control" onchange="toggleDncrDateRow()" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
+                  <option value="No">No (Clean)</option>
+                  <option value="Yes">Yes (DND Active)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="row" id="wrapDncrDate" style="display:none;">
+            <div class="col-md-12">
+              <div class="form-group" style="margin-bottom:12px;">
+                <label style="font-size:12px; font-weight:600; color:#dc2626; margin-bottom:4px; display:block;">DNCR Check Date</label>
+                <input type="text" name="dnd_check_date" id="editDndDate" class="form-control datepicker" style="border-radius:8px; border:1px solid #fca5a5; font-size:13px; height:38px;">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-4">
+              <div class="form-group" style="margin-bottom:12px;">
+                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Quantity</label>
+                <input type="number" name="qty" id="editQty" value="1" min="1" class="form-control" oninput="calculateMrrTotal()" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group" style="margin-bottom:12px;">
+                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">MRC</label>
+                <input type="text" name="mrc" id="editMrc" class="form-control" oninput="calculateMrrTotal()" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group" style="margin-bottom:12px;">
+                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Revenue</label>
+                <input type="text" name="revenue" id="editRevenue" class="form-control" oninput="calculateMrrTotal()" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group" style="margin-bottom:12px;">
+                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Call Status</label>
+                <select name="status" id="editStatus" class="form-control" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
                   <?php if(!empty($statuses)){
                     foreach($statuses as $st){ ?>
-                      <option value="<?php echo $st['id']; ?>" <?php echo (!empty($active_lead['status']) && $active_lead['status'] == $st['id']) ? 'selected' : ''; ?>>
-                        <?php echo htmlspecialchars($st['status']); ?>
-                      </option>
+                      <option value="<?php echo $st['id']; ?>"><?php echo htmlspecialchars($st['status']); ?></option>
                   <?php } } ?>
                 </select>
               </div>
             </div>
-
             <div class="col-md-6">
-              <div id="followupScheduleBlock" class="glass-form-group" style="display:none;">
-                <label class="glass-form-label"><i class="fa fa-calendar"></i> Next Follow-up Schedule</label>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                  <input type="text" name="next_followup" id="nextFollowupDate" class="glass-form-input datepicker" placeholder="YYYY-MM-DD" autocomplete="off">
-                  <input type="text" name="next_followup_time" id="nextFollowupTime" class="glass-form-input timepicker" placeholder="11:00 AM" value="11:00 AM">
-                </div>
+              <div class="form-group" style="margin-bottom:12px;">
+                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Calculated MRR</label>
+                <input type="text" name="mrr" id="editMrr" readonly class="form-control" style="background:#f2f2f7; border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px; font-weight:700;">
               </div>
             </div>
           </div>
 
-          <div class="glass-form-group">
-            <label class="glass-form-label">Discussion Remarks / Call Notes</label>
-            <textarea name="remarks" id="followupRemarks" class="glass-form-textarea" rows="3" placeholder="Key points discussed during the call..." required></textarea>
-          </div>
-
-          <div class="glass-form-group">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-              <label class="glass-form-label" style="margin:0;">Vertical Information</label>
-              <div style="display:flex; gap:6px;">
-                <span class="glass-radio-pill active" id="tabVerticalAccounting" onclick="switchVerticalTab('accounting')">Accounting & Tax</span>
-                <span class="glass-radio-pill" id="tabVerticalTelecom" onclick="switchVerticalTab('telecom')">Telecom</span>
-                <span class="glass-radio-pill" id="tabVerticalGeneral" onclick="switchVerticalTab('general')">General</span>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group" style="margin-bottom:12px;">
+                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Next Follow-up Date</label>
+                <input type="text" name="followup_date" id="editNextFollowup" class="form-control datepicker" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
               </div>
             </div>
-
-            <div id="verticalAccountingSection" style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); padding:16px; border-radius:18px;">
-              <div class="row">
-                <div class="col-md-6" style="margin-bottom:10px;">
-                  <label class="glass-form-label" style="font-size:10px;">VAT Registration</label>
-                  <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px;">
-                    <span class="glass-radio-pill vat-pill" data-val="Registered">Registered</span>
-                    <span class="glass-radio-pill vat-pill" data-val="Not Registered">Not Registered</span>
-                    <span class="glass-radio-pill vat-pill" data-val="Pending">Pending</span>
-                    <span class="glass-radio-pill vat-pill" data-val="Exempt">Exempt</span>
-                  </div>
-                  <input type="hidden" name="vat_status" id="vatStatusVal" value="">
-                  <input type="text" name="vat_trn" id="vatTrnInput" class="glass-form-input" placeholder="VAT TRN Number (if registered)...">
-                </div>
-
-                <div class="col-md-6" style="margin-bottom:10px;">
-                  <label class="glass-form-label" style="font-size:10px;">Corporate Tax (CT)</label>
-                  <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px;">
-                    <span class="glass-radio-pill ct-pill" data-val="Registered">Registered</span>
-                    <span class="glass-radio-pill ct-pill" data-val="Not Registered">Not Registered</span>
-                    <span class="glass-radio-pill ct-pill" data-val="Pending">Pending</span>
-                    <span class="glass-radio-pill ct-pill" data-val="Exempt">Exempt</span>
-                  </div>
-                  <input type="hidden" name="corporate_tax_status" id="corporateTaxStatusVal" value="">
-                  <input type="text" name="ct_trn" id="ctTrnInput" class="glass-form-input" placeholder="Corporate Tax TRN / Ref (if registered)...">
-                </div>
-              </div>
-            </div>
-
-            <div id="verticalTelecomSection" style="display:none; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); padding:16px; border-radius:18px;">
-              <div class="row">
-                <div class="col-md-6" style="margin-bottom:10px;">
-                  <label class="glass-form-label" style="font-size:10px;">Current Telecom Provider</label>
-                  <select name="business_category" id="telecomProviderSelect" class="glass-form-select">
-                    <option value="">-- Select Provider --</option>
-                    <option value="Etisalat">Etisalat by e&</option>
-                    <option value="du">du Telecom</option>
-                    <option value="Virgin">Virgin Mobile</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-                <div class="col-md-6" style="margin-bottom:10px;">
-                  <label class="glass-form-label" style="font-size:10px;">Lines / Monthly Spend</label>
-                  <input type="text" name="industry_category" id="telecomLinesInput" class="glass-form-input" placeholder="e.g. 15 Lines | AED 2,500/mo">
-                </div>
-              </div>
-            </div>
-
-            <div id="verticalGeneralSection" style="display:none; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); padding:16px; border-radius:18px;">
-              <div>
-                <label class="glass-form-label" style="font-size:10px;">Business Category</label>
-                <input type="text" name="general_business_cat" id="generalBusinessCatInput" class="glass-form-input" placeholder="e.g. Real Estate, Retail, Consulting...">
+            <div class="col-md-6">
+              <div class="form-group" style="margin-bottom:12px;">
+                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Follow-up Time</label>
+                <input type="text" name="followup_time" id="editNextFollowupTime" class="form-control" value="11:00 AM" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
               </div>
             </div>
           </div>
 
-          <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.1); padding-top:16px;">
-            <button type="button" class="glass-btn-dark" id="btnSaveOnly">
-              <i class="fa fa-check"></i> Save Details
-            </button>
-            <button type="button" class="glass-btn-white" id="btnSaveAndNextContact">
-              <span>Save & Next Contact</span> <i class="fa fa-arrow-right"></i>
-            </button>
+          <div class="form-group" style="margin-bottom:16px;">
+            <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Call Remark</label>
+            <textarea name="remark" id="editRemark" rows="2" class="form-control" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px;"></textarea>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:8px;">
+            <button type="button" class="btn-edit-row" onclick="backToListFromDetails()">Cancel</button>
+            <button type="button" class="btn-edit-row" style="background:#0072f0; color:#ffffff;" onclick="saveRecordDetailsForm()"><i class="fa fa-save"></i> Save</button>
           </div>
         </form>
       </div>
+
+      <div id="middleViewLogs" style="display:none;">
+        <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:12px; margin-bottom:18px;">
+          <div class="sheet-stat-card">
+            <div class="sheet-stat-val" id="logStatTotal">0</div>
+            <div class="sheet-stat-lbl">Total Outbound</div>
+          </div>
+          <div class="sheet-stat-card">
+            <div class="sheet-stat-val" id="logStatConnected" style="color:#34c759;">0</div>
+            <div class="sheet-stat-lbl">Connected</div>
+          </div>
+          <div class="sheet-stat-card">
+            <div class="sheet-stat-val" id="logStatNewCalls" style="color:#0072f0;">0</div>
+            <div class="sheet-stat-lbl">New Calls</div>
+          </div>
+          <div class="sheet-stat-card">
+            <div class="sheet-stat-val" id="logStatFollowups" style="color:#ff9500;">0</div>
+            <div class="sheet-stat-lbl">Follow-ups</div>
+          </div>
+          <div class="sheet-stat-card">
+            <div class="sheet-stat-val" id="logStatDuration">0m</div>
+            <div class="sheet-stat-lbl">Talk Time</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:20px;">
+          <h4 style="font-size:13px; font-weight:700; color:#1d1d1f; margin:0 0 10px 0; text-transform:uppercase; letter-spacing:0.5px;">Status Breakdown Sheet</h4>
+          <table class="sheet-table" id="tableStatusBreakdown">
+            <thead>
+              <tr>
+                <th>Call Status / Outcome</th>
+                <th style="text-align:center;">New Calls</th>
+                <th style="text-align:center;">Follow-up Calls</th>
+                <th style="text-align:center;">Total Calls</th>
+                <th style="text-align:right;">% Share</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyStatusBreakdown">
+              <tr><td colspan="5" style="text-align:center; padding:15px; color:#8e8e93;">Loading breakdown...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div>
+          <h4 style="font-size:13px; font-weight:700; color:#1d1d1f; margin:0 0 10px 0; text-transform:uppercase; letter-spacing:0.5px;">Recent Outbound Call History</h4>
+          <div style="overflow-x:auto;">
+            <table class="sheet-table" id="tableRecentLogs">
+              <thead>
+                <tr>
+                  <th>Date & Time</th>
+                  <th>Customer / Contact</th>
+                  <th>Phone Number</th>
+                  <th>Category</th>
+                  <th>Outcome</th>
+                  <th>Duration</th>
+                  <th style="text-align:right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyRecentLogs">
+                <tr><td colspan="7" style="text-align:center; padding:15px; color:#8e8e93;">Loading history...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </div>
 
   </div>
 
-  <div id="drawerBackdrop" class="glass-drawer-backdrop"></div>
+  <div class="crm-dialer-panel">
 
-  <div id="queueSlidePanel" class="glass-slide-panel">
-    <div class="glass-slide-header">
-      <h3 style="margin:0; font-size:16px; font-weight:700; color:#fff;">Calling Queue (<span id="panelQueueCount"><?php echo count($queue); ?></span>)</h3>
-      <button type="button" class="glass-dialer-backspace" id="btnCloseQueueDrawer"><i class="fa fa-times"></i></button>
-    </div>
-    <div class="glass-slide-body">
-      <div style="margin-bottom:14px;">
-        <input type="text" id="queueSearchInput" class="glass-form-input" placeholder="Search contact, phone or company...">
-      </div>
-      <div id="queueListContainer">
-        <?php if(!empty($queue)){
-          foreach($queue as $idx => $q){ ?>
-            <div class="glass-queue-item <?php echo $idx === 0 ? 'active' : ''; ?>" data-lead-idx="<?php echo $idx; ?>">
-              <div>
-                <div style="font-size:14px; font-weight:700; color:#fff;"><?php echo htmlspecialchars($q['customer']); ?></div>
-                <div style="font-size:11px; color:#94a3b8;"><?php echo !empty($q['phone_primary']) ? htmlspecialchars($q['phone_primary']) : htmlspecialchars($q['contact1']); ?></div>
-              </div>
-              <div>
-                <span class="glass-badge"><?php echo !empty($q['status_name']) ? htmlspecialchars($q['status_name']) : 'Open'; ?></span>
-              </div>
-            </div>
-        <?php } } else { ?>
-          <div style="padding:20px; text-align:center; color:#94a3b8;">No contacts in queue</div>
-        <?php } ?>
+    <div class="dialer-window-header">
+      <span style="font-size:13px; font-weight:700; color:#1d1d1f; letter-spacing:-0.01em;">Phone</span>
+      <div class="dialer-window-header-icons">
+        <i class="fa fa-headphones" title="Headset"></i>
+        <i class="fa fa-volume-up" title="Audio"></i>
       </div>
     </div>
-  </div>
 
-  <div id="logsSlidePanel" class="glass-slide-panel">
-    <div class="glass-slide-header">
-      <h3 style="margin:0; font-size:16px; font-weight:700; color:#fff;">Past Call History</h3>
-      <button type="button" class="glass-dialer-backspace" id="btnCloseLogsDrawer"><i class="fa fa-times"></i></button>
+    <div class="dialer-top-display">
+      <div class="dialer-active-chip" id="dialerContactChip">
+        <i class="fa fa-user" style="font-size:11px;"></i>
+        <span id="dialerChipName">Select contact</span>
+      </div>
+
+      <div style="position:relative; width:100%;">
+        <input type="text" class="dialer-num-input" id="dialerInput" placeholder="Enter number or name" autocomplete="off" oninput="onDialerInputChange()" onkeyup="handleDialerInputKey(event)">
+        <div id="dialerSuggestions" class="dialer-suggestions-popover" style="display:none;"></div>
+      </div>
+      <div class="dialer-status-sub" id="dialerStatusSubtitle">Ready to call</div>
     </div>
-    <div class="glass-slide-body">
-      <div id="logsListContainer">
-        <?php if(!empty($recent_logs)){
-          foreach($recent_logs as $log){ 
-            $raw_phone = !empty($log['phone_number']) ? $log['phone_number'] : '';
-            $clean_phone = preg_replace('/[^\d\+]/', '', $raw_phone);
-          ?>
-            <div class="glass-phone-log-item">
-              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">
-                <span style="font-size:14px; font-weight:700; color:#ffffff;"><?php echo htmlspecialchars($log['customer_name']); ?></span>
-                <span class="glass-badge"><?php echo (int)$log['duration'] > 0 ? (int)$log['duration'] . 's' : '0s'; ?></span>
-              </div>
-              <div style="font-size:11px; color:#94a3b8; margin-bottom:10px;">
-                <span><i class="fa fa-phone"></i> <?php echo htmlspecialchars($raw_phone); ?></span>
-                <span>•</span>
-                <span><?php echo htmlspecialchars($log['disposition']); ?></span>
-                <span>•</span>
-                <span><?php echo date('M d, H:i', strtotime($log['created_at'])); ?></span>
-              </div>
-              <div style="display:flex; gap:8px;">
-                <button type="button" class="glass-btn-white" style="padding:4px 10px; font-size:11px;" onclick="dialFromLog('<?php echo htmlspecialchars(addslashes($clean_phone)); ?>', '<?php echo htmlspecialchars(addslashes($log['customer_name'])); ?>', <?php echo !empty($log['lead_id']) ? (int)$log['lead_id'] : 0; ?>)">
-                  <i class="fa fa-phone"></i> Call
-                </button>
-                <button type="button" class="glass-btn-dark" style="padding:4px 10px; font-size:11px;" onclick="copyNumberToClipboard('<?php echo htmlspecialchars(addslashes($clean_phone)); ?>')">
-                  <i class="fa fa-copy"></i> Copy
-                </button>
-                <?php if(!empty($log['lead_id'])){ ?>
-                  <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($log['lead_id']); ?>" target="_blank" class="glass-btn-dark" style="padding:4px 10px; font-size:11px;">
-                    <i class="fa fa-user"></i> View Lead
-                  </a>
-                <?php } ?>
-              </div>
-            </div>
-        <?php } } else { ?>
-          <div style="padding:20px; text-align:center; color:#94a3b8;">No past completed calls recorded</div>
-        <?php } ?>
+
+    <div class="dialer-keypad-container">
+      <div class="dialer-keypad-grid">
+        <button type="button" class="dialer-key-btn" onclick="pressDialerKey('1')">
+          <span class="dialer-key-digit">1</span>
+          <span class="dialer-key-sub">&nbsp;</span>
+        </button>
+        <button type="button" class="dialer-key-btn" onclick="pressDialerKey('2')">
+          <span class="dialer-key-digit">2</span>
+          <span class="dialer-key-sub">ABC</span>
+        </button>
+        <button type="button" class="dialer-key-btn" onclick="pressDialerKey('3')">
+          <span class="dialer-key-digit">3</span>
+          <span class="dialer-key-sub">DEF</span>
+        </button>
+
+        <button type="button" class="dialer-key-btn" onclick="pressDialerKey('4')">
+          <span class="dialer-key-digit">4</span>
+          <span class="dialer-key-sub">GHI</span>
+        </button>
+        <button type="button" class="dialer-key-btn" onclick="pressDialerKey('5')">
+          <span class="dialer-key-digit">5</span>
+          <span class="dialer-key-sub">JKL</span>
+        </button>
+        <button type="button" class="dialer-key-btn" onclick="pressDialerKey('6')">
+          <span class="dialer-key-digit">6</span>
+          <span class="dialer-key-sub">MNO</span>
+        </button>
+
+        <button type="button" class="dialer-key-btn" onclick="pressDialerKey('7')">
+          <span class="dialer-key-digit">7</span>
+          <span class="dialer-key-sub">PQRS</span>
+        </button>
+        <button type="button" class="dialer-key-btn" onclick="pressDialerKey('8')">
+          <span class="dialer-key-digit">8</span>
+          <span class="dialer-key-sub">TUV</span>
+        </button>
+        <button type="button" class="dialer-key-btn" onclick="pressDialerKey('9')">
+          <span class="dialer-key-digit">9</span>
+          <span class="dialer-key-sub">WXYZ</span>
+        </button>
+
+        <button type="button" class="dialer-key-btn" onclick="pressDialerKey('*')">
+          <span class="dialer-key-digit">*</span>
+          <span class="dialer-key-sub">&nbsp;</span>
+        </button>
+        <button type="button" class="dialer-key-btn" onclick="pressDialerKey('0')">
+          <span class="dialer-key-digit">0</span>
+          <span class="dialer-key-sub">+</span>
+        </button>
+        <button type="button" class="dialer-key-btn" onclick="pressDialerKey('#')">
+          <span class="dialer-key-digit">#</span>
+          <span class="dialer-key-sub">&nbsp;</span>
+        </button>
       </div>
     </div>
-  </div>
 
-  <div id="appleToast" class="glass-toast">
-    <i class="fa fa-info-circle"></i>
-    <span id="appleToastText">Notice message</span>
+    <div class="dialer-bottom-actions">
+      <button type="button" class="keypad-tool-btn" title="Settings" onclick="showToast('Audio Ready')">
+        <i class="fa fa-sliders"></i>
+      </button>
+
+      <button type="button" class="btn-green-call" id="btnToggleCall" onclick="handleCallButtonClick()" title="Call">
+        <i class="fa fa-phone"></i>
+      </button>
+
+      <button type="button" class="keypad-tool-btn" onclick="dialerBackspace()" title="Delete">
+        <i class="fa fa-chevron-left"></i>
+      </button>
+    </div>
+
   </div>
 
 </div>
 
+<div class="dialer-toast" id="dialerToast">
+  <span id="dialerToastText">Notification</span>
+</div>
+
 <script>
-var callingQueue = <?php echo json_encode(!empty($queue) ? $queue : array()); ?>;
-var isBackendConfigured = <?php echo !empty($is_backend_configured) ? 'true' : 'false'; ?>;
-var configuredDialerSeconds = <?php echo !empty($autodialer_seconds) ? (int)$autodialer_seconds : 60; ?>;
+var activeLead = null;
+var activeCallLogId = 0;
+var currentQueue = [];
 var currentIndex = 0;
+var currentLogsPeriod = 'day';
+var activeQueueType = 'followup';
+var activeQueueFilter = 'today';
 var callState = 'idle';
 var callTimerInterval = null;
 var callConnectedSeconds = 0;
-var activeCallLogId = 0;
+
+var allColleagues = [];
+
 var audioCtx = null;
-var activePhoneType = 'primary';
-var autoDialerActive = true;
-var autoDialerCountdown = null;
-var autoDialerSeconds = configuredDialerSeconds;
-var autoDialerPaused = false;
-var csrfTokenName = '<?php echo $this->security->get_csrf_token_name(); ?>';
-var csrfTokenHash = '<?php echo $this->security->get_csrf_hash(); ?>';
-
-$.ajaxSetup({
-  beforeSend: function(xhr, settings) {
-    if (settings.type === 'POST') {
-      if (typeof settings.data === 'string') {
-        if (settings.data.indexOf(csrfTokenName) === -1) {
-          settings.data += (settings.data ? '&' : '') + encodeURIComponent(csrfTokenName) + '=' + encodeURIComponent(csrfTokenHash);
-        }
-      } else if (typeof settings.data === 'object' && settings.data !== null && !(settings.data instanceof FormData)) {
-        settings.data[csrfTokenName] = csrfTokenHash;
-      }
-    }
-  }
-});
-
 function getAudioContext() {
   if (!audioCtx) {
-    var AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (AudioCtx) {
-      audioCtx = new AudioCtx();
+    var AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+    if (AudioCtxClass) {
+      audioCtx = new AudioCtxClass();
     }
-  }
-  if (audioCtx && audioCtx.state === 'suspended') {
-    audioCtx.resume();
   }
   return audioCtx;
 }
@@ -1251,10 +1211,16 @@ function getAudioContext() {
 function playDtmfTone(freq1, freq2, durationMs) {
   var ctx = getAudioContext();
   if (!ctx) return;
+  if (ctx.state === 'suspended') {
+    ctx.resume();
+  }
+
   var osc1 = ctx.createOscillator();
   var osc2 = ctx.createOscillator();
   var gain = ctx.createGain();
 
+  osc1.type = 'sine';
+  osc2.type = 'sine';
   osc1.frequency.value = freq1;
   osc2.frequency.value = freq2;
 
@@ -1281,679 +1247,781 @@ var dtmfFreqs = {
 function playKeyTone(key) {
   if (dtmfFreqs[key]) {
     playDtmfTone(dtmfFreqs[key][0], dtmfFreqs[key][1], 90);
-  } else {
-    playDtmfTone(700, 900, 50);
   }
 }
 
-function showAppleToast(msg) {
-  var toast = document.getElementById('appleToast');
-  var toastText = document.getElementById('appleToastText');
-  if (!toast || !toastText) return;
-  toastText.textContent = msg;
-  toast.style.display = 'flex';
+function showToast(msg) {
+  var t = document.getElementById('dialerToast');
+  var txt = document.getElementById('dialerToastText');
+  if (!t || !txt) return;
+  txt.textContent = msg;
+  t.style.display = 'flex';
   setTimeout(function() {
-    toast.style.display = 'none';
-  }, 2800);
+    t.style.display = 'none';
+  }, 2400);
 }
 
-function copyNumberToClipboard(num) {
-  if (!num) return;
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(num).then(function() {
-      showAppleToast('Copied ' + num + ' to clipboard');
-    });
-  } else {
-    var ta = document.createElement('textarea');
-    ta.value = num;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    showAppleToast('Copied ' + num + ' to clipboard');
+function pressDialerKey(k) {
+  playKeyTone(k);
+  var inp = document.getElementById('dialerInput');
+  if (inp) {
+    inp.value += k;
+    onDialerInputChange();
   }
 }
 
-function formatTimer(secs) {
-  var m = Math.floor(secs / 60);
-  var s = secs % 60;
-  return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
-}
-
-function switchToCard(cardName) {
-  if (cardName === 'details') {
-    $('#viewCardDialer').hide();
-    $('#viewCardDetailFill').fadeIn(150);
-    $('#pillTabDialer').removeClass('active');
-    $('#pillTabDetails').addClass('active');
-    $('#dockBtnDialer').removeClass('active');
-    $('#dockBtnDetails').addClass('active');
-    checkFollowupScheduleRequirement();
-  } else {
-    $('#viewCardDetailFill').hide();
-    $('#viewCardDialer').fadeIn(150);
-    $('#pillTabDetails').removeClass('active');
-    $('#pillTabDialer').addClass('active');
-    $('#dockBtnDetails').removeClass('active');
-    $('#dockBtnDialer').addClass('active');
+function dialerBackspace() {
+  var inp = document.getElementById('dialerInput');
+  if (inp && inp.value.length > 0) {
+    inp.value = inp.value.slice(0, -1);
+    onDialerInputChange();
   }
 }
 
-function selectPhoneTarget(type) {
-  activePhoneType = type;
-  var lead = callingQueue[currentIndex] || {};
-  var num = '';
-
-  if (type === 'alt') {
-    num = lead.phone_alt || '';
-    $('#cardAltPhone').addClass('active-target');
-    $('#cardPrimaryPhone').removeClass('active-target');
-    $('#badgeAltActive').show();
-    $('#badgePrimaryActive').hide();
-  } else {
-    num = lead.phone_primary || lead.contact1 || '';
-    $('#cardPrimaryPhone').addClass('active-target');
-    $('#cardAltPhone').removeClass('active-target');
-    $('#badgePrimaryActive').show();
-    $('#badgeAltActive').hide();
-  }
-
-  if (num) {
-    document.getElementById('dialerInput').value = num;
-    document.getElementById('hiddenPhone').value = num;
-    document.getElementById('btnFallbackTel').href = 'tel:' + num.replace(/[^\d\+]/g, '');
-  }
-}
-
-function loadContactAt(idx) {
-  if (callingQueue.length === 0) return;
-  if (idx < 0) idx = 0;
-  if (idx >= callingQueue.length) idx = callingQueue.length - 1;
-  currentIndex = idx;
-
-  var lead = callingQueue[currentIndex];
-  document.getElementById('displayCustomerName').textContent = lead.customer || 'Unnamed Contact';
-  document.getElementById('detailsCardCustomer').textContent = lead.customer || 'Unnamed Contact';
-  document.getElementById('displayLeadCode').textContent = '#' + (lead.lead_id || lead.id || '—');
-  document.getElementById('displayCategoryPill').textContent = lead.category || lead.p_cat || 'General Contact';
-  document.getElementById('displayLeadStatus').textContent = lead.status_name || 'Open';
-
-  var primaryPhone = lead.phone_primary || lead.contact1 || '';
-  var altPhone = lead.phone_alt || '';
-
-  document.getElementById('displayPrimaryPhone').textContent = primaryPhone || 'No Number';
-  document.getElementById('displayAltPhone').textContent = altPhone || '—';
-
-  selectPhoneTarget('primary');
-
-  document.getElementById('displayPreviousRemarks').textContent = lead.remark || 'No previous call notes recorded for this contact.';
-  document.getElementById('displayPoc').textContent = lead.poc || '—';
-
-  var locParts = [];
-  if (lead.tl_authority) locParts.push(lead.tl_authority);
-  if (lead.tl_emirate) locParts.push(lead.tl_emirate);
-  document.getElementById('displayAuthority').textContent = locParts.length ? locParts.join(', ') : '—';
-
-  document.getElementById('queueNavIndicator').textContent = 'Contact ' + (currentIndex + 1) + ' of ' + callingQueue.length;
-
-  document.getElementById('hiddenLeadId').value = lead.id || 0;
-  document.getElementById('hiddenCustomerName').value = lead.customer || '';
-
-  $('.glass-queue-item').removeClass('active');
-  $('.glass-queue-item[data-lead-idx="' + currentIndex + '"]').addClass('active');
-
-  var catLower = (lead.category || lead.p_cat || '').toLowerCase();
-  if (catLower.indexOf('telecom') !== -1) {
-    switchVerticalTab('telecom');
-  } else if (catLower.indexOf('account') !== -1 || catLower.indexOf('tax') !== -1 || catLower.indexOf('vat') !== -1) {
-    switchVerticalTab('accounting');
-  }
-}
-
-function switchVerticalTab(tabName) {
-  $('.glass-radio-pill#tabVerticalAccounting, .glass-radio-pill#tabVerticalTelecom, .glass-radio-pill#tabVerticalGeneral').removeClass('active');
-  $('#verticalAccountingSection, #verticalTelecomSection, #verticalGeneralSection').hide();
-
-  if (tabName === 'telecom') {
-    $('#tabVerticalTelecom').addClass('active');
-    $('#verticalTelecomSection').show();
-  } else if (tabName === 'general') {
-    $('#tabVerticalGeneral').addClass('active');
-    $('#verticalGeneralSection').show();
-  } else {
-    $('#tabVerticalAccounting').addClass('active');
-    $('#verticalAccountingSection').show();
-  }
-}
-
-function checkFollowupScheduleRequirement() {
-  var sel = document.getElementById('followupStatusSelect');
-  var txt = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text.toLowerCase() : '';
-  var block = document.getElementById('followupScheduleBlock');
-  if (txt.indexOf('call') !== -1 || txt.indexOf('follow') !== -1 || txt.indexOf('meeting') !== -1 || txt.indexOf('prospective') !== -1 || txt.indexOf('interested') !== -1) {
-    block.style.display = 'block';
-  } else {
-    block.style.display = 'none';
-  }
-}
-
-function dialFromLog(phone, customerName, leadId) {
-  $('#logsSlidePanel').removeClass('show');
-  $('#drawerBackdrop').removeClass('show');
-
-  document.getElementById('dialerInput').value = phone;
-  document.getElementById('displayCustomerName').textContent = customerName || 'Direct Dial';
-  document.getElementById('detailsCardCustomer').textContent = customerName || 'Direct Dial';
-  document.getElementById('displayPrimaryPhone').textContent = phone;
-  document.getElementById('hiddenPhone').value = phone;
-  document.getElementById('hiddenCustomerName').value = customerName || 'Direct Dial';
-  document.getElementById('hiddenLeadId').value = leadId || 0;
-
-  switchToCard('dialer');
-  startCrmCall();
-}
-
-function startCrmCall() {
-  var phone = document.getElementById('dialerInput').value.trim();
-  if (!phone) {
-    showAppleToast('Please enter or select a phone number');
+function onDialerInputChange() {
+  var val = $('#dialerInput').val().trim();
+  if (val.length < 3) {
+    $('#dialerSuggestions').hide().empty();
     return;
   }
 
-  stopWrapupCountdown();
-  $('#autodialerWrapupBanner').slideUp(180);
+  if (!allColleagues || allColleagues.length === 0) {
+    loadTeamColleaguesData(true, function() {
+      onDialerInputChange();
+    });
+    return;
+  }
 
-  var leadId = document.getElementById('hiddenLeadId').value;
-  var customer = document.getElementById('hiddenCustomerName').value;
-
-  $.ajax({
-    type: 'POST',
-    url: '<?php echo base_url(); ?>manager/calls/ajax_initiate_call',
-    data: {
-      phone: phone,
-      lead_id: leadId,
-      customer_name: customer
-    },
-    dataType: 'json'
-  }).done(function(res) {
-    if (res && res.call_log_id) {
-      activeCallLogId = res.call_log_id;
-      document.getElementById('hiddenCallLogId').value = activeCallLogId;
+  var q = val.toLowerCase();
+  var matches = [];
+  for (var i = 0; i < allColleagues.length; i++) {
+    var c = allColleagues[i];
+    var searchStr = ((c.name || '') + ' ' + (c.department || '') + ' ' + (c.extension || '') + ' ' + (c.phone || '') + ' ' + (c.dial_target || '')).toLowerCase();
+    if (searchStr.indexOf(q) > -1) {
+      matches.push(c);
+      if (matches.length >= 8) break;
     }
+  }
 
-    if (res && !res.configured) {
-      callState = 'idle';
-      var cleanP = phone.replace(/[^\d\+]/g, '');
-      document.getElementById('btnFallbackTel').href = 'tel:' + cleanP;
-      document.getElementById('backendOfflineMsg').textContent = 'Calling API is not configured (API key / PBX not connected). Dial directly via device dialer below.';
-      $('#backendOfflineAlert').slideDown(180);
-      document.getElementById('liveCallSubtitle').textContent = 'Backend offline: use phone fallback';
+  if (matches.length === 0) {
+    $('#dialerSuggestions').hide().empty();
+    return;
+  }
+
+  var html = '';
+  for (var j = 0; j < matches.length; j++) {
+    var m = matches[j];
+    var initials = m.name ? m.name.split(' ').map(function(n){ return n[0]; }).slice(0, 2).join('').toUpperCase() : 'TM';
+    var dialNum = m.dial_target || m.extension || m.phone || '';
+
+    html += '<div class="dialer-suggestion-row" onclick="selectDialerSuggestion(\'' + escapeJs(m.name) + '\', \'' + escapeJs(dialNum) + '\', \'' + escapeJs(m.department || '') + '\')">';
+    html += '  <div style="display:flex; align-items:center; gap:8px; min-width:0;">';
+    html += '    <div class="dialer-suggestion-avatar">' + initials + '</div>';
+    html += '    <div style="min-width:0;">';
+    html += '      <div style="font-size:12.5px; font-weight:600; color:#1d1d1f; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + escapeHtml(m.name) + '</div>';
+    html += '      <div style="font-size:10.5px; color:#8e8e93; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + escapeHtml(m.department || 'Team') + (m.extension ? ' &bull; ' + escapeHtml(m.extension) : '') + '</div>';
+    html += '    </div>';
+    html += '  </div>';
+    if (dialNum) {
+      html += '  <span class="apple-quick-call-btn" style="width:26px; height:26px; font-size:11px; flex-shrink:0;"><i class="fa fa-phone"></i></span>';
+    }
+    html += '</div>';
+  }
+
+  $('#dialerSuggestions').html(html).show();
+}
+
+function selectDialerSuggestion(name, targetNum, dept) {
+  $('#dialerSuggestions').hide().empty();
+  if (targetNum) {
+    $('#dialerInput').val(targetNum);
+  }
+  $('#dialerChipName').text(name + (dept ? ' (' + dept + ')' : ''));
+  $('#dialerContactChip').css('display', 'inline-flex');
+
+  activeLead = {
+    id: 0,
+    customer: name + ' (Colleague)',
+    is_internal: 1,
+    phone_primary: targetNum,
+    status_name: 'Internal Team'
+  };
+}
+
+function handleDialerInputKey(e) {
+  if (e.key === 'Escape') {
+    $('#dialerSuggestions').hide().empty();
+    return;
+  }
+  if (e.key === 'Enter') {
+    var firstRow = $('#dialerSuggestions .dialer-suggestion-row').first();
+    if (firstRow.length > 0 && isNaN($('#dialerInput').val().trim())) {
+      firstRow.trigger('click');
+      startDialing();
       return;
     }
-
-    $('#backendOfflineAlert').slideUp(180);
-    callState = 'calling';
-    callConnectedSeconds = 0;
-    if (callTimerInterval) {
-      clearInterval(callTimerInterval);
-      callTimerInterval = null;
-    }
-
-    var btn = document.getElementById('btnToggleCall');
-    btn.className = 'glass-call-btn btn-end';
-    btn.innerHTML = '<i class="fa fa-phone-slash"></i>';
-    document.getElementById('liveCallSubtitle').textContent = 'Dialing ' + phone + ' via 3CX...';
-
-    setTimeout(function() {
-      if (callState === 'calling') {
-        callState = 'connected';
-        document.getElementById('liveCallSubtitle').textContent = 'Connected • 00:00';
-        callTimerInterval = setInterval(function() {
-          if (callState === 'connected') {
-            callConnectedSeconds++;
-            document.getElementById('liveCallSubtitle').textContent = 'Connected • ' + formatTimer(callConnectedSeconds);
-            document.getElementById('hiddenDuration').value = callConnectedSeconds;
-            document.getElementById('followupCallDurationBadge').textContent = formatTimer(callConnectedSeconds);
-          }
-        }, 1000);
-      }
-    }, 2000);
-
-    if (res && res.dispatch && res.dispatch.webclient_url) {
-      window.open(res.dispatch.webclient_url, '_blank');
-    }
-  }).fail(function() {
-    showAppleToast('Server communication error');
-  });
+    $('#dialerSuggestions').hide().empty();
+    startDialing();
+  }
 }
 
-function endCrmCall() {
-  if (callState === 'idle') return;
-
-  callState = 'idle';
-  if (callTimerInterval) {
-    clearInterval(callTimerInterval);
-    callTimerInterval = null;
+$(document).on('click', function(e) {
+  if (!$(e.target).closest('.dialer-top-display').length) {
+    $('#dialerSuggestions').hide();
   }
+});
 
-  var btn = document.getElementById('btnToggleCall');
-  btn.className = 'glass-call-btn btn-start';
-  btn.innerHTML = '<i class="fa fa-phone"></i>';
-
-  document.getElementById('liveCallSubtitle').textContent = 'Call Ended • Ready for notes';
-
-  var leadId = parseInt($('#hiddenLeadId').val(), 10) || 0;
-  if (autoDialerActive) {
-    $.ajax({
-      type: 'POST',
-      url: '<?php echo base_url(); ?>manager/calls/ajax_autodial_call_ended',
-      data: { lead_id: leadId, duration: callConnectedSeconds },
-      dataType: 'json'
-    });
-    startWrapupCountdown(configuredDialerSeconds);
-  }
-
-  if (activeCallLogId > 0) {
-    runAiAnalysis(activeCallLogId, true);
-  }
-
-  switchToCard('details');
+function closeMiddleArea() {
+  $('#middleContentArea').hide();
+  $('#subnavFollowup').hide();
+  $('#subnavLogsPeriod').hide();
+  $('.crm-dock-btn').removeClass('active');
 }
 
-function runAiAnalysis(callLogId, silent) {
-  if (!callLogId) return;
+function openMiddleArea() {
+  $('#middleContentArea').css('display', 'flex');
+}
+
+function openTeamColleagues() {
+  $('.crm-dock-btn').removeClass('active');
+  $('#dockBtnTeam').addClass('active');
+
+  $('#middleAreaTitle').text('Team Members');
+  $('#subnavFollowup').hide();
+  $('#subnavLogsPeriod').hide();
+
+  $('#middleViewTeam').show();
+  $('#middleViewList').hide();
+  $('#middleViewDetails').hide();
+  $('#middleViewLogs').hide();
+
+  openMiddleArea();
+  $('#inputTeamSearch').val('').focus();
+  $('#teamColleaguesContainer').html('<div id="teamSearchPrompt" style="text-align:center; padding:50px 20px; color:#8e8e93; font-size:13px; font-weight:500;">Type at least 3 letters to search colleagues or departments</div>');
+  if (!allColleagues || allColleagues.length === 0) {
+    loadTeamColleaguesData(true);
+  }
+}
+
+function loadTeamColleaguesData(silent, callback) {
   if (!silent) {
-    showAppleToast('Analyzing call with Groq AI...');
+    $('#teamColleaguesContainer').html('<div style="text-align:center; padding:30px; color:#8e8e93;"><i class="fa fa-spinner fa-spin"></i> Loading directory...</div>');
   }
+
   $.ajax({
-    type: 'POST',
-    url: '<?php echo base_url(); ?>manager/calls/ajax_process_ai',
-    data: { call_log_id: callLogId },
-    dataType: 'json'
-  }).done(function(res) {
-    if (res && res.status) {
-      if (!silent) {
-        showAppleToast('AI Analysis completed: ' + (res.data ? res.data.next_status : ''));
+    url: '<?php echo base_url(); ?>manager/calls/ajax_get_team_colleagues',
+    type: 'GET',
+    dataType: 'json',
+    success: function(res) {
+      if (res && res.status && res.colleagues) {
+        allColleagues = res.colleagues;
+        if (typeof callback === 'function') {
+          callback(allColleagues);
+        }
+      } else {
+        allColleagues = [];
+        if (!silent) {
+          $('#teamColleaguesContainer').html('<div style="text-align:center; padding:30px; color:#ff3b30;">Failed to load team directory.</div>');
+        }
       }
-      refreshCallLogs();
-    } else if (!silent) {
-      showAppleToast('AI Notice: ' + (res.message || 'Processing queue'));
+    },
+    error: function() {
+      allColleagues = [];
+      if (!silent) {
+        $('#teamColleaguesContainer').html('<div style="text-align:center; padding:30px; color:#ff3b30;">Network error while loading team.</div>');
+      }
     }
   });
 }
 
-function startWrapupCountdown(seconds) {
-  stopWrapupCountdown();
-  autoDialerSeconds = seconds || configuredDialerSeconds;
-  autoDialerPaused = false;
-  $('#autodialerTimerDisplay').text(autoDialerSeconds);
-  $('#autodialerWrapupBanner').slideDown(180);
+function filterTeamCards() {
+  var q = $('#inputTeamSearch').val().trim().toLowerCase();
+  if (q.length < 3) {
+    $('#teamColleaguesContainer').html('<div id="teamSearchPrompt" style="text-align:center; padding:50px 20px; color:#8e8e93; font-size:13px; font-weight:500;">Type at least 3 letters to search colleagues or departments</div>');
+    return;
+  }
 
-  autoDialerCountdown = setInterval(function() {
-    if (autoDialerPaused) return;
-    autoDialerSeconds--;
-    $('#autodialerTimerDisplay').text(autoDialerSeconds);
+  if (!allColleagues || allColleagues.length === 0) {
+    $('#teamColleaguesContainer').html('<div style="text-align:center; padding:30px; color:#8e8e93;"><i class="fa fa-spinner fa-spin"></i> Loading directory...</div>');
+    loadTeamColleaguesData(false, function() {
+      filterTeamCards();
+    });
+    return;
+  }
 
-    if (autoDialerSeconds <= 0) {
-      stopWrapupCountdown();
-      autoDialNextLead();
+  var matches = [];
+  for (var i = 0; i < allColleagues.length; i++) {
+    var c = allColleagues[i];
+    var searchStr = ((c.name || '') + ' ' + (c.department || '') + ' ' + (c.extension || '') + ' ' + (c.phone || '') + ' ' + (c.dial_target || '')).toLowerCase();
+    if (searchStr.indexOf(q) > -1) {
+      matches.push(c);
     }
+  }
+
+  if (matches.length === 0) {
+    $('#teamColleaguesContainer').html('<div style="text-align:center; padding:40px 20px; color:#8e8e93; font-size:13px;">No colleagues or departments matching "' + escapeHtml(q) + '"</div>');
+    return;
+  }
+
+  var html = '';
+  for (var j = 0; j < matches.length; j++) {
+    var m = matches[j];
+    var initials = m.name ? m.name.split(' ').map(function(n){ return n[0]; }).slice(0, 2).join('').toUpperCase() : 'TM';
+    var dialNum = m.dial_target || m.extension || m.phone || '';
+
+    html += '<div class="colleague-card">';
+    html += '  <div style="display:flex; align-items:center; gap:12px;">';
+    html += '    <div class="colleague-avatar">' + initials + '</div>';
+    html += '    <div>';
+    html += '      <div style="font-size:13.5px; font-weight:600; color:#1d1d1f;">' + escapeHtml(m.name) + '</div>';
+    html += '      <div style="font-size:11.5px; color:#8e8e93; font-weight:500;">' + escapeHtml(m.department || 'General') + (m.extension ? ' &bull; Ext: ' + escapeHtml(m.extension) : '') + '</div>';
+    html += '    </div>';
+    html += '  </div>';
+
+    html += '  <div style="display:flex; align-items:center; gap:8px;">';
+    if (dialNum) {
+      html += '    <button type="button" class="apple-quick-call-btn" title="Call ' + escapeJs(m.name) + '" onclick="dialColleague(\'' + escapeJs(m.name) + '\', \'' + escapeJs(dialNum) + '\')"><i class="fa fa-phone"></i></button>';
+      html += '    <button type="button" class="btn-edit-row" title="Copy Number" onclick="copyNumber(\'' + escapeJs(dialNum) + '\')"><i class="fa fa-copy"></i></button>';
+    } else {
+      html += '    <span style="font-size:11.5px; color:#8e8e93;">No phone</span>';
+    }
+    html += '  </div>';
+    html += '</div>';
+  }
+  $('#teamColleaguesContainer').html(html);
+}
+
+function dialColleague(name, targetNum) {
+  activeLead = {
+    id: 0,
+    customer: name + ' (Colleague)',
+    is_internal: 1,
+    phone_primary: targetNum,
+    status_name: 'Internal Team'
+  };
+
+  $('#dialerInput').val(targetNum);
+  $('#dialerChipName').text(name + ' (Colleague)');
+  $('#dialerContactChip').css('display', 'inline-flex');
+  startDialing();
+}
+
+function copyNumber(num) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(num).then(function() {
+      showToast('Copied ' + num);
+    });
+  } else {
+    showToast('Number: ' + num);
+  }
+}
+
+function openMenuQueue(type, filter, titleText) {
+  activeQueueType = type;
+  activeQueueFilter = filter;
+
+  $('.crm-dock-btn').removeClass('active');
+  if (type === 'followup') {
+    $('#dockBtnFollowup').addClass('active');
+    $('#subnavFollowup').show();
+    $('#subnavLogsPeriod').hide();
+    $('#subnavFollowup .apple-segment-btn').removeClass('active');
+    $('#subnavFollowup .apple-segment-btn[data-filter="' + filter + '"]').addClass('active');
+  } else if (type === 'database') {
+    $('#dockBtnDatabase').addClass('active');
+    $('#subnavFollowup').hide();
+    $('#subnavLogsPeriod').hide();
+  } else if (type === 'lead') {
+    $('#dockBtnLeads').addClass('active');
+    $('#subnavFollowup').hide();
+    $('#subnavLogsPeriod').hide();
+  }
+
+  $('#middleAreaTitle').text(titleText);
+  $('#middleViewTeam').hide();
+  $('#middleViewList').show();
+  $('#middleViewDetails').hide();
+  $('#middleViewLogs').hide();
+
+  if (type === 'database' || type === 'lead') {
+    $('#statusFilterContainer').show();
+  } else {
+    $('#statusFilterContainer').hide();
+  }
+
+  openMiddleArea();
+  loadQueueData(type, filter, $('#selectQueueStatus').val(), $('#inputQueueSearch').val());
+}
+
+function reloadCurrentQueue() {
+  loadQueueData(activeQueueType, activeQueueFilter, $('#selectQueueStatus').val(), $('#inputQueueSearch').val());
+}
+
+function loadQueueData(type, filter, statusVal, searchVal) {
+  $('#tbodyQueueRecords').html('<tr><td colspan="5" style="text-align:center; padding:25px; color:#8e8e93;"><i class="fa fa-spinner fa-spin"></i> Loading records...</td></tr>');
+
+  $.ajax({
+    url: '<?php echo base_url(); ?>manager/calls/ajax_get_queue',
+    type: 'GET',
+    data: {
+      type: type,
+      filter: filter,
+      status: statusVal,
+      search: searchVal
+    },
+    dataType: 'json',
+    success: function(res) {
+      if (res && res.status && res.leads) {
+        currentQueue = res.leads;
+        renderQueueTable(res.leads);
+
+        if (res.leads.length > 0 && (!activeLead || !activeLead.id)) {
+          applyLeadToDialer(res.leads[0], 0);
+        }
+      } else {
+        currentQueue = [];
+        $('#tbodyQueueRecords').html('<tr><td colspan="5" style="text-align:center; padding:25px; color:#8e8e93;">No matching records found.</td></tr>');
+      }
+    },
+    error: function() {
+      $('#tbodyQueueRecords').html('<tr><td colspan="5" style="text-align:center; padding:25px; color:#ff3b30;">Failed to load records.</td></tr>');
+    }
+  });
+}
+
+function renderQueueTable(leads) {
+  var html = '';
+  if (!leads || leads.length === 0) {
+    $('#tbodyQueueRecords').html('<tr><td colspan="5" style="text-align:center; padding:25px; color:#8e8e93;">No contacts found in this list.</td></tr>');
+    return;
+  }
+
+  for (var i = 0; i < leads.length; i++) {
+    var l = leads[i];
+    var isCurrent = (activeLead && activeLead.id == l.id);
+    var p1 = l.phone_primary || l.contact1 || '';
+    var p2 = l.phone_alt || l.alt_contact || '';
+    var dateTxt = l.followup_date ? (l.followup_date + (l.followup_time ? ' ' + l.followup_time : '')) : 'Not scheduled';
+
+    html += '<tr class="' + (isCurrent ? 'active-row' : '') + '" id="rowLead_' + l.id + '">';
+    html += '<td>';
+    html += '<strong style="color:#1d1d1f; font-size:13px;">' + escapeHtml(l.customer || 'Unnamed') + '</strong>';
+    if (l.poc) {
+      html += '<div style="font-size:11.5px; color:#8e8e93;">' + escapeHtml(l.poc) + '</div>';
+    }
+    html += '</td>';
+
+    html += '<td>';
+    if (p1) {
+      html += '<div><a href="javascript:void(0)" style="color:#0072f0; text-decoration:none; font-weight:600;" onclick="quickDialNumber(\'' + escapeJs(p1) + '\', ' + l.id + ')"><i class="fa fa-phone"></i> ' + escapeHtml(p1) + '</a></div>';
+    }
+    if (p2) {
+      html += '<div><a href="javascript:void(0)" style="color:#8e8e93; text-decoration:none;" onclick="quickDialNumber(\'' + escapeJs(p2) + '\', ' + l.id + ')"><i class="fa fa-mobile"></i> ' + escapeHtml(p2) + '</a></div>';
+    }
+    if (!p1 && !p2) {
+      html += '<span style="color:#8e8e93;">No Phone</span>';
+    }
+    html += '</td>';
+
+    html += '<td><span style="font-weight:600; color:#1d1d1f;">' + escapeHtml(l.status_name || 'Open') + '</span></td>';
+    html += '<td style="font-size:11.5px; color:#8e8e93; font-weight:500;">' + escapeHtml(dateTxt) + '</td>';
+
+    html += '<td style="text-align:right; white-space:nowrap;">';
+    html += '<button type="button" class="apple-quick-call-btn" title="Call" onclick="selectLeadRow(' + i + ', true)"><i class="fa fa-phone"></i></button>';
+    html += '<button type="button" class="btn-edit-row" onclick="viewLeadDetailsById(' + l.id + ')"><i class="fa fa-pencil"></i> Details</button>';
+    html += '</td>';
+    html += '</tr>';
+  }
+
+  $('#tbodyQueueRecords').html(html);
+}
+
+function filterQueueTable() {
+  var q = $('#inputQueueSearch').val().toLowerCase();
+  $('#tbodyQueueRecords tr').each(function() {
+    var txt = $(this).text().toLowerCase();
+    if (txt.indexOf(q) > -1) {
+      $(this).show();
+    } else {
+      $(this).hide();
+    }
+  });
+}
+
+function selectLeadRow(idx, andDial) {
+  if (currentQueue && currentQueue[idx]) {
+    currentIndex = idx;
+    applyLeadToDialer(currentQueue[idx], idx);
+    $('.queue-table tr').removeClass('active-row');
+    $('#rowLead_' + currentQueue[idx].id).addClass('active-row');
+    if (andDial) {
+      startDialing();
+    }
+  }
+}
+
+function quickDialNumber(num, leadId) {
+  $('#dialerInput').val(num);
+  if (leadId) {
+    for (var i = 0; i < currentQueue.length; i++) {
+      if (currentQueue[i].id == leadId) {
+        applyLeadToDialer(currentQueue[i], i);
+        break;
+      }
+    }
+  }
+  startDialing();
+}
+
+function applyLeadToDialer(lead, idx) {
+  activeLead = lead;
+  currentIndex = idx || 0;
+
+  var custName = lead.customer || 'No Contact';
+  var p1 = lead.phone_primary || lead.contact1 || '';
+
+  $('#dialerChipName').text(custName);
+  $('#dialerContactChip').css('display', 'inline-flex');
+  $('#dialerInput').val(p1);
+
+  populateDetailsForm(lead);
+}
+
+function populateDetailsForm(l) {
+  if (!l) return;
+  $('#editLeadId').val(l.id || 0);
+  $('#editCallLogId').val(0);
+  $('#detailsHeaderName').text(l.customer || 'Contact Details');
+
+  $('#editCustomer').val(l.customer || '');
+  $('#editPoc').val(l.poc || '');
+  $('#editContact1').val(l.contact1 || l.phone_primary || '');
+  $('#editAltContact').val(l.alt_contact || l.phone_alt || '');
+  $('#editEmail').val(l.email || '');
+  $('#editAuthority').val(l.tl_authority || '');
+  $('#editLocation').val(l.location || l.address || '');
+
+  var dnd = l.dnd_status || 'No';
+  $('#editDndStatus').val(dnd);
+  if (dnd === 'Yes') {
+    $('#wrapDncrDate').show();
+    $('#editDndDate').val(l.dnd_check_date || '');
+  } else {
+    $('#wrapDncrDate').hide();
+    $('#editDndDate').val('');
+  }
+
+  if (l.s_cat) $('#editSCat').val(l.s_cat);
+  if (l.p_cat) $('#editPCat').val(l.p_cat);
+  $('#editTlNumber').val(l.tl_number || '');
+
+  $('#editQty').val(l.qty || 1);
+  $('#editMrc').val(l.mrc || '');
+  $('#editRevenue').val(l.revenue || '');
+  calculateMrrTotal();
+
+  if (l.status) $('#editStatus').val(l.status);
+  $('#editRemark').val(l.remark || '');
+  $('#editNextFollowup').val(l.followup_date || '');
+  $('#editNextFollowupTime').val(l.followup_time || '11:00 AM');
+}
+
+function toggleDncrDateRow() {
+  if ($('#editDndStatus').val() === 'Yes') {
+    $('#wrapDncrDate').show();
+  } else {
+    $('#wrapDncrDate').hide();
+  }
+}
+
+function calculateMrrTotal() {
+  var qty = parseFloat($('#editQty').val()) || 1;
+  var mrc = parseFloat($('#editMrc').val()) || 0;
+  var rev = parseFloat($('#editRevenue').val()) || 0;
+  var total = (mrc * qty) + rev;
+  $('#editMrr').val(total.toFixed(2));
+}
+
+function viewLeadDetailsById(id) {
+  $.ajax({
+    url: '<?php echo base_url(); ?>manager/calls/ajax_get_lead/' + id,
+    type: 'GET',
+    dataType: 'json',
+    success: function(res) {
+      if (res && res.status && res.lead) {
+        populateDetailsForm(res.lead);
+        $('#middleViewList').hide();
+        $('#middleViewTeam').hide();
+        $('#middleViewLogs').hide();
+        $('#middleViewDetails').show();
+      } else {
+        showToast('Failed to load contact details');
+      }
+    }
+  });
+}
+
+function backToListFromDetails() {
+  $('#middleViewDetails').hide();
+  if (activeQueueType === 'team') {
+    $('#middleViewTeam').show();
+  } else {
+    $('#middleViewList').show();
+  }
+}
+
+function saveRecordDetailsForm() {
+  var fd = $('#formRecordDetails').serialize();
+  $.ajax({
+    url: '<?php echo base_url(); ?>manager/calls/ajax_save_record_details',
+    type: 'POST',
+    data: fd,
+    dataType: 'json',
+    success: function(res) {
+      if (res && res.status) {
+        showToast('Record details saved');
+        backToListFromDetails();
+        reloadCurrentQueue();
+      } else {
+        showToast(res && res.message ? res.message : 'Error saving record');
+      }
+    },
+    error: function() {
+      showToast('Network error while saving details');
+    }
+  });
+}
+
+function openMenuLogs() {
+  $('.crm-dock-btn').removeClass('active');
+  $('#dockBtnLogs').addClass('active');
+
+  $('#subnavFollowup').hide();
+  $('#subnavLogsPeriod').show();
+
+  $('#middleAreaTitle').text('Calling Reports');
+  $('#middleViewTeam').hide();
+  $('#middleViewList').hide();
+  $('#middleViewDetails').hide();
+  $('#middleViewLogs').show();
+  openMiddleArea();
+
+  loadDailyLogsData(currentLogsPeriod);
+}
+
+function changeLogsPeriod(period) {
+  currentLogsPeriod = period;
+  $('#subnavLogsPeriod .apple-segment-btn').removeClass('active');
+  $('#subnavLogsPeriod .apple-segment-btn[data-period="' + period + '"]').addClass('active');
+  loadDailyLogsData(period);
+}
+
+function loadDailyLogsData(period) {
+  period = period || currentLogsPeriod || 'day';
+  $('#tbodyStatusBreakdown').html('<tr><td colspan="5" style="text-align:center; padding:15px; color:#8e8e93;"><i class="fa fa-spinner fa-spin"></i> Loading breakdown...</td></tr>');
+  $('#tbodyRecentLogs').html('<tr><td colspan="7" style="text-align:center; padding:15px; color:#8e8e93;"><i class="fa fa-spinner fa-spin"></i> Loading history...</td></tr>');
+
+  $.ajax({
+    url: '<?php echo base_url(); ?>manager/calls/ajax_get_daily_logs',
+    type: 'GET',
+    data: { period: period },
+    dataType: 'json',
+    success: function(res) {
+      if (res && res.status) {
+        if (res.stats) {
+          $('#logStatTotal').text(res.stats.total_calls || 0);
+          $('#logStatConnected').text(res.stats.connected_calls || 0);
+          $('#logStatNewCalls').text(res.stats.new_calls || 0);
+          $('#logStatFollowups').text(res.stats.followup_calls || 0);
+          var durSec = parseInt(res.stats.total_duration) || 0;
+          var durMin = Math.round(durSec / 60);
+          $('#logStatDuration').text(durMin + 'm');
+        }
+
+        renderStatusBreakdown(res.status_breakdown);
+        renderRecentLogs(res.logs);
+      }
+    },
+    error: function() {
+      $('#tbodyStatusBreakdown').html('<tr><td colspan="5" style="text-align:center; padding:15px; color:#ff3b30;">Failed to load statistics.</td></tr>');
+    }
+  });
+}
+
+function renderStatusBreakdown(items) {
+  var html = '';
+  if (!items || items.length === 0) {
+    html = '<tr><td colspan="5" style="text-align:center; padding:15px; color:#8e8e93;">No calling activity found for this period.</td></tr>';
+  } else {
+    for (var i = 0; i < items.length; i++) {
+      var item = items[i];
+      html += '<tr>';
+      html += '  <td><strong style="color:#1d1d1f;">' + escapeHtml(item.status_name) + '</strong></td>';
+      html += '  <td style="text-align:center; color:#0072f0; font-weight:600;">' + item.new_calls + '</td>';
+      html += '  <td style="text-align:center; color:#ff9500; font-weight:600;">' + item.followup_calls + '</td>';
+      html += '  <td style="text-align:center; font-weight:700; color:#1d1d1f;">' + item.total_calls + '</td>';
+      html += '  <td style="text-align:right; font-weight:600; color:#1d1d1f;">' + item.percentage + '%</td>';
+      html += '</tr>';
+    }
+  }
+  $('#tbodyStatusBreakdown').html(html);
+}
+
+function renderRecentLogs(logs) {
+  var html = '';
+  if (!logs || logs.length === 0) {
+    html = '<tr><td colspan="7" style="text-align:center; padding:15px; color:#8e8e93;">No recent calls found.</td></tr>';
+  } else {
+    for (var i = 0; i < logs.length; i++) {
+      var log = logs[i];
+      var phone = log.phone_number || '';
+      var cust = log.customer_name || (log.lead_customer ? log.lead_customer : 'Direct Call');
+      var cat = log.call_category === 'followup' ? '<span style="color:#ff9500; font-weight:600;">Follow-up</span>' : '<span style="color:#0072f0; font-weight:600;">New Call</span>';
+
+      html += '<tr>';
+      html += '  <td style="font-size:11.5px; color:#8e8e93; font-weight:500;">' + escapeHtml(log.created_at) + '</td>';
+      html += '  <td><strong style="color:#1d1d1f;">' + escapeHtml(cust) + '</strong></td>';
+      html += '  <td><a href="javascript:void(0)" style="color:#0072f0; text-decoration:none; font-weight:600;" onclick="quickDialNumber(\'' + escapeJs(phone) + '\')"><i class="fa fa-phone"></i> ' + escapeHtml(phone) + '</a></td>';
+      html += '  <td>' + cat + '</td>';
+      html += '  <td><span style="font-weight:600; color:#1d1d1f;">' + escapeHtml(log.disposition || log.call_status) + '</span></td>';
+      html += '  <td>' + (log.duration || 0) + 's</td>';
+      html += '  <td style="text-align:right;">';
+      html += '    <button type="button" class="apple-quick-call-btn" title="Call" onclick="quickDialNumber(\'' + escapeJs(phone) + '\')"><i class="fa fa-phone"></i></button>';
+      html += '    <button type="button" class="btn-edit-row" onclick="copyNumber(\'' + escapeJs(phone) + '\')"><i class="fa fa-copy"></i></button>';
+      html += '  </td>';
+      html += '</tr>';
+    }
+  }
+  $('#tbodyRecentLogs').html(html);
+}
+
+function handleCallButtonClick() {
+  if (callState === 'idle') {
+    startDialing();
+  } else if (callState === 'calling' || callState === 'connected') {
+    endActiveCall();
+  }
+}
+
+function startDialing() {
+  var phone = $('#dialerInput').val().trim();
+  if (!phone) {
+    showToast('Please enter a phone number');
+    return;
+  }
+
+  callState = 'calling';
+  $('#btnToggleCall').removeClass('btn-connected').addClass('btn-calling');
+  $('#dialerStatusSubtitle').text('Dialing ' + phone + '...');
+
+  var isInternal = (activeLead && activeLead.is_internal) ? 1 : 0;
+  var category = isInternal ? 'internal' : (activeQueueType === 'followup' ? 'followup' : 'new_call');
+
+  $.ajax({
+    url: '<?php echo base_url(); ?>manager/calls/ajax_initiate_call',
+    type: 'POST',
+    data: {
+      phone: phone,
+      lead_id: activeLead ? activeLead.id : 0,
+      customer_name: activeLead ? activeLead.customer : 'Direct Call',
+      is_internal: isInternal,
+      call_category: category
+    },
+    dataType: 'json',
+    success: function(res) {
+      if (res && res.status) {
+        activeCallLogId = res.call_log_id || 0;
+        onCallConnected();
+      } else {
+        setTimeout(function() {
+          onCallConnected();
+        }, 1200);
+      }
+    },
+    error: function() {
+      setTimeout(function() {
+        onCallConnected();
+      }, 1200);
+    }
+  });
+}
+
+function onCallConnected() {
+  callState = 'connected';
+  callConnectedSeconds = 0;
+  $('#btnToggleCall').removeClass('btn-calling').addClass('btn-connected');
+  $('#dialerStatusSubtitle').text('Connected 00:00');
+
+  clearInterval(callTimerInterval);
+  callTimerInterval = setInterval(function() {
+    callConnectedSeconds++;
+    var m = Math.floor(callConnectedSeconds / 60);
+    var s = callConnectedSeconds % 60;
+    var timeStr = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+    $('#dialerStatusSubtitle').text('Connected ' + timeStr);
+    $('#editCallDuration').val(callConnectedSeconds);
   }, 1000);
 }
 
-function stopWrapupCountdown() {
-  if (autoDialerCountdown) {
-    clearInterval(autoDialerCountdown);
-    autoDialerCountdown = null;
-  }
-}
+function endActiveCall() {
+  clearInterval(callTimerInterval);
+  callState = 'idle';
+  $('#btnToggleCall').removeClass('btn-calling btn-connected');
+  $('#dialerStatusSubtitle').text('Call ended (' + callConnectedSeconds + 's)');
 
-function autoDialNextLead() {
-  stopWrapupCountdown();
-  $('#autodialerWrapupBanner').slideUp(180);
-
-  saveCallDetails(function() {
-    dispatchNextAutodialLead();
-  }, true);
-}
-
-function dispatchNextAutodialLead() {
-  $.ajax({
-    type: 'POST',
-    url: '<?php echo base_url(); ?>manager/calls/ajax_autodial_next',
-    dataType: 'json'
-  }).done(function(res) {
-    if (res && res.status && res.lead) {
-      var nextLead = res.lead;
-      var foundIdx = -1;
-      for (var i = 0; i < callingQueue.length; i++) {
-        if (callingQueue[i].id == nextLead.id) {
-          foundIdx = i;
-          break;
-        }
-      }
-      if (foundIdx >= 0) {
-        loadContactAt(foundIdx);
-      } else {
-        callingQueue.unshift(nextLead);
-        loadContactAt(0);
-      }
-      switchToCard('dialer');
-      showAppleToast('Auto-Dialing: ' + (nextLead.customer || 'Next Contact'));
-      setTimeout(function() {
-        startCrmCall();
-      }, 700);
-    } else if (currentIndex < callingQueue.length - 1) {
-      loadContactAt(currentIndex + 1);
-      switchToCard('dialer');
-      showAppleToast('Auto-Dialing: ' + (callingQueue[currentIndex].customer || 'Next Contact'));
-      setTimeout(function() {
-        startCrmCall();
-      }, 700);
-    } else {
-      showAppleToast('Auto-Dialer queue completed');
-    }
-  }).fail(function() {
-    if (currentIndex < callingQueue.length - 1) {
-      loadContactAt(currentIndex + 1);
-      switchToCard('dialer');
-      showAppleToast('Auto-Dialing: ' + (callingQueue[currentIndex].customer || 'Next Contact'));
-      setTimeout(function() {
-        startCrmCall();
-      }, 700);
-    } else {
-      showAppleToast('Auto-Dialer queue completed');
-    }
-  });
-}
-
-function refreshCallLogs() {
-  $.ajax({
-    type: 'GET',
-    url: '<?php echo base_url(); ?>manager/calls/ajax_get_call_logs',
-    dataType: 'json'
-  }).done(function(resp) {
-    if (resp && resp.logs) {
-      var container = document.getElementById('logsListContainer');
-      if (!container) return;
-      if (resp.logs.length === 0) {
-        container.innerHTML = '<div style="padding:20px; text-align:center; color:#94a3b8;">No past completed calls recorded</div>';
-        return;
-      }
-      var html = '';
-      resp.logs.forEach(function(log) {
-        var rawPhone = log.phone_number || '';
-        var cleanPhone = rawPhone.replace(/[^\d\+]/g, '');
-        var dur = parseInt(log.duration || 0, 10);
-
-        html += '<div class="glass-phone-log-item">';
-        html += '<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">';
-        html += '<span style="font-size:14px; font-weight:700; color:#ffffff;">' + (log.customer_name || 'Direct Call') + '</span>';
-        html += '<span class="glass-badge">' + dur + 's</span>';
-        html += '</div>';
-
-        html += '<div style="font-size:11px; color:#94a3b8; margin-bottom:10px;">';
-        html += '<span><i class="fa fa-phone"></i> ' + rawPhone + '</span>';
-        html += '<span>•</span>';
-        html += '<span>' + (log.disposition || 'Completed') + '</span>';
-        html += '<span>•</span>';
-        html += '<span>' + (log.created_at || '') + '</span>';
-        html += '</div>';
-
-        html += '<div style="display:flex; gap:8px;">';
-        html += '<button type="button" class="glass-btn-white" style="padding:4px 10px; font-size:11px;" onclick="dialFromLog(\'' + cleanPhone + '\', \'' + (log.customer_name || '').replace(/'/g, "\\'") + '\', ' + (log.lead_id || 0) + ')"><i class="fa fa-phone"></i> Call</button>';
-        html += '<button type="button" class="glass-btn-dark" style="padding:4px 10px; font-size:11px;" onclick="copyNumberToClipboard(\'' + cleanPhone + '\')"><i class="fa fa-copy"></i> Copy</button>';
-        if (log.lead_id) {
-          html += '<a href="<?php echo base_url(); ?>manager/leads/view/' + btoa(log.lead_id) + '" target="_blank" class="glass-btn-dark" style="padding:4px 10px; font-size:11px;"><i class="fa fa-user"></i> View Lead</a>';
-        }
-        html += '</div>';
-        html += '</div>';
-      });
-      container.innerHTML = html;
-    }
-  });
-}
-
-function saveCallDetails(callbackAfterSave, isAuto) {
-  var form = $('#formCallFollowup');
-  var remarks = $('#followupRemarks').val().trim();
-  if (!remarks) {
-    if (isAuto) {
-      remarks = 'Auto-logged call completion';
-      $('#followupRemarks').val(remarks);
-    } else {
-      showAppleToast('Please enter call remarks');
-      $('#followupRemarks').focus();
-      return;
-    }
-  }
-
-  var formData = form.serialize();
-  formData += '&call_duration=' + callConnectedSeconds;
-  formData += '&phone=' + encodeURIComponent($('#dialerInput').val().trim());
-
-  var btnNext = $('#btnSaveAndNextContact');
-  btnNext.prop('disabled', true).text('Saving...');
+  var leadId = activeLead ? activeLead.id : 0;
+  var phone = $('#dialerInput').val().trim();
+  var isInternal = (activeLead && activeLead.is_internal) ? 1 : 0;
+  var category = isInternal ? 'internal' : (activeQueueType === 'followup' ? 'followup' : 'new_call');
 
   $.ajax({
-    type: 'POST',
     url: '<?php echo base_url(); ?>manager/calls/ajax_save_call',
-    data: formData,
-    dataType: 'json'
-  }).done(function(resp) {
-    btnNext.prop('disabled', false).html('<span>Save & Next Contact</span> <i class="fa fa-arrow-right"></i>');
-    if (resp && resp.status) {
-      showAppleToast('Call details saved successfully');
-      $('#followupRemarks').val('');
-      refreshCallLogs();
-
-      if (typeof callbackAfterSave === 'function') {
-        callbackAfterSave(resp);
-      }
-    } else {
-      showAppleToast('Error saving call log');
-      if (isAuto && typeof callbackAfterSave === 'function') {
-        callbackAfterSave(null);
-      }
-    }
-  }).fail(function() {
-    btnNext.prop('disabled', false).html('<span>Save & Next Contact</span> <i class="fa fa-arrow-right"></i>');
-    showAppleToast('Network error while saving');
-    if (isAuto && typeof callbackAfterSave === 'function') {
-      callbackAfterSave(null);
+    type: 'POST',
+    data: {
+      call_log_id: activeCallLogId,
+      lead_id: leadId,
+      customer_name: activeLead ? activeLead.customer : 'Direct Call',
+      phone: phone,
+      call_duration: callConnectedSeconds,
+      call_disposition: 'Connected',
+      is_internal: isInternal,
+      call_category: category,
+      remarks: 'Call completed'
+    },
+    dataType: 'json',
+    success: function() {
+      showToast('Call logged');
     }
   });
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function escapeJs(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '');
 }
 
 $(document).ready(function() {
-
-  $('.datepicker').datepicker({
-    format: 'yyyy-mm-dd',
-    autoclose: true,
-    todayHighlight: true
-  });
-
-  $('.glass-key-btn').on('click', function() {
-    var key = $(this).data('key');
-    playKeyTone(key);
-    var input = document.getElementById('dialerInput');
-    input.value += key;
-  });
-
-  $('#btnDialerBackspace').on('click', function() {
-    var input = document.getElementById('dialerInput');
-    input.value = input.value.slice(0, -1);
-    playDtmfTone(350, 400, 50);
-  });
-
-  $('#btnToggleCall').on('click', function() {
-    if (callState === 'idle') {
-      startCrmCall();
-    } else {
-      endCrmCall();
-    }
-  });
-
-  $('#pillTabDialer, #dockBtnDialer').on('click', function() {
-    switchToCard('dialer');
-  });
-
-  $('#pillTabDetails, #dockBtnDetails').on('click', function() {
-    switchToCard('details');
-  });
-
-  $('#btnPrevLead').on('click', function() {
-    if (currentIndex > 0) {
-      loadContactAt(currentIndex - 1);
-    }
-  });
-
-  $('#btnNextLead').on('click', function() {
-    if (currentIndex < callingQueue.length - 1) {
-      loadContactAt(currentIndex + 1);
-    }
-  });
-
-  $('#followupStatusSelect').on('change', function() {
-    checkFollowupScheduleRequirement();
-  });
-
-  $('.vat-pill').on('click', function() {
-    $('.vat-pill').removeClass('selected');
-    $(this).addClass('selected');
-    $('#vatStatusVal').val($(this).data('val'));
-  });
-
-  $('.ct-pill').on('click', function() {
-    $('.ct-pill').removeClass('selected');
-    $(this).addClass('selected');
-    $('#corporateTaxStatusVal').val($(this).data('val'));
-  });
-
-  $('#btnSaveAndNextContact').on('click', function() {
-    saveCallDetails(function(resp) {
-      if (currentIndex < callingQueue.length - 1) {
-        loadContactAt(currentIndex + 1);
-        switchToCard('dialer');
-        showAppleToast('Loaded next contact: ' + (callingQueue[currentIndex].customer || ''));
-        if (autoDialerActive) {
-          startWrapupCountdown(configuredDialerSeconds);
-        }
-      } else {
-        showAppleToast('You have reached the end of the calling queue');
-      }
+  if ($('.datepicker').length && $.fn.datepicker) {
+    $('.datepicker').datepicker({
+      format: 'yyyy-mm-dd',
+      autoclose: true
     });
-  });
-
-  $('#btnSaveOnly').on('click', function() {
-    saveCallDetails(function() {
-      showAppleToast('Details saved for current contact');
-    });
-  });
-
-  $('#dockBtnAutoDialToggle').on('click', function() {
-    autoDialerActive = !autoDialerActive;
-    if (autoDialerActive) {
-      $('#autoDialDockLbl').text(configuredDialerSeconds + 's');
-      showAppleToast('Auto-Dialer active (' + configuredDialerSeconds + 's countdown)');
-      startWrapupCountdown(configuredDialerSeconds);
-    } else {
-      $('#autoDialDockLbl').text('Off');
-      stopWrapupCountdown();
-      $('#autodialerWrapupBanner').slideUp(180);
-      showAppleToast('Auto-Dialer stopped');
-    }
-  });
-
-  $('#btnAutodialExtend').on('click', function() {
-    autoDialerSeconds += 30;
-    $('#autodialerTimerDisplay').text(autoDialerSeconds);
-    showAppleToast('Extended by +30 seconds');
-    $.ajax({
-      type: 'POST',
-      url: '<?php echo base_url(); ?>manager/calls/ajax_autodial_extend',
-      dataType: 'json'
-    });
-  });
-
-  $('#btnAutodialPause').on('click', function() {
-    autoDialerPaused = !autoDialerPaused;
-    if (autoDialerPaused) {
-      $(this).html('<i class="fa fa-play"></i> Resume');
-      showAppleToast('Timer paused');
-      $.ajax({
-        type: 'POST',
-        url: '<?php echo base_url(); ?>manager/calls/ajax_autodial_pause',
-        dataType: 'json'
-      });
-    } else {
-      $(this).html('<i class="fa fa-pause"></i> Pause');
-      showAppleToast('Timer resumed');
-      $.ajax({
-        type: 'POST',
-        url: '<?php echo base_url(); ?>manager/calls/ajax_autodial_resume',
-        dataType: 'json'
-      });
-    }
-  });
-
-  $('#btnAutodialNextNow').on('click', function() {
-    autoDialNextLead();
-  });
-
-  $('#btnAutodialStop').on('click', function() {
-    autoDialerActive = false;
-    $('#autoDialDockLbl').text('Off');
-    stopWrapupCountdown();
-    $('#autodialerWrapupBanner').slideUp(180);
-    showAppleToast('Auto-Dialer stopped');
-  });
-
-  $('#dockBtnQueue').on('click', function() {
-    $('#drawerBackdrop').addClass('show');
-    $('#queueSlidePanel').addClass('show');
-  });
-
-  $('#btnCloseQueueDrawer, #drawerBackdrop').on('click', function() {
-    $('#queueSlidePanel').removeClass('show');
-    $('#logsSlidePanel').removeClass('show');
-    $('#drawerBackdrop').removeClass('show');
-  });
-
-  $('#dockBtnLogs').on('click', function() {
-    refreshCallLogs();
-    $('#drawerBackdrop').addClass('show');
-    $('#logsSlidePanel').addClass('show');
-  });
-
-  $('#btnCloseLogsDrawer').on('click', function() {
-    $('#logsSlidePanel').removeClass('show');
-    $('#drawerBackdrop').removeClass('show');
-  });
-
-  $(document).on('click', '.glass-queue-item', function() {
-    var idx = parseInt($(this).data('lead-idx'), 10);
-    loadContactAt(idx);
-    $('#queueSlidePanel').removeClass('show');
-    $('#drawerBackdrop').removeClass('show');
-  });
-
-  $('#queueSearchInput').on('input', function() {
-    var q = $(this).val().toLowerCase().trim();
-    $('.glass-queue-item').each(function() {
-      var txt = $(this).text().toLowerCase();
-      if (!q || txt.indexOf(q) !== -1) {
-        $(this).show();
-      } else {
-        $(this).hide();
-      }
-    });
-  });
-
-  if (callingQueue.length > 0) {
-    loadContactAt(0);
   }
+  loadTeamColleaguesData(true);
 });
 </script>
-
-<?php require_once(APPPATH . "views/manager/elements/footer.php"); ?>

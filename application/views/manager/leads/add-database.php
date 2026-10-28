@@ -45,13 +45,28 @@
           
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>Company Name <span class="text-danger">*</span></label>
-                <select name="customer" id="company_customer_select" class="form-control select2-company-ajax" style="width: 100%;" required>
-                  <option value="">Select or type company name...</option>
-                  <?php if (!empty($company_list)) { foreach ($company_list as $cmp) { if (!empty($cmp['customer'])) { ?>
-                  <option value="<?php echo htmlspecialchars($cmp['customer']); ?>"><?php echo htmlspecialchars($cmp['customer']); ?></option>
-                  <?php } } } ?>
-                </select>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                  <label style="margin:0;">Company Name <span class="text-danger">*</span></label>
+                  <a href="javascript:void(0);" id="toggleCompanyModeBtn" style="font-size:12px; font-weight:600; color:#0072f0; text-decoration:none;">
+                    <i class="fa fa-plus-circle"></i> Add New Company
+                  </a>
+                </div>
+                <div id="companySelectWrap">
+                  <select name="customer" id="company_customer_select" class="form-control select2-company-ajax" style="width: 100%;" required>
+                    <option value="">Select or type company name...</option>
+                    <?php if (!empty($company_list)) { foreach ($company_list as $cmp) { if (!empty($cmp['customer'])) { ?>
+                    <option value="<?php echo htmlspecialchars($cmp['customer']); ?>"><?php echo htmlspecialchars($cmp['customer']); ?></option>
+                    <?php } } } ?>
+                  </select>
+                </div>
+                <div id="companyInputWrap" style="display: none;">
+                  <div class="input-group" style="width: 100%;">
+                    <input type="text" id="company_customer_input" class="form-control" placeholder="Enter new company name..." style="text-transform: capitalize;" disabled>
+                    <span class="input-group-btn">
+                      <button class="btn btn-default" type="button" id="btnCancelNewCompany" title="Back to company dropdown" style="border-left:0; color:#64748b;"><i class="fa fa-times"></i></button>
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -1485,6 +1500,32 @@ $(document).ready(function() {
       }
     });
   }
+
+  $('#toggleCompanyModeBtn').on('click', function(e) {
+    e.preventDefault();
+    if ($('#companyInputWrap').is(':visible')) {
+      $('#companyInputWrap').hide();
+      $('#company_customer_input').prop('disabled', true).removeAttr('name').prop('required', false).val('');
+      $('#companySelectWrap').show();
+      $('#company_customer_select').prop('disabled', false).attr('name', 'customer').prop('required', true);
+      $('#toggleCompanyModeBtn').html('<i class="fa fa-plus-circle"></i> Add New Company');
+    } else {
+      $('#companySelectWrap').hide();
+      $('#company_customer_select').prop('disabled', true).removeAttr('name').prop('required', false);
+      $('#companyInputWrap').show();
+      $('#company_customer_input').prop('disabled', false).attr('name', 'customer').prop('required', true).focus();
+      $('#toggleCompanyModeBtn').html('<i class="fa fa-list"></i> Select Existing Company');
+    }
+  });
+
+  $('#btnCancelNewCompany').on('click', function(e) {
+    e.preventDefault();
+    $('#companyInputWrap').hide();
+    $('#company_customer_input').prop('disabled', true).removeAttr('name').prop('required', false).val('');
+    $('#companySelectWrap').show();
+    $('#company_customer_select').prop('disabled', false).attr('name', 'customer').prop('required', true);
+    $('#toggleCompanyModeBtn').html('<i class="fa fa-plus-circle"></i> Add New Company');
+  });
 
 });
 </script>
