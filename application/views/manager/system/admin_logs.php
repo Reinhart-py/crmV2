@@ -158,6 +158,7 @@ $(document).ready(function() {
     $('#example_lead').DataTable( {
       "pageLength": 50,
       responsive: true,
+      order: [[0, "desc"]],
       initComplete: function () {
           this.api().columns([2,3,4]).every( function () {
               var column = this;

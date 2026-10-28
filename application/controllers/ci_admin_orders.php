@@ -419,8 +419,10 @@ class Ci_admin_orders extends CI_Controller {
 			}
 		}
 
-		$can_edit = $is_backoffice;
+		$is_assigned = ((int)$order['assigned_to'] === $cur_uid);
+		$can_edit = $is_backoffice || $is_assigned;
 		$can_approve = ($is_backoffice && ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('back_office') || has_section_perm('kam', 'write')));
+		$can_assign_operation = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
 
 		$data = array();
 		$data['info'] = array(
@@ -433,7 +435,12 @@ class Ci_admin_orders extends CI_Controller {
 		$data['activity_logs'] = $this->db->where('order_id', $id)->order_by('id', 'DESC')->get('ci_order_history')->result_array();
 		$data['can_approve'] = $can_approve;
 		$data['can_edit'] = $can_edit;
+		$data['can_assign_operation'] = $can_assign_operation;
 		$data['staff_list'] = $this->db->select('id, name, department')->where('status', 1)->order_by('name', 'ASC')->get('ci_user')->result_array();
+		$data['operations_staff'] = $this->db->query("SELECT id, name, department FROM ci_user WHERE status = 1 AND (user_type = 5 OR department LIKE '%operat%' OR id IN (SELECT user_id FROM ci_user_permissions WHERE permission_mode IN ('custom','admin'))) ORDER BY name ASC")->result_array();
+		if (empty($data['operations_staff'])) {
+			$data['operations_staff'] = $data['staff_list'];
+		}
 
 		$this->load->view('manager/orders/view', $data);
 	}
@@ -554,14 +561,23 @@ class Ci_admin_orders extends CI_Controller {
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$cur_name = (string)$this->session->userdata('manager_name');
 
+		$order = $this->db->get_where('ci_orders', array('id' => $id))->row_array();
+		if (empty($order)) {
+			$this->session->set_flashdata('error_message', 'Order not found.');
+			redirect('manager/orders');
+			return;
+		}
+
 		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
-		if (!$is_backoffice) {
-			$this->session->set_flashdata('error_message', 'Access denied. Only Back Office and Admin can update order status.');
+		$is_assigned = ((int)$order['assigned_to'] === $cur_uid);
+
+		if (!$is_backoffice && !$is_assigned) {
+			$this->session->set_flashdata('error_message', 'Access denied.');
 			redirect('manager/orders/view/' . $id);
 			return;
 		}
 
-		$allowed = array('Draft', 'Submitted', 'Under Review', 'Approved', 'In Progress', 'Fulfilled', 'Cancelled');
+		$allowed = array('Draft', 'Submitted', 'Under Review', 'Approved', 'In Progress', 'Fulfilled', 'Completed', 'Sales', 'Cancelled');
 		if (!in_array($status, $allowed)) {
 			redirect('manager/orders/view/' . $id);
 			return;
@@ -595,16 +611,17 @@ class Ci_admin_orders extends CI_Controller {
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$cur_name = (string)$this->session->userdata('manager_name');
 
-		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
-		if (!$is_backoffice) {
-			echo json_encode(array('success' => false, 'message' => 'Access denied. Only Back Office and Admin can edit order documents.'));
-			return;
-		}
-		$cur_name = (string)$this->session->userdata('manager_name');
-
 		$order = $this->db->where('id', $order_id)->get('ci_orders')->row_array();
 		if (empty($order) || empty($doc_key)) {
 			echo json_encode(array('success' => false, 'message' => 'Invalid order or document key'));
+			return;
+		}
+
+		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
+		$is_assigned = ((int)$order['assigned_to'] === $cur_uid);
+
+		if (!$is_backoffice && !$is_assigned) {
+			echo json_encode(array('success' => false, 'message' => 'Access denied.'));
 			return;
 		}
 
@@ -645,8 +662,17 @@ class Ci_admin_orders extends CI_Controller {
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$cur_name = (string)$this->session->userdata('manager_name');
 
+		$order = $this->db->get_where('ci_orders', array('id' => $id))->row_array();
+		if (empty($order)) {
+			$this->session->set_flashdata('error_message', 'Order not found.');
+			redirect('manager/orders');
+			return;
+		}
+
 		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
-		if (!$is_backoffice) {
+		$is_assigned = ((int)$order['assigned_to'] === $cur_uid);
+
+		if (!$is_backoffice && !$is_assigned) {
 			$this->session->set_flashdata('error_message', 'Access denied.');
 			redirect('manager/orders/view/' . $id);
 			return;
@@ -663,6 +689,61 @@ class Ci_admin_orders extends CI_Controller {
 			));
 			$this->session->set_flashdata('message', 'Activity note recorded successfully.');
 		}
+		redirect('manager/orders/view/' . $id);
+	}
+
+	public function assign_to_operation($id = 0)
+	{
+		$id = (int)$id;
+		$cur_uid = (int)$this->session->userdata('manager_id');
+		$cur_role = (int)$this->session->userdata('manager_role');
+		$cur_name = (string)$this->session->userdata('manager_name');
+
+		$can_assign = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office') || has_section_perm('orders', 'write'));
+		if (!$can_assign) {
+			$this->session->set_flashdata('error_message', 'Access denied.');
+			redirect('manager/orders/view/' . $id);
+			return;
+		}
+
+		$order = $this->db->get_where('ci_orders', array('id' => $id))->row_array();
+		if (empty($order)) {
+			$this->session->set_flashdata('error_message', 'Order not found.');
+			redirect('manager/orders');
+			return;
+		}
+
+		$op_user_id = (int)$this->input->post('assigned_to');
+		$instructions = trim((string)$this->input->post('operational_instructions'));
+
+		$op_user = $this->db->select('id, name, department')->where('id', $op_user_id)->where('status', 1)->get('ci_user')->row_array();
+		if (empty($op_user)) {
+			$this->session->set_flashdata('error_message', 'Please select a valid Operations user.');
+			redirect('manager/orders/view/' . $id);
+			return;
+		}
+
+		$now = date('Y-m-d H:i:s');
+		$update_data = array(
+			'assigned_to' => $op_user['id'],
+			'assigned_dept' => 'Operations',
+			'operational_instructions' => $instructions,
+			'updated_at' => $now
+		);
+		$this->db->where('id', $id)->update('ci_orders', $update_data);
+
+		$this->db->insert('ci_order_history', array(
+			'order_id' => $id,
+			'action' => 'assigned_to_operation',
+			'notes' => "Sale assigned to Operations: {$op_user['name']} by {$cur_name}." . (!empty($instructions) ? " Instructions: {$instructions}" : ''),
+			'action_by' => $cur_uid,
+			'action_by_name' => $cur_name,
+			'created_at' => $now
+		));
+
+		$this->ci_admin_model->log_admin_action('order_assigned_operation', "Assigned sale #{$order['order_no']} to {$op_user['name']} in Operations", 'SUCCESS', $cur_uid, $cur_name);
+
+		$this->session->set_flashdata('message', "Sale #{$order['order_no']} successfully assigned to {$op_user['name']} in Operations.");
 		redirect('manager/orders/view/' . $id);
 	}
 

@@ -55,19 +55,19 @@ class Ci_admin_roles extends CI_Controller {
         }
     }	
 	
- 			public function index()
-		    {
-				
-	  			$data=array();
-				$data['info']=array(
-					'title'=>'Manager- Roles',
-					'page_heading'=>'All Roles'
-				);
-				$data['info2']=$this->if_not_login();
-				$data['user_list'] =$this->comman_model->getAll(array("status"=>1),array('id','ASC'),'ci_roles');				
-	           	$this->load->view('manager/roles/index',$data);
-				
-			}
+	public function index()
+	{
+		$data = array();
+		$data['info'] = array(
+			'title' => 'Manager- Roles',
+			'page_heading' => 'All Roles'
+		);
+		$data['info2'] = $this->if_not_login();
+		$data['user_list'] = $this->comman_model->getAll(array("status" => 1), array('id', 'ASC'), 'ci_roles');
+		$data['active_users'] = $this->db->query("SELECT u.id as user_id, u.name, u.email, u.user_type, u.department, r.title as role_title, up.permission_mode, up.permissions as custom_perms FROM ci_user u LEFT JOIN ci_roles r ON u.user_type = r.id LEFT JOIN ci_user_permissions up ON u.id = up.user_id WHERE u.status = 1 ORDER BY u.name ASC")->result_array();
+		$data['roles_list'] = $data['user_list'];
+		$this->load->view('manager/roles/index', $data);
+	}
     public function add()
 		    {
 				
@@ -232,5 +232,95 @@ class Ci_admin_roles extends CI_Controller {
 		$clean['system'] = $derive(array('users', 'roles', 'terms', 'leads_import', 'leads_export', 'assigned_leads', 'admin_logs', 'calling_api', 'integrations'), $clean);
 
 		return $clean;
+	}
+
+	public function ajax_get_user_permissions($user_id = 0)
+	{
+		$user_id = (int)$user_id;
+		if ($user_id <= 0) {
+			header('Content-Type: application/json');
+			echo json_encode(array('status' => 'error', 'message' => 'Invalid user ID'));
+			exit;
+		}
+		$user = $this->db->query("SELECT u.id, u.name, u.email, u.user_type, u.department, r.title as role_title, r.permissions as role_perms FROM ci_user u LEFT JOIN ci_roles r ON u.user_type = r.id WHERE u.id = " . $user_id . " LIMIT 1")->row_array();
+		if (empty($user)) {
+			header('Content-Type: application/json');
+			echo json_encode(array('status' => 'error', 'message' => 'User not found'));
+			exit;
+		}
+
+		$perm_row = $this->db->query("SELECT permission_mode, permissions FROM ci_user_permissions WHERE user_id = " . $user_id . " LIMIT 1")->row_array();
+		$mode = !empty($perm_row['permission_mode']) ? $perm_row['permission_mode'] : 'role';
+		$custom_perms = array();
+		if (!empty($perm_row['permissions'])) {
+			$custom_perms = json_decode($perm_row['permissions'], true);
+			if (!is_array($custom_perms)) {
+				$custom_perms = array();
+			}
+		}
+		$role_perms = array();
+		if (!empty($user['role_perms'])) {
+			$role_perms = json_decode($user['role_perms'], true);
+			if (!is_array($role_perms)) {
+				$role_perms = array();
+			}
+		}
+
+		header('Content-Type: application/json');
+		echo json_encode(array(
+			'status' => 'success',
+			'user' => array(
+				'id' => (int)$user['id'],
+				'name' => $user['name'],
+				'email' => $user['email'],
+				'role_id' => (int)$user['user_type'],
+				'role_title' => $user['role_title'] ? $user['role_title'] : 'Unassigned',
+				'department' => $user['department'] ? $user['department'] : 'General'
+			),
+			'mode' => $mode,
+			'custom_permissions' => $custom_perms,
+			'role_permissions' => $role_perms
+		));
+		exit;
+	}
+
+	public function ajax_save_user_permissions()
+	{
+		$user_id = (int)$this->input->post('user_id');
+		if ($user_id <= 0) {
+			header('Content-Type: application/json');
+			echo json_encode(array('status' => 'error', 'message' => 'Invalid user ID.'));
+			exit;
+		}
+		$mode = $this->input->post('permission_mode');
+		if (!in_array($mode, array('role', 'admin', 'custom'))) {
+			$mode = 'role';
+		}
+
+		$raw_perms = $this->input->post('permissions');
+		$clean_perms = $this->_normalize_permissions($raw_perms);
+
+		$existing = $this->db->query("SELECT id FROM ci_user_permissions WHERE user_id = " . $user_id . " LIMIT 1")->row_array();
+		if ($existing) {
+			$this->db->update('ci_user_permissions', array(
+				'permission_mode' => $mode,
+				'permissions' => json_encode($clean_perms),
+				'updated_at' => date('Y-m-d H:i:s')
+			), array('user_id' => $user_id));
+		} else {
+			$this->db->insert('ci_user_permissions', array(
+				'user_id' => $user_id,
+				'permission_mode' => $mode,
+				'permissions' => json_encode($clean_perms),
+				'created_at' => date('Y-m-d H:i:s'),
+				'updated_at' => date('Y-m-d H:i:s')
+			));
+		}
+
+		$this->ci_admin_model->log_admin_action('user_perm_update', 'Updated permissions for user ID #'.$user_id.' (mode: '.$mode.')', 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));
+
+		header('Content-Type: application/json');
+		echo json_encode(array('status' => 'success', 'message' => 'Permissions successfully saved for user.'));
+		exit;
 	}
 }

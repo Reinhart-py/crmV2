@@ -26,6 +26,8 @@ $route['manager/roles'] = "ci_admin_roles/index";
 $route['manager/roles/add'] = "ci_admin_roles/add";
 $route['manager/roles/edit/(:num)'] = "ci_admin_roles/edit/$1";
 $route['manager/roles/delete/(:num)'] = "ci_admin_roles/delete/$1";
+$route['manager/roles/ajax_get_user_permissions/(:num)'] = "ci_admin_roles/ajax_get_user_permissions/$1";
+$route['manager/roles/ajax_save_user_permissions'] = "ci_admin_roles/ajax_save_user_permissions";
 $route['manager/roles/(:any)'] = "ci_admin_roles/$1";
 
 $route['manager/terms'] = "ci_admin_terms/index";
@@ -236,6 +238,7 @@ $route['manager/orders/approve/(:any)'] = 'ci_admin_orders/approve/$1';
 $route['manager/orders/reject/(:any)'] = 'ci_admin_orders/reject/$1';
 $route['manager/orders/update_status/(:any)'] = 'ci_admin_orders/update_status/$1';
 $route['manager/orders/add_note/(:any)'] = 'ci_admin_orders/add_note/$1';
+$route['manager/orders/assign_to_operation/(:any)'] = 'ci_admin_orders/assign_to_operation/$1';
 $route['manager/orders/pending_process'] = 'ci_admin_orders/pending_process';
 $route['manager/orders/pending_process/(:any)'] = 'ci_admin_orders/pending_process/$1';
 $route['manager/orders/edit_pending/(:any)'] = 'ci_admin_orders/edit_pending/$1';

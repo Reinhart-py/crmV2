@@ -807,7 +807,44 @@ class Ci_admin_kam extends CI_Controller
 			'title' => 'KAM - Task Follow-up',
 			'page_heading' => 'Task Follow-up'
 		);
-		$data['tasks'] = array();
+		$cur_uid = (int)$this->session->userdata('manager_id');
+		$cur_role = (int)$this->session->userdata('manager_role');
+		$is_admin = ($cur_role === 1 || $cur_role === 2 || $cur_uid === 1);
+
+		$search = $this->input->get('search', true);
+		$d1 = $this->input->get('d1', true);
+		$d2 = $this->input->get('d2', true);
+
+		$this->db->select('t.*, u.name as assigned_name, c.client_name');
+		$this->db->from('ci_tasks t');
+		$this->db->join('ci_user u', 't.assigned_to = u.id', 'left');
+		$this->db->join('ci_kam_client_details c', 't.client_id = c.id', 'left');
+
+		if (!$is_admin) {
+			$this->db->group_start();
+			$this->db->where('t.assigned_to', $cur_uid);
+			$this->db->or_where("FIND_IN_SET('{$cur_uid}', t.assigned_users) > 0");
+			$this->db->group_end();
+		}
+
+		$this->db->where_not_in('t.status', array('Completed', 'Closed'));
+
+		if (!empty($search)) {
+			$this->db->group_start();
+			$this->db->like('t.customer', $search);
+			$this->db->or_like('t.remark', $search);
+			$this->db->or_like('c.client_name', $search);
+			$this->db->group_end();
+		}
+		if (!empty($d1)) {
+			$this->db->where('t.followup_date >=', date('Y-m-d', strtotime($d1)));
+		}
+		if (!empty($d2)) {
+			$this->db->where('t.followup_date <=', date('Y-m-d', strtotime($d2)));
+		}
+
+		$this->db->order_by('t.followup_date', 'ASC');
+		$data['tasks'] = $this->db->get()->result_array();
 		$data['reset_url'] = base_url('manager/kam/task-followup');
 		$this->load->view('manager/kam/task_followup', $data);
 	}

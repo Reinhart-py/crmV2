@@ -2542,6 +2542,36 @@ public function dashboard_MyPro($table='ci_leads'){
 	}
 
 	private static $_role_perms_cache = array();
+	private static $_user_perms_cache = array();
+
+	public function get_user_permission_data($user_id)
+	{
+		$user_id = (int)$user_id;
+		if ($user_id <= 0) {
+			return array('mode' => 'role', 'permissions' => array());
+		}
+		if (isset(self::$_user_perms_cache[$user_id])) {
+			return self::$_user_perms_cache[$user_id];
+		}
+		$q = $this->db->query("SELECT permission_mode, permissions FROM ci_user_permissions WHERE user_id = " . $user_id . " LIMIT 1");
+		if ($q && $q->num_rows() > 0) {
+			$row = $q->row_array();
+			$mode = !empty($row['permission_mode']) ? $row['permission_mode'] : 'role';
+			$decoded = array();
+			if (!empty($row['permissions'])) {
+				$decoded = json_decode($row['permissions'], true);
+				if (!is_array($decoded)) {
+					$decoded = array();
+				}
+			}
+			$res = array('mode' => $mode, 'permissions' => $decoded);
+			self::$_user_perms_cache[$user_id] = $res;
+			return $res;
+		}
+		$res = array('mode' => 'role', 'permissions' => array());
+		self::$_user_perms_cache[$user_id] = $res;
+		return $res;
+	}
 
 	public function get_role_permissions($role_id)
 	{
@@ -2583,11 +2613,23 @@ public function dashboard_MyPro($table='ci_leads'){
 		return $res;
 	}
 
-	public function check_permission($section, $required = 'read', $redirect = false)
+	public function check_permission($section, $required = 'read', $redirect = false, $override_user_id = null)
 	{
+		$user_id = ($override_user_id !== null) ? (int)$override_user_id : (int)$this->session->userdata('manager_id');
 		$role = (int)$this->session->userdata('manager_role');
-		$user_id = (int)$this->session->userdata('manager_id');
+		if ($override_user_id !== null && $override_user_id > 0) {
+			$uq = $this->db->query("SELECT user_type FROM ci_user WHERE id = " . (int)$user_id . " LIMIT 1");
+			if ($uq && $uq->num_rows() > 0) {
+				$role = (int)$uq->row()->user_type;
+			}
+		}
+
 		if ($role === 1 || $role === 2 || $user_id === 1) {
+			return true;
+		}
+
+		$user_pdata = $this->get_user_permission_data($user_id);
+		if ($user_pdata['mode'] === 'admin') {
 			return true;
 		}
 
@@ -2595,7 +2637,11 @@ public function dashboard_MyPro($table='ci_leads'){
 			return true;
 		}
 
-		$perms = $this->get_role_permissions($role);
+		if ($user_pdata['mode'] === 'custom' && !empty($user_pdata['permissions'])) {
+			$perms = $user_pdata['permissions'];
+		} else {
+			$perms = $this->get_role_permissions($role);
+		}
 		$user_perm = isset($perms[$section]) ? $perms[$section] : 'no_access';
 
 		$allowed = false;

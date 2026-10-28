@@ -33,6 +33,11 @@
           <i class="fa fa-refresh"></i> Update Status
         </button>
       <?php } ?>
+      <?php if(!empty($can_assign_operation)){ ?>
+        <button type="button" class="btn btn-default" data-toggle="modal" data-target="#assignOperationModal" style="background:#0072f0; border:1px solid #0072f0; color:#ffffff; font-weight:600;">
+          <i class="fa fa-user-plus"></i> Assign to Operations
+        </button>
+      <?php } ?>
       <?php if(!empty($can_edit) && !empty($can_approve) && $order['status'] !== 'Sales'){ ?>
         <button type="button" class="btn btn-default" data-toggle="modal" data-target="#convertToSalesModal" style="background:#000000; border:1px solid #000000; font-weight:600; color:#ffffff;">
           <i class="fa fa-line-chart"></i> Convert to Sales
@@ -456,6 +461,41 @@
         <div class="modal-footer" style="background:#f8fafc; border-top:1px solid #e2e8f0;">
           <button type="button" class="btn btn-default" data-dismiss="modal" style="background:#ffffff; border:1px solid #000000; color:#000000; font-weight:600;">Cancel</button>
           <button type="submit" class="btn btn-default" style="background:#000000; border:1px solid #000000; font-weight:600; color:#ffffff;">Confirm Sales Conversion</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="assignOperationModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="border-radius:6px; border:1px solid #000000;">
+      <form action="<?php echo base_url(); ?>manager/orders/assign_to_operation/<?php echo $order['id']; ?>" method="post">
+        <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
+        <div class="modal-header" style="background:#000000; border-bottom:1px solid #000000; border-radius:5px 5px 0 0;">
+          <button type="button" class="close" data-dismiss="modal" style="color:#ffffff; opacity:0.8;">&times;</button>
+          <h4 class="modal-title" style="font-weight:700; color:#ffffff;"><i class="fa fa-user-plus" style="color:#ffffff;"></i> Assign Sale to Operations</h4>
+        </div>
+        <div class="modal-body" style="padding:20px; background:#ffffff; color:#000000;">
+          <div class="form-group">
+            <label style="font-weight:700; font-size:11px; text-transform:uppercase; color:#475569;">Operations Staff Member *</label>
+            <select name="assigned_to" class="form-control" required style="border:1px solid #cbd5e1; border-radius:4px;">
+              <option value="">-- Choose Operations Staff --</option>
+              <?php if(!empty($operations_staff)){ foreach($operations_staff as $st){ ?>
+                <option value="<?php echo $st['id']; ?>" <?php echo ((int)$order['assigned_to'] === (int)$st['id']) ? 'selected' : ''; ?>>
+                  <?php echo htmlspecialchars($st['name']); ?> (<?php echo htmlspecialchars($st['department'] ?: 'Operations'); ?>)
+                </option>
+              <?php } } ?>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label style="font-weight:700; font-size:11px; text-transform:uppercase; color:#475569;">Operational Instructions &amp; Notes</label>
+            <textarea name="operational_instructions" rows="4" class="form-control" placeholder="Specify client requirements, documentation tasks, or workflow instructions..." style="border:1px solid #cbd5e1; border-radius:4px;"><?php echo htmlspecialchars($order['operational_instructions'] ?? ''); ?></textarea>
+          </div>
+        </div>
+        <div class="modal-footer" style="background:#f8fafc; border-top:1px solid #e2e8f0;">
+          <button type="button" class="btn btn-default" data-dismiss="modal" style="background:#ffffff; border:1px solid #000000; color:#000000; font-weight:600;">Cancel</button>
+          <button type="submit" class="btn btn-default" style="background:#000000; border:1px solid #000000; font-weight:600; color:#ffffff;">Assign to Operations</button>
         </div>
       </form>
     </div>

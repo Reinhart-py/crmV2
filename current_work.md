@@ -5,15 +5,13 @@
 ---
 
 ## Current Active Task
-- **Completed**:
-  1. Dashboard Task/Ticket Personal vs Team Separation (`ci_admin_model.php`).
-  2. Dashboard Projections restricted to qualified Leads (`ci_admin_model.php`).
-  3. Review Lead Queue & Conversion Permissions workflow (`ci_admin_leads.php`, `single_view.php`, `leadsview.php`).
-  4. Orders Module with client-centric grouping and Back Office navigation (`ci_admin_orders.php`, `views/manager/orders/`).
-  5. KAM Schedule decoupled from hardcoded telecom presets and renamed to Client Schedule Matrix (`ci_admin_kam.php`, `schedule.php`).
-  6. Revenue List & Company Projections outside KAM navigation (`ci_admin_report.php`, `revenue_list.php`, `company_projections.php`).
-  7. Events Calendar & Employee Awards Leaderboard (`ci_admin_events.php`, `views/manager/events/`).
-  8. Granular Role Permissions matrix expansion across core CRM sections (`ci_admin_roles.php`, `ci_admin_model.php`, `add.php`, `edit.php`).
+  23. Dedicated Dialer Page Modular Architecture & Clean Theme (`application/views/manager/calls/dashboard.php`, `application/controllers/ci_admin_calls.php`).
+  24. Dialer Click Responsiveness & Modern Navigation Pills (`dashboard.php`, `ci_admin_calls.php`).
+  25. Role Permission Fix, White Sleek 3CX Softphone UI, Team Colleague Dialer & Status Reports (`dashboard.php`, `ci_admin_calls.php`, `ci_admin_model.php`, `header.php`).
+  26. Roles & Permissions Switcher (`manager/roles`): Segmented toggle between Role-Wise and User-Wise permissions, live user selector, Role Default / Full Admin / Custom modes, role preset loader, and bulk action toggles (`ci_admin_roles.php`, `roles/index.php`, `ci_admin_model.php`).
+  27. Sales Assignment from KAM to Operations (`manager/orders`): Assign to Operations workflow with instructions, enabling assigned Operations staff to view, edit, update status, and add notes (`ci_admin_orders.php`, `orders/view.php`).
+  28. Task Follow-Up Live Connectivity (`manager/kam/task_followup`): Connected to live assigned tasks in `ci_tasks` with dual-box layout (`ci_admin_kam.php`, `kam/task_followup.php`).
+  29. Admin Logs Default Sorting (`manager/system/admin_logs`): Sorted by latest descending by default (`order: [[0, "desc"]]`) without announcement banners (`admin_logs.php`).
   9. User Profile Photo uploading, storage in `assets/uploads/avatars/`, SVG fallback, and navbar avatar sync (`ci_admin.php`, `adminprofile.php`, `profile.php`, `header.php`).
   10. Auto-Dialer sequential calling with 60-second wrap-up gap, pause/resume/extend/stop controls, and session state persistence (`ci_admin_calls.php`, `dashboard.php`).
   11. 3CX CDR & Recording webhooks with Groq Whisper post-call speech transcription (`whisper-large-v3-turbo`) and structured conversation analysis (`openai/gpt-oss-20b`, fallback `openai/gpt-oss-120b`, temperature=0) (`Groq_service.php`, `ci_admin_calls.php`).

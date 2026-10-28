@@ -2,6 +2,39 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.75.0] - 2026-10-28
+- **Timestamp**: `2026-10-28 17:25:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Implemented Apple-style segmented Roles & Permissions switcher between Role-Wise and User-Wise permissions with full support for Custom mix and Full Admin rights per user; enabled KAM/Back Office/Admin assignment of Sales to Operations users with operational notes and granted assigned Operations users full access to view, edit, update status, and record notes; connected KAM Task Follow-up to live assigned tasks in `ci_tasks`; and set Admin Logs to order by latest records descending by default without announcement banners.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Roles & Permissions Switcher (`manager/roles`)**:
+    - Added top Apple-style segmented pill switcher allowing instant toggle between **Role-Wise Permissions** and **User-Wise Permissions**.
+    - Retained the complete existing All Roles table under the Role-Wise Permissions view without modification.
+    - Implemented dedicated database table `ci_user_permissions` (`user_id` UNIQUE, `permission_mode` ENUM('role','admin','custom'), `permissions` MEDIUMTEXT, timestamps) to store individual user overrides without altering legacy user schemas.
+    - Built sleek, functional User-Wise Permissions interface:
+      - Live user selector dropdown with department and base role badges.
+      - 3 permission modes: **Role Default** (inherits role settings), **Full Admin Rights** (grants universal write permissions), and **Custom** (granular mix of permissions across modules).
+      - Role Preset Quick-Loader allowing instant copying of permissions from any existing role (e.g., KAM, Sales, Operations, Back Office) as a baseline.
+      - Bulk action buttons: `Set All: None`, `Set All: View Only`, `Set All: Full Access`.
+      - Categorized module cards (CRM Core Modules, Operations & Back Office, Governance & Tools) with 3-way toggle buttons (`None | View | Full`) for clean, uncluttered visual management.
+      - AJAX endpoints `manager/roles/ajax_get_user_permissions/(:num)` and `manager/roles/ajax_save_user_permissions` with CSRF validation and audit logging.
+    - Updated `ci_admin_model.php` `check_permission()` to resolve user-specific permission overrides (`admin`, `custom`, `role`) before role defaults.
+  - **2. Sales Assignment from KAM to Operations (`ci_admin_orders.php`, `orders/view.php`)**:
+    - Added **Assign to Operations** workflow allowing KAM, Back Office, and Admin users to assign any Sale/Order to an Operations role user (`assigned_to = $op_uid`, `assigned_dept = 'Operations'`).
+    - Added operational notes/instructions capture on assignment, recorded into `ci_order_history` and `ci_admin_logs`.
+    - Granted assigned Operations staff full operational access: can view, make changes, update operational status, toggle document verification checkpoints, and post internal notes.
+    - Added clean Apple-style assignment modal `#assignOperationModal` and status display banner in the order details view.
+  - **3. Task Follow-Up Live Connectivity (`ci_admin_kam.php`, `kam/task_followup.php`)**:
+    - Connected `task_followup()` in `ci_admin_kam.php` to real database queries from `ci_tasks` and `ci_user`.
+    - Displays all follow-ups assigned to the current user (or where they are a collaborator) with real task titles, customer names, follow-up dates, times, statuses, and remarks.
+    - Retained standard View Database dual-box table layout with responsive DataTables and 1-click View action button.
+  - **4. Admin Logs Default Sorting (`system/admin_logs.php`)**:
+    - Configured DataTables initialization to sort by latest timestamp descending (`order: [[0, "desc"]]`) by default without any announcement banners.
+    - Column headers remain fully interactive for custom sorting at any time.
+  - **5. Strict Zero Comments Verified**:
+    - Verified 0 PHP comments across all modified PHP files using `check_tokens.php`.
+    - Verified all routes return HTTP 200 OK cleanly via automated test suite `test_all_features.php`.
+
 ### [v1.74.0] - 2026-10-28
 - **Timestamp**: `2026-10-28 16:45:00 +0530`
 - **Author**: Reinhart-py

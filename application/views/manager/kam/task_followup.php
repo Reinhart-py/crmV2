@@ -40,23 +40,38 @@
                                 <table class="table table-bordered table-striped" id="example_tasks">
                                     <thead>
                                         <tr>
-                                            <th>#</th>
-                                            <th>Task Name</th>
-                                            <th>Client</th>
+                                            <th style="width: 50px;">#</th>
+                                            <th>Task / Customer</th>
                                             <th>Assigned To</th>
-                                            <th>Due Date</th>
+                                            <th>Follow-up Date</th>
+                                            <th>Time</th>
                                             <th>Status</th>
+                                            <th>Remark</th>
+                                            <th style="width: 90px; text-align:center;">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <?php foreach ($tasks as $idx => $t) { ?>
                                             <tr>
                                                 <td><?php echo $idx + 1; ?></td>
-                                                <td><?php echo htmlspecialchars($t['title'] ?? ''); ?></td>
-                                                <td><?php echo htmlspecialchars($t['client_name'] ?? ''); ?></td>
-                                                <td><?php echo htmlspecialchars($t['assigned_name'] ?? ''); ?></td>
-                                                <td><?php echo htmlspecialchars($t['due_date'] ?? ''); ?></td>
-                                                <td><?php echo htmlspecialchars($t['status'] ?? ''); ?></td>
+                                                <td>
+                                                    <strong><a href="<?php echo base_url(); ?>manager/tasks/view/<?php echo $t['id']; ?>"><?php echo htmlspecialchars($t['customer'] ?? 'Task #' . $t['id']); ?></a></strong>
+                                                    <?php if (!empty($t['client_name'])) { ?>
+                                                        <br><small class="text-muted"><?php echo htmlspecialchars($t['client_name']); ?></small>
+                                                    <?php } ?>
+                                                </td>
+                                                <td><?php echo htmlspecialchars(!empty($t['assigned_name']) ? $t['assigned_name'] : 'Self'); ?></td>
+                                                <td><?php echo !empty($t['followup_date']) ? date('d-M-Y', strtotime($t['followup_date'])) : '-'; ?></td>
+                                                <td><?php echo htmlspecialchars($t['followup_time'] ?? '-'); ?></td>
+                                                <td>
+                                                    <span class="label label-info"><?php echo htmlspecialchars($t['status'] ?? 'Pending'); ?></span>
+                                                </td>
+                                                <td><?php echo htmlspecialchars($t['remark'] ?? '-'); ?></td>
+                                                <td style="text-align:center;">
+                                                    <a href="<?php echo base_url(); ?>manager/tasks/view/<?php echo $t['id']; ?>" class="btn btn-xs btn-default" style="font-weight:600; border:1px solid #000000; color:#000000;" title="View Task Details">
+                                                        <i class="fa fa-eye"></i> View
+                                                    </a>
+                                                </td>
                                             </tr>
                                         <?php } ?>
                                     </tbody>
