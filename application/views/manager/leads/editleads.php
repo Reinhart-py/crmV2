@@ -1136,7 +1136,14 @@
       <div class="box-header with-border">
         <h3 class="box-title">Back Office Update</h3>
       </div>
-      
+<?php
+  $user_role = (int)$this->session->userdata('manager_role');
+  $user_id = (int)$this->session->userdata('manager_id');
+  $user_dept = (string)$this->session->userdata('manager_department');
+  $can_edit_bo = ($user_role === 1 || $user_role === 2 || $user_id === 1 || strcasecmp($user_dept, 'Back Office') === 0 || has_section_perm('back_office', 'write'));
+  $bo_dis = !$can_edit_bo ? ' disabled style="background-color:#f1f5f9; cursor:not-allowed;"' : '';
+  $bo_ro = !$can_edit_bo ? ' readonly style="background-color:#f1f5f9; cursor:not-allowed;"' : '';
+?>
       <div class="box-body" >
       
         <div class="row">
@@ -1155,24 +1162,24 @@
             <tr>
               <td>
                 <input type="hidden" name="bo_id[]" value="<?php echo $bo_list[$i]['id']; ?>">
-                <input type="text" class="form-control" name="bo_cat[]" value="<?php echo $bo_list[$i]['bo_cat']; ?>" readonly="">
+                <input type="text" class="form-control" name="bo_cat[]" value="<?php echo $bo_list[$i]['bo_cat']; ?>" readonly=""<?php echo $bo_ro; ?>>
               </td>
               <td>
-              <input type="text" class="form-control datepicker" name="bo_date[]" value="<?php echo $bo_list[$i]['bo_date']; ?>" ></td>
+              <input type="text" class="form-control datepicker" name="bo_date[]" value="<?php echo $bo_list[$i]['bo_date']; ?>"<?php echo $bo_dis; ?>></td>
               <?php if($i==1 || $i==4){ ?>
 
               <td colspan="3">
-                <select style="display:none;" class="form-control" style="width: 100%;" name="bo_status[]">
+                <select style="display:none;" class="form-control" style="width: 100%;" name="bo_status[]"<?php echo $bo_dis; ?>>
                   <option value="">Not Applicable</option>
                                      
                 </select>
              <input type="hidden" class="form-control" name="bo_ref[]" value=""  >
-             <input type="text" class="form-control" name="bo_remark[]" value="<?php echo $bo_list[$i]['bo_remark']; ?>"></td>
+             <input type="text" class="form-control" name="bo_remark[]" value="<?php echo $bo_list[$i]['bo_remark']; ?>"<?php echo $bo_dis; ?>></td>
               <?php
 
               }else{ ?>
               <td>
-                <select class="form-control" style="width: 100%;" name="bo_status[]">
+                <select class="form-control" style="width: 100%;" name="bo_status[]"<?php echo $bo_dis; ?>>
                   <option <?php if($bo_list[$i]['bo_status']=="Not Applicable"){ echo "selected"; } ?> value="Not Applicable">Not Applicable</option>
                   <option <?php if($bo_list[$i]['bo_status']=="Pending Approval"){ echo "selected"; } ?> value="Pending Approval">Pending Approval</option>
                   <option <?php if($bo_list[$i]['bo_status']=="Query"){ echo "selected"; } ?> value="Query">Query</option>
@@ -1181,8 +1188,8 @@
                   <option <?php if($bo_list[$i]['bo_status']=="Other"){ echo "selected"; } ?> value="Other">Other</option>                    
                 </select>
               </td>
-              <td><input type="text" class="form-control" name="bo_ref[]" value="<?php echo $bo_list[$i]['bo_ref']; ?>"  ></td>
-              <td><input type="text" class="form-control" name="bo_remark[]" value="<?php echo $bo_list[$i]['bo_remark']; ?>"></td>
+              <td><input type="text" class="form-control" name="bo_ref[]" value="<?php echo $bo_list[$i]['bo_ref']; ?>"<?php echo $bo_dis; ?>></td>
+              <td><input type="text" class="form-control" name="bo_remark[]" value="<?php echo $bo_list[$i]['bo_remark']; ?>"<?php echo $bo_dis; ?>></td>
               <?php } ?>
             </tr>
           <?php } } ?>

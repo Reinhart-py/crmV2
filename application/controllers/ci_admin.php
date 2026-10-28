@@ -449,8 +449,49 @@ class Ci_admin extends CI_Controller {
 	{
 		$this->if_not_login();
 		$uid = (int)$this->session->userdata('manager_id');
-		$this->db->where('user_id', $uid)->or_where('user_id', 0)->update('ci_notifications', array('is_read' => 1));
+		$notif_id = $this->input->get_post('notif_id');
+		$now = date('Y-m-d H:i:s');
+
+		if (!empty($notif_id)) {
+			if (strpos($notif_id, 'notif_') === 0) {
+				$real_id = (int)str_replace('notif_', '', $notif_id);
+				if ($real_id > 0) {
+					$this->db->where('id', $real_id)->where("(user_id = {$uid} OR user_id = 0)")->update('ci_notifications', array('is_read' => 1));
+				}
+			}
+			$uperm = $this->db->select('read_notif_ids')->where('user_id', $uid)->get('ci_user_permissions')->row_array();
+			$read_ids = array();
+			if (!empty($uperm['read_notif_ids'])) {
+				$decoded = json_decode($uperm['read_notif_ids'], true);
+				if (is_array($decoded)) {
+					$read_ids = $decoded;
+				}
+			}
+			if (!in_array($notif_id, $read_ids)) {
+				$read_ids[] = $notif_id;
+				if (count($read_ids) > 100) {
+					$read_ids = array_slice($read_ids, -100);
+				}
+				$json = json_encode($read_ids);
+				$this->session->set_userdata('read_notif_ids', $read_ids);
+				if (!empty($uperm)) {
+					$this->db->where('user_id', $uid)->update('ci_user_permissions', array('read_notif_ids' => $json));
+				} else {
+					$this->db->insert('ci_user_permissions', array('user_id' => $uid, 'permission_mode' => 'role', 'read_notif_ids' => $json));
+				}
+			}
+		} else {
+			$this->db->where('user_id', $uid)->or_where('user_id', 0)->update('ci_notifications', array('is_read' => 1));
+			$this->session->set_userdata('last_notif_read_at', $now);
+			$this->session->set_userdata('read_notif_ids', array());
+			$exists = $this->db->where('user_id', $uid)->get('ci_user_permissions')->row_array();
+			if (!empty($exists)) {
+				$this->db->where('user_id', $uid)->update('ci_user_permissions', array('last_notif_read_at' => $now, 'read_notif_ids' => '[]'));
+			} else {
+				$this->db->insert('ci_user_permissions', array('user_id' => $uid, 'permission_mode' => 'role', 'last_notif_read_at' => $now, 'read_notif_ids' => '[]'));
+			}
+		}
 		header('Content-Type: application/json');
-		echo json_encode(array('status' => true));
+		echo json_encode(array('status' => true, 'notif_id' => $notif_id));
 	}
 }

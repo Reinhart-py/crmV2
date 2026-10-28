@@ -2829,6 +2829,8 @@ public function dashboard_MyPro($table='ci_leads'){
 		if ($is_backoffice) {
 			$pending_leads_count = $this->db->where('pipeline_stage', 'pending_lead')->count_all_results('ci_pipeline');
 			if ($pending_leads_count > 0) {
+				$latest_pl = $this->db->select_max('created_at')->where('pipeline_stage', 'pending_lead')->get('ci_pipeline')->row_array();
+				$pl_time = !empty($latest_pl['created_at']) ? $latest_pl['created_at'] : date('Y-m-d H:i:s');
 				$notifs[] = array(
 					'id' => 'action_pending_leads',
 					'type' => 'action_required',
@@ -2836,7 +2838,7 @@ public function dashboard_MyPro($table='ci_leads'){
 					'color' => '#000000',
 					'title' => 'Pending Leads Approval',
 					'message' => $pending_leads_count . ' database lead' . ($pending_leads_count == 1 ? '' : 's') . ' awaiting approval',
-					'time' => date('Y-m-d H:i:s'),
+					'time' => $pl_time,
 					'time_ago' => 'Action Required',
 					'link' => base_url('manager/leads/review_leads'),
 					'is_read' => 0
@@ -2845,6 +2847,8 @@ public function dashboard_MyPro($table='ci_leads'){
 
 			$pending_orders_count = $this->db->where('order_request_status', 'pending')->count_all_results('ci_pipeline');
 			if ($pending_orders_count > 0) {
+				$latest_po = $this->db->select_max('created_at')->where('order_request_status', 'pending')->get('ci_pipeline')->row_array();
+				$po_time = !empty($latest_po['created_at']) ? $latest_po['created_at'] : date('Y-m-d H:i:s');
 				$notifs[] = array(
 					'id' => 'action_pending_orders',
 					'type' => 'action_required',
@@ -2852,7 +2856,7 @@ public function dashboard_MyPro($table='ci_leads'){
 					'color' => '#000000',
 					'title' => 'Pending Order Process',
 					'message' => $pending_orders_count . ' order request' . ($pending_orders_count == 1 ? '' : 's') . ' awaiting processing',
-					'time' => date('Y-m-d H:i:s'),
+					'time' => $po_time,
 					'time_ago' => 'Action Required',
 					'link' => base_url('manager/orders/pending_process'),
 					'is_read' => 0
@@ -3031,6 +3035,43 @@ public function dashboard_MyPro($table='ci_leads'){
 			$t2 = !empty($b['time']) ? strtotime($b['time']) : 0;
 			return $t2 - $t1;
 		});
+
+		$last_read = $this->session->userdata('last_notif_read_at');
+		$read_ids = $this->session->userdata('read_notif_ids');
+		if (empty($last_read) || !is_array($read_ids)) {
+			$uperm = $this->db->select('last_notif_read_at, read_notif_ids')->where('user_id', $user_id)->get('ci_user_permissions')->row_array();
+			if (!empty($uperm['last_notif_read_at']) && empty($last_read)) {
+				$last_read = $uperm['last_notif_read_at'];
+				$this->session->set_userdata('last_notif_read_at', $last_read);
+			}
+			if (!empty($uperm['read_notif_ids']) && !is_array($read_ids)) {
+				$decoded = json_decode($uperm['read_notif_ids'], true);
+				$read_ids = is_array($decoded) ? $decoded : array();
+				$this->session->set_userdata('read_notif_ids', $read_ids);
+			}
+		}
+		if (!is_array($read_ids)) {
+			$read_ids = array();
+		}
+
+		$last_read_ts = !empty($last_read) ? strtotime($last_read) : 0;
+		foreach ($notifs as &$n) {
+			if (!empty($read_ids) && in_array($n['id'], $read_ids)) {
+				$n['is_read'] = 1;
+				continue;
+			}
+			if ($last_read_ts > 0) {
+				if (!empty($n['time'])) {
+					$item_ts = strtotime($n['time']);
+					if ($item_ts <= $last_read_ts) {
+						$n['is_read'] = 1;
+					}
+				} else {
+					$n['is_read'] = 1;
+				}
+			}
+		}
+		unset($n);
 
 		return array_slice($notifs, 0, (int)$limit);
 	}

@@ -1193,15 +1193,20 @@ function __construct()
 					$this->session->userdata('manager_name')
 				);
 
-		     	if(!empty($bo_cat)){
+				$user_role = (int)$this->session->userdata('manager_role');
+				$user_id = (int)$this->session->userdata('manager_id');
+				$user_dept = (string)$this->session->userdata('manager_department');
+				$can_edit_bo = ($user_role === 1 || $user_role === 2 || $user_id === 1 || strcasecmp($user_dept, 'Back Office') === 0 || has_section_perm('back_office', 'write'));
+
+		     	if(!empty($bo_cat) && $can_edit_bo){
 		     		for($i=0;$i<=6;$i++){
 		     			$so= array(
 		     				'lead_id'=>$lead_id,
-		     				'bo_cat'=>$bo_cat[$i],
-		     				'bo_date'=>$bo_date[$i],
-		     				'bo_status'=>$bo_status[$i],
-		     				'bo_ref'=>$bo_ref[$i],
-		     				'bo_remark'=>$bo_remark[$i]		     				
+		     				'bo_cat'=>isset($bo_cat[$i]) ? $bo_cat[$i] : '',
+		     				'bo_date'=>isset($bo_date[$i]) ? $bo_date[$i] : '',
+		     				'bo_status'=>isset($bo_status[$i]) ? $bo_status[$i] : 'Not Applicable',
+		     				'bo_ref'=>isset($bo_ref[$i]) ? $bo_ref[$i] : '',
+		     				'bo_remark'=>isset($bo_remark[$i]) ? $bo_remark[$i] : ''		     				
 		     			);
 		     			$this->comman_model->saveData('ci_boleads',$so);
 		     		}
@@ -1466,14 +1471,19 @@ function __construct()
 				$this->session->userdata('manager_id'),
 				$this->session->userdata('manager_name')
 			);	
-		     	if(!empty($bo_id)){
+				$user_role = (int)$this->session->userdata('manager_role');
+				$user_id = (int)$this->session->userdata('manager_id');
+				$user_dept = (string)$this->session->userdata('manager_department');
+				$can_edit_bo = ($user_role === 1 || $user_role === 2 || $user_id === 1 || strcasecmp($user_dept, 'Back Office') === 0 || has_section_perm('back_office', 'write'));
+
+		     	if(!empty($bo_id) && $can_edit_bo){
 		     		for($i=0;$i<=6;$i++){
 		     			$so= array(		     				
-		     				'bo_cat'=>$bo_cat[$i],
-		     				'bo_date'=>$bo_date[$i],
-		     				'bo_status'=>$bo_status[$i],
-		     				'bo_ref'=>$bo_ref[$i],
-		     				'bo_remark'=>$bo_remark[$i]		     				
+		     				'bo_cat'=>isset($bo_cat[$i]) ? $bo_cat[$i] : '',
+		     				'bo_date'=>isset($bo_date[$i]) ? $bo_date[$i] : '',
+		     				'bo_status'=>isset($bo_status[$i]) ? $bo_status[$i] : 'Not Applicable',
+		     				'bo_ref'=>isset($bo_ref[$i]) ? $bo_ref[$i] : '',
+		     				'bo_remark'=>isset($bo_remark[$i]) ? $bo_remark[$i] : ''		     				
 		     			);
 		     			$this->comman_model->updateData('id',$bo_id[$i],$so,'ci_boleads');
 		     		}

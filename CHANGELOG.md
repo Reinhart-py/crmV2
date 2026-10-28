@@ -2,6 +2,23 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.76.0] - 2026-10-28
+- **Timestamp**: `2026-10-28 18:55:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Resolved notification mark-as-read persistence across dynamic and database notifications, added individual mark-as-read buttons, enabled live cookie CSRF handling with GET fallback, locked down Back Office Updates fields for non-backoffice roles, and enforced database update restrictions.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Notification Mark as Read Fix (`header.php`, `ci_admin.php`, `ci_admin_model.php`)**:
+    - Fixed dynamic timestamps for pending leads and pending orders in `ci_admin_model.php` to use the latest item creation time instead of `date('Y-m-d H:i:s')`, preventing them from immediately reverting to unread after being marked as read.
+    - Added `read_notif_ids` column to `ci_user_permissions` to persist granular read status for individual synthesized notifications.
+    - Added dedicated "Mark read" button on each individual unread notification card in addition to "Mark all as read" at the top.
+    - Enabled live CSRF cookie token resolution (`csrf_cookie_name`) with seamless fallback to GET in `sendMarkNotifRead()` to prevent CodeIgniter 2.2.6 CSRF regeneration mismatches.
+    - Automatically marks unread notifications as read when clicking directly on the notification item link.
+  - **2. My Zone > Add Database & Edit Leads Lockdown (`add-database.php`, `editleads.php`, `ci_admin_leads.php`)**:
+    - Locked all "Back Office Updates" inputs (`bo_date[]`, `bo_status[]`, `bo_ref[]`, `bo_remark[]`) as disabled/readonly for all roles except Back Office and Admin.
+    - Server-side validation in `ci_admin_leads.php` (`add` and `edit`) strictly ignores back office updates if submitted by unauthorized roles.
+  - **3. Zero Comments Verified**:
+    - Strictly verified 0 PHP comments across all modified PHP files.
+
 ### [v1.75.0] - 2026-10-28
 - **Timestamp**: `2026-10-28 17:25:00 +0530`
 - **Author**: Reinhart-py

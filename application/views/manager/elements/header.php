@@ -537,12 +537,17 @@ $(function() {
               var isUnread = (n.is_read == 0);
               var cardBorder = isUnread ? 'border:1px solid #bfdbfe; border-left:3px solid #0072f0;' : 'border:1px solid #e2e8f0;';
               var cardBg = isUnread ? '#ffffff' : '#f8fafc';
-              html += '<a href="' + (n.link || 'javascript:void(0);') + '" class="notif-item-link" style="display:flex; align-items:flex-start; margin-bottom:8px; padding:12px 14px; border-radius:12px; background:' + cardBg + '; ' + cardBorder + ' box-shadow:0 1px 3px rgba(0,0,0,0.03); text-decoration:none; color:inherit; transition:background 0.15s ease;">';
+              html += '<a href="' + (n.link || 'javascript:void(0);') + '" class="notif-item-link" data-notif-id="' + n.id + '" data-unread="' + (isUnread ? '1' : '0') + '" style="display:flex; align-items:flex-start; margin-bottom:8px; padding:12px 14px; border-radius:12px; background:' + cardBg + '; ' + cardBorder + ' box-shadow:0 1px 3px rgba(0,0,0,0.03); text-decoration:none; color:inherit; transition:background 0.15s ease;">';
               html += '  <div style="width:34px; height:34px; border-radius:8px; background:' + (n.color || '#0072f0') + '18; color:' + (n.color || '#0072f0') + '; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-right:12px; font-size:14px;"><i class="' + (n.icon || 'fa fa-bell') + '"></i></div>';
               html += '  <div style="flex:1; min-width:0;">';
               html += '    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">';
               html += '      <span style="font-size:12.5px; font-weight:700; color:#0f172a; letter-spacing:-0.2px;">' + $('<div>').text(n.title).html() + '</span>';
-              html += '      <span style="font-size:10.5px; color:#94a3b8; font-weight:500; margin-left:8px; white-space:nowrap;">' + (n.time_ago || '') + '</span>';
+              html += '      <div style="display:inline-flex; align-items:center; gap:6px;">';
+              if (isUnread) {
+                html += '        <button type="button" class="btn-single-notif-read" data-notif-id="' + n.id + '" title="Mark as read" style="background:rgba(0,114,240,0.08); border:none; border-radius:4px; padding:2px 6px; color:#0072f0; font-size:10px; font-weight:600; cursor:pointer; line-height:1.2;">Mark read</button>';
+              }
+              html += '        <span style="font-size:10.5px; color:#94a3b8; font-weight:500; margin-left:2px; white-space:nowrap;">' + (n.time_ago || '') + '</span>';
+              html += '      </div>';
               html += '    </div>';
               html += '    <div style="font-size:12px; color:#334155; line-height:1.45; white-space:normal; word-wrap:break-word; word-break:break-word;">' + $('<div>').text(n.message).html() + '</div>';
               html += '  </div>';
@@ -569,6 +574,33 @@ $(function() {
   loadNotifications();
   setInterval(loadNotifications, 20000);
 
+  function sendMarkNotifRead(notifId) {
+    var csrfMatch = document.cookie.match(/(?:^|;\s*)csrf_cookie_name=([^;]+)/);
+    var csrfToken = csrfMatch ? decodeURIComponent(csrfMatch[1]) : '<?php echo $this->security->get_csrf_hash(); ?>';
+    var url = '<?php echo base_url(); ?>manager/ajax_mark_notifications_read';
+    var postData = {
+      '<?php echo $this->security->get_csrf_token_name(); ?>': csrfToken
+    };
+    if (notifId) {
+      postData.notif_id = notifId;
+    }
+    $.ajax({
+      url: url,
+      type: 'POST',
+      data: postData,
+      dataType: 'json',
+      success: function() {
+        loadNotifications();
+      },
+      error: function() {
+        var getUrl = url + (notifId ? '?notif_id=' + encodeURIComponent(notifId) : '');
+        $.getJSON(getUrl, function() {
+          loadNotifications();
+        });
+      }
+    });
+  }
+
   $(document).on('click', '#notifBellToggle', function(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -584,18 +616,41 @@ $(function() {
   $(document).on('click', '#btnMarkNotifRead', function(e) {
     e.preventDefault();
     e.stopPropagation();
-    $.ajax({
-      url: '<?php echo base_url(); ?>manager/ajax_mark_notifications_read',
-      type: 'POST',
-      data: {
-        '<?php echo $this->security->get_csrf_token_name(); ?>': '<?php echo $this->security->get_csrf_hash(); ?>'
-      },
-      dataType: 'json',
-      success: function() {
-        $('#notifBadge').hide();
-        loadNotifications();
-      }
+    $('#notifBadge').hide();
+    $('.notif-item-link').each(function() {
+      $(this).attr('data-unread', '0').css({
+        'border': '1px solid #e2e8f0',
+        'background': '#f8fafc'
+      });
+      $(this).find('.btn-single-notif-read').remove();
     });
+    sendMarkNotifRead('');
+  });
+
+  $(document).on('click', '.btn-single-notif-read', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var nid = $(this).attr('data-notif-id');
+    var $card = $(this).closest('.notif-item-link');
+    $card.attr('data-unread', '0').css({
+      'border': '1px solid #e2e8f0',
+      'background': '#f8fafc'
+    });
+    $(this).remove();
+    var curCount = parseInt($('#notifBadge').text()) || 0;
+    if (curCount > 1) {
+      $('#notifBadge').text(curCount - 1);
+    } else {
+      $('#notifBadge').hide();
+    }
+    sendMarkNotifRead(nid);
+  });
+
+  $(document).on('click', '.notif-item-link', function(e) {
+    if ($(this).attr('data-unread') === '1') {
+      var nid = $(this).attr('data-notif-id');
+      sendMarkNotifRead(nid);
+    }
   });
 });
 </script>

@@ -902,6 +902,14 @@
        		<h3 class="box-title">Back Office Updates</h3>
         </div>
         </div>
+<?php
+  $user_role = (int)$this->session->userdata('manager_role');
+  $user_id = (int)$this->session->userdata('manager_id');
+  $user_dept = (string)$this->session->userdata('manager_department');
+  $can_edit_bo = ($user_role === 1 || $user_role === 2 || $user_id === 1 || strcasecmp($user_dept, 'Back Office') === 0 || has_section_perm('back_office', 'write'));
+  $bo_dis = !$can_edit_bo ? ' disabled style="background-color:#f1f5f9; cursor:not-allowed;"' : '';
+  $bo_ro = !$can_edit_bo ? ' readonly style="background-color:#f1f5f9; cursor:not-allowed;"' : '';
+?>
 <div class="box-body" >
       
         <div class="row">
@@ -917,10 +925,10 @@
               <th>Remarks</th>
             </tr>
             <tr>
-              <td><input type="text" class="form-control" name="bo_cat[]" value="SPR" readonly=""></td>
-              <td><input type="text" class="form-control datepicker" name="bo_date[]"  ></td>
+              <td><input type="text" class="form-control" name="bo_cat[]" value="SPR" readonly=""<?php echo $bo_ro; ?>></td>
+              <td><input type="text" class="form-control datepicker" name="bo_date[]"<?php echo $bo_dis; ?>></td>
               <td>
-                <select class="form-control" style="width: 100%;" name="bo_status[]">
+                <select class="form-control" style="width: 100%;" name="bo_status[]"<?php echo $bo_dis; ?>>
                   <option value="Not Applicable" selected="selected">Not Applicable</option>
                   <option value="Pending Approval">Pending Approval</option>
                   <option value="Query">Query</option>
@@ -929,14 +937,14 @@
                   <option value="Other">Other</option>                    
                 </select>
               </td>
-              <td><input type="text" class="form-control" name="bo_ref[]" ></td>
-              <td><input type="text" class="form-control" name="bo_remark[]" ></td>
+              <td><input type="text" class="form-control" name="bo_ref[]"<?php echo $bo_dis; ?>></td>
+              <td><input type="text" class="form-control" name="bo_remark[]"<?php echo $bo_dis; ?>></td>
             </tr>
             <tr>
-              <td><input type="text" class="form-control" name="bo_cat[]" value="Company Code" readonly=""></td>
-              <td><input type="text" class="form-control datepicker" name="bo_date[]"  ></td>
+              <td><input type="text" class="form-control" name="bo_cat[]" value="Company Code" readonly=""<?php echo $bo_ro; ?>></td>
+              <td><input type="text" class="form-control datepicker" name="bo_date[]"<?php echo $bo_dis; ?>></td>
               <td>
-                <select class="form-control" style="width: 100%;" name="bo_status[]">
+                <select class="form-control" style="width: 100%;" name="bo_status[]"<?php echo $bo_dis; ?>>
                   <option value="Not Applicable" selected="selected">Not Applicable</option>
                   <option value="Pending Approval">Pending Approval</option>
                   <option value="Query">Query</option>
@@ -945,13 +953,13 @@
                   <option value="Other">Other</option>                    
                 </select>
               </td>
-              <td colspan="2"><input type="text" class="form-control" name="bo_remark[]" ></td>
+              <td colspan="2"><input type="text" class="form-control" name="bo_remark[]"<?php echo $bo_dis; ?>></td>
             </tr>
             <tr>
-              <td><input type="text" class="form-control" name="bo_cat[]" value="Lead Activity" readonly=""></td>
-              <td><input type="text" class="form-control datepicker" name="bo_date[]"  ></td>
+              <td><input type="text" class="form-control" name="bo_cat[]" value="Lead Activity" readonly=""<?php echo $bo_ro; ?>></td>
+              <td><input type="text" class="form-control datepicker" name="bo_date[]"<?php echo $bo_dis; ?>></td>
               <td>
-                <select class="form-control" style="width: 100%;" name="bo_status[]">
+                <select class="form-control" style="width: 100%;" name="bo_status[]"<?php echo $bo_dis; ?>>
                   <option value="Not Applicable" selected="selected">Not Applicable</option>
                   <option value="Pending Approval">Pending Approval</option>
                   <option value="Query">Query</option>
@@ -960,14 +968,14 @@
                   <option value="Other">Other</option>                    
                 </select>
               </td>
-              <td><input type="text" class="form-control" name="bo_ref[]" ></td>
-              <td><input type="text" class="form-control" name="bo_remark[]" ></td>
+              <td><input type="text" class="form-control" name="bo_ref[]"<?php echo $bo_dis; ?>></td>
+              <td><input type="text" class="form-control" name="bo_remark[]"<?php echo $bo_dis; ?>></td>
             </tr>
             <tr>
-              <td><input type="text" class="form-control" name="bo_cat[]" value="Document Col/Sub" readonly=""></td>
-              <td><input type="text" class="form-control datepicker" name="bo_date[]"  ></td>
+              <td><input type="text" class="form-control" name="bo_cat[]" value="Document Col/Sub" readonly=""<?php echo $bo_ro; ?>></td>
+              <td><input type="text" class="form-control datepicker" name="bo_date[]"<?php echo $bo_dis; ?>></td>
               <td>
-                <select class="form-control" style="width: 100%;" name="bo_status[]">
+                <select class="form-control" style="width: 100%;" name="bo_status[]"<?php echo $bo_dis; ?>>
                   <option value="Not Applicable" selected="selected">Not Applicable</option>
                   <option value="Pending Approval">Pending Approval</option>
                   <option value="Query">Query</option>
@@ -976,14 +984,14 @@
                   <option value="Other">Other</option>                    
                 </select>
               </td>
-              <td><input type="text" class="form-control" name="bo_ref[]" ></td>
-              <td><input type="text" class="form-control" name="bo_remark[]" ></td>
+              <td><input type="text" class="form-control" name="bo_ref[]"<?php echo $bo_dis; ?>></td>
+              <td><input type="text" class="form-control" name="bo_remark[]"<?php echo $bo_dis; ?>></td>
             </tr>
             <tr>
-              <td><input type="text" class="form-control" name="bo_cat[]" value="Pending Documents" readonly=""></td>
-              <td><input type="text" class="form-control datepicker" name="bo_date[]"  ></td>
+              <td><input type="text" class="form-control" name="bo_cat[]" value="Pending Documents" readonly=""<?php echo $bo_ro; ?>></td>
+              <td><input type="text" class="form-control datepicker" name="bo_date[]"<?php echo $bo_dis; ?>></td>
               <td>
-                <select class="form-control" style="width: 100%;" name="bo_status[]">
+                <select class="form-control" style="width: 100%;" name="bo_status[]"<?php echo $bo_dis; ?>>
                   <option value="Not Applicable" selected="selected">Not Applicable</option>
                   <option value="Pending Approval">Pending Approval</option>
                   <option value="Query">Query</option>
@@ -992,13 +1000,13 @@
                   <option value="Other">Other</option>                    
                 </select>
               </td>
-              <td colspan="2"><input type="text" class="form-control" name="bo_remark[]" ></td>
+              <td colspan="2"><input type="text" class="form-control" name="bo_remark[]"<?php echo $bo_dis; ?>></td>
             </tr>
             <tr>
-              <td><input type="text" class="form-control" name="bo_cat[]" value="Video Verification" readonly=""></td>
-              <td><input type="text" class="form-control datepicker" name="bo_date[]"  ></td>
+              <td><input type="text" class="form-control" name="bo_cat[]" value="Video Verification" readonly=""<?php echo $bo_ro; ?>></td>
+              <td><input type="text" class="form-control datepicker" name="bo_date[]"<?php echo $bo_dis; ?>></td>
               <td>
-                <select class="form-control" style="width: 100%;" name="bo_status[]">
+                <select class="form-control" style="width: 100%;" name="bo_status[]"<?php echo $bo_dis; ?>>
                   <option value="Not Applicable" selected="selected">Not Applicable</option>
                   <option value="Pending Approval">Pending Approval</option>
                   <option value="Query">Query</option>
@@ -1007,15 +1015,15 @@
                   <option value="Other">Other</option>                    
                 </select>
               </td>
-              <td><input type="text" class="form-control" name="bo_ref[]" ></td>
-              <td><input type="text" class="form-control" name="bo_remark[]" ></td>
+              <td><input type="text" class="form-control" name="bo_ref[]"<?php echo $bo_dis; ?>></td>
+              <td><input type="text" class="form-control" name="bo_remark[]"<?php echo $bo_dis; ?>></td>
             </tr>
 
              <tr>
-              <td><input type="text" class="form-control" name="bo_cat[]" value="Post Verification" readonly=""></td>
-              <td><input type="text" class="form-control datepicker" name="bo_date[]"  ></td>
+              <td><input type="text" class="form-control" name="bo_cat[]" value="Post Verification" readonly=""<?php echo $bo_ro; ?>></td>
+              <td><input type="text" class="form-control datepicker" name="bo_date[]"<?php echo $bo_dis; ?>></td>
               <td>
-                <select class="form-control" style="width: 100%;" name="bo_status[]">
+                <select class="form-control" style="width: 100%;" name="bo_status[]"<?php echo $bo_dis; ?>>
                   <option value="Not Applicable" selected="selected">Not Applicable</option>
                   <option value="Pending Approval">Pending Approval</option>
                   <option value="Query">Query</option>
@@ -1024,8 +1032,8 @@
                   <option value="Other">Other</option>                    
                 </select>
               </td>
-              <td><input type="text" class="form-control" name="bo_ref[]" ></td>
-              <td><input type="text" class="form-control" name="bo_remark[]" ></td>
+              <td><input type="text" class="form-control" name="bo_ref[]"<?php echo $bo_dis; ?>></td>
+              <td><input type="text" class="form-control" name="bo_remark[]"<?php echo $bo_dis; ?>></td>
             </tr>
           </table>
         </div>
