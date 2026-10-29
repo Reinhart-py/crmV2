@@ -138,7 +138,10 @@
                                                             data-remarks="<?php echo htmlspecialchars(!empty($ord['operational_instructions']) ? $ord['operational_instructions'] : ''); ?>" style="font-weight: 600; color: #000000;"><i class="fa fa-commenting-o" style="margin-right: 6px;"></i> Add Follow-up</a></li>
                                                         <li><a href="<?php echo base_url(); ?>manager/orders/edit_pending/<?php echo $ord['id']; ?>" data-toggle="tooltip" title="Make Changes" style="font-weight: 600; color: #000000;"><i class="fa fa-pencil" style="margin-right: 6px;"></i> Make Changes</a></li>
                                                         <?php if ($ord['status'] === 'Fulfilled' || $ord['status'] === 'Completed'): ?>
-                                                            <li><a href="<?php echo base_url(); ?>manager/orders/convert_to_sales/<?php echo $ord['id']; ?>" onclick="return confirm('Convert this completed order to sales?');" data-toggle="tooltip" title="Convert to Sales" style="font-weight: 600; color: #000000;"><i class="fa fa-line-chart" style="margin-right: 6px;"></i> Convert to Sales</a></li>
+                                                            <li><a href="<?php echo base_url(); ?>manager/orders/mark_closed_sold/<?php echo $ord['id']; ?>" onclick="return confirm('Mark this completed order as Closed / Sold?');" data-toggle="tooltip" title="Mark as Closed / Sold" style="font-weight: 600; color: #000000;"><i class="fa fa-flag-checkered text-success" style="margin-right: 6px;"></i> Mark as Closed / Sold</a></li>
+                                                        <?php endif; ?>
+                                                        <?php if (($status_filter === 'closed' || $ord['status'] === 'Closed' || $ord['status'] === 'Sales') && ($this->session->userdata('manager_role') == 1 || $this->session->userdata('manager_id') == 1)): ?>
+                                                            <li><a href="javascript:void(0);" class="btn-open-assign-order" data-order-id="<?php echo $ord['id']; ?>" data-order-no="<?php echo htmlspecialchars($ord['order_no']); ?>" data-assigned-to="<?php echo (int)($ord['assigned_to'] ?? 0); ?>" data-assigned-dept="<?php echo htmlspecialchars($ord['assigned_dept'] ?? 'Operations'); ?>" style="font-weight: 600; color: #000000;"><i class="fa fa-user-plus text-primary" style="margin-right: 6px;"></i> Assign Order</a></li>
                                                         <?php endif; ?>
                                                         <?php if ($ord['approval_status'] === 'pending' || $ord['status'] === 'Submitted'): ?>
                                                             <li><a href="<?php echo base_url(); ?>manager/orders/quick_accept/<?php echo $ord['id']; ?>" onclick="return confirm('Accept and approve this order?');" data-toggle="tooltip" title="Accept" style="font-weight: 600; color: #000000;"><i class="fa fa-check" style="margin-right: 6px;"></i> Accept</a></li>
@@ -233,6 +236,48 @@
     </div>
 </div>
 
+<div class="modal fade" id="assignClosedOrderModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="max-width: 460px;">
+        <div class="modal-content" style="border-radius: 6px; border: 1px solid #000000; overflow: hidden;">
+            <form action="<?php echo base_url(); ?>manager/orders/assign_closed_order" method="post">
+                <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
+                <input type="hidden" name="order_id" id="assign_order_id" value="">
+                <div class="modal-header" style="background: #000000; color: #ffffff; padding: 14px 18px; border-bottom: 1px solid #000000;">
+                    <button type="button" class="close" data-dismiss="modal" style="color: #ffffff; opacity: 0.8;">&times;</button>
+                    <h4 class="modal-title" style="font-size: 15px; font-weight: 700; color: #ffffff; margin: 0;">
+                        <i class="fa fa-user-plus" style="margin-right: 6px;"></i> Assign Closed Order (<span id="assign_order_no_display"></span>)
+                    </h4>
+                </div>
+                <div class="modal-body" style="padding: 20px; background: #ffffff;">
+                    <div class="form-group">
+                        <label style="font-size: 12px; font-weight: 700; color: #000000; text-transform: uppercase;">Assign To Department <span class="text-danger">*</span></label>
+                        <select name="assigned_dept" id="assign_order_dept" class="form-control" style="border: 1px solid #000000; border-radius: 4px;">
+                            <option value="Operations">Operations</option>
+                            <option value="Back Office">Back Office</option>
+                            <option value="Finance">Finance</option>
+                            <option value="IT">IT</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 12px; font-weight: 700; color: #000000; text-transform: uppercase;">Assign To Staff <span class="text-danger">*</span></label>
+                        <select name="assigned_to" id="assign_order_staff" class="form-control" style="border: 1px solid #000000; border-radius: 4px;" required>
+                            <option value="">-- Select Staff User --</option>
+                            <?php if (!empty($staff_list)): ?>
+                                <?php foreach ($staff_list as $st): ?>
+                                    <option value="<?php echo $st['id']; ?>"><?php echo htmlspecialchars($st['name']); ?> <?php echo !empty($st['department']) ? '('.htmlspecialchars($st['department']).')' : ''; ?></option>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer" style="padding: 12px 18px; background: #f8fafc; border-top: 1px solid #e2e8f0;">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" style="background: #ffffff; border: 1px solid #000000; color: #000000; font-weight: 600;">Cancel</button>
+                    <button type="submit" class="btn btn-default" style="background: #000000; border: 1px solid #000000; color: #ffffff; font-weight: 700; padding: 6px 18px;">Confirm Assignment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <script type="text/javascript">
 $(document).ready(function() {
     if ($.fn.DataTable.isDataTable('#example_orders')) {
@@ -272,6 +317,24 @@ $(document).ready(function() {
         $('#btnSaveFollowup').prop('disabled', false).text('Save Follow-up');
 
         $('#orderFollowupModal').modal('show');
+    });
+
+    
+    $(document).on('click', '.btn-open-assign-order', function(e) {
+        e.preventDefault();
+        var orderId = $(this).data('order-id');
+        var orderNo = $(this).data('order-no');
+        var assignedTo = $(this).data('assigned-to');
+        var assignedDept = $(this).data('assigned-dept');
+        $('#assign_order_id').val(orderId);
+        $('#assign_order_no_display').text(orderNo);
+        if (assignedDept) {
+            $('#assign_order_dept').val(assignedDept);
+        }
+        if (assignedTo) {
+            $('#assign_order_staff').val(assignedTo);
+        }
+        $('#assignClosedOrderModal').modal('show');
     });
 
     $('#orderFollowupForm').on('submit', function(e) {

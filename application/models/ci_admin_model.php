@@ -2915,48 +2915,6 @@ public function dashboard_MyPro($table='ci_leads'){
 			}
 		}
 
-		$this->db->select('P.*, L.customer, L.lead_id as lead_code, L.created_by as lead_owner');
-		$this->db->from('ci_pipeline_logs P');
-		$this->db->join('ci_leads L', 'L.id = P.lead_id', 'LEFT');
-		if (!$is_backoffice) {
-			$this->db->where("(P.action_by = {$user_id} OR L.created_by = {$user_id} OR L.lead_assign = {$user_id})");
-		}
-		$pipeline_logs = $this->db->order_by('P.id', 'DESC')->limit(10)->get()->result_array();
-
-		if (!empty($pipeline_logs)) {
-			foreach ($pipeline_logs as $pl) {
-				$act = $pl['action'];
-				$icon = 'fa fa-info-circle';
-				$color = '#2563eb';
-				$title = 'Pipeline Update';
-				if ($act === 'convert_to_lead') {
-					$icon = 'fa fa-check-circle';
-					$color = '#16a34a';
-					$title = 'Lead Approved';
-				} elseif ($act === 'reject_conversion') {
-					$icon = 'fa fa-times-circle';
-					$color = '#dc2626';
-					$title = 'Lead Approval Rejected';
-				} elseif ($act === 'request_conversion') {
-					$icon = 'fa fa-clock-o';
-					$color = '#d97706';
-					$title = 'Conversion Requested';
-				}
-				$notifs[] = array(
-					'id' => 'pipe_' . $pl['id'],
-					'type' => 'pipeline',
-					'icon' => $icon,
-					'color' => $color,
-					'title' => $title,
-					'message' => (!empty($pl['customer']) ? $pl['customer'] . ': ' : '') . ($pl['remarks'] ?: 'Action updated'),
-					'time' => $pl['created_at'],
-					'time_ago' => !empty($pl['created_at']) ? date('d M, H:i', strtotime($pl['created_at'])) : '',
-					'link' => base_url('manager/leads/view/' . base64_encode($pl['lead_id'])),
-					'is_read' => 0
-				);
-			}
-		}
-
 		$this->db->select('OL.*, O.order_no, O.client_name, O.created_by as ord_creator, O.assigned_to as ord_assigned');
 		$this->db->from('ci_order_history OL');
 		$this->db->join('ci_orders O', 'O.id = OL.order_id', 'LEFT');

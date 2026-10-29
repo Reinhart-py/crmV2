@@ -79,7 +79,7 @@ class Ci_admin_orders extends CI_Controller {
 				'title' => 'View Sales - Seven Strokes CRM',
 				'page_heading' => 'View Sales'
 			);
-			$this->db->where('O.status', 'Sales');
+			$this->db->where("(O.status = 'Sales' OR (O.sales_ref_no IS NOT NULL AND O.sales_ref_no != ''))");
 			if (!$is_backoffice) {
 				$this->db->where("(O.created_by = {$cur_uid} OR O.assigned_to = {$cur_uid} OR A.created_by = {$cur_uid} OR A.lead_assign = {$cur_uid} OR FIND_IN_SET({$cur_uid}, A.agents) > 0 OR O.lead_id IN (SELECT lead_id FROM ci_lead_transfers WHERE from_user_id = {$cur_uid} OR to_user_id = {$cur_uid}) OR O.lead_id IN (SELECT lead_id FROM ci_pipeline WHERE conversion_requested_by = {$cur_uid} OR order_requested_by = {$cur_uid}) OR O.lead_id IN (SELECT lead_id FROM ci_pipeline_logs WHERE action_by = {$cur_uid}))");
 				$can_edit_orders = false;
@@ -103,6 +103,7 @@ class Ci_admin_orders extends CI_Controller {
 			$this->db->where_in('O.status', array('Fulfilled', 'Completed'));
 			$this->db->where("(O.sales_ref_no IS NULL OR O.sales_ref_no = '')");
 			$this->db->where("O.status != 'Sales'");
+			$this->db->where("O.status != 'Closed'");
 			$can_edit_orders = $is_backoffice;
 			$reset_url = base_url('manager/orders/completed');
 		} elseif ($status_filter === 'closed') {
@@ -110,7 +111,7 @@ class Ci_admin_orders extends CI_Controller {
 				'title' => 'Closed Orders - Back Office',
 				'page_heading' => 'Closed Orders'
 			);
-			$this->db->where("(O.status = 'Sales' OR (O.sales_ref_no IS NOT NULL AND O.sales_ref_no != ''))");
+			$this->db->where("(O.status = 'Sales' OR O.status = 'Closed' OR (O.sales_ref_no IS NOT NULL AND O.sales_ref_no != ''))");
 			$can_edit_orders = $is_backoffice;
 			$reset_url = base_url('manager/orders/closed');
 		} elseif ($status_filter === 'rejected_lost') {
@@ -775,7 +776,7 @@ class Ci_admin_orders extends CI_Controller {
 		if (!empty($client)) {
 			$this->db->group_start();
 			$this->db->like('L.customer', $client);
-			$this->db->or_like('L.company_name', $client);
+			$this->db->or_like('L.poc', $client);
 			$this->db->or_like('P.db_ref_no', $client);
 			$this->db->or_like('P.lead_ref_no', $client);
 			$this->db->group_end();
@@ -992,25 +993,143 @@ class Ci_admin_orders extends CI_Controller {
 				return;
 			}
 
-			if ($action_type === 'approve_order') {
-				$vertical_code = $this->input->post('vertical_code', true);
-				$service_title = trim($this->input->post('service_title', true));
-				$service_scope = trim($this->input->post('service_scope', true));
-				$pricing_amount = (float)$this->input->post('pricing_amount', true);
+			if ($action_type === 'approve_order' || $action_type === 'process_order') {
+				$orig_snapshot = !empty($lead['salesperson_snapshot']) ? $lead['salesperson_snapshot'] : json_encode($lead);
+				$this->db->where('lead_id', $id)->update('ci_pipeline', array('salesperson_snapshot' => $orig_snapshot));
+
+				$customer_val = trim((string)$this->input->post('customer', true));
+				if (empty($customer_val)) {
+					$customer_val = trim((string)$this->input->post('company_name', true));
+				}
+				if (empty($customer_val)) {
+					$customer_val = $lead['customer'];
+				}
+				$owner_name = trim((string)$this->input->post('owner_name', true));
+				$poc = trim((string)$this->input->post('poc', true));
+				$contact1 = trim((string)$this->input->post('contact1', true));
+				$alt_contact = trim((string)$this->input->post('alt_contact', true));
+				$email = trim((string)$this->input->post('email', true));
+				$a_number = trim((string)$this->input->post('a_number', true));
+				$a_department = trim((string)$this->input->post('a_department', true));
+				$r_amount = trim((string)$this->input->post('r_amount', true));
+				$category = trim((string)$this->input->post('category', true));
+				$company_status = trim((string)$this->input->post('company_status', true));
+				$ind_cat = trim((string)$this->input->post('industry_category', true));
+				$tl_number = trim((string)$this->input->post('tl_number', true));
+				$tl_emirate = trim((string)$this->input->post('tl_emirate', true));
+				$tl_zone = trim((string)$this->input->post('tl_zone', true));
+				$tl_authority = trim((string)$this->input->post('tl_authority', true));
+				$tl_expire_date = trim((string)$this->input->post('tl_expire_date', true));
+				$tl_due = trim((string)$this->input->post('tl_due', true));
+				$no_of_mol_employee = trim((string)$this->input->post('no_of_mol_employee', true));
+				$last_mol = trim((string)$this->input->post('last_mol', true));
+				$year_ending = trim((string)$this->input->post('year_ending', true));
+				$corporate_tax_status = trim((string)$this->input->post('corporate_tax_status', true));
+				$trc_reg = trim((string)$this->input->post('trc_reg', true));
+				$vat_qtr = trim((string)$this->input->post('vat_qtr', true));
+				$fta_remark = trim((string)$this->input->post('fta_remark', true));
+				$due_date = trim((string)$this->input->post('due_date', true));
+				$s_cat = trim((string)$this->input->post('s_cat', true));
+				$p_cat = trim((string)$this->input->post('p_cat', true));
+				$p_details = trim((string)$this->input->post('p_details', true));
+				$qty = trim((string)$this->input->post('qty', true));
+				$mrc = trim((string)$this->input->post('mrc', true));
+				$revenue = trim((string)$this->input->post('revenue', true));
 				$mrr = (float)$this->input->post('mrr', true);
+				$quote_status = trim((string)$this->input->post('quote_status', true));
+				$quote_mode = trim((string)$this->input->post('quote_mode', true));
+				$quote_amount = trim((string)$this->input->post('quote_amount', true));
+				$status_id = (int)$this->input->post('status', true);
+				$status_category = trim((string)$this->input->post('status_category', true));
+				$close_date = trim((string)$this->input->post('close_date', true));
+				$remarks = trim((string)$this->input->post('remarks', true));
+
+				$r_date_val = trim((string)$this->input->post('r_date', true));
+				$lead_update = array(
+					'customer' => $customer_val,
+					'poc' => $poc,
+					'contact1' => $contact1,
+					'alt_contact' => $alt_contact,
+					'alt_mobile' => $alt_contact,
+					'email' => $email,
+					'a_number' => $a_number,
+					'a_department' => $a_department,
+					'r_amount' => $r_amount,
+					'r_date' => !empty($r_date_val) ? db_date($r_date_val) : null,
+					'category' => $category,
+					'company_status' => $company_status ?: 'Active',
+					'industry_category' => $ind_cat,
+					'business_category' => $ind_cat,
+					'tl_number' => $tl_number,
+					'tl_emirate' => $tl_emirate,
+					'tl_zone' => $tl_zone,
+					'tl_authority' => $tl_authority,
+					'tl_expire_date' => !empty($tl_expire_date) ? db_date($tl_expire_date) : null,
+					'corporate_tax_status' => $corporate_tax_status,
+					's_cat' => $s_cat,
+					'p_cat' => $p_cat,
+					'p_details' => $p_details,
+					'qty' => $qty,
+					'mrc' => $mrc,
+					'revenue' => $revenue,
+					'mrr' => $mrr,
+					'quote_status' => $quote_status,
+					'quote_mode' => $quote_mode,
+					'quote_amount' => !empty($quote_amount) ? floatval($quote_amount) : 0,
+					'status_category' => $status_category,
+					'close_date' => !empty($close_date) ? db_date($close_date) : null,
+					'remark' => $remarks
+				);
+				if ($status_id > 0) {
+					$lead_update['status'] = $status_id;
+				}
+				$this->db->where('id', $id)->update('ci_leads', $lead_update);
+
+				$bo_cat = $this->input->post('bo_cat');
+				$bo_date = $this->input->post('bo_date');
+				$bo_status = $this->input->post('bo_status');
+				$bo_ref = $this->input->post('bo_ref');
+				$bo_remark = $this->input->post('bo_remark');
+				$bo_id = $this->input->post('bo_id');
+				if (!empty($bo_cat) && is_array($bo_cat)) {
+					for ($i = 0; $i < count($bo_cat); $i++) {
+						$bo_data = array(
+							'lead_id' => $id,
+							'bo_cat' => isset($bo_cat[$i]) ? $bo_cat[$i] : '',
+							'bo_date' => isset($bo_date[$i]) ? $bo_date[$i] : '',
+							'bo_status' => isset($bo_status[$i]) ? $bo_status[$i] : 'Not Applicable',
+							'bo_ref' => isset($bo_ref[$i]) ? $bo_ref[$i] : '',
+							'bo_remark' => isset($bo_remark[$i]) ? $bo_remark[$i] : ''
+						);
+						if (!empty($bo_id[$i])) {
+							$this->comman_model->updateData('id', $bo_id[$i], $bo_data, 'ci_boleads');
+						} else {
+							$this->comman_model->saveData('ci_boleads', $bo_data);
+						}
+					}
+				}
+
+				$vertical_code = $this->input->post('vertical_code', true);
+				$service_title = trim((string)$this->input->post('service_title', true));
+				$service_scope = trim((string)$this->input->post('service_scope', true));
+				$pricing_amount = (float)$this->input->post('pricing_amount', true);
+				if ($pricing_amount <= 0 && $mrr > 0) {
+					$pricing_amount = $mrr;
+				}
 				$assigned_dept = $this->input->post('assigned_dept', true);
 				$assigned_to = (int)$this->input->post('assigned_to', true);
-				$approval_notes = trim($this->input->post('approval_notes', true));
+				$approval_notes = trim((string)$this->input->post('approval_notes', true));
 
 				$order_no = $this->ci_admin_model->generate_next_ref('order');
-
 				$db_ref = !empty($lead['db_ref_no']) ? $lead['db_ref_no'] : '';
 				$lead_ref = !empty($lead['lead_ref_no']) ? $lead['lead_ref_no'] : '';
 
 				$order_data = array(
 					'order_no' => $order_no,
 					'client_id' => $id,
-					'client_name' => $lead['customer'],
+					'client_name' => $customer_val,
+					'company_name' => $customer_val,
+					'owner_name' => $owner_name,
 					'lead_id' => $id,
 					'db_ref_no' => $db_ref,
 					'lead_ref_no' => $lead_ref,
@@ -1023,10 +1142,11 @@ class Ci_admin_orders extends CI_Controller {
 					'billing_type' => 'monthly',
 					'assigned_to' => ($assigned_to > 0) ? $assigned_to : $cur_uid,
 					'assigned_dept' => $assigned_dept ?: 'Back Office',
-					'status' => 'Approved',
+					'status' => 'Onboarding',
 					'approval_status' => 'approved',
 					'approved_by' => $cur_uid,
 					'approved_at' => $now,
+					'salesperson_original_data' => $orig_snapshot,
 					'created_by' => !empty($lead['order_requested_by']) ? (int)$lead['order_requested_by'] : $cur_uid,
 					'created_at' => $now,
 					'updated_at' => $now
@@ -1044,7 +1164,7 @@ class Ci_admin_orders extends CI_Controller {
 				$this->db->insert('ci_order_history', array(
 					'order_id' => $new_order_id,
 					'action' => 'order_created_from_lead',
-					'notes' => "Order #{$order_no} created and approved by Back Office. " . (!empty($approval_notes) ? "Notes: {$approval_notes}" : ''),
+					'notes' => "Order #{$order_no} processed and queued for Client Onboarding. Original salesperson data preserved." . (!empty($approval_notes) ? " Notes: {$approval_notes}" : ''),
 					'action_by' => $cur_uid,
 					'action_by_name' => $cur_name,
 					'created_at' => $now
@@ -1062,15 +1182,15 @@ class Ci_admin_orders extends CI_Controller {
 				));
 
 				$this->ci_admin_model->log_admin_action('convert_to_order', "Lead #{$id} converted to Order #{$order_no}", 'SUCCESS', $cur_uid, $cur_name);
-				$this->session->set_flashdata('message', "Order #{$order_no} successfully created and processed.");
-				redirect('manager/orders/view/' . $new_order_id);
+				$this->session->set_flashdata('message', "Order #{$order_no} successfully processed! Please assign or onboard the client to complete.");
+				redirect('manager/kam/onboard?order_id=' . $new_order_id . '&lead_id=' . $id);
 				return;
 			}
 		}
 
 		$data = array();
 		$data['info'] = array(
-			'title' => 'Back Office - Edit Pending Order',
+			'title' => 'Back Office - Process Order Conversion',
 			'page_heading' => 'Process Order Conversion'
 		);
 		$data['lead'] = $lead;
@@ -1082,6 +1202,14 @@ class Ci_admin_orders extends CI_Controller {
 			->get()
 			->result_array();
 		$data['staff_list'] = $this->db->select('id, name, department')->where('status', 1)->order_by('name', 'ASC')->get('ci_user')->result_array();
+		$data['st_list'] = $this->comman_model->getAll(array('active' => 1), '', 'ci_status');
+		$data['bo_list'] = $this->comman_model->getAll(array('lead_id' => $id), '', 'ci_boleads');
+		$data['vertical_list'] = $this->db->get('ci_verticals')->result_array();
+		$data['p_cat'] = $this->comman_model->getAll(array('parent_id' => 0, 'status' => 1, 'cat_type' => 'p_cat'), '', 'ci_terms');
+		$data['service_cats'] = $this->comman_model->getAll(array('parent_id' => 0, 'status' => 1, 'cat_type' => 's_cat'), '', 'ci_terms');
+		$data['business_categories'] = $this->comman_model->getAll(array('cat_type' => 'business_cat', 'status' => 1), '', 'ci_terms');
+		$data['company_list'] = $this->db->select('DISTINCT(customer) as customer')->where("customer != ''", null, false)->limit(50)->get('ci_leads')->result_array();
+		$data['onboarded_companies'] = $this->db->select('id, client_name, owner_name')->group_by('client_name')->get('ci_kam_client_details')->result_array();
 
 		$this->load->view('manager/orders/edit_pending', $data);
 	}
@@ -1302,5 +1430,97 @@ class Ci_admin_orders extends CI_Controller {
 		header('Content-Type: application/json');
 		echo json_encode(array('success' => true, 'message' => 'Follow-up saved successfully'));
 		exit;
+	}
+
+	public function mark_closed_sold($id = 0)
+	{
+		$this->if_not_login();
+		$cur_role = (int)$this->session->userdata('manager_role');
+		$cur_uid = (int)$this->session->userdata('manager_id');
+		$cur_dept = (string)$this->session->userdata('manager_dept');
+		$cur_name = (string)$this->session->userdata('manager_name');
+		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_uid === 1 || strcasecmp($cur_dept, 'Back Office') === 0 || has_section_perm('orders_management', 'write'));
+		if (!$is_backoffice) {
+			$this->session->set_flashdata('error_message', 'Permission denied.');
+			redirect('manager/orders?status=completed');
+			return;
+		}
+
+		$id = (int)$id;
+		$order = $this->db->where('id', $id)->get('ci_orders')->row_array();
+		if (empty($order)) {
+			$this->session->set_flashdata('error_message', 'Order not found.');
+			redirect('manager/orders?status=completed');
+			return;
+		}
+
+		$sales_ref_no = sprintf("S%010d", $id);
+		$now = date('Y-m-d H:i:s');
+		$this->db->where('id', $id)->update('ci_orders', array(
+			'status' => 'Closed',
+			'sales_ref_no' => $sales_ref_no,
+			'updated_at' => $now
+		));
+
+		$this->db->insert('ci_order_history', array(
+			'order_id' => $id,
+			'action' => 'marked_closed_sold',
+			'notes' => "Order marked as Closed / Sold with Sales Ref No: {$sales_ref_no}",
+			'action_by' => $cur_uid,
+			'action_by_name' => $cur_name,
+			'created_at' => $now
+		));
+
+		$this->ci_admin_model->log_admin_action('order_closed_sold', "Marked order #{$id} as Closed / Sold", 'SUCCESS', $cur_uid, $cur_name);
+		$this->session->set_flashdata('message', "Order #{$order['order_no']} successfully marked as Closed / Sold ({$sales_ref_no}).");
+		redirect('manager/orders?status=closed');
+	}
+
+	public function assign_closed_order($id = 0)
+	{
+		$this->if_not_login();
+		$cur_role = (int)$this->session->userdata('manager_role');
+		$cur_uid = (int)$this->session->userdata('manager_id');
+		$cur_name = (string)$this->session->userdata('manager_name');
+		$is_admin = ($cur_role === 1 || $cur_uid === 1);
+		if (!$is_admin) {
+			$this->session->set_flashdata('error_message', 'Only Admin can assign closed orders.');
+			redirect('manager/orders?status=closed');
+			return;
+		}
+
+		$id = (int)$this->input->post('order_id') ?: (int)$id;
+		$assigned_to = (int)$this->input->post('assigned_to');
+		$assigned_dept = trim((string)$this->input->post('assigned_dept')) ?: 'Operations';
+
+		$order = $this->db->where('id', $id)->get('ci_orders')->row_array();
+		if (empty($order)) {
+			$this->session->set_flashdata('error_message', 'Order not found.');
+			redirect('manager/orders?status=closed');
+			return;
+		}
+
+		$u = $this->db->where('id', $assigned_to)->get('ci_user')->row_array();
+		$assigned_name = !empty($u['name']) ? $u['name'] : 'User #' . $assigned_to;
+
+		$now = date('Y-m-d H:i:s');
+		$this->db->where('id', $id)->update('ci_orders', array(
+			'assigned_to' => $assigned_to,
+			'assigned_dept' => $assigned_dept,
+			'updated_at' => $now
+		));
+
+		$this->db->insert('ci_order_history', array(
+			'order_id' => $id,
+			'action' => 'assigned_closed_order',
+			'notes' => "Closed order assigned to {$assigned_name} ({$assigned_dept})",
+			'action_by' => $cur_uid,
+			'action_by_name' => $cur_name,
+			'created_at' => $now
+		));
+
+		$this->ci_admin_model->log_admin_action('assign_closed_order', "Assigned closed order #{$id} to {$assigned_name}", 'SUCCESS', $cur_uid, $cur_name);
+		$this->session->set_flashdata('message', "Closed order successfully assigned to {$assigned_name}.");
+		redirect('manager/orders?status=closed');
 	}
 }

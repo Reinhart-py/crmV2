@@ -276,7 +276,7 @@
       <?php } ?>
 
       <?php if($is_admin || has_section_perm('system')){ ?>
-      <li class="<?php if($route1=="roles" || $route1=="terms" || $route1=="users" || $route1=="assigned-leads" || $route1=="admin-logs" || ($route1=="system" && ($route2=="calling-api" || $route2=="calling_api" || $route2=="integrations")) || $route1=="integrations" || ($route1=="leads" && in_array($route2, array("import", "export")))){ echo "active";}else{ echo "";}?>"> 
+      <li class="<?php if($route1=="roles" || $route1=="terms" || $route1=="users" || $route1=="assigned-leads" || $route1=="admin-logs" || ($route1=="system" && ($route2=="calling-api" || $route2=="calling_api" || $route2=="integrations" || $route2=="assignee" || $route2=="kam_clients")) || $route1=="integrations" || ($route1=="leads" && in_array($route2, array("import", "export")))){ echo "active";}else{ echo "";}?>"> 
         <a href="<?php echo ($is_admin)? base_url().'manager/roles' : base_url().'manager/assigned-leads'; ?>"><i class="fa fa-paperclip"></i> <span>System</span> </a>
         <ul>        
           <?php if($is_admin || has_section_perm('users')){ ?>
@@ -301,6 +301,12 @@
           <?php } ?>
           <?php if($is_admin || has_section_perm('admin_logs')){ ?>
           <li><a href="<?php echo base_url();?>manager/admin-logs"><i class="fa fa-history"></i>Admin Logs</a></li>
+          <?php } ?>
+          <?php if($is_admin || has_section_perm('system_assignee') || has_section_perm('system')){ ?>
+          <li><a href="<?php echo base_url();?>manager/system/assign"><i class="fa fa-user-plus"></i>Assign</a></li>
+          <?php } ?>
+          <?php if($is_admin || has_section_perm('kam_clients') || has_section_perm('system')){ ?>
+          <li><a href="<?php echo base_url();?>manager/system/kam_clients"><i class="fa fa-briefcase"></i>KAM Client</a></li>
           <?php } ?>
           <?php if($is_admin || has_section_perm('calling_api')){ ?>
           <li><a href="<?php echo base_url();?>manager/system/calling-api"><i class="fa fa-phone-square"></i>Calling API</a></li>
@@ -821,6 +827,12 @@ $(function() {
           <?php } ?>
           <?php if($is_admin || has_section_perm('admin_logs')){ ?>
           <li><a href="<?php echo base_url();?>manager/admin-logs"><i class="fa fa-history"></i>Admin Logs</a></li>
+          <?php } ?>
+          <?php if($is_admin || has_section_perm('system_assignee') || has_section_perm('system')){ ?>
+          <li><a href="<?php echo base_url();?>manager/system/assign"><i class="fa fa-user-plus"></i>Assign</a></li>
+          <?php } ?>
+          <?php if($is_admin || has_section_perm('kam_clients') || has_section_perm('system')){ ?>
+          <li><a href="<?php echo base_url();?>manager/system/kam_clients"><i class="fa fa-briefcase"></i>KAM Client</a></li>
           <?php } ?>
           <?php if($is_admin || has_section_perm('calling_api')){ ?>
           <li><a href="<?php echo base_url();?>manager/system/calling-api"><i class="fa fa-phone-square"></i>Calling API</a></li>

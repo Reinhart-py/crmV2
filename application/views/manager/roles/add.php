@@ -385,6 +385,8 @@
               'leads_export'        => 'Export Leads',
               'assigned_leads'      => 'Allotted Database',
               'admin_logs'          => 'Admin Logs',
+              'system_assignee'     => 'Assignee Management',
+              'kam_clients'         => 'KAM Client',
               'calling_api'         => 'Calling API',
               'integrations'        => 'Third-Party API'
             )

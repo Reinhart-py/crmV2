@@ -14,6 +14,11 @@ Everything is designed to be fast, reliable, clean, and simple to use on both co
 ## Table of Contents
 
 - [Overview](#overview)
+- [End-to-End CRM Workflow & Operational Architecture](#end-to-end-crm-workflow--operational-architecture)
+  - [1. Entity Numbering & Lifecycle Flow](#1-entity-numbering--lifecycle-flow)
+  - [2. Detailed Operational Pipeline](#2-detailed-operational-pipeline)
+  - [3. System Governance: KAM Client & Assignment System](#3-system-governance-kam-client--assignment-system)
+  - [4. Phone Dialer & Smart Outbound Engine](#4-phone-dialer--smart-outbound-engine)
 - [Key Features](#key-features)
   - [1. Calling Center & Smart Dialer](#1-calling-center--smart-dialer)
   - [2. Lead Management & Database Allocation](#2-lead-management--database-allocation)
@@ -47,6 +52,95 @@ Seven Strokes CRM solves common sales and operational bottlenecks:
 - **Integrated Phone Calling**: Dial contacts directly from the CRM with live call duration tracking, dual-number selection, and quick outcome saving.
 - **Real-Time Data Drilldowns**: Click any number in an executive report to instantly see the exact list of matching leads.
 - **Zero Clutter**: Clean, functional interface with no unnecessary decorations, fake timers, or slow page transitions.
+
+---
+
+## End-to-End CRM Workflow & Operational Architecture
+
+The Seven Strokes CRM Platform operates as an integrated commercial engine where every prospect interaction, operational transition, and sales closure follows a strictly defined lifecycle. Rather than treating records as generic items, the system enforces discrete entity boundaries and auditable reference identifiers at every milestone:
+
+```
+[ Salesperson ]          [ Back Office ]            [ Back Office / KAM ]          [ Closed & Assigned ]
+ Add Database     -->   Pending Leads Approval -->  Process Order & Onboard  -->   Mark as Closed / Sold
+(D0000000001)                (L0000000001)                (O0000000001)                 (S0000000001)
+```
+
+### 1. Entity Numbering & Lifecycle Flow
+
+| Milestone | Prefix & Format | Entity Table | Key Status / Condition | Description & Access Rule |
+|---|---|---|---|---|
+| **Database Prospect** | `D%010d` (e.g. `D0000000042`) | `ci_leads` | `lead_stage = 'Database'` | Initial prospect entry. Created by sales agents or via Manual/Auto Dialer. Strictly a Database record, **never** called a Lead. |
+| **Qualified Lead** | `L%010d` (e.g. `L0000000042`) | `ci_leads` | `lead_stage = 'Lead'`, `pipeline_stage = 'lead'` | Approved prospect after qualification. Assigned an official Lead Reference Number by Back Office or Admin. |
+| **Order Request** | `O%010d` (e.g. `O0000000015`) | `ci_orders` | `order_request_status = 'pending'` | Generated upon salesperson deal submission. Source lead is instantly locked (`is_locked = 1`) to preserve data integrity. |
+| **Client Onboarding** | Company ID & Profile | `ci_companies` | `status = 'Onboarded'` | Multi-order parent company profile. Multiple orders can link to the same onboarded company. Owner Name is an optional contact field. |
+| **Sales Conversion** | `S%010d` (e.g. `S0000000008`) | `ci_orders` | `status = 'Sales'` | Assigned when Back Office or Admin marks a completed order as closed or sold. Recorded in **My Zone > View Sales**. |
+
+---
+
+### 2. Detailed Operational Pipeline
+
+1. **Step 1: Prospect Ingestion & Outbound Contact (`My Zone > Add Database` / Phone Dialer)**
+   - Sales executives add prospective business contacts manually or import CSV databases.
+   - Using the **Integrated Calling Center** (`manager/calls`), agents connect directly with prospects via **Manual Dialer** or **Auto Dialer**.
+   - Call logs, audio transcripts, and follow-ups are automatically attached to the record.
+
+2. **Step 2: Qualification & Lead Approval (`Back Office > Pending Leads Approval`)**
+   - Once a salesperson identifies genuine buying interest, budget, and commercial viability, they submit a **Conversion Request**.
+   - The record appears under `manager/leads/review_leads` for Back Office verification.
+   - Upon review, Back Office approves the submission, minting the official Lead Number (`L%010d`).
+
+3. **Step 3: Order Submission & Lead Locking**
+   - From `My Zone > View Leads`, the salesperson clicks **Create Order** to submit agreed commercial terms, line items, VAT specifications, and attached documentation.
+   - Once submitted, the source lead is locked (`is_locked = 1`) against accidental editing, and an order request is generated.
+
+4. **Step 4: Back Office Processing & Prompt Onboarding (`Back Office > Pending Order Process`)**
+   - Back Office staff open `manager/orders/pending_process` and click **Process Order**.
+   - The processing interface displays the salesperson's full original submission in an expandable layout, allowing staff to verify and edit items.
+   - Clicking **Process and Continue to Prompt Onboarding** assigns an Order Reference Number (`O%010d`) and routes directly into the **Onboard Client** system before KAM allocation.
+
+5. **Step 5: Client Onboarding (`Back Office / KAM > Onboard Client`)**
+   - The onboarding screen works identically across both Back Office and KAM (`manager/kam/onboard`).
+   - Staff can search for existing onboarded companies or onboard a new corporate entity for first-time clients.
+   - **Company Name** and **Owner Name** remain separate fields, with Owner Name maintained as optional.
+   - Completing onboarding links the order to the corporate account and transitions the order status to `Completed`.
+
+6. **Step 6: Completed Orders to Sales Closure (`Back Office > Completed Orders`)**
+   - Located at `manager/orders?status=completed`, completed orders represent delivered projects awaiting commercial sign-off.
+   - In the actions dropdown, Back Office or Admin clicks **Mark as Closed / Sold**.
+   - This assigns the official Sales Number (`S%010d`), marks the order as `Sales`, and routes it to `My Zone > View Sales` (`manager/sales`) for revenue counting.
+   - Administrators can assign closed orders to Operations or fulfillment executives.
+
+---
+
+### 3. System Governance: KAM Client & Assignment System
+
+- **System > KAM Client (`manager/system/kam-client`)**:
+  - **Privacy Search Gate**: To protect corporate confidentiality and avoid exposing the full database, results are displayed only after typing at least three letters (`strlen($search) >= 3`).
+  - **Scattered View vs. Edit Permissions**: Any authorized user can search and view company profiles, but editing rights are strictly restricted to the designated assigned account executive or Super Admin.
+- **System > Assign (`manager/system/assignee`)**:
+  - Displays all onboarded corporate accounts and client profiles with their primary and additional assignees.
+  - Authorized managers can assign a **Primary Assignee / Executor** and **Collaborators / Additional Assignees** selected from active system users.
+  - Access permissions for Assignee and KAM Client are governed through **Roles & Permissions** (`manager/roles`), ensuring standard staff cannot modify assignments without explicit authorization.
+
+---
+
+### 4. Phone Dialer & Smart Outbound Engine
+
+Located at `manager/calls` (and accessible via the top navigation phone icon), the calling suite provides an Apple-style, distraction-free environment:
+
+- **Dialer Home**: Ultra-clean interface displaying the phone keypad, ready-to-call status, and quick direct dialing.
+- **Manual Dialer (`Database > Manual Dialer`)**:
+  - Dedicated direct manual calling card with international prefix selection (`+971`, `+966`, `+1`, `+44`, `+91`, etc.), quick clipboard pasting, and reset buttons.
+  - Live contact lookup: searches and suggests existing database contacts as you type.
+  - 1-click **Save to Database** button creates an immediate `D%010d` record without leaving the dialer.
+  - Displays recent manual calls with 1-click redialing.
+- **Auto Dialer (`Database > Auto Dialer`)**:
+  - **Multi-Stage Queueing**: Checkbox selection of pipeline stages (Database, Follow up, Interested, Callback, etc.) with real-time queue count calculations.
+  - **Configurable Countdown Timer Delay**: Select delay intervals (3s, 5s, 10s, 15s, 30s) between calls. The live card displays an animated countdown timer badge with instant "Dial Now" and "Pause" options.
+  - **Detail Filling Mode**: Toggle between **Auto Pre-fill Lead Details** (pre-loads contact info and stage into the record form) and **Manual Details Entry** (leaves remarks editable for custom agent notes).
+  - **Groq AI Auto Call Summarization & Logging**: Powered by Groq AI (`groq_service.php`), the system automatically analyzes call duration, disposition, and agent remarks upon call completion. It generates a concise summary, customer sentiment, and next action, and auto-saves the log to `ci_call_logs`, `ci_leads`, and `ci_lead_followup`.
+- **Organized Follow-up Queues**: Flyout navigation for **Today**, **Missed Today**, **Last Seven Days**, **Next Seven Days**, and **All Follow Up**.
+- **Calling Logs**: Centralized outbound reporting categorized across Day, Week, Month, Year, and All Time.
 
 ---
 

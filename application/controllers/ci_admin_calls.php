@@ -278,7 +278,10 @@ class Ci_admin_calls extends CI_Controller
 		} elseif ($type === 'database') {
 			$this->db->where('(P.pipeline_stage = "database" OR P.pipeline_stage IS NULL)');
 			if (!empty($status_param) && $status_param !== 'all') {
-				if (is_numeric($status_param)) {
+				if (strpos($status_param, ',') !== false) {
+					$st_ids = array_map('intval', explode(',', $status_param));
+					$this->db->where_in('A.status', $st_ids);
+				} elseif (is_numeric($status_param)) {
 					$this->db->where('A.status', (int)$status_param);
 				} else {
 					$this->_apply_lead_filters($status_param);
@@ -287,7 +290,10 @@ class Ci_admin_calls extends CI_Controller
 		} elseif ($type === 'lead') {
 			$this->db->where('P.pipeline_stage', 'lead');
 			if (!empty($status_param) && $status_param !== 'all') {
-				if (is_numeric($status_param)) {
+				if (strpos($status_param, ',') !== false) {
+					$st_ids = array_map('intval', explode(',', $status_param));
+					$this->db->where_in('A.status', $st_ids);
+				} elseif (is_numeric($status_param)) {
 					$this->db->where('A.status', (int)$status_param);
 				} else {
 					$this->_apply_lead_filters($status_param);
@@ -295,7 +301,10 @@ class Ci_admin_calls extends CI_Controller
 			}
 		} else {
 			if (!empty($status_param) && $status_param !== 'all') {
-				if (is_numeric($status_param)) {
+				if (strpos($status_param, ',') !== false) {
+					$st_ids = array_map('intval', explode(',', $status_param));
+					$this->db->where_in('A.status', $st_ids);
+				} elseif (is_numeric($status_param)) {
 					$this->db->where('A.status', (int)$status_param);
 				} else {
 					$this->_apply_lead_filters($status_param);
@@ -685,7 +694,7 @@ class Ci_admin_calls extends CI_Controller
 		$manager_id = (int)$this->session->userdata('manager_id');
 		$role = (int)$this->session->userdata('manager_role');
 		$period = trim($this->input->get('period'));
-		if (!in_array($period, array('day', 'week', 'month', 'year'))) {
+		if (!in_array($period, array('day', 'week', 'month', 'year', 'all'))) {
 			$period = 'day';
 		}
 
@@ -696,6 +705,8 @@ class Ci_admin_calls extends CI_Controller
 			$date_clause = "L.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
 		} elseif ($period === 'year') {
 			$date_clause = "L.created_at >= DATE_SUB(NOW(), INTERVAL 365 DAY)";
+		} elseif ($period === 'all') {
+			$date_clause = "1=1";
 		}
 
 		$user_clause = ($role != 1 && $role != 4) ? "L.user_id = $manager_id AND " : "";
@@ -1521,6 +1532,203 @@ class Ci_admin_calls extends CI_Controller
 			'remaining_seconds' => $rem,
 			'total_dialed' => (int)$sess['total_dialed']
 		));
+	}
+
+	public function ajax_groq_quick_summary()
+	{
+		$manager_id = (int)$this->session->userdata('manager_id');
+		$phone = trim($this->input->post('phone'));
+		$lead_id = (int)$this->input->post('lead_id');
+		$call_log_id = (int)$this->input->post('call_log_id');
+		$customer_name = trim($this->input->post('customer_name'));
+		$call_duration = (int)$this->input->post('call_duration');
+		$call_disposition = trim($this->input->post('call_disposition'));
+		$remarks = trim($this->input->post('remarks'));
+
+		if (empty($customer_name)) {
+			$customer_name = 'Direct Contact';
+		}
+		if (empty($call_disposition)) {
+			$call_disposition = ($call_duration > 0) ? 'Connected' : 'No Answer';
+		}
+
+		$transcript = "Customer: {$customer_name}\nPhone: {$phone}\nCall Duration: {$call_duration} seconds\nCall Disposition: {$call_disposition}\nAgent Notes: {$remarks}";
+
+		$summary = '';
+		$sentiment = 'Neutral';
+		$next_action = 'Follow up with client regarding ongoing requirements.';
+		$follow_up_date = date('Y-m-d', strtotime('+2 days'));
+		$groq_success = false;
+
+		if ($this->groq_service->is_configured()) {
+			$ai_res = $this->groq_service->analyze_transcript($transcript);
+			if (!empty($ai_res['status']) && !empty($ai_res['data'])) {
+				$d = $ai_res['data'];
+				$summary = !empty($d['summary']) ? $d['summary'] : '';
+				$sentiment = !empty($d['sentiment']) ? $d['sentiment'] : 'Neutral';
+				$next_action = !empty($d['next_action']) ? $d['next_action'] : $next_action;
+				if (!empty($d['follow_up_date']) && $d['follow_up_date'] !== 'null') {
+					$follow_up_date = $d['follow_up_date'];
+				}
+				$groq_success = true;
+			}
+		}
+
+		if (empty($summary)) {
+			$sentiment = ($call_duration >= 45 || in_array($call_disposition, array('Connected', 'Interested', 'Follow up'))) ? 'Positive' : (($call_disposition === 'Not Interested' || $call_disposition === 'Wrong Number') ? 'Negative' : 'Neutral');
+			$summary = "Outbound call to {$customer_name} ({$phone}) completed. Disposition: {$call_disposition}, duration {$call_duration}s. " . ($remarks ? "Remarks: {$remarks}" : "Client contacted regarding service inquiries.");
+			$next_action = ($sentiment === 'Positive') ? "Schedule follow-up discussion and prepare proposal." : "Check client availability for subsequent follow-up.";
+		}
+
+		$now = date('Y-m-d H:i:s');
+		if ($call_log_id > 0) {
+			$this->db->where('id', $call_log_id)->update('ci_call_logs', array(
+				'ai_summary' => $summary,
+				'ai_remarks' => $remarks,
+				'ai_sentiment' => $sentiment,
+				'ai_next_action' => $next_action,
+				'ai_follow_up_date' => $follow_up_date,
+				'ai_processing_status' => 'completed',
+				'ai_processed_at' => $now
+			));
+		}
+
+		if ($lead_id > 0) {
+			$ai_lead_note = "[AI Summary - {$sentiment}] {$summary} | Next Action: {$next_action}";
+			$this->db->where('id', $lead_id)->update('ci_leads', array(
+				'remark' => $ai_lead_note,
+				'followup_date' => $follow_up_date,
+				'edited_by' => $manager_id,
+				'modified' => date('Y-m-d')
+			));
+
+			$this->db->insert('ci_followup', array(
+				'lead_id' => $lead_id,
+				'lead_type' => 'lead',
+				'user_id' => $manager_id,
+				'followup_date' => $follow_up_date,
+				'followup_time' => '11:00:00',
+				'followup_remark' => $ai_lead_note,
+				'followup_result' => $call_disposition
+			));
+		}
+
+		echo json_encode(array(
+			'status' => true,
+			'summary' => $summary,
+			'sentiment' => $sentiment,
+			'next_action' => $next_action,
+			'follow_up_date' => $follow_up_date,
+			'groq_used' => $groq_success,
+			'message' => 'Groq AI call analysis generated and saved successfully'
+		));
+	}
+
+	public function ajax_search_manual_contact()
+	{
+		$query = trim($this->input->get('query'));
+		if (strlen($query) < 2) {
+			echo json_encode(array('status' => true, 'contacts' => array()));
+			return;
+		}
+
+		$escaped = $this->db->escape_like_str($query);
+		$contacts = $this->db->query("
+			SELECT id, customer, poc, contact1, alt_contact, email, status, remark
+			FROM ci_leads
+			WHERE customer LIKE '%{$escaped}%' 
+			   OR poc LIKE '%{$escaped}%' 
+			   OR contact1 LIKE '%{$escaped}%' 
+			   OR alt_contact LIKE '%{$escaped}%'
+			ORDER BY id DESC
+			LIMIT 8
+		")->result_array();
+
+		echo json_encode(array('status' => true, 'contacts' => $contacts));
+	}
+
+	public function ajax_save_manual_contact()
+	{
+		$manager_id = (int)$this->session->userdata('manager_id');
+		$customer = trim($this->input->post('customer'));
+		$poc = trim($this->input->post('poc'));
+		$phone = trim($this->input->post('phone'));
+		$email = trim($this->input->post('email'));
+		$status = (int)$this->input->post('status');
+		$remark = trim($this->input->post('remark'));
+		$followup_date = trim($this->input->post('followup_date'));
+
+		if (empty($phone)) {
+			echo json_encode(array('status' => false, 'message' => 'Phone number is required'));
+			return;
+		}
+
+		if (empty($customer)) {
+			$customer = 'Manual Contact ' . substr($phone, -4);
+		}
+
+		if ($status <= 0) {
+			$status = 1;
+		}
+
+		$lead_data = array(
+			'customer' => $customer,
+			'poc' => $poc,
+			'contact1' => $phone,
+			'email' => $email,
+			'status' => $status,
+			'call_status' => 'Contacted via Manual Dialer',
+			'remark' => $remark,
+			'followup_date' => !empty($followup_date) ? db_date($followup_date) : date('Y-m-d', strtotime('+2 days')),
+			'followup_time' => '11:00:00',
+			'lead_assign' => $manager_id,
+			'created_by' => $manager_id,
+			'pipeline_stage' => 'database',
+			'lead_stage' => 'Database',
+			'created' => date('Y-m-d H:i:s'),
+			'modified' => date('Y-m-d')
+		);
+
+		$this->db->insert('ci_leads', $lead_data);
+		$new_id = $this->db->insert_id();
+
+		$ref_no = sprintf("D%010d", $new_id);
+		$this->db->where('id', $new_id)->update('ci_leads', array('ref_no' => $ref_no));
+
+		if (!empty($remark)) {
+			$this->db->insert('ci_followup', array(
+				'lead_id' => $new_id,
+				'lead_type' => 'lead',
+				'user_id' => $manager_id,
+				'followup_date' => !empty($followup_date) ? db_date($followup_date) : date('Y-m-d'),
+				'followup_time' => '11:00:00',
+				'followup_remark' => $remark,
+				'followup_result' => 'Manual Dialer Add'
+			));
+		}
+
+		echo json_encode(array(
+			'status' => true,
+			'lead_id' => $new_id,
+			'ref_no' => $ref_no,
+			'customer' => $customer,
+			'phone' => $phone,
+			'message' => 'New database contact created successfully'
+		));
+	}
+
+	public function ajax_get_recent_manual_calls()
+	{
+		$manager_id = (int)$this->session->userdata('manager_id');
+		$calls = $this->db->query("
+			SELECT id, customer_name, phone_number, duration, disposition, notes, call_status, created_at, lead_id
+			FROM ci_call_logs
+			WHERE user_id = {$manager_id}
+			ORDER BY id DESC
+			LIMIT 15
+		")->result_array();
+
+		echo json_encode(array('status' => true, 'calls' => $calls));
 	}
 }
 

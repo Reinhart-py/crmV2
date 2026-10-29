@@ -906,7 +906,7 @@
   $user_role = (int)$this->session->userdata('manager_role');
   $user_id = (int)$this->session->userdata('manager_id');
   $user_dept = (string)$this->session->userdata('manager_department');
-  $can_edit_bo = ($user_role === 1 || $user_role === 2 || $user_id === 1 || strcasecmp($user_dept, 'Back Office') === 0 || has_section_perm('back_office', 'write'));
+  $can_edit_bo = ($user_role === 2 || $user_role === 1 || $user_id === 1 || strcasecmp($user_dept, 'Back Office') === 0);
   $bo_dis = !$can_edit_bo ? ' disabled style="background-color:#f1f5f9; cursor:not-allowed;"' : '';
   $bo_ro = !$can_edit_bo ? ' readonly style="background-color:#f1f5f9; cursor:not-allowed;"' : '';
 ?>

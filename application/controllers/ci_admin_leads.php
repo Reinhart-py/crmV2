@@ -448,7 +448,7 @@ function __construct()
 			$lead_owner ?: $cur_uid,
 			'lead_approved',
 			'Lead Approved',
-			'Record #' . $lead_id . ' (' . (!empty($lead['customer']) ? $lead['customer'] : '') . ') was approved and assigned Lead Ref #' . $lead_ref,
+			'Lead for ' . (!empty($lead['customer']) ? $lead['customer'] : 'Record #' . $lead_id) . ' has been approved by Back Office.',
 			base_url('manager/leads/view/' . base64_encode($lead_id)),
 			'fa fa-check-circle',
 			'#16a34a'
@@ -1196,7 +1196,7 @@ function __construct()
 				$user_role = (int)$this->session->userdata('manager_role');
 				$user_id = (int)$this->session->userdata('manager_id');
 				$user_dept = (string)$this->session->userdata('manager_department');
-				$can_edit_bo = ($user_role === 1 || $user_role === 2 || $user_id === 1 || strcasecmp($user_dept, 'Back Office') === 0 || has_section_perm('back_office', 'write'));
+				$can_edit_bo = ($user_role === 2 || $user_role === 1 || $user_id === 1 || strcasecmp($user_dept, 'Back Office') === 0);
 
 		     	if(!empty($bo_cat) && $can_edit_bo){
 		     		for($i=0;$i<=6;$i++){
@@ -1474,7 +1474,7 @@ function __construct()
 				$user_role = (int)$this->session->userdata('manager_role');
 				$user_id = (int)$this->session->userdata('manager_id');
 				$user_dept = (string)$this->session->userdata('manager_department');
-				$can_edit_bo = ($user_role === 1 || $user_role === 2 || $user_id === 1 || strcasecmp($user_dept, 'Back Office') === 0 || has_section_perm('back_office', 'write'));
+				$can_edit_bo = ($user_role === 2 || $user_role === 1 || $user_id === 1 || strcasecmp($user_dept, 'Back Office') === 0);
 
 		     	if(!empty($bo_id) && $can_edit_bo){
 		     		for($i=0;$i<=6;$i++){

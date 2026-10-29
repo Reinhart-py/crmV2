@@ -229,7 +229,7 @@ class Ci_admin_roles extends CI_Controller {
 		$clean['back_office'] = $derive(array('lead_review', 'orders_pending', 'kam_onboard', 'orders_management'), $clean);
 		$clean['kam'] = $derive(array('kam_clients', 'kam_schedule', 'kam_task_followup', 'kam_reminders'), $clean);
 		$clean['reports'] = $derive(array('reports_revenue', 'reports_projections', 'reports_download'), $clean);
-		$clean['system'] = $derive(array('users', 'roles', 'terms', 'leads_import', 'leads_export', 'assigned_leads', 'admin_logs', 'calling_api', 'integrations'), $clean);
+		$clean['system'] = $derive(array('users', 'roles', 'terms', 'leads_import', 'leads_export', 'assigned_leads', 'admin_logs', 'system_assignee', 'kam_clients', 'calling_api', 'integrations'), $clean);
 
 		return $clean;
 	}

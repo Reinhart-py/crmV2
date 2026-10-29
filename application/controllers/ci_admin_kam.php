@@ -244,6 +244,81 @@ class Ci_admin_kam extends CI_Controller
 		exit;
 	}
 
+	public function ajax_search_onboarded_companies()
+	{
+		$this->ci_admin_model->check_permission('kam', 'read', true);
+		$term = trim((string)$this->input->get('term', true));
+		if (empty($term)) {
+			$term = trim((string)$this->input->get('q', true));
+		}
+		$results = array();
+		if (strlen($term) >= 1) {
+			$this->db->select('DISTINCT(client_name) as cname');
+			$this->db->from('ci_kam_client_details');
+			$this->db->like('client_name', $term);
+			$this->db->limit(20);
+			$q1 = $this->db->get()->result_array();
+			foreach ($q1 as $r) {
+				$name = trim((string)$r['cname']);
+				if (!empty($name) && !in_array($name, $results)) {
+					$results[] = $name;
+				}
+			}
+			$this->db->select('DISTINCT(customer) as cname');
+			$this->db->from('ci_leads');
+			$this->db->like('customer', $term);
+			$this->db->limit(30);
+			$q2 = $this->db->get()->result_array();
+			foreach ($q2 as $r) {
+				$name = trim((string)$r['cname']);
+				if (!empty($name) && !in_array($name, $results)) {
+					$results[] = $name;
+				}
+			}
+		}
+		$formatted = array();
+		foreach ($results as $item) {
+			$formatted[] = array('id' => $item, 'text' => $item);
+		}
+		header('Content-Type: application/json');
+		echo json_encode(array('results' => $formatted));
+		exit;
+	}
+
+	public function ajax_get_company_details()
+	{
+		$this->ci_admin_model->check_permission('kam', 'read', true);
+		$company = trim((string)$this->input->get_post('company'));
+		if (empty($company)) {
+			$company = trim((string)$this->input->get_post('customer'));
+		}
+		$result = array('status' => 'empty', 'company' => $company);
+		if (!empty($company)) {
+			$lead = $this->db->where('customer', $company)->order_by('id', 'DESC')->get('ci_leads')->row_array();
+			$kam = $this->db->where('client_name', $company)->order_by('id', 'DESC')->get('ci_kam_client_details')->row_array();
+			$result['status'] = 'success';
+			$result['company_name'] = $company;
+			$result['owner_name'] = !empty($kam['owner_name']) ? $kam['owner_name'] : (!empty($lead['poc']) ? $lead['poc'] : '');
+			$result['poc'] = !empty($lead['poc']) ? $lead['poc'] : (!empty($kam['owner_name']) ? $kam['owner_name'] : '');
+			$result['group_name'] = !empty($kam['group_name']) ? $kam['group_name'] : '';
+			$result['email'] = !empty($lead['email']) ? $lead['email'] : '';
+			$result['contact'] = !empty($lead['contact1']) ? $lead['contact1'] : (!empty($lead['mobile']) ? $lead['mobile'] : '');
+			$result['location'] = !empty($lead['location']) ? $lead['location'] : '';
+			$result['tl_number'] = !empty($lead['tl_number']) ? $lead['tl_number'] : '';
+			$result['tl_emirate'] = !empty($lead['tl_emirate']) ? $lead['tl_emirate'] : '';
+			$result['tl_zone'] = !empty($lead['tl_zone']) ? $lead['tl_zone'] : '';
+			$result['tl_authority'] = !empty($lead['tl_authority']) ? $lead['tl_authority'] : '';
+			$result['tl_expire_date'] = (!empty($lead['tl_expire_date']) && $lead['tl_expire_date'] != '0000-00-00') ? date('d-m-Y', strtotime($lead['tl_expire_date'])) : '';
+			$result['status_category'] = !empty($lead['status_category']) ? $lead['status_category'] : 'Active';
+			$result['client_status'] = !empty($lead['company_status']) ? $lead['company_status'] : 'Active';
+			$result['primary_assignee'] = !empty($kam['executive_id']) ? (int)$kam['executive_id'] : (!empty($lead['lead_assign']) ? (int)$lead['lead_assign'] : 0);
+			$result['collaborators'] = !empty($kam['collaborators']) ? explode(',', $kam['collaborators']) : (!empty($lead['agents']) ? explode(',', $lead['agents']) : array());
+		}
+		header('Content-Type: application/json');
+		echo json_encode($result);
+		exit;
+	}
+
 	public function onboard()
 	{
 		$manager_id = (int)$this->session->userdata('manager_id');
@@ -263,17 +338,48 @@ class Ci_admin_kam extends CI_Controller
 		$data['business_categories'] = $this->comman_model->getAll(array('cat_type' => 'business_cat', 'status' => 1), '', 'ci_terms');
 		$data['c_list'] = $this->comman_model->getAll('', array('id', 'ASC'), 'countries');
 
+		$order_id = (int)$this->input->get_post('order_id');
+		$lead_id = (int)$this->input->get_post('lead_id');
+		$data['order_id'] = $order_id;
+		$data['lead_id'] = $lead_id;
+
+		$prefill_order = array();
+		if ($order_id > 0) {
+			$prefill_order = $this->db->where('id', $order_id)->get('ci_orders')->row_array();
+			if (!empty($prefill_order)) {
+				$data['prefill_company'] = !empty($prefill_order['company_name']) ? $prefill_order['company_name'] : $prefill_order['client_name'];
+				$data['prefill_owner'] = !empty($prefill_order['owner_name']) ? $prefill_order['owner_name'] : '';
+				if (empty($lead_id) && !empty($prefill_order['lead_id'])) {
+					$lead_id = (int)$prefill_order['lead_id'];
+					$data['lead_id'] = $lead_id;
+				}
+			}
+		}
+
+		if ($lead_id > 0 && empty($data['prefill_company'])) {
+			$lead_rec = $this->db->where('id', $lead_id)->get('ci_leads')->row_array();
+			if (!empty($lead_rec)) {
+				$data['prefill_company'] = $lead_rec['customer'];
+				$data['prefill_owner'] = !empty($lead_rec['poc']) ? $lead_rec['poc'] : '';
+			}
+		}
+
 		if ($this->input->server('REQUEST_METHOD') === 'POST') {
-			$client_name = trim($this->input->post('customer'));
+			$client_name = trim((string)$this->input->post('customer'));
 			if (empty($client_name)) {
-				$client_name = trim($this->input->post('client_name'));
+				$client_name = trim((string)$this->input->post('assigned_company'));
+			}
+			if (empty($client_name)) {
+				$client_name = trim((string)$this->input->post('client_name'));
 			}
 
 			if (empty($client_name)) {
-				$this->session->set_flashdata('error_message', 'Client Name is required.');
-				redirect('manager/kam/onboard');
+				$this->session->set_flashdata('error_message', 'Assigned Client (Company Name) is required.');
+				redirect('manager/kam/onboard' . ($order_id > 0 ? '?order_id=' . $order_id : ''));
 				return;
 			}
+
+			$owner_name = trim((string)$this->input->post('owner_name'));
 
 			$poc = trim($this->input->post('poc'));
 			if (empty($poc)) {
@@ -441,14 +547,40 @@ class Ci_admin_kam extends CI_Controller
 				'database_category' => 'KAM Onboarded'
 			);
 
-			$inserted_lead_id = $this->comman_model->saveData('ci_leads', $lead_record);
+			$existing_lead = $this->db->where('customer', $client_name)->order_by('id', 'DESC')->get('ci_leads')->row_array();
+			if (!empty($existing_lead)) {
+				$inserted_lead_id = (int)$existing_lead['id'];
+				$custom_lead_code = (int)$existing_lead['lead_id'];
+				$this->db->where('id', $inserted_lead_id)->update('ci_leads', array(
+					'poc' => $poc,
+					'category' => !empty($status_category) ? $status_category : $existing_lead['category'],
+					'company_status' => $client_status,
+					'email' => !empty($email) ? $email : $existing_lead['email'],
+					'contact1' => !empty($number) ? $number : $existing_lead['contact1'],
+					'tl_number' => !empty($tl_number) ? $tl_number : $existing_lead['tl_number'],
+					'tl_emirate' => !empty($tl_emirate) ? $tl_emirate : $existing_lead['tl_emirate'],
+					'tl_zone' => !empty($tl_zone) ? $tl_zone : $existing_lead['tl_zone'],
+					'tl_authority' => !empty($tl_authority) ? $tl_authority : $existing_lead['tl_authority'],
+					'lead_assign' => $primary_assignee,
+					'agents' => $assigned_agents,
+					'database_category' => 'KAM Onboarded'
+				));
+			} else {
+				$inserted_lead_id = $this->comman_model->saveData('ci_leads', $lead_record);
+				if ($inserted_lead_id) {
+					$custom_lead_code = 100000000 + (int)$inserted_lead_id;
+					$this->db->where('id', $inserted_lead_id)->update('ci_leads', array('lead_id' => $custom_lead_code));
+				}
+			}
 
 			if ($inserted_lead_id) {
-				$custom_lead_code = 100000000 + (int)$inserted_lead_id;
-				$this->db->where('id', $inserted_lead_id)->update('ci_leads', array('lead_id' => $custom_lead_code));
+				if (empty($custom_lead_code)) {
+					$custom_lead_code = 100000000 + (int)$inserted_lead_id;
+				}
 
 				$kam_data_array = array(
 					'poc' => $poc,
+					'owner_name' => $owner_name,
 					'group_name' => $group_name,
 					'status_category' => $status_category,
 					'client_status' => $client_status,
@@ -520,18 +652,62 @@ class Ci_admin_kam extends CI_Controller
 					'day' => $day
 				);
 
-				$this->db->insert('ci_kam_client_details', array(
-					'lead_id' => (int)$inserted_lead_id,
-					'client_name' => $client_name,
-					'group_name' => $group_name,
-					'executive_id' => $primary_assignee,
-					'executive_name' => $executive_name,
-					'v_man' => $v_man,
-					'v_exe' => $v_exe,
-					'kam_data' => json_encode($kam_data_array),
-					'schedule_data' => json_encode($schedule_inputs),
-					'created_at' => date('Y-m-d H:i:s')
-				));
+				$existing_kam = $this->db->where('client_name', $client_name)->get('ci_kam_client_details')->row_array();
+				if (!empty($existing_kam)) {
+					$this->db->where('id', $existing_kam['id'])->update('ci_kam_client_details', array(
+						'lead_id' => (int)$inserted_lead_id,
+						'owner_name' => $owner_name,
+						'group_name' => $group_name,
+						'executive_id' => $primary_assignee,
+						'executive_name' => $executive_name,
+						'v_man' => $v_man,
+						'v_exe' => $v_exe,
+						'collaborators' => $assigned_agents,
+						'kam_data' => json_encode($kam_data_array),
+						'schedule_data' => json_encode($schedule_inputs),
+						'updated_at' => date('Y-m-d H:i:s')
+					));
+				} else {
+					$this->db->insert('ci_kam_client_details', array(
+						'lead_id' => (int)$inserted_lead_id,
+						'client_name' => $client_name,
+						'owner_name' => $owner_name,
+						'group_name' => $group_name,
+						'executive_id' => $primary_assignee,
+						'executive_name' => $executive_name,
+						'v_man' => $v_man,
+						'v_exe' => $v_exe,
+						'collaborators' => $assigned_agents,
+						'kam_data' => json_encode($kam_data_array),
+						'schedule_data' => json_encode($schedule_inputs),
+						'created_at' => date('Y-m-d H:i:s')
+					));
+				}
+
+				if ($order_id > 0) {
+					$order_rec = $this->db->where('id', $order_id)->get('ci_orders')->row_array();
+					if (!empty($order_rec)) {
+						$this->db->where('id', $order_id)->update('ci_orders', array(
+							'company_name' => $client_name,
+							'owner_name' => $owner_name,
+							'company_id' => (int)$inserted_lead_id,
+							'status' => 'Completed',
+							'updated_at' => date('Y-m-d H:i:s')
+						));
+						$this->db->insert('ci_order_history', array(
+							'order_id' => $order_id,
+							'action' => 'onboarding_completed',
+							'notes' => "Client onboarding completed for company '{$client_name}'. Order #{$order_rec['order_no']} moved to Completed Orders.",
+							'action_by' => $manager_id,
+							'action_by_name' => (string)$this->session->userdata('manager_name'),
+							'created_at' => date('Y-m-d H:i:s')
+						));
+						$this->ci_admin_model->log_admin_action('order_onboarded', "Order #{$order_rec['order_no']} onboarded for {$client_name}", 'SUCCESS', $manager_id, (string)$this->session->userdata('manager_name'));
+						$this->session->set_flashdata('message', "Client '{$client_name}' onboarded successfully. Order #{$order_rec['order_no']} moved to Completed Orders.");
+						redirect('manager/orders?status=completed');
+						return;
+					}
+				}
 
 				$this->ci_admin_model->log_admin_action(
 					'kam_client_onboard',
@@ -546,7 +722,7 @@ class Ci_admin_kam extends CI_Controller
 				return;
 			} else {
 				$this->session->set_flashdata('error_message', 'Failed to onboard client. Please try again.');
-				redirect('manager/kam/onboard');
+				redirect('manager/kam/onboard' . ($order_id > 0 ? '?order_id=' . $order_id : ''));
 				return;
 			}
 		}

@@ -18,7 +18,9 @@
     <?php echo get_message($this->session->flashdata('message'),'message'); ?>
      
     <form role="form" action="<?php echo base_url(); ?>manager/kam/onboard" method="post" name="onboard_client_form">
-      
+      <input type="hidden" name="order_id" value="<?php echo htmlspecialchars($order_id ?? ''); ?>">
+      <input type="hidden" name="lead_id" value="<?php echo htmlspecialchars($lead_id ?? ''); ?>">
+
       <div class="box box-default">
         <div class="box-header with-border">
           <h3 class="box-title">Client and Group Details</h3>
@@ -27,10 +29,36 @@
           <div class="row">
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
-                <label>Client Name <span>*</span></label>
-                <select name="customer" id="kam_company_select" class="form-control select2-company-ajax" style="width: 100%;" required>
-                  <option value=""></option>
-                </select>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                  <label style="margin:0;">Assigned Client (Company Name) <span class="text-danger">*</span></label>
+                  <a href="javascript:void(0);" id="toggleKamCompanyModeBtn" style="font-size:12px; font-weight:600; color:#0072f0; text-decoration:none;">
+                    <i class="fa fa-plus-circle"></i> Add New Company
+                  </a>
+                </div>
+                <div id="kamCompanySelectWrap">
+                  <select name="customer" id="kam_company_select" class="form-control select2-kam-company-ajax" style="width: 100%;" required>
+                    <?php if (!empty($prefill_company)) { ?>
+                      <option value="<?php echo htmlspecialchars($prefill_company); ?>" selected><?php echo htmlspecialchars($prefill_company); ?></option>
+                    <?php } else { ?>
+                      <option value="">Search existing company name...</option>
+                    <?php } ?>
+                  </select>
+                </div>
+                <div id="kamCompanyInputWrap" style="display: none;">
+                  <div class="input-group" style="width: 100%;">
+                    <input type="text" id="kam_company_input" class="form-control" placeholder="Enter new company name..." style="text-transform: capitalize;" disabled>
+                    <span class="input-group-btn">
+                      <button class="btn btn-default" type="button" id="btnCancelNewKamCompany" title="Back to company dropdown" style="border-left:0; color:#64748b;"><i class="fa fa-times"></i></button>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Owner Name</label>
+                <input type="text" class="form-control" name="owner_name" id="kam_owner_name" placeholder="Owner Name" value="<?php echo htmlspecialchars($prefill_owner ?? ''); ?>">
               </div>
             </div>
 
@@ -931,6 +959,95 @@ $(document).ready(function() {
 
   $('#tl_zone_select').on('change', function() {
     applyTradeLicenseDependencies(false);
+  });
+
+  if ($.fn.select2) {
+    $('.select2-kam-company-ajax').select2({
+      placeholder: 'Search company name (min 1 character)...',
+      minimumInputLength: 1,
+      allowClear: true,
+      tags: true,
+      ajax: {
+        url: '<?php echo base_url(); ?>manager/kam/ajax_search_onboarded_companies',
+        dataType: 'json',
+        delay: 250,
+        data: function (params) {
+          return { term: params.term || '' };
+        },
+        processResults: function (data) {
+          return { results: data.results || [] };
+        },
+        cache: true
+      }
+    });
+  }
+
+  $('#kam_company_select').on('change', function() {
+    var cname = $(this).val();
+    if (cname && cname.trim().length > 0) {
+      $.ajax({
+        url: '<?php echo base_url(); ?>manager/kam/ajax_get_company_details',
+        type: 'POST',
+        dataType: 'json',
+        data: {
+          company: cname,
+          '<?php echo $this->security->get_csrf_token_name(); ?>': '<?php echo $this->security->get_csrf_hash(); ?>'
+        },
+        success: function(res) {
+          if (res && res.status === 'success') {
+            if (res.owner_name && !$('#kam_owner_name').val()) {
+              $('#kam_owner_name').val(res.owner_name);
+            }
+            if (res.poc && !$('#kam_poc_name').val()) {
+              $('#kam_poc_name').val(res.poc);
+            }
+            if (res.group_name && !$('#kam_group_name').val()) {
+              $('#kam_group_name').val(res.group_name);
+            }
+            if (res.email && !$('input[name="email"]').val()) {
+              $('input[name="email"]').val(res.email);
+            }
+            if (res.contact && !$('input[name="number"]').val()) {
+              $('input[name="number"]').val(res.contact);
+            }
+            if (res.tl_number && !$('input[name="tl_number"]').val()) {
+              $('input[name="tl_number"]').val(res.tl_number);
+            }
+            if (res.tl_emirate) {
+              $('#tl_emirate_select').val(res.tl_emirate).trigger('change');
+            }
+            if (res.tl_zone) {
+              $('#tl_zone_select').val(res.tl_zone).trigger('change');
+            }
+            if (res.tl_authority) {
+              setTimeout(function() {
+                $('#tl_authority_select').val(res.tl_authority).trigger('change');
+              }, 200);
+            }
+            if (res.tl_expire_date && !$('input[name="tl_expire_date"]').val()) {
+              $('input[name="tl_expire_date"]').val(res.tl_expire_date);
+            }
+          }
+        }
+      });
+    }
+  });
+
+  $('#toggleKamCompanyModeBtn').on('click', function(e) {
+    e.preventDefault();
+    $('#kamCompanySelectWrap').hide();
+    $('#kam_company_select').prop('disabled', true);
+    $('#kamCompanyInputWrap').show();
+    $('#kam_company_input').prop('disabled', false).attr('name', 'customer').focus();
+    $(this).hide();
+  });
+
+  $('#btnCancelNewKamCompany').on('click', function() {
+    $('#kamCompanyInputWrap').hide();
+    $('#kam_company_input').prop('disabled', true).removeAttr('name').val('');
+    $('#kamCompanySelectWrap').show();
+    $('#kam_company_select').prop('disabled', false).attr('name', 'customer');
+    $('#toggleKamCompanyModeBtn').show();
   });
 
   applyTradeLicenseDependencies(true);
