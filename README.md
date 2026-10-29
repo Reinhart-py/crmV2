@@ -130,15 +130,14 @@ Located at `manager/calls` (and accessible via the top navigation phone icon), t
 
 - **Dialer Home**: Ultra-clean interface displaying the phone keypad, ready-to-call status, and quick direct dialing.
 - **Manual Dialer (`Database > Manual Dialer`)**:
-  - Dedicated direct manual calling card with international prefix selection (`+971`, `+966`, `+1`, `+44`, `+91`, etc.), quick clipboard pasting, and reset buttons.
-  - Live contact lookup: searches and suggests existing database contacts as you type.
-  - 1-click **Save to Database** button creates an immediate `D%010d` record without leaving the dialer.
-  - Displays recent manual calls with 1-click redialing.
+  - Full Leads Details workstation matching the complete contact profile: Company Name, POC, Primary and Alternate Phones with 1-click dial, Email, Authority, Location, DNCR Registry, MRC/Revenue calculations, and Call Remarks.
+  - Interactive Queue Cycling: Seamlessly call through Database Records, Follow-ups, or Leads queues with **Save & Next** (saves details and dials next person) and **Skip** buttons.
+  - Blank Record mode for instant new prospect creation with automatic `D%010d` assignment.
 - **Auto Dialer (`Database > Auto Dialer`)**:
-  - **Multi-Stage Queueing**: Checkbox selection of pipeline stages (Database, Follow up, Interested, Callback, etc.) with real-time queue count calculations.
-  - **Configurable Countdown Timer Delay**: Select delay intervals (3s, 5s, 10s, 15s, 30s) between calls. The live card displays an animated countdown timer badge with instant "Dial Now" and "Pause" options.
-  - **Detail Filling Mode**: Toggle between **Auto Pre-fill Lead Details** (pre-loads contact info and stage into the record form) and **Manual Details Entry** (leaves remarks editable for custom agent notes).
-  - **Groq AI Auto Call Summarization & Logging**: Powered by Groq AI (`groq_service.php`), the system automatically analyzes call duration, disposition, and agent remarks upon call completion. It generates a concise summary, customer sentiment, and next action, and auto-saves the log to `ci_call_logs`, `ci_leads`, and `ci_lead_followup`.
+  - **Multi-Stage Queueing**: Clean pipeline stage selection with instant queue calculation.
+  - **Countdown Timer Delay**: User-configurable interval (3s, 5s, 10s, 15s, 30s) between calls with live countdown indicator, instant "Dial Now", and "Pause" options.
+  - **Detail Filling Mode**: "Auto Pre-fill Lead Details" vs "Manual Details Entry".
+  - **Automated Background Call Intelligence**: Automatically processes call discussion, extracts customer intent and next action, and saves logs to history in the background without intrusive UI clutter.
 - **Organized Follow-up Queues**: Flyout navigation for **Today**, **Missed Today**, **Last Seven Days**, **Next Seven Days**, and **All Follow Up**.
 - **Calling Logs**: Centralized outbound reporting categorized across Day, Week, Month, Year, and All Time.
 
