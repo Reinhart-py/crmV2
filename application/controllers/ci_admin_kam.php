@@ -323,10 +323,12 @@ class Ci_admin_kam extends CI_Controller
 	{
 		$manager_id = (int)$this->session->userdata('manager_id');
 		$role = (int)$this->session->userdata('manager_role');
+		$is_admin = ($role === 1 || $this->session->userdata('is_admin') == 1);
 
 		$this->ci_admin_model->check_permission('kam', 'write', true);
 
 		$data = array();
+		$data['is_admin'] = $is_admin;
 		$data['info'] = array(
 			'title' => 'KAM - Onboard Client',
 			'page_heading' => 'Onboard Client'
@@ -356,12 +358,40 @@ class Ci_admin_kam extends CI_Controller
 			}
 		}
 
-		if ($lead_id > 0 && empty($data['prefill_company'])) {
+		if ($lead_id > 0) {
 			$lead_rec = $this->db->where('id', $lead_id)->get('ci_leads')->row_array();
 			if (!empty($lead_rec)) {
-				$data['prefill_company'] = $lead_rec['customer'];
-				$data['prefill_owner'] = !empty($lead_rec['poc']) ? $lead_rec['poc'] : '';
+				if (empty($data['prefill_company'])) {
+					$data['prefill_company'] = $lead_rec['customer'];
+				}
+				if (empty($data['prefill_owner'])) {
+					$data['prefill_owner'] = !empty($lead_rec['poc']) ? $lead_rec['poc'] : '';
+				}
+				$data['default_assignee'] = !empty($lead_rec['lead_assign']) ? (int)$lead_rec['lead_assign'] : 0;
+				$data['default_collaborators'] = !empty($lead_rec['agents']) ? explode(',', $lead_rec['agents']) : array();
 			}
+		}
+
+		if (!empty($data['prefill_company'])) {
+			$kam_rec = $this->db->where('client_name', $data['prefill_company'])->get('ci_kam_client_details')->row_array();
+			if (!empty($kam_rec)) {
+				if (!empty($kam_rec['executive_id'])) {
+					$data['default_assignee'] = (int)$kam_rec['executive_id'];
+				}
+				if (!empty($kam_rec['collaborators'])) {
+					$data['default_collaborators'] = explode(',', $kam_rec['collaborators']);
+				}
+				if (!empty($kam_rec['owner_name']) && empty($data['prefill_owner'])) {
+					$data['prefill_owner'] = $kam_rec['owner_name'];
+				}
+			}
+		}
+
+		if (empty($data['default_assignee'])) {
+			$data['default_assignee'] = $manager_id;
+		}
+		if (!isset($data['default_collaborators'])) {
+			$data['default_collaborators'] = array();
 		}
 
 		if ($this->input->server('REQUEST_METHOD') === 'POST') {
@@ -402,22 +432,38 @@ class Ci_admin_kam extends CI_Controller
 			$group_yn = trim($this->input->post('group_yn'));
 			$executive_post = trim($this->input->post('executive'));
 
-			$primary_assignee = (int)$this->input->post('lead_assign');
-			if ($primary_assignee <= 0) {
-				$primary_assignee = $manager_id;
-			}
+			if ($is_admin) {
+				$primary_assignee = (int)$this->input->post('lead_assign');
+				if ($primary_assignee <= 0) {
+					$primary_assignee = $manager_id;
+				}
 
-			$collaborators_input = $this->input->post('agents');
-			$assigned_agents = '';
-			if (!empty($collaborators_input)) {
-				if (is_array($collaborators_input)) {
-					$clean_collabs = array_values(array_diff(array_unique(array_filter(array_map('intval', $collaborators_input))), array($primary_assignee)));
-					$assigned_agents = implode(',', $clean_collabs);
-				} else {
-					$single_c = (int)$collaborators_input;
-					if ($single_c > 0 && $single_c !== $primary_assignee) {
-						$assigned_agents = (string)$single_c;
+				$collaborators_input = $this->input->post('agents');
+				$assigned_agents = '';
+				if (!empty($collaborators_input)) {
+					if (is_array($collaborators_input)) {
+						$clean_collabs = array_values(array_diff(array_unique(array_filter(array_map('intval', $collaborators_input))), array($primary_assignee)));
+						$assigned_agents = implode(',', $clean_collabs);
+					} else {
+						$single_c = (int)$collaborators_input;
+						if ($single_c > 0 && $single_c !== $primary_assignee) {
+							$assigned_agents = (string)$single_c;
+						}
 					}
+				}
+			} else {
+				$existing_kam_check = $this->db->where('client_name', $client_name)->get('ci_kam_client_details')->row_array();
+				$existing_lead_check = $this->db->where('customer', $client_name)->order_by('id', 'DESC')->get('ci_leads')->row_array();
+
+				if (!empty($existing_kam_check) && !empty($existing_kam_check['executive_id'])) {
+					$primary_assignee = (int)$existing_kam_check['executive_id'];
+					$assigned_agents = isset($existing_kam_check['collaborators']) ? $existing_kam_check['collaborators'] : '';
+				} elseif (!empty($existing_lead_check) && !empty($existing_lead_check['lead_assign'])) {
+					$primary_assignee = (int)$existing_lead_check['lead_assign'];
+					$assigned_agents = isset($existing_lead_check['agents']) ? $existing_lead_check['agents'] : '';
+				} else {
+					$primary_assignee = $manager_id;
+					$assigned_agents = '';
 				}
 			}
 
@@ -551,7 +597,7 @@ class Ci_admin_kam extends CI_Controller
 			if (!empty($existing_lead)) {
 				$inserted_lead_id = (int)$existing_lead['id'];
 				$custom_lead_code = (int)$existing_lead['lead_id'];
-				$this->db->where('id', $inserted_lead_id)->update('ci_leads', array(
+				$lead_update_data = array(
 					'poc' => $poc,
 					'category' => !empty($status_category) ? $status_category : $existing_lead['category'],
 					'company_status' => $client_status,
@@ -561,10 +607,13 @@ class Ci_admin_kam extends CI_Controller
 					'tl_emirate' => !empty($tl_emirate) ? $tl_emirate : $existing_lead['tl_emirate'],
 					'tl_zone' => !empty($tl_zone) ? $tl_zone : $existing_lead['tl_zone'],
 					'tl_authority' => !empty($tl_authority) ? $tl_authority : $existing_lead['tl_authority'],
-					'lead_assign' => $primary_assignee,
-					'agents' => $assigned_agents,
 					'database_category' => 'KAM Onboarded'
-				));
+				);
+				if ($is_admin) {
+					$lead_update_data['lead_assign'] = $primary_assignee;
+					$lead_update_data['agents'] = $assigned_agents;
+				}
+				$this->db->where('id', $inserted_lead_id)->update('ci_leads', $lead_update_data);
 			} else {
 				$inserted_lead_id = $this->comman_model->saveData('ci_leads', $lead_record);
 				if ($inserted_lead_id) {
@@ -654,19 +703,22 @@ class Ci_admin_kam extends CI_Controller
 
 				$existing_kam = $this->db->where('client_name', $client_name)->get('ci_kam_client_details')->row_array();
 				if (!empty($existing_kam)) {
-					$this->db->where('id', $existing_kam['id'])->update('ci_kam_client_details', array(
+					$kam_update_data = array(
 						'lead_id' => (int)$inserted_lead_id,
 						'owner_name' => $owner_name,
 						'group_name' => $group_name,
-						'executive_id' => $primary_assignee,
-						'executive_name' => $executive_name,
 						'v_man' => $v_man,
 						'v_exe' => $v_exe,
-						'collaborators' => $assigned_agents,
 						'kam_data' => json_encode($kam_data_array),
 						'schedule_data' => json_encode($schedule_inputs),
 						'updated_at' => date('Y-m-d H:i:s')
-					));
+					);
+					if ($is_admin) {
+						$kam_update_data['executive_id'] = $primary_assignee;
+						$kam_update_data['executive_name'] = $executive_name;
+						$kam_update_data['collaborators'] = $assigned_agents;
+					}
+					$this->db->where('id', $existing_kam['id'])->update('ci_kam_client_details', $kam_update_data);
 				} else {
 					$this->db->insert('ci_kam_client_details', array(
 						'lead_id' => (int)$inserted_lead_id,

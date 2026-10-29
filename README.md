@@ -13,12 +13,14 @@ Everything is designed to be fast, reliable, clean, and simple to use on both co
 
 ## Table of Contents
 
+- [Executive Summary (For Non-Technical Leaders & Teams)](#executive-summary-how-this-crm-works-in-plain-english)
 - [Overview](#overview)
 - [End-to-End CRM Workflow & Operational Architecture](#end-to-end-crm-workflow--operational-architecture)
   - [1. Entity Numbering & Lifecycle Flow](#1-entity-numbering--lifecycle-flow)
-  - [2. Detailed Operational Pipeline](#2-detailed-operational-pipeline)
-  - [3. System Governance: KAM Client & Assignment System](#3-system-governance-kam-client--assignment-system)
-  - [4. Phone Dialer & Smart Outbound Engine](#4-phone-dialer--smart-outbound-engine)
+  - [2. Complete User Role Workflows (Single-Paragraph Guides)](#complete-user-role-workflows-single-paragraph-guides)
+  - [3. Detailed Operational Pipeline](#3-detailed-operational-pipeline)
+  - [4. System Governance: KAM Client & Assignment System](#4-system-governance-kam-client--assignment-system)
+  - [5. Phone Dialer & Smart Outbound Engine](#5-phone-dialer--smart-outbound-engine)
 - [Key Features](#key-features)
   - [1. Calling Center & Smart Dialer](#1-calling-center--smart-dialer)
   - [2. Lead Management & Database Allocation](#2-lead-management--database-allocation)
@@ -40,6 +42,19 @@ Everything is designed to be fast, reliable, clean, and simple to use on both co
 - [Key URL Routes](#key-url-routes)
 - [User Roles & Access Levels](#user-roles--access-levels)
 - [License](#license)
+
+---
+
+## Executive Summary (How This CRM Works in Plain English)
+
+Think of Seven Strokes CRM as a streamlined digital assembly line connecting your entire business -- from the first cold call to final payment and long-term account management. Instead of sales reps scribbling phone numbers on paper or deals getting lost in confusing email threads, every prospect enters a clear, step-by-step conveyor belt:
+
+1. **Find & Dial**: Salespeople reach out to companies using our built-in phone dialer with 1-click calling and zero wasted time.
+2. **Quality Check**: When a prospect wants to buy, the Back Office checks their documents and officially approves them as a verified Lead.
+3. **Lock & Process**: When a deal is signed, the salesperson submits an Order and the record is instantly locked so numbers cannot be tampered with.
+4. **Onboard & Assign**: The Back Office verifies payment terms, onboards the client's corporate profile, and hands them over to Account Managers.
+5. **Retain & Grow**: Key Account Managers track trade license expirations, VAT deadlines, and service tasks to keep clients happy and renewing year after year.
+6. **Executive Control**: Business leaders and administrators have 100% real-time visibility over projected revenue, closed sales, and team productivity without ever needing to ask for a manual spreadsheet report.
 
 ---
 
@@ -77,7 +92,23 @@ The Seven Strokes CRM Platform operates as an integrated commercial engine where
 
 ---
 
-### 2. Detailed Operational Pipeline
+### 2. Complete User Role Workflows (Single-Paragraph Guides)
+
+#### 1. Salesperson Workflow
+A salesperson operates primarily within **My Zone** and the **Calling Center**, beginning their day by accessing prospective businesses through **Add Database** or launching the **Auto / Manual Dialer** to cycle sequentially through targeted calling queues with one-click dialing and automated call intelligence. During or immediately following each conversation, the salesperson updates the prospect's contact details, records notes, and schedules callbacks which populate their personal **My Follow-Up** calendar. Once a genuine commercial interest is established, the salesperson submits a conversion request to the Back Office; upon receiving approval, they negotiate deal commercials, input line items and pricing under **Create Order**, and submit the deal -- which instantly locks the source lead record to preserve operational integrity while the salesperson moves smoothly to their next prospect without administrative slowdown.
+
+#### 2. Back Office Workflow
+The Back Office team serves as the operational quality and compliance gateway of the business, continuously monitoring incoming deal activity across the **Back Office** menu to ensure data accuracy and financial diligence. Staff start by reviewing salesperson conversion submissions under **Pending Leads Approval**, verifying company details before issuing an official Lead Reference ID (`L%010d`) to authorize formal quoting. When a closed deal arrives under **Pending Order Process**, Back Office specialists inspect the salesperson's full original submission, verify line items and VAT calculations, assign an official Order ID (`O%010d`), and transition directly into **Onboard Client** to capture corporate trade licenses, tax registrations, and compliance timelines. Once onboarding is finalized, the order automatically transitions to **Completed Orders**, where Back Office or Administrators perform final commercial sign-off by clicking **Mark as Closed / Sold**, assigning a permanent Sales Reference ID (`S%010d`) and reflecting recognized revenue in **View Sales**.
+
+#### 3. Key Account Manager (KAM) Workflow
+Key Account Managers take commercial and operational custody of onboarded corporate clients to guarantee exceptional service delivery, regulatory compliance, and high lifetime value through the **KAM** workstation. Using **KAM > My Clients** and the privacy-protected search in **System > KAM Client**, account executives access complete company dossiers, corporate trade licenses, authority jurisdictions, and executive contacts while retaining exclusive editing privileges for their assigned accounts. Account managers track scheduled corporate compliance milestones -- including trade license renewals, corporate tax filings, quarterly VAT submissions, and audit deadlines -- across dynamic calendar matrices, coordinating operational task fulfillment with assigned collaborator executives. By proactively monitoring automated renewal alerts and managing recurring client interactions, account managers safeguard ongoing Monthly Recurring Revenue (MRR) and build lasting client relationships.
+
+#### 4. Super Administrator & Operations Workflow
+Super Administrators and Operations Leaders govern the entire commercial machinery from a centralized administrative vantage point, maintaining system integrity, role-based security, and top-tier financial control. Administrators configure access rights and menu visibility across team tiers using **System > Roles**, manage company allocations and assign dedicated Primary Executives and Collaborators to corporate clients under **System > Assign**, and ensure dialing rules and pipeline categories operate in strict accordance with business governance. From the **Dashboard**, **Company Projection**, and **Revenue List**, leadership tracks real-time corporate metrics, projected versus realized revenue, and individual team performance without data fragmentation. By maintaining absolute control over client reassignments, order approvals, and system-wide audit trails, operations leaders steer company growth with complete clarity and auditable accountability.
+
+---
+
+### 3. Detailed Operational Pipeline
 
 1. **Step 1: Prospect Ingestion & Outbound Contact (`My Zone > Add Database` / Phone Dialer)**
    - Sales executives add prospective business contacts manually or import CSV databases.
@@ -112,7 +143,7 @@ The Seven Strokes CRM Platform operates as an integrated commercial engine where
 
 ---
 
-### 3. System Governance: KAM Client & Assignment System
+### 4. System Governance: KAM Client & Assignment System
 
 - **System > KAM Client (`manager/system/kam-client`)**:
   - **Privacy Search Gate**: To protect corporate confidentiality and avoid exposing the full database, results are displayed only after typing at least three letters (`strlen($search) >= 3`).
@@ -124,7 +155,7 @@ The Seven Strokes CRM Platform operates as an integrated commercial engine where
 
 ---
 
-### 4. Phone Dialer & Smart Outbound Engine
+### 5. Phone Dialer & Smart Outbound Engine
 
 Located at `manager/calls` (and accessible via the top navigation phone icon), the calling suite provides an Apple-style, distraction-free environment:
 

@@ -173,29 +173,61 @@
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
                 <label>Primary Assignee / Executive <span>*</span></label>
+                <?php if (!empty($is_admin)) { ?>
                 <select name="lead_assign" id="onboard_lead_assign_val" class="form-control select2" required style="width: 100%;">
                   <option value="">Select Primary Assignee / Executive *</option>
                   <?php if(isset($u_list) && !empty($u_list)) {
-                    foreach($u_list as $u){ ?>
-                      <option value="<?php echo $u['id']; ?>">
+                    foreach($u_list as $u){ 
+                      $sel = (!empty($default_assignee) && (int)$default_assignee === (int)$u['id']) ? 'selected="selected"' : '';
+                    ?>
+                      <option value="<?php echo $u['id']; ?>" <?php echo $sel; ?>>
                         <?php echo htmlspecialchars($u['name']); ?> (<?php echo htmlspecialchars($u['department']); ?>)
                       </option>
                   <?php } } ?>
                 </select>
+                <?php } else { ?>
+                <select id="onboard_lead_assign_val" class="form-control select2" disabled style="width: 100%; background-color: #f8fafc; cursor: not-allowed;">
+                  <option value="">Select Primary Assignee / Executive *</option>
+                  <?php if(isset($u_list) && !empty($u_list)) {
+                    foreach($u_list as $u){ 
+                      $sel = (!empty($default_assignee) && (int)$default_assignee === (int)$u['id']) ? 'selected="selected"' : '';
+                    ?>
+                      <option value="<?php echo $u['id']; ?>" <?php echo $sel; ?>>
+                        <?php echo htmlspecialchars($u['name']); ?> (<?php echo htmlspecialchars($u['department']); ?>)
+                      </option>
+                  <?php } } ?>
+                </select>
+                <input type="hidden" name="lead_assign" id="hidden_lead_assign" value="<?php echo htmlspecialchars($default_assignee ?? ''); ?>">
+                <?php } ?>
               </div>
             </div>
 
             <div class="col-lg-3 col-sm-6">
               <div class="form-group">
                 <label>Collaborators / Additional Assignees</label>
-                <select class="form-control select2" name="agents[]" multiple="multiple" data-placeholder="Select Additional Assignees" style="width: 100%;">
+                <?php if (!empty($is_admin)) { ?>
+                <select class="form-control select2" name="agents[]" id="onboard_agents_val" multiple="multiple" data-placeholder="Select Additional Assignees" style="width: 100%;">
                   <?php if(isset($u_list) && !empty($u_list)) {
-                    foreach($u_list as $u){ ?>
-                      <option value="<?php echo $u['id']; ?>">
+                    foreach($u_list as $u){ 
+                      $sel = (!empty($default_collaborators) && in_array((string)$u['id'], array_map('strval', $default_collaborators))) ? 'selected="selected"' : '';
+                    ?>
+                      <option value="<?php echo $u['id']; ?>" <?php echo $sel; ?>>
                         <?php echo htmlspecialchars($u['name']); ?>
                       </option>
                   <?php } } ?>
                 </select>
+                <?php } else { ?>
+                <select class="form-control select2" id="onboard_agents_val" multiple="multiple" disabled data-placeholder="Select Additional Assignees" style="width: 100%; background-color: #f8fafc; cursor: not-allowed;">
+                  <?php if(isset($u_list) && !empty($u_list)) {
+                    foreach($u_list as $u){ 
+                      $sel = (!empty($default_collaborators) && in_array((string)$u['id'], array_map('strval', $default_collaborators))) ? 'selected="selected"' : '';
+                    ?>
+                      <option value="<?php echo $u['id']; ?>" <?php echo $sel; ?>>
+                        <?php echo htmlspecialchars($u['name']); ?>
+                      </option>
+                  <?php } } ?>
+                </select>
+                <?php } ?>
               </div>
             </div>
 
@@ -1026,6 +1058,13 @@ $(document).ready(function() {
             }
             if (res.tl_expire_date && !$('input[name="tl_expire_date"]').val()) {
               $('input[name="tl_expire_date"]').val(res.tl_expire_date);
+            }
+            if (res.primary_assignee) {
+              $('#onboard_lead_assign_val').val(res.primary_assignee).trigger('change');
+              $('#hidden_lead_assign').val(res.primary_assignee);
+            }
+            if (res.collaborators && Array.isArray(res.collaborators)) {
+              $('#onboard_agents_val').val(res.collaborators).trigger('change');
             }
           }
         }
