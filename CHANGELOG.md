@@ -2,6 +2,42 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.77.0] - 2026-10-29
+- **Timestamp**: `2026-10-29 17:35:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Restricted client assignee and collaborator editing strictly to Super Admin; completed the integrated Phone Calling suite (Manual Dialer & Auto Dialer) with Apple-style UX and background AI intelligence; resolved Back Office Pending Order Process and prompt onboarding workflow; added System KAM Client and Assign modules with privacy search gate and role governance; and expanded README with an executive overview and single-paragraph role workflows.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Admin-Only Client Assignment Governance (`manager/kam/onboard`, `ci_admin_kam.php`)**:
+    - Locked down **Primary Assignee / Executive** and **Collaborators / Additional Assignees** fields on the Client Onboarding screen so they are strictly editable by Super Admin (`manager_role == 1` or `$is_admin`).
+    - For all non-admin users, these fields are rendered as disabled (`background-color: #f8fafc; cursor: not-allowed;`) with hidden fallback inputs to preserve current assignments.
+    - Server-side enforcement in `ci_admin_kam.php::onboard()` guarantees non-admin submissions cannot tamper with or reassign existing accounts or lead owners.
+    - Dynamic AJAX auto-fill (`ajax_get_company_details`) synchronizes assigned executive and collaborator IDs seamlessly when selecting an existing company.
+    - Made **Owner Name** strictly optional, maintaining clean separation from **Company Name**.
+  - **2. Calling Center & Smart Dialer Suite (`manager/calls`, `header.php`, `phone-view.php`)**:
+    - Added direct phone icon in the top navigation bar (clean icon without text) routing directly to the streamlined Calling Center home screen.
+    - Implemented **Database > Manual Dialer**: Full lead workstation matching `Leads > Details` layout (Company Name, POC, Primary/Alt Phone with 1-click dial, Email, Authority, Location, DNCR registry + date, MRC, Revenue, MRR, Status, Next Follow-up Date/Time, and Remarks) with sequential queue cycling via **Save & Next** and **Skip**.
+    - Implemented **Database > Auto Dialer**: Multi-stage pipeline calling with stage selection, real lead queue calculations, configurable countdown interval timer (3s-30s), Auto Pre-fill vs Manual Details mode, and live Pause/Resume controls.
+    - Removed all distracting technical badges, AI toggles, and explanatory banners ('Groq AI Processing', 'Auto AI Summary') -- setting intelligent call summarization to run silently in the background.
+    - Fixed Auto Dialer and queue visibility leaks across queue tabs with centralized `hideAllMiddleViews()` scoping.
+    - Configured Logs menu item at the bottom of navigation with day/week/month/year/all-time outbound activity drilldowns.
+  - **3. Back Office > Pending Order Process & Prompt Onboarding Workflow (`ci_admin_orders.php`, `orders/process_order.php`)**:
+    - Fixed schema and database mismatch (resolved `Unknown column 'tl_due' in 'field list'` error on `ci_leads` update by safely maintaining trade license due fields in KAM details and order history).
+    - Preserved salesperson deal submission details under an expandable, clean accordion layout so Back Office can inspect all original inputs before finalizing.
+    - Connected **Process and Continue to Prompt Onboarding** directly to `manager/kam/onboard` with prefilled order, lead, company, and owner parameters.
+  - **4. System Governance: KAM Client & Assign Modules (`ci_admin_system.php`, `system/kam_client.php`, `system/assignee.php`)**:
+    - **System > KAM Client**: Implemented 3-letter privacy search gate (`strlen($search) >= 3`) to safeguard corporate confidentiality. Users can search and view company profiles, but edit rights remain strictly restricted to the assigned executive or Super Admin.
+    - **System > Assign**: Displays all onboarded corporate clients with active assignees. Authorized managers can assign or reassign Primary Assignee / Executive and Collaborators from active system users, governed by `system_assignee` and `system` write permissions.
+  - **5. README Documentation & User Role Workflows (`README.md`)**:
+    - Added a **Non-Technical Executive Overview** at the top explaining the complete commercial pipeline in plain English without technical jargon.
+    - Added **Complete User Role Workflows** with a single comprehensive paragraph for each user persona:
+      - Salesperson Workflow (Single Paragraph)
+      - Back Office Workflow (Single Paragraph)
+      - Key Account Manager (KAM) Workflow (Single Paragraph)
+      - Super Administrator & Operations Workflow (Single Paragraph)
+  - **6. Zero Comments & Code Integrity**:
+    - Strictly 0 comments in any PHP file (`//`, `/* ... */`, `<!-- ... -->`).
+    - Clean linting pass with `php -l`.
+
 ### [v1.76.0] - 2026-10-28
 - **Timestamp**: `2026-10-28 18:55:00 +0530`
 - **Author**: Reinhart-py
