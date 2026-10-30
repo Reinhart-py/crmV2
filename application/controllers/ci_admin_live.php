@@ -48,6 +48,27 @@ class Ci_admin_live extends CI_Controller
 		$data['team_stats'] = $this->get_stats_block($is_admin ? array() : $team_list);
 		$data['performers'] = $this->get_performers_block($is_admin ? array() : $team_list);
 
+		$centers_query = $this->db->query("SELECT DISTINCT office FROM ci_user WHERE office IS NOT NULL AND office != '' ORDER BY office ASC");
+		$centers_data = array();
+		if ($centers_query && $centers_query->num_rows() > 0) {
+			foreach ($centers_query->result_array() as $c) {
+				$off = $c['office'];
+				$u_ids = array();
+				$u_rows = $this->db->query("SELECT id FROM ci_user WHERE office = " . $this->db->escape($off))->result_array();
+				foreach ($u_rows as $ur) {
+					$u_ids[] = (int)$ur['id'];
+				}
+				$centers_data[] = array(
+					'name' => $off,
+					'stats' => $this->get_stats_block($u_ids),
+					'perf' => $this->get_performers_block($u_ids)
+				);
+			}
+		}
+		$data['centers_data'] = $centers_data;
+		$data['company_stats'] = $this->get_stats_block(array());
+		$data['company_perf'] = $this->get_performers_block(array());
+
 		$this->load->view('manager/live/index', $data);
 	}
 
@@ -135,10 +156,10 @@ class Ci_admin_live extends CI_Controller
 
 		$where_leads = $has_filter ? "WHERE (FIND_IN_SET(a.created_by, '{$u_str}') > 0 OR (a.lead_assign > 0 AND FIND_IN_SET(a.lead_assign, '{$u_str}') > 0))" : "";
 		$leads_row = $this->db->query("SELECT 
-			COALESCE(SUM(CASE WHEN a.created_at >= '{$t_d1}' AND a.created_at <= '{$t_d2}' THEN 1 ELSE 0 END), 0) as today,
-			COALESCE(SUM(CASE WHEN a.created_at >= '{$w_d1}' AND a.created_at <= '{$w_d2}' THEN 1 ELSE 0 END), 0) as seven_days,
-			COALESCE(SUM(CASE WHEN a.created_at >= '{$m_d1}' AND a.created_at <= '{$m_d2}' THEN 1 ELSE 0 END), 0) as month,
-			COALESCE(SUM(CASE WHEN a.created_at >= '{$q_d1}' AND a.created_at <= '{$q_d2}' THEN 1 ELSE 0 END), 0) as quarter
+			COALESCE(SUM(CASE WHEN a.created >= '{$t_d1}' AND a.created <= '{$t_d2}' THEN 1 ELSE 0 END), 0) as today,
+			COALESCE(SUM(CASE WHEN a.created >= '{$w_d1}' AND a.created <= '{$w_d2}' THEN 1 ELSE 0 END), 0) as seven_days,
+			COALESCE(SUM(CASE WHEN a.created >= '{$m_d1}' AND a.created <= '{$m_d2}' THEN 1 ELSE 0 END), 0) as month,
+			COALESCE(SUM(CASE WHEN a.created >= '{$q_d1}' AND a.created <= '{$q_d2}' THEN 1 ELSE 0 END), 0) as quarter
 		FROM ci_leads a
 		INNER JOIN ci_pipeline p ON p.lead_id = a.id AND p.pipeline_stage = 'lead' {$where_leads}")->row_array();
 
@@ -198,21 +219,21 @@ class Ci_admin_live extends CI_Controller
 			COALESCE(SUM(CASE WHEN m_date >= '{$date_q_start}' AND m_date <= '{$date_q_end}' THEN 1 ELSE 0 END), 0) as quarter
 		FROM ci_meetings {$where_meet}")->row_array();
 
-		$where_tick = $has_filter ? "AND (raised_by IN ({$u_str}) OR assigned_user IN ({$u_str}))" : "";
+		$where_tick = $has_filter ? "AND (raised_by IN ({$u_str}) OR assigned_to IN ({$u_str}))" : "";
 		$tick_row = $this->db->query("SELECT 
-			COALESCE(SUM(CASE WHEN (updated_at >= '{$t_d1}' OR created >= '{$t_d1}') AND (updated_at <= '{$t_d2}' OR created <= '{$t_d2}') THEN 1 ELSE 0 END), 0) as today,
-			COALESCE(SUM(CASE WHEN (updated_at >= '{$w_d1}' OR created >= '{$w_d1}') AND (updated_at <= '{$w_d2}' OR created <= '{$w_d2}') THEN 1 ELSE 0 END), 0) as seven_days,
-			COALESCE(SUM(CASE WHEN (updated_at >= '{$m_d1}' OR created >= '{$m_d1}') AND (updated_at <= '{$m_d2}' OR created <= '{$m_d2}') THEN 1 ELSE 0 END), 0) as month,
-			COALESCE(SUM(CASE WHEN (updated_at >= '{$q_d1}' OR created >= '{$q_d1}') AND (updated_at <= '{$q_d2}' OR created <= '{$q_d2}') THEN 1 ELSE 0 END), 0) as quarter
+			COALESCE(SUM(CASE WHEN updated_at >= '{$t_d1}' AND updated_at <= '{$t_d2}' THEN 1 ELSE 0 END), 0) as today,
+			COALESCE(SUM(CASE WHEN updated_at >= '{$w_d1}' AND updated_at <= '{$w_d2}' THEN 1 ELSE 0 END), 0) as seven_days,
+			COALESCE(SUM(CASE WHEN updated_at >= '{$m_d1}' AND updated_at <= '{$m_d2}' THEN 1 ELSE 0 END), 0) as month,
+			COALESCE(SUM(CASE WHEN updated_at >= '{$q_d1}' AND updated_at <= '{$q_d2}' THEN 1 ELSE 0 END), 0) as quarter
 		FROM ci_tickets
 		WHERE status = 'Resolved' {$where_tick}")->row_array();
 
 		$where_vert = $has_filter ? "WHERE created_by IN ({$u_str})" : "";
 		$vert_row = $this->db->query("SELECT 
-			COALESCE(SUM(CASE WHEN created_at >= '{$t_d1}' AND created_at <= '{$t_d2}' THEN 1 ELSE 0 END), 0) as today,
-			COALESCE(SUM(CASE WHEN created_at >= '{$w_d1}' AND created_at <= '{$w_d2}' THEN 1 ELSE 0 END), 0) as seven_days,
-			COALESCE(SUM(CASE WHEN created_at >= '{$m_d1}' AND created_at <= '{$m_d2}' THEN 1 ELSE 0 END), 0) as month,
-			COALESCE(SUM(CASE WHEN created_at >= '{$q_d1}' AND created_at <= '{$q_d2}' THEN 1 ELSE 0 END), 0) as quarter
+			COALESCE(SUM(CASE WHEN created >= '{$t_d1}' AND created <= '{$t_d2}' THEN 1 ELSE 0 END), 0) as today,
+			COALESCE(SUM(CASE WHEN created >= '{$w_d1}' AND created <= '{$w_d2}' THEN 1 ELSE 0 END), 0) as seven_days,
+			COALESCE(SUM(CASE WHEN created >= '{$m_d1}' AND created <= '{$m_d2}' THEN 1 ELSE 0 END), 0) as month,
+			COALESCE(SUM(CASE WHEN created >= '{$q_d1}' AND created <= '{$q_d2}' THEN 1 ELSE 0 END), 0) as quarter
 		FROM ci_verticals {$where_vert}")->row_array();
 
 		return array(
@@ -373,6 +394,7 @@ class Ci_admin_live extends CI_Controller
 			'is_admin' => $is_admin,
 			'my_stats' => $my_stats,
 			'team_stats' => $team_stats,
+			'performers' => $performers_team,
 			'performers_team' => $performers_team,
 			'company_stats' => $company_stats,
 			'performers_company' => $performers_company,

@@ -2,6 +2,32 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.79.5] - 2026-10-30
+- **Timestamp**: `2026-10-30 17:25:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Resolved Team Chart syntax error, streamlined Team Chart toolbar with a clean single zoom button and strict hierarchical upline/downline navigation boundaries, cleaned Quality Check (QC Panel) header by removing all tutorial and subtitle banners, expanded QC module tree to cover all CRM pages and filter tabs, fixed Live Operations database query schema errors, and restored 3-column Calls & Dialer layout.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Team Chart View Cleanup & Hierarchical Scoping (`chart.php`, `ci_admin_team.php`)**:
+    - Removed `Viewing hierarchy for: ...` header subtitle in `chart.php`.
+    - Removed `Zoom: 100%` text, reset `100%` button, and `Fullscreen` button; retained a single compact zoom button (`<i class="fa fa-search-plus"></i>`) in `.chart-toolbar-right`.
+    - Resolved unmatched bracket syntax error on line 348 in `chart.php`.
+    - Wired direct manager node above to be clickable, allowing users to navigate up to their direct manager.
+    - Enforced hierarchical navigation boundaries in `ci_admin_team.php`: users can navigate down through their subordinate tree and back up to their direct manager, but cannot see their manager's peers nor levels above their direct manager.
+  - **2. Quality Check (QC Panel) Header Cleanup & Full Tree Expansion (`qc.php`, `ci_admin_system.php`)**:
+    - Removed `System Modules & Feature Verification` title and `Audit checklist for module functionality, routing, and access verification.` subtitle callout.
+    - Removed `Expand All` and `Collapse All` buttons, displaying all category sections and subpages expanded by default with high-contrast checkboxes and new-tab links.
+    - Expanded `$tree` in `ci_admin_system.php` to include all pages, submodules, and filter tabs across Dashboard, My Zone, Team, Back Office, Calls & Dialer, Live Operations, KAM, HR Operations, Reports, and System Management.
+  - **3. Live Operations Database Error Resolution (`ci_admin_live.php`, `index.php`)**:
+    - Fixed `Unknown column 'a.created_at'` error by referencing `a.created` for `ci_leads` and `created` for `ci_verticals`.
+    - Corrected column references in `ci_tickets` to `assigned_to` and `created_at`/`updated_at`.
+    - Fixed performer title mapping (`title`) and populated `performers` in AJAX response.
+  - **4. Calls & Dialer Structure & Mode Alignment (`dashboard.php`)**:
+    - Fixed extra closing `</div>` that prematurely closed the middle content wrapper and displaced `.crm-dialer-panel`.
+    - Restored 3-column flex layout: 64px dock (left), flexible `flex: 1 1 auto` form workspace (middle), and 300px phone panel (right).
+    - Removed seconds interval and preset options from manual dialer mode.
+  - **5. Strict Zero Comments Rule Compliance**:
+    - Zero comments in any PHP file (`//`, `/* */`, `<!-- -->`). All PHP files verified with `php -l`.
+
 ### [v1.79.4] - 2026-10-30
 - **Timestamp**: `2026-10-30 16:20:00 +0530`
 - **Author**: Reinhart-py

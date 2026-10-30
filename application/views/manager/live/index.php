@@ -212,7 +212,7 @@
                 <tbody id="tbodyPerformers">
                     <?php if (!empty($performers)) { foreach ($performers as $idx => $p) { ?>
                         <tr>
-                            <td class="col-perf-title"><?php echo htmlspecialchars($p['award']); ?></td>
+                            <td class="col-perf-title"><?php echo htmlspecialchars(!empty($p['title']) ? $p['title'] : (!empty($p['award']) ? $p['award'] : '')); ?></td>
                             <td class="col-perf-name" id="perf_val_<?php echo $idx; ?>_cur"><?php echo htmlspecialchars($p['current']); ?></td>
                             <td class="col-perf-name" id="perf_val_<?php echo $idx; ?>_last"><?php echo htmlspecialchars($p['last']); ?></td>
                         </tr>

@@ -545,26 +545,75 @@ class Ci_admin_team extends CI_Controller {
 
 	public function chart()
 	{
-		
-        $data=array();
-		$data['info']=array(
-			'title'=>'Users',
-			'page_heading'=>'My Team Members Chart'
+		$data = array();
+		$data['info'] = array(
+			'title' => 'Users',
+			'page_heading' => 'My Team Members Chart'
 		);
-		
-		$data['info2']=$this->if_not_login();
-		$id = isset($_GET['id']) ? $_GET['id'] : '';
-		if(empty($id)){
-			$data['main_user'] = $this->comman_model->getpostdata2(array('id'=>$this->session->userdata('manager_id')),'','ci_user');
-		}else{
-			$data['main_user'] = $this->comman_model->getpostdata2(array('id'=>$id),'','ci_user');
+		$data['info2'] = $this->if_not_login();
 
+		$logged_in_id = (int)$this->session->userdata('manager_id');
+		$logged_in_role = (int)$this->session->userdata('manager_role');
+		$is_admin = ($logged_in_role === 1 || $logged_in_id === 1);
+
+		$logged_in_user = $this->db->select('id, name, manager, department, office, avatar, user_type')->where('id', $logged_in_id)->get('ci_user')->row_array();
+		$top_manager_id = (!empty($logged_in_user['manager']) && (int)$logged_in_user['manager'] !== $logged_in_id) ? (int)$logged_in_user['manager'] : 0;
+
+		$req_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+		if ($req_id === 0) {
+			$req_id = $logged_in_id;
 		}
-		$main_user_id = (!empty($data['main_user']) && isset($data['main_user']['id'])) ? (int)$data['main_user']['id'] : 0;
-	    $data['List2']= $this->comman_model->getAll(array('manager'=>$main_user_id),'','ci_user');
-		$data['back_user'] = $this->comman_model->getpostdata2(array('id'=>$main_user_id),'','ci_user');
-		$manager_id = (!empty($data['main_user']) && !empty($data['main_user']['manager'])) ? (int)$data['main_user']['manager'] : 0;
-		$data['manager_node'] = ($manager_id > 0 && $manager_id !== $main_user_id) ? $this->db->select('id, name, department, office, avatar, user_type')->where('id', $manager_id)->get('ci_user')->row_array() : null;
+
+		$is_subordinate = function($parent_id, $child_id) use (&$is_subordinate) {
+			if ($parent_id === $child_id) return true;
+			$directs = $this->db->select('id')->from('ci_user')->where('manager', (int)$parent_id)->where('status', 1)->get()->result_array();
+			foreach ($directs as $d) {
+				$sub_id = (int)$d['id'];
+				if ($sub_id === (int)$child_id) return true;
+				if ($is_subordinate($sub_id, $child_id)) return true;
+			}
+			return false;
+		};
+
+		if (!$is_admin && $req_id !== $logged_in_id && $req_id !== $top_manager_id) {
+			if (!$is_subordinate($logged_in_id, $req_id)) {
+				$req_id = $logged_in_id;
+			}
+		}
+
+		$target_user = $this->comman_model->getpostdata2(array('id' => $req_id), '', 'ci_user');
+		if (empty($target_user)) {
+			$target_user = $logged_in_user;
+			$req_id = $logged_in_id;
+		}
+
+		$data['main_user'] = $target_user;
+		$main_user_id = (int)$target_user['id'];
+		$data['logged_in_id'] = $logged_in_id;
+		$data['is_viewing_self'] = ($main_user_id === $logged_in_id);
+		$data['is_viewing_manager'] = ($main_user_id === $top_manager_id && $top_manager_id > 0);
+
+		$manager_node = null;
+		$manager_nav_id = 0;
+
+		if ($main_user_id === $logged_in_id) {
+			if ($top_manager_id > 0) {
+				$manager_node = $this->db->select('id, name, department, office, avatar, user_type')->where('id', $top_manager_id)->get('ci_user')->row_array();
+				$manager_nav_id = $top_manager_id;
+			}
+		} elseif ($main_user_id === $top_manager_id) {
+			$manager_node = null;
+			$manager_nav_id = 0;
+		} else {
+			$t_mgr_id = !empty($target_user['manager']) ? (int)$target_user['manager'] : 0;
+			if ($t_mgr_id > 0) {
+				$manager_node = $this->db->select('id, name, department, office, avatar, user_type')->where('id', $t_mgr_id)->get('ci_user')->row_array();
+				$manager_nav_id = ($t_mgr_id === $logged_in_id) ? 0 : $t_mgr_id;
+			}
+		}
+
+		$data['manager_node'] = $manager_node;
+		$data['manager_nav_id'] = $manager_nav_id;
 
 		$tree_builder = function($user_id, $depth = 0, $max_depth = 5) use (&$tree_builder) {
 			if ($depth > $max_depth || empty($user_id)) {
@@ -586,18 +635,26 @@ class Ci_admin_team extends CI_Controller {
 			return $nodes;
 		};
 
+		if ($main_user_id === $top_manager_id && !$is_admin) {
+			$logged_in_node = $logged_in_user;
+			$logged_in_node['children'] = $tree_builder($logged_in_id, 0, 5);
+			$children_list = array($logged_in_node);
+		} else {
+			$children_list = $tree_builder($main_user_id, 0, 5);
+		}
+
 		$data['team_tree'] = array(
-			'id' => isset($data['main_user']['id']) ? (int)$data['main_user']['id'] : 0,
-			'name' => isset($data['main_user']['name']) ? $data['main_user']['name'] : '',
-			'manager' => isset($data['main_user']['manager']) ? (int)$data['main_user']['manager'] : 0,
-			'department' => isset($data['main_user']['department']) ? $data['main_user']['department'] : '',
-			'office' => isset($data['main_user']['office']) ? $data['main_user']['office'] : '',
-			'avatar' => isset($data['main_user']['avatar']) ? $data['main_user']['avatar'] : '',
-			'user_type' => isset($data['main_user']['user_type']) ? $data['main_user']['user_type'] : '',
-			'children' => $tree_builder($main_user_id, 0, 5)
+			'id' => $main_user_id,
+			'name' => isset($target_user['name']) ? $target_user['name'] : '',
+			'manager' => isset($target_user['manager']) ? (int)$target_user['manager'] : 0,
+			'department' => isset($target_user['department']) ? $target_user['department'] : '',
+			'office' => isset($target_user['office']) ? $target_user['office'] : '',
+			'avatar' => isset($target_user['avatar']) ? $target_user['avatar'] : '',
+			'user_type' => isset($target_user['user_type']) ? $target_user['user_type'] : '',
+			'children' => $children_list
 		);
 
-		$this->load->view('manager/team/chart',$data);
+		$this->load->view('manager/team/chart', $data);
 	}
 
 	public function orders()

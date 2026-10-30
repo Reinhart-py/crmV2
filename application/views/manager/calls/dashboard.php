@@ -185,10 +185,10 @@ html, body {
 
 #middleContentArea {
   display: flex;
-  width: 580px;
-  min-width: 460px !important;
-  max-width: 680px !important;
-  flex: 0 1 580px !important;
+  flex: 1 1 auto !important;
+  min-width: 420px !important;
+
+
   height: 100% !important;
   max-height: 100% !important;
   background: #ffffff;
@@ -459,8 +459,8 @@ html, body {
 .crm-dialer-panel {
 
   width: 300px;
-  min-width: 280px;
-  max-width: 310px;
+  min-width: 300px;
+  max-width: 300px;
   flex-shrink: 0;
   height: 100% !important;
   max-height: 100% !important;
@@ -1327,7 +1327,8 @@ html, body {
             </div>
           </form>
         </div>
-      </div></div><div id="middleViewLogs" style="display:none;">
+      </div>
+      <div id="middleViewLogs" style="display:none;">
         <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:12px; margin-bottom:18px;">
           <div class="sheet-stat-card">
             <div class="sheet-stat-val" id="logStatTotal">0</div>
@@ -1708,7 +1709,7 @@ function openDialerHome() {
   $('.crm-dock-btn').removeClass('active');
   $('#dockBtnCallHome').addClass('active');
   hideAllMiddleViews();
-  $('#middleContentArea').hide();
+  openManualDialerMode();
   $('#subnavFollowup').hide();
   $('#subnavLogsPeriod').hide();
   $('#dialerSuggestions').hide();
@@ -2067,7 +2068,7 @@ function stopAutoDialSession() {
 
 function closeMiddleArea() {
   hideAllMiddleViews();
-  $('#middleContentArea').hide();
+  openManualDialerMode();
   $('#subnavFollowup').hide();
   $('#subnavLogsPeriod').hide();
   $('.crm-dock-btn').removeClass('active');

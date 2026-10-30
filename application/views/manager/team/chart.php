@@ -291,14 +291,9 @@
 
 <div class="content-wrapper px-4">
     <section class="content-header" style="padding-bottom: 8px;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h1 style="margin:0; font-size:22px; font-weight:600; color:#0f172a;">
-                <?php echo htmlspecialchars($info['page_heading']); ?>
-            </h1>
-            <div style="font-size:13px; color:#64748b;">
-                Viewing hierarchy for: <strong style="color:#0f172a;"><?php echo htmlspecialchars($main_user['name']); ?></strong>
-            </div>
-        </div>
+        <h1 style="margin:0; font-size:22px; font-weight:600; color:#0f172a;">
+            <?php echo htmlspecialchars($info['page_heading']); ?>
+        </h1>
     </section>
 
     <section class="content" style="padding-top: 6px;">
@@ -315,18 +310,15 @@
                             </a>
                         </div>
                         <div class="chart-toolbar-right">
-                            <span style="font-size:12px; color:#64748b; margin-right:8px;">Zoom: <strong id="zoomLevel">100%</strong></span>
-                            <button type="button" class="chart-btn" onclick="zoomChart(-0.1)" title="Zoom Out"><i class="fa fa-search-minus"></i></button>
-                            <button type="button" class="chart-btn" onclick="resetZoom()" title="Reset Zoom"><i class="fa fa-undo"></i> 100%</button>
-                            <button type="button" class="chart-btn" onclick="zoomChart(0.1)" title="Zoom In"><i class="fa fa-search-plus"></i></button>
-                            <button type="button" class="chart-btn" onclick="toggleFullscreen()" title="Toggle Browser Fullscreen"><i class="fa fa-arrows-alt" id="fsIcon"></i> Fullscreen</button>
+                            <button type="button" class="chart-btn" onclick="zoomChart(0.15)" title="Zoom In" style="padding:6px 10px; font-size:13px;"><i class="fa fa-search-plus"></i></button>
                         </div>
                     </div>
 
                     <div class="chart-canvas" id="chartCanvas">
                         <div class="tree-node-wrapper">
                             <?php if (!empty($manager_node)) { ?>
-                            <div class="tree-card" style="background:#ffffff; border:1.5px solid #cbd5e1; box-shadow:0 2px 8px rgba(0,0,0,0.04); cursor:default;" title="Direct Manager">
+                            <a href="<?php echo base_url(); ?>manager/team/chart<?php echo (!empty($manager_nav_id)) ? '?id='.$manager_nav_id : ''; ?>" style="text-decoration:none; color:inherit; display:block;">
+                            <div class="tree-card" style="background:#ffffff; border:1.5px solid #cbd5e1; box-shadow:0 2px 8px rgba(0,0,0,0.04); cursor:pointer;" title="Click to view manager <?php echo htmlspecialchars($manager_node['name']); ?>">
                                 <div class="node-avatar-circle" style="background:#f1f5f9; color:#475569;">
                                     <?php if (!empty($manager_node['avatar']) && file_exists(FCPATH . $manager_node['avatar'])) { ?>
                                         <img src="<?php echo base_url() . $manager_node['avatar']; ?>" class="node-avatar-img" alt="<?php echo htmlspecialchars($manager_node['name']); ?>" />
@@ -338,8 +330,9 @@
                                     <div class="node-name" style="color:#0f172a; font-weight:700;"><?php echo htmlspecialchars($manager_node['name']); ?></div>
                                     <div class="node-sub" style="color:#64748b;"><?php echo !empty($manager_node['department']) ? htmlspecialchars($manager_node['department']) : 'Manager'; ?></div>
                                 </div>
-                                <span style="position:absolute; top:-9px; right:10px; background:#e2e8f0; color:#475569; font-size:10px; font-weight:700; padding:1px 8px; border-radius:10px;">Direct Manager</span>
+                                <span style="position:absolute; top:-9px; right:10px; background:#e2e8f0; color:#475569; font-size:10px; font-weight:700; padding:1px 8px; border-radius:10px;">Manager &uarr;</span>
                             </div>
+                            </a>
 
                             <div style="width:2px; height:32px; background:#cbd5e1;"></div>
                             <?php } ?>

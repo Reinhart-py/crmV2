@@ -570,10 +570,10 @@ class Ci_admin_system extends CI_Controller {
 				'url' => 'manager/dashboard',
 				'children' => array(
 					array('title' => 'Dashboard Overview', 'key' => 'm_dash_overview', 'url' => 'manager/dashboard'),
-					array('title' => 'KPI Cards & Counts', 'key' => 'm_dash_kpi', 'url' => 'manager/dashboard'),
-					array('title' => 'My & Team Projections', 'key' => 'm_dash_projections', 'url' => 'manager/dashboard'),
-					array('title' => 'My & Team Achievements', 'key' => 'm_dash_achievements', 'url' => 'manager/dashboard'),
-					array('title' => 'Operational Activity & Breakdown', 'key' => 'm_dash_ops', 'url' => 'manager/dashboard')
+					array('title' => 'KPI Cards & Counts', 'key' => 'm_dash_kpi', 'url' => 'manager/dashboard#kpis'),
+					array('title' => 'My & Team Projections', 'key' => 'm_dash_projections', 'url' => 'manager/dashboard#projections'),
+					array('title' => 'My & Team Achievements', 'key' => 'm_dash_achievements', 'url' => 'manager/dashboard#achievements'),
+					array('title' => 'Operational Activity & Breakdown', 'key' => 'm_dash_ops', 'url' => 'manager/dashboard#operational')
 				)
 			),
 			array(
@@ -582,17 +582,28 @@ class Ci_admin_system extends CI_Controller {
 				'icon' => 'fa fa-th-large',
 				'children' => array(
 					array('title' => 'Add Database', 'key' => 'mz_add_db', 'url' => 'manager/leads/add'),
-					array('title' => 'View Database', 'key' => 'mz_view_db', 'url' => 'manager/leads'),
-					array('title' => 'View Leads', 'key' => 'mz_view_leads', 'url' => 'manager/leads/view_leads'),
-					array('title' => 'View Orders', 'key' => 'mz_view_orders', 'url' => 'manager/orders/my'),
+					array('title' => 'View Database (All)', 'key' => 'mz_view_db', 'url' => 'manager/leads'),
+					array('title' => 'View Database (Today Follow-up)', 'key' => 'mz_view_db_today', 'url' => 'manager/leads?filter=today'),
+					array('title' => 'View Database (Missed Follow-up)', 'key' => 'mz_view_db_missed', 'url' => 'manager/leads?filter=missed'),
+					array('title' => 'View Database (Last 7 Days)', 'key' => 'mz_view_db_7d', 'url' => 'manager/leads?filter=7days'),
+					array('title' => 'View Database (Next 7 Days)', 'key' => 'mz_view_db_next7d', 'url' => 'manager/leads?filter=next7days'),
+					array('title' => 'View Leads (All Leads)', 'key' => 'mz_view_leads', 'url' => 'manager/leads/view_leads'),
+					array('title' => 'View Leads (Today Follow-up)', 'key' => 'mz_view_leads_today', 'url' => 'manager/leads/view_leads?filter=today'),
+					array('title' => 'View Leads (Missed Follow-up)', 'key' => 'mz_view_leads_missed', 'url' => 'manager/leads/view_leads?filter=missed'),
+					array('title' => 'View Orders (My Orders)', 'key' => 'mz_view_orders', 'url' => 'manager/orders/my'),
 					array('title' => 'View Sales', 'key' => 'mz_view_sales', 'url' => 'manager/sales'),
-					array('title' => 'My Follow-Up', 'key' => 'mz_followups', 'url' => 'manager/leads/followups'),
-					array('title' => 'My Meetings', 'key' => 'mz_meetings', 'url' => 'manager/leads/meetings'),
+					array('title' => 'My Follow-Up (All)', 'key' => 'mz_followups', 'url' => 'manager/leads/followups'),
+					array('title' => 'My Follow-Up (Today)', 'key' => 'mz_followups_today', 'url' => 'manager/leads/followups?filter=today'),
+					array('title' => 'My Follow-Up (Missed)', 'key' => 'mz_followups_missed', 'url' => 'manager/leads/followups?filter=missed'),
+					array('title' => 'My Follow-Up (Next 7 Days)', 'key' => 'mz_followups_next7d', 'url' => 'manager/leads/followups?filter=next7days'),
+					array('title' => 'My Meetings (Today)', 'key' => 'mz_meetings', 'url' => 'manager/leads/meetings'),
+					array('title' => 'My Meetings (Missed)', 'key' => 'mz_meetings_missed', 'url' => 'manager/leads/meetings?filter=missed'),
 					array('title' => 'Add Vertical', 'key' => 'mz_add_vertical', 'url' => 'manager/verticals/add'),
 					array('title' => 'View Vertical', 'key' => 'mz_view_vertical', 'url' => 'manager/verticals'),
 					array('title' => 'Vertical Follow-up', 'key' => 'mz_vertical_fu', 'url' => 'manager/verticals/followups'),
 					array('title' => 'View Internal Task', 'key' => 'mz_tasks_internal', 'url' => 'manager/tasks/internal'),
 					array('title' => 'View External Task', 'key' => 'mz_tasks_external', 'url' => 'manager/tasks/external'),
+					array('title' => 'Add Task', 'key' => 'mz_tasks_add', 'url' => 'manager/tasks/add'),
 					array('title' => 'Database Transfer', 'key' => 'mz_db_transfer', 'url' => 'manager/database-transfer')
 				)
 			),
@@ -629,6 +640,19 @@ class Ci_admin_system extends CI_Controller {
 				)
 			),
 			array(
+				'title' => 'Calls & Live Operations',
+				'key' => 'm_calls_live',
+				'icon' => 'fa fa-phone',
+				'children' => array(
+					array('title' => 'Auto Dialer', 'key' => 'call_autodialer', 'url' => 'manager/calls'),
+					array('title' => 'Manual Dialer', 'key' => 'call_manualdialer', 'url' => 'manager/calls#manual'),
+					array('title' => 'Colleagues Directory', 'key' => 'call_team_dir', 'url' => 'manager/calls#team'),
+					array('title' => 'Call Logs & Statistics', 'key' => 'call_logs', 'url' => 'manager/calls#logs'),
+					array('title' => 'Live Dashboard', 'key' => 'live_dashboard', 'url' => 'manager/live'),
+					array('title' => 'Presentation TV Mode', 'key' => 'live_presentation', 'url' => 'manager/live/presentation')
+				)
+			),
+			array(
 				'title' => 'KAM (Key Accounts)',
 				'key' => 'm_kam',
 				'icon' => 'fa fa-handshake-o',
@@ -643,9 +667,20 @@ class Ci_admin_system extends CI_Controller {
 				'icon' => 'fa fa-user-circle-o',
 				'children' => array(
 					array('title' => 'Employees / Users', 'key' => 'hr_users', 'url' => 'manager/user'),
+					array('title' => 'Add Employee', 'key' => 'hr_users_add', 'url' => 'manager/user/add'),
 					array('title' => 'Attendance Management', 'key' => 'hr_attendance', 'url' => 'manager/attendance'),
 					array('title' => 'Leave Management', 'key' => 'hr_leaves', 'url' => 'manager/leaves'),
 					array('title' => 'Roles & Permissions', 'key' => 'hr_roles', 'url' => 'manager/roles')
+				)
+			),
+			array(
+				'title' => 'Reports & Analytics',
+				'key' => 'm_reports',
+				'icon' => 'fa fa-bar-chart',
+				'children' => array(
+					array('title' => 'Revenue List', 'key' => 'rep_revenue', 'url' => 'manager/reports/revenue-list'),
+					array('title' => 'Company Projections', 'key' => 'rep_projections', 'url' => 'manager/reports/company-projections'),
+					array('title' => 'Download Reports', 'key' => 'rep_download', 'url' => 'manager/download-report')
 				)
 			),
 			array(
@@ -661,26 +696,7 @@ class Ci_admin_system extends CI_Controller {
 					array('title' => 'Import Leads', 'key' => 'sys_import', 'url' => 'manager/leads/import'),
 					array('title' => 'Export Leads', 'key' => 'sys_export', 'url' => 'manager/leads/export'),
 					array('title' => 'Allotted Database', 'key' => 'sys_allotted', 'url' => 'manager/assigned-leads'),
-					array('title' => 'QC Panel', 'key' => 'sys_qc', 'url' => 'manager/system/qc')
-				)
-			),
-			array(
-				'title' => 'Reports & Analytics',
-				'key' => 'm_reports',
-				'icon' => 'fa fa-bar-chart',
-				'children' => array(
-					array('title' => 'Revenue List', 'key' => 'rep_revenue', 'url' => 'manager/reports/revenue-list'),
-					array('title' => 'Company Projections', 'key' => 'rep_projections', 'url' => 'manager/reports/company-projections'),
-					array('title' => 'Download Reports', 'key' => 'rep_download', 'url' => 'manager/download-report')
-				)
-			),
-			array(
-				'title' => 'Calls & Live Operations',
-				'key' => 'm_calls_live',
-				'icon' => 'fa fa-phone',
-				'children' => array(
-					array('title' => 'Dialer Dashboard', 'key' => 'call_dialer', 'url' => 'manager/calls'),
-					array('title' => 'Live Dashboard', 'key' => 'live_dashboard', 'url' => 'manager/live')
+					array('title' => 'Quality Check Panel', 'key' => 'sys_qc', 'url' => 'manager/system/qc')
 				)
 			)
 		);
