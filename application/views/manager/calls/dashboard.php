@@ -19,22 +19,13 @@ html, body {
   margin: 0 !important;
   padding: 0 !important;
 }
-.main-sidebar, .left-side, .main-footer, .crm-footer {
-  display: none !important;
-}
 .content-wrapper.glass-calling-wrapper {
   background: #f2f2f7 !important;
   position: relative !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  width: 100% !important;
-  max-width: 100% !important;
   flex: 1 1 0% !important;
-  height: auto !important;
-  min-height: 0 !important;
-  max-height: 100% !important;
+  height: calc(100vh - 50px) !important;
+  min-height: calc(100vh - 50px) !important;
+  max-height: calc(100vh - 50px) !important;
   padding: 10px 14px !important;
   color: #1d1d1f;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
@@ -45,7 +36,6 @@ html, body {
   gap: 12px !important;
   align-items: stretch !important;
   justify-content: flex-start !important;
-  margin: 0 !important;
   z-index: 800 !important;
 }
 
@@ -201,8 +191,10 @@ html, body {
 
 #middleContentArea {
   display: none;
-  flex: 1 1 0% !important;
-  min-width: 0 !important;
+  width: 580px;
+  min-width: 460px !important;
+  max-width: 680px !important;
+  flex: 0 1 580px !important;
   height: 100% !important;
   max-height: 100% !important;
   background: #ffffff;
@@ -486,7 +478,7 @@ html, body {
   flex-direction: column;
   overflow: hidden;
   z-index: 950;
-  margin-left: auto;
+  margin-left: 0;
 }
 
 .dialer-window-header {

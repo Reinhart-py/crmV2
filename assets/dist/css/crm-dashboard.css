@@ -491,11 +491,8 @@ ul.munk_menu > li.active > a i {
 }
 
 ul.munk_menu > li.active > a:before {
-  content: "•" !important;
-  margin-right: 2px !important;
-  font-size: 11px !important;
-  font-weight: 900 !important;
-  color: #09090b !important;
+  display: none !important;
+  content: none !important;
 }
 
 /* Dropdown Submenus: Centered card in white (light) or dark (dark mode) */
@@ -773,6 +770,13 @@ ul.munk_menu > li > ul > li > a i {
 
 .dash-chart-title i {
   color: #0072f0 !important;
+}
+
+.dash-chart-legend {
+  margin-left: auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 16px !important;
 }
 
 .dash-chart-body {

@@ -1,8 +1,13 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
 <div class="content-wrapper px-4">
-  <section class="content-header">
-    <h1> <?php echo $info['page_heading']; ?> </h1>
+  <section class="content-header" style="display:flex; justify-content:space-between; align-items:center;">
+    <h1 style="margin:0;"> <?php echo $info['page_heading']; ?> </h1>
+    <div>
+      <a href="<?php echo base_url(); ?>manager/team/chart" class="btn btn-default" style="border-radius:8px; font-weight:600; padding:6px 14px; border:1px solid #cbd5e1; color:#0f172a; text-decoration:none;">
+        <i class="fa fa-sitemap" style="margin-right:6px; color:#0072f0;"></i> Back to Chart View
+      </a>
+    </div>
   </section>
   <section class="content">
     <div class="row">
@@ -20,7 +25,6 @@
                   <tr>
                     <th>S.N.</th>
                     <th>Name</th>
-                    <th>Upline</th>
                     <th>Designation</th>   
                  	  <th>Department</th>          
                     <th>Contact No</th>
@@ -35,7 +39,6 @@
                   <tr>
                     <td><span class="label label-primary" style="font-size:11.5px; letter-spacing:0.5px;"><?php echo sprintf('EMP-%05d', $li['id']); ?></span></td>
                     <td style="text-transform:capitalize;"><?php echo $li['name']; ?> </td>
-                    <td></td>                   
                     <td><?php echo $li['role']; ?></td>
                     <td><?php echo $li['department']; ?></td>
                     <td><?php echo $li['mobile']; ?></td>

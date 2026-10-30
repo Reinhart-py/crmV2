@@ -2,15 +2,10 @@
 
 <style>
 #reportsContainer {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+    flex-direction: column;
     gap: 20px;
-    align-items: start;
-}
-@media (max-width: 991px) {
-    #reportsContainer {
-        grid-template-columns: 1fr;
-    }
+    width: 100%;
 }
 .report-section-card {
     background: #ffffff;

@@ -16,7 +16,7 @@ class Ci_admin_team extends CI_Controller {
 	}
 	public function index()
 	{
-		redirect('manager/team/members');
+		redirect('manager/team/chart');
 	}
 
 	public function if_not_login($url = '')
@@ -563,6 +563,8 @@ class Ci_admin_team extends CI_Controller {
 		$main_user_id = (!empty($data['main_user']) && isset($data['main_user']['id'])) ? (int)$data['main_user']['id'] : 0;
 	    $data['List2']= $this->comman_model->getAll(array('manager'=>$main_user_id),'','ci_user');
 		$data['back_user'] = $this->comman_model->getpostdata2(array('id'=>$main_user_id),'','ci_user');
+		$manager_id = (!empty($data['main_user']) && !empty($data['main_user']['manager'])) ? (int)$data['main_user']['manager'] : 0;
+		$data['manager_node'] = ($manager_id > 0 && $manager_id !== $main_user_id) ? $this->db->select('id, name, department, office, avatar, user_type')->where('id', $manager_id)->get('ci_user')->row_array() : null;
 
 		$tree_builder = function($user_id, $depth = 0, $max_depth = 5) use (&$tree_builder) {
 			if ($depth > $max_depth || empty($user_id)) {

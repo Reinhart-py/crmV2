@@ -307,13 +307,8 @@
                 <div class="chart-fullscreen-container" id="chartContainer">
                     <div class="chart-toolbar">
                         <div class="chart-toolbar-left">
-                            <?php if (!empty($back_user['manager']) && (int)$back_user['manager'] !== (int)$main_user['id']) { ?>
-                            <a href="<?php echo base_url(); ?>manager/team/chart?id=<?php echo (int)$back_user['manager']; ?>" class="chart-btn btn-dark-pill" title="Navigate to upline manager">
-                                <i class="fa fa-arrow-up"></i> Go to Manager
-                            </a>
-                            <?php } ?>
-                            <a href="<?php echo base_url(); ?>manager/team/chart" class="chart-btn" title="Reset to my own hierarchy root">
-                                <i class="fa fa-home"></i> My Team Root
+                            <a href="<?php echo base_url(); ?>manager/team/chart" class="chart-btn btn-dark-pill" style="font-weight:700;">
+                                <i class="fa fa-sitemap"></i> Chart View
                             </a>
                             <a href="<?php echo base_url(); ?>manager/team/members" class="chart-btn">
                                 <i class="fa fa-list"></i> Table View
@@ -330,7 +325,26 @@
 
                     <div class="chart-canvas" id="chartCanvas">
                         <div class="tree-node-wrapper">
-                            <div class="tree-card root-card" title="Click to refresh root">
+                            <?php if (!empty($manager_node)) { ?>
+                            <div class="tree-card" style="background:#ffffff; border:1.5px solid #cbd5e1; box-shadow:0 2px 8px rgba(0,0,0,0.04); cursor:default;" title="Direct Manager">
+                                <div class="node-avatar-circle" style="background:#f1f5f9; color:#475569;">
+                                    <?php if (!empty($manager_node['avatar']) && file_exists(FCPATH . $manager_node['avatar'])) { ?>
+                                        <img src="<?php echo base_url() . $manager_node['avatar']; ?>" class="node-avatar-img" alt="<?php echo htmlspecialchars($manager_node['name']); ?>" />
+                                    <?php } else { ?>
+                                        <?php echo strtoupper(substr($manager_node['name'], 0, 1)); ?>
+                                    <?php } ?>
+                                </div>
+                                <div class="node-info-text">
+                                    <div class="node-name" style="color:#0f172a; font-weight:700;"><?php echo htmlspecialchars($manager_node['name']); ?></div>
+                                    <div class="node-sub" style="color:#64748b;"><?php echo !empty($manager_node['department']) ? htmlspecialchars($manager_node['department']) : 'Manager'; ?></div>
+                                </div>
+                                <span style="position:absolute; top:-9px; right:10px; background:#e2e8f0; color:#475569; font-size:10px; font-weight:700; padding:1px 8px; border-radius:10px;">Direct Manager</span>
+                            </div>
+
+                            <div style="width:2px; height:32px; background:#cbd5e1;"></div>
+                            <?php } ?>
+
+                            <div class="tree-card root-card" title="My Profile (You)">
                                 <div class="node-avatar-circle">
                                     <?php if (!empty($main_user['avatar']) && file_exists(FCPATH . $main_user['avatar'])) { ?>
                                         <img src="<?php echo base_url() . $main_user['avatar']; ?>" class="node-avatar-img" alt="<?php echo htmlspecialchars($main_user['name']); ?>" />
@@ -339,7 +353,7 @@
                                     <?php } ?>
                                 </div>
                                 <div class="node-info-text">
-                                    <div class="node-name"><?php echo htmlspecialchars($main_user['name']); ?></div>
+                                    <div class="node-name"><?php echo htmlspecialchars($main_user['name']); ?> <span style="font-size:11px; font-weight:500; opacity:0.85;">(You)</span></div>
                                     <div class="node-sub"><?php echo !empty($main_user['department']) ? htmlspecialchars($main_user['department']) : 'Team Leader'; ?></div>
                                 </div>
                                 <?php if (!empty($team_tree['children'])) { ?>

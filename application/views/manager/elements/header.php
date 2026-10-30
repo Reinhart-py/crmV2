@@ -52,7 +52,7 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.5/css/responsive.dataTables.min.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/bootstrap/developer.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/multiselect/multiselect.css">
-<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-dashboard.css?v=20261030_screen_dialer_v11">
+<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-dashboard.css?v=20261030_v1793_p1">
 <link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/plugins/table_export/css/tableexport.css" />
 
 <script src="<?php echo base_url();?>assets/plugins/table_export/FileSaver.min.js"></script>
@@ -207,9 +207,8 @@
       <?php } ?>
 
       <?php if($is_admin || has_section_perm('team')){ ?>
-      <li class="<?php if(in_array($route1, array('team')) || ($route1=="orders" && ($route2=="team" || (isset($_GET['scope']) && $_GET['scope']=="team")))){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/team/members"><i class="fa fa-users"></i> <span>Team</span> </a>
+      <li class="<?php if(in_array($route1, array('team')) || ($route1=="orders" && ($route2=="team" || (isset($_GET['scope']) && $_GET['scope']=="team")))){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/team/chart"><i class="fa fa-users"></i> <span>Team</span> </a>
         <ul>
-          <li><a href="<?php echo base_url();?>manager/team/members"><i class="fa fa-users"></i>Members</a></li>
           <li><a href="<?php echo base_url();?>manager/team/chart"><i class="fa fa-sitemap"></i>Chart</a></li>
           <li><a href="<?php echo base_url();?>manager/team/database"><i class="fa fa-database"></i>Database</a></li>
           <li><a href="<?php echo base_url();?>manager/team/leads"><i class="fa fa-list"></i>Leads</a></li>
@@ -736,7 +735,6 @@ $(function() {
       <li class="<?php if(in_array($route1, array('team')) || ($route1=="orders" && ($route2=="team" || (isset($_GET['scope']) && $_GET['scope']=="team")))){ echo "active";}else{ echo "";}?> treeview"> 
         <a href="javascript:void(0);"><i class="fa fa-users"></i> <span>Team</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu">
-          <li><a href="<?php echo base_url();?>manager/team/members"><i class="fa fa-users"></i>Members</a></li>
           <li><a href="<?php echo base_url();?>manager/team/chart"><i class="fa fa-sitemap"></i>Chart</a></li>
           <li><a href="<?php echo base_url();?>manager/team/database"><i class="fa fa-database"></i>Database</a></li>
           <li><a href="<?php echo base_url();?>manager/team/leads"><i class="fa fa-list"></i>Leads</a></li>

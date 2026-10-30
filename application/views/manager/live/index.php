@@ -1,384 +1,496 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
-<div class="content-wrapper" style="background:#f8fafc; min-height:920px; padding-bottom:40px;">
-    <section class="content-header" style="padding:20px 24px 12px 24px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
-            <div>
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <span class="live-pulse-dot"></span>
-                    <h1 style="font-size:22px; font-weight:800; color:#0f172a; margin:0; letter-spacing:-0.02em;">
-                        LIVE <span style="color:#00c6f0;">DASHBOARD</span>
-                    </h1>
-                </div>
-                <div style="font-size:12px; color:#64748b; margin-top:4px;">
-                    Auto-updates every 10s &bull; Last updated: <span id="liveLastSync" style="font-weight:700; color:#0f172a;">--:--:--</span>
-                </div>
-            </div>
-            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-                <div class="btn-group" role="group" id="liveScopeGroup" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:3px; box-shadow:0 1px 2px rgba(0,0,0,0.03);">
-                    <button type="button" class="btn btn-xs live-scope-btn active" data-scope="my" style="border-radius:6px; font-weight:700; font-size:11px; padding:6px 14px; border:none; background:#0f172a; color:#ffffff; transition:all 0.15s ease;">My Activity</button>
-                    <?php if(!empty($has_team)){ ?>
-                    <button type="button" class="btn btn-xs live-scope-btn" data-scope="team" style="border-radius:6px; font-weight:700; font-size:11px; padding:6px 14px; border:none; background:transparent; color:#64748b; transition:all 0.15s ease;">Team Activity</button>
-                    <?php } ?>
-                </div>
-
-                <div class="btn-group" role="group" id="liveTimeframeGroup" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:3px; box-shadow:0 1px 2px rgba(0,0,0,0.03);">
-                    <button type="button" class="btn btn-xs live-tf-btn active" data-tf="today" style="border-radius:6px; font-weight:700; font-size:11px; padding:6px 12px; border:none; background:#00c6f0; color:#ffffff; transition:all 0.15s ease;">Today</button>
-                    <button type="button" class="btn btn-xs live-tf-btn" data-tf="last7" style="border-radius:6px; font-weight:700; font-size:11px; padding:6px 12px; border:none; background:transparent; color:#475569; transition:all 0.15s ease;">Last 7 Days</button>
-                    <button type="button" class="btn btn-xs live-tf-btn" data-tf="month" style="border-radius:6px; font-weight:700; font-size:11px; padding:6px 12px; border:none; background:transparent; color:#475569; transition:all 0.15s ease;">Month</button>
-                    <button type="button" class="btn btn-xs live-tf-btn" data-tf="quarter" style="border-radius:6px; font-weight:700; font-size:11px; padding:6px 12px; border:none; background:transparent; color:#475569; transition:all 0.15s ease;">Quarter</button>
-                </div>
-
-                <button type="button" id="btnLiveRefreshNow" class="btn btn-default btn-xs" style="border-radius:8px; border:1px solid #e2e8f0; background:#ffffff; font-weight:700; color:#0f172a; padding:6px 14px;" title="Refresh now">
-                    <i class="fa fa-refresh" id="liveRefreshIcon" style="color:#00c6f0; margin-right:4px;"></i> Refresh
-                </button>
-            </div>
-        </div>
-    </section>
-
-    <section class="content" style="padding:10px 24px 24px 24px;">
-        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:24px 28px; margin-bottom:22px; box-shadow:0 1px 3px rgba(0,0,0,0.02);">
-            <div class="row" style="margin:0;">
-                <div class="col-md-4 col-xs-12" style="padding:0 24px 0 0; border-right:1px solid #f1f5f9;">
-                    <div style="font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.04em; color:#64748b;">Live Calls</div>
-                    <div style="display:flex; align-items:baseline; gap:8px; margin:10px 0 12px 0;">
-                        <span id="liveCallsTotal" style="font-size:36px; font-weight:800; color:#0f172a; line-height:1; letter-spacing:-0.03em;">0</span>
-                        <span style="font-size:13px; font-weight:600; color:#64748b;">Total Placed</span>
-                    </div>
-                    <div style="height:6px; background:#f1f5f9; border-radius:3px; display:flex; overflow:hidden; margin:14px 0 12px 0;">
-                        <div id="liveBarConnected" style="background:#00c6f0; width:0%; transition:width 0.4s ease;"></div>
-                        <div id="liveBarInProcess" style="background:#38bdf8; width:0%; transition:width 0.4s ease;"></div>
-                        <div id="liveBarOther" style="background:#cbd5e1; width:0%; transition:width 0.4s ease;"></div>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-top:14px; flex-wrap:wrap; gap:8px;">
-                        <div>
-                            <span style="display:inline-block; width:8px; height:8px; border-radius:2px; background:#00c6f0; margin-right:4px;"></span>
-                            <span style="color:#64748b;">Connected:</span> <strong id="liveCallsConnected" style="color:#0f172a;">0</strong> <span style="color:#00a2d6; font-weight:700;">(<span id="liveCallsRate">0%</span>)</span>
-                        </div>
-                        <div>
-                            <span style="display:inline-block; width:8px; height:8px; border-radius:2px; background:#38bdf8; margin-right:4px;"></span>
-                            <span style="color:#64748b;">In Process:</span> <strong id="liveCallsInProcess" style="color:#0f172a;">0</strong>
-                        </div>
-                        <div>
-                            <span style="display:inline-block; width:8px; height:8px; border-radius:2px; background:#cbd5e1; margin-right:4px;"></span>
-                            <span style="color:#64748b;">Other:</span> <strong id="liveCallsOther" style="color:#64748b;">0</strong>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-5 col-xs-12" style="padding:0 24px; border-right:1px solid #f1f5f9;">
-                    <div style="font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.04em; color:#64748b;">Live Pipeline Flow</div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin:10px 0 12px 0;">
-                        <div>
-                            <div style="font-size:26px; font-weight:800; color:#0f172a; line-height:1;" id="liveLeadsTotal">0</div>
-                            <div style="font-size:12px; font-weight:600; color:#00a2d6; margin-top:4px;"><span id="liveLeadsQualified">0</span> Leads</div>
-                        </div>
-                        <div style="color:#cbd5e1; font-size:20px; font-weight:300;">&rarr;</div>
-                        <div>
-                            <div style="font-size:26px; font-weight:800; color:#0f172a; line-height:1;" id="liveOrdersTotal">0</div>
-                            <div style="font-size:12px; font-weight:600; color:#475569; margin-top:4px;"><span id="liveOrdersPending">0</span> Orders</div>
-                        </div>
-                        <div style="color:#cbd5e1; font-size:20px; font-weight:300;">&rarr;</div>
-                        <div>
-                            <div style="font-size:26px; font-weight:800; color:#0f172a; line-height:1;" id="liveSalesCount">0</div>
-                            <div style="font-size:12px; font-weight:600; color:#16a34a; margin-top:4px;">Sales Deals</div>
-                        </div>
-                    </div>
-                    <div style="margin-top:16px; padding-top:12px; border-top:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#64748b;">
-                        <span>Lead Conversion: <strong id="liveLeadsRate" style="color:#0f172a; font-weight:700;">0.0%</strong></span>
-                        <span>Order Win Rate: <strong id="liveOrdersRate" style="color:#0f172a; font-weight:700;">0.0%</strong></span>
-                    </div>
-                </div>
-
-                <div class="col-md-3 col-xs-12" style="padding:0 0 0 24px;">
-                    <div style="font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.04em; color:#64748b;">Sales Revenue Achieved</div>
-                    <div id="liveSalesRevenue" style="font-size:28px; font-weight:800; color:#0f172a; letter-spacing:-0.03em; margin:10px 0 6px 0; line-height:1;">AED 0.00</div>
-                    <div style="font-size:12px; color:#64748b; margin-top:6px;">
-                        Avg Closed Deal: <strong id="liveSalesAvg" style="color:#00a2d6;">AED 0.00</strong>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-6 col-xs-12" style="margin-bottom:20px;">
-                <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:22px 24px; box-shadow:0 1px 3px rgba(0,0,0,0.02); height:100%;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:14px; margin-bottom:16px;">
-                        <div style="font-size:13px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.04em;">Call Status &amp; Breakdown</div>
-                        <span id="liveCallBadge" style="font-size:11px; font-weight:700; color:#00c6f0; background:rgba(0,198,240,0.08); padding:3px 10px; border-radius:4px;">0 Calls</span>
-                    </div>
-
-                    <div style="display:flex; flex-direction:column; gap:14px; padding:6px 0;">
-                        <div>
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:13px;">
-                                <span style="font-weight:600; color:#0f172a; display:flex; align-items:center; gap:8px;">
-                                    <span style="width:10px; height:10px; border-radius:2px; background:#00c6f0; display:inline-block;"></span>
-                                    Connected Calls
-                                </span>
-                                <span style="font-weight:700; color:#0f172a;"><span id="statConnectedVal">0</span> <span style="font-weight:500; font-size:11px; color:#64748b;">(<span id="statConnectedPct">0%</span>)</span></span>
-                            </div>
-                            <div style="height:6px; background:#f1f5f9; border-radius:3px; overflow:hidden;">
-                                <div id="barStatConnected" style="background:#00c6f0; width:0%; height:100%; transition:width 0.4s ease;"></div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:13px;">
-                                <span style="font-weight:600; color:#0f172a; display:flex; align-items:center; gap:8px;">
-                                    <span style="width:10px; height:10px; border-radius:2px; background:#38bdf8; display:inline-block;"></span>
-                                    In Process / Ringing
-                                </span>
-                                <span style="font-weight:700; color:#0f172a;"><span id="statInProcessVal">0</span> <span style="font-weight:500; font-size:11px; color:#64748b;">(<span id="statInProcessPct">0%</span>)</span></span>
-                            </div>
-                            <div style="height:6px; background:#f1f5f9; border-radius:3px; overflow:hidden;">
-                                <div id="barStatInProcess" style="background:#38bdf8; width:0%; height:100%; transition:width 0.4s ease;"></div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:13px;">
-                                <span style="font-weight:600; color:#0f172a; display:flex; align-items:center; gap:8px;">
-                                    <span style="width:10px; height:10px; border-radius:2px; background:#94a3b8; display:inline-block;"></span>
-                                    Other / Not Responding
-                                </span>
-                                <span style="font-weight:700; color:#0f172a;"><span id="statOtherVal">0</span> <span style="font-weight:500; font-size:11px; color:#64748b;">(<span id="statOtherPct">0%</span>)</span></span>
-                            </div>
-                            <div style="height:6px; background:#f1f5f9; border-radius:3px; overflow:hidden;">
-                                <div id="barStatOther" style="background:#94a3b8; width:0%; height:100%; transition:width 0.4s ease;"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-xs-12" style="margin-bottom:20px;">
-                <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:22px 24px; box-shadow:0 1px 3px rgba(0,0,0,0.02); height:100%;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:14px; margin-bottom:16px;">
-                        <div style="font-size:13px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.04em;">Lead Stages Breakdown</div>
-                        <span id="liveLeadBadge" style="font-size:11px; font-weight:700; color:#00c6f0; background:rgba(0,198,240,0.08); padding:3px 10px; border-radius:4px;">0 Leads</span>
-                    </div>
-
-                    <div id="liveLeadStagesList" style="display:flex; flex-direction:column; gap:12px; padding:6px 0;">
-                        <div style="color:#94a3b8; font-size:13px; text-align:center; padding:18px 0;">Loading lead stages...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:22px 28px; box-shadow:0 1px 3px rgba(0,0,0,0.02);">
-            <div style="font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; color:#0f172a; margin-bottom:18px; border-bottom:1px solid #f1f5f9; padding-bottom:10px;">
-                Operational Activities
-            </div>
-            <div class="row" style="margin:0;">
-                <div class="col-md-3 col-sm-6 col-xs-12" style="padding:0 20px 0 0; border-right:1px solid #f1f5f9;">
-                    <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:#64748b;">Follow-ups</div>
-                    <div style="font-size:26px; font-weight:800; color:#0f172a; margin:6px 0 4px 0;" id="liveFollowupsTotal">0</div>
-                    <div style="font-size:12px; color:#64748b;">
-                        <span id="liveFollowupsToday" style="font-weight:700; color:#00a2d6;">0 Today</span> &bull; <span id="liveFollowupsMissed" style="font-weight:700; color:#dc2626;">0 Missed</span>
-                    </div>
-                </div>
-
-                <div class="col-md-3 col-sm-6 col-xs-12" style="padding:0 20px; border-right:1px solid #f1f5f9;">
-                    <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:#64748b;">Meetings</div>
-                    <div style="font-size:26px; font-weight:800; color:#0f172a; margin:6px 0 4px 0;" id="liveMeetingsTotal">0</div>
-                    <div style="font-size:12px; color:#64748b;">
-                        Scheduled Meetings
-                    </div>
-                </div>
-
-                <div class="col-md-3 col-sm-6 col-xs-12" style="padding:0 20px; border-right:1px solid #f1f5f9;">
-                    <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:#64748b;">Tickets</div>
-                    <div style="font-size:26px; font-weight:800; color:#0f172a; margin:6px 0 4px 0;" id="liveTicketsTotal">0</div>
-                    <div style="font-size:12px; color:#64748b;">
-                        <span id="liveTicketsOpen" style="font-weight:700; color:#00a2d6;">0 Open</span> &bull; <span id="liveTicketsResolved" style="font-weight:700; color:#16a34a;">0 Resolved</span>
-                    </div>
-                </div>
-
-                <div class="col-md-3 col-sm-6 col-xs-12" style="padding:0 0 0 20px;">
-                    <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:#64748b;">Verticals</div>
-                    <div style="font-size:26px; font-weight:800; color:#0f172a; margin:6px 0 4px 0;" id="liveArticlesTotal">0</div>
-                    <div style="font-size:12px; color:#64748b;">
-                        Active Catalog
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-</div>
-
 <style>
-@keyframes livePulseAura {
-    0% { box-shadow: 0 0 0 0 rgba(0, 198, 240, 0.6); }
-    70% { box-shadow: 0 0 0 10px rgba(0, 198, 240, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(0, 198, 240, 0); }
+.live-sheet-wrapper {
+    background: #f8fafc;
+    min-height: calc(100vh - 80px);
+    padding: 20px 24px 60px 24px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+.live-sheet-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #e2e8f0;
+}
+.live-sheet-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 .live-pulse-dot {
     width: 10px;
     height: 10px;
-    background: #00c6f0;
+    background-color: #0072f0;
     border-radius: 50%;
     display: inline-block;
-    animation: livePulseAura 2s infinite;
+    box-shadow: 0 0 0 0 rgba(0, 114, 240, 0.7);
+    animation: livePulseRing 2s infinite;
 }
-.live-scope-btn.active {
-    background: #0f172a !important;
-    color: #ffffff !important;
+@keyframes livePulseRing {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 114, 240, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(0, 114, 240, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 114, 240, 0); }
 }
-.live-tf-btn.active {
-    background: #00c6f0 !important;
-    color: #ffffff !important;
+.live-sheet-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+.live-sheet-sync-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    margin-left: 10px;
+}
+.live-segmented-view {
+    display: inline-flex;
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 3px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+.live-seg-btn {
+    padding: 6px 16px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.live-seg-btn:hover {
+    color: #0f172a;
+}
+.live-seg-btn.active {
+    background: #0072f0;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 114, 240, 0.25);
+}
+.live-btn-action {
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.live-btn-action:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+.live-sheet-section-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: 0.02em;
+    margin: 22px 0 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.live-sheet-section-title::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 16px;
+    background: #0072f0;
+    border-radius: 2px;
+}
+.live-sheet-table-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    margin-bottom: 24px;
+}
+.live-excel-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    text-align: left;
+}
+.live-excel-table th {
+    background: #f8fafc;
+    color: #0f172a;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 12px 18px;
+    border-bottom: 1.5px solid #cbd5e1;
+    border-right: 1px solid #f1f5f9;
+}
+.live-excel-table th:last-child {
+    border-right: none;
+}
+.live-excel-table th.col-num {
+    text-align: right;
+    width: 18%;
+}
+.live-excel-table td {
+    padding: 11px 18px;
+    border-bottom: 1px solid #f1f5f9;
+    border-right: 1px solid #f1f5f9;
+    color: #1e293b;
+    vertical-align: middle;
+}
+.live-excel-table td:last-child {
+    border-right: none;
+}
+.live-excel-table tr:last-child td {
+    border-bottom: none;
+}
+.live-excel-table tr:nth-child(even) td {
+    background: #fcfdfe;
+}
+.live-excel-table tr:hover td {
+    background: #f0f7ff;
+}
+.live-excel-table td.col-metric {
+    font-weight: 600;
+    color: #0f172a;
+}
+.live-excel-table td.col-val {
+    text-align: right;
+    font-weight: 700;
+    color: #0f172a;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+}
+.live-excel-table td.col-perf-title {
+    font-weight: 700;
+    color: #0f172a;
+    width: 32%;
+}
+.live-excel-table td.col-perf-name {
+    font-weight: 600;
+    color: #0072f0;
+    width: 34%;
+}
+.live-loading-state {
+    text-align: center;
+    padding: 30px;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 600;
 }
 </style>
 
+<div class="content-wrapper live-sheet-wrapper">
+    <div class="live-sheet-topbar">
+        <div class="live-sheet-title-group">
+            <span class="live-pulse-dot"></span>
+            <h1 class="live-sheet-title">LIVE OPERATIONS</h1>
+            <div class="live-sheet-sync-pill">
+                <span>Refresh Rate: 10s</span>
+                <span>&bull;</span>
+                <span>Synced: <strong id="liveSyncClock" style="color:#0f172a;">--:--:--</strong></span>
+            </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <div class="live-segmented-view" id="viewModeGroup">
+                <button type="button" class="live-seg-btn active" id="btnShowRegular" onclick="switchViewMode('regular')">
+                    <i class="fa fa-user"></i> My &amp; Team Stats
+                </button>
+                <button type="button" class="live-seg-btn" id="btnShowPresentation" onclick="switchViewMode('presentation')">
+                    <i class="fa fa-television"></i> Presentation (TV Mode)
+                </button>
+            </div>
+
+            <button type="button" class="live-btn-action" onclick="fetchLiveSheetData(true)" title="Force Refresh">
+                <i class="fa fa-refresh" id="liveRefreshIcon" style="color:#0072f0;"></i> Refresh
+            </button>
+
+            <button type="button" class="live-btn-action" onclick="toggleLiveFullscreen()" title="Fullscreen TV Display">
+                <i class="fa fa-arrows-alt" id="liveFsIcon"></i> Fullscreen
+            </button>
+        </div>
+    </div>
+
+    <div id="containerRegularUsers">
+        <div class="live-sheet-section-title">My Stats</div>
+        <div class="live-sheet-table-card">
+            <table class="live-excel-table">
+                <thead>
+                    <tr>
+                        <th style="width:28%;">Activity</th>
+                        <th class="col-num">Today</th>
+                        <th class="col-num">7 Days</th>
+                        <th class="col-num">This Month</th>
+                        <th class="col-num">This Quarter</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyMyStats">
+                    <tr><td colspan="5" class="live-loading-state">Loading My Stats...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="live-sheet-section-title">Team Stats</div>
+        <div class="live-sheet-table-card">
+            <table class="live-excel-table">
+                <thead>
+                    <tr>
+                        <th style="width:28%;">Activity</th>
+                        <th class="col-num">Today</th>
+                        <th class="col-num">7 Days</th>
+                        <th class="col-num">This Month</th>
+                        <th class="col-num">This Quarter</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyTeamStats">
+                    <tr><td colspan="5" class="live-loading-state">Loading Team Stats...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="live-sheet-section-title">Performers</div>
+        <div class="live-sheet-table-card">
+            <table class="live-excel-table">
+                <thead>
+                    <tr>
+                        <th style="width:32%;">Award Category</th>
+                        <th style="width:34%;">Current</th>
+                        <th style="width:34%;">Last</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyPerformersTeam">
+                    <tr><td colspan="3" class="live-loading-state">Loading Performers...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="containerPresentationUser" style="display:none;">
+        <div class="live-sheet-section-title">Company Overview</div>
+        <div class="live-sheet-table-card">
+            <table class="live-excel-table">
+                <thead>
+                    <tr>
+                        <th style="width:28%;">Activity</th>
+                        <th class="col-num">Today</th>
+                        <th class="col-num">7 Days</th>
+                        <th class="col-num">This Month</th>
+                        <th class="col-num">This Quarter</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyCompanyStats">
+                    <tr><td colspan="5" class="live-loading-state">Loading Company Stats...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="live-sheet-section-title">Company Performers</div>
+        <div class="live-sheet-table-card">
+            <table class="live-excel-table">
+                <thead>
+                    <tr>
+                        <th style="width:32%;">Award Category</th>
+                        <th style="width:34%;">Current</th>
+                        <th style="width:34%;">Last</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyCompanyPerformers">
+                    <tr><td colspan="3" class="live-loading-state">Loading Company Performers...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="dynamicCentersArea"></div>
+    </div>
+</div>
+
 <script>
-$(document).ready(function() {
-    var curScope = 'my';
-    var curTf = 'today';
-    var refreshTimer = null;
+var liveIntervalTimer = null;
+var currentLiveViewMode = 'regular';
 
-    function formatNumber(num) {
-        return (num || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+function switchViewMode(mode) {
+    currentLiveViewMode = mode;
+    if (mode === 'regular') {
+        $('#btnShowRegular').addClass('active');
+        $('#btnShowPresentation').removeClass('active');
+        $('#containerRegularUsers').show();
+        $('#containerPresentationUser').hide();
+    } else {
+        $('#btnShowRegular').removeClass('active');
+        $('#btnShowPresentation').addClass('active');
+        $('#containerRegularUsers').hide();
+        $('#containerPresentationUser').show();
     }
+}
 
-    function formatCurrency(val) {
-        var n = parseFloat(val) || 0;
-        return 'AED ' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+function renderStatsRows(items) {
+    if (!items || !items.length) {
+        return '<tr><td colspan="5" class="live-loading-state">No Data Found</td></tr>';
     }
+    var html = '';
+    for (var i = 0; i < items.length; i++) {
+        var row = items[i];
+        html += '<tr>';
+        html += '<td class="col-metric">' + escapeLiveHtml(row.metric) + '</td>';
+        html += '<td class="col-val">' + escapeLiveHtml(row.today) + '</td>';
+        html += '<td class="col-val">' + escapeLiveHtml(row.seven_days) + '</td>';
+        html += '<td class="col-val">' + escapeLiveHtml(row.month) + '</td>';
+        html += '<td class="col-val">' + escapeLiveHtml(row.quarter) + '</td>';
+        html += '</tr>';
+    }
+    return html;
+}
 
-    function fetchLiveData() {
+function renderPerformersRows(items) {
+    if (!items || !items.length) {
+        return '<tr><td colspan="3" class="live-loading-state">No Performers Recorded</td></tr>';
+    }
+    var html = '';
+    for (var i = 0; i < items.length; i++) {
+        var p = items[i];
+        html += '<tr>';
+        html += '<td class="col-perf-title">' + escapeLiveHtml(p.title) + '</td>';
+        html += '<td class="col-perf-name">' + escapeLiveHtml(p.current) + '</td>';
+        html += '<td class="col-perf-name" style="color:#475569;">' + escapeLiveHtml(p.last) + '</td>';
+        html += '</tr>';
+    }
+    return html;
+}
+
+function escapeLiveHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function fetchLiveSheetData(isManual) {
+    if (isManual) {
         $('#liveRefreshIcon').addClass('fa-spin');
-        $.ajax({
-            url: '<?php echo base_url(); ?>manager/live/ajax_get_data',
-            type: 'POST',
-            data: { scope: curScope, timeframe: curTf },
-            dataType: 'json',
-            success: function(res) {
-                $('#liveRefreshIcon').removeClass('fa-spin');
-                if (!res || res.status !== 'success') return;
-
-                $('#liveLastSync').text(res.timestamp || '--:--:--');
-
-                var cTotal = res.calls ? parseInt(res.calls.total) || 0 : 0;
-                var cConn = res.calls ? parseInt(res.calls.connected) || 0 : 0;
-                var cProc = res.calls ? parseInt(res.calls.in_process) || 0 : 0;
-                var cOther = res.calls ? parseInt(res.calls.other) || 0 : 0;
-                var cRate = cTotal > 0 ? ((cConn / cTotal) * 100).toFixed(1) : '0.0';
-
-                $('#liveCallsTotal').text(formatNumber(cTotal));
-                $('#liveCallsConnected').text(formatNumber(cConn));
-                $('#liveCallsInProcess').text(formatNumber(cProc));
-                $('#liveCallsOther').text(formatNumber(cOther));
-                $('#liveCallsRate').text(cRate + '%');
-                $('#liveCallBadge').text(formatNumber(cTotal) + ' Calls');
-
-                var pConn = cTotal > 0 ? ((cConn / cTotal) * 100).toFixed(1) : 0;
-                var pProc = cTotal > 0 ? ((cProc / cTotal) * 100).toFixed(1) : 0;
-                var pOth = cTotal > 0 ? ((cOther / cTotal) * 100).toFixed(1) : 0;
-
-                $('#liveBarConnected').css('width', pConn + '%');
-                $('#liveBarInProcess').css('width', pProc + '%');
-                $('#liveBarOther').css('width', pOth + '%');
-
-                $('#statConnectedVal').text(formatNumber(cConn));
-                $('#statConnectedPct').text(pConn + '%');
-                $('#barStatConnected').css('width', pConn + '%');
-
-                $('#statInProcessVal').text(formatNumber(cProc));
-                $('#statInProcessPct').text(pProc + '%');
-                $('#barStatInProcess').css('width', pProc + '%');
-
-                $('#statOtherVal').text(formatNumber(cOther));
-                $('#statOtherPct').text(pOth + '%');
-                $('#barStatOther').css('width', pOth + '%');
-
-                var lTotal = res.leads ? parseInt(res.leads.total) || 0 : 0;
-                var lQual = res.leads ? parseInt(res.leads.qualified) || 0 : 0;
-                var lRate = lTotal > 0 ? ((lQual / lTotal) * 100).toFixed(1) : '0.0';
-
-                $('#liveLeadsTotal').text(formatNumber(lTotal));
-                $('#liveLeadsQualified').text(formatNumber(lQual));
-                $('#liveLeadsRate').text(lRate + '%');
-                $('#liveLeadBadge').text(formatNumber(lTotal) + ' Leads');
-
-                var oTotal = res.orders ? parseInt(res.orders.total) || 0 : 0;
-                var oPending = res.orders ? parseInt(res.orders.pending) || 0 : 0;
-                var oComp = res.orders ? parseInt(res.orders.completed) || 0 : 0;
-                var oRate = oTotal > 0 ? (((oComp) / oTotal) * 100).toFixed(1) : '0.0';
-
-                $('#liveOrdersTotal').text(formatNumber(oTotal));
-                $('#liveOrdersPending').text(formatNumber(oPending));
-                $('#liveOrdersRate').text(oRate + '%');
-
-                var sCount = res.sales ? parseInt(res.sales.count) || 0 : 0;
-                var sRev = res.sales ? parseFloat(res.sales.revenue) || 0.0 : 0.0;
-                var sAvg = sCount > 0 ? (sRev / sCount) : 0.0;
-
-                $('#liveSalesCount').text(formatNumber(sCount));
-                $('#liveSalesRevenue').text(formatCurrency(sRev));
-                $('#liveSalesAvg').text(formatCurrency(sAvg));
-
-                if (res.leads && res.leads.statuses && res.leads.statuses.length > 0) {
-                    var sHtml = '';
-                    var maxCnt = 1;
-                    $.each(res.leads.statuses, function(i, st) {
-                        if (st.count > maxCnt) maxCnt = st.count;
-                    });
-                    $.each(res.leads.statuses, function(i, st) {
-                        var pct = Math.round((st.count / (lTotal > 0 ? lTotal : 1)) * 100);
-                        var barW = Math.round((st.count / maxCnt) * 100);
-                        sHtml += '<div>' +
-                            '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; font-size:12.5px;">' +
-                                '<span style="font-weight:600; color:#0f172a;">' + st.name + '</span>' +
-                                '<span style="font-weight:700; color:#0f172a;">' + formatNumber(st.count) + ' <span style="font-weight:500; font-size:11px; color:#64748b;">(' + pct + '%)</span></span>' +
-                            '</div>' +
-                            '<div style="height:5px; background:#f1f5f9; border-radius:3px; overflow:hidden;">' +
-                                '<div style="background:#00c6f0; width:' + barW + '%; height:100%; transition:width 0.4s ease;"></div>' +
-                            '</div>' +
-                        '</div>';
-                    });
-                    $('#liveLeadStagesList').html(sHtml);
-                } else {
-                    $('#liveLeadStagesList').html('<div style="color:#94a3b8; font-size:13px; text-align:center; padding:18px 0;">No lead stages recorded</div>');
-                }
-
-                $('#liveFollowupsTotal').text(formatNumber(res.followups ? res.followups.total : 0));
-                $('#liveFollowupsToday').text((res.followups ? res.followups.today : 0) + ' Today');
-                $('#liveFollowupsMissed').text((res.followups ? res.followups.missed : 0) + ' Missed');
-
-                $('#liveMeetingsTotal').text(formatNumber(res.meetings ? res.meetings.total : 0));
-
-                $('#liveTicketsTotal').text(formatNumber(res.tickets ? res.tickets.total : 0));
-                $('#liveTicketsOpen').text((res.tickets ? res.tickets.open : 0) + ' Open');
-                $('#liveTicketsResolved').text((res.tickets ? res.tickets.resolved : 0) + ' Resolved');
-
-                $('#liveArticlesTotal').text(formatNumber(res.articles ? res.articles.total : 0));
-            },
-            error: function() {
-                $('#liveRefreshIcon').removeClass('fa-spin');
-            }
-        });
     }
+    $.ajax({
+        url: '<?php echo base_url(); ?>manager/live/ajax_get_data',
+        type: 'GET',
+        dataType: 'json',
+        cache: false,
+        success: function(res) {
+            $('#liveRefreshIcon').removeClass('fa-spin');
+            if (!res || res.status !== 'success') return;
 
-    $('.live-scope-btn').on('click', function() {
-        $('.live-scope-btn').removeClass('active').css({ 'background': 'transparent', 'color': '#64748b' });
-        $(this).addClass('active').css({ 'background': '#0f172a', 'color': '#ffffff' });
-        curScope = $(this).data('scope');
-        fetchLiveData();
+            if (res.timestamp) {
+                $('#liveSyncClock').text(res.timestamp);
+            }
+
+            $('#tbodyMyStats').html(renderStatsRows(res.my_stats));
+            $('#tbodyTeamStats').html(renderStatsRows(res.team_stats));
+            $('#tbodyPerformersTeam').html(renderPerformersRows(res.performers_team));
+
+            $('#tbodyCompanyStats').html(renderStatsRows(res.company_stats));
+            $('#tbodyCompanyPerformers').html(renderPerformersRows(res.performers_company));
+
+            var centersHtml = '';
+            if (res.centers && res.centers.length > 0) {
+                for (var c = 0; c < res.centers.length; c++) {
+                    var center = res.centers[c];
+                    centersHtml += '<div class="live-sheet-section-title">' + escapeLiveHtml(center.center_code) + ' &bull; ' + escapeLiveHtml(center.center_name) + ' (' + center.user_count + ' Staff)</div>';
+                    centersHtml += '<div class="live-sheet-table-card">';
+                    centersHtml += '<table class="live-excel-table">';
+                    centersHtml += '<thead><tr><th style="width:28%;">Activity</th><th class="col-num">Today</th><th class="col-num">7 Days</th><th class="col-num">This Month</th><th class="col-num">This Quarter</th></tr></thead>';
+                    centersHtml += '<tbody>' + renderStatsRows(center.stats) + '</tbody>';
+                    centersHtml += '</table>';
+                    centersHtml += '</div>';
+
+                    centersHtml += '<div class="live-sheet-section-title" style="margin-top:14px;">' + escapeLiveHtml(center.center_code) + ' Performers</div>';
+                    centersHtml += '<div class="live-sheet-table-card">';
+                    centersHtml += '<table class="live-excel-table">';
+                    centersHtml += '<thead><tr><th style="width:32%;">Award Category</th><th style="width:34%;">Current</th><th style="width:34%;">Last</th></tr></thead>';
+                    centersHtml += '<tbody>' + renderPerformersRows(center.performers) + '</tbody>';
+                    centersHtml += '</table>';
+                    centersHtml += '</div>';
+                }
+            } else if (res.center_wise_only) {
+                var co = res.center_wise_only;
+                centersHtml += '<div class="live-sheet-section-title">Center Wise Only: ' + escapeLiveHtml(co.center_name) + '</div>';
+                centersHtml += '<div class="live-sheet-table-card">';
+                centersHtml += '<table class="live-excel-table">';
+                centersHtml += '<thead><tr><th style="width:28%;">Activity</th><th class="col-num">Today</th><th class="col-num">7 Days</th><th class="col-num">This Month</th><th class="col-num">This Quarter</th></tr></thead>';
+                centersHtml += '<tbody>' + renderStatsRows(co.stats) + '</tbody>';
+                centersHtml += '</table>';
+                centersHtml += '</div>';
+
+                centersHtml += '<div class="live-sheet-section-title" style="margin-top:14px;">Performers</div>';
+                centersHtml += '<div class="live-sheet-table-card">';
+                centersHtml += '<table class="live-excel-table">';
+                centersHtml += '<thead><tr><th style="width:32%;">Award Category</th><th style="width:34%;">Current</th><th style="width:34%;">Last</th></tr></thead>';
+                centersHtml += '<tbody>' + renderPerformersRows(co.performers) + '</tbody>';
+                centersHtml += '</table>';
+                centersHtml += '</div>';
+            }
+            $('#dynamicCentersArea').html(centersHtml);
+        },
+        error: function() {
+            $('#liveRefreshIcon').removeClass('fa-spin');
+        }
     });
+}
 
-    $('.live-tf-btn').on('click', function() {
-        $('.live-tf-btn').removeClass('active').css({ 'background': 'transparent', 'color': '#475569' });
-        $(this).addClass('active').css({ 'background': '#00c6f0', 'color': '#ffffff' });
-        curTf = $(this).data('tf');
-        fetchLiveData();
-    });
+function toggleLiveFullscreen() {
+    var elem = document.documentElement;
+    if (!document.fullscreenElement && !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen();
+        } else if (elem.msRequestFullscreen) {
+            elem.msRequestFullscreen();
+        } else if (elem.mozRequestFullScreen) {
+            elem.mozRequestFullScreen();
+        } else if (elem.webkitRequestFullscreen) {
+            elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+        }
+        $('#liveFsIcon').removeClass('fa-arrows-alt').addClass('fa-compress');
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        }
+        $('#liveFsIcon').removeClass('fa-compress').addClass('fa-arrows-alt');
+    }
+}
 
-    $('#btnLiveRefreshNow').on('click', function() {
-        fetchLiveData();
-    });
-
-    fetchLiveData();
-    refreshTimer = setInterval(fetchLiveData, 10000);
+$(document).ready(function() {
+    fetchLiveSheetData(false);
+    if (liveIntervalTimer) {
+        clearInterval(liveIntervalTimer);
+    }
+    liveIntervalTimer = setInterval(function() {
+        fetchLiveSheetData(false);
+    }, 10000);
 });
 </script>
-
-<?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

@@ -1108,7 +1108,7 @@ $(function () {
         if (!empty($dashboard_MyPro['month_labels'])) {
             echo json_encode($dashboard_MyPro['month_labels']);
         } else {
-            echo json_encode(array('OCT 26', 'NOV 26', 'DEC 26', 'JAN 27', 'FEB 27', 'MAR 27'));
+            echo json_encode(array('Oct-26', 'Nov-26', 'Dec-26', 'Jan-27', 'Feb-27', 'Mar-27'));
         }
     ?>;
     
@@ -1304,7 +1304,7 @@ $(function () {
     var customOpTooltip = function(tooltip) {
         var el = $('#chartjs-op-tooltip');
         if (!el.length) {
-            $('body').append('<div id="chartjs-op-tooltip" style="position: fixed; z-index: 999999; pointer-events: none; opacity: 0; background: rgba(15, 23, 42, 0.94); color: #ffffff; padding: 5px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 700; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif; white-space: nowrap; box-shadow: 0 4px 14px rgba(0,0,0,0.3); transition: opacity 0.1s ease;"></div>');
+            $('body').append('<div id="chartjs-op-tooltip" style="position: absolute; z-index: 9999999; pointer-events: none; opacity: 0; background: rgba(15, 23, 42, 0.94); color: #ffffff; padding: 5px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 700; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif; white-space: nowrap; box-shadow: 0 4px 14px rgba(0,0,0,0.3); transition: opacity 0.1s ease;"></div>');
             el = $('#chartjs-op-tooltip');
         }
         if (!tooltip || !tooltip.text) {
@@ -1312,9 +1312,12 @@ $(function () {
             return;
         }
         el.html(tooltip.text);
-        if (tooltip.isScreenCoord) {
-            var top = tooltip.y - el.outerHeight() - 8;
-            var left = tooltip.x - (el.outerWidth() / 2);
+        var cv = (tooltip.chart && tooltip.chart.canvas) ? tooltip.chart.canvas : (tooltip.chart && tooltip.chart.ctx ? tooltip.chart.ctx.canvas : null);
+        if (cv) {
+            var $cv = $(cv);
+            var offset = $cv.offset();
+            var top = offset.top + tooltip.y - el.outerHeight() - 8;
+            var left = offset.left + tooltip.x - (el.outerWidth() / 2);
             el.css({
                 opacity: 1,
                 top: Math.max(10, top) + 'px',

@@ -2,6 +2,49 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.79.3] - 2026-10-30
+- **Timestamp**: `2026-10-30 14:05:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Delivered Month-Year 3-letter abbreviation with 2-digit year (`Oct-26`, `Nov-26`, etc.) across Projections & Achievements, completely removed active navigation bar black dot indicator (`•`), restored CRM main-sidebar on dialer and corrected middle workspace dimensions with natural phone keypad docking, reformatted Reports sections to stack vertically one below another in a single column, streamlined Team navigation to Chart View only with direct manager upline display and Table View back button, and completely transformed the LIVE operations console into a sleek Apple-style Excel private sheet with 10s auto-refresh supporting both Regular Users (My Stats, Team Stats, Performers) and Presentation Users (Company, Center-1, Center-2 with center-wise metrics & performers).
+- **Detailed Changes & Technical Implementation**:
+  - **1. Dashboard Projections & Achievements Month Format (`ci_admin_model.php`, `dashboard.php`)**:
+    - Updated date format in `ci_admin_model.php` (`dashboard_achievement_graph`, `dashboard_TeamPro`, `dashboard_MyPro`) from `date("M - Y")` to `date("M-y")`, producing 3-letter month followed by dash and 2-digit year with zero spaces (e.g. `Oct-26`, `Nov-26`, `Jan-27`).
+    - Updated fallback labels array in `dashboard.php` to `array('Oct-26', 'Nov-26', 'Dec-26', 'Jan-27', 'Feb-27', 'Mar-27')`.
+  - **2. Navigation Bar Active Pill Dot Removal (`crm-dashboard.css`, `header.php`)**:
+    - Removed `ul.munk_menu > li.active > a:before` bullet content (`•`) in `crm-dashboard.css`, eliminating the black dot from active navbar capsules across Dashboard, My Zone, Team, Back Office, etc.
+    - Bumped CSS cache-buster query parameter to `?v=20261030_v1793_p1` in `header.php`.
+  - **3. Indicator Spacing & Doughnut Chart Tooltip Fix (`dashboard.php`, `crm-dashboard.css`)**:
+    - Added dedicated `.dash-chart-legend` styles with `margin-left: auto !important; gap: 16px !important;` and `.dash-chart-title` with `margin-right: 20px !important;`, preventing legend color indicators from touching chart titles.
+    - Updated `customOpTooltip` in `dashboard.php` to calculate canvas offsets using `$(cv).offset()`, rendering tooltips in `#chartjs-op-tooltip` with high z-index (`9999999`) and zero text clipping.
+  - **4. Calls & Dialer Sidebar Restoration & Middle View Width Fix (`views/manager/calls/dashboard.php`)**:
+    - Removed `.main-sidebar, .left-side, .main-footer, .crm-footer { display: none !important; }`, restoring the CRM navigation sidebar and drawer.
+    - Replaced `margin: 0 !important; width: 100% !important;` on `.content-wrapper.glass-calling-wrapper` with flexible layout that respects AdminLTE sidebar margins.
+    - Fixed middle workspace (`#middleContentArea`) to `width: 580px; min-width: 460px; max-width: 680px; flex: 0 1 580px;`, ensuring setup forms and contact details have spacious room without stretching 1200px.
+    - Removed `margin-left: auto;` from `.crm-dialer-panel`, placing the phone keypad naturally adjacent to the middle content area.
+  - **5. Reports Section Single-Column Vertical Stacking (`views/manager/report/download_report.php`)**:
+    - Changed `#reportsContainer` from 2-column grid (`grid-template-columns: repeat(2, minmax(0, 1fr))`) to single-column flex column (`display: flex; flex-direction: column; gap: 20px; width: 100%;`).
+    - All departments and report categories now stack neatly one below another.
+  - **6. Team Navigation & Org Chart vs Table View Overhaul (`header.php`, `ci_admin_team.php`, `chart.php`, `members.php`)**:
+    - Removed `Members` from Team dropdowns in `header.php` (both desktop header and mobile drawer), leaving `Chart` as the primary entrance.
+    - Removed `Go to Manager` and `My Team Root` from `chart.php` toolbar; simplified toolbar to strictly two options: `Chart View` (active) and `Table View`.
+    - In `ci_admin_team.php` `chart()`, fetched logged-in user's direct manager node (`$manager_node`).
+    - In `chart.php`, rendered the direct manager above the logged-in user with a subtle slate card (no peers under that manager). Highlighted the logged-in user in the center (`root-card`), with direct team members branching below.
+    - In `members.php` (Table View), removed empty upline column and added a "Back to Chart View" button in the header.
+  - **7. LIVE Section Excel / Private Sheet Redesign (`ci_admin_live.php`, `views/manager/live/index.php`)**:
+    - Completely redesigned `manager/live` into a high-end Excel private sheet matching the design specification.
+    - Implemented 10-second automatic background sync without page reloading.
+    - **Show 1 - Regular Users**:
+      - `My Stats` sheet: 8 metrics (`Calls Made`, `Leads Generated`, `Orders Submitted`, `Sales Achieved`, `Follow up`, `Meetings`, `Tickets Resolved`, `Verticals Introduced`) across 4 timeframes (`Today`, `7 Days`, `This Month`, `This Quarter`).
+      - `Team Stats` sheet: Same 8 metrics across the 4 timeframes for the team.
+      - `Performers` sheet: Top achievers for `Performer of the Month`, `Performer of Quarter`, and `Performer of Year` across `Current` and `Last` periods.
+    - **Show 2 - Presentation User (TV / Big-screen mode)**:
+      - `Company Overview` sheet: 8 metrics across Today, 7 Days, Month, Quarter for the whole company, plus company performers.
+      - Center-wise sheets: Automatically queries distinct offices (`01 - UAE-Dubai-SZR`, etc.) and renders dedicated sheets for each center with its 8 metrics and performers if the center exists in the DB.
+      - Fullscreen toggle for TV display.
+    - Minimalist dual-color palette (ocean blue `#0072f0` and clean white `#ffffff` with slate borders `#e2e8f0`), zero pill badges, zero explanatory banners, zero fake figures.
+  - **8. Zero Comments Compliance**:
+    - Strictly 0 comments in any PHP file (`//`, `/* */`, `<!-- -->`). All PHP files verified with `php -l`.
+
 ### [v1.79.2] - 2026-10-30
 - **Timestamp**: `2026-10-30 12:45:00 +0530`
 - **Author**: Reinhart-py
