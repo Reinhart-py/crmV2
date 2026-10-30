@@ -139,7 +139,7 @@ class Ci_admin_hr extends CI_Controller {
 				->where('created <=', $e_date)
 				->count_all_results('ci_meetings');
 
-			$sales_sum = $this->db->select_sum('total_amount')
+			$sales_sum = $this->db->select_sum('pricing_amount')
 				->where('created_by', $uid)
 				->where('status', 'Sales')
 				->where('created_at >=', $s_date . ' 00:00:00')
@@ -150,7 +150,7 @@ class Ci_admin_hr extends CI_Controller {
 			$t['achieved_calls'] = (int)$calls_count;
 			$t['achieved_leads'] = (int)$leads_count;
 			$t['achieved_meetings'] = (int)$meetings_count;
-			$t['achieved_amount'] = !empty($sales_sum['total_amount']) ? (float)$sales_sum['total_amount'] : 0.00;
+			$t['achieved_amount'] = !empty($sales_sum['pricing_amount']) ? (float)$sales_sum['pricing_amount'] : 0.00;
 
 			$t['target_revenue'] = floatval($t['target_amount']);
 			$t['actual_revenue'] = $t['achieved_amount'];

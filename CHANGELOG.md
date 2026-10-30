@@ -2,6 +2,25 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.79.1] - 2026-10-30
+- **Timestamp**: `2026-10-30 11:58:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Fixed SQL Error 1054 (`Unknown column 'total_amount' in 'field list'`) in `dashboard_countdata` and `dashboard_Tcountdata` by referencing `pricing_amount`, and redesigned the Live page UI into an executive, clean, no-bullshit Apple-style live operations dashboard with simple straightforward English headers, 3 large cohesive sections, real-time voice donut chart, and live stream tables.
+- **Detailed Changes & Technical Implementation**:
+  - **1. SQL Error 1054 Fix (`ci_admin_model.php`, `ci_admin_live.php`, `ci_admin_hr.php`)**:
+    - Removed non-existent column `total_amount` from `ci_orders` queries in `dashboard_countdata()` and `dashboard_Tcountdata()` in `ci_admin_model.php`.
+    - Standardized on `pricing_amount` (`COALESCE(NULLIF(pricing_amount, 0), NULLIF(mrr, 0), 0)`) across all order revenue aggregations in `ci_admin_model.php`, `ci_admin_live.php`, and `ci_admin_hr.php`.
+  - **2. Live Page Executive Redesign (`views/manager/live/index.php`)**:
+    - Discarded all small cards, foreign widgets, and lengthy explanatory subtitles.
+    - Used clean, simple English headers (`Calls`, `Pipeline`, `Sales Achieved`, `Call Status`, `Recent Calls`, `Lead Stages`, `Recent Leads`, `Activity`).
+    - Standardized on a strict 2-3 color palette: Ocean Blue (`#00c6f0`), Slate Navy (`#0f172a`), and Crisp White (`#ffffff`), with subtle hairline borders (`1px solid #e2e8f0`).
+    - Section 1 (Hero Operations Masterstage): 3 cohesive zones for Outbound Calls (with real-time progress bar), Commercial Funnel (Leads -> Pending Orders -> Closed Sales), and Sales Achieved (AED revenue and average deal size).
+    - Section 2 (Deep Dive Monitoring): Left panel features a high-res Doughnut chart (`liveCallsDonutChart`) for call status distribution alongside the live recent dialing stream table; Right panel features stage velocity badges and the recent lead ingestion stream table.
+    - Section 3 (Activity Matrix): Consolidated 4-column executive bar for Follow-ups (Total, Today, Missed), Meetings (Total Scheduled), Tickets (Total, Open, Resolved), and Verticals (Active Catalog).
+    - Preserved 10-second AJAX background syncing, scope toggling (My Activity vs Team Activity), and timeframe filtering (Today, Last 7 Days, Month, Quarter).
+  - **3. Code Integrity & Zero Comments**:
+    - Verified 0 comments across all PHP files. Passed all `php -l` lint checks.
+
 ### [v1.79.0] - 2026-10-30
 - **Timestamp**: `2026-10-30 11:40:00 +0530`
 - **Author**: Reinhart-py

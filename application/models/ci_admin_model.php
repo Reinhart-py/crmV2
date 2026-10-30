@@ -34,7 +34,7 @@ class Ci_admin_model extends CI_model {
 			 AND (A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)) as count_leads,
 
 			(SELECT count(id) FROM ci_orders WHERE created_by = " . $manager_id . ") as count_orders,
-			(SELECT COALESCE(SUM(CAST(COALESCE(NULLIF(pricing_amount, 0), NULLIF(total_amount, 0), NULLIF(mrr, 0), 0) AS DECIMAL(12,2))), 0) FROM ci_orders WHERE created_by = " . $manager_id . " AND (status = 'Sales' OR status = 'Closed / Sold' OR status = 'Completed' OR (sales_ref_no IS NOT NULL AND sales_ref_no != ''))) as sales_amount";
+			(SELECT COALESCE(SUM(CAST(COALESCE(NULLIF(pricing_amount, 0), NULLIF(mrr, 0), 0) AS DECIMAL(12,2))), 0) FROM ci_orders WHERE created_by = " . $manager_id . " AND (status = 'Sales' OR status = 'Closed / Sold' OR status = 'Completed' OR (sales_ref_no IS NOT NULL AND sales_ref_no != ''))) as sales_amount";
 
 		$rows = $this->db->query($sql);
 		if ($rows && is_object($rows) && $rows->num_rows() >= 1) {
@@ -78,7 +78,7 @@ class Ci_admin_model extends CI_model {
 				 AND (A.company_status IS NULL OR LOWER(A.company_status) != 'closed')) as count_leads,
 				(SELECT count(id) FROM ci_verticals WHERE FIND_IN_SET(created_by, '" . $team_str . "') > 0) as count_verticals,
 				(SELECT count(id) FROM ci_orders WHERE FIND_IN_SET(created_by, '" . $team_str . "') > 0) as count_orders,
-				(SELECT COALESCE(SUM(CAST(COALESCE(NULLIF(pricing_amount, 0), NULLIF(total_amount, 0), NULLIF(mrr, 0), 0) AS DECIMAL(12,2))), 0) FROM ci_orders WHERE FIND_IN_SET(created_by, '" . $team_str . "') > 0 AND (status = 'Sales' OR status = 'Closed / Sold' OR status = 'Completed' OR (sales_ref_no IS NOT NULL AND sales_ref_no != ''))) as sales_amount";
+				(SELECT COALESCE(SUM(CAST(COALESCE(NULLIF(pricing_amount, 0), NULLIF(mrr, 0), 0) AS DECIMAL(12,2))), 0) FROM ci_orders WHERE FIND_IN_SET(created_by, '" . $team_str . "') > 0 AND (status = 'Sales' OR status = 'Closed / Sold' OR status = 'Completed' OR (sales_ref_no IS NOT NULL AND sales_ref_no != ''))) as sales_amount";
 
 			$rows = $this->db->query($sql);
 			if ($rows && is_object($rows) && $rows->num_rows() >= 1) {

@@ -138,7 +138,7 @@ class Ci_admin_live extends CI_Controller
 			->join('ci_user u', 'c.user_id = u.id', 'left')
 			->where("c.user_id IN ({$user_in})", null, false)
 			->order_by('c.id', 'DESC')
-			->limit(6)
+			->limit(8)
 			->get()
 			->result_array();
 
@@ -172,11 +172,12 @@ class Ci_admin_live extends CI_Controller
 			}
 		}
 
-		$latest_leads = $this->db->select('id, lead_id, customer, poc, contact1, status, lead_stage, created')
-			->from('ci_leads')
-			->where("(created_by IN ({$user_in}) OR lead_assign IN ({$user_in}))", null, false)
-			->order_by('id', 'DESC')
-			->limit(5)
+		$latest_leads = $this->db->select('l.id, l.lead_id, l.customer, l.poc, l.contact1, l.status, l.lead_stage, l.created, s.status as status_name')
+			->from('ci_leads l')
+			->join('ci_status s', 'l.status = s.id', 'left')
+			->where("(l.created_by IN ({$user_in}) OR l.lead_assign IN ({$user_in}))", null, false)
+			->order_by('l.id', 'DESC')
+			->limit(8)
 			->get()
 			->result_array();
 
@@ -220,7 +221,7 @@ class Ci_admin_live extends CI_Controller
 		$this->db->group_end();
 		$sales_count = $this->db->count_all_results();
 
-		$sales_rev_row = $this->db->select('SUM(CAST(total_amount AS DECIMAL(12,2))) as rev_sum')
+		$sales_rev_row = $this->db->select('SUM(CAST(COALESCE(NULLIF(pricing_amount, 0), NULLIF(mrr, 0), 0) AS DECIMAL(12,2))) as rev_sum')
 			->from('ci_orders')
 			->where("(created_by IN ({$user_in}) OR assigned_to IN ({$user_in}))", null, false)
 			->where('created_at >=', $d1)
