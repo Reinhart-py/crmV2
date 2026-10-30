@@ -2,6 +2,32 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.79.4] - 2026-10-30
+- **Timestamp**: `2026-10-30 16:20:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Fixed dashboard top card styling by setting pure white text on the lower four cards (My Leads, My Orders, Team Leads, Team Orders), strictly scoped My Database on the dashboard to the user's assigned/created records for all roles including Admin, enabled and optimized all 14 Operational Activity & Breakdown doughnut charts with synchronous rendering and updated sizing, and introduced the Quality Operations Checklist (QC Panel) under System navigation with interactive persistent checkboxes and external tab launch buttons.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Dashboard Top Cards Lower Row White Text (`dashboard.php`, `crm-dashboard.css`)**:
+    - Replaced limp green sales text (`#16a34a`) in `My Leads`, `My Orders`, `Team Leads`, and `Team Orders` cards with `#ffffff !important;` for crisp, high-contrast readability.
+    - Set explicit `#ffffff !important;` on `.dash-kpi-value`, `.dash-kpi-label`, `.dash-kpi-sales`, and `.dash-kpi-footer` across all four lower cards in both inline styles and `#cardMyLeads, #cardMyOrders, #cardTeamLeads, #cardTeamOrders` stylesheet rules.
+  - **2. My Database & Leads Scoping for Admin (`ci_admin_model.php`)**:
+    - In `dashboard_countdata()`, removed admin bypass on `count_database` and `count_verticals` so that admin's personal cards strictly count records assigned to or created by the logged-in administrator (`$manager_id`).
+    - In `get_Myleads()`, enforced `$where1` (`lead_assign = $uid` or `created_by = $uid` or assigned agents) for `$stage === 'database'` and `$stage === 'lead'`, preventing other team members' database entries from showing under Admin's personal database view.
+    - In `getMyVerticals()`, strictly scoped verticals to `$uid`.
+  - **3. Operational Activity & Breakdown 14 Doughnut Charts (`dashboard.php`)**:
+    - Initialized all 14 doughnut chart canvases (`pieCard_my_tickets`, `pieCard_my_tasks`, `pieCard_my_f`, `pieCard_my_m`, `pieCard_my_vfu`, `pieCard_my_db`, `pieCard_my_leads`, `pieCard_team_tickets`, `pieCard_team_tasks`, `pieCard_team_f`, `pieCard_team_m`, `pieCard_team_vfu`, `pieCard_team_db`, `pieCard_team_leads`) via `renderOpPie`.
+    - Set `animation: false` in Chart.js Doughnut configuration to ensure instant, synchronous, and non-blocking drawing of all 14 canvases without dropped animation frames.
+    - Standardized canvas dimensions to `width="96" height="96"` for clear, prominent visibility without clipping.
+  - **4. Quality Operations Checklist (QC Panel) (`ci_admin_system.php`, `qc.php`, `header.php`, `routes.php`)**:
+    - Created database table `ci_qoc_checklist` for persistent audit storage (`node_key`, `is_checked`, `checked_by`, `updated_at`).
+    - Added routes `manager/system/qc`, `manager/system/qoc`, and `manager/system/ajax_save_qc`.
+    - Added `qc()` and `ajax_save_qc()` in `ci_admin_system.php` with a complete tree structure of all CRM modules, submodules, routes, and features.
+    - Created `application/views/manager/system/qc.php` featuring expandable/collapsible tree nodes (`+` / `-` toggle), live checkmarks with strikethrough feedback, instant AJAX state persistence, real-time verified counter & progress bar, and external new-tab launch buttons (`target="_blank"`).
+    - Added `QC Panel` link under the `System` navigation dropdown in both the desktop navbar capsule and the mobile sidebar drawer.
+    - Bumped CSS cache-buster query parameter to `?v=20261030_v1794`.
+  - **5. Zero Comments Compliance**:
+    - Strictly 0 comments in any PHP file (`//`, `/* */`, `<!-- -->`). All PHP files verified with `php -l`.
+
 ### [v1.79.3] - 2026-10-30
 - **Timestamp**: `2026-10-30 14:05:00 +0530`
 - **Author**: Reinhart-py

@@ -227,6 +227,9 @@ $route['manager/system/ajax_update_assignee'] = 'ci_admin_system/ajax_update_ass
 $route['manager/system/kam-clients'] = 'ci_admin_system/kam_clients';
 $route['manager/system/kam_clients'] = 'ci_admin_system/kam_clients';
 $route['manager/system/ajax_search_kam_companies'] = 'ci_admin_system/ajax_search_kam_companies';
+$route['manager/system/qc'] = 'ci_admin_system/qc';
+$route['manager/system/qoc'] = 'ci_admin_system/qc';
+$route['manager/system/ajax_save_qc'] = 'ci_admin_system/ajax_save_qc';
 $route['manager/ping'] = "ci_admin/ping";
 
 $route['manager/back-office'] = 'ci_admin_leads/review_leads';

@@ -8,6 +8,8 @@ class Ci_admin_model extends CI_model {
 	
 	   public function dashboard_countdata(){
 		$manager_id = (int)$this->session->userdata('manager_id');
+		$user_role = (int)($this->session->userdata('manager_role') ? $this->session->userdata('manager_role') : $this->session->userdata('user_role'));
+		$is_admin = ($user_role === 1 || $user_role === 4 || $manager_id === 1);
 		$data = array(
 			'count_database' => 0,
 			'count_verticals' => 0,
@@ -18,19 +20,20 @@ class Ci_admin_model extends CI_model {
 		
 		);
 
+		$db_where = "(P.pipeline_stage = 'database' OR (P.pipeline_stage IS NULL AND (A.database_category != 'KAM Onboarded' OR A.database_category IS NULL))) AND (A.lead_assign = " . $manager_id . " OR (A.created_by = " . $manager_id . " AND (A.lead_assign = 0 OR A.lead_assign IS NULL)) OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET(" . $manager_id . ", A.agents) > 0)) AND (A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)";
+		$vert_sql = "(SELECT count(id) FROM ci_verticals WHERE created_by = " . $manager_id . ")";
+
 		$sql = "SELECT 
 			(SELECT count(A.id) FROM ci_leads as A 
 			 LEFT JOIN ci_pipeline as P ON A.id = P.lead_id 
-			 WHERE (P.pipeline_stage = 'database' OR (P.pipeline_stage IS NULL AND (A.database_category != 'KAM Onboarded' OR A.database_category IS NULL))) 
-			 AND (A.lead_assign = " . $manager_id . " OR (A.created_by = " . $manager_id . " AND (A.lead_assign = 1 OR A.lead_assign IS NULL)) OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET(" . $manager_id . ", A.agents) > 0)) 
-			 AND (A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)) as count_database,
+			 WHERE " . $db_where . ") as count_database,
 
-			(SELECT count(id) FROM ci_verticals WHERE created_by = " . $manager_id . ") as count_verticals,
+			" . $vert_sql . " as count_verticals,
 
 			(SELECT count(A.id) FROM ci_leads as A 
 			 LEFT JOIN ci_pipeline as P ON A.id = P.lead_id 
 			 WHERE P.pipeline_stage = 'lead' 
-			 AND (A.lead_assign = " . $manager_id . " OR (A.created_by = " . $manager_id . " AND (A.lead_assign = 1 OR A.lead_assign IS NULL)) OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET(" . $manager_id . ", A.agents) > 0)) 
+			 AND (A.lead_assign = " . $manager_id . " OR (A.created_by = " . $manager_id . " AND (A.lead_assign = 0 OR A.lead_assign IS NULL)) OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET(" . $manager_id . ", A.agents) > 0)) 
 			 AND (A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)) as count_leads,
 
 			(SELECT count(id) FROM ci_orders WHERE created_by = " . $manager_id . ") as count_orders,
@@ -49,15 +52,26 @@ class Ci_admin_model extends CI_model {
 
 		public function dashboard_Tcountdata(){
 			$manager_id = (int)$this->session->userdata('manager_id');
+			$user_role = (int)($this->session->userdata('manager_role') ? $this->session->userdata('manager_role') : $this->session->userdata('user_role'));
+			$is_admin = ($user_role === 1 || $user_role === 4 || $manager_id === 1);
 			$team_array = $this->fetchTeamList($manager_id, '');
 			if (!is_array($team_array)) {
 				$team_array = array();
 			}
 			$team_clean = array_filter(array_map('intval', $team_array));
+			if (empty($team_clean) && $is_admin) {
+				$qAll = $this->db->query("SELECT id FROM ci_user WHERE status = 1 AND id != " . $manager_id);
+				if ($qAll && $qAll->num_rows() > 0) {
+					foreach ($qAll->result_array() as $u) {
+						$team_clean[] = (int)$u['id'];
+					}
+				}
+			}
 			$team_str = !empty($team_clean) ? implode(',', $team_clean) : '0';
 
 			$data = array(
 				'count_user' => 0,
+				'count_users' => 0,
 				'count_verticals' => 0,
 				'count_vetricals' => 0,
 				'count_leads' => 0,
@@ -68,15 +82,18 @@ class Ci_admin_model extends CI_model {
 			);
 
 			$today = date('Y-m-d');
+			$vert_team_sql = "(SELECT count(id) FROM ci_verticals WHERE FIND_IN_SET(created_by, '" . $team_str . "') > 0)";
+			$user_team_sql = "(SELECT count(id) FROM ci_user WHERE FIND_IN_SET(id, '" . $team_str . "') > 0 AND status = 1)";
+
 			$sql = "SELECT 
-				(SELECT count(id) FROM ci_user WHERE FIND_IN_SET(id, '" . $team_str . "') > 0) as count_user,
+				" . $user_team_sql . " as count_user,
 				(SELECT count(id) FROM ci_user WHERE FIND_IN_SET(id, '" . $team_str . "') > 0 AND dob = '" . $today . "') as count_today_birth,
 				(SELECT count(A.id) FROM ci_leads as A 
 				 LEFT JOIN ci_pipeline as P ON A.id = P.lead_id 
 				 WHERE P.pipeline_stage = 'lead' 
 				 AND ((A.lead_assign > 0 AND FIND_IN_SET(A.lead_assign, '" . $team_str . "') > 0) OR ((A.lead_assign = 0 OR A.lead_assign IS NULL) AND FIND_IN_SET(A.created_by, '" . $team_str . "') > 0)) 
 				 AND (A.company_status IS NULL OR LOWER(A.company_status) != 'closed')) as count_leads,
-				(SELECT count(id) FROM ci_verticals WHERE FIND_IN_SET(created_by, '" . $team_str . "') > 0) as count_verticals,
+				" . $vert_team_sql . " as count_verticals,
 				(SELECT count(id) FROM ci_orders WHERE FIND_IN_SET(created_by, '" . $team_str . "') > 0) as count_orders,
 				(SELECT COALESCE(SUM(CAST(COALESCE(NULLIF(pricing_amount, 0), NULLIF(mrr, 0), 0) AS DECIMAL(12,2))), 0) FROM ci_orders WHERE FIND_IN_SET(created_by, '" . $team_str . "') > 0 AND (status = 'Sales' OR status = 'Closed / Sold' OR status = 'Completed' OR (sales_ref_no IS NOT NULL AND sales_ref_no != ''))) as sales_amount";
 
@@ -84,6 +101,8 @@ class Ci_admin_model extends CI_model {
 			if ($rows && is_object($rows) && $rows->num_rows() >= 1) {
 				$data = $rows->row_array();
 			}
+			$data['count_users'] = isset($data['count_user']) ? (int)$data['count_user'] : count($team_clean);
+			$data['count_user'] = $data['count_users'];
 			$data['count_vetricals'] = isset($data['count_verticals']) ? $data['count_verticals'] : 0;
 			if (!isset($data['sales_amount'])) {
 				$data['sales_amount'] = 0.00;
@@ -897,7 +916,11 @@ public function dashboard_MyPro($table='ci_leads'){
 						   $this->db->where('A.id', -1);
 					   }
 				   }
-			   } elseif ($stage === 'database' || $stage === 'lead') {
+			   } elseif ($stage === 'database') {
+				   $where1 = "(A.lead_assign = $uid OR (A.created_by = $uid AND (A.lead_assign = 0 OR A.lead_assign IS NULL)) OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET($uid, A.agents) > 0))";	
+				   $this->db->where($where1);
+				   $this->db->where("(A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)");
+			   } elseif ($stage === 'lead') {
 				   $where1 = "(A.lead_assign = $uid OR (A.created_by = $uid AND (A.lead_assign = 0 OR A.lead_assign IS NULL)) OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET($uid, A.agents) > 0))";	
 				   $this->db->where($where1);
 				   $this->db->where("(A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)");
@@ -2010,8 +2033,9 @@ public function dashboard_MyPro($table='ci_leads'){
 
  	public function getMyVerticals($d1='', $d2='', $limit_per_page='', $page_index='', $order_by='',$sort_by='', $search='', $status='', $category='',$type='')
 	  {
-
-					
+					$uid = (int)$this->session->userdata('manager_id');
+					$urole = (int)($this->session->userdata('manager_role') ? $this->session->userdata('manager_role') : $this->session->userdata('user_role'));
+					$is_admin = ($urole === 1 || $urole === 4 || $uid === 1);
 
 					$result=array();
 				   $this->db->select(array('A.*','B.title as vertical_status','C.title as v_cat','D.title as v_subcat'));
@@ -2019,7 +2043,7 @@ public function dashboard_MyPro($table='ci_leads'){
 				   $this->db->join('ci_terms as B','A.status=B.id','LEFT');
 				   $this->db->join('ci_terms as C','A.category=C.id','LEFT');
 				   $this->db->join('ci_terms as D','A.sub_category=D.id','LEFT'); 
-				   $this->db->where('A.created_by',$this->session->userdata('manager_id'));
+				   $this->db->where('A.created_by', $uid);
 				   $today = date('Y-m-d');
 					$last_date= date('Y-m-d', strtotime("-7 day"));
 					$next_date= date('Y-m-d', strtotime("+7 day"));
@@ -2091,9 +2115,13 @@ public function dashboard_MyPro($table='ci_leads'){
 
 	  public function getTeamVerticals($d1='', $d2='', $limit_per_page='', $page_index='', $order_by='',$sort_by='', $search='', $status='', $category='',$type='')
 	  {
-
-					$team_array= $this->fetchTeamList($this->session->userdata('manager_id'),'');
-					$team_str= implode(',',$team_array);
+					$uid = (int)$this->session->userdata('manager_id');
+					$urole = (int)($this->session->userdata('manager_role') ? $this->session->userdata('manager_role') : $this->session->userdata('user_role'));
+					$is_admin = ($urole === 1 || $urole === 4 || $uid === 1);
+					$team_array = $this->fetchTeamList($uid, '');
+					if (!is_array($team_array)) { $team_array = array(); }
+					$team_clean = array_filter(array_map('intval', $team_array));
+					$team_str = implode(',', $team_clean);
 		
 					$result=array();
 				   $this->db->select(array('A.*','B.title as vertical_status','C.title as v_cat','D.title as v_subcat'));
@@ -2102,9 +2130,10 @@ public function dashboard_MyPro($table='ci_leads'){
 				   $this->db->join('ci_terms as C','A.category=C.id','LEFT');
 				   $this->db->join('ci_terms as D','A.sub_category=D.id','LEFT'); 
 				   
-				   $where3="FIND_IN_SET(A.created_by,'".$team_str."')>0";
-				   if(isset($where3)){
-					$this->db->where($where3);
+				   if (!empty($team_clean)) {
+					   $this->db->where_in('A.created_by', $team_clean);
+				   } elseif (!$is_admin) {
+					   $this->db->where('A.created_by', -1);
 				   }
 				   
 				   $where='';
@@ -2262,20 +2291,28 @@ public function dashboard_MyPro($table='ci_leads'){
 	
 	public function get_teamMember($id)
 	{
-			$result=array();
-			 $this->db->select(array('A.*','B.title as role','C.name as manager_name','D.name as country_name','E.name as state_name'));
-			 $this->db->from('ci_user as A');
-			 $this->db->join('ci_roles as B','A.user_type=B.id','LEFT');
-			 $this->db->join('ci_user as C','A.manager=C.id','LEFT');
-			 $this->db->join('countries as D','A.country=D.id','LEFT');
-			 $this->db->join('states as E','A.state=E.id','LEFT');
-			 $this->db->where('A.manager', $id);
-			 $data = $this->db->get();
-	   foreach($data->result_array() as $row)
-	   {
-		   $result[]= $row;
-	   }
-	   return $result;
+		$result=array();
+		$this->db->select(array('A.*','B.title as role','C.name as manager_name','D.name as country_name','E.name as state_name'));
+		$this->db->from('ci_user as A');
+		$this->db->join('ci_roles as B','A.user_type=B.id','LEFT');
+		$this->db->join('ci_user as C','A.manager=C.id','LEFT');
+		$this->db->join('countries as D','A.country=D.id','LEFT');
+		$this->db->join('states as E','A.state=E.id','LEFT');
+		$team_array = $this->fetchTeamList($id, '');
+		if (!is_array($team_array)) { $team_array = array(); }
+		$team_clean = array_filter(array_map('intval', $team_array));
+		if (!empty($team_clean)) {
+			$this->db->where_in('A.id', $team_clean);
+		} else {
+			$this->db->where('A.manager', $id);
+		}
+		$data = $this->db->get();
+		if ($data && is_object($data) && $data->num_rows() >= 1) {
+			foreach($data->result_array() as $row) {
+				$result[]= $row;
+			}
+		}
+		return $result;
 	}
 
 	public function fetchTeamHierarchyTree($root_id, $visited = array())

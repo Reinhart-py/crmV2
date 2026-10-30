@@ -535,4 +535,205 @@ class Ci_admin_system extends CI_Controller {
 		echo json_encode(array('results' => $formatted));
 		exit();
 	}
+
+	public function qc()
+	{
+		$this->if_not_login();
+		$cur_role = (int)$this->session->userdata('manager_role');
+		$cur_uid = (int)$this->session->userdata('manager_id');
+		$has_access = ($cur_role === 1 || $cur_uid === 1 || has_section_perm('system', 'read'));
+		if (!$has_access) {
+			$this->session->set_flashdata('error_message', 'Permission denied. Access restricted.');
+			redirect('manager/dashboard');
+			return;
+		}
+
+		$data = array();
+		$data['info'] = array(
+			'title' => 'System - QC Panel',
+			'page_heading' => 'Quality Operations Checklist (QC)'
+		);
+
+		$checked_map = array();
+		$q = $this->db->get('ci_qoc_checklist');
+		if ($q && $q->num_rows() > 0) {
+			foreach ($q->result_array() as $row) {
+				$checked_map[$row['node_key']] = (int)$row['is_checked'];
+			}
+		}
+
+		$tree = array(
+			array(
+				'title' => 'Dashboard',
+				'key' => 'm_dashboard',
+				'icon' => 'fa fa-dashboard',
+				'url' => 'manager/dashboard',
+				'children' => array(
+					array('title' => 'Dashboard Overview', 'key' => 'm_dash_overview', 'url' => 'manager/dashboard'),
+					array('title' => 'KPI Cards & Counts', 'key' => 'm_dash_kpi', 'url' => 'manager/dashboard'),
+					array('title' => 'My & Team Projections', 'key' => 'm_dash_projections', 'url' => 'manager/dashboard'),
+					array('title' => 'My & Team Achievements', 'key' => 'm_dash_achievements', 'url' => 'manager/dashboard'),
+					array('title' => 'Operational Activity & Breakdown', 'key' => 'm_dash_ops', 'url' => 'manager/dashboard')
+				)
+			),
+			array(
+				'title' => 'My Zone',
+				'key' => 'm_my_zone',
+				'icon' => 'fa fa-th-large',
+				'children' => array(
+					array('title' => 'Add Database', 'key' => 'mz_add_db', 'url' => 'manager/leads/add'),
+					array('title' => 'View Database', 'key' => 'mz_view_db', 'url' => 'manager/leads'),
+					array('title' => 'View Leads', 'key' => 'mz_view_leads', 'url' => 'manager/leads/view_leads'),
+					array('title' => 'View Orders', 'key' => 'mz_view_orders', 'url' => 'manager/orders/my'),
+					array('title' => 'View Sales', 'key' => 'mz_view_sales', 'url' => 'manager/sales'),
+					array('title' => 'My Follow-Up', 'key' => 'mz_followups', 'url' => 'manager/leads/followups'),
+					array('title' => 'My Meetings', 'key' => 'mz_meetings', 'url' => 'manager/leads/meetings'),
+					array('title' => 'Add Vertical', 'key' => 'mz_add_vertical', 'url' => 'manager/verticals/add'),
+					array('title' => 'View Vertical', 'key' => 'mz_view_vertical', 'url' => 'manager/verticals'),
+					array('title' => 'Vertical Follow-up', 'key' => 'mz_vertical_fu', 'url' => 'manager/verticals/followups'),
+					array('title' => 'View Internal Task', 'key' => 'mz_tasks_internal', 'url' => 'manager/tasks/internal'),
+					array('title' => 'View External Task', 'key' => 'mz_tasks_external', 'url' => 'manager/tasks/external'),
+					array('title' => 'Database Transfer', 'key' => 'mz_db_transfer', 'url' => 'manager/database-transfer')
+				)
+			),
+			array(
+				'title' => 'Team',
+				'key' => 'm_team',
+				'icon' => 'fa fa-users',
+				'children' => array(
+					array('title' => 'Members', 'key' => 'tm_members', 'url' => 'manager/team/members'),
+					array('title' => 'Chart View', 'key' => 'tm_chart', 'url' => 'manager/team/chart'),
+					array('title' => 'Database', 'key' => 'tm_database', 'url' => 'manager/team/database'),
+					array('title' => 'Leads', 'key' => 'tm_leads', 'url' => 'manager/team/leads'),
+					array('title' => 'Orders', 'key' => 'tm_orders', 'url' => 'manager/team/orders'),
+					array('title' => 'Verticals', 'key' => 'tm_verticals', 'url' => 'manager/team/verticals'),
+					array('title' => 'Follow up', 'key' => 'tm_followups', 'url' => 'manager/team/followups'),
+					array('title' => 'Meetings', 'key' => 'tm_meetings', 'url' => 'manager/team/meetings'),
+					array('title' => 'Assigned Meetings', 'key' => 'tm_assigned_meetings', 'url' => 'manager/team/assignmeetings'),
+					array('title' => 'Assign Database', 'key' => 'tm_assign_db', 'url' => 'manager/team/assignleads'),
+					array('title' => 'Task', 'key' => 'tm_tasks', 'url' => 'manager/tasks'),
+					array('title' => 'Tickets', 'key' => 'tm_tickets', 'url' => 'manager/team/tickets')
+				)
+			),
+			array(
+				'title' => 'Back Office',
+				'key' => 'm_backoffice',
+				'icon' => 'fa fa-briefcase',
+				'children' => array(
+					array('title' => 'Pending Leads Approval', 'key' => 'bo_pending_leads', 'url' => 'manager/leads/review_leads'),
+					array('title' => 'Pending Order Process', 'key' => 'bo_pending_orders', 'url' => 'manager/orders/pending_process'),
+					array('title' => 'Pending Sales Approval', 'key' => 'bo_pending_sales', 'url' => 'manager/orders/pending_sales_approval'),
+					array('title' => 'Onboard Client', 'key' => 'bo_onboard_client', 'url' => 'manager/kam/onboard'),
+					array('title' => 'Completed Orders', 'key' => 'bo_completed_orders', 'url' => 'manager/orders?status=completed'),
+					array('title' => 'View All Orders', 'key' => 'bo_all_orders', 'url' => 'manager/orders')
+				)
+			),
+			array(
+				'title' => 'KAM (Key Accounts)',
+				'key' => 'm_kam',
+				'icon' => 'fa fa-handshake-o',
+				'children' => array(
+					array('title' => 'Onboard Client', 'key' => 'kam_onboard', 'url' => 'manager/kam/onboard'),
+					array('title' => 'KAM Clients', 'key' => 'kam_clients', 'url' => 'manager/system/kam_clients')
+				)
+			),
+			array(
+				'title' => 'HR Operations',
+				'key' => 'm_hr',
+				'icon' => 'fa fa-user-circle-o',
+				'children' => array(
+					array('title' => 'Employees / Users', 'key' => 'hr_users', 'url' => 'manager/user'),
+					array('title' => 'Attendance Management', 'key' => 'hr_attendance', 'url' => 'manager/attendance'),
+					array('title' => 'Leave Management', 'key' => 'hr_leaves', 'url' => 'manager/leaves'),
+					array('title' => 'Roles & Permissions', 'key' => 'hr_roles', 'url' => 'manager/roles')
+				)
+			),
+			array(
+				'title' => 'System Management',
+				'key' => 'm_system',
+				'icon' => 'fa fa-cog',
+				'children' => array(
+					array('title' => 'Admin Logs Audit', 'key' => 'sys_admin_logs', 'url' => 'manager/system/admin-logs'),
+					array('title' => 'Live Location Tracking', 'key' => 'sys_live_location', 'url' => 'manager/system/live-location'),
+					array('title' => 'Calling API Gateway', 'key' => 'sys_calling_api', 'url' => 'manager/system/calling-api'),
+					array('title' => 'Third-Party API Integrations', 'key' => 'sys_integrations', 'url' => 'manager/system/integrations'),
+					array('title' => 'Category & Terms', 'key' => 'sys_terms', 'url' => 'manager/terms'),
+					array('title' => 'Import Leads', 'key' => 'sys_import', 'url' => 'manager/leads/import'),
+					array('title' => 'Export Leads', 'key' => 'sys_export', 'url' => 'manager/leads/export'),
+					array('title' => 'Allotted Database', 'key' => 'sys_allotted', 'url' => 'manager/assigned-leads'),
+					array('title' => 'QC Panel', 'key' => 'sys_qc', 'url' => 'manager/system/qc')
+				)
+			),
+			array(
+				'title' => 'Reports & Analytics',
+				'key' => 'm_reports',
+				'icon' => 'fa fa-bar-chart',
+				'children' => array(
+					array('title' => 'Revenue List', 'key' => 'rep_revenue', 'url' => 'manager/reports/revenue-list'),
+					array('title' => 'Company Projections', 'key' => 'rep_projections', 'url' => 'manager/reports/company-projections'),
+					array('title' => 'Download Reports', 'key' => 'rep_download', 'url' => 'manager/download-report')
+				)
+			),
+			array(
+				'title' => 'Calls & Live Operations',
+				'key' => 'm_calls_live',
+				'icon' => 'fa fa-phone',
+				'children' => array(
+					array('title' => 'Dialer Dashboard', 'key' => 'call_dialer', 'url' => 'manager/calls'),
+					array('title' => 'Live Dashboard', 'key' => 'live_dashboard', 'url' => 'manager/live')
+				)
+			)
+		);
+
+		$total_items = 0;
+		$checked_items = 0;
+		foreach ($tree as $parent) {
+			if (!empty($parent['children'])) {
+				foreach ($parent['children'] as $child) {
+					$total_items++;
+					if (!empty($checked_map[$child['key']])) {
+						$checked_items++;
+					}
+				}
+			}
+		}
+
+		$data['tree'] = $tree;
+		$data['checked_map'] = $checked_map;
+		$data['total_items'] = $total_items;
+		$data['checked_items'] = $checked_items;
+		$data['pct'] = ($total_items > 0) ? round(($checked_items / $total_items) * 100) : 0;
+
+		$this->load->view('manager/system/qc', $data);
+	}
+
+	public function ajax_save_qc()
+	{
+		$this->if_not_login();
+		$node_key = trim((string)$this->input->post('node_key', true));
+		$is_checked = (int)$this->input->post('is_checked') ? 1 : 0;
+		$uid = (int)$this->session->userdata('manager_id');
+
+		if (!empty($node_key)) {
+			$existing = $this->db->get_where('ci_qoc_checklist', array('node_key' => $node_key))->row_array();
+			if ($existing) {
+				$this->db->where('node_key', $node_key)->update('ci_qoc_checklist', array(
+					'is_checked' => $is_checked,
+					'checked_by' => $uid,
+					'updated_at' => date('Y-m-d H:i:s')
+				));
+			} else {
+				$this->db->insert('ci_qoc_checklist', array(
+					'node_key' => $node_key,
+					'is_checked' => $is_checked,
+					'checked_by' => $uid,
+					'updated_at' => date('Y-m-d H:i:s')
+				));
+			}
+		}
+
+		header('Content-Type: application/json');
+		echo json_encode(array('success' => true, 'is_checked' => $is_checked));
+		exit();
+	}
 }

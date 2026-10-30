@@ -28,8 +28,8 @@ class Ci_admin_live extends CI_Controller
 	{
 		$data = array();
 		$data['info'] = array(
-			'title' => 'LIVE Commercial Sheet',
-			'page_heading' => 'LIVE Operations'
+			'title' => 'Live',
+			'page_heading' => 'Live'
 		);
 
 		$manager_id = (int)$this->session->userdata('manager_id');
@@ -44,7 +44,53 @@ class Ci_admin_live extends CI_Controller
 		$team_list = $this->ci_admin_model->fetchTeamList($manager_id, '');
 		$data['has_team'] = (!empty($team_list) || $is_admin);
 
+		$data['my_stats'] = $this->get_stats_block(array($manager_id));
+		$data['team_stats'] = $this->get_stats_block($is_admin ? array() : $team_list);
+		$data['performers'] = $this->get_performers_block($is_admin ? array() : $team_list);
+
 		$this->load->view('manager/live/index', $data);
+	}
+
+	public function presentation()
+	{
+		$data = array();
+		$data['info'] = array(
+			'title' => 'Live Presentation',
+			'page_heading' => 'Live'
+		);
+
+		$manager_id = (int)$this->session->userdata('manager_id');
+		$role = (int)$this->session->userdata('manager_role');
+		$is_admin = ($role === 1 || $manager_id === 1);
+		$data['is_admin'] = $is_admin;
+
+		$user_row = $this->db->select('id, name, office, department')->where('id', $manager_id)->get('ci_user')->row_array();
+		$data['current_user'] = $user_row;
+		$data['user_office'] = !empty($user_row['office']) ? $user_row['office'] : '';
+
+		$data['company_stats'] = $this->get_stats_block(array());
+		$data['company_perf'] = $this->get_performers_block(array());
+
+		$centers_query = $this->db->query("SELECT DISTINCT office FROM ci_user WHERE office IS NOT NULL AND office != '' ORDER BY office ASC");
+		$centers_data = array();
+		if ($centers_query && $centers_query->num_rows() > 0) {
+			foreach ($centers_query->result_array() as $c) {
+				$off = $c['office'];
+				$u_ids = array();
+				$u_rows = $this->db->query("SELECT id FROM ci_user WHERE office = " . $this->db->escape($off))->result_array();
+				foreach ($u_rows as $ur) {
+					$u_ids[] = (int)$ur['id'];
+				}
+				$centers_data[] = array(
+					'name' => $off,
+					'stats' => $this->get_stats_block($u_ids),
+					'perf' => $this->get_performers_block($u_ids)
+				);
+			}
+		}
+		$data['centers_data'] = $centers_data;
+
+		$this->load->view('manager/live/presentation', $data);
 	}
 
 	private function get_stats_block($user_ids = array())
@@ -203,8 +249,7 @@ class Ci_admin_live extends CI_Controller
 
 		$row = $this->db->query($sql)->row_array();
 		if (!empty($row) && !empty($row['name'])) {
-			$rev = (float)$row['total_rev'];
-			return $row['name'] . ($rev > 0 ? ' (AED ' . number_format($rev, 0) . ')' : '');
+			return $row['name'];
 		}
 		return '-';
 	}

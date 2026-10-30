@@ -16,25 +16,6 @@
     padding-bottom: 14px;
     border-bottom: 1px solid #e2e8f0;
 }
-.live-sheet-title-group {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-.live-pulse-dot {
-    width: 10px;
-    height: 10px;
-    background-color: #0072f0;
-    border-radius: 50%;
-    display: inline-block;
-    box-shadow: 0 0 0 0 rgba(0, 114, 240, 0.7);
-    animation: livePulseRing 2s infinite;
-}
-@keyframes livePulseRing {
-    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 114, 240, 0.7); }
-    70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(0, 114, 240, 0); }
-    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 114, 240, 0); }
-}
 .live-sheet-title {
     font-size: 20px;
     font-weight: 800;
@@ -42,59 +23,19 @@
     letter-spacing: -0.02em;
     margin: 0;
 }
-.live-sheet-sync-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    color: #475569;
-    margin-left: 10px;
-}
-.live-segmented-view {
-    display: inline-flex;
-    align-items: center;
-    background: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    padding: 3px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-}
-.live-seg-btn {
-    padding: 6px 16px;
-    border-radius: 6px;
-    border: none;
-    background: transparent;
-    color: #475569;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-}
-.live-seg-btn:hover {
-    color: #0f172a;
-}
-.live-seg-btn.active {
-    background: #0072f0;
-    color: #ffffff;
-    box-shadow: 0 2px 6px rgba(0, 114, 240, 0.25);
-}
 .live-btn-action {
-    padding: 7px 14px;
+    padding: 8px 12px;
     border-radius: 8px;
     border: 1px solid #cbd5e1;
     background: #ffffff;
     color: #0f172a;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.15s ease;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
 }
 .live-btn-action:hover {
     background: #f1f5f9;
@@ -190,51 +131,25 @@
     color: #0072f0;
     width: 34%;
 }
-.live-loading-state {
-    text-align: center;
-    padding: 30px;
-    color: #64748b;
-    font-size: 13px;
-    font-weight: 600;
-}
 </style>
 
-<div class="content-wrapper live-sheet-wrapper">
+<div class="content-wrapper live-sheet-wrapper" id="liveSheetWrapper">
     <div class="live-sheet-topbar">
-        <div class="live-sheet-title-group">
-            <span class="live-pulse-dot"></span>
-            <h1 class="live-sheet-title">LIVE OPERATIONS</h1>
-            <div class="live-sheet-sync-pill">
-                <span>Refresh Rate: 10s</span>
-                <span>&bull;</span>
-                <span>Synced: <strong id="liveSyncClock" style="color:#0f172a;">--:--:--</strong></span>
-            </div>
+        <div style="display:flex; align-items:center;">
+            <h1 class="live-sheet-title">Live</h1>
         </div>
 
-        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-            <div class="live-segmented-view" id="viewModeGroup">
-                <button type="button" class="live-seg-btn active" id="btnShowRegular" onclick="switchViewMode('regular')">
-                    <i class="fa fa-user"></i> My &amp; Team Stats
-                </button>
-                <button type="button" class="live-seg-btn" id="btnShowPresentation" onclick="switchViewMode('presentation')">
-                    <i class="fa fa-television"></i> Presentation (TV Mode)
-                </button>
-            </div>
-
-            <button type="button" class="live-btn-action" onclick="fetchLiveSheetData(true)" title="Force Refresh">
-                <i class="fa fa-refresh" id="liveRefreshIcon" style="color:#0072f0;"></i> Refresh
-            </button>
-
-            <button type="button" class="live-btn-action" onclick="toggleLiveFullscreen()" title="Fullscreen TV Display">
-                <i class="fa fa-arrows-alt" id="liveFsIcon"></i> Fullscreen
+        <div style="display:flex; align-items:center; gap:10px;">
+            <button type="button" class="live-btn-action" onclick="toggleFullScreenSheet()" title="Toggle Full Screen">
+                <i class="fa fa-arrows-alt"></i>
             </button>
         </div>
     </div>
 
-    <div id="containerRegularUsers">
+    <div>
         <div class="live-sheet-section-title">My Stats</div>
         <div class="live-sheet-table-card">
-            <table class="live-excel-table">
+            <table class="live-excel-table" id="tableMyStats">
                 <thead>
                     <tr>
                         <th style="width:28%;">Activity</th>
@@ -245,14 +160,22 @@
                     </tr>
                 </thead>
                 <tbody id="tbodyMyStats">
-                    <tr><td colspan="5" class="live-loading-state">Loading My Stats...</td></tr>
+                    <?php if (!empty($my_stats)) { foreach ($my_stats as $idx => $row) { ?>
+                        <tr>
+                            <td class="col-metric"><?php echo htmlspecialchars($row['metric']); ?></td>
+                            <td class="col-val" id="my_val_<?php echo $idx; ?>_today"><?php echo htmlspecialchars((string)$row['today']); ?></td>
+                            <td class="col-val" id="my_val_<?php echo $idx; ?>_7d"><?php echo htmlspecialchars((string)$row['seven_days']); ?></td>
+                            <td class="col-val" id="my_val_<?php echo $idx; ?>_month"><?php echo htmlspecialchars((string)$row['month']); ?></td>
+                            <td class="col-val" id="my_val_<?php echo $idx; ?>_quarter"><?php echo htmlspecialchars((string)$row['quarter']); ?></td>
+                        </tr>
+                    <?php } } ?>
                 </tbody>
             </table>
         </div>
 
         <div class="live-sheet-section-title">Team Stats</div>
         <div class="live-sheet-table-card">
-            <table class="live-excel-table">
+            <table class="live-excel-table" id="tableTeamStats">
                 <thead>
                     <tr>
                         <th style="width:28%;">Activity</th>
@@ -263,234 +186,101 @@
                     </tr>
                 </thead>
                 <tbody id="tbodyTeamStats">
-                    <tr><td colspan="5" class="live-loading-state">Loading Team Stats...</td></tr>
+                    <?php if (!empty($team_stats)) { foreach ($team_stats as $idx => $row) { ?>
+                        <tr>
+                            <td class="col-metric"><?php echo htmlspecialchars($row['metric']); ?></td>
+                            <td class="col-val" id="team_val_<?php echo $idx; ?>_today"><?php echo htmlspecialchars((string)$row['today']); ?></td>
+                            <td class="col-val" id="team_val_<?php echo $idx; ?>_7d"><?php echo htmlspecialchars((string)$row['seven_days']); ?></td>
+                            <td class="col-val" id="team_val_<?php echo $idx; ?>_month"><?php echo htmlspecialchars((string)$row['month']); ?></td>
+                            <td class="col-val" id="team_val_<?php echo $idx; ?>_quarter"><?php echo htmlspecialchars((string)$row['quarter']); ?></td>
+                        </tr>
+                    <?php } } ?>
                 </tbody>
             </table>
         </div>
 
         <div class="live-sheet-section-title">Performers</div>
         <div class="live-sheet-table-card">
-            <table class="live-excel-table">
+            <table class="live-excel-table" id="tablePerformers">
                 <thead>
                     <tr>
-                        <th style="width:32%;">Award Category</th>
+                        <th style="width:32%;">Award</th>
                         <th style="width:34%;">Current</th>
                         <th style="width:34%;">Last</th>
                     </tr>
                 </thead>
-                <tbody id="tbodyPerformersTeam">
-                    <tr><td colspan="3" class="live-loading-state">Loading Performers...</td></tr>
+                <tbody id="tbodyPerformers">
+                    <?php if (!empty($performers)) { foreach ($performers as $idx => $p) { ?>
+                        <tr>
+                            <td class="col-perf-title"><?php echo htmlspecialchars($p['award']); ?></td>
+                            <td class="col-perf-name" id="perf_val_<?php echo $idx; ?>_cur"><?php echo htmlspecialchars($p['current']); ?></td>
+                            <td class="col-perf-name" id="perf_val_<?php echo $idx; ?>_last"><?php echo htmlspecialchars($p['last']); ?></td>
+                        </tr>
+                    <?php } } ?>
                 </tbody>
             </table>
         </div>
-    </div>
-
-    <div id="containerPresentationUser" style="display:none;">
-        <div class="live-sheet-section-title">Company Overview</div>
-        <div class="live-sheet-table-card">
-            <table class="live-excel-table">
-                <thead>
-                    <tr>
-                        <th style="width:28%;">Activity</th>
-                        <th class="col-num">Today</th>
-                        <th class="col-num">7 Days</th>
-                        <th class="col-num">This Month</th>
-                        <th class="col-num">This Quarter</th>
-                    </tr>
-                </thead>
-                <tbody id="tbodyCompanyStats">
-                    <tr><td colspan="5" class="live-loading-state">Loading Company Stats...</td></tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="live-sheet-section-title">Company Performers</div>
-        <div class="live-sheet-table-card">
-            <table class="live-excel-table">
-                <thead>
-                    <tr>
-                        <th style="width:32%;">Award Category</th>
-                        <th style="width:34%;">Current</th>
-                        <th style="width:34%;">Last</th>
-                    </tr>
-                </thead>
-                <tbody id="tbodyCompanyPerformers">
-                    <tr><td colspan="3" class="live-loading-state">Loading Company Performers...</td></tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div id="dynamicCentersArea"></div>
     </div>
 </div>
 
 <script>
-var liveIntervalTimer = null;
-var currentLiveViewMode = 'regular';
-
-function switchViewMode(mode) {
-    currentLiveViewMode = mode;
-    if (mode === 'regular') {
-        $('#btnShowRegular').addClass('active');
-        $('#btnShowPresentation').removeClass('active');
-        $('#containerRegularUsers').show();
-        $('#containerPresentationUser').hide();
+function toggleFullScreenSheet() {
+    var elem = document.getElementById("liveSheetWrapper");
+    if (!document.fullscreenElement) {
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) {
+            elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) {
+            elem.msRequestFullscreen();
+        }
     } else {
-        $('#btnShowRegular').removeClass('active');
-        $('#btnShowPresentation').addClass('active');
-        $('#containerRegularUsers').hide();
-        $('#containerPresentationUser').show();
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        }
     }
 }
 
-function renderStatsRows(items) {
-    if (!items || !items.length) {
-        return '<tr><td colspan="5" class="live-loading-state">No Data Found</td></tr>';
-    }
-    var html = '';
-    for (var i = 0; i < items.length; i++) {
-        var row = items[i];
-        html += '<tr>';
-        html += '<td class="col-metric">' + escapeLiveHtml(row.metric) + '</td>';
-        html += '<td class="col-val">' + escapeLiveHtml(row.today) + '</td>';
-        html += '<td class="col-val">' + escapeLiveHtml(row.seven_days) + '</td>';
-        html += '<td class="col-val">' + escapeLiveHtml(row.month) + '</td>';
-        html += '<td class="col-val">' + escapeLiveHtml(row.quarter) + '</td>';
-        html += '</tr>';
-    }
-    return html;
-}
-
-function renderPerformersRows(items) {
-    if (!items || !items.length) {
-        return '<tr><td colspan="3" class="live-loading-state">No Performers Recorded</td></tr>';
-    }
-    var html = '';
-    for (var i = 0; i < items.length; i++) {
-        var p = items[i];
-        html += '<tr>';
-        html += '<td class="col-perf-title">' + escapeLiveHtml(p.title) + '</td>';
-        html += '<td class="col-perf-name">' + escapeLiveHtml(p.current) + '</td>';
-        html += '<td class="col-perf-name" style="color:#475569;">' + escapeLiveHtml(p.last) + '</td>';
-        html += '</tr>';
-    }
-    return html;
-}
-
-function escapeLiveHtml(str) {
-    if (str === null || str === undefined) return '';
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-}
-
-function fetchLiveSheetData(isManual) {
-    if (isManual) {
-        $('#liveRefreshIcon').addClass('fa-spin');
-    }
+function silentRefreshLiveData() {
     $.ajax({
         url: '<?php echo base_url(); ?>manager/live/ajax_get_data',
         type: 'GET',
         dataType: 'json',
         cache: false,
         success: function(res) {
-            $('#liveRefreshIcon').removeClass('fa-spin');
-            if (!res || res.status !== 'success') return;
+            if (!res || !res.status) return;
 
-            if (res.timestamp) {
-                $('#liveSyncClock').text(res.timestamp);
+            if (res.my_stats && Array.isArray(res.my_stats)) {
+                res.my_stats.forEach(function(row, idx) {
+                    $('#my_val_' + idx + '_today').text(row.today);
+                    $('#my_val_' + idx + '_7d').text(row.seven_days);
+                    $('#my_val_' + idx + '_month').text(row.month);
+                    $('#my_val_' + idx + '_quarter').text(row.quarter);
+                });
             }
 
-            $('#tbodyMyStats').html(renderStatsRows(res.my_stats));
-            $('#tbodyTeamStats').html(renderStatsRows(res.team_stats));
-            $('#tbodyPerformersTeam').html(renderPerformersRows(res.performers_team));
-
-            $('#tbodyCompanyStats').html(renderStatsRows(res.company_stats));
-            $('#tbodyCompanyPerformers').html(renderPerformersRows(res.performers_company));
-
-            var centersHtml = '';
-            if (res.centers && res.centers.length > 0) {
-                for (var c = 0; c < res.centers.length; c++) {
-                    var center = res.centers[c];
-                    centersHtml += '<div class="live-sheet-section-title">' + escapeLiveHtml(center.center_code) + ' &bull; ' + escapeLiveHtml(center.center_name) + ' (' + center.user_count + ' Staff)</div>';
-                    centersHtml += '<div class="live-sheet-table-card">';
-                    centersHtml += '<table class="live-excel-table">';
-                    centersHtml += '<thead><tr><th style="width:28%;">Activity</th><th class="col-num">Today</th><th class="col-num">7 Days</th><th class="col-num">This Month</th><th class="col-num">This Quarter</th></tr></thead>';
-                    centersHtml += '<tbody>' + renderStatsRows(center.stats) + '</tbody>';
-                    centersHtml += '</table>';
-                    centersHtml += '</div>';
-
-                    centersHtml += '<div class="live-sheet-section-title" style="margin-top:14px;">' + escapeLiveHtml(center.center_code) + ' Performers</div>';
-                    centersHtml += '<div class="live-sheet-table-card">';
-                    centersHtml += '<table class="live-excel-table">';
-                    centersHtml += '<thead><tr><th style="width:32%;">Award Category</th><th style="width:34%;">Current</th><th style="width:34%;">Last</th></tr></thead>';
-                    centersHtml += '<tbody>' + renderPerformersRows(center.performers) + '</tbody>';
-                    centersHtml += '</table>';
-                    centersHtml += '</div>';
-                }
-            } else if (res.center_wise_only) {
-                var co = res.center_wise_only;
-                centersHtml += '<div class="live-sheet-section-title">Center Wise Only: ' + escapeLiveHtml(co.center_name) + '</div>';
-                centersHtml += '<div class="live-sheet-table-card">';
-                centersHtml += '<table class="live-excel-table">';
-                centersHtml += '<thead><tr><th style="width:28%;">Activity</th><th class="col-num">Today</th><th class="col-num">7 Days</th><th class="col-num">This Month</th><th class="col-num">This Quarter</th></tr></thead>';
-                centersHtml += '<tbody>' + renderStatsRows(co.stats) + '</tbody>';
-                centersHtml += '</table>';
-                centersHtml += '</div>';
-
-                centersHtml += '<div class="live-sheet-section-title" style="margin-top:14px;">Performers</div>';
-                centersHtml += '<div class="live-sheet-table-card">';
-                centersHtml += '<table class="live-excel-table">';
-                centersHtml += '<thead><tr><th style="width:32%;">Award Category</th><th style="width:34%;">Current</th><th style="width:34%;">Last</th></tr></thead>';
-                centersHtml += '<tbody>' + renderPerformersRows(co.performers) + '</tbody>';
-                centersHtml += '</table>';
-                centersHtml += '</div>';
+            if (res.team_stats && Array.isArray(res.team_stats)) {
+                res.team_stats.forEach(function(row, idx) {
+                    $('#team_val_' + idx + '_today').text(row.today);
+                    $('#team_val_' + idx + '_7d').text(row.seven_days);
+                    $('#team_val_' + idx + '_month').text(row.month);
+                    $('#team_val_' + idx + '_quarter').text(row.quarter);
+                });
             }
-            $('#dynamicCentersArea').html(centersHtml);
-        },
-        error: function() {
-            $('#liveRefreshIcon').removeClass('fa-spin');
+
+            if (res.performers && Array.isArray(res.performers)) {
+                res.performers.forEach(function(p, idx) {
+                    $('#perf_val_' + idx + '_cur').text(p.current);
+                    $('#perf_val_' + idx + '_last').text(p.last);
+                });
+            }
         }
     });
 }
 
-function toggleLiveFullscreen() {
-    var elem = document.documentElement;
-    if (!document.fullscreenElement && !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
-        if (elem.requestFullscreen) {
-            elem.requestFullscreen();
-        } else if (elem.msRequestFullscreen) {
-            elem.msRequestFullscreen();
-        } else if (elem.mozRequestFullScreen) {
-            elem.mozRequestFullScreen();
-        } else if (elem.webkitRequestFullscreen) {
-            elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
-        }
-        $('#liveFsIcon').removeClass('fa-arrows-alt').addClass('fa-compress');
-    } else {
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (document.msExitFullscreen) {
-            document.msExitFullscreen();
-        } else if (document.mozCancelFullScreen) {
-            document.mozCancelFullScreen();
-        } else if (document.webkitExitFullscreen) {
-            document.webkitExitFullscreen();
-        }
-        $('#liveFsIcon').removeClass('fa-compress').addClass('fa-arrows-alt');
-    }
-}
-
 $(document).ready(function() {
-    fetchLiveSheetData(false);
-    if (liveIntervalTimer) {
-        clearInterval(liveIntervalTimer);
-    }
-    liveIntervalTimer = setInterval(function() {
-        fetchLiveSheetData(false);
-    }, 10000);
+    setInterval(silentRefreshLiveData, 10000);
 });
 </script>
+
+<?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

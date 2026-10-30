@@ -1,6 +1,17 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
 
+<style>
+#cardMyLeads, #cardMyOrders, #cardTeamLeads, #cardTeamOrders,
+#cardMyLeads *, #cardMyOrders *, #cardTeamLeads *, #cardTeamOrders * {
+    color: #ffffff !important;
+}
+#cardMyLeads .dash-kpi-icon i, #cardMyOrders .dash-kpi-icon i,
+#cardTeamLeads .dash-kpi-icon i, #cardTeamOrders .dash-kpi-icon i {
+    color: rgba(255, 255, 255, 0.35) !important;
+}
+</style>
+
 <div class="content-wrapper full-screen-dash">
 
     
@@ -54,7 +65,7 @@
                 <a href="<?php echo base_url(); ?>manager/team/members" class="dash-kpi-card dash-kpi-amber" id="cardTeamUsers">
                     <div class="dash-kpi-top">
                         <div>
-                            <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_users']) ? (int)$dashboard_Tcount['count_users'] : 0; ?></div>
+                            <div class="dash-kpi-value"><?php echo (isset($dashboard_Tcount['count_users']) && (int)$dashboard_Tcount['count_users'] > 0) ? (int)$dashboard_Tcount['count_users'] : (isset($dashboard_Tcount['count_user']) ? (int)$dashboard_Tcount['count_user'] : 0); ?></div>
                             <div class="dash-kpi-label">Team Users</div>
                         </div>
                         <div class="dash-kpi-icon"><i class="ion ion-person-add"></i></div>
@@ -86,8 +97,11 @@
                 <a href="<?php echo base_url(); ?>manager/leads/view_leads" class="dash-kpi-card dash-kpi-navy" id="cardMyLeads">
                     <div class="dash-kpi-top">
                         <div>
-                            <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_leads']) ? (int)$dashboard_count['count_leads'] : 0; ?></div>
-                            <div class="dash-kpi-label">My Leads</div>
+                            <div class="dash-kpi-value" style="color:#ffffff !important;"><?php echo isset($dashboard_count['count_leads']) ? (int)$dashboard_count['count_leads'] : 0; ?></div>
+                            <div class="dash-kpi-label" style="color:#ffffff !important;">My Leads</div>
+                            <div class="dash-kpi-sales" style="font-size:11.5px; font-weight:600; color:#ffffff !important; margin-top:4px;">
+                                Sales: AED <?php echo number_format((float)(isset($dashboard_count['sales_amount']) ? $dashboard_count['sales_amount'] : 0), 2); ?>
+                            </div>
                         </div>
                         <div class="dash-kpi-icon"><i class="fa fa-bullseye"></i></div>
                     </div>
@@ -101,8 +115,11 @@
                 <a href="<?php echo base_url(); ?>manager/orders/my" class="dash-kpi-card dash-kpi-forest" id="cardMyOrders">
                     <div class="dash-kpi-top">
                         <div>
-                            <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_orders']) ? (int)$dashboard_count['count_orders'] : 0; ?></div>
-                            <div class="dash-kpi-label">My Orders</div>
+                            <div class="dash-kpi-value" style="color:#ffffff !important;"><?php echo isset($dashboard_count['count_orders']) ? (int)$dashboard_count['count_orders'] : 0; ?></div>
+                            <div class="dash-kpi-label" style="color:#ffffff !important;">My Orders</div>
+                            <div class="dash-kpi-sales" style="font-size:11.5px; font-weight:600; color:#ffffff !important; margin-top:4px;">
+                                Sales: AED <?php echo number_format((float)(isset($dashboard_count['sales_amount']) ? $dashboard_count['sales_amount'] : 0), 2); ?>
+                            </div>
                         </div>
                         <div class="dash-kpi-icon"><i class="fa fa-shopping-cart"></i></div>
                     </div>
@@ -116,8 +133,11 @@
                 <a href="<?php echo base_url(); ?>manager/team/leads" class="dash-kpi-card dash-kpi-amber" id="cardTeamLeads">
                     <div class="dash-kpi-top">
                         <div>
-                            <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_leads']) ? (int)$dashboard_Tcount['count_leads'] : 0; ?></div>
-                            <div class="dash-kpi-label">Team Leads</div>
+                            <div class="dash-kpi-value" style="color:#ffffff !important;"><?php echo isset($dashboard_Tcount['count_leads']) ? (int)$dashboard_Tcount['count_leads'] : 0; ?></div>
+                            <div class="dash-kpi-label" style="color:#ffffff !important;">Team Leads</div>
+                            <div class="dash-kpi-sales" style="font-size:11.5px; font-weight:600; color:#ffffff !important; margin-top:4px;">
+                                Sales: AED <?php echo number_format((float)(isset($dashboard_Tcount['sales_amount']) ? $dashboard_Tcount['sales_amount'] : 0), 2); ?>
+                            </div>
                         </div>
                         <div class="dash-kpi-icon"><i class="ion ion-pie-graph"></i></div>
                     </div>
@@ -131,8 +151,11 @@
                 <a href="<?php echo base_url(); ?>manager/team/orders" class="dash-kpi-card dash-kpi-crimson" id="cardTeamOrders">
                     <div class="dash-kpi-top">
                         <div>
-                            <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_orders']) ? (int)$dashboard_Tcount['count_orders'] : 0; ?></div>
-                            <div class="dash-kpi-label">Team Orders</div>
+                            <div class="dash-kpi-value" style="color:#ffffff !important;"><?php echo isset($dashboard_Tcount['count_orders']) ? (int)$dashboard_Tcount['count_orders'] : 0; ?></div>
+                            <div class="dash-kpi-label" style="color:#ffffff !important;">Team Orders</div>
+                            <div class="dash-kpi-sales" style="font-size:11.5px; font-weight:600; color:#ffffff !important; margin-top:4px;">
+                                Sales: AED <?php echo number_format((float)(isset($dashboard_Tcount['sales_amount']) ? $dashboard_Tcount['sales_amount'] : 0), 2); ?>
+                            </div>
                         </div>
                         <div class="dash-kpi-icon"><i class="fa fa-truck"></i></div>
                     </div>
@@ -332,7 +355,7 @@
                             <i class="fa fa-line-chart"></i> My Projection
                         </h4>
                         <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
-                            <span style="display:inline-block; width:10px; height:10px; background-color:#00c6f0; border-radius:2px;"></span>
+                            <span style="display:inline-block; width:10px; height:10px; background-color:#0072f0; border-radius:2px;"></span>
                             <span>Projection</span>
                         </div>
                     </div>
@@ -349,7 +372,7 @@
                             <i class="fa fa-line-chart"></i> Team Projection
                         </h4>
                         <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
-                            <span style="display:inline-block; width:10px; height:10px; background-color:#00c6f0; border-radius:2px;"></span>
+                            <span style="display:inline-block; width:10px; height:10px; background-color:#0072f0; border-radius:2px;"></span>
                             <span>Projection</span>
                         </div>
                     </div>
@@ -369,7 +392,7 @@
                         </h4>
                         <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:16px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
                             <span style="display:inline-flex; align-items:center; gap:6px;">
-                                <span style="display:inline-block; width:10px; height:10px; background-color:#00c6f0; border-radius:2px;"></span>
+                                <span style="display:inline-block; width:10px; height:10px; background-color:#0072f0; border-radius:2px;"></span>
                                 <span>Target</span>
                             </span>
                             <span style="display:inline-flex; align-items:center; gap:6px;">
@@ -392,7 +415,7 @@
                         </h4>
                         <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:16px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
                             <span style="display:inline-flex; align-items:center; gap:6px;">
-                                <span style="display:inline-block; width:10px; height:10px; background-color:#00c6f0; border-radius:2px;"></span>
+                                <span style="display:inline-block; width:10px; height:10px; background-color:#0072f0; border-radius:2px;"></span>
                                 <span>Target</span>
                             </span>
                             <span style="display:inline-flex; align-items:center; gap:6px;">
@@ -447,7 +470,7 @@
                             <span class="card-total-pill"><?php echo $total_my_tickets; ?> Total</span>
                         <?php } ?>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_my_tickets" width="70" height="70" style="width:70px; height:70px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_my_tickets" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
@@ -496,7 +519,7 @@
                         <h4 class="card-title"><a href="<?php echo base_url(); ?>manager/tasks?team=0" style="color:inherit; text-decoration:none;"><i class="fa fa-tasks"></i> My Tasks</a></h4>
                         <a href="<?php echo base_url(); ?>manager/tasks?team=0" class="card-total-pill" style="text-decoration:none;"><?php echo $total_my_tasks; ?> Total</a>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_my_tasks" width="70" height="70" style="width:70px; height:70px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_my_tasks" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
@@ -545,7 +568,7 @@
                         <h4 class="card-title"><i class="fa fa-calendar-check-o"></i> My Followups</h4>
                         <span class="card-total-pill"><?php echo $total_my_f; ?> Total</span>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_my_f" width="70" height="70" style="width:70px; height:70px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_my_f" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:12%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
@@ -594,7 +617,7 @@
                         <h4 class="card-title"><i class="fa fa-handshake-o"></i> My Meetings</h4>
                         <span class="card-total-pill"><?php echo $total_my_m; ?> Total</span>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_my_m" width="70" height="70" style="width:70px; height:70px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_my_m" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:10%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:18%;" title="Last 7 Days"></div>
@@ -643,7 +666,7 @@
                         <h4 class="card-title"><i class="fa fa-briefcase"></i> My Vertical FU</h4>
                         <span class="card-total-pill"><?php echo $total_my_vfu; ?> Total</span>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_my_vfu" width="70" height="70" style="width:70px; height:70px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_my_vfu" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
@@ -692,7 +715,7 @@
                         <h4 class="card-title"><i class="fa fa-database" style="color:#0072f0;"></i> My Database</h4>
                         <span class="card-total-pill"><?php echo (int)$dashboard_db_ops_my['total_all']; ?> Total</span>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_my_db" width="70" height="70" style="width:70px; height:70px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_my_db" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
@@ -716,7 +739,7 @@
                         <h4 class="card-title"><i class="fa fa-bullseye" style="color:#0072f0;"></i> My Leads</h4>
                         <span class="card-total-pill"><?php echo (int)$dashboard_lead_ops_my['total_all']; ?> Total</span>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_my_leads" width="70" height="70" style="width:70px; height:70px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_my_leads" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
@@ -752,7 +775,7 @@
                             <span class="card-total-pill"><?php echo $total_team_tickets; ?> Total</span>
                         <?php } ?>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_team_tickets" width="70" height="70" style="width:70px; height:70px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_team_tickets" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
@@ -801,7 +824,7 @@
                         <h4 class="card-title"><a href="<?php echo base_url(); ?>manager/tasks?team=1" style="color:inherit; text-decoration:none;"><i class="fa fa-tasks"></i> Team Tasks</a></h4>
                         <a href="<?php echo base_url(); ?>manager/tasks?team=1" class="card-total-pill" style="text-decoration:none;"><?php echo $total_team_tasks; ?> Total</a>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_team_tasks" width="70" height="70" style="width:70px; height:70px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_team_tasks" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
@@ -850,7 +873,7 @@
                         <h4 class="card-title"><i class="fa fa-calendar-check-o"></i> Team Followups</h4>
                         <span class="card-total-pill"><?php echo $total_team_f; ?> Total</span>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_team_f" width="70" height="70" style="width:70px; height:70px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_team_f" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:10%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:18%;" title="Last 7 Days"></div>
@@ -899,7 +922,7 @@
                         <h4 class="card-title"><i class="fa fa-handshake-o"></i> Team Meetings</h4>
                         <span class="card-total-pill"><?php echo $total_team_m; ?> Total</span>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_team_m" width="70" height="70" style="width:70px; height:70px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_team_m" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:8%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
@@ -948,7 +971,7 @@
                         <h4 class="card-title"><i class="fa fa-briefcase"></i> Team Vertical FU</h4>
                         <span class="card-total-pill"><?php echo $total_team_vfu; ?> Total</span>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_team_vfu" width="70" height="70" style="width:70px; height:70px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_team_vfu" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:12%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
@@ -997,7 +1020,7 @@
                         <h4 class="card-title"><i class="fa fa-database" style="color:#0072f0;"></i> Team Database</h4>
                         <span class="card-total-pill"><?php echo (int)$dashboard_db_ops_team['total_all']; ?> Total</span>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_team_db" width="70" height="70" style="width:70px; height:70px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_team_db" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
@@ -1021,7 +1044,7 @@
                         <h4 class="card-title"><i class="fa fa-bullseye" style="color:#0072f0;"></i> Team Leads</h4>
                         <span class="card-total-pill"><?php echo (int)$dashboard_lead_ops_team['total_all']; ?> Total</span>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_team_leads" width="70" height="70" style="width:70px; height:70px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_team_leads" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
@@ -1304,7 +1327,7 @@ $(function () {
     var customOpTooltip = function(tooltip) {
         var el = $('#chartjs-op-tooltip');
         if (!el.length) {
-            $('body').append('<div id="chartjs-op-tooltip" style="position: absolute; z-index: 9999999; pointer-events: none; opacity: 0; background: rgba(15, 23, 42, 0.94); color: #ffffff; padding: 5px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 700; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif; white-space: nowrap; box-shadow: 0 4px 14px rgba(0,0,0,0.3); transition: opacity 0.1s ease;"></div>');
+            $('body').append('<div id="chartjs-op-tooltip" style="position: fixed; z-index: 99999999; pointer-events: none; opacity: 0; background: rgba(15, 23, 42, 0.96); color: #ffffff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif; white-space: nowrap; box-shadow: 0 4px 14px rgba(0,0,0,0.35); transition: opacity 0.08s ease;"></div>');
             el = $('#chartjs-op-tooltip');
         }
         if (!tooltip || !tooltip.text) {
@@ -1312,18 +1335,18 @@ $(function () {
             return;
         }
         el.html(tooltip.text);
-        var cv = (tooltip.chart && tooltip.chart.canvas) ? tooltip.chart.canvas : (tooltip.chart && tooltip.chart.ctx ? tooltip.chart.ctx.canvas : null);
-        if (cv) {
-            var $cv = $(cv);
-            var offset = $cv.offset();
-            var top = offset.top + tooltip.y - el.outerHeight() - 8;
-            var left = offset.left + tooltip.x - (el.outerWidth() / 2);
-            el.css({
-                opacity: 1,
-                top: Math.max(10, top) + 'px',
-                left: Math.max(10, left) + 'px'
-            });
-        }
+        var tipW = el.outerWidth() || 80;
+        var tipH = el.outerHeight() || 28;
+        var top = (tooltip.clientY || tooltip.y) - tipH - 12;
+        var left = (tooltip.clientX || tooltip.x) - (tipW / 2);
+        if (top < 10) top = (tooltip.clientY || tooltip.y) + 16;
+        if (left < 10) left = 10;
+        if (left + tipW > $(window).width() - 10) left = $(window).width() - tipW - 10;
+        el.css({
+            opacity: 1,
+            top: top + 'px',
+            left: left + 'px'
+        });
     };
 
     function renderOpPie(canvasId, missed, last7, today, next7, future) {
@@ -1350,9 +1373,9 @@ $(function () {
             segmentShowStroke: true,
             segmentStrokeColor: '#ffffff',
             segmentStrokeWidth: 1,
-            animationSteps: 30,
-            animationEasing: 'easeOutQuart',
-            animateRotate: true,
+            animation: false,
+
+
             responsive: false,
             maintainAspectRatio: true,
             showTooltips: false
@@ -1365,10 +1388,8 @@ $(function () {
                 if (seg.label && seg.label !== 'Empty') {
                     customOpTooltip({
                         text: seg.label + ': ' + seg.value,
-                        chart: { canvas: cv },
-                        x: e.clientX,
-                        y: e.clientY,
-                        isScreenCoord: true
+                        clientX: e.clientX,
+                        clientY: e.clientY
                     });
                 } else {
                     customOpTooltip(null);
@@ -1381,6 +1402,19 @@ $(function () {
         });
     }
 
+    renderOpPie('pieCard_my_tickets', '<?php echo isset($dashboard_tickets["total_missed"]) ? (int)$dashboard_tickets["total_missed"] : 0; ?>', '<?php echo isset($dashboard_tickets["total_lastweek"]) ? (int)$dashboard_tickets["total_lastweek"] : 0; ?>', '<?php echo isset($dashboard_tickets["total_today"]) ? (int)$dashboard_tickets["total_today"] : 0; ?>', '<?php echo isset($dashboard_tickets["total_nextweek"]) ? (int)$dashboard_tickets["total_nextweek"] : 0; ?>', '<?php echo isset($dashboard_tickets["total_future"]) ? (int)$dashboard_tickets["total_future"] : 0; ?>');
+    renderOpPie('pieCard_my_tasks', '<?php echo isset($dashboard_tasks["total_missed"]) ? (int)$dashboard_tasks["total_missed"] : 0; ?>', '<?php echo isset($dashboard_tasks["total_lastweek"]) ? (int)$dashboard_tasks["total_lastweek"] : 0; ?>', '<?php echo isset($dashboard_tasks["total_today"]) ? (int)$dashboard_tasks["total_today"] : 0; ?>', '<?php echo isset($dashboard_tasks["total_nextweek"]) ? (int)$dashboard_tasks["total_nextweek"] : 0; ?>', '<?php echo isset($dashboard_tasks["total_future"]) ? (int)$dashboard_tasks["total_future"] : 0; ?>');
+    renderOpPie('pieCard_my_f', '<?php echo isset($dashboard_f["total_missed"]) ? (int)$dashboard_f["total_missed"] : 0; ?>', '<?php echo isset($dashboard_f["total_lastweek"]) ? (int)$dashboard_f["total_lastweek"] : 0; ?>', '<?php echo isset($dashboard_f["total_today"]) ? (int)$dashboard_f["total_today"] : 0; ?>', '<?php echo isset($dashboard_f["total_nextweek"]) ? (int)$dashboard_f["total_nextweek"] : 0; ?>', '<?php echo isset($dashboard_f["total_future"]) ? (int)$dashboard_f["total_future"] : 0; ?>');
+    renderOpPie('pieCard_my_m', '<?php echo isset($dashboard_m["total_missed"]) ? (int)$dashboard_m["total_missed"] : 0; ?>', '<?php echo isset($dashboard_m["total_lastweek"]) ? (int)$dashboard_m["total_lastweek"] : 0; ?>', '<?php echo isset($dashboard_m["total_today"]) ? (int)$dashboard_m["total_today"] : 0; ?>', '<?php echo isset($dashboard_m["total_nextweek"]) ? (int)$dashboard_m["total_nextweek"] : 0; ?>', '<?php echo isset($dashboard_m["total_future"]) ? (int)$dashboard_m["total_future"] : 0; ?>');
+    renderOpPie('pieCard_my_vfu', '<?php echo isset($dashboard_vfu["total_missed"]) ? (int)$dashboard_vfu["total_missed"] : 0; ?>', '<?php echo isset($dashboard_vfu["total_lastweek"]) ? (int)$dashboard_vfu["total_lastweek"] : 0; ?>', '<?php echo isset($dashboard_vfu["total_today"]) ? (int)$dashboard_vfu["total_today"] : 0; ?>', '<?php echo isset($dashboard_vfu["total_nextweek"]) ? (int)$dashboard_vfu["total_nextweek"] : 0; ?>', '<?php echo isset($dashboard_vfu["total_future"]) ? (int)$dashboard_vfu["total_future"] : 0; ?>');
+    renderOpPie('pieCard_my_db', '<?php echo isset($dashboard_db_ops_my["total_missed"]) ? (int)$dashboard_db_ops_my["total_missed"] : 0; ?>', '<?php echo isset($dashboard_db_ops_my["total_lastweek"]) ? (int)$dashboard_db_ops_my["total_lastweek"] : 0; ?>', '<?php echo isset($dashboard_db_ops_my["total_today"]) ? (int)$dashboard_db_ops_my["total_today"] : 0; ?>', '<?php echo isset($dashboard_db_ops_my["total_nextweek"]) ? (int)$dashboard_db_ops_my["total_nextweek"] : 0; ?>', '<?php echo isset($dashboard_db_ops_my["total_future"]) ? (int)$dashboard_db_ops_my["total_future"] : 0; ?>');
+    renderOpPie('pieCard_my_leads', '<?php echo isset($dashboard_lead_ops_my["total_missed"]) ? (int)$dashboard_lead_ops_my["total_missed"] : 0; ?>', '<?php echo isset($dashboard_lead_ops_my["total_lastweek"]) ? (int)$dashboard_lead_ops_my["total_lastweek"] : 0; ?>', '<?php echo isset($dashboard_lead_ops_my["total_today"]) ? (int)$dashboard_lead_ops_my["total_today"] : 0; ?>', '<?php echo isset($dashboard_lead_ops_my["total_nextweek"]) ? (int)$dashboard_lead_ops_my["total_nextweek"] : 0; ?>', '<?php echo isset($dashboard_lead_ops_my["total_future"]) ? (int)$dashboard_lead_ops_my["total_future"] : 0; ?>');
+    renderOpPie('pieCard_team_tickets', '<?php echo isset($dashboard_Ttickets["total_missed"]) ? (int)$dashboard_Ttickets["total_missed"] : 0; ?>', '<?php echo isset($dashboard_Ttickets["total_lastweek"]) ? (int)$dashboard_Ttickets["total_lastweek"] : 0; ?>', '<?php echo isset($dashboard_Ttickets["total_today"]) ? (int)$dashboard_Ttickets["total_today"] : 0; ?>', '<?php echo isset($dashboard_Ttickets["total_nextweek"]) ? (int)$dashboard_Ttickets["total_nextweek"] : 0; ?>', '<?php echo isset($dashboard_Ttickets["total_future"]) ? (int)$dashboard_Ttickets["total_future"] : 0; ?>');
+    renderOpPie('pieCard_team_tasks', '<?php echo isset($dashboard_Ttasks["total_missed"]) ? (int)$dashboard_Ttasks["total_missed"] : 0; ?>', '<?php echo isset($dashboard_Ttasks["total_lastweek"]) ? (int)$dashboard_Ttasks["total_lastweek"] : 0; ?>', '<?php echo isset($dashboard_Ttasks["total_today"]) ? (int)$dashboard_Ttasks["total_today"] : 0; ?>', '<?php echo isset($dashboard_Ttasks["total_nextweek"]) ? (int)$dashboard_Ttasks["total_nextweek"] : 0; ?>', '<?php echo isset($dashboard_Ttasks["total_future"]) ? (int)$dashboard_Ttasks["total_future"] : 0; ?>');
+    renderOpPie('pieCard_team_f', '<?php echo isset($dashboard_Tf["total_missed"]) ? (int)$dashboard_Tf["total_missed"] : 0; ?>', '<?php echo isset($dashboard_Tf["total_lastweek"]) ? (int)$dashboard_Tf["total_lastweek"] : 0; ?>', '<?php echo isset($dashboard_Tf["total_today"]) ? (int)$dashboard_Tf["total_today"] : 0; ?>', '<?php echo isset($dashboard_Tf["total_nextweek"]) ? (int)$dashboard_Tf["total_nextweek"] : 0; ?>', '<?php echo isset($dashboard_Tf["total_future"]) ? (int)$dashboard_Tf["total_future"] : 0; ?>');
+    renderOpPie('pieCard_team_m', '<?php echo isset($dashboard_Tm["total_missed"]) ? (int)$dashboard_Tm["total_missed"] : 0; ?>', '<?php echo isset($dashboard_Tm["total_lastweek"]) ? (int)$dashboard_Tm["total_lastweek"] : 0; ?>', '<?php echo isset($dashboard_Tm["total_today"]) ? (int)$dashboard_Tm["total_today"] : 0; ?>', '<?php echo isset($dashboard_Tm["total_nextweek"]) ? (int)$dashboard_Tm["total_nextweek"] : 0; ?>', '<?php echo isset($dashboard_Tm["total_future"]) ? (int)$dashboard_Tm["total_future"] : 0; ?>');
+    renderOpPie('pieCard_team_vfu', '<?php echo isset($dashboard_Tvfu["total_missed"]) ? (int)$dashboard_Tvfu["total_missed"] : 0; ?>', '<?php echo isset($dashboard_Tvfu["total_lastweek"]) ? (int)$dashboard_Tvfu["total_lastweek"] : 0; ?>', '<?php echo isset($dashboard_Tvfu["total_today"]) ? (int)$dashboard_Tvfu["total_today"] : 0; ?>', '<?php echo isset($dashboard_Tvfu["total_nextweek"]) ? (int)$dashboard_Tvfu["total_nextweek"] : 0; ?>', '<?php echo isset($dashboard_Tvfu["total_future"]) ? (int)$dashboard_Tvfu["total_future"] : 0; ?>');
+    renderOpPie('pieCard_team_db', '<?php echo isset($dashboard_db_ops_team["total_missed"]) ? (int)$dashboard_db_ops_team["total_missed"] : 0; ?>', '<?php echo isset($dashboard_db_ops_team["total_lastweek"]) ? (int)$dashboard_db_ops_team["total_lastweek"] : 0; ?>', '<?php echo isset($dashboard_db_ops_team["total_today"]) ? (int)$dashboard_db_ops_team["total_today"] : 0; ?>', '<?php echo isset($dashboard_db_ops_team["total_nextweek"]) ? (int)$dashboard_db_ops_team["total_nextweek"] : 0; ?>', '<?php echo isset($dashboard_db_ops_team["total_future"]) ? (int)$dashboard_db_ops_team["total_future"] : 0; ?>');
     renderOpPie('pieCard_team_leads', '<?php echo (int)$dashboard_lead_ops_team["total_missed"]; ?>', '<?php echo (int)$dashboard_lead_ops_team["total_lastweek"]; ?>', '<?php echo (int)$dashboard_lead_ops_team["total_today"]; ?>', '<?php echo (int)$dashboard_lead_ops_team["total_nextweek"]; ?>', '<?php echo (int)$dashboard_lead_ops_team["total_future"]; ?>');
 });
 </script>

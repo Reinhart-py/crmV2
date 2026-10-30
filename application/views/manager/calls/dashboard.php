@@ -10,33 +10,27 @@ html, body {
   background: #f2f2f7 !important;
 }
 .wrapper {
-  height: 100vh !important;
-  max-height: 100vh !important;
-  overflow: hidden !important;
-  display: flex !important;
-  flex-direction: column !important;
+  min-height: 100vh !important;
   background: #f2f2f7 !important;
-  margin: 0 !important;
-  padding: 0 !important;
+  position: relative !important;
 }
 .content-wrapper.glass-calling-wrapper {
   background: #f2f2f7 !important;
   position: relative !important;
-  flex: 1 1 0% !important;
-  height: calc(100vh - 50px) !important;
-  min-height: calc(100vh - 50px) !important;
-  max-height: calc(100vh - 50px) !important;
-  padding: 10px 14px !important;
+  height: calc(100vh - 60px) !important;
+  min-height: calc(100vh - 60px) !important;
+  max-height: calc(100vh - 60px) !important;
+  padding: 12px 16px !important;
   color: #1d1d1f;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
   box-sizing: border-box !important;
   overflow: hidden !important;
   display: flex !important;
   flex-direction: row !important;
-  gap: 12px !important;
-  align-items: stretch !important;
+  flex-wrap: nowrap !important;
+  gap: 14px !important;
+  align-items: flex-start !important;
   justify-content: flex-start !important;
-  z-index: 800 !important;
 }
 
 .crm-dialer-dock {
@@ -190,7 +184,7 @@ html, body {
 }
 
 #middleContentArea {
-  display: none;
+  display: flex;
   width: 580px;
   min-width: 460px !important;
   max-width: 680px !important;
@@ -463,6 +457,7 @@ html, body {
 }
 
 .crm-dialer-panel {
+
   width: 300px;
   min-width: 280px;
   max-width: 310px;
@@ -478,7 +473,10 @@ html, body {
   flex-direction: column;
   overflow: hidden;
   z-index: 950;
-  margin-left: 0;
+  margin-left: auto !important;
+  align-self: flex-start !important;
+  margin-top: 0 !important;
+
 }
 
 .dialer-window-header {
@@ -608,8 +606,8 @@ html, body {
 }
 
 .dialer-key-btn {
-  width: 56px;
-  height: 56px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   background: #f2f2f7;
   border: none;

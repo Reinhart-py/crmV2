@@ -52,7 +52,7 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.5/css/responsive.dataTables.min.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/bootstrap/developer.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/multiselect/multiselect.css">
-<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-dashboard.css?v=20261030_v1793_p1">
+<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-dashboard.css?v=20261030_v1794">
 <link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/plugins/table_export/css/tableexport.css" />
 
 <script src="<?php echo base_url();?>assets/plugins/table_export/FileSaver.min.js"></script>
@@ -312,6 +312,9 @@
           <?php } ?>
           <?php if($is_admin || has_section_perm('integrations')){ ?>
           <li><a href="<?php echo base_url();?>manager/system/integrations"><i class="fa fa-plug"></i>Third-Party API</a></li>
+          <?php } ?>
+          <?php if($is_admin || has_section_perm('system')){ ?>
+          <li><a href="<?php echo base_url();?>manager/system/qc"><i class="fa fa-check-square-o"></i>QC Panel</a></li>
           <?php } ?>
         </ul>
       </li>
@@ -841,6 +844,9 @@ $(function() {
           <?php } ?>
           <?php if($is_admin || has_section_perm('integrations')){ ?>
           <li><a href="<?php echo base_url();?>manager/system/integrations"><i class="fa fa-plug"></i>Third-Party API</a></li>
+          <?php } ?>
+          <?php if($is_admin || has_section_perm('system')){ ?>
+          <li><a href="<?php echo base_url();?>manager/system/qc"><i class="fa fa-check-square-o"></i>QC Panel</a></li>
           <?php } ?>
         </ul>
       </li>
