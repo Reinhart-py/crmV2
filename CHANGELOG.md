@@ -2,6 +2,38 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.79.0] - 2026-10-30
+- **Timestamp**: `2026-10-30 11:40:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Live Operations Console redesign to clean executive report table with dual-color palette (Ocean Blue & White), Operational Activity donut chart tooltip clipping fix, graph legend indicators for Projection and Achievement charts, top card values refinement with sales amount achieved, and header LIVE word badge streamlining.
+- **Detailed Changes & Technical Implementation**:
+  - **1. LIVE Section UI Redesign (`manager/live`, `views/manager/live/index.php`)**:
+    - Discarded multi-card layout with badges/pills and decorative icon boxes.
+    - Implemented a clean, sleek, Apple-style Commercial Operations & Velocity Report with a dual-color palette: Ocean Blue (`#00c6f0`) and White (`#ffffff`), with dark slate typography (`#0f172a`) and subtle hairline borders (`1px solid #e2e8f0`).
+    - Structured comprehensive live operational metrics report table covering: Outbound Calling Telemetry (Total, Connected, In Process, Other/Ringing, Connection Rate), Leads & Pipeline (Total, Qualified, Database Entries, Qualification Rate), Commercial Orders (Total Submitted, Pending Back Office, Completed, Velocity Rate), Sales Achieved (Confirmed Deals, Revenue in AED, Average Deal Size), Client Follow-ups (Total Scheduled, Overdue/Missed, Due Today), Meetings & Visits, Support Tickets (Total Logged, Open, Resolved, Resolution Rate), and Service Catalog Verticals.
+    - Side-by-side real-time stream log tables for recent outbound calls and recent lead pipeline ingestion with clean hover rows and zero badge pill clutter.
+    - Continuous 10-second AJAX auto-refresh with instant scope switching (My Activity vs Team Activity) and timeframe toggling (Today, Last 7 Days, Month, Quarter).
+  - **2. Topbar LIVE Highlighted Word (`views/manager/elements/header.php`)**:
+    - Streamlined the top bar LIVE navigation element placed beside the call option.
+    - Displayed strictly as a highlighted word with hairline borders and dual-color styling (`border-radius: 6px; padding: 4px 12px; background: #00c6f0; color: #ffffff; border: 1px solid #00c6f0`), completely eliminating round pill shapes and icon dots.
+  - **3. Operational Activity Donut Chart Tooltip Clipping Fix (`views/manager/dashboard.php`)**:
+    - Resolved the canvas clipping bug where hovering over 70x70px circular charts cut off tooltip text (e.g. `ssed: 6`).
+    - Implemented a floating HTML overlay tooltip (`#chartjs-op-tooltip`) attached directly to `document.body` via `customTooltips: customOpTooltip`.
+    - Computes canvas bounding rectangle with scroll offsets and coordinates, ensuring complete labels (e.g., "All Missed: 6") are fully visible with zero edge clipping.
+  - **4. Graph Legend Indicators (`views/manager/dashboard.php`)**:
+    - Added square color legend indicators in chart headers matching graph bar colors:
+      - **My Projection**: Ocean Blue (`#00c6f0`) indicator labeled "Projection".
+      - **Team Projection**: Ocean Blue (`#00c6f0`) indicator labeled "Projection".
+      - **My Achievement**: Dual indicators with Ocean Blue (`#00c6f0`) labeled "Target" and Forest Green (`#16a34a`) labeled "Achieved".
+      - **Team Achievement**: Dual indicators with Ocean Blue (`#00c6f0`) labeled "Target" and Forest Green (`#16a34a`) labeled "Achieved".
+  - **5. Top Cards Visibility & Sales Amount Achieved (`dashboard.php`, `ci_admin_model.php`)**:
+    - **Hidden Values**: Removed numeric counter values from `My Database` (View Database), `My Vertical` (View Verticals), `Team Users` (View Members), and `Team Verticals` (View Verticals), retaining clean card titles, icons, and action links.
+    - **Displayed Values & Sales Amount**: `My Leads`, `My Orders`, `Team Leads`, and `Team Orders` display their count values plus the achieved sales revenue: `Sales: AED XX,XXX.XX`.
+    - Updated `dashboard_countdata()` and `dashboard_Tcountdata()` in `ci_admin_model.php` with subqueries summing won order revenue (`status IN ('Sales', 'Closed / Sold', 'Completed') OR sales_ref_no IS NOT NULL`).
+  - **6. Strict Zero Comments in PHP Files**:
+    - Verified strict compliance with 0 comments (`//`, `/* ... */`, `<!-- ... -->`) across all PHP files.
+    - Passed all `php -l` lint validations.
+
 ### [v1.78.0] - 2026-10-30
 - **Timestamp**: `2026-10-30 11:00:00 +0530`
 - **Author**: Reinhart-py

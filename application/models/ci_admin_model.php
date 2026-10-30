@@ -13,7 +13,9 @@ class Ci_admin_model extends CI_model {
 			'count_verticals' => 0,
 			'count_vetricals' => 0,
 			'count_leads' => 0,
-			'count_orders' => 0
+			'count_orders' => 0,
+			'sales_amount' => 0.00
+		
 		);
 
 		$sql = "SELECT 
@@ -31,13 +33,17 @@ class Ci_admin_model extends CI_model {
 			 AND (A.lead_assign = " . $manager_id . " OR (A.created_by = " . $manager_id . " AND (A.lead_assign = 1 OR A.lead_assign IS NULL)) OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET(" . $manager_id . ", A.agents) > 0)) 
 			 AND (A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)) as count_leads,
 
-			(SELECT count(id) FROM ci_orders WHERE created_by = " . $manager_id . ") as count_orders";
+			(SELECT count(id) FROM ci_orders WHERE created_by = " . $manager_id . ") as count_orders,
+			(SELECT COALESCE(SUM(CAST(COALESCE(NULLIF(pricing_amount, 0), NULLIF(total_amount, 0), NULLIF(mrr, 0), 0) AS DECIMAL(12,2))), 0) FROM ci_orders WHERE created_by = " . $manager_id . " AND (status = 'Sales' OR status = 'Closed / Sold' OR status = 'Completed' OR (sales_ref_no IS NOT NULL AND sales_ref_no != ''))) as sales_amount";
 
 		$rows = $this->db->query($sql);
 		if ($rows && is_object($rows) && $rows->num_rows() >= 1) {
 			$data = $rows->row_array();
 		}
 		$data['count_vetricals'] = isset($data['count_verticals']) ? $data['count_verticals'] : 0;
+		if (!isset($data['sales_amount'])) {
+			$data['sales_amount'] = 0.00;
+		}
 		return $data;
 	   }
 
@@ -56,7 +62,9 @@ class Ci_admin_model extends CI_model {
 				'count_vetricals' => 0,
 				'count_leads' => 0,
 				'count_orders' => 0,
-				'count_today_birth' => 0
+				'count_today_birth' => 0,
+				'sales_amount' => 0.00
+			
 			);
 
 			$today = date('Y-m-d');
@@ -69,13 +77,17 @@ class Ci_admin_model extends CI_model {
 				 AND ((A.lead_assign > 0 AND FIND_IN_SET(A.lead_assign, '" . $team_str . "') > 0) OR ((A.lead_assign = 0 OR A.lead_assign IS NULL) AND FIND_IN_SET(A.created_by, '" . $team_str . "') > 0)) 
 				 AND (A.company_status IS NULL OR LOWER(A.company_status) != 'closed')) as count_leads,
 				(SELECT count(id) FROM ci_verticals WHERE FIND_IN_SET(created_by, '" . $team_str . "') > 0) as count_verticals,
-				(SELECT count(id) FROM ci_orders WHERE FIND_IN_SET(created_by, '" . $team_str . "') > 0) as count_orders";
+				(SELECT count(id) FROM ci_orders WHERE FIND_IN_SET(created_by, '" . $team_str . "') > 0) as count_orders,
+				(SELECT COALESCE(SUM(CAST(COALESCE(NULLIF(pricing_amount, 0), NULLIF(total_amount, 0), NULLIF(mrr, 0), 0) AS DECIMAL(12,2))), 0) FROM ci_orders WHERE FIND_IN_SET(created_by, '" . $team_str . "') > 0 AND (status = 'Sales' OR status = 'Closed / Sold' OR status = 'Completed' OR (sales_ref_no IS NOT NULL AND sales_ref_no != ''))) as sales_amount";
 
 			$rows = $this->db->query($sql);
 			if ($rows && is_object($rows) && $rows->num_rows() >= 1) {
 				$data = $rows->row_array();
 			}
 			$data['count_vetricals'] = isset($data['count_verticals']) ? $data['count_verticals'] : 0;
+			if (!isset($data['sales_amount'])) {
+				$data['sales_amount'] = 0.00;
+			}
 			return $data;
 		}
         public function dashboard_leaddata(){

@@ -333,9 +333,7 @@
   </nav>
 
   <div class="header-quick-actions">
-    <a href="<?php echo base_url();?>manager/live" class="live-nav-badge <?php echo ($route1 === 'live') ? 'active' : ''; ?>" title="Live Commercial Operations Dashboard" style="display:inline-flex; align-items:center; justify-content:center; text-decoration:none; margin-right:8px; padding:5px 12px; border-radius:9999px; background:#0f172a; color:#ffffff; font-weight:700; font-size:11px; letter-spacing:0.06em; border:1px solid rgba(0, 114, 240, 0.45); box-shadow:0 2px 8px rgba(0,0,0,0.18); transition:all 0.2s ease;">
-      <span style="width:7px; height:7px; border-radius:50%; background:#10b981; box-shadow:0 0 8px #10b981; display:inline-block; margin-right:6px;"></span> LIVE
-    </a>
+    <a href="<?php echo base_url();?>manager/live" class="live-nav-badge <?php echo ($route1 === 'live') ? 'active' : ''; ?>" title="Live Operations Report" style="display:inline-flex; align-items:center; justify-content:center; text-decoration:none; margin-right:8px; padding:4px 12px; border-radius:6px; <?php echo ($route1 === 'live') ? 'background:#00c6f0; color:#ffffff; border:1px solid #00c6f0;' : 'background:transparent; color:#00c6f0; border:1px solid #00c6f0;'; ?> font-weight:700; font-size:12px; letter-spacing:0.06em; transition:all 0.2s ease;">LIVE</a>
     <?php if(has_section_perm('calls')){ ?>
     <a href="<?php echo base_url();?>manager/calls" class="global-theme-btn" title="Phone Dialer & Calls" style="display:inline-flex; align-items:center; justify-content:center; text-decoration:none; margin-right:6px; color:#2563eb;">
       <i class="fa fa-phone"></i>
