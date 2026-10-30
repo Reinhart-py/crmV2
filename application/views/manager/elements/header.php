@@ -4,11 +4,17 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
     
-<link rel="shortcut icon" href="<?php echo base_url(); ?>assets/logo-7strokes.png" type="image/png">
-<link rel="icon" type="image/png" sizes="64x64" href="<?php echo base_url(); ?>assets/logo-7strokes.png">
-<link rel="icon" type="image/png" sizes="32x32" href="<?php echo base_url(); ?>assets/logo-7strokes.png">
-<link rel="icon" type="image/png" sizes="16x16" href="<?php echo base_url(); ?>assets/logo-7strokes.png">
-<link rel="apple-touch-icon" href="<?php echo base_url(); ?>assets/logo-7strokes.png">
+<link rel="shortcut icon" href="<?php echo base_url(); ?>assets/logo.png" type="image/png">
+<link rel="icon" type="image/png" sizes="64x64" href="<?php echo base_url(); ?>assets/logo.png">
+<link rel="icon" type="image/png" sizes="32x32" href="<?php echo base_url(); ?>assets/logo.png">
+<link rel="icon" type="image/png" sizes="16x16" href="<?php echo base_url(); ?>assets/logo.png">
+<link rel="apple-touch-icon" href="<?php echo base_url(); ?>assets/logo.png">
+<meta property="og:title" content="<?php echo !empty($info['title']) ? htmlspecialchars($info['title']) : 'Seven Strokes CRM'; ?>">
+<meta property="og:description" content="Seven Strokes CRM Platform">
+<meta property="og:image" content="<?php echo base_url(); ?>assets/logo.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="<?php echo base_url(); ?>assets/logo.png">
 
     
 <title><?php echo $info['title']; ?></title>
@@ -52,7 +58,7 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.5/css/responsive.dataTables.min.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/bootstrap/developer.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/multiselect/multiselect.css">
-<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-dashboard.css?v=20261030_v1794">
+<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-dashboard.css?v=20261030_v1797">
 <link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/plugins/table_export/css/tableexport.css" />
 
 <script src="<?php echo base_url();?>assets/plugins/table_export/FileSaver.min.js"></script>
@@ -89,7 +95,7 @@
 
   <div class="main-logo">
     <a href="<?php echo base_url(); ?>manager/dashboard"> 
-      <img src="<?php echo base_url(); ?>assets/logo-7strokes.png" alt="7 Strokes" />
+      <img src="<?php echo base_url(); ?>assets/logo.png" alt="7 Strokes" />
     </a> 
   </div>
 
@@ -488,7 +494,7 @@ $(function() {
       try {
         var notif = new Notification(n.title, {
           body: n.message,
-          icon: '<?php echo base_url(); ?>assets/logo-7strokes.png'
+          icon: '<?php echo base_url(); ?>assets/logo.png'
         });
         notif.onclick = function() {
           window.focus();
@@ -668,7 +674,7 @@ $(function() {
 <aside class="main-sidebar"> 
   
   <div class="crm-sidebar-header">
-    <img src="<?php echo base_url(); ?>assets/logo-7strokes.png" alt="7 Strokes" />
+    <img src="<?php echo base_url(); ?>assets/logo.png" alt="7 Strokes" />
     <button type="button" class="crm-sidebar-close" id="crmSidebarClose" aria-label="Close navigation">&times;</button>
   </div>
   

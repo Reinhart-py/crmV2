@@ -5,8 +5,15 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title><?php echo $info['title']; ?></title>
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-  <link rel="shortcut icon" href="<?php echo base_url(); ?>assets/7strokes-logo.png" type="image/png">
-  <link rel="icon" type="image/png" href="<?php echo base_url(); ?>assets/7strokes-logo.png">        
+  <link rel="shortcut icon" href="<?php echo base_url(); ?>assets/logo.png" type="image/png">
+  <link rel="icon" type="image/png" href="<?php echo base_url(); ?>assets/logo.png">
+  <link rel="apple-touch-icon" href="<?php echo base_url(); ?>assets/logo.png">
+  <meta property="og:title" content="<?php echo !empty($info['title']) ? htmlspecialchars($info['title']) : 'Seven Strokes CRM - Reset Password'; ?>">
+  <meta property="og:description" content="Seven Strokes CRM Platform">
+  <meta property="og:image" content="<?php echo base_url(); ?>assets/logo.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="<?php echo base_url(); ?>assets/logo.png">
   <link rel="stylesheet" href="<?php echo base_url(); ?>assets/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css">
@@ -21,7 +28,7 @@
         <div>
           <div class="login-box-body">
             <div class="login-logo mb-5">
-              <a href="<?php echo base_url(); ?>"><img src="<?php echo base_url(); ?>assets/7strokes-logo.png" style="max-height: 70px; max-width: 100%;"></a>
+              <a href="<?php echo base_url(); ?>"><img src="<?php echo base_url(); ?>assets/logo.png" alt="7 Strokes" style="max-height: 80px; max-width: 100%;"></a>
             </div>
             <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?> <?php echo get_message($this->session->flashdata('message'),'message'); ?>
             <form action="<?php echo base_url(); ?>ci_admin/fchange_password" method="post">

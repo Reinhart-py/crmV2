@@ -2,6 +2,24 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.79.7] - 2026-10-30
+- **Timestamp**: `2026-10-30 18:18:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Standardized official CRM logo to `assets/logo.png` across all auth pages (login, forgot password, reset password), browser favicons, touch icons, push notifications, and Open Graph/Twitter link preview meta tags; scaled up top-left dashboard brand logo for enhanced visual clarity and prominence.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Auth Pages Logo & Link Previews (`loginpage.php`, `forgot.php`, `reset.php`)**:
+    - Replaced legacy image references with `assets/logo.png` for primary auth brand banner.
+    - Set favicon, shortcut icon, and apple-touch-icon to `assets/logo.png`.
+    - Added comprehensive Open Graph (`og:title`, `og:description`, `og:image`, `og:type`) and Twitter Cards (`twitter:card`, `twitter:image`) for link preview embeds.
+  - **2. Application Header & Dashboard Logo Scaling (`header.php`, `crm-dashboard.css`)**:
+    - Replaced all header branding and notification icon references with `assets/logo.png`.
+    - Increased dashboard top-left logo sizing in `crm-dashboard.css` from `40px` to `48px` max-height with `min-height: 48px` header alignment, significantly enhancing visibility while preserving clean layout balance.
+    - Adjusted mobile header logo max-height from `32px` to `38px`.
+    - Bumped stylesheet cache buster query parameter to `?v=20261030_v1797`.
+  - **3. Strict Rule Compliance**:
+    - Zero comments in any PHP file (`//`, `/* */`, `<!-- -->`). All PHP files linted cleanly with `php -l`.
+
+
 ### [v1.79.6] - 2026-10-30
 - **Timestamp**: `2026-10-30 17:45:00 +0530`
 - **Author**: Reinhart-py
