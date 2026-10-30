@@ -2,6 +2,30 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.79.6] - 2026-10-30
+- **Timestamp**: `2026-10-30 17:45:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Comprehensive Quality Check (QC Panel) tree expansion covering all CRM pages, subpages, tabs, and action routes across every department and module regardless of role access; enhanced URL handling for external tools.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Quality Check (QC Panel) Full Page & Subpage Tree Expansion (`ci_admin_system.php`)**:
+    - Expanded all categories in the QC checklist `$tree` to exhaustively cover all CRM pages and navigation destinations:
+      - **Dashboard**: Dashboard Overview, KPI Cards & Counts, My & Team Projections, My & Team Achievements, Operational Activity & Breakdown.
+      - **My Zone**: Add Database, View Database (All, Today, Missed, 7 Days, Next 7 Days), View Leads (All Leads, Today, Missed), View Orders (My Orders), View Sales, My Follow-Up (All, Today, Missed, Next 7 Days), My Meetings (Today, Missed), Add Vertical, View Vertical, Vertical Follow-up, View Internal Task, View External Task, Add Task, Database Transfer.
+      - **Team**: Chart View, Members Table View, Team Database, Team Leads, Team Orders, Team Verticals, Team Follow-up, Team Meetings, Assigned Meetings, Assign Database, Team Task, Team Tickets.
+      - **Back Office**: Pending Leads Approval, Pending Order Process, Pending Sales Approval, Onboard Client, Open Orders, Orders Follow-up, Completed Orders, Closed Orders, Rejected / Lost Orders, View All Orders.
+      - **KAM (Key Accounts)**: My Client, Onboard Client, Create Schedule, Task Follow-up, Reminders, KAM Report, KAM Clients Directory, Client Assignee Management.
+      - **HR Operations**: HR Overview, Targets, Add Target, Employee Lifecycle, Attendance & GPS Tracking, Daily Attendance, Shift Management, Add Shift, Assign Shift, Leave Management, Apply Leave, Payroll Overview, Generate Payroll, Taxation & Gratuity, Appraisals, Add Appraisal, Document Vault, Add Document.
+      - **Calls & Live Operations**: Auto Dialer, Manual Dialer, Colleagues Directory, Call Logs & Statistics, Live Dashboard, Presentation TV Mode.
+      - **Reports & Analytics**: Revenue List, Company Projections, Download Reports Center, Admin Reports, Leads Report, Department Performance Report, Individual Performance Report, User Activity Report, Data Generator Tool.
+      - **Events & Awards**: Events & Announcements, Add Event, Awards Recognition, Add Award.
+      - **System Management**: Users View, Add User, Roles & Permissions, Add Role, Category & Terms, Add Category / Term, Import Leads, Export Leads, Allotted Database, Non-Allotted Database, Admin Logs Audit, Client Assignee Management, KAM Clients Directory, Calling API Gateway, Third-Party API Integrations, Live Location Tracking, Quality Check Panel.
+      - **User Account**: Admin Profile, Change Password.
+  - **2. QC Panel URL Dispatch Fix (`qc.php`)**:
+    - Added protocol check `(strpos($url, 'http') === 0) ? $url : base_url($url)` so that external tools (e.g. Data Generator Tool) open cleanly in a new tab without being prefixed by `base_url()`.
+  - **3. Strict Rule Compliance**:
+    - Zero comments in any PHP file (`//`, `/* */`, `<!-- -->`). All PHP files linted cleanly with `php -l`.
+
+
 ### [v1.79.5] - 2026-10-30
 - **Timestamp**: `2026-10-30 17:25:00 +0530`
 - **Author**: Reinhart-py

@@ -37,7 +37,7 @@
                     <div style="display:flex; align-items:center; gap:12px;">
                       <span class="badge" id="badge_<?php echo $pIndex; ?>" style="background:#e0f2fe; color:#0369a1; font-weight:600; font-size:11px; padding:4px 10px; border-radius:12px;"><?php echo $pChecked; ?> / <?php echo $pTotal; ?></span>
                       <?php if(!empty($parent['url'])){ ?>
-                        <a href="<?php echo base_url($parent['url']); ?>" target="_blank" onclick="event.stopPropagation();" class="btn btn-xs btn-default" title="Open section in new tab" style="border-radius:6px; padding:3px 8px; color:#64748b; border:1px solid #cbd5e1;">
+                        <a href="<?php echo (strpos($parent['url'], 'http') === 0) ? $parent['url'] : base_url($parent['url']); ?>" target="_blank" onclick="event.stopPropagation();" class="btn btn-xs btn-default" title="Open section in new tab" style="border-radius:6px; padding:3px 8px; color:#64748b; border:1px solid #cbd5e1;">
                           <i class="fa fa-external-link"></i>
                         </a>
                       <?php } ?>
@@ -59,7 +59,7 @@
                               <span style="font-size:11.5px; color:#94a3b8; margin-left:8px;">(<?php echo htmlspecialchars($child['url']); ?>)</span>
                             </td>
                             <td style="width:60px; text-align:right; vertical-align:middle; padding:8px 6px;">
-                              <a href="<?php echo base_url($child['url']); ?>" target="_blank" class="btn btn-xs btn-default" title="Open in new tab" style="border-radius:6px; padding:4px 9px; color:#0072f0; border:1px solid #cbd5e1; background:#ffffff;">
+                              <a href="<?php echo (strpos($child['url'], 'http') === 0) ? $child['url'] : base_url($child['url']); ?>" target="_blank" class="btn btn-xs btn-default" title="Open in new tab" style="border-radius:6px; padding:4px 9px; color:#0072f0; border:1px solid #cbd5e1; background:#ffffff;">
                                 <i class="fa fa-external-link"></i>
                               </a>
                             </td>

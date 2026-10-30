@@ -593,11 +593,11 @@ class Ci_admin_system extends CI_Controller {
 					array('title' => 'View Orders (My Orders)', 'key' => 'mz_view_orders', 'url' => 'manager/orders/my'),
 					array('title' => 'View Sales', 'key' => 'mz_view_sales', 'url' => 'manager/sales'),
 					array('title' => 'My Follow-Up (All)', 'key' => 'mz_followups', 'url' => 'manager/leads/followups'),
-					array('title' => 'My Follow-Up (Today)', 'key' => 'mz_followups_today', 'url' => 'manager/leads/followups?filter=today'),
-					array('title' => 'My Follow-Up (Missed)', 'key' => 'mz_followups_missed', 'url' => 'manager/leads/followups?filter=missed'),
+					array('title' => 'My Follow-Up (Today Follow-up)', 'key' => 'mz_followups_today', 'url' => 'manager/leads/followups?filter=today'),
+					array('title' => 'My Follow-Up (Missed Follow-up)', 'key' => 'mz_followups_missed', 'url' => 'manager/leads/followups?filter=missed'),
 					array('title' => 'My Follow-Up (Next 7 Days)', 'key' => 'mz_followups_next7d', 'url' => 'manager/leads/followups?filter=next7days'),
-					array('title' => 'My Meetings (Today)', 'key' => 'mz_meetings', 'url' => 'manager/leads/meetings'),
-					array('title' => 'My Meetings (Missed)', 'key' => 'mz_meetings_missed', 'url' => 'manager/leads/meetings?filter=missed'),
+					array('title' => 'My Meetings (Today Meetings)', 'key' => 'mz_meetings', 'url' => 'manager/leads/meetings'),
+					array('title' => 'My Meetings (Missed Meetings)', 'key' => 'mz_meetings_missed', 'url' => 'manager/leads/meetings?filter=missed'),
 					array('title' => 'Add Vertical', 'key' => 'mz_add_vertical', 'url' => 'manager/verticals/add'),
 					array('title' => 'View Vertical', 'key' => 'mz_view_vertical', 'url' => 'manager/verticals'),
 					array('title' => 'Vertical Follow-up', 'key' => 'mz_vertical_fu', 'url' => 'manager/verticals/followups'),
@@ -612,18 +612,18 @@ class Ci_admin_system extends CI_Controller {
 				'key' => 'm_team',
 				'icon' => 'fa fa-users',
 				'children' => array(
-					array('title' => 'Members', 'key' => 'tm_members', 'url' => 'manager/team/members'),
 					array('title' => 'Chart View', 'key' => 'tm_chart', 'url' => 'manager/team/chart'),
-					array('title' => 'Database', 'key' => 'tm_database', 'url' => 'manager/team/database'),
-					array('title' => 'Leads', 'key' => 'tm_leads', 'url' => 'manager/team/leads'),
-					array('title' => 'Orders', 'key' => 'tm_orders', 'url' => 'manager/team/orders'),
-					array('title' => 'Verticals', 'key' => 'tm_verticals', 'url' => 'manager/team/verticals'),
-					array('title' => 'Follow up', 'key' => 'tm_followups', 'url' => 'manager/team/followups'),
-					array('title' => 'Meetings', 'key' => 'tm_meetings', 'url' => 'manager/team/meetings'),
+					array('title' => 'Members Table View', 'key' => 'tm_members', 'url' => 'manager/team/members'),
+					array('title' => 'Team Database', 'key' => 'tm_database', 'url' => 'manager/team/database'),
+					array('title' => 'Team Leads', 'key' => 'tm_leads', 'url' => 'manager/team/leads'),
+					array('title' => 'Team Orders', 'key' => 'tm_orders', 'url' => 'manager/team/orders'),
+					array('title' => 'Team Verticals', 'key' => 'tm_verticals', 'url' => 'manager/team/verticals'),
+					array('title' => 'Team Follow-up', 'key' => 'tm_followups', 'url' => 'manager/team/followups'),
+					array('title' => 'Team Meetings', 'key' => 'tm_meetings', 'url' => 'manager/team/meetings'),
 					array('title' => 'Assigned Meetings', 'key' => 'tm_assigned_meetings', 'url' => 'manager/team/assignmeetings'),
 					array('title' => 'Assign Database', 'key' => 'tm_assign_db', 'url' => 'manager/team/assignleads'),
-					array('title' => 'Task', 'key' => 'tm_tasks', 'url' => 'manager/tasks'),
-					array('title' => 'Tickets', 'key' => 'tm_tickets', 'url' => 'manager/team/tickets')
+					array('title' => 'Team Task', 'key' => 'tm_tasks', 'url' => 'manager/tasks'),
+					array('title' => 'Team Tickets', 'key' => 'tm_tickets', 'url' => 'manager/team/tickets')
 				)
 			),
 			array(
@@ -635,8 +635,52 @@ class Ci_admin_system extends CI_Controller {
 					array('title' => 'Pending Order Process', 'key' => 'bo_pending_orders', 'url' => 'manager/orders/pending_process'),
 					array('title' => 'Pending Sales Approval', 'key' => 'bo_pending_sales', 'url' => 'manager/orders/pending_sales_approval'),
 					array('title' => 'Onboard Client', 'key' => 'bo_onboard_client', 'url' => 'manager/kam/onboard'),
+					array('title' => 'Open Orders', 'key' => 'bo_open_orders', 'url' => 'manager/orders/open'),
+					array('title' => 'Orders Follow-up', 'key' => 'bo_orders_fu', 'url' => 'manager/orders/followups'),
 					array('title' => 'Completed Orders', 'key' => 'bo_completed_orders', 'url' => 'manager/orders?status=completed'),
+					array('title' => 'Closed Orders', 'key' => 'bo_closed_orders', 'url' => 'manager/orders?status=closed'),
+					array('title' => 'Rejected / Lost Orders', 'key' => 'bo_rejected_orders', 'url' => 'manager/orders?status=rejected_lost'),
 					array('title' => 'View All Orders', 'key' => 'bo_all_orders', 'url' => 'manager/orders')
+				)
+			),
+			array(
+				'title' => 'KAM (Key Accounts)',
+				'key' => 'm_kam',
+				'icon' => 'fa fa-handshake-o',
+				'children' => array(
+					array('title' => 'My Client', 'key' => 'kam_my_client', 'url' => 'manager/kam/my-client'),
+					array('title' => 'Onboard Client', 'key' => 'kam_onboard', 'url' => 'manager/kam/onboard'),
+					array('title' => 'Create Schedule', 'key' => 'kam_schedule', 'url' => 'manager/kam/schedule'),
+					array('title' => 'Task Follow-up', 'key' => 'kam_task_fu', 'url' => 'manager/kam/task-followup'),
+					array('title' => 'Reminders', 'key' => 'kam_reminders', 'url' => 'manager/kam/reminders'),
+					array('title' => 'KAM Report', 'key' => 'kam_report', 'url' => 'manager/kam/report'),
+					array('title' => 'KAM Clients Directory', 'key' => 'kam_clients_dir', 'url' => 'manager/system/kam_clients'),
+					array('title' => 'Client Assignee Management', 'key' => 'kam_assignee_mgmt', 'url' => 'manager/system/assignee')
+				)
+			),
+			array(
+				'title' => 'HR Operations',
+				'key' => 'm_hr',
+				'icon' => 'fa fa-id-card-o',
+				'children' => array(
+					array('title' => 'HR Overview', 'key' => 'hr_overview', 'url' => 'manager/hr'),
+					array('title' => 'Targets', 'key' => 'hr_targets', 'url' => 'manager/hr/targets'),
+					array('title' => 'Add Target', 'key' => 'hr_targets_add', 'url' => 'manager/hr/targets/add'),
+					array('title' => 'Employee Lifecycle', 'key' => 'hr_lifecycle', 'url' => 'manager/hr/lifecycle'),
+					array('title' => 'Attendance & GPS Tracking', 'key' => 'hr_attendance', 'url' => 'manager/hr/attendance'),
+					array('title' => 'Daily Attendance', 'key' => 'hr_att_daily', 'url' => 'manager/attendance'),
+					array('title' => 'Shift Management', 'key' => 'hr_shifts', 'url' => 'manager/hr/shifts'),
+					array('title' => 'Add Shift', 'key' => 'hr_shifts_add', 'url' => 'manager/hr/shifts/add'),
+					array('title' => 'Assign Shift', 'key' => 'hr_shifts_assign', 'url' => 'manager/hr/shifts/assign'),
+					array('title' => 'Leave Management', 'key' => 'hr_leaves', 'url' => 'manager/hr/leaves'),
+					array('title' => 'Apply Leave', 'key' => 'hr_leaves_apply', 'url' => 'manager/hr/leaves/apply'),
+					array('title' => 'Payroll Overview', 'key' => 'hr_payroll', 'url' => 'manager/hr/payroll'),
+					array('title' => 'Generate Payroll', 'key' => 'hr_payroll_gen', 'url' => 'manager/hr/payroll/generate'),
+					array('title' => 'Taxation & Gratuity', 'key' => 'hr_taxation', 'url' => 'manager/hr/taxation'),
+					array('title' => 'Appraisals', 'key' => 'hr_appraisals', 'url' => 'manager/hr/appraisals'),
+					array('title' => 'Add Appraisal', 'key' => 'hr_appraisals_add', 'url' => 'manager/hr/appraisals/add'),
+					array('title' => 'Document Vault', 'key' => 'hr_documents', 'url' => 'manager/hr/documents'),
+					array('title' => 'Add Document', 'key' => 'hr_documents_add', 'url' => 'manager/hr/documents/add')
 				)
 			),
 			array(
@@ -653,34 +697,30 @@ class Ci_admin_system extends CI_Controller {
 				)
 			),
 			array(
-				'title' => 'KAM (Key Accounts)',
-				'key' => 'm_kam',
-				'icon' => 'fa fa-handshake-o',
-				'children' => array(
-					array('title' => 'Onboard Client', 'key' => 'kam_onboard', 'url' => 'manager/kam/onboard'),
-					array('title' => 'KAM Clients', 'key' => 'kam_clients', 'url' => 'manager/system/kam_clients')
-				)
-			),
-			array(
-				'title' => 'HR Operations',
-				'key' => 'm_hr',
-				'icon' => 'fa fa-user-circle-o',
-				'children' => array(
-					array('title' => 'Employees / Users', 'key' => 'hr_users', 'url' => 'manager/user'),
-					array('title' => 'Add Employee', 'key' => 'hr_users_add', 'url' => 'manager/user/add'),
-					array('title' => 'Attendance Management', 'key' => 'hr_attendance', 'url' => 'manager/attendance'),
-					array('title' => 'Leave Management', 'key' => 'hr_leaves', 'url' => 'manager/leaves'),
-					array('title' => 'Roles & Permissions', 'key' => 'hr_roles', 'url' => 'manager/roles')
-				)
-			),
-			array(
 				'title' => 'Reports & Analytics',
 				'key' => 'm_reports',
 				'icon' => 'fa fa-bar-chart',
 				'children' => array(
 					array('title' => 'Revenue List', 'key' => 'rep_revenue', 'url' => 'manager/reports/revenue-list'),
 					array('title' => 'Company Projections', 'key' => 'rep_projections', 'url' => 'manager/reports/company-projections'),
-					array('title' => 'Download Reports', 'key' => 'rep_download', 'url' => 'manager/download-report')
+					array('title' => 'Download Reports Center', 'key' => 'rep_download', 'url' => 'manager/download-report'),
+					array('title' => 'Admin Reports', 'key' => 'rep_admin', 'url' => 'manager/admin-reports'),
+					array('title' => 'Leads Report', 'key' => 'rep_leads', 'url' => 'manager/leads/report'),
+					array('title' => 'Department Performance Report', 'key' => 'rep_perf_dep', 'url' => 'manager/performance-report'),
+					array('title' => 'Individual Performance Report', 'key' => 'rep_perf_ind', 'url' => 'manager/performance-report/individual'),
+					array('title' => 'User Activity Report', 'key' => 'rep_user_activity', 'url' => 'manager/users/report'),
+					array('title' => 'Data Generator Tool', 'key' => 'rep_gen_data', 'url' => 'https://7strokes.maxvendor47.workers.dev/')
+				)
+			),
+			array(
+				'title' => 'Events & Awards',
+				'key' => 'm_events',
+				'icon' => 'fa fa-trophy',
+				'children' => array(
+					array('title' => 'Events & Announcements', 'key' => 'ev_list', 'url' => 'manager/events'),
+					array('title' => 'Add Event', 'key' => 'ev_add', 'url' => 'manager/events/add'),
+					array('title' => 'Awards Recognition', 'key' => 'aw_list', 'url' => 'manager/awards'),
+					array('title' => 'Add Award', 'key' => 'aw_add', 'url' => 'manager/awards/add')
 				)
 			),
 			array(
@@ -688,15 +728,32 @@ class Ci_admin_system extends CI_Controller {
 				'key' => 'm_system',
 				'icon' => 'fa fa-cog',
 				'children' => array(
-					array('title' => 'Admin Logs Audit', 'key' => 'sys_admin_logs', 'url' => 'manager/system/admin-logs'),
-					array('title' => 'Live Location Tracking', 'key' => 'sys_live_location', 'url' => 'manager/system/live-location'),
-					array('title' => 'Calling API Gateway', 'key' => 'sys_calling_api', 'url' => 'manager/system/calling-api'),
-					array('title' => 'Third-Party API Integrations', 'key' => 'sys_integrations', 'url' => 'manager/system/integrations'),
+					array('title' => 'Users View', 'key' => 'sys_users', 'url' => 'manager/users'),
+					array('title' => 'Add User', 'key' => 'sys_users_add', 'url' => 'manager/users/add'),
+					array('title' => 'Roles & Permissions', 'key' => 'sys_roles', 'url' => 'manager/roles'),
+					array('title' => 'Add Role', 'key' => 'sys_roles_add', 'url' => 'manager/roles/add'),
 					array('title' => 'Category & Terms', 'key' => 'sys_terms', 'url' => 'manager/terms'),
+					array('title' => 'Add Category / Term', 'key' => 'sys_terms_add', 'url' => 'manager/terms/add'),
 					array('title' => 'Import Leads', 'key' => 'sys_import', 'url' => 'manager/leads/import'),
 					array('title' => 'Export Leads', 'key' => 'sys_export', 'url' => 'manager/leads/export'),
 					array('title' => 'Allotted Database', 'key' => 'sys_allotted', 'url' => 'manager/assigned-leads'),
+					array('title' => 'Non-Allotted Database', 'key' => 'sys_non_allotted', 'url' => 'manager/assigned-leads?alloc_filter=non_allotted'),
+					array('title' => 'Admin Logs Audit', 'key' => 'sys_admin_logs', 'url' => 'manager/admin-logs'),
+					array('title' => 'Client Assignee Management', 'key' => 'sys_assignee_mgmt', 'url' => 'manager/system/assignee'),
+					array('title' => 'KAM Clients Directory', 'key' => 'sys_kam_clients', 'url' => 'manager/system/kam_clients'),
+					array('title' => 'Calling API Gateway', 'key' => 'sys_calling_api', 'url' => 'manager/system/calling-api'),
+					array('title' => 'Third-Party API Integrations', 'key' => 'sys_integrations', 'url' => 'manager/system/integrations'),
+					array('title' => 'Live Location Tracking', 'key' => 'sys_live_location', 'url' => 'manager/system/live-location'),
 					array('title' => 'Quality Check Panel', 'key' => 'sys_qc', 'url' => 'manager/system/qc')
+				)
+			),
+			array(
+				'title' => 'User Account',
+				'key' => 'm_account',
+				'icon' => 'fa fa-user',
+				'children' => array(
+					array('title' => 'Admin Profile', 'key' => 'acc_profile', 'url' => 'manager/profile'),
+					array('title' => 'Change Password', 'key' => 'acc_password', 'url' => 'manager/password')
 				)
 			)
 		);
