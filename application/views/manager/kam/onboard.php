@@ -808,6 +808,110 @@
         </div>
       </div>
 
+      <div class="box box-default">
+        <div class="box-header with-border">
+          <h3 class="box-title">Follow-Up</h3>
+        </div>
+        <div class="box-body">
+          <div class="row">
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Next Follow Up Date</label>
+                <input type="text" class="form-control datepicker" name="followup_date" id="kam_followup_date" placeholder="DD-MM-YYYY" autocomplete="off">
+              </div>
+            </div>
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Next Follow Up Time</label>
+                <div class="input-group bootstrap-timepicker timepicker">
+                  <input type="text" class="form-control input-small timepicker" name="followup_time" autocomplete="off">
+                  <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-6 col-sm-12">
+              <div class="form-group">
+                <label>Follow-Up Remark</label>
+                <input type="text" class="form-control" name="followup_remark" placeholder="Follow-up remark...">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="box box-default">
+        <div class="box-header with-border">
+          <h3 class="box-title">Meeting and Visit</h3>
+        </div>
+        <div class="box-body">
+          <div class="row remark_row">
+            <div class="col-md-7">
+              <div class="row">
+                <div class="col-lg-4 col-sm-6">
+                  <div class="form-group">
+                    <label>Next Meeting Date</label>
+                    <input type="text" class="form-control datepicker" name="m_date" id="kam_m_date" placeholder="DD-MM-YYYY" autocomplete="off">
+                  </div>
+                </div>
+                <div class="col-lg-4 col-sm-6">
+                  <div class="form-group">
+                    <label>Next Meeting Time</label>
+                    <div class="input-group bootstrap-timepicker timepicker">
+                      <input type="text" class="form-control input-small timepicker" name="m_time" autocomplete="off">
+                      <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-4 col-sm-6">
+                  <div class="form-group">
+                    <label>POC</label>
+                    <input type="text" class="form-control" name="m_poc" placeholder="Contact person">
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-4 col-sm-6">
+                  <div class="form-group">
+                    <label>Attendee 1</label>
+                    <select class="form-control select2" name="a1" style="width: 100%;">
+                      <option value="">Select Attendee 1</option>
+                      <?php if(isset($u_list) && !empty($u_list)) { 
+                        foreach($u_list as $li){ ?>
+                          <option value="<?php echo $li['id']; ?>"><?php echo htmlspecialchars($li['name']); ?></option>
+                      <?php } } ?>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-lg-4 col-sm-6">
+                  <div class="form-group">
+                    <label>Attendee 2</label>
+                    <select class="form-control select2" name="a2" style="width: 100%;">
+                      <option value="">Select Attendee 2</option>
+                      <?php if(isset($u_list) && !empty($u_list)) { 
+                        foreach($u_list as $li){ ?>
+                          <option value="<?php echo $li['id']; ?>"><?php echo htmlspecialchars($li['name']); ?></option>
+                      <?php } } ?>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-lg-4 col-sm-6">
+                  <div class="form-group">
+                    <label>Mobile</label>
+                    <input type="text" class="form-control" name="m_mobile" placeholder="Mobile number">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-5">
+              <div class="form-group remark-group">
+                <label>Meeting Remark</label>
+                <textarea class="form-control" name="m_remark" rows="4" placeholder="Meeting / Visit notes..."></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="box-footer text-center" style="padding: 20px 15px; background: transparent;">
         <button type="submit" class="btn btn-danger btn-lg" style="min-width: 180px;"><i class="fa fa-user-plus"></i> Onboard Client</button>
         <a href="<?php echo base_url(); ?>manager/kam/my-client" class="btn btn-default btn-lg" style="margin-left: 10px;">Cancel</a>

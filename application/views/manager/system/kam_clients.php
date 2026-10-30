@@ -12,18 +12,8 @@
                     <div class="x_row">
                         <div class="x_col">
                             <form class="form-inline head_filter form-inline-mob" method="get" action="<?php echo base_url('manager/system/kam_clients'); ?>">
-                                <div class="form-group" style="min-width: 320px;">
-                                    <select name="company" id="kamCompanySearch" class="form-control" style="width: 100%;">
-                                        <?php if (!empty($_GET['company'])) { ?>
-                                            <option value="<?php echo htmlspecialchars($_GET['company']); ?>" selected="selected"><?php echo htmlspecialchars($_GET['company']); ?></option>
-                                        <?php } else { ?>
-                                            <option value="">Type 3+ letters to search company...</option>
-                                        <?php } ?>
-                                    </select>
-                                </div>
-
                                 <div class="form-group">
-                                    <input type="text" class="input-md form-control" name="search" placeholder="Search Owner / POC / Contact" value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>" autocomplete="off" style="min-width: 240px;" />
+                                    <input type="text" class="input-md form-control" name="search" placeholder="Search Company / Owner / POC" value="<?php echo htmlspecialchars($_GET['search'] ?? ($_GET['company'] ?? '')); ?>" autocomplete="off" style="min-width: 300px;" />
                                 </div>
 
                                 <div class="form-group">
@@ -162,11 +152,7 @@
                                 </tbody>
                             </table>
                         <?php } else { ?>
-                            <?php if (!empty($searched) && strlen($search_term) >= 3) { ?>
-                                <div class="alert alert-info" style="margin: 15px 0;"> No matching companies found for "<?php echo htmlspecialchars($search_term); ?>" </div>
-                            <?php } else { ?>
-                                <div class="alert alert-info" style="margin: 15px 0;"> Please type at least 3 letters to search for a company. </div>
-                            <?php } ?>
+                            <div class="alert alert-info"> No Data Found </div>
                         <?php } ?>
                     </div>
                 </div>

@@ -480,24 +480,20 @@ class Ci_admin_system extends CI_Controller {
 			$search = trim((string)$this->input->get('search'));
 		}
 
-		$clients = array();
-		$searched = false;
+		$this->db->select('K.*, L.poc as lead_poc, L.contact1 as lead_contact, L.email as lead_email, L.category, L.company_status, L.r_amount, L.mrr, L.location, L.tl_number, L.tl_emirate, U.name as assignee_name');
+		$this->db->from('ci_kam_client_details K');
+		$this->db->join('ci_leads L', 'K.lead_id = L.id', 'LEFT');
+		$this->db->join('ci_user U', 'K.executive_id = U.id', 'LEFT');
 		if (!empty($search)) {
-			$searched = true;
-			if (strlen($search) >= 3) {
-				$this->db->select('K.*, L.poc as lead_poc, L.contact1 as lead_contact, L.email as lead_email, L.category, L.company_status, L.r_amount, L.mrr, L.location, L.tl_number, L.tl_emirate, U.name as assignee_name');
-				$this->db->from('ci_kam_client_details K');
-				$this->db->join('ci_leads L', 'K.lead_id = L.id', 'LEFT');
-				$this->db->join('ci_user U', 'K.executive_id = U.id', 'LEFT');
-				$this->db->group_start();
-				$this->db->like('K.client_name', $search);
-				$this->db->or_like('K.owner_name', $search);
-				$this->db->or_like('L.poc', $search);
-				$this->db->group_end();
-				$this->db->order_by('K.id', 'DESC');
-				$clients = $this->db->get()->result_array();
-			}
+			$this->db->group_start();
+			$this->db->like('K.client_name', $search);
+			$this->db->or_like('K.owner_name', $search);
+			$this->db->or_like('L.poc', $search);
+			$this->db->group_end();
 		}
+		$this->db->order_by('K.id', 'DESC');
+		$clients = $this->db->get()->result_array();
+		$searched = !empty($search);
 
 		$data['clients'] = $clients;
 		$data['searched'] = $searched;

@@ -52,7 +52,7 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.5/css/responsive.dataTables.min.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/bootstrap/developer.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/multiselect/multiselect.css">
-<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-dashboard.css?v=20261028_dashboard_v7">
+<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-dashboard.css?v=20261029_darkblue_oceanblue_v9">
 <link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/plugins/table_export/css/tableexport.css" />
 
 <script src="<?php echo base_url();?>assets/plugins/table_export/FileSaver.min.js"></script>
@@ -231,7 +231,10 @@
         <ul>
           <li><a href="<?php echo base_url();?>manager/leads/review_leads"><i class="fa fa-check-square-o"></i>Pending Leads Approval</a></li>
           <li><a href="<?php echo base_url();?>manager/orders/pending_process"><i class="fa fa-hourglass-half"></i>Pending Order Process</a></li>
+          <li><a href="<?php echo base_url();?>manager/orders/pending_sales_approval"><i class="fa fa-clock-o"></i>Pending Sales Approval</a></li>
+          <?php if($is_admin || has_section_perm('kam', 'write')){ ?>
           <li><a href="<?php echo base_url();?>manager/kam/onboard"><i class="fa fa-user-plus"></i>Onboard Client</a></li>
+          <?php } ?>
           <li><a href="<?php echo base_url();?>manager/orders/open"><i class="fa fa-folder-open-o"></i>Open Orders</a></li>
           <li><a href="<?php echo base_url();?>manager/orders/followups"><i class="fa fa-calendar-check-o"></i>Orders Follow-up</a></li>
           <li><a href="<?php echo base_url();?>manager/orders?status=completed"><i class="fa fa-check-circle"></i>Completed Orders</a></li>
@@ -249,8 +252,8 @@
           <li><a href="<?php echo base_url();?>manager/kam/my-client"><i class="fa fa-user"></i>My Client</a></li>
           <?php if($is_admin || has_section_perm('kam', 'write')){ ?>
           <li><a href="<?php echo base_url();?>manager/kam/onboard"><i class="fa fa-user-plus"></i>Onboard Client</a></li>
-          <?php } ?>
           <li><a href="<?php echo base_url();?>manager/kam/schedule"><i class="fa fa-calendar"></i>Create Schedule</a></li>
+          <?php } ?>
           <li><a href="<?php echo base_url();?>manager/kam/task-followup"><i class="fa fa-tasks"></i>Task Follow-up</a></li>
           <li><a href="<?php echo base_url();?>manager/kam/reminders"><i class="fa fa-bell-o"></i>Reminders</a></li>
         </ul>
@@ -302,11 +305,8 @@
           <?php if($is_admin || has_section_perm('admin_logs')){ ?>
           <li><a href="<?php echo base_url();?>manager/admin-logs"><i class="fa fa-history"></i>Admin Logs</a></li>
           <?php } ?>
-          <?php if($is_admin || has_section_perm('system_assignee') || has_section_perm('system')){ ?>
-          <li><a href="<?php echo base_url();?>manager/system/assign"><i class="fa fa-user-plus"></i>Assign</a></li>
-          <?php } ?>
           <?php if($is_admin || has_section_perm('kam_clients') || has_section_perm('system')){ ?>
-          <li><a href="<?php echo base_url();?>manager/system/kam_clients"><i class="fa fa-briefcase"></i>KAM Client</a></li>
+          <li><a href="<?php echo base_url();?>manager/system/kam_clients"><i class="fa fa-briefcase"></i>KAM Clients</a></li>
           <?php } ?>
           <?php if($is_admin || has_section_perm('calling_api')){ ?>
           <li><a href="<?php echo base_url();?>manager/system/calling-api"><i class="fa fa-phone-square"></i>Calling API</a></li>
@@ -333,6 +333,9 @@
   </nav>
 
   <div class="header-quick-actions">
+    <a href="<?php echo base_url();?>manager/live" class="live-nav-badge <?php echo ($route1 === 'live') ? 'active' : ''; ?>" title="Live Commercial Operations Dashboard" style="display:inline-flex; align-items:center; justify-content:center; text-decoration:none; margin-right:8px; padding:5px 12px; border-radius:9999px; background:#0f172a; color:#ffffff; font-weight:700; font-size:11px; letter-spacing:0.06em; border:1px solid rgba(0, 114, 240, 0.45); box-shadow:0 2px 8px rgba(0,0,0,0.18); transition:all 0.2s ease;">
+      <span style="width:7px; height:7px; border-radius:50%; background:#10b981; box-shadow:0 0 8px #10b981; display:inline-block; margin-right:6px;"></span> LIVE
+    </a>
     <?php if(has_section_perm('calls')){ ?>
     <a href="<?php echo base_url();?>manager/calls" class="global-theme-btn" title="Phone Dialer & Calls" style="display:inline-flex; align-items:center; justify-content:center; text-decoration:none; margin-right:6px; color:#2563eb;">
       <i class="fa fa-phone"></i>
@@ -757,7 +760,10 @@ $(function() {
         <ul class="treeview-menu">
           <li><a href="<?php echo base_url();?>manager/leads/review_leads"><i class="fa fa-check-square-o"></i>Pending Leads Approval</a></li>
           <li><a href="<?php echo base_url();?>manager/orders/pending_process"><i class="fa fa-hourglass-half"></i>Pending Order Process</a></li>
+          <li><a href="<?php echo base_url();?>manager/orders/pending_sales_approval"><i class="fa fa-clock-o"></i>Pending Sales Approval</a></li>
+          <?php if($is_admin || has_section_perm('kam', 'write')){ ?>
           <li><a href="<?php echo base_url();?>manager/kam/onboard"><i class="fa fa-user-plus"></i>Onboard Client</a></li>
+          <?php } ?>
           <li><a href="<?php echo base_url();?>manager/orders/open"><i class="fa fa-folder-open-o"></i>Open Orders</a></li>
           <li><a href="<?php echo base_url();?>manager/orders/followups"><i class="fa fa-calendar-check-o"></i>Orders Follow-up</a></li>
           <li><a href="<?php echo base_url();?>manager/orders?status=completed"><i class="fa fa-check-circle"></i>Completed Orders</a></li>
@@ -775,8 +781,8 @@ $(function() {
           <li><a href="<?php echo base_url();?>manager/kam/my-client"><i class="fa fa-user"></i>My Client</a></li>
           <?php if($is_admin || has_section_perm('kam', 'write')){ ?>
           <li><a href="<?php echo base_url();?>manager/kam/onboard"><i class="fa fa-user-plus"></i>Onboard Client</a></li>
-          <?php } ?>
           <li><a href="<?php echo base_url();?>manager/kam/schedule"><i class="fa fa-calendar"></i>Create Schedule</a></li>
+          <?php } ?>
           <li><a href="<?php echo base_url();?>manager/kam/task-followup"><i class="fa fa-tasks"></i>Task Follow-up</a></li>
           <li><a href="<?php echo base_url();?>manager/kam/reminders"><i class="fa fa-bell-o"></i>Reminders</a></li>
         </ul>

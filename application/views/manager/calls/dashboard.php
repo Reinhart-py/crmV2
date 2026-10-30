@@ -763,14 +763,14 @@ html, body {
         <a href="javascript:void(0)" class="dock-flyout-item" onclick="openMenuQueue('followup', 'next7', 'Next 7 Days')">
           <span>Next Seven Days</span>
         </a>
-        <a href="javascript:void(0)" class="dock-flyout-item" onclick="openMenuQueue('followup', 'all', 'All Follow-up')">
-          <span>All Follow Up</span>
+        <a href="javascript:void(0)" class="dock-flyout-item" onclick="openFollowupAllFeaturesMode()">
+          <span>All Features</span>
         </a>
       </div>
     </div>
 
     <div class="dock-item-wrapper">
-      <button type="button" class="crm-dock-btn" id="dockBtnDatabase" title="Database" onclick="openMenuQueue('database', 'all', 'Database Records')">
+      <button type="button" class="crm-dock-btn" id="dockBtnDatabase" title="Database" onclick="openAutoDialerMode()">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block; margin:0 auto 2px auto;">
           <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
           <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
@@ -787,15 +787,11 @@ html, body {
           <i class="fa fa-keyboard-o" style="margin-right:8px; color:#64748b;"></i>
           <span>Manual Dialer</span>
         </a>
-        <a href="javascript:void(0)" class="dock-flyout-item" onclick="openMenuQueue('database', 'all', 'All Database Records')">
-          <i class="fa fa-list" style="margin-right:8px; color:#64748b;"></i>
-          <span>All Database Records</span>
-        </a>
       </div>
     </div>
 
     <div class="dock-item-wrapper">
-      <button type="button" class="crm-dock-btn" id="dockBtnLeads" title="Leads" onclick="openMenuQueue('lead', 'all', 'Qualified Leads')">
+      <button type="button" class="crm-dock-btn" id="dockBtnLeads" title="Leads" onclick="openLeadsDialerMode()">
         <i class="fa fa-bullhorn"></i>
         <span class="dock-lbl">Leads</span>
       </button>
@@ -822,7 +818,7 @@ html, body {
         <button type="button" class="apple-segment-btn" data-filter="missed" onclick="openMenuQueue('followup', 'missed', 'Missed Follow-ups')">Missed</button>
         <button type="button" class="apple-segment-btn" data-filter="last7" onclick="openMenuQueue('followup', 'last7', 'Last 7 Days')">Last 7d</button>
         <button type="button" class="apple-segment-btn" data-filter="next7" onclick="openMenuQueue('followup', 'next7', 'Next 7 Days')">Next 7d</button>
-        <button type="button" class="apple-segment-btn" data-filter="all" onclick="openMenuQueue('followup', 'all', 'All Follow-ups')">All</button>
+        <button type="button" class="apple-segment-btn" data-filter="all" onclick="openFollowupAllFeaturesMode()">All Features</button>
       </div>
 
       <div class="apple-segmented-group" id="subnavLogsPeriod" style="display:none;">
@@ -1044,11 +1040,10 @@ html, body {
       </div>
 
       <div id="middleViewAutoDialer" style="display:none; padding:15px; height:100%; overflow-y:auto;">
-        <input type="hidden" id="autoDialGroqAi" value="1">
-        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:18px 20px; box-shadow:0 1px 3px rgba(0,0,0,0.03); margin-bottom:16px;">
+        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:18px 20px; box-shadow:0 1px 3px rgba(0,0,0,0.04); margin-bottom:16px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-            <h3 style="font-size:15px; font-weight:700; color:#0f172a; margin:0; letter-spacing:-0.01em;">
-              <i class="fa fa-play-circle" style="color:#0072f0; margin-right:6px;"></i> Auto Dialer
+            <h3 style="font-size:16px; font-weight:700; color:#0f172a; margin:0; letter-spacing:-0.01em;" id="dialerSetupHeading">
+              <i class="fa fa-play-circle" style="color:#0072f0; margin-right:6px;" id="dialerSetupIcon"></i> <span id="dialerSetupTitle">Auto Dialer</span>
             </h3>
             <div style="display:flex; gap:6px;">
               <button type="button" class="btn btn-xs btn-default" onclick="selectAllAutoStages(true)" style="border-radius:6px; font-size:11px; font-weight:600; padding:4px 10px;">Select All</button>
@@ -1059,39 +1054,52 @@ html, body {
           <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:10px; margin-bottom:16px; padding:14px; background:#f8fafc; border-radius:10px; border:1px solid #f1f5f9;">
             <?php if(!empty($statuses)){ foreach($statuses as $st){ ?>
               <label style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:500; color:#334155; margin:0; cursor:pointer;">
-                <input type="checkbox" class="cbx-auto-stage" value="<?php echo (int)$st['id']; ?>" style="margin:0; width:15px; height:15px; accent-color:#0072f0;">
+                <input type="checkbox" class="cbx-auto-stage" value="<?php echo (int)$st['id']; ?>" onchange="updateAutoDialerQueueCount()" style="margin:0; width:15px; height:15px; accent-color:#0072f0;">
                 <span><?php echo htmlspecialchars($st['status']); ?></span>
               </label>
             <?php } } ?>
           </div>
 
           <div class="row" style="margin-bottom:14px;">
-            <div class="col-xs-12 col-sm-6">
+            <div class="col-xs-12 col-sm-4">
               <label style="font-size:12px; font-weight:600; color:#334155; margin-bottom:4px; display:block;">Call Delay Interval</label>
               <select id="autoDialTimerDelay" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:12px; height:36px;">
                 <option value="3">3 Seconds</option>
-                <option value="5" selected>5 Seconds</option>
-                <option value="10">10 Seconds</option>
-                <option value="15">15 Seconds</option>
-                <option value="30">30 Seconds</option>
+                <option value="60" selected>60 Seconds</option>
+                <option value="90">90 Seconds</option>
+                <option value="120">120 Seconds</option>
               </select>
             </div>
-            <div class="col-xs-12 col-sm-6">
+            <div class="col-xs-12 col-sm-4">
               <label style="font-size:12px; font-weight:600; color:#334155; margin-bottom:4px; display:block;">Details Filling Mode</label>
               <select id="autoDialFillingMode" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:12px; height:36px;">
                 <option value="auto" selected>Auto Pre-fill Lead Details</option>
                 <option value="manual">Manual Details Entry</option>
               </select>
             </div>
+            <div class="col-xs-12 col-sm-4">
+              <label style="font-size:12px; font-weight:600; color:#334155; margin-bottom:4px; display:block;">Range (Last 3 Digits)</label>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <input type="number" id="dialerRangeFrom" min="0" max="999" placeholder="001" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:12px; height:36px;" oninput="updateAutoDialerQueueCount()">
+                <span style="font-size:12px; color:#64748b;">to</span>
+                <input type="number" id="dialerRangeTo" min="0" max="999" placeholder="200" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:12px; height:36px;" oninput="updateAutoDialerQueueCount()">
+              </div>
+            </div>
           </div>
 
           <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; padding-top:4px;">
             <div style="font-size:13px; color:#475569;">
-              Queue Status: <strong id="autoDialerQueueCount" style="color:#0f172a;">0 leads ready</strong>
+              Queue Status: <strong id="autoDialerQueueCount" style="color:#0f172a;">0 records ready</strong>
             </div>
             <div style="display:flex; gap:8px;">
+              <button type="button" id="btnDialerBreak" class="btn btn-sm btn-default btn-dialer-break" onclick="toggleDialerBreak()" style="border-radius:8px; font-weight:600; padding:7px 16px; border:1px solid #cbd5e1;">
+                <i class="fa fa-coffee"></i> Break
+              </button>
               <button type="button" id="btnStartAutoDial" class="btn btn-sm btn-primary" onclick="startAutoDialSession()" style="background:#0072f0; border-color:#0072f0; font-weight:600; padding:7px 20px; border-radius:8px;">
                 <i class="fa fa-play"></i> Start Auto Dialing
+              </button>
+              <button type="button" id="btnStartManualDial" class="btn btn-sm btn-primary" onclick="startManualDialSession()" style="display:none; background:#0072f0; border-color:#0072f0; font-weight:600; padding:7px 20px; border-radius:8px;">
+                <i class="fa fa-play"></i> Start Manual Dialing
               </button>
               <button type="button" id="btnPauseAutoDial" class="btn btn-sm btn-default" onclick="toggleAutoDialPause()" style="display:none; border-radius:8px; font-weight:600; padding:7px 16px;">
                 <i class="fa fa-pause"></i> Pause
@@ -1119,7 +1127,7 @@ html, body {
 
           <div id="autoDialCountdownWrap" style="display:none; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:10px 14px; margin-top:12px; align-items:center; justify-content:space-between;">
             <div style="font-size:12px; font-weight:600; color:#166534;">
-              <i class="fa fa-clock-o"></i> Next call dialing in <strong id="autoDialCountdownNum" style="font-size:15px; color:#15803d;">5</strong>s...
+              <i class="fa fa-clock-o"></i> Next call dialing in <strong id="autoDialCountdownNum" style="font-size:15px; color:#15803d;">60</strong>s...
             </div>
             <div style="display:flex; gap:6px;">
               <button type="button" class="btn btn-xs btn-success" onclick="triggerImmediateNextAutoLead()" style="border-radius:6px; font-weight:600;"><i class="fa fa-phone"></i> Dial Now</button>
@@ -1132,23 +1140,21 @@ html, body {
           
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid #f1f5f9;">
             <div style="display:flex; align-items:center; gap:10px;">
-              <h3 style="font-size:16px; font-weight:700; color:#0f172a; margin:0;" id="manualDetailsHeaderName">Manual Dialer - Contact Details</h3>
+              <button type="button" class="btn btn-xs btn-default" onclick="backToDialerSetup()" style="border-radius:6px; font-weight:600; padding:4px 10px; border:1px solid #cbd5e1;">
+                <i class="fa fa-arrow-left"></i> Setup
+              </button>
+              <h3 style="font-size:16px; font-weight:700; color:#0f172a; margin:0;" id="manualDetailsHeaderName">Contact Details</h3>
               <span id="manualDialProgressBadge" style="font-size:11px; font-weight:700; color:#0072f0; background:#e6f1fe; padding:3px 10px; border-radius:12px;">Contact 0 of 0</span>
             </div>
             
             <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-              <select id="manualDialQueueSource" class="form-control" style="width:145px; border-radius:6px; font-size:12px; height:32px; display:inline-block;" onchange="changeManualDialQueue(this.value)">
-                <option value="database" selected>Database Queue</option>
-                <option value="followup">Follow-ups Queue</option>
-                <option value="lead">Leads Queue</option>
-              </select>
-              <button type="button" class="btn btn-sm btn-default" onclick="prevManualLead()" title="Previous Contact" style="border-radius:6px; height:32px; padding:4px 10px;">
+              <button type="button" class="btn btn-sm btn-default" onclick="prevManualLead()" title="Previous Contact" style="border-radius:6px; height:32px; padding:4px 10px; border:1px solid #cbd5e1;">
                 <i class="fa fa-chevron-left"></i>
               </button>
               <button type="button" class="btn btn-sm btn-warning" onclick="skipManualLead()" title="Skip to next contact" style="background:#f59e0b; border-color:#d97706; color:#ffffff; border-radius:6px; font-weight:600; height:32px; padding:4px 12px;">
                 <i class="fa fa-forward"></i> Skip
               </button>
-              <button type="button" class="btn btn-sm btn-default" onclick="saveManualRecordDetails(false)" title="Save changes" style="border-radius:6px; font-weight:600; height:32px; padding:4px 12px;">
+              <button type="button" class="btn btn-sm btn-default" onclick="saveManualRecordDetails(false)" title="Save changes" style="border-radius:6px; font-weight:600; height:32px; padding:4px 12px; border:1px solid #cbd5e1;">
                 <i class="fa fa-save"></i> Save
               </button>
               <button type="button" class="btn btn-sm btn-success" onclick="saveAndNextManualLead()" title="Save details and call next contact" style="background:#16a34a; border-color:#16a34a; color:#ffffff; border-radius:6px; font-weight:600; height:32px; padding:4px 14px;">
@@ -1156,6 +1162,9 @@ html, body {
               </button>
               <button type="button" class="btn btn-sm btn-primary" onclick="dialActiveManualContact()" title="Dial active contact number" style="background:#0072f0; border-color:#0072f0; border-radius:6px; font-weight:600; height:32px; padding:4px 14px;">
                 <i class="fa fa-phone"></i> Call Now
+              </button>
+              <button type="button" class="btn btn-sm btn-default btn-dialer-break" onclick="toggleDialerBreak()" style="border-radius:6px; font-weight:600; height:32px; padding:4px 12px; border:1px solid #cbd5e1;">
+                <i class="fa fa-coffee"></i> Break
               </button>
             </div>
           </div>
@@ -1165,159 +1174,147 @@ html, body {
             <input type="hidden" name="call_log_id" id="manualEditCallLogId" value="0">
             <input type="hidden" name="call_duration" id="manualEditCallDuration" value="0">
 
-            <div class="row">
-              <div class="col-md-6">
-                <div class="form-group" style="margin-bottom:12px;">
-                  <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Company Name</label>
-                  <input type="text" name="customer" id="manualEditCustomer" class="form-control" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
+            <div style="background:#f8fafc; border:1px solid #f1f5f9; border-radius:10px; padding:14px; margin-bottom:14px;">
+              <h5 style="margin:0 0 10px 0; font-size:12px; font-weight:700; text-transform:uppercase; color:#475569; letter-spacing:0.5px;">1. Client &amp; Contact Information</h5>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group" style="margin-bottom:12px;">
+                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Company Name</label>
+                    <input type="text" name="customer" id="manualEditCustomer" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;">
+                  </div>
                 </div>
-              </div>
-              <div class="col-md-6">
-                <div class="form-group" style="margin-bottom:12px;">
-                  <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Point of Contact</label>
-                  <input type="text" name="poc" id="manualEditPoc" class="form-control" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
-                </div>
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col-md-6">
-                <div class="form-group" style="margin-bottom:12px;">
-                  <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Primary Phone</label>
-                  <div style="display:flex; gap:6px;">
-                    <input type="text" name="contact1" id="manualEditContact1" class="form-control" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px; font-weight:600;">
-                    <button type="button" class="btn btn-default" onclick="dialManualPhoneField('primary')" title="Dial Primary Phone" style="border-radius:8px; height:38px; color:#0072f0;"><i class="fa fa-phone"></i></button>
+                <div class="col-md-6">
+                  <div class="form-group" style="margin-bottom:12px;">
+                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Point of Contact (POC)</label>
+                    <input type="text" name="poc" id="manualEditPoc" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;">
                   </div>
                 </div>
               </div>
-              <div class="col-md-6">
-                <div class="form-group" style="margin-bottom:12px;">
-                  <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Alt Phone</label>
-                  <div style="display:flex; gap:6px;">
-                    <input type="text" name="alt_contact" id="manualEditAltContact" class="form-control" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
-                    <button type="button" class="btn btn-default" onclick="dialManualPhoneField('alt')" title="Dial Alt Phone" style="border-radius:8px; height:38px; color:#0072f0;"><i class="fa fa-phone"></i></button>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group" style="margin-bottom:12px;">
+                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Primary Phone</label>
+                    <div style="display:flex; gap:6px;">
+                      <input type="text" name="contact1" id="manualEditContact1" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px; font-weight:600;">
+                      <button type="button" class="btn btn-default" onclick="dialManualPhoneField('primary')" title="Dial Primary Phone" style="border-radius:8px; height:36px; color:#0072f0; border:1px solid #cbd5e1;"><i class="fa fa-phone"></i></button>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group" style="margin-bottom:12px;">
+                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Alt Phone</label>
+                    <div style="display:flex; gap:6px;">
+                      <input type="text" name="alt_contact" id="manualEditAltContact" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;">
+                      <button type="button" class="btn btn-default" onclick="dialManualPhoneField('alt')" title="Dial Alt Phone" style="border-radius:8px; height:36px; color:#0072f0; border:1px solid #cbd5e1;"><i class="fa fa-phone"></i></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group" style="margin-bottom:12px;">
+                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Email Address</label>
+                    <input type="email" name="email" id="manualEditEmail" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;">
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="form-group" style="margin-bottom:12px;">
+                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Location</label>
+                    <input type="text" name="location" id="manualEditLocation" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;">
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="form-group" style="margin-bottom:12px;">
+                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">DNCR Registry</label>
+                    <select name="dnd_status" id="manualEditDndStatus" class="form-control" onchange="toggleManualDncrDateRow()" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;">
+                      <option value="No">No (Clean)</option>
+                      <option value="Yes">Yes (DND Active)</option>
+                    </select>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="row">
-              <div class="col-md-6">
-                <div class="form-group" style="margin-bottom:12px;">
-                  <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Email Address</label>
-                  <input type="email" name="email" id="manualEditEmail" class="form-control" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
+            <div style="background:#f8fafc; border:1px solid #f1f5f9; border-radius:10px; padding:14px; margin-bottom:14px;">
+              <h5 style="margin:0 0 10px 0; font-size:12px; font-weight:700; text-transform:uppercase; color:#475569; letter-spacing:0.5px;">2. Business Scope &amp; Commercials</h5>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group" style="margin-bottom:12px;">
+                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Authority</label>
+                    <select name="tl_authority" id="manualEditAuthority" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;">
+                      <option value="">Select Authority</option>
+                      <option value="DED">DED</option>
+                      <option value="DMCC">DMCC</option>
+                      <option value="SHAMS">SHAMS</option>
+                      <option value="IFZA">IFZA</option>
+                      <option value="RAKEZ">RAKEZ</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
                 </div>
-              </div>
-              <div class="col-md-6">
-                <div class="form-group" style="margin-bottom:12px;">
-                  <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Authority</label>
-                  <select name="tl_authority" id="manualEditAuthority" class="form-control" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
-                    <option value="">Select Authority</option>
-                    <option value="DED">DED</option>
-                    <option value="DMCC">DMCC</option>
-                    <option value="SHAMS">SHAMS</option>
-                    <option value="IFZA">IFZA</option>
-                    <option value="RAKEZ">RAKEZ</option>
-                    <option value="Other">Other</option>
-                  </select>
+                <div class="col-md-2">
+                  <div class="form-group" style="margin-bottom:12px;">
+                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Quantity</label>
+                    <input type="number" name="qty" id="manualEditQty" value="1" min="1" class="form-control" oninput="calculateManualMrrTotal()" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;">
+                  </div>
                 </div>
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col-md-6">
-                <div class="form-group" style="margin-bottom:12px;">
-                  <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Location</label>
-                  <input type="text" name="location" id="manualEditLocation" class="form-control" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
+                <div class="col-md-2">
+                  <div class="form-group" style="margin-bottom:12px;">
+                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">MRC</label>
+                    <input type="text" name="mrc" id="manualEditMrc" class="form-control" oninput="calculateManualMrrTotal()" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;">
+                  </div>
                 </div>
-              </div>
-              <div class="col-md-6">
-                <div class="form-group" style="margin-bottom:12px;">
-                  <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">DNCR Registry</label>
-                  <select name="dnd_status" id="manualEditDndStatus" class="form-control" onchange="toggleManualDncrDateRow()" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
-                    <option value="No">No (Clean)</option>
-                    <option value="Yes">Yes (DND Active)</option>
-                  </select>
+                <div class="col-md-2">
+                  <div class="form-group" style="margin-bottom:12px;">
+                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Calculated MRR</label>
+                    <input type="text" name="mrr" id="manualEditMrr" readonly class="form-control" style="background:#f1f5f9; border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px; font-weight:700; color:#16a34a;">
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div class="row" id="manualWrapDncrDate" style="display:none;">
-              <div class="col-md-12">
-                <div class="form-group" style="margin-bottom:12px;">
-                  <label style="font-size:12px; font-weight:600; color:#dc2626; margin-bottom:4px; display:block;">DNCR Check Date</label>
-                  <input type="text" name="dnd_check_date" id="manualEditDndDate" class="form-control datepicker" style="border-radius:8px; border:1px solid #fca5a5; font-size:13px; height:38px;">
+            <div style="background:#f8fafc; border:1px solid #f1f5f9; border-radius:10px; padding:14px; margin-bottom:14px;">
+              <h5 style="margin:0 0 10px 0; font-size:12px; font-weight:700; text-transform:uppercase; color:#475569; letter-spacing:0.5px;">3. Status, Follow-Up &amp; Remarks</h5>
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group" style="margin-bottom:12px;">
+                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Call / Lead Status</label>
+                    <select name="status" id="manualEditStatus" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;">
+                      <?php if(!empty($statuses)){
+                        foreach($statuses as $st){ ?>
+                          <option value="<?php echo $st['id']; ?>"><?php echo htmlspecialchars($st['status']); ?></option>
+                      <?php } } ?>
+                    </select>
+                  </div>
                 </div>
+                <div class="col-md-4">
+                  <div class="form-group" style="margin-bottom:12px;">
+                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Next Follow-up Date</label>
+                    <input type="text" name="followup_date" id="manualEditNextFollowup" class="form-control datepicker" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group" style="margin-bottom:12px;">
+                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Follow-up Time</label>
+                    <input type="text" name="followup_time" id="manualEditNextFollowupTime" class="form-control" value="11:00 AM" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;">
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom:0;">
+                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Call Remark / Discussion Notes</label>
+                <textarea name="remark" id="manualEditRemark" rows="3" class="form-control" placeholder="Discussion notes, commitments, objections..." style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px;"></textarea>
               </div>
             </div>
 
-            <div class="row">
-              <div class="col-md-4">
-                <div class="form-group" style="margin-bottom:12px;">
-                  <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Quantity</label>
-                  <input type="number" name="qty" id="manualEditQty" value="1" min="1" class="form-control" oninput="calculateManualMrrTotal()" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="form-group" style="margin-bottom:12px;">
-                  <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">MRC</label>
-                  <input type="text" name="mrc" id="manualEditMrc" class="form-control" oninput="calculateManualMrrTotal()" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="form-group" style="margin-bottom:12px;">
-                  <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Revenue</label>
-                  <input type="text" name="revenue" id="manualEditRevenue" class="form-control" oninput="calculateManualMrrTotal()" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
-                </div>
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col-md-6">
-                <div class="form-group" style="margin-bottom:12px;">
-                  <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Call Status</label>
-                  <select name="status" id="manualEditStatus" class="form-control" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
-                    <?php if(!empty($statuses)){
-                      foreach($statuses as $st){ ?>
-                        <option value="<?php echo $st['id']; ?>"><?php echo htmlspecialchars($st['status']); ?></option>
-                    <?php } } ?>
-                  </select>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="form-group" style="margin-bottom:12px;">
-                  <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Calculated MRR</label>
-                  <input type="text" name="mrr" id="manualEditMrr" readonly class="form-control" style="background:#f2f2f7; border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px; font-weight:700;">
-                </div>
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col-md-6">
-                <div class="form-group" style="margin-bottom:12px;">
-                  <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Next Follow-up Date</label>
-                  <input type="text" name="followup_date" id="manualEditNextFollowup" class="form-control datepicker" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="form-group" style="margin-bottom:12px;">
-                  <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Follow-up Time</label>
-                  <input type="text" name="followup_time" id="manualEditNextFollowupTime" class="form-control" value="11:00 AM" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
-                </div>
-              </div>
-            </div>
-
-            <div class="form-group" style="margin-bottom:16px;">
-              <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Call Remark / Notes</label>
-              <textarea name="remark" id="manualEditRemark" rows="2" class="form-control" placeholder="Discussion notes, objections, commitments..." style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px;"></textarea>
-            </div>
-
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; padding-top:8px; border-top:1px solid #f1f5f9;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; padding-top:8px;">
               <div style="display:flex; gap:8px;">
-                <button type="button" class="btn btn-sm btn-default" onclick="newBlankManualContact()" style="border-radius:6px;">
+                <button type="button" class="btn btn-sm btn-default" onclick="newBlankManualContact()" style="border-radius:6px; border:1px solid #cbd5e1;">
                   <i class="fa fa-user-plus"></i> Blank Record
                 </button>
-                <button type="button" class="btn btn-sm btn-default" onclick="prevManualLead()" style="border-radius:6px;">
+                <button type="button" class="btn btn-sm btn-default" onclick="prevManualLead()" style="border-radius:6px; border:1px solid #cbd5e1;">
                   <i class="fa fa-chevron-left"></i> Previous
                 </button>
               </div>
@@ -1325,7 +1322,7 @@ html, body {
                 <button type="button" class="btn btn-sm btn-warning" onclick="skipManualLead()" style="background:#f59e0b; border-color:#d97706; color:#ffffff; font-weight:600; border-radius:6px; padding:6px 14px;">
                   <i class="fa fa-forward"></i> Skip
                 </button>
-                <button type="button" class="btn btn-sm btn-default" onclick="saveManualRecordDetails(false)" style="font-weight:600; border-radius:6px; padding:6px 14px;">
+                <button type="button" class="btn btn-sm btn-default" onclick="saveManualRecordDetails(false)" style="font-weight:600; border-radius:6px; padding:6px 14px; border:1px solid #cbd5e1;">
                   <i class="fa fa-save"></i> Save
                 </button>
                 <button type="button" class="btn btn-sm btn-success" onclick="saveAndNextManualLead()" style="background:#16a34a; border-color:#16a34a; color:#ffffff; font-weight:600; border-radius:6px; padding:6px 16px;">
@@ -1338,7 +1335,7 @@ html, body {
             </div>
           </form>
         </div>
-      </div><div id="middleViewLogs" style="display:none;">
+      </div></div><div id="middleViewLogs" style="display:none;">
         <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:12px; margin-bottom:18px;">
           <div class="sheet-stat-card">
             <div class="sheet-stat-val" id="logStatTotal">0</div>
@@ -1742,16 +1739,132 @@ function openManualDialerMode() {
   }
 }
 
+var dialerMode = 'auto';
+var isOnBreak = false;
+
 function openAutoDialerMode() {
+  dialerMode = 'auto';
   $('.crm-dock-btn').removeClass('active');
   $('#dockBtnDatabase').addClass('active');
   $('#middleAreaTitle').text('Auto Dialer');
+  $('#dialerSetupTitle').text('Auto Dialer');
+  $('#dialerSetupIcon').attr('class', 'fa fa-play-circle');
   $('#subnavFollowup').hide();
   $('#subnavLogsPeriod').hide();
   hideAllMiddleViews();
+  $('#btnStartAutoDial').show();
+  $('#btnStartManualDial').hide();
   $('#middleViewAutoDialer').show();
   openMiddleArea();
   updateAutoDialerQueueCount();
+}
+
+function openManualDialerMode() {
+  dialerMode = 'manual';
+  $('.crm-dock-btn').removeClass('active');
+  $('#dockBtnDatabase').addClass('active');
+  $('#middleAreaTitle').text('Manual Dialer');
+  $('#dialerSetupTitle').text('Manual Dialer - Setup');
+  $('#dialerSetupIcon').attr('class', 'fa fa-keyboard-o');
+  $('#subnavFollowup').hide();
+  $('#subnavLogsPeriod').hide();
+  hideAllMiddleViews();
+  $('#btnStartAutoDial').hide();
+  $('#btnStartManualDial').show();
+  $('#middleViewAutoDialer').show();
+  openMiddleArea();
+  updateAutoDialerQueueCount();
+}
+
+function openLeadsDialerMode() {
+  dialerMode = 'leads';
+  $('.crm-dock-btn').removeClass('active');
+  $('#dockBtnLeads').addClass('active');
+  $('#middleAreaTitle').text('Leads Dialer');
+  $('#dialerSetupTitle').text('Leads Dialer - Selection');
+  $('#dialerSetupIcon').attr('class', 'fa fa-bullhorn');
+  $('#subnavFollowup').hide();
+  $('#subnavLogsPeriod').hide();
+  hideAllMiddleViews();
+  $('#btnStartAutoDial').show();
+  $('#btnStartManualDial').hide();
+  $('#middleViewAutoDialer').show();
+  openMiddleArea();
+  updateAutoDialerQueueCount();
+}
+
+function openFollowupAllFeaturesMode() {
+  dialerMode = 'followup';
+  $('.crm-dock-btn').removeClass('active');
+  $('#dockBtnFollowup').addClass('active');
+  $('#middleAreaTitle').text('Follow-up - All Features');
+  $('#dialerSetupTitle').text('Follow-up - All Features');
+  $('#dialerSetupIcon').attr('class', 'fa fa-calendar-check-o');
+  $('#subnavFollowup').hide();
+  $('#subnavLogsPeriod').hide();
+  hideAllMiddleViews();
+  $('#btnStartAutoDial').show();
+  $('#btnStartManualDial').hide();
+  $('#middleViewAutoDialer').show();
+  openMiddleArea();
+  updateAutoDialerQueueCount();
+}
+
+function backToDialerSetup() {
+  hideAllMiddleViews();
+  $('#middleViewAutoDialer').show();
+  openMiddleArea();
+}
+
+function startManualDialSession() {
+  if (!autoDialerQueue || autoDialerQueue.length === 0) {
+    showToast('Please select stages and ensure records exist in the chosen criteria');
+    return;
+  }
+  manualDialerQueue = autoDialerQueue.slice();
+  manualDialerIndex = 0;
+  hideAllMiddleViews();
+  $('#middleViewManualDialer').show();
+  displayManualLead(0);
+}
+
+function toggleDialerBreak() {
+  var nextAction = isOnBreak ? 'resume' : 'start';
+  $.ajax({
+    url: '<?php echo base_url(); ?>manager/calls/ajax_log_break',
+    type: 'POST',
+    data: { action: nextAction },
+    dataType: 'json',
+    success: function(res) {
+      isOnBreak = !isOnBreak;
+      if (isOnBreak) {
+        if (autoDialerActive && !autoDialerPaused) {
+          toggleAutoDialPause();
+        }
+        if (autoDialerCountdownInterval) {
+          clearInterval(autoDialerCountdownInterval);
+          autoDialerCountdownInterval = null;
+        }
+        $('.btn-dialer-break').html('<i class="fa fa-coffee" style="color:#d97706;"></i> <strong>On Break</strong>').css({
+          'background': '#fef3c7',
+          'border-color': '#f59e0b',
+          'color': '#92400e'
+        });
+        showToast('Break started - Break status recorded in Admin Logs');
+      } else {
+        $('.btn-dialer-break').html('<i class="fa fa-coffee"></i> Break').css({
+          'background': '#ffffff',
+          'border-color': '#cbd5e1',
+          'color': '#334155'
+        });
+        var durMsg = res.duration_minutes ? (' (Duration: ' + res.duration_minutes + 'm)') : '';
+        showToast('Resumed work from break' + durMsg);
+        if (autoDialerActive && autoDialerPaused) {
+          toggleAutoDialPause();
+        }
+      }
+    }
+  });
 }
 
 function selectAllAutoStages(check) {
@@ -1765,27 +1878,39 @@ function updateAutoDialerQueueCount() {
     selectedStages.push($(this).val());
   });
   if (selectedStages.length === 0) {
-    $('#autoDialerQueueCount').text('0 leads ready (select stages above)');
+    $('#autoDialerQueueCount').text('0 records ready (select stages above)');
     autoDialerQueue = [];
     return;
   }
+  var qType = 'database';
+  if (dialerMode === 'leads') {
+    qType = 'lead';
+  } else if (dialerMode === 'followup') {
+    qType = 'followup';
+  }
+  var rFrom = $('#dialerRangeFrom').val() ? parseInt($('#dialerRangeFrom').val(), 10) : '';
+  var rTo = $('#dialerRangeTo').val() ? parseInt($('#dialerRangeTo').val(), 10) : '';
+
   $('#autoDialerQueueCount').html('<i class="fa fa-spinner fa-spin"></i> Calculating queue...');
   $.ajax({
     url: '<?php echo base_url(); ?>manager/calls/ajax_get_queue',
     type: 'GET',
     data: {
-      type: 'database',
+      type: qType,
       filter: 'all',
-      status: selectedStages.join(',')
+      status: selectedStages.join(','),
+      range_from: rFrom,
+      range_to: rTo
     },
     dataType: 'json',
     success: function(res) {
       if (res && res.status && res.leads) {
         autoDialerQueue = res.leads;
-        $('#autoDialerQueueCount').text(res.leads.length + ' leads ready to dial');
+        var suffix = (rFrom !== '' || rTo !== '') ? (' (Range: ' + (rFrom !== '' ? rFrom : '0') + '-' + (rTo !== '' ? rTo : '999') + ')') : '';
+        $('#autoDialerQueueCount').text(res.leads.length + ' records ready to dial' + suffix);
       } else {
         autoDialerQueue = [];
-        $('#autoDialerQueueCount').text('0 leads in selected stages');
+        $('#autoDialerQueueCount').text('0 records in selected criteria');
       }
     },
     error: function() {
@@ -1857,11 +1982,12 @@ function dialCurrentAutoLead() {
 }
 
 function startAutoDialCountdown() {
+  if (isOnBreak) return;
   if (autoDialerCountdownInterval) {
     clearInterval(autoDialerCountdownInterval);
     autoDialerCountdownInterval = null;
   }
-  var delay = parseInt($('#autoDialTimerDelay').val(), 10) || 5;
+  var delay = parseInt($('#autoDialTimerDelay').val(), 10) || 60;
   autoDialerCountdownSeconds = delay;
   $('#autoDialCountdownNum').text(autoDialerCountdownSeconds);
   $('#autoDialCountdownWrap').css('display', 'flex');
@@ -2589,7 +2715,7 @@ function endActiveCall() {
     });
   }
 
-  if (autoDialerActive && !autoDialerPaused) {
+  if (autoDialerActive && !autoDialerPaused && !isOnBreak) {
     autoDialerIndex++;
     startAutoDialCountdown();
   }

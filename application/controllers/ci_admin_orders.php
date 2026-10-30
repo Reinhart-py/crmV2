@@ -1124,6 +1124,11 @@ class Ci_admin_orders extends CI_Controller {
 				$db_ref = !empty($lead['db_ref_no']) ? $lead['db_ref_no'] : '';
 				$lead_ref = !empty($lead['lead_ref_no']) ? $lead['lead_ref_no'] : '';
 
+				$onboard_mgr = (int)$this->input->post('onboard_manager_id', true);
+				if ($onboard_mgr > 0) {
+					$assigned_to = $onboard_mgr;
+				}
+
 				$order_data = array(
 					'order_no' => $order_no,
 					'client_id' => $id,
@@ -1142,10 +1147,10 @@ class Ci_admin_orders extends CI_Controller {
 					'billing_type' => 'monthly',
 					'assigned_to' => ($assigned_to > 0) ? $assigned_to : $cur_uid,
 					'assigned_dept' => $assigned_dept ?: 'Back Office',
-					'status' => 'Onboarding',
-					'approval_status' => 'approved',
-					'approved_by' => $cur_uid,
-					'approved_at' => $now,
+					'status' => ($action_type === 'send_for_approval') ? 'Pending Sales Approval' : 'Onboarding',
+					'approval_status' => ($action_type === 'send_for_approval') ? 'pending_approval' : 'approved',
+					'approved_by' => ($action_type === 'send_for_approval') ? 0 : $cur_uid,
+					'approved_at' => ($action_type === 'send_for_approval') ? null : $now,
 					'salesperson_original_data' => $orig_snapshot,
 					'created_by' => !empty($lead['order_requested_by']) ? (int)$lead['order_requested_by'] : $cur_uid,
 					'created_at' => $now,
@@ -1154,6 +1159,39 @@ class Ci_admin_orders extends CI_Controller {
 
 				$this->db->insert('ci_orders', $order_data);
 				$new_order_id = $this->db->insert_id();
+
+				if ($action_type === 'send_for_approval') {
+					$this->db->where('lead_id', $id)->update('ci_pipeline', array(
+						'order_request_status' => 'pending_sales_approval',
+						'is_locked' => 1,
+						'updated_at' => $now
+					));
+
+					$this->db->insert('ci_order_history', array(
+						'order_id' => $new_order_id,
+						'action' => 'order_sent_for_sales_approval',
+						'notes' => "Order #{$order_no} submitted for Sales Approval." . (!empty($approval_notes) ? " Notice: {$approval_notes}" : ''),
+						'action_by' => $cur_uid,
+						'action_by_name' => $cur_name,
+						'created_at' => $now
+					));
+
+					$this->db->insert('ci_pipeline_logs', array(
+						'lead_id' => $id,
+						'action' => 'order_sent_for_sales_approval',
+						'stage_from' => 'lead',
+						'stage_to' => 'order',
+						'action_by' => $cur_uid,
+						'action_by_name' => $cur_name,
+						'remarks' => "Order #{$order_no} sent for Sales Approval",
+						'created_at' => $now
+					));
+
+					$this->ci_admin_model->log_admin_action('send_for_approval', "Order #{$order_no} submitted for Sales Approval", 'SUCCESS', $cur_uid, $cur_name);
+					$this->session->set_flashdata('message', "Order #{$order_no} sent for Sales Approval successfully!");
+					redirect('manager/orders/pending_sales_approval');
+					return;
+				}
 
 				$this->db->where('lead_id', $id)->update('ci_pipeline', array(
 					'order_request_status' => 'processed',
@@ -1208,10 +1246,105 @@ class Ci_admin_orders extends CI_Controller {
 		$data['p_cat'] = $this->comman_model->getAll(array('parent_id' => 0, 'status' => 1, 'cat_type' => 'p_cat'), '', 'ci_terms');
 		$data['service_cats'] = $this->comman_model->getAll(array('parent_id' => 0, 'status' => 1, 'cat_type' => 's_cat'), '', 'ci_terms');
 		$data['business_categories'] = $this->comman_model->getAll(array('cat_type' => 'business_cat', 'status' => 1), '', 'ci_terms');
-		$data['company_list'] = $this->db->select('DISTINCT(customer) as customer')->where("customer != ''", null, false)->limit(50)->get('ci_leads')->result_array();
+		$data['company_list'] = $this->db->select('DISTINCT(customer) as customer')->where("customer IS NOT NULL AND customer != ''", null, false)->order_by('customer', 'ASC')->get('ci_leads')->result_array();
 		$data['onboarded_companies'] = $this->db->select('id, client_name, owner_name')->group_by('client_name')->get('ci_kam_client_details')->result_array();
 
 		$this->load->view('manager/orders/edit_pending', $data);
+	}
+
+	public function pending_sales_approval()
+	{
+		$this->if_not_login();
+		$cur_uid = (int)$this->session->userdata('manager_id');
+		$cur_role = (int)$this->session->userdata('manager_role');
+		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
+		if (!$is_backoffice) {
+			$this->session->set_flashdata('error_message', 'Access denied.');
+			redirect('manager/dashboard');
+			return;
+		}
+
+		$data = array();
+		$data['info'] = array(
+			'title' => 'Back Office - Pending Sales Approval',
+			'page_heading' => 'Pending Sales Approval'
+		);
+
+		$search = trim((string)$this->input->get('search'));
+		$d1 = trim((string)$this->input->get('d1'));
+		$d2 = trim((string)$this->input->get('d2'));
+
+		$this->db->select("O.*, U.name as created_by_name, A.name as assigned_to_name, L.customer as company_name, L.poc, L.contact1, L.email");
+		$this->db->from('ci_orders O');
+		$this->db->join('ci_user U', 'O.created_by = U.id', 'left');
+		$this->db->join('ci_user A', 'O.assigned_to = A.id', 'left');
+		$this->db->join('ci_leads L', 'O.lead_id = L.id', 'left');
+		$this->db->group_start();
+		$this->db->where('O.status', 'Pending Sales Approval');
+		$this->db->or_where('O.approval_status', 'pending_approval');
+		$this->db->or_where('O.status', 'pending_sales_approval');
+		$this->db->group_end();
+
+		if (!empty($search)) {
+			$clean = $this->db->escape_str($this->db->escape_like_str($search));
+			$this->db->where("(O.order_no LIKE '%$clean%' OR O.client_name LIKE '%$clean%' OR L.customer LIKE '%$clean%' OR O.service_title LIKE '%$clean%')");
+		}
+		if (!empty($d1) && !empty($d2)) {
+			$this->db->where('O.created_at >=', $d1 . ' 00:00:00');
+			$this->db->where('O.created_at <=', $d2 . ' 23:59:59');
+		}
+
+		$this->db->order_by('O.id', 'DESC');
+		$data['orders'] = $this->db->get()->result_array();
+
+		$this->load->view('manager/orders/pending_sales_approval', $data);
+	}
+
+	public function approve_sales_order($id = 0)
+	{
+		$this->if_not_login();
+		$id = (int)$id;
+		$cur_uid = (int)$this->session->userdata('manager_id');
+		$cur_name = (string)$this->session->userdata('manager_name');
+		$now = date('Y-m-d H:i:s');
+
+		$order = $this->db->where('id', $id)->get('ci_orders')->row_array();
+		if (empty($order)) {
+			$this->session->set_flashdata('error_message', 'Order not found.');
+			redirect('manager/orders/pending_sales_approval');
+			return;
+		}
+
+		$sales_ref = $this->ci_admin_model->generate_next_ref('sales');
+		$this->db->where('id', $id)->update('ci_orders', array(
+			'status' => 'Sales',
+			'approval_status' => 'approved',
+			'sales_ref_no' => $sales_ref,
+			'approved_by' => $cur_uid,
+			'approved_at' => $now,
+			'updated_at' => $now
+		));
+
+		if (!empty($order['lead_id'])) {
+			$this->db->where('lead_id', (int)$order['lead_id'])->update('ci_pipeline', array(
+				'order_request_status' => 'approved',
+				'sales_ref_no' => $sales_ref,
+				'updated_at' => $now
+			));
+		}
+
+		$this->db->insert('ci_order_history', array(
+			'order_id' => $id,
+			'action' => 'sales_approval_granted',
+			'notes' => "Order #{$order['order_no']} approved for Sales. Sales Ref: #{$sales_ref}.",
+			'action_by' => $cur_uid,
+			'action_by_name' => $cur_name,
+			'created_at' => $now
+		));
+
+		$this->ci_admin_model->log_admin_action('sales_approval_granted', "Approved Sales for Order #{$order['order_no']} (Sales #{$sales_ref})", 'SUCCESS', $cur_uid, $cur_name);
+		$this->session->set_flashdata('message', "Order #{$order['order_no']} approved as Sales #{$sales_ref}!");
+		redirect('manager/kam/onboard?order_id=' . $id . '&lead_id=' . (int)$order['lead_id']);
 	}
 
 	public function my()

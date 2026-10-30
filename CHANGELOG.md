@@ -2,6 +2,54 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.78.0] - 2026-10-30
+- **Timestamp**: `2026-10-30 11:00:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Comprehensive 16-point commercial and architectural overhaul across CRM navigation, real-time analytics, Back Office order processing, KAM client scoping and read-only views, and the dialer engine with 3-digit range queuing, delay countdown enforcement, and break logging.
+- **Detailed Changes & Technical Implementation**:
+  - **1. LIVE Console & Topbar Highlighted Badge (`manager/live`, `ci_admin_live.php`, `live/index.php`, `header.php`)**:
+    - Placed highlighted `LIVE` badge with a pulsing green indicator dot in the top navigation bar directly beside the call icon.
+    - Built real-time commercial telemetry console with a dual-color palette (Deep Slate `#0b1329` and Ocean Cyan `#00c6f0`).
+    - Implemented auto-refreshing real-time tracking for Calls (Connected, In Process, Other), Leads Generated, Orders Submitted, Sales (AED), Follow-ups, Meetings, Tickets, and Articles across Today, Last 7 Days, Month, and Quarter for both My Activity and Team scopes.
+  - **2. Dashboard UI Refinement & Achievement Charts (`dashboard.php`, `ci_admin_model.php`)**:
+    - Formatted projection and historical month-year labels as `M - Y` (`Oct - 2026`, Capital first, lowercase remainder).
+    - Rendered projection towers in Ocean Cyan (`#00c6f0`).
+    - Configured Achievement charts strictly with Ocean Cyan (`#00c6f0`) for Target and Forest Green (`#16a34a`) for Achievement—completely eliminating red or foreign colors.
+    - Restored classic CRM Operational Activity palette: Red (`#dd4b39`), Orange (`#ff851b`), Sky Blue (`#00c0ef`), Deep Blue (`#0164e8`), and Forest Green (`#00a65a`).
+    - Added individual circular pie/doughnut charts (`renderOpPie`) for each of the 14 operational activity breakdown cards with matching color slices.
+  - **3. Ocean Cyan Palette & Navigation Standards (`assets/dist/css/crm-dashboard.css`, `header.php`)**:
+    - Replaced card gradients with `#00c6f0` (RGB 6, 203, 236) electric turquoise ocean blue.
+    - Set active navigation items to Dark Blue (`#1e3a8a` / `#0047ba`) with crisp white typography.
+    - Updated CSS cache buster query parameter to `v=20261029_darkblue_oceanblue_v9`.
+  - **4. Assign Order Onboard Client & Pending Sales Approval Workflow (`orders/edit_pending.php`, `orders/pending_sales_approval.php`, `ci_admin_orders.php`)**:
+    - Added "Assign Order Onboard Client" section to Process Order (`edit_pending.php`) between salesperson submission and Initial Category Fields.
+    - Auto-populates existing database company details via AJAX or selects an onboarding Manager.
+    - Streamlined Order & Onboarding Configuration: kept strictly Assigned Staff, Service Description Scope, and Approval Processing Notice.
+    - Added **Send for Approval** (`action_type=send_for_approval`), **Reject**, and **Cancel** buttons.
+    - Created **Back Office > Pending Sales Approval** section (`manager/orders/pending_sales_approval`) matching the standard dual-box DataTables view.
+    - Enforced client onboarding write permissions across Back Office and KAM.
+  - **5. KAM Clients Scoping & Read-Only Profile (`kam/my_client.php`, `kam/view.php`, `ci_admin_kam.php`)**:
+    - Scoped `manager/kam/my-client` strictly to logged-in user (`lead_assign = $uid` or `executive_id = $uid`) across all roles.
+    - Replaced Action column with strictly a **View** button (removed Edit).
+    - Created dedicated read-only client view (`manager/kam/view/$id`) featuring full client details and an **Upcoming Scheduled Tasks** table fed from `ci_kam_schedules` with 1-click link to Task Follow-Up.
+    - Added Follow-Up and Meeting & Visit sections to `manager/kam/onboard` matching `Add Database` fields, persisting to `ci_followup` and `ci_meetings`.
+    - Restricted Onboard Client and Create Schedule navigation and controller execution strictly to users with write permissions (`has_section_perm('kam', 'write')`).
+  - **6. System Navigation Refinements (`ci_admin_system.php`, `system/kam_clients.php`, `header.php`)**:
+    - Renamed "KAM Client" to "KAM Clients" (`manager/system/kam_clients`).
+    - Removed 3-letter search restriction so all onboarded companies display directly for authorized admins.
+    - Removed "Assign" link from System navigation.
+  - **7. Dialer Suite Overhaul & Workstation (`calls/dashboard.php`, `ci_admin_calls.php`)**:
+    - Standardized Call Delay Intervals to strictly: 3s, 60s, 90s, 120s.
+    - Delay timer starts ONLY after a call ends or disconnects in `endActiveCall()`.
+    - Unified Initial Selection / Setup Screen for Auto Dialer, Manual Dialer, Leads Dialer, and Follow-Up ("All Features").
+    - Added 3-digit range filter (`dialerRangeFrom` to `dialerRangeTo`, e.g. 001 to 200) to queue specific slices of contacts without repeating previously dialed leads.
+    - Removed raw database table records and tariffs from Database menu in Dialer.
+    - Implemented Apple-style Manual Dialer Workstation on Page 2 matching `Leads > Details` layout with complete Contact, Commercials, Status, and Follow-up sections.
+    - Implemented **Break** status tracking: pauses auto dialer and countdown, logging user break start and resume duration in `ci_admin_logs`.
+  - **8. Zero Comments & Code Integrity**:
+    - Strictly 0 comments in any PHP file (`//`, `/* ... */`, `<!-- ... -->`).
+    - Clean linting pass with `php -l`.
+
 ### [v1.77.0] - 2026-10-29
 - **Timestamp**: `2026-10-29 17:35:00 +0530`
 - **Author**: Reinhart-py

@@ -142,9 +142,9 @@
                                 <tbody>
                                     <?php foreach($product_list as $k=>$li){ ?>
                                     <tr>
-                                        <td><a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>"><strong><?php echo !empty($li['lead_id']) ? htmlspecialchars($li['lead_id']) : $li['id']; ?></strong></a></td>
+                                        <td><a href="<?php echo base_url(); ?>manager/kam/view/<?php echo $li['id']; ?>"><strong><?php echo !empty($li['lead_id']) ? htmlspecialchars($li['lead_id']) : $li['id']; ?></strong></a></td>
                                         <td>
-                                            <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>"><?php echo htmlspecialchars($li['customer']); ?></a>
+                                            <a href="<?php echo base_url(); ?>manager/kam/view/<?php echo $li['id']; ?>"><strong><?php echo htmlspecialchars($li['customer']); ?></strong></a>
                                             <?php if(!empty($li['dnd_status']) && strtolower($li['dnd_status']) == 'yes'){ ?>
                                                 <span class="label label-danger" style="background:#dc2626; color:#ffffff; font-weight:700; padding:1px 5px; border-radius:3px; font-size:10px; margin-left:4px; letter-spacing:0.5px;">DNCR</span>
                                             <?php } ?>
@@ -158,8 +158,8 @@
                                         <td>
                                             <?php echo isset($li['lead_status']) ? htmlspecialchars($li['lead_status']) : ''; ?>
                                             <?php 
-                                            $cat_label = !empty($li['status_category']) ? $li['status_category'] : (!empty($li['lost_reason']) ? $li['lost_reason'] : '');
-                                            if (!empty($cat_label)): ?>
+                                             $cat_label = !empty($li['status_category']) ? $li['status_category'] : (!empty($li['lost_reason']) ? $li['lost_reason'] : '');
+                                             if (!empty($cat_label)): ?>
                                                 <br><small class="text-muted" style="font-weight: 500;">Category: <?php echo htmlspecialchars($cat_label); ?></small>
                                             <?php endif; ?>
                                             <?php if (!empty($li['quote_status'])): ?>
@@ -167,17 +167,9 @@
                                             <?php endif; ?>
                                         </td>
                                         <td>
-                                            <div class="btn-group" style="min-width: 85px;">
-                                                <button type="button" class="btn btn-sm btn-warning">Action</button>
-                                                <button type="button" class="btn btn-sm btn-warning dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                                                    <span class="caret"></span>
-                                                    <span class="sr-only">Toggle Dropdown</span>
-                                                </button>
-                                                <ul class="dropdown-menu" role="menu">
-                                                    <li> <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>" data-toggle="tooltip" title="View">Preview</a> </li>
-                                                    <li> <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($li['id']); ?>" data-toggle="tooltip" title="Edit">Edit</a> </li>
-                                                </ul>
-                                            </div>
+                                            <a href="<?php echo base_url(); ?>manager/kam/view/<?php echo $li['id']; ?>" class="btn btn-sm btn-default" style="color:#0072f0; font-weight:600; border:1px solid #cbd5e1; border-radius:4px; padding:4px 12px; display:inline-block;" title="View Client Details">
+                                                <i class="fa fa-eye"></i> View
+                                            </a>
                                         </td>
                                     </tr>
                                     <?php } ?>

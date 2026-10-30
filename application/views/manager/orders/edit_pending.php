@@ -105,7 +105,45 @@
 
     <form role="form" action="<?php echo base_url(); ?>manager/orders/edit_pending/<?php echo $lead['id']; ?>" method="post" name="process_order_form">
       <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
-      <input type="hidden" name="action_type" value="approve_order">
+      <input type="hidden" name="action_type" value="send_for_approval">
+
+      <div class="box box-default" style="border: 1px solid #00c6f0; border-radius: 6px; margin-bottom: 16px;">
+        <div class="box-header with-border" style="background: #f0fbff; padding: 12px 18px;">
+          <h3 class="box-title" style="color: #0369a1; font-weight: 700; font-size: 15px; margin: 0;">
+            <i class="fa fa-user-plus" style="margin-right: 8px;"></i> Assign Order Onboard Client
+          </h3>
+        </div>
+        <div class="box-body" style="padding: 18px;">
+          <div class="row">
+            <div class="col-md-6 col-sm-12">
+              <div class="form-group">
+                <label style="font-weight: 700; font-size: 12px; color: #334155;">Select Client / Company</label>
+                <select name="selected_existing_company" id="selectExistingCompany" class="form-control select2" style="width: 100%;">
+                  <option value="">-- Choose Existing Company or Keep Current --</option>
+                  <?php if (!empty($company_list)) { foreach ($company_list as $cmp) { ?>
+                    <option value="<?php echo htmlspecialchars($cmp['customer']); ?>" <?php echo (strcasecmp($cmp['customer'], $lead['customer']) === 0) ? 'selected' : ''; ?>>
+                      <?php echo htmlspecialchars($cmp['customer']); ?>
+                    </option>
+                  <?php } } ?>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6 col-sm-12">
+              <div class="form-group">
+                <label style="font-weight: 700; font-size: 12px; color: #334155;">Manager (Responsible for Onboarding)</label>
+                <select name="onboard_manager_id" id="selectOnboardManager" class="form-control select2" style="width: 100%;">
+                  <option value="">-- Select Manager with Onboard Rights --</option>
+                  <?php if (!empty($staff_list)) { foreach ($staff_list as $mgr) { ?>
+                    <option value="<?php echo (int)$mgr['id']; ?>" <?php echo ((int)$lead['lead_assign'] === (int)$mgr['id']) ? 'selected' : ''; ?>>
+                      <?php echo htmlspecialchars($mgr['name'] . (!empty($mgr['department']) ? ' (' . $mgr['department'] . ')' : '')); ?>
+                    </option>
+                  <?php } } ?>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div class="box box-default">
         <div class="box-header with-border" style="position: relative; text-align: center; padding: 14px 15px; min-height: 48px;">
@@ -544,56 +582,16 @@
         </div>
       </div>
 
-      <div class="box box-default" style="border: 1px solid #000000; border-radius: 4px;">
-        <div class="box-header with-border" style="background: #000000; color: #ffffff; padding: 12px 18px;">
-          <h3 class="box-title" style="color: #ffffff; font-weight: 700; font-size: 16px; margin: 0; letter-spacing: -0.01em;">
-            <i class="fa fa-cogs" style="margin-right: 8px;"></i> Order &amp; Onboarding Configuration
-          </h3>
-        </div>
+      <div class="box box-default" style="border: 1px solid #e2e8f0; border-radius: 6px;">
+        <input type="hidden" name="vertical_code" value="<?php echo htmlspecialchars($lead['servicecat'] ?? 'general'); ?>">
+        <input type="hidden" name="service_title" value="<?php echo htmlspecialchars(!empty($lead['servicecat']) ? $lead['servicecat'] : 'Standard Service Scope'); ?>">
+        <input type="hidden" name="pricing_amount" value="<?php echo htmlspecialchars($lead['mrr'] ?? '0.00'); ?>">
+        <input type="hidden" name="assigned_dept" value="Back Office">
 
         <div class="box-body" style="padding: 20px;">
           <div class="row">
 
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group">
-                <label style="font-weight: 700; font-size: 11px; text-transform: uppercase; color: #475569;">Service Vertical <span class="text-danger">*</span></label>
-                <select name="vertical_code" class="form-control" required style="border: 1px solid #cbd5e1; border-radius: 4px;">
-                  <option value="accounting" <?php echo (stripos($lead['servicecat'] ?? '', 'account') !== false) ? 'selected' : ''; ?>>Accounting / VAT</option>
-                  <option value="telecom" <?php echo (stripos($lead['servicecat'] ?? '', 'telecom') !== false) ? 'selected' : ''; ?>>Telecom (Du / Etisalat)</option>
-                  <option value="corporate" <?php echo (stripos($lead['servicecat'] ?? '', 'corporate') !== false) ? 'selected' : ''; ?>>Corporate Services</option>
-                  <option value="it" <?php echo (stripos($lead['servicecat'] ?? '', 'it') !== false) ? 'selected' : ''; ?>>IT Services</option>
-                  <option value="general" <?php echo (stripos($lead['servicecat'] ?? '', 'general') !== false) ? 'selected' : ''; ?>>General</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group">
-                <label style="font-weight: 700; font-size: 11px; text-transform: uppercase; color: #475569;">Service Scope Title <span class="text-danger">*</span></label>
-                <input type="text" name="service_title" class="form-control" value="<?php echo htmlspecialchars(!empty($lead['servicecat']) ? $lead['servicecat'] : 'Standard Service Scope'); ?>" required style="border: 1px solid #cbd5e1; border-radius: 4px;">
-              </div>
-            </div>
-
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group">
-                <label style="font-weight: 700; font-size: 11px; text-transform: uppercase; color: #475569;">Pricing Amount (AED) <span class="text-danger">*</span></label>
-                <input type="number" step="0.01" min="0" name="pricing_amount" class="form-control" value="<?php echo htmlspecialchars($lead['mrr'] ?? '0.00'); ?>" required style="border: 1px solid #cbd5e1; border-radius: 4px;">
-              </div>
-            </div>
-
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group">
-                <label style="font-weight: 700; font-size: 11px; text-transform: uppercase; color: #475569;">Assigned Department</label>
-                <select name="assigned_dept" class="form-control" style="border: 1px solid #cbd5e1; border-radius: 4px;">
-                  <option value="Back Office" selected>Back Office</option>
-                  <option value="Operations">Operations</option>
-                  <option value="Finance">Finance</option>
-                  <option value="IT">IT</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="col-lg-3 col-sm-6">
+            <div class="col-md-4 col-sm-12">
               <div class="form-group">
                 <label style="font-weight: 700; font-size: 11px; text-transform: uppercase; color: #475569;">Assigned Staff</label>
                 <select name="assigned_to" class="form-control" style="border: 1px solid #cbd5e1; border-radius: 4px;">
@@ -611,16 +609,16 @@
               </div>
             </div>
 
-            <div class="col-lg-9 col-sm-12">
+            <div class="col-md-8 col-sm-12">
               <div class="form-group">
-                <label style="font-weight: 700; font-size: 11px; text-transform: uppercase; color: #475569;">Service Description / Scope</label>
+                <label style="font-weight: 700; font-size: 11px; text-transform: uppercase; color: #475569;">Service Description Scope</label>
                 <textarea name="service_scope" class="form-control" rows="2" placeholder="Detailed scope of service..." style="border: 1px solid #cbd5e1; border-radius: 4px;"><?php echo htmlspecialchars($lead['order_request_remarks'] ?? ''); ?></textarea>
               </div>
             </div>
 
             <div class="col-sm-12">
               <div class="form-group" style="margin-bottom: 0;">
-                <label style="font-weight: 700; font-size: 11px; text-transform: uppercase; color: #475569;">Approval / Processing Notes</label>
+                <label style="font-weight: 700; font-size: 11px; text-transform: uppercase; color: #475569;">Approval Processing Notice</label>
                 <textarea name="approval_notes" class="form-control" rows="2" placeholder="Notes for order history and audit trail..." style="border: 1px solid #cbd5e1; border-radius: 4px;"></textarea>
               </div>
             </div>
@@ -629,13 +627,13 @@
         </div>
 
         <div class="box-footer text-center" style="background: #f8fafc; padding: 16px; border-top: 1px solid #e2e8f0;">
-          <button type="submit" class="btn btn-default" style="background: #000000; color: #ffffff; font-weight: 700; padding: 10px 24px; border: 1px solid #000000; margin-right: 8px;">
-            <i class="fa fa-arrow-right"></i> Process &amp; Continue to Client Onboarding
+          <button type="submit" name="action_type" value="send_for_approval" class="btn btn-primary" style="background: #0072f0; border-color: #0072f0; color: #ffffff; font-weight: 700; padding: 10px 24px; border-radius: 4px; margin-right: 8px;">
+            <i class="fa fa-send"></i> Send for Approval
           </button>
-          <button type="button" class="btn btn-default" data-toggle="modal" data-target="#rejectModal" style="background: #ffffff; color: #dc2626; font-weight: 600; padding: 10px 18px; border: 1px solid #dc2626; margin-right: 8px;">
-            <i class="fa fa-times-circle"></i> Reject Request
+          <button type="button" class="btn btn-default" data-toggle="modal" data-target="#rejectModal" style="background: #ffffff; color: #dc2626; font-weight: 600; padding: 10px 18px; border: 1px solid #dc2626; border-radius: 4px; margin-right: 8px;">
+            <i class="fa fa-times-circle"></i> Reject
           </button>
-          <a href="<?php echo base_url(); ?>manager/orders/pending_process" class="btn btn-default" style="background: #ffffff; color: #000000; font-weight: 600; padding: 10px 18px; border: 1px solid #cbd5e1;">
+          <a href="<?php echo base_url(); ?>manager/orders/pending_process" class="btn btn-default" style="background: #ffffff; color: #0f172a; font-weight: 600; padding: 10px 18px; border: 1px solid #cbd5e1; border-radius: 4px;">
             Cancel
           </a>
         </div>
@@ -680,6 +678,38 @@ $(document).ready(function() {
     var m = parseFloat($('#input_mrc').val()) || 0;
     var r = parseFloat($('#input_revenue').val()) || 0;
     $('#input_mrr').val(m + r);
+  });
+
+  $('#selectExistingCompany').on('change', function() {
+    var comp = $(this).val();
+    if (!comp) return;
+    $.ajax({
+      url: '<?php echo base_url(); ?>manager/kam/ajax_get_company_details',
+      type: 'POST',
+      data: {
+        company: comp,
+        '<?php echo $this->security->get_csrf_token_name(); ?>': '<?php echo $this->security->get_csrf_hash(); ?>'
+      },
+      dataType: 'json',
+      success: function(resp) {
+        if (resp && resp.status === 'success') {
+          if (resp.company_name) $('#customer_input').val(resp.company_name);
+          if (resp.owner_name) $('#owner_name_input').val(resp.owner_name);
+          if (resp.poc) $('input[name="poc"]').val(resp.poc);
+          if (resp.contact) $('input[name="contact1"]').val(resp.contact);
+          if (resp.email) $('input[name="email"]').val(resp.email);
+          if (resp.tl_number) $('input[name="tl_number"]').val(resp.tl_number);
+          if (resp.tl_emirate) $('select[name="tl_emirate"]').val(resp.tl_emirate);
+          if (resp.tl_zone) $('select[name="tl_zone"]').val(resp.tl_zone);
+          if (resp.tl_authority) $('select[name="tl_authority"]').val(resp.tl_authority);
+          if (resp.tl_expire_date) $('input[name="tl_expire_date"]').val(resp.tl_expire_date);
+          if (resp.location) $('input[name="location"]').val(resp.location);
+          if (resp.status_category) $('select[name="status_category"]').val(resp.status_category);
+          if (resp.client_status) $('select[name="company_status"]').val(resp.client_status);
+          if (resp.primary_assignee) $('#selectOnboardManager').val(resp.primary_assignee).trigger('change');
+        }
+      }
+    });
   });
 });
 </script>

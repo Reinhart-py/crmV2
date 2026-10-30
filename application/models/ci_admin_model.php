@@ -250,7 +250,7 @@ class Ci_admin_model extends CI_model {
 			for ($i = 9; $i >= 0; $i--) {
 				$d1 = date("Y-m-01", strtotime("-$i month"));
 				$d2 = date("Y-m-t", strtotime("-$i month"));
-				$label = strtoupper(date("M y", strtotime("-$i month")));
+				$label = date("M - Y", strtotime("-$i month"));
 				$labels[] = $label;
 				$month_dates[] = array('d1' => $d1, 'd2' => $d2);
 				$target_data[] = $monthly_target;
@@ -381,7 +381,7 @@ public function dashboard_TeamPro($table='ci_leads'){
 	for ($i = 0; $i < 12; $i++) {
 		$m_date = date("Y-m-01", strtotime("+$i month"));
 		$loop[] = $m_date;
-		$label = strtoupper(date("M y", strtotime("+$i month")));
+		$label = date("M - Y", strtotime("+$i month"));
 		$loop1[] = $label;
 		$loop_labels[] = $label;
 		$d1 = date("Y-m-01", strtotime("+$i month"));
@@ -425,7 +425,7 @@ public function dashboard_MyPro($table='ci_leads'){
 	for ($i = 0; $i < 12; $i++) {
 		$m_date = date("Y-m-01", strtotime("+$i month"));
 		$loop[] = $m_date;
-		$label = strtoupper(date("M y", strtotime("+$i month")));
+		$label = date("M - Y", strtotime("+$i month"));
 		$loop1[] = $label;
 		$loop_labels[] = $label;
 		$d1 = date("Y-m-01", strtotime("+$i month"));

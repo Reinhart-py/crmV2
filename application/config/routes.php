@@ -271,9 +271,17 @@ $route['manager/orders/followups'] = 'ci_admin_orders/followups';
 $route['manager/kam/task-followup'] = 'ci_admin_kam/task_followup';
 $route['manager/kam/reminders'] = 'ci_admin_kam/reminders';
 $route['manager/kam/report'] = 'ci_admin_kam/report';
+$route['manager/kam/view/(:any)'] = 'ci_admin_kam/view/$1';
 $route['manager/kam/(:any)'] = 'ci_admin_kam/$1';
 $route['manager/kam'] = 'ci_admin_kam/index';
+$route['manager/orders/approve_sales_order/(:any)'] = 'ci_admin_orders/approve_sales_order/$1';
+$route['manager/orders/pending_sales_approval'] = 'ci_admin_orders/pending_sales_approval';
+$route['manager/orders/pending_sales_approval/(:any)'] = 'ci_admin_orders/pending_sales_approval/$1';
 $route['manager/orders/(:any)'] = 'ci_admin_orders/$1';
+
+$route['manager/live'] = 'ci_admin_live/index';
+$route['manager/live/ajax_get_data'] = 'ci_admin_live/ajax_get_data';
+$route['manager/live/(:any)'] = 'ci_admin_live/$1';
 
 $route['manager/events'] = 'ci_admin_events/index';
 $route['manager/events/add'] = 'ci_admin_events/add';

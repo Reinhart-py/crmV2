@@ -317,8 +317,22 @@ class Ci_admin_calls extends CI_Controller
 			$this->db->where("(A.customer LIKE '%$escaped_search%' OR A.poc LIKE '%$escaped_search%' OR A.contact1 LIKE '%$escaped_search%' OR A.alt_contact LIKE '%$escaped_search%' OR A.contact2 LIKE '%$escaped_search%' OR A.mobile LIKE '%$escaped_search%' OR A.lead_id LIKE '%$escaped_search%')");
 		}
 
+		$range_from = $this->input->get('range_from');
+		$range_to = $this->input->get('range_to');
+		if ($range_from !== null && $range_to !== null && $range_from !== '' && $range_to !== '') {
+			$rf = (int)$range_from;
+			$rt = (int)$range_to;
+			if ($rt >= $rf) {
+				$this->db->where("(CAST(RIGHT(IFNULL(A.lead_id, A.id), 3) AS UNSIGNED) BETWEEN $rf AND $rt OR (A.id >= $rf AND A.id <= $rt))");
+			}
+		}
+
 		$this->db->order_by('A.id', 'DESC');
-		$this->db->limit(150);
+		$limit_val = 300;
+		if ($range_to !== null && (int)$range_to > 300) {
+			$limit_val = (int)$range_to;
+		}
+		$this->db->limit($limit_val);
 		$leads = $this->db->get()->result_array();
 
 		foreach ($leads as &$l_item) {
@@ -1729,6 +1743,28 @@ class Ci_admin_calls extends CI_Controller
 		")->result_array();
 
 		echo json_encode(array('status' => true, 'calls' => $calls));
+	}
+
+	public function ajax_log_break()
+	{
+		$manager_id = (int)$this->session->userdata('manager_id');
+		$action = trim((string)$this->input->post('action'));
+		if (empty($action)) {
+			$action = 'start';
+		}
+		$now = date('Y-m-d H:i:s');
+		if ($action === 'start') {
+			$this->session->set_userdata('dialer_break_start', time());
+			$this->ci_admin_model->log_admin_action('dialer_break_start', 'Staff paused dialing for break at ' . date('H:i:s'), 'BREAK', $manager_id);
+			echo json_encode(array('status' => true, 'is_on_break' => true, 'time' => $now));
+		} else {
+			$break_start = (int)$this->session->userdata('dialer_break_start');
+			$duration_sec = $break_start > 0 ? (time() - $break_start) : 0;
+			$duration_min = round($duration_sec / 60, 1);
+			$this->session->unset_userdata('dialer_break_start');
+			$this->ci_admin_model->log_admin_action('dialer_break_resume', 'Staff resumed dialing from break (Duration: ' . $duration_min . ' mins)', 'RESUME', $manager_id);
+			echo json_encode(array('status' => true, 'is_on_break' => false, 'duration_seconds' => $duration_sec, 'duration_minutes' => $duration_min, 'time' => $now));
+		}
 	}
 }
 
