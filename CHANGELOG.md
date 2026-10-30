@@ -2,6 +2,40 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.79.2] - 2026-10-30
+- **Timestamp**: `2026-10-30 12:45:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Comprehensive fix for screen size overflow and layout squishing on `manager/calls`, complete removal of illogical delay seconds and preset filling options from the Manual Dialer, full count restoration on all 8 dashboard top cards (removing sales profit lines), legend indicator separation from chart titles with generous spacing, fix for white-on-white badge text, fix for clipped Operational Activity doughnut chart tooltips, and complete elimination of customer log tables from the Live section in favor of an ultra-clean live metrics console.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Calls & Dialer Responsive Layout Fix (`views/manager/calls/dashboard.php`)**:
+    - Replaced rigid `position: fixed; width: 100vw; top: 50px;` with a responsive flex container layout (`.wrapper` flex column, `.glass-calling-wrapper` with `position: relative; width: 100%; flex: 1 1 0%; min-height: 0; max-height: 100%; padding: 10px 14px;`).
+    - Resolved `100vw` horizontal overflow caused by browser zoom (`body { zoom: 0.93 }`), ensuring the middle workspace is never squished or forced underneath the phone keypad.
+    - Updated `#middleContentArea` to `flex: 1 1 0% !important; min-width: 0 !important; overflow: hidden !important;` with responsive padding and scrollable body.
+    - Optimized `.crm-dialer-panel` width to 300px (min 280px, max 310px) with 56px dial keys and compact padding (10px 20px 12px 20px), ensuring the green call button is 100% visible and never cut off at the bottom of the viewport on any screen resolution.
+    - Made the Auto Dialer and Manual Dialer setup cards fully responsive: stage checkboxes wrap cleanly via `repeat(auto-fill, minmax(135px, 1fr))`, interval and range wrap via flexbox, and action buttons (`Break`, `Start Auto Dialing`, `Start Manual Dialing`) remain 100% visible, fully aligned, and clickable.
+  - **2. Manual Dialer Logical Streamlining (`views/manager/calls/dashboard.php`)**:
+    - Removed "Call Delay Interval" (seconds) entirely from the Manual Dialer setup. Delay intervals only apply to automated dialing and have no place in manual dialing where the user dials at their own pace.
+    - Completely removed the confusing "Details Filling Mode" (Auto Pre-fill vs Manual) preset option. In both auto and manual dialing, contact details are naturally loaded from the database and remain fully editable by the salesperson.
+    - Streamlined `openManualDialerMode()` so it hides delay interval seconds (`#wrapAutoDialTimerDelay`), hides auto dial buttons, and shows only stage selection, range filter, and "Start Manual Dialing".
+  - **3. Dashboard Top Cards Count Restoration (`views/manager/dashboard.php`)**:
+    - Restored the count display (`dash-kpi-value`) on all 8 top cards: `My Database`, `My Vertical`, `Team Users`, `Team Verticals`, `My Leads`, `My Orders`, `Team Leads`, and `Team Orders`.
+    - Removed the `Sales: AED ...` profit line from all cards, adhering strictly to the user requirement for pure counts and no profit values on cards.
+  - **4. Chart Legends Spacing & White-on-White Text Fix (`views/manager/dashboard.php`, `assets/dist/css/crm-dashboard.css`)**:
+    - Applied `justify-content: space-between !important; gap: 20px !important;` to `.dash-chart-header`, with `margin-right: auto !important;` on chart titles and `margin-left: auto !important;` on legends so title and indicators never touch each other.
+    - Fixed default chip badges to have dark slate text (`color: #0f172a !important; background: #ffffff !important; border: 1px solid #cbd5e1 !important;`), ensuring numbers in Database & Lead states are crisp and never rendered white-on-white.
+    - Bumped CSS cache buster to `?v=20261030_screen_dialer_v11` in `header.php`.
+  - **5. Operational Activity Doughnut Chart Tooltip Fix (`views/manager/dashboard.php`)**:
+    - Set `showTooltips: false` in Chart.js options to suppress built-in canvas drawing that physically clips text inside the 70px canvas bitmap (e.g. clipping "All Missed: 6" into "ssed: 6").
+    - Attached a jQuery mousemove listener using `chartInst.getSegmentsAtEvent(e)` to dynamically display the hovered segment label and count in a floating HTML DOM tooltip (`#chartjs-op-tooltip`) positioned over the mouse with `position: fixed` and `z-index: 999999`.
+  - **6. LIVE Section Clean Operations Redesign (`views/manager/live/index.php`)**:
+    - Completely removed the customer detail tables (`Customer Phone Agent Status Duration No recent calls` and `Customer POC Stage Status Date No recent leads`).
+    - Focused strictly on high-impact live metrics: Outbound Calls & connection rate %, Pipeline flow (Leads -> Orders -> Sales), Sales revenue in AED, Call status breakdowns, Lead stage distributions, and Operational Activities (Follow-ups, Meetings, Tickets, Verticals).
+    - Preserved 10-second background auto-syncing, scope filtering (My Activity vs Team Activity), and timeframe selection (Today, Last 7 Days, Month, Quarter).
+  - **7. Zero Comments Compliance**:
+    - Verified strictly 0 comments across all modified PHP files. All files passed `php -l`.
+
+
+
 ### [v1.79.1] - 2026-10-30
 - **Timestamp**: `2026-10-30 11:58:00 +0530`
 - **Author**: Reinhart-py

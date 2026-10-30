@@ -757,7 +757,8 @@ ul.munk_menu > li > ul > li > a i {
   border-bottom: 1px solid var(--crm-border-subtle) !important;
   display: flex !important;
   align-items: center !important;
-  justify-content: center !important;
+  justify-content: space-between !important;
+  gap: 20px !important;
 }
 
 .dash-chart-title {
@@ -938,11 +939,12 @@ ul.munk_menu > li > ul > li > a i {
 .crm-modern-stat-chip .badge {
   font-size: 11px !important;
   font-weight: 700 !important;
-  padding: 3px 8px !important;
+  padding: 2px 7px !important;
   border-radius: 4px !important;
-  color: #ffffff !important;
-  border: none !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15) !important;
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
   transition: all 0.15s ease !important;
 }
 

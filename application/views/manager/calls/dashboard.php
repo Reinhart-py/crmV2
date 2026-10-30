@@ -2,8 +2,8 @@
 
 <style>
 html, body {
-  height: 100vh !important;
-  max-height: 100vh !important;
+  height: 100% !important;
+  min-height: 100% !important;
   overflow: hidden !important;
   margin: 0 !important;
   padding: 0 !important;
@@ -16,28 +16,32 @@ html, body {
   display: flex !important;
   flex-direction: column !important;
   background: #f2f2f7 !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 .main-sidebar, .left-side, .main-footer, .crm-footer {
   display: none !important;
 }
 .content-wrapper.glass-calling-wrapper {
   background: #f2f2f7 !important;
-  position: fixed !important;
-  top: 50px !important;
+  position: relative !important;
+  top: 0 !important;
   left: 0 !important;
   right: 0 !important;
   bottom: 0 !important;
-  width: 100vw !important;
-  max-width: 100vw !important;
-  height: calc(100vh - 50px) !important;
-  max-height: calc(100vh - 50px) !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  flex: 1 1 0% !important;
+  height: auto !important;
   min-height: 0 !important;
-  padding: 12px !important;
+  max-height: 100% !important;
+  padding: 10px 14px !important;
   color: #1d1d1f;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
   box-sizing: border-box !important;
   overflow: hidden !important;
   display: flex !important;
+  flex-direction: row !important;
   gap: 12px !important;
   align-items: stretch !important;
   justify-content: flex-start !important;
@@ -46,9 +50,10 @@ html, body {
 }
 
 .crm-dialer-dock {
-  width: 68px;
+  width: 64px;
   flex-shrink: 0;
   height: 100% !important;
+  max-height: 100% !important;
   background: #ffffff;
   border: 1px solid #e5e5ea;
   border-radius: 14px;
@@ -196,16 +201,17 @@ html, body {
 
 #middleContentArea {
   display: none;
-  flex: 1;
-  min-width: 0;
+  flex: 1 1 0% !important;
+  min-width: 0 !important;
   height: 100% !important;
+  max-height: 100% !important;
   background: #ffffff;
   border: 1px solid #e5e5ea;
   border-radius: 14px;
   box-shadow: 0 2px 14px rgba(0, 0, 0, 0.03);
   box-sizing: border-box !important;
-  flex-direction: column;
-  overflow: hidden;
+  flex-direction: column !important;
+  overflow: hidden !important;
   z-index: 900;
 }
 
@@ -465,9 +471,12 @@ html, body {
 }
 
 .crm-dialer-panel {
-  width: 340px;
+  width: 300px;
+  min-width: 280px;
+  max-width: 310px;
   flex-shrink: 0;
   height: 100% !important;
+  max-height: 100% !important;
   background: #ffffff;
   border: 1px solid #e5e5ea;
   border-radius: 14px;
@@ -601,14 +610,14 @@ html, body {
 .dialer-keypad-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 14px 18px;
+  gap: 8px 14px;
   width: 100%;
-  max-width: 270px;
+  max-width: 250px;
 }
 
 .dialer-key-btn {
-  width: 64px;
-  height: 64px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   background: #f2f2f7;
   border: none;
@@ -632,24 +641,24 @@ html, body {
 }
 
 .dialer-key-digit {
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 500;
   color: #1d1d1f;
   line-height: 1;
 }
 
 .dialer-key-sub {
-  font-size: 9px;
+  font-size: 8.5px;
   font-weight: 600;
   color: #8e8e93;
-  letter-spacing: 1.5px;
+  letter-spacing: 1px;
   text-transform: uppercase;
   margin-top: 1px;
   line-height: 1;
 }
 
 .dialer-bottom-actions {
-  padding: 16px 24px 20px 24px;
+  padding: 8px 20px 12px 20px;
   background: #ffffff;
   display: flex;
   align-items: center;
@@ -657,13 +666,13 @@ html, body {
 }
 
 .keypad-tool-btn {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: transparent;
   border: none;
   color: #8e8e93;
-  font-size: 18px;
+  font-size: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -677,13 +686,13 @@ html, body {
 }
 
 .btn-green-call {
-  width: 64px;
-  height: 64px;
+  width: 58px;
+  height: 58px;
   border-radius: 50%;
   background: #34c759;
   border: none;
   color: #ffffff;
-  font-size: 24px;
+  font-size: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1041,7 +1050,7 @@ html, body {
 
       <div id="middleViewAutoDialer" style="display:none; padding:15px; height:100%; overflow-y:auto;">
         <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:18px 20px; box-shadow:0 1px 3px rgba(0,0,0,0.04); margin-bottom:16px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
             <h3 style="font-size:16px; font-weight:700; color:#0f172a; margin:0; letter-spacing:-0.01em;" id="dialerSetupHeading">
               <i class="fa fa-play-circle" style="color:#0072f0; margin-right:6px;" id="dialerSetupIcon"></i> <span id="dialerSetupTitle">Auto Dialer</span>
             </h3>
@@ -1051,7 +1060,7 @@ html, body {
             </div>
           </div>
 
-          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:10px; margin-bottom:16px; padding:14px; background:#f8fafc; border-radius:10px; border:1px solid #f1f5f9;">
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(135px, 1fr)); gap:8px; margin-bottom:14px; padding:12px; background:#f8fafc; border-radius:10px; border:1px solid #f1f5f9;">
             <?php if(!empty($statuses)){ foreach($statuses as $st){ ?>
               <label style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:500; color:#334155; margin:0; cursor:pointer;">
                 <input type="checkbox" class="cbx-auto-stage" value="<?php echo (int)$st['id']; ?>" onchange="updateAutoDialerQueueCount()" style="margin:0; width:15px; height:15px; accent-color:#0072f0;">
@@ -1060,38 +1069,31 @@ html, body {
             <?php } } ?>
           </div>
 
-          <div class="row" style="margin-bottom:14px;">
-            <div class="col-xs-12 col-sm-4">
+          <div style="display:flex; flex-wrap:wrap; gap:16px; align-items:flex-end; margin-bottom:16px;">
+            <div style="flex:1 1 200px; min-width:180px;" id="wrapAutoDialTimerDelay">
               <label style="font-size:12px; font-weight:600; color:#334155; margin-bottom:4px; display:block;">Call Delay Interval</label>
-              <select id="autoDialTimerDelay" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:12px; height:36px;">
+              <select id="autoDialTimerDelay" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;">
                 <option value="3">3 Seconds</option>
                 <option value="60" selected>60 Seconds</option>
                 <option value="90">90 Seconds</option>
                 <option value="120">120 Seconds</option>
               </select>
             </div>
-            <div class="col-xs-12 col-sm-4">
-              <label style="font-size:12px; font-weight:600; color:#334155; margin-bottom:4px; display:block;">Details Filling Mode</label>
-              <select id="autoDialFillingMode" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:12px; height:36px;">
-                <option value="auto" selected>Auto Pre-fill Lead Details</option>
-                <option value="manual">Manual Details Entry</option>
-              </select>
-            </div>
-            <div class="col-xs-12 col-sm-4">
+            <div style="flex:1 1 220px; min-width:200px;">
               <label style="font-size:12px; font-weight:600; color:#334155; margin-bottom:4px; display:block;">Range (Last 3 Digits)</label>
-              <div style="display:flex; align-items:center; gap:6px;">
-                <input type="number" id="dialerRangeFrom" min="0" max="999" placeholder="001" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:12px; height:36px;" oninput="updateAutoDialerQueueCount()">
-                <span style="font-size:12px; color:#64748b;">to</span>
-                <input type="number" id="dialerRangeTo" min="0" max="999" placeholder="200" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:12px; height:36px;" oninput="updateAutoDialerQueueCount()">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <input type="number" id="dialerRangeFrom" min="0" max="999" placeholder="001" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;" oninput="updateAutoDialerQueueCount()">
+                <span style="font-size:12px; color:#64748b; font-weight:600;">to</span>
+                <input type="number" id="dialerRangeTo" min="0" max="999" placeholder="200" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;" oninput="updateAutoDialerQueueCount()">
               </div>
             </div>
           </div>
 
-          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; padding-top:4px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; padding-top:8px; border-top:1px solid #f1f5f9;">
             <div style="font-size:13px; color:#475569;">
-              Queue Status: <strong id="autoDialerQueueCount" style="color:#0f172a;">0 records ready</strong>
+              Queue Status: <strong id="autoDialerQueueCount" style="color:#0f172a; font-weight:700;">0 records ready</strong>
             </div>
-            <div style="display:flex; gap:8px;">
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
               <button type="button" id="btnDialerBreak" class="btn btn-sm btn-default btn-dialer-break" onclick="toggleDialerBreak()" style="border-radius:8px; font-weight:600; padding:7px 16px; border:1px solid #cbd5e1;">
                 <i class="fa fa-coffee"></i> Break
               </button>
@@ -1114,7 +1116,7 @@ html, body {
           </div>
         </div>
 
-        <div id="autoDialerLiveCard" style="display:none; background:#ffffff; border:1px solid #0072f0; border-radius:12px; padding:20px; box-shadow:0 4px 14px rgba(0,114,240,0.08);">
+        <div id="autoDialerLiveCard"  style="display:none; background:#ffffff; border:1px solid #0072f0; border-radius:12px; padding:20px; box-shadow:0 4px 14px rgba(0,114,240,0.08);">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
             <span style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#0072f0; background:#e6f1fe; padding:3px 10px; border-radius:12px;" id="autoDialProgressBadge">
               Lead 1 of 0
@@ -1747,11 +1749,12 @@ function openAutoDialerMode() {
   $('.crm-dock-btn').removeClass('active');
   $('#dockBtnDatabase').addClass('active');
   $('#middleAreaTitle').text('Auto Dialer');
-  $('#dialerSetupTitle').text('Auto Dialer');
+  $('#dialerSetupTitle').text('Auto Dialer - Setup');
   $('#dialerSetupIcon').attr('class', 'fa fa-play-circle');
   $('#subnavFollowup').hide();
   $('#subnavLogsPeriod').hide();
   hideAllMiddleViews();
+  $('#wrapAutoDialTimerDelay').show();
   $('#btnStartAutoDial').show();
   $('#btnStartManualDial').hide();
   $('#middleViewAutoDialer').show();
@@ -1769,6 +1772,7 @@ function openManualDialerMode() {
   $('#subnavFollowup').hide();
   $('#subnavLogsPeriod').hide();
   hideAllMiddleViews();
+  $('#wrapAutoDialTimerDelay').hide();
   $('#btnStartAutoDial').hide();
   $('#btnStartManualDial').show();
   $('#middleViewAutoDialer').show();

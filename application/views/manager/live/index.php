@@ -1,5 +1,5 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
-<div class="content-wrapper" style="background:#f8fafc; min-height:940px; padding-bottom:40px;">
+<div class="content-wrapper" style="background:#f8fafc; min-height:920px; padding-bottom:40px;">
     <section class="content-header" style="padding:20px 24px 12px 24px;">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
             <div>
@@ -10,7 +10,7 @@
                     </h1>
                 </div>
                 <div style="font-size:12px; color:#64748b; margin-top:4px;">
-                    Last updated: <span id="liveLastSync" style="font-weight:700; color:#0f172a;">--:--:--</span>
+                    Auto-updates every 10s &bull; Last updated: <span id="liveLastSync" style="font-weight:700; color:#0f172a;">--:--:--</span>
                 </div>
             </div>
             <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
@@ -39,17 +39,17 @@
         <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:24px 28px; margin-bottom:22px; box-shadow:0 1px 3px rgba(0,0,0,0.02);">
             <div class="row" style="margin:0;">
                 <div class="col-md-4 col-xs-12" style="padding:0 24px 0 0; border-right:1px solid #f1f5f9;">
-                    <div style="font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.04em; color:#64748b;">Calls</div>
+                    <div style="font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.04em; color:#64748b;">Live Calls</div>
                     <div style="display:flex; align-items:baseline; gap:8px; margin:10px 0 12px 0;">
                         <span id="liveCallsTotal" style="font-size:36px; font-weight:800; color:#0f172a; line-height:1; letter-spacing:-0.03em;">0</span>
-                        <span style="font-size:13px; font-weight:600; color:#64748b;">Total</span>
+                        <span style="font-size:13px; font-weight:600; color:#64748b;">Total Placed</span>
                     </div>
                     <div style="height:6px; background:#f1f5f9; border-radius:3px; display:flex; overflow:hidden; margin:14px 0 12px 0;">
                         <div id="liveBarConnected" style="background:#00c6f0; width:0%; transition:width 0.4s ease;"></div>
                         <div id="liveBarInProcess" style="background:#38bdf8; width:0%; transition:width 0.4s ease;"></div>
                         <div id="liveBarOther" style="background:#cbd5e1; width:0%; transition:width 0.4s ease;"></div>
                     </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-top:14px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-top:14px; flex-wrap:wrap; gap:8px;">
                         <div>
                             <span style="display:inline-block; width:8px; height:8px; border-radius:2px; background:#00c6f0; margin-right:4px;"></span>
                             <span style="color:#64748b;">Connected:</span> <strong id="liveCallsConnected" style="color:#0f172a;">0</strong> <span style="color:#00a2d6; font-weight:700;">(<span id="liveCallsRate">0%</span>)</span>
@@ -66,7 +66,7 @@
                 </div>
 
                 <div class="col-md-5 col-xs-12" style="padding:0 24px; border-right:1px solid #f1f5f9;">
-                    <div style="font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.04em; color:#64748b;">Pipeline</div>
+                    <div style="font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.04em; color:#64748b;">Live Pipeline Flow</div>
                     <div style="display:flex; justify-content:space-between; align-items:center; margin:10px 0 12px 0;">
                         <div>
                             <div style="font-size:26px; font-weight:800; color:#0f172a; line-height:1;" id="liveLeadsTotal">0</div>
@@ -75,25 +75,25 @@
                         <div style="color:#cbd5e1; font-size:20px; font-weight:300;">&rarr;</div>
                         <div>
                             <div style="font-size:26px; font-weight:800; color:#0f172a; line-height:1;" id="liveOrdersTotal">0</div>
-                            <div style="font-size:12px; font-weight:600; color:#475569; margin-top:4px;"><span id="liveOrdersPending">0</span> Pending</div>
+                            <div style="font-size:12px; font-weight:600; color:#475569; margin-top:4px;"><span id="liveOrdersPending">0</span> Orders</div>
                         </div>
                         <div style="color:#cbd5e1; font-size:20px; font-weight:300;">&rarr;</div>
                         <div>
                             <div style="font-size:26px; font-weight:800; color:#0f172a; line-height:1;" id="liveSalesCount">0</div>
-                            <div style="font-size:12px; font-weight:600; color:#16a34a; margin-top:4px;">Sales</div>
+                            <div style="font-size:12px; font-weight:600; color:#16a34a; margin-top:4px;">Sales Deals</div>
                         </div>
                     </div>
                     <div style="margin-top:16px; padding-top:12px; border-top:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#64748b;">
-                        <span>Lead Rate: <strong id="liveLeadsRate" style="color:#0f172a; font-weight:700;">0.0%</strong></span>
-                        <span>Order Rate: <strong id="liveOrdersRate" style="color:#0f172a; font-weight:700;">0.0%</strong></span>
+                        <span>Lead Conversion: <strong id="liveLeadsRate" style="color:#0f172a; font-weight:700;">0.0%</strong></span>
+                        <span>Order Win Rate: <strong id="liveOrdersRate" style="color:#0f172a; font-weight:700;">0.0%</strong></span>
                     </div>
                 </div>
 
                 <div class="col-md-3 col-xs-12" style="padding:0 0 0 24px;">
-                    <div style="font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.04em; color:#64748b;">Sales Achieved</div>
-                    <div id="liveSalesRevenue" style="font-size:30px; font-weight:800; color:#0f172a; letter-spacing:-0.03em; margin:10px 0 6px 0; line-height:1;">AED 0.00</div>
+                    <div style="font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.04em; color:#64748b;">Sales Revenue Achieved</div>
+                    <div id="liveSalesRevenue" style="font-size:28px; font-weight:800; color:#0f172a; letter-spacing:-0.03em; margin:10px 0 6px 0; line-height:1;">AED 0.00</div>
                     <div style="font-size:12px; color:#64748b; margin-top:6px;">
-                        Avg Deal: <strong id="liveSalesAvg" style="color:#00a2d6;">AED 0.00</strong>
+                        Avg Closed Deal: <strong id="liveSalesAvg" style="color:#00a2d6;">AED 0.00</strong>
                     </div>
                 </div>
             </div>
@@ -103,58 +103,48 @@
             <div class="col-md-6 col-xs-12" style="margin-bottom:20px;">
                 <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:22px 24px; box-shadow:0 1px 3px rgba(0,0,0,0.02); height:100%;">
                     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:14px; margin-bottom:16px;">
-                        <div style="font-size:13px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.04em;">Call Status</div>
+                        <div style="font-size:13px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.04em;">Call Status &amp; Breakdown</div>
                         <span id="liveCallBadge" style="font-size:11px; font-weight:700; color:#00c6f0; background:rgba(0,198,240,0.08); padding:3px 10px; border-radius:4px;">0 Calls</span>
                     </div>
 
-                    <div style="display:flex; align-items:center; gap:24px; padding:6px 0 16px 0; border-bottom:1px solid #f1f5f9;">
-                        <div style="position:relative; width:110px; height:110px; flex-shrink:0;">
-                            <canvas id="liveCallsDonutChart" width="110" height="110" style="width:110px; height:110px;"></canvas>
-                        </div>
-                        <div style="flex:1;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:12px;">
-                                <div style="display:flex; align-items:center; gap:8px;">
+                    <div style="display:flex; flex-direction:column; gap:14px; padding:6px 0;">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:13px;">
+                                <span style="font-weight:600; color:#0f172a; display:flex; align-items:center; gap:8px;">
                                     <span style="width:10px; height:10px; border-radius:2px; background:#00c6f0; display:inline-block;"></span>
-                                    <span style="font-weight:600; color:#0f172a;">Connected</span>
-                                </div>
-                                <span id="donutConnectedVal" style="font-weight:700; color:#00a2d6;">0</span>
+                                    Connected Calls
+                                </span>
+                                <span style="font-weight:700; color:#0f172a;"><span id="statConnectedVal">0</span> <span style="font-weight:500; font-size:11px; color:#64748b;">(<span id="statConnectedPct">0%</span>)</span></span>
                             </div>
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:12px;">
-                                <div style="display:flex; align-items:center; gap:8px;">
-                                    <span style="width:10px; height:10px; border-radius:2px; background:#38bdf8; display:inline-block;"></span>
-                                    <span style="font-weight:600; color:#0f172a;">In Process</span>
-                                </div>
-                                <span id="donutInProcessVal" style="font-weight:700; color:#475569;">0</span>
-                            </div>
-                            <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px;">
-                                <div style="display:flex; align-items:center; gap:8px;">
-                                    <span style="width:10px; height:10px; border-radius:2px; background:#cbd5e1; display:inline-block;"></span>
-                                    <span style="font-weight:600; color:#0f172a;">Other</span>
-                                </div>
-                                <span id="donutOtherVal" style="font-weight:700; color:#64748b;">0</span>
+                            <div style="height:6px; background:#f1f5f9; border-radius:3px; overflow:hidden;">
+                                <div id="barStatConnected" style="background:#00c6f0; width:0%; height:100%; transition:width 0.4s ease;"></div>
                             </div>
                         </div>
-                    </div>
 
-                    <div style="margin-top:16px;">
-                        <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:#64748b; margin-bottom:10px;">Recent Calls</div>
-                        <div class="table-responsive" style="margin:0;">
-                            <table class="table" style="margin-bottom:0; font-size:12px;">
-                                <thead>
-                                    <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0; color:#475569; font-size:11px; text-transform:uppercase;">
-                                        <th style="padding:8px 12px; font-weight:700;">Customer</th>
-                                        <th style="padding:8px 12px; font-weight:700;">Phone</th>
-                                        <th style="padding:8px 12px; font-weight:700;">Agent</th>
-                                        <th style="padding:8px 12px; font-weight:700;">Status</th>
-                                        <th style="padding:8px 12px; font-weight:700; text-align:right;">Duration</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="liveRecentCallsTbody">
-                                    <tr>
-                                        <td colspan="5" style="text-align:center; padding:24px 0; color:#94a3b8;">No recent calls</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:13px;">
+                                <span style="font-weight:600; color:#0f172a; display:flex; align-items:center; gap:8px;">
+                                    <span style="width:10px; height:10px; border-radius:2px; background:#38bdf8; display:inline-block;"></span>
+                                    In Process / Ringing
+                                </span>
+                                <span style="font-weight:700; color:#0f172a;"><span id="statInProcessVal">0</span> <span style="font-weight:500; font-size:11px; color:#64748b;">(<span id="statInProcessPct">0%</span>)</span></span>
+                            </div>
+                            <div style="height:6px; background:#f1f5f9; border-radius:3px; overflow:hidden;">
+                                <div id="barStatInProcess" style="background:#38bdf8; width:0%; height:100%; transition:width 0.4s ease;"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:13px;">
+                                <span style="font-weight:600; color:#0f172a; display:flex; align-items:center; gap:8px;">
+                                    <span style="width:10px; height:10px; border-radius:2px; background:#94a3b8; display:inline-block;"></span>
+                                    Other / Not Responding
+                                </span>
+                                <span style="font-weight:700; color:#0f172a;"><span id="statOtherVal">0</span> <span style="font-weight:500; font-size:11px; color:#64748b;">(<span id="statOtherPct">0%</span>)</span></span>
+                            </div>
+                            <div style="height:6px; background:#f1f5f9; border-radius:3px; overflow:hidden;">
+                                <div id="barStatOther" style="background:#94a3b8; width:0%; height:100%; transition:width 0.4s ease;"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -163,36 +153,12 @@
             <div class="col-md-6 col-xs-12" style="margin-bottom:20px;">
                 <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:22px 24px; box-shadow:0 1px 3px rgba(0,0,0,0.02); height:100%;">
                     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:14px; margin-bottom:16px;">
-                        <div style="font-size:13px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.04em;">Lead Stages</div>
+                        <div style="font-size:13px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.04em;">Lead Stages Breakdown</div>
                         <span id="liveLeadBadge" style="font-size:11px; font-weight:700; color:#00c6f0; background:rgba(0,198,240,0.08); padding:3px 10px; border-radius:4px;">0 Leads</span>
                     </div>
 
-                    <div style="padding:6px 0 16px 0; border-bottom:1px solid #f1f5f9;">
-                        <div id="liveLeadStagesList" style="display:flex; flex-wrap:wrap; gap:8px;">
-                            <span style="color:#94a3b8; font-size:12px;">Loading stages...</span>
-                        </div>
-                    </div>
-
-                    <div style="margin-top:16px;">
-                        <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:#64748b; margin-bottom:10px;">Recent Leads</div>
-                        <div class="table-responsive" style="margin:0;">
-                            <table class="table" style="margin-bottom:0; font-size:12px;">
-                                <thead>
-                                    <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0; color:#475569; font-size:11px; text-transform:uppercase;">
-                                        <th style="padding:8px 12px; font-weight:700;">Customer</th>
-                                        <th style="padding:8px 12px; font-weight:700;">POC</th>
-                                        <th style="padding:8px 12px; font-weight:700;">Stage</th>
-                                        <th style="padding:8px 12px; font-weight:700;">Status</th>
-                                        <th style="padding:8px 12px; font-weight:700; text-align:right;">Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="liveRecentLeadsTbody">
-                                    <tr>
-                                        <td colspan="5" style="text-align:center; padding:24px 0; color:#94a3b8;">No recent leads</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                    <div id="liveLeadStagesList" style="display:flex; flex-direction:column; gap:12px; padding:6px 0;">
+                        <div style="color:#94a3b8; font-size:13px; text-align:center; padding:18px 0;">Loading lead stages...</div>
                     </div>
                 </div>
             </div>
@@ -200,7 +166,7 @@
 
         <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:22px 28px; box-shadow:0 1px 3px rgba(0,0,0,0.02);">
             <div style="font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; color:#0f172a; margin-bottom:18px; border-bottom:1px solid #f1f5f9; padding-bottom:10px;">
-                Activity
+                Operational Activities
             </div>
             <div class="row" style="margin:0;">
                 <div class="col-md-3 col-sm-6 col-xs-12" style="padding:0 20px 0 0; border-right:1px solid #f1f5f9;">
@@ -215,7 +181,7 @@
                     <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:#64748b;">Meetings</div>
                     <div style="font-size:26px; font-weight:800; color:#0f172a; margin:6px 0 4px 0;" id="liveMeetingsTotal">0</div>
                     <div style="font-size:12px; color:#64748b;">
-                        Scheduled
+                        Scheduled Meetings
                     </div>
                 </div>
 
@@ -248,60 +214,34 @@
 .live-pulse-dot {
     width: 10px;
     height: 10px;
-    border-radius: 50%;
     background: #00c6f0;
+    border-radius: 50%;
     display: inline-block;
-    animation: livePulseAura 2s infinite ease-in-out;
+    animation: livePulseAura 2s infinite;
 }
-.live-stream-row {
-    border-bottom: 1px solid #f1f5f9;
-    transition: background 0.15s ease;
+.live-scope-btn.active {
+    background: #0f172a !important;
+    color: #ffffff !important;
 }
-.live-stream-row:hover {
-    background: #f8fafc;
+.live-tf-btn.active {
+    background: #00c6f0 !important;
+    color: #ffffff !important;
 }
 </style>
 
 <script>
 $(document).ready(function() {
-    var currentTimeframe = 'today';
-    var currentScope = 'my';
+    var curScope = 'my';
+    var curTf = 'today';
     var refreshTimer = null;
-    var callsDonutInstance = null;
 
-    function renderCallsDonut(connected, inProcess, other) {
-        var cv = document.getElementById('liveCallsDonutChart');
-        if (!cv) return;
-        var ctx = cv.getContext('2d');
-        var c = parseInt(connected) || 0;
-        var p = parseInt(inProcess) || 0;
-        var o = parseInt(other) || 0;
-        var data = [];
+    function formatNumber(num) {
+        return (num || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
 
-        if (c === 0 && p === 0 && o === 0) {
-            data = [{ value: 1, color: '#e2e8f0', label: 'No Calls' }];
-        } else {
-            if (c > 0) data.push({ value: c, color: '#00c6f0', label: 'Connected' });
-            if (p > 0) data.push({ value: p, color: '#38bdf8', label: 'In Process' });
-            if (o > 0) data.push({ value: o, color: '#cbd5e1', label: 'Other' });
-        }
-
-        if (callsDonutInstance) {
-            try { callsDonutInstance.destroy(); } catch(e) {}
-        }
-
-        callsDonutInstance = new Chart(ctx).Doughnut(data, {
-            percentageInnerCutout: 68,
-            segmentShowStroke: true,
-            segmentStrokeColor: '#ffffff',
-            segmentStrokeWidth: 2,
-            animationSteps: 25,
-            animationEasing: 'easeOutQuart',
-            animateRotate: true,
-            responsive: false,
-            maintainAspectRatio: true,
-            showTooltips: true
-        });
+    function formatCurrency(val) {
+        var n = parseFloat(val) || 0;
+        return 'AED ' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     }
 
     function fetchLiveData() {
@@ -309,111 +249,108 @@ $(document).ready(function() {
         $.ajax({
             url: '<?php echo base_url(); ?>manager/live/ajax_get_data',
             type: 'POST',
-            data: {
-                timeframe: currentTimeframe,
-                scope: currentScope
-            },
+            data: { scope: curScope, timeframe: curTf },
             dataType: 'json',
-            success: function(resp) {
+            success: function(res) {
                 $('#liveRefreshIcon').removeClass('fa-spin');
-                if (resp && resp.status === 'success') {
-                    $('#liveLastSync').text(resp.timestamp);
+                if (!res || res.status !== 'success') return;
 
-                    $('#liveCallsTotal').text(resp.calls.total);
-                    $('#liveCallsConnected').text(resp.calls.connected);
-                    $('#liveCallsInProcess').text(resp.calls.in_process);
-                    $('#liveCallsOther').text(resp.calls.other);
-                    $('#liveCallBadge').text(resp.calls.total + ' Calls');
+                $('#liveLastSync').text(res.timestamp || '--:--:--');
 
-                    var callTot = resp.calls.total > 0 ? resp.calls.total : 1;
-                    var callRate = resp.calls.total > 0 ? ((resp.calls.connected / resp.calls.total) * 100).toFixed(1) : '0.0';
-                    $('#liveCallsRate').text(callRate + '%');
+                var cTotal = res.calls ? parseInt(res.calls.total) || 0 : 0;
+                var cConn = res.calls ? parseInt(res.calls.connected) || 0 : 0;
+                var cProc = res.calls ? parseInt(res.calls.in_process) || 0 : 0;
+                var cOther = res.calls ? parseInt(res.calls.other) || 0 : 0;
+                var cRate = cTotal > 0 ? ((cConn / cTotal) * 100).toFixed(1) : '0.0';
 
-                    $('#liveBarConnected').css('width', Math.round((resp.calls.connected / callTot) * 100) + '%');
-                    $('#liveBarInProcess').css('width', Math.round((resp.calls.in_process / callTot) * 100) + '%');
-                    $('#liveBarOther').css('width', Math.round((resp.calls.other / callTot) * 100) + '%');
+                $('#liveCallsTotal').text(formatNumber(cTotal));
+                $('#liveCallsConnected').text(formatNumber(cConn));
+                $('#liveCallsInProcess').text(formatNumber(cProc));
+                $('#liveCallsOther').text(formatNumber(cOther));
+                $('#liveCallsRate').text(cRate + '%');
+                $('#liveCallBadge').text(formatNumber(cTotal) + ' Calls');
 
-                    $('#donutConnectedVal').text(resp.calls.connected);
-                    $('#donutInProcessVal').text(resp.calls.in_process);
-                    $('#donutOtherVal').text(resp.calls.other);
+                var pConn = cTotal > 0 ? ((cConn / cTotal) * 100).toFixed(1) : 0;
+                var pProc = cTotal > 0 ? ((cProc / cTotal) * 100).toFixed(1) : 0;
+                var pOth = cTotal > 0 ? ((cOther / cTotal) * 100).toFixed(1) : 0;
 
-                    renderCallsDonut(resp.calls.connected, resp.calls.in_process, resp.calls.other);
+                $('#liveBarConnected').css('width', pConn + '%');
+                $('#liveBarInProcess').css('width', pProc + '%');
+                $('#liveBarOther').css('width', pOth + '%');
 
-                    var callsHtml = '';
-                    if (resp.calls.latest && resp.calls.latest.length > 0) {
-                        for (var i = 0; i < resp.calls.latest.length; i++) {
-                            var cl = resp.calls.latest[i];
-                            var stColor = cl.status === 'connected' ? '#00c6f0' : (cl.status === 'in_process' ? '#38bdf8' : '#64748b');
-                            callsHtml += '<tr class="live-stream-row">' +
-                                '<td style="padding:8px 12px; font-weight:700; color:#0f172a;">' + (cl.customer_name ? cl.customer_name : 'Unknown') + '</td>' +
-                                '<td style="padding:8px 12px; color:#475569;">' + (cl.phone_number ? cl.phone_number : '-') + '</td>' +
-                                '<td style="padding:8px 12px; color:#64748b;">' + (cl.agent_name ? cl.agent_name : '-') + '</td>' +
-                                '<td style="padding:8px 12px; font-weight:700; color:' + stColor + '; text-transform:capitalize;">' + cl.status + '</td>' +
-                                '<td style="padding:8px 12px; text-align:right; font-weight:600; color:#0f172a;">' + (cl.duration ? cl.duration + 's' : '0s') + '</td>' +
-                            '</tr>';
-                        }
-                    } else {
-                        callsHtml = '<tr><td colspan="5" style="text-align:center; padding:24px 0; color:#94a3b8;">No recent calls</td></tr>';
-                    }
-                    $('#liveRecentCallsTbody').html(callsHtml);
+                $('#statConnectedVal').text(formatNumber(cConn));
+                $('#statConnectedPct').text(pConn + '%');
+                $('#barStatConnected').css('width', pConn + '%');
 
-                    $('#liveLeadsTotal').text(resp.leads.total);
-                    $('#liveLeadsQualified').text(resp.leads.qualified);
-                    $('#liveLeadBadge').text(resp.leads.total + ' Leads');
-                    var leadRate = resp.leads.total > 0 ? ((resp.leads.qualified / resp.leads.total) * 100).toFixed(1) : '0.0';
-                    $('#liveLeadsRate').text(leadRate + '%');
+                $('#statInProcessVal').text(formatNumber(cProc));
+                $('#statInProcessPct').text(pProc + '%');
+                $('#barStatInProcess').css('width', pProc + '%');
 
-                    var stagesHtml = '';
-                    if (resp.leads.statuses && resp.leads.statuses.length > 0) {
-                        for (var j = 0; j < resp.leads.statuses.length; j++) {
-                            var st = resp.leads.statuses[j];
-                            stagesHtml += '<span style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:4px 10px; font-size:11px; font-weight:600; color:#334155;">' +
-                                st.name + ': <strong style="color:#00a2d6;">' + st.count + '</strong></span>';
-                        }
-                    } else {
-                        stagesHtml = '<span style="color:#94a3b8; font-size:12px;">No active stages</span>';
-                    }
-                    $('#liveLeadStagesList').html(stagesHtml);
+                $('#statOtherVal').text(formatNumber(cOther));
+                $('#statOtherPct').text(pOth + '%');
+                $('#barStatOther').css('width', pOth + '%');
 
-                    var leadsHtml = '';
-                    if (resp.leads.latest && resp.leads.latest.length > 0) {
-                        for (var k = 0; k < resp.leads.latest.length; k++) {
-                            var ld = resp.leads.latest[k];
-                            var stName = ld.status_name ? ld.status_name : (ld.status ? ld.status : 'New');
-                            leadsHtml += '<tr class="live-stream-row">' +
-                                '<td style="padding:8px 12px; font-weight:700; color:#0f172a;">' + (ld.customer ? ld.customer : 'N/A') + '</td>' +
-                                '<td style="padding:8px 12px; color:#475569;">' + (ld.poc ? ld.poc : '-') + '</td>' +
-                                '<td style="padding:8px 12px; font-weight:600; color:#00a2d6;">' + (ld.lead_stage ? ld.lead_stage : 'Database') + '</td>' +
-                                '<td style="padding:8px 12px; color:#475569;">' + stName + '</td>' +
-                                '<td style="padding:8px 12px; text-align:right; color:#64748b;">' + (ld.created ? ld.created : '-') + '</td>' +
-                            '</tr>';
-                        }
-                    } else {
-                        leadsHtml = '<tr><td colspan="5" style="text-align:center; padding:24px 0; color:#94a3b8;">No recent leads</td></tr>';
-                    }
-                    $('#liveRecentLeadsTbody').html(leadsHtml);
+                var lTotal = res.leads ? parseInt(res.leads.total) || 0 : 0;
+                var lQual = res.leads ? parseInt(res.leads.qualified) || 0 : 0;
+                var lRate = lTotal > 0 ? ((lQual / lTotal) * 100).toFixed(1) : '0.0';
 
-                    $('#liveOrdersTotal').text(resp.orders.total);
-                    $('#liveOrdersPending').text(resp.orders.pending);
-                    var ordRate = resp.orders.total > 0 ? ((resp.orders.completed / resp.orders.total) * 100).toFixed(1) : '0.0';
-                    $('#liveOrdersRate').text(ordRate + '%');
+                $('#liveLeadsTotal').text(formatNumber(lTotal));
+                $('#liveLeadsQualified').text(formatNumber(lQual));
+                $('#liveLeadsRate').text(lRate + '%');
+                $('#liveLeadBadge').text(formatNumber(lTotal) + ' Leads');
 
-                    $('#liveSalesRevenue').text(resp.sales.revenue_formatted);
-                    $('#liveSalesCount').text(resp.sales.count);
-                    var avgSales = resp.sales.count > 0 ? (resp.sales.revenue / resp.sales.count) : 0;
-                    $('#liveSalesAvg').text('AED ' + avgSales.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+                var oTotal = res.orders ? parseInt(res.orders.total) || 0 : 0;
+                var oPending = res.orders ? parseInt(res.orders.pending) || 0 : 0;
+                var oComp = res.orders ? parseInt(res.orders.completed) || 0 : 0;
+                var oRate = oTotal > 0 ? (((oComp) / oTotal) * 100).toFixed(1) : '0.0';
 
-                    $('#liveFollowupsTotal').text(resp.followups.total);
-                    $('#liveFollowupsMissed').text(resp.followups.missed);
-                    $('#liveFollowupsToday').text(resp.followups.today);
+                $('#liveOrdersTotal').text(formatNumber(oTotal));
+                $('#liveOrdersPending').text(formatNumber(oPending));
+                $('#liveOrdersRate').text(oRate + '%');
 
-                    $('#liveMeetingsTotal').text(resp.meetings.total);
-                    $('#liveTicketsTotal').text(resp.tickets.total);
-                    $('#liveTicketsOpen').text(resp.tickets.open);
-                    $('#liveTicketsResolved').text(resp.tickets.resolved);
+                var sCount = res.sales ? parseInt(res.sales.count) || 0 : 0;
+                var sRev = res.sales ? parseFloat(res.sales.revenue) || 0.0 : 0.0;
+                var sAvg = sCount > 0 ? (sRev / sCount) : 0.0;
 
-                    $('#liveArticlesTotal').text(resp.articles.total);
+                $('#liveSalesCount').text(formatNumber(sCount));
+                $('#liveSalesRevenue').text(formatCurrency(sRev));
+                $('#liveSalesAvg').text(formatCurrency(sAvg));
+
+                if (res.leads && res.leads.statuses && res.leads.statuses.length > 0) {
+                    var sHtml = '';
+                    var maxCnt = 1;
+                    $.each(res.leads.statuses, function(i, st) {
+                        if (st.count > maxCnt) maxCnt = st.count;
+                    });
+                    $.each(res.leads.statuses, function(i, st) {
+                        var pct = Math.round((st.count / (lTotal > 0 ? lTotal : 1)) * 100);
+                        var barW = Math.round((st.count / maxCnt) * 100);
+                        sHtml += '<div>' +
+                            '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; font-size:12.5px;">' +
+                                '<span style="font-weight:600; color:#0f172a;">' + st.name + '</span>' +
+                                '<span style="font-weight:700; color:#0f172a;">' + formatNumber(st.count) + ' <span style="font-weight:500; font-size:11px; color:#64748b;">(' + pct + '%)</span></span>' +
+                            '</div>' +
+                            '<div style="height:5px; background:#f1f5f9; border-radius:3px; overflow:hidden;">' +
+                                '<div style="background:#00c6f0; width:' + barW + '%; height:100%; transition:width 0.4s ease;"></div>' +
+                            '</div>' +
+                        '</div>';
+                    });
+                    $('#liveLeadStagesList').html(sHtml);
+                } else {
+                    $('#liveLeadStagesList').html('<div style="color:#94a3b8; font-size:13px; text-align:center; padding:18px 0;">No lead stages recorded</div>');
                 }
+
+                $('#liveFollowupsTotal').text(formatNumber(res.followups ? res.followups.total : 0));
+                $('#liveFollowupsToday').text((res.followups ? res.followups.today : 0) + ' Today');
+                $('#liveFollowupsMissed').text((res.followups ? res.followups.missed : 0) + ' Missed');
+
+                $('#liveMeetingsTotal').text(formatNumber(res.meetings ? res.meetings.total : 0));
+
+                $('#liveTicketsTotal').text(formatNumber(res.tickets ? res.tickets.total : 0));
+                $('#liveTicketsOpen').text((res.tickets ? res.tickets.open : 0) + ' Open');
+                $('#liveTicketsResolved').text((res.tickets ? res.tickets.resolved : 0) + ' Resolved');
+
+                $('#liveArticlesTotal').text(formatNumber(res.articles ? res.articles.total : 0));
             },
             error: function() {
                 $('#liveRefreshIcon').removeClass('fa-spin');
@@ -424,14 +361,14 @@ $(document).ready(function() {
     $('.live-scope-btn').on('click', function() {
         $('.live-scope-btn').removeClass('active').css({ 'background': 'transparent', 'color': '#64748b' });
         $(this).addClass('active').css({ 'background': '#0f172a', 'color': '#ffffff' });
-        currentScope = $(this).data('scope');
+        curScope = $(this).data('scope');
         fetchLiveData();
     });
 
     $('.live-tf-btn').on('click', function() {
         $('.live-tf-btn').removeClass('active').css({ 'background': 'transparent', 'color': '#475569' });
         $(this).addClass('active').css({ 'background': '#00c6f0', 'color': '#ffffff' });
-        currentTimeframe = $(this).data('tf');
+        curTf = $(this).data('tf');
         fetchLiveData();
     });
 
@@ -443,4 +380,5 @@ $(document).ready(function() {
     refreshTimer = setInterval(fetchLiveData, 10000);
 });
 </script>
+
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

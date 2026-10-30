@@ -24,7 +24,8 @@
                 <a href="<?php echo base_url(); ?>manager/leads" class="dash-kpi-card dash-kpi-navy" id="cardMyDatabase">
                     <div class="dash-kpi-top">
                         <div>
-                            <div class="dash-kpi-label" style="font-size: 18px; font-weight: 700; padding-top: 10px;">My Database</div>
+                            <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_database']) ? (int)$dashboard_count['count_database'] : 0; ?></div>
+                            <div class="dash-kpi-label">My Database</div>
                         </div>
                         <div class="dash-kpi-icon"><i class="fa fa-database"></i></div>
                     </div>
@@ -38,7 +39,8 @@
                 <a href="<?php echo base_url(); ?>manager/verticals" class="dash-kpi-card dash-kpi-forest" id="cardMyVerticals">
                     <div class="dash-kpi-top">
                         <div>
-                            <div class="dash-kpi-label" style="font-size: 18px; font-weight: 700; padding-top: 10px;">My Vertical</div>
+                            <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_verticals']) ? (int)$dashboard_count['count_verticals'] : 0; ?></div>
+                            <div class="dash-kpi-label">My Vertical</div>
                         </div>
                         <div class="dash-kpi-icon"><i class="ion ion-stats-bars"></i></div>
                     </div>
@@ -52,7 +54,8 @@
                 <a href="<?php echo base_url(); ?>manager/team/members" class="dash-kpi-card dash-kpi-amber" id="cardTeamUsers">
                     <div class="dash-kpi-top">
                         <div>
-                            <div class="dash-kpi-label" style="font-size: 18px; font-weight: 700; padding-top: 10px;">Team Users</div>
+                            <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_users']) ? (int)$dashboard_Tcount['count_users'] : 0; ?></div>
+                            <div class="dash-kpi-label">Team Users</div>
                         </div>
                         <div class="dash-kpi-icon"><i class="ion ion-person-add"></i></div>
                     </div>
@@ -66,7 +69,8 @@
                 <a href="<?php echo base_url(); ?>manager/team/verticals" class="dash-kpi-card dash-kpi-crimson" id="cardTeamVerticals">
                     <div class="dash-kpi-top">
                         <div>
-                            <div class="dash-kpi-label" style="font-size: 18px; font-weight: 700; padding-top: 10px;">Team Verticals</div>
+                            <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_verticals']) ? (int)$dashboard_Tcount['count_verticals'] : 0; ?></div>
+                            <div class="dash-kpi-label">Team Verticals</div>
                         </div>
                         <div class="dash-kpi-icon"><i class="fa fa-cubes"></i></div>
                     </div>
@@ -84,7 +88,6 @@
                         <div>
                             <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_leads']) ? (int)$dashboard_count['count_leads'] : 0; ?></div>
                             <div class="dash-kpi-label">My Leads</div>
-                            <div class="dash-kpi-sales" style="font-size: 11px; font-weight: 700; opacity: 0.95; margin-top: 3px;">Sales: AED <?php echo number_format((float)(isset($dashboard_count['sales_amount']) ? $dashboard_count['sales_amount'] : 0), 2); ?></div>
                         </div>
                         <div class="dash-kpi-icon"><i class="fa fa-bullseye"></i></div>
                     </div>
@@ -100,7 +103,6 @@
                         <div>
                             <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_orders']) ? (int)$dashboard_count['count_orders'] : 0; ?></div>
                             <div class="dash-kpi-label">My Orders</div>
-                            <div class="dash-kpi-sales" style="font-size: 11px; font-weight: 700; opacity: 0.95; margin-top: 3px;">Sales: AED <?php echo number_format((float)(isset($dashboard_count['sales_amount']) ? $dashboard_count['sales_amount'] : 0), 2); ?></div>
                         </div>
                         <div class="dash-kpi-icon"><i class="fa fa-shopping-cart"></i></div>
                     </div>
@@ -116,7 +118,6 @@
                         <div>
                             <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_leads']) ? (int)$dashboard_Tcount['count_leads'] : 0; ?></div>
                             <div class="dash-kpi-label">Team Leads</div>
-                            <div class="dash-kpi-sales" style="font-size: 11px; font-weight: 700; opacity: 0.95; margin-top: 3px;">Sales: AED <?php echo number_format((float)(isset($dashboard_Tcount['sales_amount']) ? $dashboard_Tcount['sales_amount'] : 0), 2); ?></div>
                         </div>
                         <div class="dash-kpi-icon"><i class="ion ion-pie-graph"></i></div>
                     </div>
@@ -132,7 +133,6 @@
                         <div>
                             <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_orders']) ? (int)$dashboard_Tcount['count_orders'] : 0; ?></div>
                             <div class="dash-kpi-label">Team Orders</div>
-                            <div class="dash-kpi-sales" style="font-size: 11px; font-weight: 700; opacity: 0.95; margin-top: 3px;">Sales: AED <?php echo number_format((float)(isset($dashboard_Tcount['sales_amount']) ? $dashboard_Tcount['sales_amount'] : 0), 2); ?></div>
                         </div>
                         <div class="dash-kpi-icon"><i class="fa fa-truck"></i></div>
                     </div>
@@ -143,8 +143,6 @@
             </div>
         </div>
 
-
-        
         <?php
             $my_db_total = 0;
             if (!empty($dashboard_db_state)) {
@@ -329,11 +327,11 @@
         <div class="row">
             <div class="col-md-6 col-xs-12">
                 <div class="dash-chart-card">
-                    <div class="dash-chart-header" style="display:flex; justify-content:space-between; align-items:center;">
-                        <h4 class="dash-chart-title" style="margin:0;">
+                    <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important;">
+                        <h4 class="dash-chart-title" style="margin:0 !important; margin-right:20px !important;">
                             <i class="fa fa-line-chart"></i> My Projection
                         </h4>
-                        <div style="display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600; color:#475569;">
+                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
                             <span style="display:inline-block; width:10px; height:10px; background-color:#00c6f0; border-radius:2px;"></span>
                             <span>Projection</span>
                         </div>
@@ -346,11 +344,11 @@
 
             <div class="col-md-6 col-xs-12">
                 <div class="dash-chart-card">
-                    <div class="dash-chart-header" style="display:flex; justify-content:space-between; align-items:center;">
-                        <h4 class="dash-chart-title" style="margin:0;">
+                    <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important;">
+                        <h4 class="dash-chart-title" style="margin:0 !important; margin-right:20px !important;">
                             <i class="fa fa-line-chart"></i> Team Projection
                         </h4>
-                        <div style="display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600; color:#475569;">
+                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
                             <span style="display:inline-block; width:10px; height:10px; background-color:#00c6f0; border-radius:2px;"></span>
                             <span>Projection</span>
                         </div>
@@ -365,16 +363,16 @@
         <div class="row" style="margin-top: 14px;">
             <div class="col-md-6 col-xs-12">
                 <div class="dash-chart-card">
-                    <div class="dash-chart-header" style="display:flex; justify-content:space-between; align-items:center;">
-                        <h4 class="dash-chart-title" style="margin:0;">
+                    <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important;">
+                        <h4 class="dash-chart-title" style="margin:0 !important; margin-right:20px !important;">
                             <i class="fa fa-bar-chart"></i> My Achievement
                         </h4>
-                        <div style="display:inline-flex; align-items:center; gap:12px; font-size:12px; font-weight:600; color:#475569;">
-                            <span style="display:inline-flex; align-items:center; gap:5px;">
+                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:16px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
+                            <span style="display:inline-flex; align-items:center; gap:6px;">
                                 <span style="display:inline-block; width:10px; height:10px; background-color:#00c6f0; border-radius:2px;"></span>
                                 <span>Target</span>
                             </span>
-                            <span style="display:inline-flex; align-items:center; gap:5px;">
+                            <span style="display:inline-flex; align-items:center; gap:6px;">
                                 <span style="display:inline-block; width:10px; height:10px; background-color:#16a34a; border-radius:2px;"></span>
                                 <span>Achieved</span>
                             </span>
@@ -388,16 +386,16 @@
 
             <div class="col-md-6 col-xs-12">
                 <div class="dash-chart-card">
-                    <div class="dash-chart-header" style="display:flex; justify-content:space-between; align-items:center;">
-                        <h4 class="dash-chart-title" style="margin:0;">
+                    <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important;">
+                        <h4 class="dash-chart-title" style="margin:0 !important; margin-right:20px !important;">
                             <i class="fa fa-bar-chart"></i> Team Achievement
                         </h4>
-                        <div style="display:inline-flex; align-items:center; gap:12px; font-size:12px; font-weight:600; color:#475569;">
-                            <span style="display:inline-flex; align-items:center; gap:5px;">
+                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:16px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
+                            <span style="display:inline-flex; align-items:center; gap:6px;">
                                 <span style="display:inline-block; width:10px; height:10px; background-color:#00c6f0; border-radius:2px;"></span>
                                 <span>Target</span>
                             </span>
-                            <span style="display:inline-flex; align-items:center; gap:5px;">
+                            <span style="display:inline-flex; align-items:center; gap:6px;">
                                 <span style="display:inline-block; width:10px; height:10px; background-color:#16a34a; border-radius:2px;"></span>
                                 <span>Achieved</span>
                             </span>
@@ -1306,7 +1304,7 @@ $(function () {
     var customOpTooltip = function(tooltip) {
         var el = $('#chartjs-op-tooltip');
         if (!el.length) {
-            $('body').append('<div id="chartjs-op-tooltip" style="position: absolute; z-index: 99999; pointer-events: none; opacity: 0; background: rgba(15, 23, 42, 0.92); color: #ffffff; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.25); transition: opacity 0.1s ease;"></div>');
+            $('body').append('<div id="chartjs-op-tooltip" style="position: fixed; z-index: 999999; pointer-events: none; opacity: 0; background: rgba(15, 23, 42, 0.94); color: #ffffff; padding: 5px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 700; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif; white-space: nowrap; box-shadow: 0 4px 14px rgba(0,0,0,0.3); transition: opacity 0.1s ease;"></div>');
             el = $('#chartjs-op-tooltip');
         }
         if (!tooltip || !tooltip.text) {
@@ -1314,14 +1312,13 @@ $(function () {
             return;
         }
         el.html(tooltip.text);
-        if (tooltip.chart && tooltip.chart.canvas) {
-            var canvasRect = tooltip.chart.canvas.getBoundingClientRect();
-            var top = window.pageYOffset + canvasRect.top + tooltip.y - el.outerHeight() - 6;
-            var left = window.pageXOffset + canvasRect.left + tooltip.x - (el.outerWidth() / 2);
+        if (tooltip.isScreenCoord) {
+            var top = tooltip.y - el.outerHeight() - 8;
+            var left = tooltip.x - (el.outerWidth() / 2);
             el.css({
                 opacity: 1,
-                top: Math.max(0, top) + 'px',
-                left: Math.max(0, left) + 'px'
+                top: Math.max(10, top) + 'px',
+                left: Math.max(10, left) + 'px'
             });
         }
     };
@@ -1345,7 +1342,7 @@ $(function () {
             if (n > 0) data.push({ value: n, color: '#0164e8', label: 'Next 7 Days' });
             if (f > 0) data.push({ value: f, color: '#00a65a', label: 'All Future' });
         }
-        new Chart(ctx).Doughnut(data, {
+        var chartInst = new Chart(ctx).Doughnut(data, {
             percentageInnerCutout: 52,
             segmentShowStroke: true,
             segmentStrokeColor: '#ffffff',
@@ -1355,25 +1352,32 @@ $(function () {
             animateRotate: true,
             responsive: false,
             maintainAspectRatio: true,
-            showTooltips: true,
-            customTooltips: customOpTooltip
+            showTooltips: false
+        });
+
+        $(cv).on('mousemove', function(e) {
+            var pts = chartInst.getSegmentsAtEvent(e);
+            if (pts && pts.length > 0) {
+                var seg = pts[0];
+                if (seg.label && seg.label !== 'Empty') {
+                    customOpTooltip({
+                        text: seg.label + ': ' + seg.value,
+                        chart: { canvas: cv },
+                        x: e.clientX,
+                        y: e.clientY,
+                        isScreenCoord: true
+                    });
+                } else {
+                    customOpTooltip(null);
+                }
+            } else {
+                customOpTooltip(null);
+            }
+        }).on('mouseleave', function() {
+            customOpTooltip(null);
         });
     }
 
-    renderOpPie('pieCard_my_tickets', '<?php echo isset($dashboard_tickets["total_missed"]) ? (int)$dashboard_tickets["total_missed"] : 0; ?>', '<?php echo isset($dashboard_tickets["total_lastweek"]) ? (int)$dashboard_tickets["total_lastweek"] : 0; ?>', '<?php echo isset($dashboard_tickets["total_today"]) ? (int)$dashboard_tickets["total_today"] : 0; ?>', '<?php echo isset($dashboard_tickets["total_nextweek"]) ? (int)$dashboard_tickets["total_nextweek"] : 0; ?>', '<?php echo isset($dashboard_tickets["total_future"]) ? (int)$dashboard_tickets["total_future"] : 0; ?>');
-    renderOpPie('pieCard_my_tasks', '<?php echo isset($dashboard_tasks["total_missed"]) ? (int)$dashboard_tasks["total_missed"] : 0; ?>', '<?php echo isset($dashboard_tasks["total_lastweek"]) ? (int)$dashboard_tasks["total_lastweek"] : 0; ?>', '<?php echo isset($dashboard_tasks["total_today"]) ? (int)$dashboard_tasks["total_today"] : 0; ?>', '<?php echo isset($dashboard_tasks["total_nextweek"]) ? (int)$dashboard_tasks["total_nextweek"] : 0; ?>', '<?php echo isset($dashboard_tasks["total_future"]) ? (int)$dashboard_tasks["total_future"] : 0; ?>');
-    renderOpPie('pieCard_my_f', '<?php echo isset($dashboard_f["total_missed"]) ? (int)$dashboard_f["total_missed"] : 0; ?>', '<?php echo isset($dashboard_f["total_lastweek"]) ? (int)$dashboard_f["total_lastweek"] : 0; ?>', '<?php echo isset($dashboard_f["total_today"]) ? (int)$dashboard_f["total_today"] : 0; ?>', '<?php echo isset($dashboard_f["total_nextweek"]) ? (int)$dashboard_f["total_nextweek"] : 0; ?>', '<?php echo isset($dashboard_f["total_future"]) ? (int)$dashboard_f["total_future"] : 0; ?>');
-    renderOpPie('pieCard_my_m', '<?php echo isset($dashboard_m["total_missed"]) ? (int)$dashboard_m["total_missed"] : 0; ?>', '<?php echo isset($dashboard_m["total_lastweek"]) ? (int)$dashboard_m["total_lastweek"] : 0; ?>', '<?php echo isset($dashboard_m["total_today"]) ? (int)$dashboard_m["total_today"] : 0; ?>', '<?php echo isset($dashboard_m["total_nextweek"]) ? (int)$dashboard_m["total_nextweek"] : 0; ?>', '<?php echo isset($dashboard_m["total_future"]) ? (int)$dashboard_m["total_future"] : 0; ?>');
-    renderOpPie('pieCard_my_vfu', '<?php echo isset($dashboard_vfu["total_missed"]) ? (int)$dashboard_vfu["total_missed"] : 0; ?>', '<?php echo isset($dashboard_vfu["total_lastweek"]) ? (int)$dashboard_vfu["total_lastweek"] : 0; ?>', '<?php echo isset($dashboard_vfu["total_today"]) ? (int)$dashboard_vfu["total_today"] : 0; ?>', '<?php echo isset($dashboard_vfu["total_nextweek"]) ? (int)$dashboard_vfu["total_nextweek"] : 0; ?>', '<?php echo isset($dashboard_vfu["total_future"]) ? (int)$dashboard_vfu["total_future"] : 0; ?>');
-    renderOpPie('pieCard_my_db', '<?php echo (int)$dashboard_db_ops_my["total_missed"]; ?>', '<?php echo (int)$dashboard_db_ops_my["total_lastweek"]; ?>', '<?php echo (int)$dashboard_db_ops_my["total_today"]; ?>', '<?php echo (int)$dashboard_db_ops_my["total_nextweek"]; ?>', '<?php echo (int)$dashboard_db_ops_my["total_future"]; ?>');
-    renderOpPie('pieCard_my_leads', '<?php echo (int)$dashboard_lead_ops_my["total_missed"]; ?>', '<?php echo (int)$dashboard_lead_ops_my["total_lastweek"]; ?>', '<?php echo (int)$dashboard_lead_ops_my["total_today"]; ?>', '<?php echo (int)$dashboard_lead_ops_my["total_nextweek"]; ?>', '<?php echo (int)$dashboard_lead_ops_my["total_future"]; ?>');
-
-    renderOpPie('pieCard_team_tickets', '<?php echo isset($dashboard_Ttickets["total_missed"]) ? (int)$dashboard_Ttickets["total_missed"] : 0; ?>', '<?php echo isset($dashboard_Ttickets["total_lastweek"]) ? (int)$dashboard_Ttickets["total_lastweek"] : 0; ?>', '<?php echo isset($dashboard_Ttickets["total_today"]) ? (int)$dashboard_Ttickets["total_today"] : 0; ?>', '<?php echo isset($dashboard_Ttickets["total_nextweek"]) ? (int)$dashboard_Ttickets["total_nextweek"] : 0; ?>', '<?php echo isset($dashboard_Ttickets["total_future"]) ? (int)$dashboard_Ttickets["total_future"] : 0; ?>');
-    renderOpPie('pieCard_team_tasks', '<?php echo isset($dashboard_Ttasks["total_missed"]) ? (int)$dashboard_Ttasks["total_missed"] : 0; ?>', '<?php echo isset($dashboard_Ttasks["total_lastweek"]) ? (int)$dashboard_Ttasks["total_lastweek"] : 0; ?>', '<?php echo isset($dashboard_Ttasks["total_today"]) ? (int)$dashboard_Ttasks["total_today"] : 0; ?>', '<?php echo isset($dashboard_Ttasks["total_nextweek"]) ? (int)$dashboard_Ttasks["total_nextweek"] : 0; ?>', '<?php echo isset($dashboard_Ttasks["total_future"]) ? (int)$dashboard_Ttasks["total_future"] : 0; ?>');
-    renderOpPie('pieCard_team_f', '<?php echo isset($dashboard_Tf["total_missed"]) ? (int)$dashboard_Tf["total_missed"] : 0; ?>', '<?php echo isset($dashboard_Tf["total_lastweek"]) ? (int)$dashboard_Tf["total_lastweek"] : 0; ?>', '<?php echo isset($dashboard_Tf["total_today"]) ? (int)$dashboard_Tf["total_today"] : 0; ?>', '<?php echo isset($dashboard_Tf["total_nextweek"]) ? (int)$dashboard_Tf["total_nextweek"] : 0; ?>', '<?php echo isset($dashboard_Tf["total_future"]) ? (int)$dashboard_Tf["total_future"] : 0; ?>');
-    renderOpPie('pieCard_team_m', '<?php echo isset($dashboard_Tm["total_missed"]) ? (int)$dashboard_Tm["total_missed"] : 0; ?>', '<?php echo isset($dashboard_Tm["total_lastweek"]) ? (int)$dashboard_Tm["total_lastweek"] : 0; ?>', '<?php echo isset($dashboard_Tm["total_today"]) ? (int)$dashboard_Tm["total_today"] : 0; ?>', '<?php echo isset($dashboard_Tm["total_nextweek"]) ? (int)$dashboard_Tm["total_nextweek"] : 0; ?>', '<?php echo isset($dashboard_Tm["total_future"]) ? (int)$dashboard_Tm["total_future"] : 0; ?>');
-    renderOpPie('pieCard_team_vfu', '<?php echo isset($dashboard_Tvfu["total_missed"]) ? (int)$dashboard_Tvfu["total_missed"] : 0; ?>', '<?php echo isset($dashboard_Tvfu["total_lastweek"]) ? (int)$dashboard_Tvfu["total_lastweek"] : 0; ?>', '<?php echo isset($dashboard_Tvfu["total_today"]) ? (int)$dashboard_Tvfu["total_today"] : 0; ?>', '<?php echo isset($dashboard_Tvfu["total_nextweek"]) ? (int)$dashboard_Tvfu["total_nextweek"] : 0; ?>', '<?php echo isset($dashboard_Tvfu["total_future"]) ? (int)$dashboard_Tvfu["total_future"] : 0; ?>');
-    renderOpPie('pieCard_team_db', '<?php echo (int)$dashboard_db_ops_team["total_missed"]; ?>', '<?php echo (int)$dashboard_db_ops_team["total_lastweek"]; ?>', '<?php echo (int)$dashboard_db_ops_team["total_today"]; ?>', '<?php echo (int)$dashboard_db_ops_team["total_nextweek"]; ?>', '<?php echo (int)$dashboard_db_ops_team["total_future"]; ?>');
     renderOpPie('pieCard_team_leads', '<?php echo (int)$dashboard_lead_ops_team["total_missed"]; ?>', '<?php echo (int)$dashboard_lead_ops_team["total_lastweek"]; ?>', '<?php echo (int)$dashboard_lead_ops_team["total_today"]; ?>', '<?php echo (int)$dashboard_lead_ops_team["total_nextweek"]; ?>', '<?php echo (int)$dashboard_lead_ops_team["total_future"]; ?>');
 });
 </script>
