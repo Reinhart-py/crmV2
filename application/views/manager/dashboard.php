@@ -257,57 +257,130 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
             <div class="col-lg-7 col-md-12 col-xs-12">
                 <div class="row" style="margin-left:-4px; margin-right:-4px;">
                     <div class="col-xs-3" style="padding-left:4px; padding-right:4px;">
-                        <a href="<?php echo base_url(); ?>manager/sales" class="dash-kpi-card dash-kpi-col1" style="min-height:68px; padding:8px 10px !important; margin-bottom:8px;">
-                            <div class="dash-kpi-label" style="font-size:11px; opacity:0.9;">Total sales</div>
-                            <div class="dash-kpi-value" style="font-size:18px; font-weight:700;"><?php echo (isset($dashboard_count['sales_amount']) && (float)$dashboard_count['sales_amount'] > 0) ? (((float)$dashboard_count['sales_amount'] >= 1000000) ? number_format((float)$dashboard_count['sales_amount'] / 1000000, 1) . 'M' : number_format((float)$dashboard_count['sales_amount'] / 1000, 1) . 'K') : '0.00'; ?></div>
+                        <a href="<?php echo base_url(); ?>manager/leads" class="dash-kpi-card dash-kpi-col1" id="cardMyDatabase" style="min-height:78px; margin-bottom:8px;">
+                            <div class="dash-kpi-top">
+                                <div>
+                                    <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_database']) ? (int)$dashboard_count['count_database'] : 0; ?></div>
+                                    <div class="dash-kpi-label">My Database</div>
+                                </div>
+                                <div class="dash-kpi-icon"><i class="fa fa-database"></i></div>
+                            </div>
+                            <div class="dash-kpi-footer">
+                                <span>View Database</span> <i class="fa fa-arrow-circle-right"></i>
+                            </div>
                         </a>
                     </div>
                     <div class="col-xs-3" style="padding-left:4px; padding-right:4px;">
-                        <a href="<?php echo base_url(); ?>manager/leads/view_leads" class="dash-kpi-card dash-kpi-col2" style="min-height:68px; padding:8px 10px !important; margin-bottom:8px;">
-                            <div class="dash-kpi-label" style="font-size:11px; opacity:0.9;">Won deals</div>
-                            <div class="dash-kpi-value" style="font-size:18px; font-weight:700;"><?php echo isset($dashboard_count['count_leads']) ? (int)$dashboard_count['count_leads'] : 0; ?></div>
+                        <a href="<?php echo base_url(); ?>manager/verticals" class="dash-kpi-card dash-kpi-col2" id="cardMyVerticals" style="min-height:78px; margin-bottom:8px;">
+                            <div class="dash-kpi-top">
+                                <div>
+                                    <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_verticals']) ? (int)$dashboard_count['count_verticals'] : 0; ?></div>
+                                    <div class="dash-kpi-label">My Vertical</div>
+                                </div>
+                                <div class="dash-kpi-icon"><i class="ion ion-stats-bars"></i></div>
+                            </div>
+                            <div class="dash-kpi-footer">
+                                <span>View Verticals</span> <i class="fa fa-arrow-circle-right"></i>
+                            </div>
                         </a>
                     </div>
                     <div class="col-xs-3" style="padding-left:4px; padding-right:4px;">
-                        <a href="<?php echo base_url(); ?>manager/verticals" class="dash-kpi-card dash-kpi-col3" style="min-height:68px; padding:8px 10px !important; margin-bottom:8px;">
-                            <div class="dash-kpi-label" style="font-size:11px; opacity:0.9;">Win rate</div>
-                            <div class="dash-kpi-value" style="font-size:18px; font-weight:700;"><?php 
-                                $total_deals_calc = (int)(isset($dashboard_count['count_database']) ? $dashboard_count['count_database'] : 0) + (int)(isset($dashboard_count['count_leads']) ? $dashboard_count['count_leads'] : 0);
-                                echo $total_deals_calc > 0 ? number_format(((int)(isset($dashboard_count['count_leads']) ? $dashboard_count['count_leads'] : 0) / $total_deals_calc) * 100, 2) . '%' : '0.00%';
-                            ?></div>
+                        <a href="<?php echo base_url(); ?>manager/team/members" class="dash-kpi-card dash-kpi-col3" id="cardTeamUsers" style="min-height:78px; margin-bottom:8px;">
+                            <div class="dash-kpi-top">
+                                <div>
+                                    <div class="dash-kpi-value"><?php echo (isset($dashboard_Tcount['count_users']) && (int)$dashboard_Tcount['count_users'] > 0) ? (int)$dashboard_Tcount['count_users'] : (isset($dashboard_Tcount['count_user']) ? (int)$dashboard_Tcount['count_user'] : 0); ?></div>
+                                    <div class="dash-kpi-label">Team Users</div>
+                                </div>
+                                <div class="dash-kpi-icon"><i class="ion ion-person-add"></i></div>
+                            </div>
+                            <div class="dash-kpi-footer">
+                                <span>View Members</span> <i class="fa fa-arrow-circle-right"></i>
+                            </div>
                         </a>
                     </div>
                     <div class="col-xs-3" style="padding-left:4px; padding-right:4px;">
-                        <a href="<?php echo base_url(); ?>manager/orders/my" class="dash-kpi-card dash-kpi-col4" style="min-height:68px; padding:8px 10px !important; margin-bottom:8px;">
-                            <div class="dash-kpi-label" style="font-size:11px; opacity:0.9;">Avg days to close</div>
-                            <div class="dash-kpi-value" style="font-size:18px; font-weight:700;">60.70</div>
+                        <a href="<?php echo base_url(); ?>manager/team/verticals" class="dash-kpi-card dash-kpi-col4" id="cardTeamVerticals" style="min-height:78px; margin-bottom:8px;">
+                            <div class="dash-kpi-top">
+                                <div>
+                                    <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_verticals']) ? (int)$dashboard_Tcount['count_verticals'] : 0; ?></div>
+                                    <div class="dash-kpi-label">Team Verticals</div>
+                                </div>
+                                <div class="dash-kpi-icon"><i class="ion ion-stats-bars"></i></div>
+                            </div>
+                            <div class="dash-kpi-footer">
+                                <span>View Verticals</span> <i class="fa fa-arrow-circle-right"></i>
+                            </div>
                         </a>
                     </div>
                 </div>
 
                 <div class="row" style="margin-left:-4px; margin-right:-4px;">
                     <div class="col-xs-3" style="padding-left:4px; padding-right:4px;">
-                        <a href="<?php echo base_url(); ?>manager/leads" class="dash-kpi-card dash-kpi-col1" style="min-height:68px; padding:8px 10px !important; margin-bottom:10px;">
-                            <div class="dash-kpi-label" style="font-size:11px; opacity:0.9;">Pipeline value</div>
-                            <div class="dash-kpi-value" style="font-size:18px; font-weight:700;"><?php echo isset($dashboard_count['count_database']) ? (int)$dashboard_count['count_database'] : 0; ?></div>
+                        <a href="<?php echo base_url(); ?>manager/leads/view_leads" class="dash-kpi-card dash-kpi-col1" id="cardMyLeads" style="min-height:78px; margin-bottom:10px;">
+                            <div class="dash-kpi-top">
+                                <div>
+                                    <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_leads']) ? (int)$dashboard_count['count_leads'] : 0; ?></div>
+                                    <div class="dash-kpi-label">My Leads</div>
+                                    <div class="dash-kpi-sales">
+                                        Sales: AED <?php echo number_format((float)(isset($dashboard_count['sales_amount']) ? $dashboard_count['sales_amount'] : 0), 2); ?>
+                                    </div>
+                                </div>
+                                <div class="dash-kpi-icon"><i class="fa fa-bullseye"></i></div>
+                            </div>
+                            <div class="dash-kpi-footer">
+                                <span>View Leads</span> <i class="fa fa-arrow-circle-right"></i>
+                            </div>
                         </a>
                     </div>
                     <div class="col-xs-3" style="padding-left:4px; padding-right:4px;">
-                        <a href="<?php echo base_url(); ?>manager/orders/my" class="dash-kpi-card dash-kpi-col2" style="min-height:68px; padding:8px 10px !important; margin-bottom:10px;">
-                            <div class="dash-kpi-label" style="font-size:11px; opacity:0.9;">Open deals</div>
-                            <div class="dash-kpi-value" style="font-size:18px; font-weight:700;"><?php echo isset($dashboard_count['count_orders']) ? (int)$dashboard_count['count_orders'] : 0; ?></div>
+                        <a href="<?php echo base_url(); ?>manager/orders/my" class="dash-kpi-card dash-kpi-col2" id="cardMyOrders" style="min-height:78px; margin-bottom:10px;">
+                            <div class="dash-kpi-top">
+                                <div>
+                                    <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_orders']) ? (int)$dashboard_count['count_orders'] : 0; ?></div>
+                                    <div class="dash-kpi-label">My Orders</div>
+                                    <div class="dash-kpi-sales">
+                                        Sales: AED <?php echo number_format((float)(isset($dashboard_count['sales_amount']) ? $dashboard_count['sales_amount'] : 0), 2); ?>
+                                    </div>
+                                </div>
+                                <div class="dash-kpi-icon"><i class="fa fa-shopping-cart"></i></div>
+                            </div>
+                            <div class="dash-kpi-footer">
+                                <span>View Orders</span> <i class="fa fa-arrow-circle-right"></i>
+                            </div>
                         </a>
                     </div>
                     <div class="col-xs-3" style="padding-left:4px; padding-right:4px;">
-                        <a href="<?php echo base_url(); ?>manager/verticals" class="dash-kpi-card dash-kpi-col3" style="min-height:68px; padding:8px 10px !important; margin-bottom:10px;">
-                            <div class="dash-kpi-label" style="font-size:11px; opacity:0.9;">Weighted value</div>
-                            <div class="dash-kpi-value" style="font-size:18px; font-weight:700;"><?php echo isset($dashboard_count['count_verticals']) ? (int)$dashboard_count['count_verticals'] : 0; ?></div>
+                        <a href="<?php echo base_url(); ?>manager/team/leads" class="dash-kpi-card dash-kpi-col3" id="cardTeamLeads" style="min-height:78px; margin-bottom:10px;">
+                            <div class="dash-kpi-top">
+                                <div>
+                                    <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_leads']) ? (int)$dashboard_Tcount['count_leads'] : 0; ?></div>
+                                    <div class="dash-kpi-label">Team Leads</div>
+                                    <div class="dash-kpi-sales">
+                                        Sales: AED <?php echo number_format((float)(isset($dashboard_Tcount['sales_amount']) ? $dashboard_Tcount['sales_amount'] : 0), 2); ?>
+                                    </div>
+                                </div>
+                                <div class="dash-kpi-icon"><i class="fa fa-bullseye"></i></div>
+                            </div>
+                            <div class="dash-kpi-footer">
+                                <span>View Leads</span> <i class="fa fa-arrow-circle-right"></i>
+                            </div>
                         </a>
                     </div>
                     <div class="col-xs-3" style="padding-left:4px; padding-right:4px;">
-                        <a href="<?php echo base_url(); ?>manager/team/members" class="dash-kpi-card dash-kpi-col4" style="min-height:68px; padding:8px 10px !important; margin-bottom:10px;">
-                            <div class="dash-kpi-label" style="font-size:11px; opacity:0.9;">Avg open deal age</div>
-                            <div class="dash-kpi-value" style="font-size:18px; font-weight:700;">201.67</div>
+                        <a href="<?php echo base_url(); ?>manager/team/orders" class="dash-kpi-card dash-kpi-col4" id="cardTeamOrders" style="min-height:78px; margin-bottom:10px;">
+                            <div class="dash-kpi-top">
+                                <div>
+                                    <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_orders']) ? (int)$dashboard_Tcount['count_orders'] : 0; ?></div>
+                                    <div class="dash-kpi-label">Team Orders</div>
+                                    <div class="dash-kpi-sales">
+                                        Sales: AED <?php echo number_format((float)(isset($dashboard_Tcount['sales_amount']) ? $dashboard_Tcount['sales_amount'] : 0), 2); ?>
+                                    </div>
+                                </div>
+                                <div class="dash-kpi-icon"><i class="fa fa-shopping-cart"></i></div>
+                            </div>
+                            <div class="dash-kpi-footer">
+                                <span>View Orders</span> <i class="fa fa-arrow-circle-right"></i>
+                            </div>
                         </a>
                     </div>
                 </div>
@@ -343,14 +416,14 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                 </div>
             </div>
 
-            <div class="col-lg-3 col-md-6 col-xs-12">
+            <div class="col-lg-5 col-md-12 col-xs-12">
                 <div class="dash-round-card" style="margin-bottom: 10px; padding:12px 14px;">
                     <div class="dash-round-title" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; font-size:13px; font-weight:700;">
                         <span>My Lead</span>
                         <span class="badge" style="background:#0072f0; color:#ffffff; font-size:10px; font-weight:600;"><?php echo isset($mylead_donut['total']) ? (int)$mylead_donut['total'] : 0; ?> Total</span>
                     </div>
                     <div style="width:100%; display:flex; align-items:center; justify-content:center;">
-                        <?php echo render_donut_chart_svg($lead_items, 280, 200, 140, 100, 54, 32); ?>
+                        <?php echo render_donut_chart_svg($lead_items, 320, 205, 160, 102, 58, 34); ?>
                     </div>
                 </div>
 
@@ -360,69 +433,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                         <span class="badge" style="background:#0072f0; color:#ffffff; font-size:10px; font-weight:600;"><?php echo isset($myorder_donut['total']) ? (int)$myorder_donut['total'] : 0; ?> Total</span>
                     </div>
                     <div style="width:100%; display:flex; align-items:center; justify-content:center;">
-                        <?php echo render_donut_chart_svg($order_items, 280, 200, 140, 100, 54, 32); ?>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-2 col-md-6 col-xs-12">
-                <div class="dash-round-card" style="margin-bottom: 10px; padding:12px;">
-                    <div style="font-size:12px; font-weight:700; color:#0f172a; margin-bottom:6px;">Report date</div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:10px; color:#64748b; margin-bottom:8px; border:1px solid #e2e8f0; border-radius:6px; padding:4px 8px; background:#f8fafc;">
-                        <span>01-04-2026</span>
-                        <i class="fa fa-calendar" style="color:#94a3b8; font-size:10px;"></i>
-                        <span>31-10-2026</span>
-                        <i class="fa fa-calendar" style="color:#94a3b8; font-size:10px;"></i>
-                    </div>
-                    <div style="position:relative; margin-bottom:12px; padding:0 4px;">
-                        <div style="height:3px; background:#cbd5e1; border-radius:2px; position:relative; top:6px;"></div>
-                        <div style="display:flex; justify-content:space-between; position:relative;">
-                            <span style="width:12px; height:12px; border:2px solid #0072f0; background:#fff; border-radius:50%; display:inline-block;"></span>
-                            <span style="width:12px; height:12px; border:2px solid #0072f0; background:#fff; border-radius:50%; display:inline-block;"></span>
-                        </div>
-                    </div>
-
-                    <div class="form-group" style="margin-bottom:8px;">
-                        <label style="font-size:10.5px; font-weight:600; color:#475569; margin-bottom:2px; display:block;">Deal Owner</label>
-                        <select class="form-control input-sm" style="height:28px; padding:2px 8px; font-size:11px; border-radius:6px;">
-                            <option>All</option>
-                        </select>
-                    </div>
-                    <div class="form-group" style="margin-bottom:8px;">
-                        <label style="font-size:10.5px; font-weight:600; color:#475569; margin-bottom:2px; display:block;">Deal Stage</label>
-                        <select class="form-control input-sm" style="height:28px; padding:2px 8px; font-size:11px; border-radius:6px;">
-                            <option>All</option>
-                        </select>
-                    </div>
-                    <div class="form-group" style="margin-bottom:8px;">
-                        <label style="font-size:10.5px; font-weight:600; color:#475569; margin-bottom:2px; display:block;">Pipeline</label>
-                        <select class="form-control input-sm" style="height:28px; padding:2px 8px; font-size:11px; border-radius:6px;">
-                            <option>All</option>
-                        </select>
-                    </div>
-                    <div class="form-group" style="margin-bottom:0;">
-                        <label style="font-size:10.5px; font-weight:600; color:#475569; margin-bottom:2px; display:block;">Deal Label</label>
-                        <select class="form-control input-sm" style="height:28px; padding:2px 8px; font-size:11px; border-radius:6px;">
-                            <option>All</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="dash-round-card" style="margin-bottom: 10px; padding:12px;">
-                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-                        <div style="font-size:12px; font-weight:700; color:#0f172a;">Have questions?</div>
-                        <div style="width:26px; height:26px; border-radius:50%; background:#e0f2fe; display:flex; align-items:center; justify-content:center; color:#0072f0; font-size:12px;">
-                            <i class="fa fa-user"></i>
-                        </div>
-                    </div>
-                    <div style="font-size:10.5px; display:flex; flex-direction:column; gap:5px;">
-                        <a href="<?php echo base_url(); ?>manager/leads" style="color:#0072f0; text-decoration:none; font-weight:500;">Dashboard setup guide</a>
-                        <a href="<?php echo base_url(); ?>manager/leads" style="color:#0072f0; text-decoration:none; font-weight:500;">Get a demo</a>
-                        <a href="<?php echo base_url(); ?>manager/leads" style="color:#0072f0; text-decoration:none; font-weight:500;">Contact support</a>
-                    </div>
-                    <div style="margin-top:10px; display:flex; gap:10px; color:#94a3b8; font-size:13px;">
-                        <i class="fa fa-youtube-play" style="color:#ef4444;"></i>
-                        <i class="fa fa-globe" style="color:#0072f0;"></i>
+                        <?php echo render_donut_chart_svg($order_items, 320, 205, 160, 102, 58, 34); ?>
                     </div>
                 </div>
             </div>

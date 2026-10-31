@@ -2,6 +2,29 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.80.8] - 2026-10-31
+- **Timestamp**: `2026-10-31 17:06:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Restored original 8 CRM KPI cards with their established UI, icons, click behaviors, and sales lines, removed the right-hand Report date and filter sidebar, and rebalanced the upper dashboard into an uncluttered dual-column layout.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Restored Original 8 KPI Cards (`manager/dashboard.php`)**:
+    - Restored the exact original cards with their identities, IDs, and click actions:
+      1. `My Database` (`manager/leads`, icon `fa fa-database`, footer `View Database`)
+      2. `My Vertical` (`manager/verticals`, icon `ion ion-stats-bars`, footer `View Verticals`)
+      3. `Team Users` (`manager/team/members`, icon `ion ion-person-add`, footer `View Members`)
+      4. `Team Verticals` (`manager/team/verticals`, icon `ion ion-stats-bars`, footer `View Verticals`)
+      5. `My Leads` (`manager/leads/view_leads`, icon `fa fa-bullseye`, sales line `Sales: AED ...`, footer `View Leads`)
+      6. `My Orders` (`manager/orders/my`, icon `fa fa-shopping-cart`, sales line `Sales: AED ...`, footer `View Orders`)
+      7. `Team Leads` (`manager/team/leads`, icon `fa fa-bullseye`, sales line `Sales: AED ...`, footer `View Leads`)
+      8. `Team Orders` (`manager/team/orders`, icon `fa fa-shopping-cart`, sales line `Sales: AED ...`, footer `View Orders`)
+    - Compacted card dimensions to 78px height for clean alignment above the two line graphs in the left column.
+  - **2. Date Section Removal & Layout Rebalance (`manager/dashboard.php`)**:
+    - Completely removed the right sidebar containing Report date, slider, filter dropdowns, and the Have questions card.
+    - Updated column ratios to a clean 2-column layout: Left column (`col-lg-7 col-md-12`) for the 8 cards + 2 line graphs; Right column (`col-lg-5 col-md-12`) for the My Lead and My Order donut state charts.
+    - Increased donut SVG viewport to 320x205 with generous padding for clear callout labels and percentages.
+  - **3. Zero Comments Rule Compliance**:
+    - Confirmed zero comments across modified PHP files and verified syntax with `php -l`.
+
 ### [v1.80.7] - 2026-10-31
 - **Timestamp**: `2026-10-31 16:42:00 +0530`
 - **Author**: Reinhart-py
