@@ -2,6 +2,23 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.80.1] - 2026-10-31
+- **Timestamp**: `2026-10-31 12:15:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Updated My Orders and Team Orders cards on Dashboard to display order process statuses with numeric count badges and segmented progress bars, exactly matching Database States and Lead States.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Order State Query Implementation (`ci_admin_model.php`)**:
+    - Added `dashboard_order_state($is_team = 0)` to query `ci_orders` grouped by key order process statuses: Submitted, Approved, In Progress, Onboarding, Under Review, Completed, Sales, and Cancelled.
+    - Accurately scoped to current user (`created_by` / `assigned_to`) for personal card, and team hierarchy (`fetchTeamList`) for team card.
+  - **2. Controller Integration (`ci_admin.php`)**:
+    - Passed `$data['dashboard_order_state']` and `$data['dashboard_order_state_team']` into dashboard view.
+  - **3. Order Process Status Chips & Digits (`dashboard.php`)**:
+    - Replaced placeholder buttons with dynamic process status chips containing numeric digit badges (`<?php echo (int)$li['order_count']; ?>`).
+    - Added proportional segmented progress bars (`.crm-seg-bar`) for visual distribution.
+    - Retained clean styling without colored pills, matching Database States and Lead States design standards.
+  - **4. Zero Comments Rule Compliance**:
+    - Verified zero PHP comments across all modified files using AST tokenizer.
+
 ### [v1.80.0] - 2026-10-31
 - **Timestamp**: `2026-10-31 11:48:00 +0530`
 - **Author**: Reinhart-py

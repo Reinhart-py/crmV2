@@ -472,6 +472,22 @@
                     $team_lead_total += (int)$item['lead_count'];
                 }
             }
+            $my_order_total = 0;
+            if (!empty($dashboard_order_state)) {
+                foreach($dashboard_order_state as $item) {
+                    $my_order_total += (int)$item['order_count'];
+                }
+            } else {
+                $my_order_total = isset($dashboard_count['count_orders']) ? (int)$dashboard_count['count_orders'] : 0;
+            }
+            $team_order_total = 0;
+            if (!empty($dashboard_order_state_team)) {
+                foreach($dashboard_order_state_team as $item) {
+                    $team_order_total += (int)$item['order_count'];
+                }
+            } else {
+                $team_order_total = isset($dashboard_Tcount['count_orders']) ? (int)$dashboard_Tcount['count_orders'] : 0;
+            }
         ?>
 
         <div class="dash-section-divider" style="margin-top: 18px; margin-bottom: 12px;">
@@ -632,37 +648,32 @@
             <div class="col-md-6 col-xs-12">
                 <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
                     <div class="card-top">
-                        <h4 class="card-title"><i class="fa fa-shopping-cart" style="color:#0072f0;"></i> My Orders</h4>
-                        <span class="card-total-pill"><?php echo isset($dashboard_count['count_orders']) ? (int)$dashboard_count['count_orders'] : 0; ?> Total</span>
+                        <h4 class="card-title"><i class="fa fa-shopping-cart" style="color:#0072f0;"></i> My Order State</h4>
+                        <span class="card-total-pill"><?php echo number_format($my_order_total); ?> Total</span>
                     </div>
                     <div class="crm-seg-bar">
-                        <div class="crm-seg" style="width:100%; opacity:0.85;"></div>
+                        <?php if (!empty($dashboard_order_state) && $my_order_total > 0) {
+                            foreach($dashboard_order_state as $li) {
+                                $pct = round(((int)$li['order_count'] / $my_order_total) * 100, 1);
+                                if ($pct > 0) {
+                                    echo '<div class="crm-seg" style="width:' . $pct . '%; opacity:0.85;" title="' . htmlspecialchars($li['status']) . ': ' . (int)$li['order_count'] . '"></div>';
+                                }
+                            }
+                        } else { ?>
+                            <div class="crm-seg" style="width:100%; opacity:0.3;"></div>
+                        <?php } ?>
                     </div>
                     <ul class="crm-modern-stat-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:6px;">
-                        <li style="margin:0;">
-                            <a href="<?php echo base_url(); ?>manager/orders/my" class="crm-modern-stat-chip" style="padding:6px 9px;">
-                                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;">All My Orders</span>
-                                <span class="badge" style="background:var(--crm-card-bg, #ffffff); color:var(--crm-text, #0f172a); border:1px solid var(--crm-border, #cbd5e1); font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;"><?php echo isset($dashboard_count['count_orders']) ? (int)$dashboard_count['count_orders'] : 0; ?></span>
-                            </a>
-                        </li>
-                        <li style="margin:0;">
-                            <a href="<?php echo base_url(); ?>manager/orders/my?status=pending" class="crm-modern-stat-chip" style="padding:6px 9px;">
-                                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;">Pending Orders</span>
-                                <span class="badge bg-orange" style="font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;">View</span>
-                            </a>
-                        </li>
-                        <li style="margin:0;">
-                            <a href="<?php echo base_url(); ?>manager/orders/my?status=completed" class="crm-modern-stat-chip" style="padding:6px 9px;">
-                                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;">Completed Orders</span>
-                                <span class="badge bg-green" style="font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;">View</span>
-                            </a>
-                        </li>
-                        <li style="margin:0;">
-                            <a href="<?php echo base_url(); ?>manager/sales" class="crm-modern-stat-chip" style="padding:6px 9px;">
-                                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;">Converted Sales</span>
-                                <span class="badge bg-blue" style="font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;">AED <?php echo number_format((float)(isset($dashboard_count['sales_amount']) ? $dashboard_count['sales_amount'] : 0), 2); ?></span>
-                            </a>
-                        </li>
+                        <?php if (!empty($dashboard_order_state)) { foreach($dashboard_order_state as $li) { ?>
+                            <li style="margin:0;">
+                                <a href="<?php echo base_url(); ?>manager/orders/my?status=<?php echo urlencode($li['status_key']); ?>" class="crm-modern-stat-chip" style="padding:6px 9px;">
+                                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;" title="<?php echo htmlspecialchars($li['status']); ?>"><?php echo htmlspecialchars($li['status']); ?></span>
+                                    <span class="badge" style="background:var(--crm-card-bg, #ffffff); color:var(--crm-text, #0f172a); border:1px solid var(--crm-border, #cbd5e1); font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;"><?php echo (int)$li['order_count']; ?></span>
+                                </a>
+                            </li>
+                        <?php } } else { ?>
+                            <li style="grid-column: 1 / -1;"><span class="text-muted" style="font-size:12px;">No orders found</span></li>
+                        <?php } ?>
                     </ul>
                 </div>
             </div>
@@ -670,37 +681,32 @@
             <div class="col-md-6 col-xs-12">
                 <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
                     <div class="card-top">
-                        <h4 class="card-title"><i class="fa fa-shopping-cart" style="color:#0072f0;"></i> Team Orders</h4>
-                        <span class="card-total-pill"><?php echo isset($dashboard_Tcount['count_orders']) ? (int)$dashboard_Tcount['count_orders'] : 0; ?> Total</span>
+                        <h4 class="card-title"><i class="fa fa-shopping-cart" style="color:#0072f0;"></i> Team Order State</h4>
+                        <span class="card-total-pill"><?php echo number_format($team_order_total); ?> Total</span>
                     </div>
                     <div class="crm-seg-bar">
-                        <div class="crm-seg" style="width:100%; opacity:0.85;"></div>
+                        <?php if (!empty($dashboard_order_state_team) && $team_order_total > 0) {
+                            foreach($dashboard_order_state_team as $li) {
+                                $pct = round(((int)$li['order_count'] / $team_order_total) * 100, 1);
+                                if ($pct > 0) {
+                                    echo '<div class="crm-seg" style="width:' . $pct . '%; opacity:0.85;" title="' . htmlspecialchars($li['status']) . ': ' . (int)$li['order_count'] . '"></div>';
+                                }
+                            }
+                        } else { ?>
+                            <div class="crm-seg" style="width:100%; opacity:0.3;"></div>
+                        <?php } ?>
                     </div>
                     <ul class="crm-modern-stat-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:6px;">
-                        <li style="margin:0;">
-                            <a href="<?php echo base_url(); ?>manager/team/orders" class="crm-modern-stat-chip" style="padding:6px 9px;">
-                                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;">All Team Orders</span>
-                                <span class="badge" style="background:var(--crm-card-bg, #ffffff); color:var(--crm-text, #0f172a); border:1px solid var(--crm-border, #cbd5e1); font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;"><?php echo isset($dashboard_Tcount['count_orders']) ? (int)$dashboard_Tcount['count_orders'] : 0; ?></span>
-                            </a>
-                        </li>
-                        <li style="margin:0;">
-                            <a href="<?php echo base_url(); ?>manager/team/orders?status=pending" class="crm-modern-stat-chip" style="padding:6px 9px;">
-                                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;">Pending Orders</span>
-                                <span class="badge bg-orange" style="font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;">View</span>
-                            </a>
-                        </li>
-                        <li style="margin:0;">
-                            <a href="<?php echo base_url(); ?>manager/team/orders?status=completed" class="crm-modern-stat-chip" style="padding:6px 9px;">
-                                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;">Completed Orders</span>
-                                <span class="badge bg-green" style="font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;">View</span>
-                            </a>
-                        </li>
-                        <li style="margin:0;">
-                            <a href="<?php echo base_url(); ?>manager/orders" class="crm-modern-stat-chip" style="padding:6px 9px;">
-                                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;">Back Office Orders</span>
-                                <span class="badge bg-blue" style="font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;">AED <?php echo number_format((float)(isset($dashboard_Tcount['sales_amount']) ? $dashboard_Tcount['sales_amount'] : 0), 2); ?></span>
-                            </a>
-                        </li>
+                        <?php if (!empty($dashboard_order_state_team)) { foreach($dashboard_order_state_team as $li) { ?>
+                            <li style="margin:0;">
+                                <a href="<?php echo base_url(); ?>manager/team/orders?status=<?php echo urlencode($li['status_key']); ?>" class="crm-modern-stat-chip" style="padding:6px 9px;">
+                                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;" title="<?php echo htmlspecialchars($li['status']); ?>"><?php echo htmlspecialchars($li['status']); ?></span>
+                                    <span class="badge" style="background:var(--crm-card-bg, #ffffff); color:var(--crm-text, #0f172a); border:1px solid var(--crm-border, #cbd5e1); font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;"><?php echo (int)$li['order_count']; ?></span>
+                                </a>
+                            </li>
+                        <?php } } else { ?>
+                            <li style="grid-column: 1 / -1;"><span class="text-muted" style="font-size:12px;">No team orders found</span></li>
+                        <?php } ?>
                     </ul>
                 </div>
             </div>

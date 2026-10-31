@@ -203,6 +203,48 @@ class Ci_admin_model extends CI_model {
 			return $data;
 		}
 
+		public function dashboard_order_state($is_team = 0){
+			$manager_id = (int)$this->session->userdata('manager_id');
+			$user_role = (int)$this->session->userdata('user_role');
+			if ($user_role === 0) {
+				$user_role = (int)$this->session->userdata('manager_role');
+			}
+			if ($is_team == 0) {
+				$scope = "(O.created_by = ".$manager_id." OR O.assigned_to = ".$manager_id.")";
+			} else {
+				if ($user_role === 1 || $user_role === 4) {
+					$scope = "1=1";
+				} else {
+					$team_array = $this->fetchTeamList($manager_id, '');
+					$team_clean = !empty($team_array) && is_array($team_array) ? array_filter(array_map('intval', $team_array)) : array(0);
+					$team_str = implode(',', $team_clean);
+					$scope = "(FIND_IN_SET(O.created_by, '".$team_str."') > 0 OR FIND_IN_SET(O.assigned_to, '".$team_str."') > 0)";
+				}
+			}
+			$process_statuses = array(
+				array('key' => 'Submitted', 'label' => 'Submitted', 'cond' => "O.status = 'Submitted'"),
+				array('key' => 'Approved', 'label' => 'Approved', 'cond' => "O.status = 'Approved'"),
+				array('key' => 'In Progress', 'label' => 'In Progress', 'cond' => "O.status = 'In Progress'"),
+				array('key' => 'Onboarding', 'label' => 'Onboarding', 'cond' => "O.status = 'Onboarding'"),
+				array('key' => 'Under Review', 'label' => 'Under Review', 'cond' => "O.status = 'Under Review'"),
+				array('key' => 'completed', 'label' => 'Completed', 'cond' => "O.status IN ('Completed', 'Fulfilled') AND (O.sales_ref_no IS NULL OR O.sales_ref_no = '') AND O.status != 'Sales'"),
+				array('key' => 'sales', 'label' => 'Sales', 'cond' => "(O.status = 'Sales' OR (O.sales_ref_no IS NOT NULL AND O.sales_ref_no != ''))"),
+				array('key' => 'rejected_lost', 'label' => 'Cancelled', 'cond' => "O.status IN ('Cancelled', 'Rejected', 'Lost')")
+			);
+			$data = array();
+			foreach ($process_statuses as $st) {
+				$sql = "SELECT COUNT(O.id) as order_count FROM ci_orders O WHERE ".$st['cond']." AND ".$scope;
+				$row = $this->db->query($sql)->row_array();
+				$cnt = !empty($row['order_count']) ? (int)$row['order_count'] : 0;
+				$data[] = array(
+					'status' => $st['label'],
+					'status_key' => $st['key'],
+					'order_count' => $cnt
+				);
+			}
+			return $data;
+		}
+
 		public function dashboard_stage_followups($is_team = 0, $stage = 'database'){
 			$manager_id = (int)$this->session->userdata('manager_id');
 			$user_role = (int)$this->session->userdata('user_role');

@@ -135,6 +135,8 @@ class Ci_admin extends CI_Controller {
 		$data['dashboard_db_state_team']=$this->ci_admin_model->dashboard_db_state(1);
 		$data['dashboard_lead_state']=$this->ci_admin_model->dashboard_lead_state(0);
 		$data['dashboard_lead_state_team']=$this->ci_admin_model->dashboard_lead_state(1);
+		$data['dashboard_order_state']=$this->ci_admin_model->dashboard_order_state(0);
+		$data['dashboard_order_state_team']=$this->ci_admin_model->dashboard_order_state(1);
 		$data['dashboard_achievement_my']=$this->ci_admin_model->dashboard_achievement_graph(0);
 		$data['dashboard_achievement_team']=$this->ci_admin_model->dashboard_achievement_graph(1);
 		$data['dashboard_db_ops_my']=$this->ci_admin_model->dashboard_stage_followups(0, 'database');
