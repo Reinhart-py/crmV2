@@ -245,7 +245,7 @@ body[data-theme="dark"] .main-header,
 }
 
 .main-header .main-logo img {
-  max-height: 48px !important;
+  max-height: 56px !important;
   width: auto !important;
   display: block !important;
   object-fit: contain !important;
@@ -499,8 +499,8 @@ ul.munk_menu > li.active > a:before {
 ul.munk_menu > li > ul {
   position: absolute !important;
   top: 100% !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
+  left: 0 !important;
+  transform: none !important;
   background: #ffffff !important;
   border: 1px solid #e2e8f0 !important;
   border-radius: 12px !important;
@@ -1447,7 +1447,7 @@ ul.munk_menu > li > ul > li > a i {
   }
 
   .main-header .main-logo img {
-    max-height: 38px !important;
+    max-height: 44px !important;
   }
 
   /* Hide the horizontal pill menu on mobile/Android as requested */

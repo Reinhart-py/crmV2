@@ -2,6 +2,56 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.79.8] - 2026-10-31
+- **Timestamp**: `2026-10-31 11:15:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Comprehensive update delivering structured Quality Check (QC Panel) checklist with 7-point verification, inline remarks, and row/section Select All; full Roles permission matrix synchronization for all system pages; enhanced Live Operations pivot sheet table with distinct soft color tints for Today, 7 Days, Month, and Quarter; responsive Dialer overhaul across Android, tablet, and desktop screens with standardized 4-stage follow-up queues; fixed global navigation hover-dropdown alignment; updated dashboard card icons and top-left branding logo size.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Quality Check (QC Panel) Checklist & Remarks (`qc.php`, `ci_admin_system.php`)**:
+    - Removed old checkmark column and replaced with clickable hyperlink opening the target page directly in a new tab.
+    - Added 7 separate QC checklist columns: UI Responsiveness (`chk_ui`), UX (`chk_ux`), Functionality (`chk_func`), Navigation (`chk_nav`), Data Accuracy (`chk_data`), Permissions (`chk_perm`), and Error Handling (`chk_err`).
+    - Added row-level "Select All" checkbox to toggle all 7 checks for a page at once.
+    - Added section-level "Select All Section" checkbox to toggle all checks for all pages in that section.
+    - Added "Remarks" drawer modal for each page, saving observations and bug notes via AJAX to `ci_qoc_checklist.remarks`.
+    - Integrated tailored Feather-style SVG icons for every category section (including KAM, HR Operations, Live Operations, etc.).
+    - Automated database column migration for `chk_ui`, `chk_ux`, `chk_func`, `chk_nav`, `chk_data`, `chk_perm`, `chk_err`, and `remarks`.
+  - **2. Roles Permission Matrix Synchronization (`ci_admin_roles.php`, `roles/add.php`, `roles/edit.php`)**:
+    - Synchronized all pages and modules from the QC tree into `$all_modules` across `add.php` and `edit.php`.
+    - Updated `_normalize_permissions()` in `ci_admin_roles.php` to derive and validate permissions for Live Operations, HR Document Vault, Events & Awards, and QC Panel.
+  - **3. Live Section Pivot Sheet Table (`live/index.php`)**:
+    - Styled Today, Last 7 Days, This Month, and This Quarter counters with distinct soft background tints:
+      - **Today**: Emerald Green tint (`#ecfdf5` header, `#f0fdf4` cells)
+      - **Last 7 Days**: Warm Amber tint (`#fffbeb` header, `#fefce8` cells)
+      - **This Month**: Royal Blue tint (`#eff6ff` header, `#f0f9ff` cells)
+      - **This Quarter**: Soft Purple tint (`#f5f3ff` header, `#faf5ff` cells)
+    - Full dark mode support for all tinted columns.
+    - Refactored table structure into an Apple-style pivot sheet with crisp grid borders, tabular numeric alignments, and silent background polling every 10 seconds.
+  - **4. Dialer Mobile Responsiveness & Follow-up Ordering (`calls/dashboard.php`, `ci_admin_calls.php`)**:
+    - Added responsive `@media (max-width: 991px)` styles enabling smooth scrolling, adaptive horizontal dock, and 100% width stacking on Android and tablets.
+    - Standardized Follow-up flyout and segmented controls into exactly 4 options in exact sequence:
+      1. Last Seven Days (`last7`)
+      2. Today (`today`)
+      3. Next Seven Days (`next7`)
+      4. All Future (`all_future`)
+    - Updated `ajax_get_queue()` in `ci_admin_calls.php` to filter records accurately for `last7`, `today`, `next7`, and `all_future`.
+    - Replaced broadcast horn icon with target icon (`fa fa-bullseye`) for Leads dock button.
+    - Moved Logs dock button directly below Leads.
+  - **5. Global Navigation Dropdown Alignment & SVG Icons (`header.php`, `crm-dashboard.css`)**:
+    - Changed main menu items with submenus to `href="javascript:void(0);"` and added click handler preventing page reloads on parent menu clicks.
+    - Updated `crm-dashboard.css` dropdown alignment from `left: 50%; transform: translateX(-50%)` to `left: 0; transform: none` so dropdowns start at the exact horizontal position of the hovered item.
+    - Added bespoke SVG icons for KAM, HR, Employee Lifecycle, and System in both top navigation and mobile drawer.
+    - Increased dashboard top-left logo size in `crm-dashboard.css` from `48px` to `56px` on desktop and from `38px` to `44px` on mobile.
+    - Bumped stylesheet cache buster query parameter to `?v=20261031_v1798`.
+  - **6. Dashboard Card Icon Consistency (`dashboard.php`)**:
+    - Synchronized Team Verticals icon to match My Verticals (`ion ion-stats-bars`).
+    - Synchronized Team Leads icon to match My Leads (`fa fa-bullseye`).
+    - Synchronized Team Orders icon to match My Orders (`fa fa-shopping-cart`).
+  - **7. Comprehensive System Documentation (`README.md`)**:
+    - Completely rewrote `README.md` with full system architecture, module capabilities, entity numbering rules, and setup instructions.
+    - Consolidated CRM workflow into exactly one simple paragraph in plain English.
+  - **8. Strict Rule Compliance**:
+    - Zero comments in any PHP file (`//`, `/* */`, `<!-- -->`). All PHP files linted cleanly with `php -l`.
+
 ### [v1.79.7] - 2026-10-30
 - **Timestamp**: `2026-10-30 18:18:00 +0530`
 - **Author**: Reinhart-py

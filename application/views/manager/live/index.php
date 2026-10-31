@@ -61,10 +61,10 @@
 }
 .live-sheet-table-card {
     background: #ffffff;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #cbd5e1;
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
     margin-bottom: 24px;
 }
 .live-excel-table {
@@ -82,7 +82,7 @@
     text-transform: uppercase;
     padding: 12px 18px;
     border-bottom: 1.5px solid #cbd5e1;
-    border-right: 1px solid #f1f5f9;
+    border-right: 1px solid #e2e8f0;
 }
 .live-excel-table th:last-child {
     border-right: none;
@@ -93,8 +93,8 @@
 }
 .live-excel-table td {
     padding: 11px 18px;
-    border-bottom: 1px solid #f1f5f9;
-    border-right: 1px solid #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
+    border-right: 1px solid #e2e8f0;
     color: #1e293b;
     vertical-align: middle;
 }
@@ -104,23 +104,62 @@
 .live-excel-table tr:last-child td {
     border-bottom: none;
 }
-.live-excel-table tr:nth-child(even) td {
-    background: #fcfdfe;
-}
-.live-excel-table tr:hover td {
-    background: #f0f7ff;
-}
 .live-excel-table td.col-metric {
     font-weight: 600;
     color: #0f172a;
+    background: #ffffff;
 }
 .live-excel-table td.col-val {
     text-align: right;
     font-weight: 700;
-    color: #0f172a;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.01em;
 }
+
+.live-excel-table th.col-header-today {
+    background: #ecfdf5 !important;
+    color: #065f46 !important;
+    border-bottom: 2px solid #10b981 !important;
+}
+.live-excel-table td.col-val-today {
+    background: #f0fdf4 !important;
+    color: #047857 !important;
+}
+
+.live-excel-table th.col-header-7d {
+    background: #fffbeb !important;
+    color: #92400e !important;
+    border-bottom: 2px solid #f59e0b !important;
+}
+.live-excel-table td.col-val-7d {
+    background: #fefce8 !important;
+    color: #b45309 !important;
+}
+
+.live-excel-table th.col-header-month {
+    background: #eff6ff !important;
+    color: #1e40af !important;
+    border-bottom: 2px solid #3b82f6 !important;
+}
+.live-excel-table td.col-val-month {
+    background: #f0f9ff !important;
+    color: #0284c7 !important;
+}
+
+.live-excel-table th.col-header-quarter {
+    background: #f5f3ff !important;
+    color: #5b21b6 !important;
+    border-bottom: 2px solid #8b5cf6 !important;
+}
+.live-excel-table td.col-val-quarter {
+    background: #faf5ff !important;
+    color: #7c3aed !important;
+}
+
+.live-excel-table tr:hover td {
+    filter: brightness(0.96);
+}
+
 .live-excel-table td.col-perf-title {
     font-weight: 700;
     color: #0f172a;
@@ -130,6 +169,70 @@
     font-weight: 600;
     color: #0072f0;
     width: 34%;
+}
+
+[data-theme="dark"] .live-sheet-wrapper {
+    background: #0f172a !important;
+}
+[data-theme="dark"] .live-sheet-title {
+    color: #f8fafc !important;
+}
+[data-theme="dark"] .live-sheet-section-title {
+    color: #f8fafc !important;
+}
+[data-theme="dark"] .live-sheet-table-card {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+[data-theme="dark"] .live-excel-table th {
+    background: #1e293b !important;
+    color: #f8fafc !important;
+    border-color: #334155 !important;
+}
+[data-theme="dark"] .live-excel-table td {
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+[data-theme="dark"] .live-excel-table td.col-metric {
+    background: #1e293b !important;
+    color: #f8fafc !important;
+}
+[data-theme="dark"] .live-excel-table th.col-header-today {
+    background: rgba(16, 185, 129, 0.2) !important;
+    color: #34d399 !important;
+}
+[data-theme="dark"] .live-excel-table td.col-val-today {
+    background: rgba(16, 185, 129, 0.12) !important;
+    color: #6ee7b7 !important;
+}
+[data-theme="dark"] .live-excel-table th.col-header-7d {
+    background: rgba(245, 158, 11, 0.2) !important;
+    color: #fbbf24 !important;
+}
+[data-theme="dark"] .live-excel-table td.col-val-7d {
+    background: rgba(245, 158, 11, 0.12) !important;
+    color: #fcd34d !important;
+}
+[data-theme="dark"] .live-excel-table th.col-header-month {
+    background: rgba(59, 130, 246, 0.2) !important;
+    color: #60a5fa !important;
+}
+[data-theme="dark"] .live-excel-table td.col-val-month {
+    background: rgba(59, 130, 246, 0.12) !important;
+    color: #93c5fd !important;
+}
+[data-theme="dark"] .live-excel-table th.col-header-quarter {
+    background: rgba(139, 92, 246, 0.2) !important;
+    color: #a78bfa !important;
+}
+[data-theme="dark"] .live-excel-table td.col-val-quarter {
+    background: rgba(139, 92, 246, 0.12) !important;
+    color: #c4b5fd !important;
+}
+[data-theme="dark"] .live-btn-action {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
 }
 </style>
 
@@ -153,20 +256,20 @@
                 <thead>
                     <tr>
                         <th style="width:28%;">Activity</th>
-                        <th class="col-num">Today</th>
-                        <th class="col-num">7 Days</th>
-                        <th class="col-num">This Month</th>
-                        <th class="col-num">This Quarter</th>
+                        <th class="col-num col-header-today">Today</th>
+                        <th class="col-num col-header-7d">7 Days</th>
+                        <th class="col-num col-header-month">This Month</th>
+                        <th class="col-num col-header-quarter">This Quarter</th>
                     </tr>
                 </thead>
                 <tbody id="tbodyMyStats">
                     <?php if (!empty($my_stats)) { foreach ($my_stats as $idx => $row) { ?>
                         <tr>
                             <td class="col-metric"><?php echo htmlspecialchars($row['metric']); ?></td>
-                            <td class="col-val" id="my_val_<?php echo $idx; ?>_today"><?php echo htmlspecialchars((string)$row['today']); ?></td>
-                            <td class="col-val" id="my_val_<?php echo $idx; ?>_7d"><?php echo htmlspecialchars((string)$row['seven_days']); ?></td>
-                            <td class="col-val" id="my_val_<?php echo $idx; ?>_month"><?php echo htmlspecialchars((string)$row['month']); ?></td>
-                            <td class="col-val" id="my_val_<?php echo $idx; ?>_quarter"><?php echo htmlspecialchars((string)$row['quarter']); ?></td>
+                            <td class="col-val col-val-today" id="my_val_<?php echo $idx; ?>_today"><?php echo htmlspecialchars((string)$row['today']); ?></td>
+                            <td class="col-val col-val-7d" id="my_val_<?php echo $idx; ?>_7d"><?php echo htmlspecialchars((string)$row['seven_days']); ?></td>
+                            <td class="col-val col-val-month" id="my_val_<?php echo $idx; ?>_month"><?php echo htmlspecialchars((string)$row['month']); ?></td>
+                            <td class="col-val col-val-quarter" id="my_val_<?php echo $idx; ?>_quarter"><?php echo htmlspecialchars((string)$row['quarter']); ?></td>
                         </tr>
                     <?php } } ?>
                 </tbody>
@@ -179,20 +282,20 @@
                 <thead>
                     <tr>
                         <th style="width:28%;">Activity</th>
-                        <th class="col-num">Today</th>
-                        <th class="col-num">7 Days</th>
-                        <th class="col-num">This Month</th>
-                        <th class="col-num">This Quarter</th>
+                        <th class="col-num col-header-today">Today</th>
+                        <th class="col-num col-header-7d">7 Days</th>
+                        <th class="col-num col-header-month">This Month</th>
+                        <th class="col-num col-header-quarter">This Quarter</th>
                     </tr>
                 </thead>
                 <tbody id="tbodyTeamStats">
                     <?php if (!empty($team_stats)) { foreach ($team_stats as $idx => $row) { ?>
                         <tr>
                             <td class="col-metric"><?php echo htmlspecialchars($row['metric']); ?></td>
-                            <td class="col-val" id="team_val_<?php echo $idx; ?>_today"><?php echo htmlspecialchars((string)$row['today']); ?></td>
-                            <td class="col-val" id="team_val_<?php echo $idx; ?>_7d"><?php echo htmlspecialchars((string)$row['seven_days']); ?></td>
-                            <td class="col-val" id="team_val_<?php echo $idx; ?>_month"><?php echo htmlspecialchars((string)$row['month']); ?></td>
-                            <td class="col-val" id="team_val_<?php echo $idx; ?>_quarter"><?php echo htmlspecialchars((string)$row['quarter']); ?></td>
+                            <td class="col-val col-val-today" id="team_val_<?php echo $idx; ?>_today"><?php echo htmlspecialchars((string)$row['today']); ?></td>
+                            <td class="col-val col-val-7d" id="team_val_<?php echo $idx; ?>_7d"><?php echo htmlspecialchars((string)$row['seven_days']); ?></td>
+                            <td class="col-val col-val-month" id="team_val_<?php echo $idx; ?>_month"><?php echo htmlspecialchars((string)$row['month']); ?></td>
+                            <td class="col-val col-val-quarter" id="team_val_<?php echo $idx; ?>_quarter"><?php echo htmlspecialchars((string)$row['quarter']); ?></td>
                         </tr>
                     <?php } } ?>
                 </tbody>

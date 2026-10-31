@@ -554,11 +554,37 @@ class Ci_admin_system extends CI_Controller {
 			'page_heading' => 'Quality Operations Checklist (QC)'
 		);
 
+		$cols = array(
+			'chk_ui' => "TINYINT(1) NOT NULL DEFAULT 0",
+			'chk_ux' => "TINYINT(1) NOT NULL DEFAULT 0",
+			'chk_func' => "TINYINT(1) NOT NULL DEFAULT 0",
+			'chk_nav' => "TINYINT(1) NOT NULL DEFAULT 0",
+			'chk_data' => "TINYINT(1) NOT NULL DEFAULT 0",
+			'chk_perm' => "TINYINT(1) NOT NULL DEFAULT 0",
+			'chk_err' => "TINYINT(1) NOT NULL DEFAULT 0",
+			'remarks' => "TEXT NULL"
+		);
+		foreach ($cols as $col_name => $col_sql) {
+			if (!$this->db->field_exists($col_name, 'ci_qoc_checklist')) {
+				$this->db->query("ALTER TABLE ci_qoc_checklist ADD COLUMN {$col_name} {$col_sql}");
+			}
+		}
+
 		$checked_map = array();
 		$q = $this->db->get('ci_qoc_checklist');
 		if ($q && $q->num_rows() > 0) {
 			foreach ($q->result_array() as $row) {
-				$checked_map[$row['node_key']] = (int)$row['is_checked'];
+				$checked_map[$row['node_key']] = array(
+					'chk_ui' => (int)(isset($row['chk_ui']) ? $row['chk_ui'] : 0),
+					'chk_ux' => (int)(isset($row['chk_ux']) ? $row['chk_ux'] : 0),
+					'chk_func' => (int)(isset($row['chk_func']) ? $row['chk_func'] : 0),
+					'chk_nav' => (int)(isset($row['chk_nav']) ? $row['chk_nav'] : 0),
+					'chk_data' => (int)(isset($row['chk_data']) ? $row['chk_data'] : 0),
+					'chk_perm' => (int)(isset($row['chk_perm']) ? $row['chk_perm'] : 0),
+					'chk_err' => (int)(isset($row['chk_err']) ? $row['chk_err'] : 0),
+					'remarks' => (string)(isset($row['remarks']) ? $row['remarks'] : ''),
+					'is_checked' => (int)(isset($row['is_checked']) ? $row['is_checked'] : 0)
+				);
 			}
 		}
 
@@ -759,13 +785,23 @@ class Ci_admin_system extends CI_Controller {
 		);
 
 		$total_items = 0;
+		$total_checks = 0;
+		$passed_checks = 0;
 		$checked_items = 0;
+
 		foreach ($tree as $parent) {
 			if (!empty($parent['children'])) {
 				foreach ($parent['children'] as $child) {
 					$total_items++;
-					if (!empty($checked_map[$child['key']])) {
-						$checked_items++;
+					$total_checks += 7;
+					$k = $child['key'];
+					if (!empty($checked_map[$k])) {
+						$row_item = $checked_map[$k];
+						$row_passed = ($row_item['chk_ui'] + $row_item['chk_ux'] + $row_item['chk_func'] + $row_item['chk_nav'] + $row_item['chk_data'] + $row_item['chk_perm'] + $row_item['chk_err']);
+						$passed_checks += $row_passed;
+						if ($row_passed === 7 || $row_item['is_checked'] === 1) {
+							$checked_items++;
+						}
 					}
 				}
 			}
@@ -774,8 +810,10 @@ class Ci_admin_system extends CI_Controller {
 		$data['tree'] = $tree;
 		$data['checked_map'] = $checked_map;
 		$data['total_items'] = $total_items;
+		$data['total_checks'] = $total_checks;
+		$data['passed_checks'] = $passed_checks;
 		$data['checked_items'] = $checked_items;
-		$data['pct'] = ($total_items > 0) ? round(($checked_items / $total_items) * 100) : 0;
+		$data['pct'] = ($total_checks > 0) ? round(($passed_checks / $total_checks) * 100) : 0;
 
 		$this->load->view('manager/system/qc', $data);
 	}
@@ -784,29 +822,130 @@ class Ci_admin_system extends CI_Controller {
 	{
 		$this->if_not_login();
 		$node_key = trim((string)$this->input->post('node_key', true));
+		$chk_field = trim((string)$this->input->post('chk_field', true));
 		$is_checked = (int)$this->input->post('is_checked') ? 1 : 0;
+		$select_all_row = (int)$this->input->post('select_all_row');
+		$select_all_section = (int)$this->input->post('select_all_section');
+		$keys = $this->input->post('keys');
 		$uid = (int)$this->session->userdata('manager_id');
+		$now = date('Y-m-d H:i:s');
+
+		if ($select_all_section === 1 && !empty($keys) && is_array($keys)) {
+			foreach ($keys as $k) {
+				$clean_k = trim((string)$k);
+				if (empty($clean_k)) continue;
+				$exist = $this->db->get_where('ci_qoc_checklist', array('node_key' => $clean_k))->row_array();
+				$upd_data = array(
+					'chk_ui' => $is_checked,
+					'chk_ux' => $is_checked,
+					'chk_func' => $is_checked,
+					'chk_nav' => $is_checked,
+					'chk_data' => $is_checked,
+					'chk_perm' => $is_checked,
+					'chk_err' => $is_checked,
+					'is_checked' => $is_checked,
+					'checked_by' => $uid,
+					'updated_at' => $now
+				);
+				if ($exist) {
+					$this->db->where('node_key', $clean_k)->update('ci_qoc_checklist', $upd_data);
+				} else {
+					$upd_data['node_key'] = $clean_k;
+					$this->db->insert('ci_qoc_checklist', $upd_data);
+				}
+			}
+			header('Content-Type: application/json');
+			echo json_encode(array('success' => true, 'is_checked' => $is_checked));
+			exit();
+		}
 
 		if (!empty($node_key)) {
 			$existing = $this->db->get_where('ci_qoc_checklist', array('node_key' => $node_key))->row_array();
-			if ($existing) {
-				$this->db->where('node_key', $node_key)->update('ci_qoc_checklist', array(
+			if ($select_all_row === 1) {
+				$upd_data = array(
+					'chk_ui' => $is_checked,
+					'chk_ux' => $is_checked,
+					'chk_func' => $is_checked,
+					'chk_nav' => $is_checked,
+					'chk_data' => $is_checked,
+					'chk_perm' => $is_checked,
+					'chk_err' => $is_checked,
 					'is_checked' => $is_checked,
 					'checked_by' => $uid,
-					'updated_at' => date('Y-m-d H:i:s')
-				));
+					'updated_at' => $now
+				);
+				if ($existing) {
+					$this->db->where('node_key', $node_key)->update('ci_qoc_checklist', $upd_data);
+				} else {
+					$upd_data['node_key'] = $node_key;
+					$this->db->insert('ci_qoc_checklist', $upd_data);
+				}
 			} else {
-				$this->db->insert('ci_qoc_checklist', array(
-					'node_key' => $node_key,
-					'is_checked' => $is_checked,
-					'checked_by' => $uid,
-					'updated_at' => date('Y-m-d H:i:s')
-				));
+				$allowed_fields = array('chk_ui', 'chk_ux', 'chk_func', 'chk_nav', 'chk_data', 'chk_perm', 'chk_err');
+				if (in_array($chk_field, $allowed_fields)) {
+					if ($existing) {
+						$new_row = array(
+							$chk_field => $is_checked,
+							'checked_by' => $uid,
+							'updated_at' => $now
+						);
+						$existing[$chk_field] = $is_checked;
+						$all_7 = ($existing['chk_ui'] && $existing['chk_ux'] && $existing['chk_func'] && $existing['chk_nav'] && $existing['chk_data'] && $existing['chk_perm'] && $existing['chk_err']) ? 1 : 0;
+						$new_row['is_checked'] = $all_7;
+						$this->db->where('node_key', $node_key)->update('ci_qoc_checklist', $new_row);
+					} else {
+						$insert_data = array(
+							'node_key' => $node_key,
+							'chk_ui' => ($chk_field === 'chk_ui') ? $is_checked : 0,
+							'chk_ux' => ($chk_field === 'chk_ux') ? $is_checked : 0,
+							'chk_func' => ($chk_field === 'chk_func') ? $is_checked : 0,
+							'chk_nav' => ($chk_field === 'chk_nav') ? $is_checked : 0,
+							'chk_data' => ($chk_field === 'chk_data') ? $is_checked : 0,
+							'chk_perm' => ($chk_field === 'chk_perm') ? $is_checked : 0,
+							'chk_err' => ($chk_field === 'chk_err') ? $is_checked : 0,
+							'is_checked' => 0,
+							'checked_by' => $uid,
+							'updated_at' => $now
+						);
+						$this->db->insert('ci_qoc_checklist', $insert_data);
+					}
+				}
 			}
 		}
 
 		header('Content-Type: application/json');
 		echo json_encode(array('success' => true, 'is_checked' => $is_checked));
+		exit();
+	}
+
+	public function ajax_save_qc_remarks()
+	{
+		$this->if_not_login();
+		$node_key = trim((string)$this->input->post('node_key', true));
+		$remarks = trim((string)$this->input->post('remarks', true));
+		$uid = (int)$this->session->userdata('manager_id');
+		$now = date('Y-m-d H:i:s');
+
+		if (!empty($node_key)) {
+			$existing = $this->db->get_where('ci_qoc_checklist', array('node_key' => $node_key))->row_array();
+			if ($existing) {
+				$this->db->where('node_key', $node_key)->update('ci_qoc_checklist', array(
+					'remarks' => $remarks,
+					'checked_by' => $uid,
+					'updated_at' => $now
+				));
+			} else {
+				$this->db->insert('ci_qoc_checklist', array(
+					'node_key' => $node_key,
+					'remarks' => $remarks,
+					'checked_by' => $uid,
+					'updated_at' => $now
+				));
+			}
+		}
+
+		header('Content-Type: application/json');
+		echo json_encode(array('success' => true, 'remarks' => $remarks));
 		exit();
 	}
 }

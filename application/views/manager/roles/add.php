@@ -290,7 +290,7 @@
       </div>
 
       <?php
-        $all_modules = array(
+                $all_modules = array(
           'dashboard' => array(
             'title' => 'Dashboard',
             'icon'  => 'fa fa-dashboard',
@@ -302,21 +302,18 @@
             'title' => 'Phone Dialer & Calling',
             'icon'  => 'fa fa-phone',
             'pages' => array(
-              'calls'               => 'Phone Dialer & Softphone'
+              'calls'               => 'Phone Dialer & Softphone',
+              'calls_autodialer'    => 'Auto Dialer',
+              'calls_manualdialer'  => 'Manual Dialer',
+              'calls_logs'          => 'Call Logs & Statistics'
             )
           ),
-          'hr' => array(
-            'title' => 'HR & People Management',
-            'icon'  => 'fa fa-user-circle-o',
+          'live' => array(
+            'title' => 'Live Operations',
+            'icon'  => 'fa fa-line-chart',
             'pages' => array(
-              'hr'                  => 'HR Management',
-              'hr_targets'          => 'Assign Targets',
-              'hr_attendance'       => 'Attendance & Geolocation',
-              'hr_shifts'           => 'Shift Management',
-              'hr_leaves'           => 'Leave & Holidays',
-              'hr_payroll'          => 'Payroll & Compensation',
-              'hr_appraisals'       => 'Performance & Appraisals',
-              'hr_lifecycle'        => 'Employee Lifecycle'
+              'live'                => 'Live Operations Dashboard',
+              'live_presentation'   => 'Live Presentation TV Mode'
             )
           ),
           'my_zone' => array(
@@ -360,44 +357,81 @@
             'pages' => array(
               'lead_review'         => 'Pending Leads Approval',
               'orders_pending'      => 'Pending Order Process',
+              'orders_pending_sales'=> 'Pending Sales Approval',
               'kam_onboard'         => 'Onboard Client',
+              'orders_open'         => 'Open Orders',
+              'orders_followups'    => 'Orders Follow-up',
+              'orders_completed'    => 'Completed Orders',
+              'orders_closed'       => 'Closed Orders',
+              'orders_rejected'     => 'Rejected / Lost Orders',
               'orders_management'   => 'All Orders'
             )
           ),
           'kam' => array(
-            'title' => 'KAM',
+            'title' => 'KAM (Key Accounts)',
             'icon'  => 'fa fa-handshake-o',
             'pages' => array(
               'kam_clients'         => 'My Client',
               'kam_schedule'        => 'Create Schedule',
               'kam_task_followup'   => 'Task Follow-up',
-              'kam_reminders'       => 'Reminders'
+              'kam_reminders'       => 'Reminders',
+              'kam_report'          => 'KAM Report',
+              'kam_assignee_mgmt'   => 'Client Assignee Management'
             )
           ),
-          'system' => array(
-            'title' => 'System',
-            'icon'  => 'fa fa-cog',
+          'hr' => array(
+            'title' => 'HR Operations',
+            'icon'  => 'fa fa-id-card-o',
             'pages' => array(
-              'users'               => 'Users',
-              'roles'               => 'Roles',
-              'terms'               => 'Category',
-              'leads_import'        => 'Import Leads',
-              'leads_export'        => 'Export Leads',
-              'assigned_leads'      => 'Allotted Database',
-              'admin_logs'          => 'Admin Logs',
-              'system_assignee'     => 'Assignee Management',
-              'kam_clients'         => 'KAM Client',
-              'calling_api'         => 'Calling API',
-              'integrations'        => 'Third-Party API'
+              'hr'                  => 'HR Overview',
+              'hr_targets'          => 'Assign Targets',
+              'hr_attendance'       => 'Attendance & Geolocation',
+              'hr_shifts'           => 'Shift Management',
+              'hr_leaves'           => 'Leave Management',
+              'hr_payroll'          => 'Payroll & Compensation',
+              'hr_taxation'         => 'Taxation & Gratuity',
+              'hr_appraisals'       => 'Performance & Appraisals',
+              'hr_lifecycle'        => 'Employee Lifecycle',
+              'hr_documents'        => 'Document Vault'
             )
           ),
           'reports' => array(
-            'title' => 'Reports',
+            'title' => 'Reports & Analytics',
             'icon'  => 'fa fa-bar-chart',
             'pages' => array(
               'reports_revenue'     => 'Revenue List',
               'reports_projections' => 'Company Projections',
-              'reports_download'    => 'Download Reports'
+              'reports_download'    => 'Download Reports Center',
+              'reports_admin'       => 'Admin Reports',
+              'reports_leads'       => 'Leads Report',
+              'reports_perf_dep'    => 'Department Performance',
+              'reports_perf_ind'    => 'Individual Performance'
+            )
+          ),
+          'events' => array(
+            'title' => 'Events & Awards',
+            'icon'  => 'fa fa-trophy',
+            'pages' => array(
+              'events_list'         => 'Events & Announcements',
+              'awards_list'         => 'Awards Recognition'
+            )
+          ),
+          'system' => array(
+            'title' => 'System Management',
+            'icon'  => 'fa fa-cog',
+            'pages' => array(
+              'users'               => 'Users View & Add',
+              'roles'               => 'Roles & Permissions',
+              'terms'               => 'Category & Terms',
+              'leads_import'        => 'Import Leads',
+              'leads_export'        => 'Export Leads',
+              'assigned_leads'      => 'Allotted & Non-Allotted Database',
+              'admin_logs'          => 'Admin Logs Audit',
+              'system_assignee'     => 'Assignee Management',
+              'calling_api'         => 'Calling API Gateway',
+              'integrations'        => 'Third-Party API Integrations',
+              'live_location'       => 'Live Location Tracking',
+              'qc_panel'            => 'Quality Check Panel'
             )
           )
         );

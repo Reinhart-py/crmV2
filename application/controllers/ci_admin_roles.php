@@ -226,10 +226,13 @@ class Ci_admin_roles extends CI_Controller {
 
 		$clean['my_zone'] = $derive(array('database', 'leads', 'orders', 'sales', 'followups', 'meetings', 'verticals', 'vertical_followups', 'internal_tasks', 'external_tasks', 'database_transfer'), $clean);
 		$clean['team'] = $derive(array('team_members', 'team_chart', 'team_database', 'team_leads', 'team_orders', 'team_verticals', 'team_followups', 'team_meetings', 'team_assignmeetings', 'team_assignleads', 'team_tasks', 'team_tickets'), $clean);
-		$clean['back_office'] = $derive(array('lead_review', 'orders_pending', 'kam_onboard', 'orders_management'), $clean);
-		$clean['kam'] = $derive(array('kam_clients', 'kam_schedule', 'kam_task_followup', 'kam_reminders'), $clean);
-		$clean['reports'] = $derive(array('reports_revenue', 'reports_projections', 'reports_download'), $clean);
-		$clean['system'] = $derive(array('users', 'roles', 'terms', 'leads_import', 'leads_export', 'assigned_leads', 'admin_logs', 'system_assignee', 'kam_clients', 'calling_api', 'integrations'), $clean);
+		$clean['back_office'] = $derive(array('lead_review', 'orders_pending', 'orders_pending_sales', 'kam_onboard', 'orders_open', 'orders_followups', 'orders_completed', 'orders_closed', 'orders_rejected', 'orders_management'), $clean);
+		$clean['kam'] = $derive(array('kam_clients', 'kam_schedule', 'kam_task_followup', 'kam_reminders', 'kam_report', 'kam_assignee_mgmt'), $clean);
+		$clean['hr'] = $derive(array('hr', 'hr_targets', 'hr_lifecycle', 'hr_attendance', 'hr_shifts', 'hr_leaves', 'hr_payroll', 'hr_taxation', 'hr_appraisals', 'hr_documents'), $clean);
+		$clean['reports'] = $derive(array('reports_revenue', 'reports_projections', 'reports_download', 'reports_admin', 'reports_leads', 'reports_perf_dep', 'reports_perf_ind'), $clean);
+		$clean['live'] = $derive(array('live', 'live_presentation'), $clean);
+		$clean['events'] = $derive(array('events_list', 'awards_list'), $clean);
+		$clean['system'] = $derive(array('users', 'roles', 'terms', 'leads_import', 'leads_export', 'assigned_leads', 'admin_logs', 'system_assignee', 'kam_clients', 'calling_api', 'integrations', 'live_location', 'qc_panel'), $clean);
 
 		return $clean;
 	}

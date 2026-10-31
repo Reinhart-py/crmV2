@@ -83,7 +83,7 @@
                             <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_verticals']) ? (int)$dashboard_Tcount['count_verticals'] : 0; ?></div>
                             <div class="dash-kpi-label">Team Verticals</div>
                         </div>
-                        <div class="dash-kpi-icon"><i class="fa fa-cubes"></i></div>
+                        <div class="dash-kpi-icon"><i class="ion ion-stats-bars"></i></div>
                     </div>
                     <div class="dash-kpi-footer">
                         <span>View Verticals</span> <i class="fa fa-arrow-circle-right"></i>
@@ -139,7 +139,7 @@
                                 Sales: AED <?php echo number_format((float)(isset($dashboard_Tcount['sales_amount']) ? $dashboard_Tcount['sales_amount'] : 0), 2); ?>
                             </div>
                         </div>
-                        <div class="dash-kpi-icon"><i class="ion ion-pie-graph"></i></div>
+                        <div class="dash-kpi-icon"><i class="fa fa-bullseye"></i></div>
                     </div>
                     <div class="dash-kpi-footer">
                         <span>View Leads</span> <i class="fa fa-arrow-circle-right"></i>
@@ -157,7 +157,7 @@
                                 Sales: AED <?php echo number_format((float)(isset($dashboard_Tcount['sales_amount']) ? $dashboard_Tcount['sales_amount'] : 0), 2); ?>
                             </div>
                         </div>
-                        <div class="dash-kpi-icon"><i class="fa fa-truck"></i></div>
+                        <div class="dash-kpi-icon"><i class="fa fa-shopping-cart"></i></div>
                     </div>
                     <div class="dash-kpi-footer">
                         <span>View Orders</span> <i class="fa fa-arrow-circle-right"></i>

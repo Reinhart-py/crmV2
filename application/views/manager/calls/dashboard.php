@@ -725,6 +725,66 @@ html, body {
   display: none;
   z-index: 99999;
 }
+
+@media (max-width: 991px) {
+  .content-wrapper.glass-calling-wrapper {
+    height: auto !important;
+    min-height: calc(100vh - 60px) !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    flex-direction: column !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+    padding: 10px !important;
+  }
+  .crm-dialer-dock {
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    flex-direction: row !important;
+    justify-content: space-around !important;
+    gap: 6px !important;
+    padding: 6px 8px !important;
+    overflow-x: auto !important;
+  }
+  .dock-item-wrapper {
+    width: auto !important;
+  }
+  .crm-dock-btn {
+    width: 60px !important;
+    height: 48px !important;
+  }
+  .dock-flyout-menu {
+    left: 0 !important;
+    top: 100% !important;
+    margin-top: 6px !important;
+    min-width: 180px !important;
+  }
+  .dock-flyout-menu::before {
+    display: none !important;
+  }
+  #middleContentArea {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: 540px !important;
+    flex: none !important;
+    overflow-y: auto !important;
+  }
+  .crm-dialer-panel {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    margin-left: 0 !important;
+  }
+  .middle-body {
+    overflow-x: auto !important;
+  }
+}
 </style>
 
 <div class="content-wrapper glass-calling-wrapper">
@@ -750,20 +810,17 @@ html, body {
         <span class="dock-lbl">Follow-up</span>
       </button>
       <div class="dock-flyout-menu" id="flyoutFollowup">
-        <a href="javascript:void(0)" class="dock-flyout-item" onclick="openMenuQueue('followup', 'missed', 'Missed Today')">
-          <span>Missed Today</span>
+        <a href="javascript:void(0)" class="dock-flyout-item" onclick="openMenuQueue('followup', 'last7', 'Last 7 Days Follow-ups')">
+          <span>Last Seven Days</span>
         </a>
         <a href="javascript:void(0)" class="dock-flyout-item" onclick="openMenuQueue('followup', 'today', 'Today Follow-ups')">
           <span>Today</span>
         </a>
-        <a href="javascript:void(0)" class="dock-flyout-item" onclick="openMenuQueue('followup', 'last7', 'Last 7 Days')">
-          <span>Last Seven Days</span>
-        </a>
-        <a href="javascript:void(0)" class="dock-flyout-item" onclick="openMenuQueue('followup', 'next7', 'Next 7 Days')">
+        <a href="javascript:void(0)" class="dock-flyout-item" onclick="openMenuQueue('followup', 'next7', 'Next 7 Days Follow-ups')">
           <span>Next Seven Days</span>
         </a>
-        <a href="javascript:void(0)" class="dock-flyout-item" onclick="openFollowupAllFeaturesMode()">
-          <span>All Features</span>
+        <a href="javascript:void(0)" class="dock-flyout-item" onclick="openMenuQueue('followup', 'all_future', 'All Future Follow-ups')">
+          <span>All Future</span>
         </a>
       </div>
     </div>
@@ -791,12 +848,12 @@ html, body {
 
     <div class="dock-item-wrapper">
       <button type="button" class="crm-dock-btn" id="dockBtnLeads" title="Leads" onclick="openLeadsDialerMode()">
-        <i class="fa fa-bullhorn"></i>
+        <i class="fa fa-bullseye"></i>
         <span class="dock-lbl">Leads</span>
       </button>
     </div>
 
-    <div class="dock-item-wrapper" style="margin-top:auto;">
+    <div class="dock-item-wrapper">
       <button type="button" class="crm-dock-btn" id="dockBtnLogs" title="Logs" onclick="openMenuLogs()">
         <i class="fa fa-list-alt"></i>
         <span class="dock-lbl">Logs</span>
@@ -813,11 +870,10 @@ html, body {
       </div>
 
       <div class="apple-segmented-group" id="subnavFollowup" style="display:none;">
+        <button type="button" class="apple-segment-btn" data-filter="last7" onclick="openMenuQueue('followup', 'last7', 'Last 7 Days Follow-ups')">Last Seven Days</button>
         <button type="button" class="apple-segment-btn active" data-filter="today" onclick="openMenuQueue('followup', 'today', 'Today Follow-ups')">Today</button>
-        <button type="button" class="apple-segment-btn" data-filter="missed" onclick="openMenuQueue('followup', 'missed', 'Missed Follow-ups')">Missed</button>
-        <button type="button" class="apple-segment-btn" data-filter="last7" onclick="openMenuQueue('followup', 'last7', 'Last 7 Days')">Last 7d</button>
-        <button type="button" class="apple-segment-btn" data-filter="next7" onclick="openMenuQueue('followup', 'next7', 'Next 7 Days')">Next 7d</button>
-        <button type="button" class="apple-segment-btn" data-filter="all" onclick="openFollowupAllFeaturesMode()">All Features</button>
+        <button type="button" class="apple-segment-btn" data-filter="next7" onclick="openMenuQueue('followup', 'next7', 'Next 7 Days Follow-ups')">Next Seven Days</button>
+        <button type="button" class="apple-segment-btn" data-filter="all_future" onclick="openMenuQueue('followup', 'all_future', 'All Future Follow-ups')">All Future</button>
       </div>
 
       <div class="apple-segmented-group" id="subnavLogsPeriod" style="display:none;">
