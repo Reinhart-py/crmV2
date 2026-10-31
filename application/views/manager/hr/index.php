@@ -286,7 +286,7 @@
         </div>
       </div>
 
-      <div class="modal fade" id="modalAssignTarget" tabindex="-1" role="dialog">
+      <div class="modal fade" id="modalAssignTarget" role="dialog">
         <div class="modal-dialog" role="document">
           <div class="modal-content">
             <form action="<?php echo base_url(); ?>manager/hr/add_target" method="POST">
@@ -298,7 +298,7 @@
               <div class="modal-body">
                 <div class="form-group">
                   <label>Employee <span class="text-danger">*</span></label>
-                  <select name="user_id" class="form-control select2" style="width:100%;" required>
+                  <select name="user_id" id="target_user_id" class="form-control select2" style="width:100%;" required>
                     <option value="">Select Employee</option>
                     <?php if (!empty($employees)): ?>
                       <?php foreach ($employees as $emp): ?>
@@ -1440,6 +1440,32 @@ $(function() {
     $('#gratuityResultValue').text(formatted);
     $('#gratuityResultFormula').text(formulaText);
     $('#gratuityResultBox').slideDown();
+  });
+
+  if ($.fn.modal && $.fn.modal.Constructor) {
+    $.fn.modal.Constructor.prototype.enforceFocus = function () {};
+  }
+  $(document).on('shown.bs.modal', '.modal', function () {
+    var $modal = $(this);
+    $modal.find('.select2').each(function() {
+      var $sel = $(this);
+      if ($sel.hasClass('select2-hidden-accessible')) {
+        $sel.select2('destroy');
+      }
+      $sel.select2({
+        dropdownParent: $modal,
+        placeholder: $sel.find('option:first').text() || 'Select Employee',
+        allowClear: true,
+        width: '100%'
+      });
+    });
+  });
+  $('#modalAssignTarget').on('shown.bs.modal', function () {
+    setTimeout(function() {
+      if ($('#target_user_id').length) {
+        $('#target_user_id').select2('open');
+      }
+    }, 150);
   });
 });
 </script>

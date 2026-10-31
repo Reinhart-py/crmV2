@@ -2,6 +2,18 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.80.9] - 2026-10-31
+- **Timestamp**: `2026-10-31 17:10:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Fixed Select Employee typing filter in HR Target assignment modal by attaching Select2 to the modal container and resolving Bootstrap focus trapping.
+- **Detailed Changes & Technical Implementation**:
+  - **1. HR Target Assign Modal Typing Filter (`manager/hr/index.php`)**:
+    - Removed Bootstrap modal `tabindex="-1"` from `#modalAssignTarget` which was interfering with input focus in Select2.
+    - Assigned unique identifier `#target_user_id` to the employee select field.
+    - Bypassed Bootstrap `enforceFocus` collision and dynamically initialized Select2 with `dropdownParent: $modal` upon modal display so employees can be filtered by typing immediately.
+  - **2. Zero Comments Rule Compliance**:
+    - Confirmed zero comments across modified PHP files and verified syntax with `php -l`.
+
 ### [v1.80.8] - 2026-10-31
 - **Timestamp**: `2026-10-31 17:06:00 +0530`
 - **Author**: Reinhart-py
