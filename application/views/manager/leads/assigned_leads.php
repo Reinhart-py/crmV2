@@ -1,13 +1,11 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
-<!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper px-4">
     <section class="content-header">
         <h1> <?php echo isset($info['page_heading']) ? $info['page_heading'] : 'Allotted Database'; ?> </h1>
     </section>
 
-    <!-- Main content -->
-    <section class="content">
+        <section class="content">
         <div class="row">
             <div class="col-xs-12">
 
@@ -217,8 +215,7 @@
     </section>
 </div>
 
-<!-- Modal: Allocate Selected Leads -->
-<div class="modal fade" id="modalMoveLeads" tabindex="-1" role="dialog" aria-labelledby="modalMoveLeadsLabel">
+<div class="modal fade" id="modalMoveLeads" role="dialog" aria-labelledby="modalMoveLeadsLabel">
     <div class="modal-dialog" role="document">
         <form action="<?php echo base_url(); ?>manager/leads/bulk-move" method="post" id="formBulkMove">
             <div class="modal-content">
@@ -333,6 +330,29 @@ $(document).ready(function() {
             var val = $(this).val();
             container.append('<input type="hidden" name="lead_ids[]" value="' + val + '">');
         });
+    });
+
+    if ($.fn.modal && $.fn.modal.Constructor) {
+        $.fn.modal.Constructor.prototype.enforceFocus = function () {};
+    }
+
+    function setupTargetUserSelect2() {
+        if ($('#target_user').hasClass('select2-hidden-accessible')) {
+            $('#target_user').select2('destroy');
+        }
+        $('#target_user').select2({
+            dropdownParent: $('#modalMoveLeads'),
+            placeholder: '-- Select Target User --',
+            allowClear: true,
+            width: '100%'
+        });
+    }
+
+    $('#modalMoveLeads').on('shown.bs.modal', function () {
+        setupTargetUserSelect2();
+        setTimeout(function() {
+            $('#target_user').select2('open');
+        }, 150);
     });
 });
 </script>

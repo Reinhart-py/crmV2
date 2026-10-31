@@ -319,11 +319,27 @@ class Ci_admin_calls extends CI_Controller
 
 		$range_from = $this->input->get('range_from');
 		$range_to = $this->input->get('range_to');
+		$range = trim((string)$this->input->get('range'));
+
+		if ($range !== '' && $range !== 'all') {
+			if (strpos($range, '-') !== false) {
+				$parts = explode('-', $range);
+				$range_from = (int)trim($parts[0]);
+				$range_to = (int)trim($parts[1]);
+			} elseif (is_numeric($range)) {
+				$range_from = 1;
+				$range_to = (int)$range;
+			}
+		}
+
 		if ($range_from !== null && $range_to !== null && $range_from !== '' && $range_to !== '') {
 			$rf = (int)$range_from;
 			$rt = (int)$range_to;
 			if ($rt >= $rf) {
 				$this->db->where("(CAST(RIGHT(IFNULL(A.lead_id, A.id), 3) AS UNSIGNED) BETWEEN $rf AND $rt OR (A.id >= $rf AND A.id <= $rt))");
+				if ($rt > 300) {
+					$limit_val = $rt;
+				}
 			}
 		}
 

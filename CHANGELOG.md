@@ -2,6 +2,23 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.80.4] - 2026-10-31
+- **Timestamp**: `2026-10-31 14:02:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Upgraded Dialer range filter to a searchable Select2 dropdown with typing search and default "All" display; fixed non-allotted database target user dropdown in allocation modal by resolving Bootstrap focus enforcement and attaching Select2 with in-modal dropdown parent.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Searchable Range Filter Dropdown (`calls/dashboard.php`, `ci_admin_calls.php`)**:
+    - Replaced the two separate numeric range inputs with a searchable Select2 dropdown menu (`#dialerRangeSelect`) supporting custom tag creation and real-time typing filters.
+    - Default option is set to `All (Show All Records)`, showing all records immediately without requiring 3 digits.
+    - Provided common range brackets (`001-050`, `001-100`, `101-200`, ..., `3001-5000`) and enabled typing any custom range (e.g. `1-20` or `50`).
+    - Updated backend `ajax_get_queue()` to parse `$range`, `$range_from`, and `$range_to` dynamically.
+  - **2. Non-Allotted Database Target User Typing Filter (`assigned_leads.php`)**:
+    - Fixed the Allocate Selected Leads modal (`#modalMoveLeads`) by removing Bootstrap's `tabindex="-1"` and disabling `enforceFocus` which was blocking keystrokes inside Select2.
+    - Bound Select2 initialization to the modal's `shown.bs.modal` event with `dropdownParent: $('#modalMoveLeads')` so users can immediately type and filter target lead owners.
+    - Removed legacy HTML comments from `assigned_leads.php`.
+  - **3. Zero Comments Rule Compliance**:
+    - Confirmed zero PHP comments across all modified files.
+
 ### [v1.80.3] - 2026-10-31
 - **Timestamp**: `2026-10-31 13:16:00 +0530`
 - **Author**: Reinhart-py

@@ -1219,13 +1219,26 @@ html, body {
                 <option value="120">120 Seconds</option>
               </select>
             </div>
-            <div style="flex:1 1 220px; min-width:200px;">
-              <label style="font-size:12px; font-weight:600; color:#334155; margin-bottom:4px; display:block;">Range (Last 3 Digits)</label>
-              <div style="display:flex; align-items:center; gap:8px;">
-                <input type="number" id="dialerRangeFrom" min="0" max="999" placeholder="001" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;" oninput="updateAutoDialerQueueCount()">
-                <span style="font-size:12px; color:#64748b; font-weight:600;">to</span>
-                <input type="number" id="dialerRangeTo" min="0" max="999" placeholder="200" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;" oninput="updateAutoDialerQueueCount()">
-              </div>
+            <div style="flex:1 1 240px; min-width:200px;">
+              <label style="font-size:12px; font-weight:600; color:#334155; margin-bottom:4px; display:block;">Range</label>
+              <select id="dialerRangeSelect" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px; width:100%;">
+                <option value="all" selected>All (Show All Records)</option>
+                <option value="1-50">001 - 050</option>
+                <option value="1-100">001 - 100</option>
+                <option value="101-200">101 - 200</option>
+                <option value="201-300">201 - 300</option>
+                <option value="301-400">301 - 400</option>
+                <option value="401-500">401 - 500</option>
+                <option value="501-600">501 - 600</option>
+                <option value="601-700">601 - 700</option>
+                <option value="701-800">701 - 800</option>
+                <option value="801-900">801 - 900</option>
+                <option value="901-1000">901 - 1000</option>
+                <option value="1001-1500">1001 - 1500</option>
+                <option value="1501-2000">1501 - 2000</option>
+                <option value="2001-3000">2001 - 3000</option>
+                <option value="3001-5000">3001 - 5000</option>
+              </select>
             </div>
           </div>
 
@@ -2138,8 +2151,22 @@ function updateAutoDialerQueueCount() {
   } else if (dialerMode === 'followup') {
     qType = 'followup';
   }
-  var rFrom = $('#dialerRangeFrom').val() ? parseInt($('#dialerRangeFrom').val(), 10) : '';
-  var rTo = $('#dialerRangeTo').val() ? parseInt($('#dialerRangeTo').val(), 10) : '';
+  var rangeVal = $('#dialerRangeSelect').val() || 'all';
+  var rFrom = '';
+  var rTo = '';
+  if (rangeVal && rangeVal !== 'all') {
+    if (rangeVal.indexOf('-') > -1) {
+      var parts = rangeVal.split('-');
+      rFrom = parseInt(parts[0], 10) || 0;
+      rTo = parseInt(parts[1], 10) || 0;
+    } else {
+      var num = parseInt(rangeVal, 10);
+      if (!isNaN(num) && num > 0) {
+        rFrom = 1;
+        rTo = num;
+      }
+    }
+  }
 
   $('#autoDialerQueueCount').html('<i class="fa fa-spinner fa-spin"></i> Calculating queue...');
   $.ajax({
@@ -2149,6 +2176,7 @@ function updateAutoDialerQueueCount() {
       type: qType,
       filter: 'all',
       status: selectedStages.join(','),
+      range: rangeVal,
       range_from: rFrom,
       range_to: rTo
     },
@@ -2156,7 +2184,7 @@ function updateAutoDialerQueueCount() {
     success: function(res) {
       if (res && res.status && res.leads) {
         autoDialerQueue = res.leads;
-        var suffix = (rFrom !== '' || rTo !== '') ? (' (Range: ' + (rFrom !== '' ? rFrom : '0') + '-' + (rTo !== '' ? rTo : '999') + ')') : '';
+        var suffix = (rangeVal && rangeVal !== 'all') ? (' (Range: ' + rangeVal + ')') : '';
         $('#autoDialerQueueCount').text(res.leads.length + ' records ready to dial' + suffix);
       } else {
         autoDialerQueue = [];
@@ -3267,6 +3295,24 @@ function escapeJs(str) {
 $(document).ready(function() {
   if (window.innerWidth <= 991) {
     switchMobileDialerView('keypad');
+  }
+  if ($('#dialerRangeSelect').length && $.fn.select2) {
+    $('#dialerRangeSelect').select2({
+      tags: true,
+      width: '100%',
+      placeholder: 'All (Show All Records)',
+      createTag: function (params) {
+        var term = $.trim(params.term);
+        if (term === '') return null;
+        return {
+          id: term,
+          text: term,
+          newTag: true
+        };
+      }
+    }).on('change', function() {
+      updateAutoDialerQueueCount();
+    });
   }
   if ($('.datepicker').length && $.fn.datepicker) {
     $('.datepicker').datepicker({
