@@ -2,6 +2,27 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.80.7] - 2026-10-31
+- **Timestamp**: `2026-10-31 16:42:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Implemented Upper Dashboard UI layout matching reference screenshot with 3-column architecture, removed hardcoded 50,000 targets with live `ci_hr_targets` HR integration, and added live database-driven SVG donut charts for My Lead and My Order statuses.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Upper Dashboard 3-Column Layout Matching Screenshot (`manager/dashboard.php`)**:
+    - Left Column (`col-lg-7 col-md-12`): 8 compact KPI cards arranged in 2 rows of 4 cards on top (Total Sales, Won Deals, Win Rate, Avg Days to Close, Pipeline Value, Open Deals, Weighted Value, Avg Open Deal Age) directly positioned above the two line graphs (**Target vs Achievement** and **Target vs Projection**).
+    - Middle Column (`col-lg-3 col-md-6`): Side charts containing **My Lead** donut chart (6 statuses: Busy, DNCR, Following Up, Future, Not Interested, Not Valid) and **My Order** donut chart (8 statuses: Submitted, Approved, In Progress, Onboarding, Under Review, Completed, Sales, Canceled) with dynamic SVG arc slices, callout polylines, and labels with percentages.
+    - Right Column (`col-lg-2 col-md-6`): Report date range display + filter dropdowns (Deal Owner, Deal Stage, Pipeline, Deal Label) and the **Have questions?** support card.
+  - **2. HR Target System Database Connection & 50,000 Hardcode Removal (`ci_admin_model.php`, `manager/dashboard.php`)**:
+    - Completely removed hardcoded `50000` / `?50,000` and salary fallbacks in `dashboard_achievement_graph()`.
+    - Targets are now queried directly per-month from active records in `ci_hr_targets` (`target_amount`) assigned by HR for the specific user (`user_id = manager_id`) or team members.
+    - If HR has not assigned any target, target is strictly `0` (never displays any default, arbitrary, or random amount).
+    - Cleaned chart initialization scripts in `dashboard.php` so target and achieved series default to `0` instead of static dummy arrays.
+  - **3. Live Database Donut Data Integration (`ci_admin_model.php`, `ci_admin.php`)**:
+    - Added `dashboard_mylead_donut_data()` to query `ci_leads` grouped across the 6 specified lead statuses: Busy (45), DNCR (46), Following Up (47), Future (48), Not Interested (49), Not Valid (50).
+    - Added `dashboard_myorder_donut_data()` to query `ci_orders` grouped across the 8 specified order statuses: Submitted, Approved, In Progress, Onboarding, Under Review, Completed, Sales, Canceled.
+    - Connected both datasets to the view via `ci_admin.php` `dashboard()`.
+  - **4. Zero Comments Rule Compliance**:
+    - Strictly verified zero comments across all modified PHP files and validated syntax with `php -l`.
+
 ### [v1.80.6] - 2026-10-31
 - **Timestamp**: `2026-10-31 16:05:00 +0530`
 - **Author**: Reinhart-py

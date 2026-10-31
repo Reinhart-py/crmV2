@@ -299,33 +299,40 @@ class Ci_admin_model extends CI_model {
 			$colors = array();
 			$month_dates = array();
 
-			$monthly_target = 50000;
-			if ($is_team == 0) {
-				$u = $this->db->query("SELECT c_salary FROM ci_user WHERE id = " . $manager_id)->row_array();
-				if (!empty($u['c_salary']) && (float)$u['c_salary'] > 0) {
-					$monthly_target = (float)$u['c_salary'];
-				}
-			} else {
-				if ($user_role === 1 || $user_role === 4) {
-					$tot = $this->db->query("SELECT SUM(CASE WHEN c_salary > 0 THEN CAST(c_salary AS DECIMAL(10,2)) ELSE 50000 END) as s FROM ci_user WHERE status = 1")->row_array();
-					$monthly_target = !empty($tot['s']) ? (float)$tot['s'] : 250000;
-				} else {
-					$team_array = $this->fetchTeamList($manager_id, '');
-					if (!empty($team_array) && is_array($team_array)) {
-						$team_clean = array_filter(array_map('intval', $team_array));
-						$team_str = implode(',', $team_clean);
-						$tot = $this->db->query("SELECT SUM(CASE WHEN c_salary > 0 THEN CAST(c_salary AS DECIMAL(10,2)) ELSE 50000 END) as s FROM ci_user WHERE id IN ($team_str)")->row_array();
-						$monthly_target = !empty($tot['s']) ? (float)$tot['s'] : (count($team_clean) * 50000);
-					}
-				}
-			}
-
 			for ($i = 9; $i >= 0; $i--) {
 				$d1 = date("Y-m-01", strtotime("-$i month"));
 				$d2 = date("Y-m-t", strtotime("-$i month"));
+				$month_key = date("Y-m", strtotime("-$i month"));
 				$label = date("M-y", strtotime("-$i month"));
 				$labels[] = $label;
 				$month_dates[] = array('d1' => $d1, 'd2' => $d2);
+
+				$monthly_target = 0.0;
+				if ($is_team == 0) {
+					$t_row = $this->db->query("SELECT target_amount FROM ci_hr_targets WHERE user_id = {$manager_id} AND status = 'Active' AND (period_month = '{$month_key}' OR ('{$d1}' <= end_date AND '{$d2}' >= start_date)) ORDER BY id DESC LIMIT 1")->row_array();
+					if (!empty($t_row['target_amount'])) {
+						$monthly_target = (float)$t_row['target_amount'];
+					}
+				} else {
+					if ($user_role === 1 || $user_role === 4) {
+						$t_row = $this->db->query("SELECT SUM(target_amount) as s FROM ci_hr_targets WHERE status = 'Active' AND (period_month = '{$month_key}' OR ('{$d1}' <= end_date AND '{$d2}' >= start_date))")->row_array();
+						if (!empty($t_row['s'])) {
+							$monthly_target = (float)$t_row['s'];
+						}
+					} else {
+						$team_array = $this->fetchTeamList($manager_id, '');
+						if (!empty($team_array) && is_array($team_array)) {
+							$team_clean = array_filter(array_map('intval', $team_array));
+							if (!empty($team_clean)) {
+								$team_str = implode(',', $team_clean);
+								$t_row = $this->db->query("SELECT SUM(target_amount) as s FROM ci_hr_targets WHERE user_id IN ({$team_str}) AND status = 'Active' AND (period_month = '{$month_key}' OR ('{$d1}' <= end_date AND '{$d2}' >= start_date))")->row_array();
+								if (!empty($t_row['s'])) {
+									$monthly_target = (float)$t_row['s'];
+								}
+							}
+						}
+					}
+				}
 				$target_data[] = $monthly_target;
 
 				if ($is_team == 0) {
@@ -345,7 +352,7 @@ class Ci_admin_model extends CI_model {
 				}
 				$achieved = (float)$lq['val'] + (float)$oq['val'];
 				$achieve_data[] = $achieved;
-				$colors[] = ($achieved >= $monthly_target) ? '#16a34a' : '#dc2626';
+				$colors[] = ($monthly_target > 0 && $achieved >= $monthly_target) ? '#16a34a' : '#01509e';
 			}
 
 			return array(
@@ -357,7 +364,82 @@ class Ci_admin_model extends CI_model {
 			);
 		}
 
-	
+		public function dashboard_mylead_donut_data($manager_id = 0){
+			if ($manager_id <= 0) {
+				$manager_id = (int)$this->session->userdata('manager_id');
+			}
+			$specs = array(
+				array('label' => 'Busy', 'cond' => "l.status = 45 OR LOWER(l.call_status) LIKE '%busy%' OR LOWER(l.call_status) LIKE '%not responding%'", 'color' => '#01509e'),
+				array('label' => 'DNCR', 'cond' => "l.status = 46 OR LOWER(l.call_status) LIKE '%dncr%' OR LOWER(l.call_status) LIKE '%dnd%' OR l.dnd_status = 'Yes'", 'color' => '#00a8f3'),
+				array('label' => 'Following Up', 'cond' => "l.status = 47 OR LOWER(l.call_status) LIKE '%follow%' OR LOWER(l.call_status) LIKE '%callback%'", 'color' => '#5c2bb1'),
+				array('label' => 'Future', 'cond' => "l.status = 48 OR LOWER(l.call_status) LIKE '%future%'", 'color' => '#6c7d93'),
+				array('label' => 'Not Interested', 'cond' => "l.status = 49 OR LOWER(l.call_status) LIKE '%not interested%'", 'color' => '#ff6b6b'),
+				array('label' => 'Not Valid', 'cond' => "l.status = 50 OR LOWER(l.call_status) LIKE '%not valid%' OR LOWER(l.call_status) LIKE '%invalid%'", 'color' => '#00b69c')
+			);
+			$lead_scope = "(l.lead_assign = {$manager_id} OR (l.created_by = {$manager_id} AND (l.lead_assign = 0 OR l.lead_assign IS NULL)) OR (l.agents IS NOT NULL AND l.agents != '' AND FIND_IN_SET({$manager_id}, l.agents) > 0)) AND (l.company_status IS NULL OR LOWER(l.company_status) != 'closed')";
+			
+			$items = array();
+			$total = 0;
+			foreach ($specs as $sp) {
+				$sql = "SELECT COUNT(DISTINCT l.id) as cnt FROM ci_leads l INNER JOIN ci_pipeline p ON p.lead_id = l.id AND p.pipeline_stage = 'lead' WHERE ({$sp['cond']}) AND ({$lead_scope})";
+				$row = $this->db->query($sql)->row_array();
+				$count = !empty($row['cnt']) ? (int)$row['cnt'] : 0;
+				$total += $count;
+				$items[] = array(
+					'label' => $sp['label'],
+					'count' => $count,
+					'color' => $sp['color'],
+					'percentage' => 0.0
+				);
+			}
+			foreach ($items as &$it) {
+				$it['percentage'] = $total > 0 ? round(($it['count'] / $total) * 100, 2) : 0.0;
+			}
+			return array(
+				'total' => $total,
+				'items' => $items
+			);
+		}
+
+		public function dashboard_myorder_donut_data($manager_id = 0){
+			if ($manager_id <= 0) {
+				$manager_id = (int)$this->session->userdata('manager_id');
+			}
+			$specs = array(
+				array('label' => 'Submitted', 'cond' => "O.status = 'Submitted'", 'color' => '#01509e'),
+				array('label' => 'Approved', 'cond' => "O.status = 'Approved'", 'color' => '#00a8f3'),
+				array('label' => 'In Progress', 'cond' => "O.status = 'In Progress'", 'color' => '#5c2bb1'),
+				array('label' => 'Onboarding', 'cond' => "O.status = 'Onboarding'", 'color' => '#6c7d93'),
+				array('label' => 'Under Review', 'cond' => "O.status = 'Under Review'", 'color' => '#eab308'),
+				array('label' => 'Completed', 'cond' => "O.status IN ('Completed', 'Fulfilled') AND (O.sales_ref_no IS NULL OR O.sales_ref_no = '') AND O.status != 'Sales'", 'color' => '#16a34a'),
+				array('label' => 'Sales', 'cond' => "O.status = 'Sales' OR (O.sales_ref_no IS NOT NULL AND O.sales_ref_no != '')", 'color' => '#00b69c'),
+				array('label' => 'Canceled', 'cond' => "O.status IN ('Cancelled', 'Canceled', 'Rejected', 'Lost')", 'color' => '#ff6b6b')
+			);
+			$order_scope = "(O.created_by = {$manager_id} OR O.assigned_to = {$manager_id})";
+
+			$items = array();
+			$total = 0;
+			foreach ($specs as $sp) {
+				$sql = "SELECT COUNT(O.id) as cnt FROM ci_orders O WHERE ({$sp['cond']}) AND ({$order_scope})";
+				$row = $this->db->query($sql)->row_array();
+				$count = !empty($row['cnt']) ? (int)$row['cnt'] : 0;
+				$total += $count;
+				$items[] = array(
+					'label' => $sp['label'],
+					'count' => $count,
+					'color' => $sp['color'],
+					'percentage' => 0.0
+				);
+			}
+			foreach ($items as &$it) {
+				$it['percentage'] = $total > 0 ? round(($it['count'] / $total) * 100, 2) : 0.0;
+			}
+			return array(
+				'total' => $total,
+				'items' => $items
+			);
+		}
+
 		public function dashboard_followups($type){
 			$manager_id= $this->session->userdata('manager_id');
 			$today = date('Y-m-d');
