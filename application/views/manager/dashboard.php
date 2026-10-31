@@ -114,6 +114,12 @@
 [data-theme="dark"] .dash-round-title {
     color: #f8fafc;
 }
+[data-theme="dark"] .donut-callout-text {
+    fill: #f1f5f9 !important;
+}
+[data-theme="dark"] .donut-slice {
+    stroke: #111827 !important;
+}
 </style>
 
 <div class="content-wrapper full-screen-dash">
@@ -122,14 +128,20 @@
 
     <div class="dash-content-body">
 
-<div id="donutHoverTooltip" style="display:none; position:fixed; z-index:99999; pointer-events:none; background:#110d29; color:#ffffff; border-radius:6px; padding:7px 11px; font-size:11.5px; box-shadow:0 8px 24px rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.15); line-height:1.35;">
-    <div style="font-size:10.5px; color:#94a3b8; margin-bottom:1px;" id="donutTipTitle">Status</div>
-    <div style="font-weight:700; font-size:12.5px; color:#ffffff;" id="donutTipVal">0 (0.0%)</div>
+<div id="donutHoverTooltip" style="display:none; position:fixed; z-index:99999; pointer-events:none; background:#12072b; color:#ffffff; border-radius:6px; padding:9px 13px; font-size:11.5px; box-shadow:0 10px 28px rgba(0,0,0,0.45); border:1px solid rgba(255,255,255,0.18); min-width:170px; line-height:1.4;">
+    <div style="display:flex; justify-content:space-between; margin-bottom:3px; gap:12px;">
+        <span style="color:#ffffff; font-weight:700;" id="donutTipTitle">Lead: Status</span>
+        <span style="color:#ffffff; font-weight:700;" id="donutTipStage">Busy</span>
+    </div>
+    <div style="display:flex; justify-content:space-between; gap:12px;">
+        <span style="color:#ffffff; font-weight:700;" id="donutTipType">Leads</span>
+        <span style="color:#ffffff; font-weight:700;" id="donutTipVal">0 (0.0%)</span>
+    </div>
 </div>
 
 <?php
 if (!function_exists('render_donut_chart_svg')) {
-    function render_donut_chart_svg($items, $w = 280, $h = 160, $cx = 140, $cy = 80, $r_out = 55, $r_in = 33, $type = 'Lead') {
+    function render_donut_chart_svg($items, $w = 280, $h = 164, $cx = 140, $cy = 82, $r_out = 56, $r_in = 33, $type = 'Lead') {
         $total = 0;
         foreach ($items as $it) {
             $total += (float)$it['count'];
@@ -170,8 +182,8 @@ if (!function_exists('render_donut_chart_svg')) {
             $tx = $p3_x + ($is_right ? 3 : -3);
             $ty = $p3_y + 3;
             $lbl = htmlspecialchars($it['label']) . ' ' . $display_pct;
-            $callouts .= sprintf('<polyline points="%.1f,%.1f %.1f,%.1f %.1f,%.1f" fill="none" stroke="#94a3b8" stroke-width="1" />', $p1_x, $p1_y, $p2_x, $p2_y, $p3_x, $p3_y);
-            $callouts .= sprintf('<text x="%.1f" y="%.1f" font-size="8.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="600" fill="#334155" text-anchor="%s">%s</text>', $tx, $ty, $anchor, $lbl);
+            $callouts .= sprintf('<polyline points="%.1f,%.1f %.1f,%.1f %.1f,%.1f" fill="none" stroke="#94a3b8" stroke-width="1.2" />', $p1_x, $p1_y, $p2_x, $p2_y, $p3_x, $p3_y);
+            $callouts .= sprintf('<text x="%.1f" y="%.1f" font-size="9" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="700" fill="#1e293b" class="donut-callout-text" text-anchor="%s">%s</text>', $tx, $ty, $anchor, $lbl);
             $current_angle = $next_angle;
         }
         return '<svg viewBox="0 0 ' . $w . ' ' . $h . '" width="100%" height="' . $h . '" xmlns="http://www.w3.org/2000/svg" style="display:block; margin:0 auto; overflow:visible;"><g>' . $paths . $callouts . '</g></svg>';
@@ -240,7 +252,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
 ?>
 
         <div class="row" style="margin-top: 4px; margin-bottom: 8px;">
-            <div class="col-lg-7 col-md-12 col-xs-12" style="padding-right: 6px;">
+            <div class="col-lg-8 col-md-7 col-xs-12" style="padding-left: 12px; padding-right: 8px;">
                 <div class="row" style="margin-left:-3px; margin-right:-3px;">
                     <div class="col-xs-3" style="padding-left:3px; padding-right:3px;">
                         <a href="<?php echo base_url(); ?>manager/leads" class="dash-kpi-card dash-kpi-col1" id="cardMyDatabase">
@@ -345,8 +357,8 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                             Target vs Achievement
                         </h4>
                         <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:12px; font-size:10.5px; font-weight:600; color:#475569;">
-                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#01509e; border-radius:50%;"></span> Target</span>
-                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#00c6f0; border-radius:50%;"></span> Achievement</span>
+                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#00c6f0; border-radius:50%;"></span> Target</span>
+                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#16a34a; border-radius:50%;"></span> Achievement</span>
                         </div>
                     </div>
                     <div class="dash-chart-body" style="padding:0;">
@@ -360,8 +372,8 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                             Target vs Projection
                         </h4>
                         <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:12px; font-size:10.5px; font-weight:600; color:#475569;">
-                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#01509e; border-radius:50%;"></span> Target</span>
-                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#00c6f0; border-radius:50%;"></span> Projection</span>
+                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#00c6f0; border-radius:50%;"></span> Target</span>
+                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#0072f0; border-radius:50%;"></span> Projection</span>
                         </div>
                     </div>
                     <div class="dash-chart-body" style="padding:0;">
@@ -370,24 +382,24 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                 </div>
             </div>
 
-            <div class="col-lg-5 col-md-12 col-xs-12" style="padding-left: 6px;">
-                <div class="dash-round-card" style="margin-bottom: 6px; padding: 8px 12px; border-radius: 8px; min-height: 200px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div class="col-lg-4 col-md-5 col-xs-12" style="padding-left: 8px; padding-right: 12px; display: flex; flex-direction: column; align-items: flex-end;">
+                <div class="dash-round-card" style="width: 100%; max-width: 290px; height: 206px; margin-bottom: 6px; padding: 8px 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
                     <div class="dash-round-title" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; font-size:12.5px; font-weight:700;">
                         <span>My Leads</span>
                         <span class="badge" style="background:#0072f0; color:#ffffff; font-size:10px; font-weight:600;"><?php echo isset($mylead_donut['total']) ? (int)$mylead_donut['total'] : 0; ?> Total</span>
                     </div>
-                    <div style="width:100%; display:flex; align-items:center; justify-content:center; flex:1;">
-                        <?php echo render_donut_chart_svg($lead_items, 280, 165, 140, 82, 54, 32, 'Lead'); ?>
+                    <div style="width:100%; display:flex; align-items:center; justify-content:center; flex:1; overflow:visible;">
+                        <?php echo render_donut_chart_svg($lead_items, 280, 164, 140, 82, 56, 33, 'Lead'); ?>
                     </div>
                 </div>
 
-                <div class="dash-round-card" style="margin-bottom: 0px; padding: 8px 12px; border-radius: 8px; min-height: 200px; display: flex; flex-direction: column; justify-content: space-between;">
+                <div class="dash-round-card" style="width: 100%; max-width: 290px; height: 206px; margin-bottom: 0px; padding: 8px 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
                     <div class="dash-round-title" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; font-size:12.5px; font-weight:700;">
                         <span>My Orders</span>
                         <span class="badge" style="background:#0072f0; color:#ffffff; font-size:10px; font-weight:600;"><?php echo isset($myorder_donut['total']) ? (int)$myorder_donut['total'] : 0; ?> Total</span>
                     </div>
-                    <div style="width:100%; display:flex; align-items:center; justify-content:center; flex:1;">
-                        <?php echo render_donut_chart_svg($order_items, 280, 165, 140, 82, 54, 32, 'Order'); ?>
+                    <div style="width:100%; display:flex; align-items:center; justify-content:center; flex:1; overflow:visible;">
+                        <?php echo render_donut_chart_svg($order_items, 280, 164, 140, 82, 56, 33, 'Order'); ?>
                     </div>
                 </div>
             </div>
@@ -1599,22 +1611,22 @@ $(function () {
             datasets: [
                 {
                     label: 'Target',
-                    fillColor: 'rgba(1, 80, 158, 0.08)',
-                    strokeColor: '#01509e',
-                    pointColor: '#01509e',
-                    pointStrokeColor: '#ffffff',
-                    pointHighlightFill: '#ffffff',
-                    pointHighlightStroke: '#01509e',
-                    data: (achieveTargetMy && achieveTargetMy.length > 0) ? achieveTargetMy : months.map(function(){ return 0; })
-                },
-                {
-                    label: 'Achievement',
                     fillColor: 'rgba(0, 198, 240, 0.08)',
                     strokeColor: '#00c6f0',
                     pointColor: '#00c6f0',
                     pointStrokeColor: '#ffffff',
                     pointHighlightFill: '#ffffff',
                     pointHighlightStroke: '#00c6f0',
+                    data: (achieveTargetMy && achieveTargetMy.length > 0) ? achieveTargetMy : months.map(function(){ return 0; })
+                },
+                {
+                    label: 'Achievement',
+                    fillColor: 'rgba(22, 163, 74, 0.08)',
+                    strokeColor: '#16a34a',
+                    pointColor: '#16a34a',
+                    pointStrokeColor: '#ffffff',
+                    pointHighlightFill: '#ffffff',
+                    pointHighlightStroke: '#16a34a',
                     data: (achieveDataMy && achieveDataMy.length > 0) ? achieveDataMy : months.map(function(){ return 0; })
                 }
             ]
@@ -1642,22 +1654,22 @@ $(function () {
             datasets: [
                 {
                     label: 'Target',
-                    fillColor: 'rgba(1, 80, 158, 0.08)',
-                    strokeColor: '#01509e',
-                    pointColor: '#01509e',
-                    pointStrokeColor: '#ffffff',
-                    pointHighlightFill: '#ffffff',
-                    pointHighlightStroke: '#01509e',
-                    data: projTargetData
-                },
-                {
-                    label: 'Projection',
                     fillColor: 'rgba(0, 198, 240, 0.08)',
                     strokeColor: '#00c6f0',
                     pointColor: '#00c6f0',
                     pointStrokeColor: '#ffffff',
                     pointHighlightFill: '#ffffff',
                     pointHighlightStroke: '#00c6f0',
+                    data: projTargetData
+                },
+                {
+                    label: 'Projection',
+                    fillColor: 'rgba(0, 114, 240, 0.08)',
+                    strokeColor: '#0072f0',
+                    pointColor: '#0072f0',
+                    pointStrokeColor: '#ffffff',
+                    pointHighlightFill: '#ffffff',
+                    pointHighlightStroke: '#0072f0',
                     data: myProData
                 }
             ]
@@ -1781,13 +1793,15 @@ $(function () {
         var count = $(this).attr('data-count');
         var pct = $(this).attr('data-pct');
         var type = $(this).attr('data-type') || 'Record';
-        $('#donutTipTitle').text(type + ' Status: ' + label);
+        $('#donutTipTitle').text(type + ': Status');
+        $('#donutTipStage').text(label);
+        $('#donutTipType').text(type + 's');
         $('#donutTipVal').text(count + ' (' + pct + ')');
         $('#donutHoverTooltip').show();
         $(this).attr('stroke', '#ffffff').attr('stroke-width', '3').css('opacity', '0.85');
     }).on('mousemove', '.donut-slice', function(e) {
         $('#donutHoverTooltip').css({
-            top: (e.clientY - 45) + 'px',
+            top: (e.clientY - 55) + 'px',
             left: (e.clientX + 15) + 'px'
         });
     }).on('mouseleave', '.donut-slice', function() {

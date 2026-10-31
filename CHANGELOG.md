@@ -2,6 +2,30 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.81.2] - 2026-10-31
+- **Timestamp**: 2026-10-31 18:05:00 +0530
+- **Author**: Reinhart-py
+- **Summary**: Refined dashboard upper section with square side cards aligned to Target vs Projection, calibrated graph colors to existing Target (Cyan #00c6f0) and Achievement (Green #16a34a), enlarged donut elements with bolder callout labels, and aligned multi-column hover tooltip to reference design.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Target vs Achievement & Projection Graph Colors (manager/dashboard.php)**:
+    - Calibrated lineChartTargetAchieve dataset colors to match existing CRM standards: Target is Cyan (#00c6f0) and Achievement is Green (#16a34a).
+    - Calibrated lineChartTargetProject dataset colors: Target is Cyan (#00c6f0) and Projection is Royal Blue (#0072f0).
+    - Updated legend color indicators to accurately match line strokes and point fills.
+  - **2. Square Side Cards & Right-Aligned Layout (manager/dashboard.php)**:
+    - Balanced upper section columns to col-lg-8 col-md-7 (left) and col-lg-4 col-md-5 (right).
+    - Shifted left-side content slightly right with padding-left: 12px; padding-right: 8px.
+    - Set right-side cards to square proportions (max-width: 290px; height: 206px;) right-aligned within col-lg-4.
+    - Total right height (206px + 6px + 206px = 418px) matches left column height (110px + 6px + 148px + 6px + 148px = 418px), aligning bottom borders to the exact pixel.
+  - **3. Enlarged Donut Elements & Bolder Callout Labels (manager/dashboard.php)**:
+    - Increased donut outer radius to 56px and inner radius to 33px in 
+ender_donut_chart_svg().
+    - Strengthened callout pointer lines (stroke-width: 1.2) and text typography (9px, ont-weight: 700, #1e293b).
+    - Added dark theme styling support for donut slice borders and callout text.
+  - **4. Reference-Aligned Multi-Column Hover Tooltip (manager/dashboard.php)**:
+    - Updated #donutHoverTooltip to a dual-row, two-column layout (Type: Status on left, stage on right; Types on left, count/percent on right).
+  - **5. Zero Comments Rule Compliance**:
+    - Confirmed zero comments across modified PHP files and verified syntax with php -l.
+
 ### [v1.81.1] - 2026-10-31
 - **Timestamp**: `2026-10-31 17:49:00 +0530`
 - **Author**: Reinhart-py
