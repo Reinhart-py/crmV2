@@ -2,6 +2,23 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.81.5] - 2026-10-31
+- **Timestamp**: `2026-10-31 18:47:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Added comprehensive, step-by-step cPanel production deployment and hosting guide to README.md covering PHP extensions, MySQL setup, database import from database/localhost.sql, Git and manual file upload, CodeIgniter 3 config, Apache .htaccess rewrite rules, directory permissions, SSL setup, cron automation, and troubleshooting.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Production Deployment & cPanel Guide (`README.md`)**:
+    - Step 1: MultiPHP Manager & MultiPHP INI Editor configuration (`PHP 7.4/8.1/8.2`, `max_input_vars = 5000`, `memory_limit = 256M`, extensions: `mysqli`, `curl`, `mbstring`, `json`, `openssl`, `gd`, `zip`, `xml`, `fileinfo`).
+    - Step 2: MySQL database and user creation with full privileges in cPanel.
+    - Step 3: Database schema import via phpMyAdmin using `database/localhost.sql`.
+    - Step 4: Codebase deployment methods (Git™ Version Control vs File Manager zip upload with dotfiles unhidden).
+    - Step 5: Application configuration (`application/config/database.php` and `application/config/config.php` for `base_url`, `index_page`, and session paths).
+    - Step 6: Apache `.htaccess` clean URL rewrite rules and HTTPS redirection.
+    - Step 7: Linux file permissions (`755` folders, `644` files, `775` writable cache/logs/uploads).
+    - Step 8: SSL / HTTPS activation via cPanel AutoSSL and Force HTTPS toggle.
+    - Step 9: Automated CRM cron jobs configuration.
+    - Step 10: Troubleshooting matrix for common cPanel issues (404 errors, mysqli errors, mixed content, login loops, 500 errors, max_input_vars truncation).
+
 ### [v1.81.4] - 2026-10-31
 - **Timestamp**: `2026-10-31 18:32:00 +0530`
 - **Author**: Reinhart-py
