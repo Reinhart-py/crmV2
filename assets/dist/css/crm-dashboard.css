@@ -1440,17 +1440,20 @@ ul.munk_menu > li > ul > li > a i {
   }
 }
 
-/* Android, Mobile & Tablet (max-width: 991px): 3-line hamburger bar on left, logo center, offcanvas drawer */
+/* Android, Mobile & Tablet (max-width: 991px): 3-line hamburger bar on far left, 7 Strokes logo directly beside it, actions right-aligned */
 @media (max-width: 991px) {
   .main-header-bar {
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
     justify-content: flex-start !important;
-    padding: 6px 14px !important;
-    min-height: 52px !important;
+    padding: 6px 12px !important;
+    min-height: 50px !important;
     position: relative !important;
-    gap: 10px !important;
+    gap: 8px !important;
+    flex-wrap: nowrap !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
   }
 
   .crm-mobile-hamburger,
@@ -1463,6 +1466,9 @@ ul.munk_menu > li > ul > li > a i {
     transform: none !important;
     margin: 0 !important;
     flex-shrink: 0 !important;
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 16px !important;
     z-index: 1010 !important;
     cursor: pointer !important;
     touch-action: manipulation !important;
@@ -1472,14 +1478,27 @@ ul.munk_menu > li > ul > li > a i {
   .main-header .main-logo {
     position: static !important;
     transform: none !important;
-    margin: 0 auto !important;
-    display: flex !important;
+    margin: 0 0 0 2px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
     align-items: center !important;
-    justify-content: center !important;
+    justify-content: flex-start !important;
+    flex-shrink: 0 !important;
+  }
+
+  .main-header .main-logo a {
+    display: inline-flex !important;
+    align-items: center !important;
+    text-decoration: none !important;
   }
 
   .main-header .main-logo img {
-    max-height: 44px !important;
+    max-height: 32px !important;
+    max-width: 110px !important;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
+    display: block !important;
   }
 
   /* Hide the horizontal pill menu on mobile/Android as requested */
@@ -1490,8 +1509,111 @@ ul.munk_menu > li > ul > li > a i {
   }
 
   .header-quick-actions {
-    right: 14px !important;
+    position: static !important;
+    transform: none !important;
+    top: auto !important;
+    right: auto !important;
+    margin-left: auto !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
+    z-index: 1010 !important;
+    white-space: nowrap !important;
   }
+
+  .header-quick-actions .live-nav-badge {
+    padding: 3px 8px !important;
+    font-size: 11px !important;
+    letter-spacing: 0.04em !important;
+    margin-right: 4px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .header-quick-actions .global-theme-btn {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 12px !important;
+    margin-right: 2px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .header-quick-actions .notif-dropdown-wrap {
+    margin-right: 2px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .header-quick-actions .profile-avatar-btn {
+    width: 28px !important;
+    height: 28px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .header-quick-actions .profile-avatar-img {
+    width: 28px !important;
+    height: 28px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-header-bar {
+    padding: 4px 8px !important;
+    gap: 6px !important;
+  }
+
+  .crm-mobile-hamburger,
+  #crmMobileHamburger {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 14px !important;
+  }
+
+  .main-header .main-logo img {
+    max-height: 28px !important;
+    max-width: 95px !important;
+  }
+
+  .header-quick-actions {
+    gap: 4px !important;
+  }
+
+  .header-quick-actions .live-nav-badge {
+    padding: 2px 6px !important;
+    font-size: 10.5px !important;
+    margin-right: 2px !important;
+  }
+
+  .header-quick-actions .global-theme-btn {
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 11px !important;
+    margin-right: 1px !important;
+  }
+
+  .header-quick-actions .profile-avatar-btn,
+  .header-quick-actions .profile-avatar-img {
+    width: 26px !important;
+    height: 26px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .main-header-bar {
+    padding: 4px 6px !important;
+    gap: 4px !important;
+  }
+
+  .main-header .main-logo img {
+    max-height: 25px !important;
+    max-width: 80px !important;
+  }
+
+  .header-quick-actions .live-nav-badge {
+    padding: 2px 5px !important;
+    font-size: 10px !important;
+  }
+}
 
   /* AdminLTE Offcanvas Drawer Sidebar on Mobile */
   .main-sidebar {

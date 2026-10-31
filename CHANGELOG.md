@@ -2,6 +2,21 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.80.5] - 2026-10-31
+- **Timestamp**: `2026-10-31 15:02:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Resolved mobile/Android top navigation bar overlapping issue; positioned the 7 Strokes logo directly beside the 3-line hamburger sidebar toggle button (`#crmMobileHamburger`) and pushed quick actions (LIVE badge, call button, notifications, theme toggle, and profile avatar) cleanly to the right with non-overlapping flexbox flow and responsive scaling down to 320px screens.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Mobile Header Alignment (`assets/dist/css/crm-dashboard.css`)**:
+    - Replaced centered `margin: 0 auto` on `.main-logo` with `display: inline-flex; margin: 0 0 0 2px; flex-shrink: 0;` so the 7 Strokes logo sits directly beside the 3-line hamburger menu (`.crm-mobile-hamburger`).
+    - Changed `.header-quick-actions` on mobile (`@media (max-width: 991px)`) from absolute positioning to flex layout with `margin-left: auto; position: static;`, ensuring it naturally stays aligned to the far right without colliding with or overlapping the logo.
+    - Set responsive logo image sizing (`max-height: 32px; max-width: 110px`) on tablets and mobile, scaling to `max-height: 28px; max-width: 95px` on screens `<= 480px` and `max-height: 25px; max-width: 80px` on screens `<= 360px`.
+    - Compacted padding and action icon sizes on mobile screens to ensure plenty of breathing room for all buttons (LIVE badge, dialer shortcut, notifications, theme toggle, and profile avatar).
+  - **2. CSS Cache Busting (`application/views/manager/elements/header.php`)**:
+    - Bumped `crm-dashboard.css` version query parameter from `v=20261031_v1800` to `v=20261031_v1805` to guarantee instant client-side asset refresh.
+  - **3. Zero Comments Rule Compliance**:
+    - Confirmed zero comments in `header.php` and verified PHP syntax with `php -l`.
+
 ### [v1.80.4] - 2026-10-31
 - **Timestamp**: `2026-10-31 14:02:00 +0530`
 - **Author**: Reinhart-py
