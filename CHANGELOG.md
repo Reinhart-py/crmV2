@@ -1,3 +1,14 @@
+## [2026-10-31] - Dashboard UI & Layout Calibration (First-Frame Fit & Baseline Alignment)
+### Changed
+- **Upper Dashboard Sizing & 100% Zoom Fit**: Calibrated heights across top KPI cards (52px), Target vs Achievement / Projection cards (180px, 145px canvas), and My Leads / My Orders cards (238px) so the entire upper section fits within the initial desktop frame without scrolling.
+- **Exact Pixel Baseline Alignment**: Aligned the bottom border of Target vs Projection with My Orders on the exact horizontal baseline (482px total height on both left and right sides).
+- **Larger Donut Charts in My Leads & My Orders**: Expanded SVG donut outer radius to 64px (128px diameter) with inner radius of 38px, utilizing card width without overflowing.
+- **Outside Donut Labels**: Streamlined outside labels to display Status and actual count (e.g. Busy: 0, DNCR: 0), omitting percentage from outside callouts.
+- **Hover-Only Percentage Display**: Positioned percentages exclusively inside the dark floating tooltip on hover, displaying status, count, and percentage (e.g. 12 (15.20%)).
+- **Clean Meta Headers in Side Cards**: Removed solid blue pill background from top-right corner of My Leads and My Orders; replaced with sleek, transparent typography showing total count, sales value, and cash received.
+- **Top 4 Cards Display**: Removed the word 'Sales:' from My Leads, My Orders, Team Leads, and Team Orders; directly displays the user's currency and formatted value (e.g. AED 0.00).
+- **Dynamic User Currency & Cash Received Integration**: Added currency schema support to ci_user with automatic database migration, passed user currency to the view, and integrated real cash received aggregation from ci_payments.
+
 # Changelog
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.

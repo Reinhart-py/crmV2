@@ -6,10 +6,10 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    min-height: 52px;
-    height: 52px;
-    border-radius: 7px !important;
-    padding: 6px 10px !important;
+    min-height: 60px;
+    height: 60px;
+    border-radius: 8px !important;
+    padding: 7px 12px !important;
     color: #ffffff !important;
     margin-bottom: 6px;
     overflow: hidden;
@@ -110,8 +110,8 @@
     border: 1px solid #e2e8f0 !important;
     border-top: 2px solid #0084ff !important;
     border-radius: 8px !important;
-    padding: 5px 10px !important;
-    margin-bottom: 6px !important;
+    padding: 6px 12px !important;
+    margin-bottom: 8px !important;
     box-shadow: 0 1px 3px rgba(0,0,0,0.03) !important;
     overflow: hidden !important;
 }
@@ -121,14 +121,14 @@
 }
 .dash-top-chart-body {
     position: relative !important;
-    height: 145px !important;
-    max-height: 145px !important;
+    height: 184px !important;
+    max-height: 184px !important;
     padding: 0 !important;
     overflow: hidden !important;
 }
 .dash-top-chart-body canvas {
-    height: 145px !important;
-    max-height: 145px !important;
+    height: 184px !important;
+    max-height: 184px !important;
     width: 100% !important;
 }
 [data-theme="dark"] .dash-round-meta {
@@ -178,7 +178,7 @@
 
 <?php
 if (!function_exists('render_donut_chart_svg')) {
-    function render_donut_chart_svg($items, $w = 380, $h = 195, $cx = 190, $cy = 98, $r_out = 64, $r_in = 38, $type = 'Lead') {
+    function render_donut_chart_svg($items, $w = 380, $h = 240, $cx = 190, $cy = 120, $r_out = 76, $r_in = 46, $type = 'Lead') {
         $total = 0;
         foreach ($items as $it) {
             $total += (float)$it['count'];
@@ -389,67 +389,59 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                     </div>
                 </div>
 
-                <div class="dash-top-chart-card" style="height: 180px; max-height: 180px; margin-bottom: 6px; padding: 5px 10px; border-radius: 8px; box-sizing: border-box;">
+                <div class="dash-top-chart-card" style="height: 222px; max-height: 222px; margin-bottom: 8px; padding: 6px 12px; border-radius: 8px; box-sizing: border-box;">
                     <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important; margin-bottom: 2px !important; padding:2px 0 !important; border-bottom:none !important;">
-                        <h4 class="dash-chart-title" style="margin:0 !important; font-size:12px; font-weight:700;">
+                        <h4 class="dash-chart-title" style="margin:0 !important; font-size:12.5px; font-weight:700;">
                             Target vs Achievement
                         </h4>
-                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:10px; font-size:10px; font-weight:600; color:#475569;">
-                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:7px; height:7px; background-color:#00c6f0; border-radius:50%;"></span> Target</span>
-                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:7px; height:7px; background-color:#16a34a; border-radius:50%;"></span> Achievement</span>
+                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:10px; font-size:10.5px; font-weight:600; color:#475569;">
+                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#00c6f0; border-radius:50%;"></span> Target</span>
+                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#16a34a; border-radius:50%;"></span> Achievement</span>
                         </div>
                     </div>
-                    <div class="dash-top-chart-body" style="height: 145px !important; max-height: 145px !important;">
-                        <canvas id="lineChartTargetAchieve" height="145"></canvas>
+                    <div class="dash-top-chart-body" style="height: 184px !important; max-height: 184px !important;">
+                        <canvas id="lineChartTargetAchieve" height="184"></canvas>
                     </div>
                 </div>
 
-                <div class="dash-top-chart-card" style="height: 180px; max-height: 180px; margin-bottom: 0px; padding: 5px 10px; border-radius: 8px; box-sizing: border-box;">
+                <div class="dash-top-chart-card" style="height: 222px; max-height: 222px; margin-bottom: 0px; padding: 6px 12px; border-radius: 8px; box-sizing: border-box;">
                     <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important; margin-bottom: 2px !important; padding:2px 0 !important; border-bottom:none !important;">
-                        <h4 class="dash-chart-title" style="margin:0 !important; font-size:12px; font-weight:700;">
+                        <h4 class="dash-chart-title" style="margin:0 !important; font-size:12.5px; font-weight:700;">
                             Target vs Projection
                         </h4>
-                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:10px; font-size:10px; font-weight:600; color:#475569;">
-                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:7px; height:7px; background-color:#00c6f0; border-radius:50%;"></span> Target</span>
-                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:7px; height:7px; background-color:#0072f0; border-radius:50%;"></span> Projection</span>
+                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:10px; font-size:10.5px; font-weight:600; color:#475569;">
+                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#00c6f0; border-radius:50%;"></span> Target</span>
+                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#0072f0; border-radius:50%;"></span> Projection</span>
                         </div>
                     </div>
-                    <div class="dash-top-chart-body" style="height: 145px !important; max-height: 145px !important;">
-                        <canvas id="lineChartTargetProject" height="145"></canvas>
+                    <div class="dash-top-chart-body" style="height: 184px !important; max-height: 184px !important;">
+                        <canvas id="lineChartTargetProject" height="184"></canvas>
                     </div>
                 </div>
             </div>
 
             <div class="col-lg-4 col-md-5 col-xs-12" style="padding-left: 6px; padding-right: 10px;">
-                <div class="dash-round-card" style="width: 100%; height: 238px; max-height: 238px; margin-bottom: 6px; padding: 6px 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
+                <div class="dash-round-card" style="width: 100%; height: 289px; max-height: 289px; margin-bottom: 8px; padding: 8px 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
                     <div class="dash-round-title" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0; font-size:13px; font-weight:700;">
                         <span>My Leads</span>
-                        <div class="dash-round-meta" style="display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:#64748b;">
+                        <div class="dash-round-meta" style="display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; color:#64748b;">
                             <span><strong style="color:#0f172a; font-weight:700;"><?php echo isset($mylead_donut['total']) ? (int)$mylead_donut['total'] : 0; ?></strong> Total</span>
-                            <span style="color:#cbd5e1;">&bull;</span>
-                            <span>Sales: <strong style="color:#0f172a; font-weight:700;"><?php echo $curr . ' ' . number_format((float)(isset($dashboard_count['sales_amount']) ? $dashboard_count['sales_amount'] : 0), 2); ?></strong></span>
-                            <span style="color:#cbd5e1;">&bull;</span>
-                            <span>Received: <strong style="color:#0f172a; font-weight:700;"><?php echo $curr . ' ' . number_format((float)(isset($dashboard_count['cash_received']) ? $dashboard_count['cash_received'] : 0), 2); ?></strong></span>
                         </div>
                     </div>
                     <div style="width:100%; display:flex; align-items:center; justify-content:center; flex:1; overflow:visible;">
-                        <?php echo render_donut_chart_svg($lead_items, 380, 195, 190, 98, 64, 38, 'Lead'); ?>
+                        <?php echo render_donut_chart_svg($lead_items, 380, 240, 190, 120, 76, 46, 'Lead'); ?>
                     </div>
                 </div>
 
-                <div class="dash-round-card" style="width: 100%; height: 238px; max-height: 238px; margin-bottom: 0px; padding: 6px 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
+                <div class="dash-round-card" style="width: 100%; height: 289px; max-height: 289px; margin-bottom: 0px; padding: 8px 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
                     <div class="dash-round-title" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0; font-size:13px; font-weight:700;">
                         <span>My Orders</span>
-                        <div class="dash-round-meta" style="display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:#64748b;">
+                        <div class="dash-round-meta" style="display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; color:#64748b;">
                             <span><strong style="color:#0f172a; font-weight:700;"><?php echo isset($myorder_donut['total']) ? (int)$myorder_donut['total'] : 0; ?></strong> Total</span>
-                            <span style="color:#cbd5e1;">&bull;</span>
-                            <span>Sales: <strong style="color:#0f172a; font-weight:700;"><?php echo $curr . ' ' . number_format((float)(isset($dashboard_count['sales_amount']) ? $dashboard_count['sales_amount'] : 0), 2); ?></strong></span>
-                            <span style="color:#cbd5e1;">&bull;</span>
-                            <span>Received: <strong style="color:#0f172a; font-weight:700;"><?php echo $curr . ' ' . number_format((float)(isset($dashboard_count['cash_received']) ? $dashboard_count['cash_received'] : 0), 2); ?></strong></span>
                         </div>
                     </div>
                     <div style="width:100%; display:flex; align-items:center; justify-content:center; flex:1; overflow:visible;">
-                        <?php echo render_donut_chart_svg($order_items, 380, 195, 190, 98, 64, 38, 'Order'); ?>
+                        <?php echo render_donut_chart_svg($order_items, 380, 240, 190, 120, 76, 46, 'Order'); ?>
                     </div>
                 </div>
             </div>
