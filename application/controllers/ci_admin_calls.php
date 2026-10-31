@@ -255,7 +255,11 @@ class Ci_admin_calls extends CI_Controller
 
 		if ($type === 'followup') {
 			$this->db->where('(P.pipeline_stage = "database" OR P.pipeline_stage IS NULL)');
-			if ($filter === 'last7') {
+			if ($filter === 'missed' || $filter === 'all_missed') {
+				$this->db->where('A.followup_date <', $today);
+				$this->db->where('A.followup_date !=', '');
+				$this->db->where('A.followup_date !=', '0000-00-00');
+			} elseif ($filter === 'last7') {
 				$this->db->where('A.followup_date <', $today);
 				$this->db->where('A.followup_date >=', $last_date);
 				$this->db->where('A.followup_date !=', '');

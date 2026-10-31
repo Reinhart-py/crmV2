@@ -6,11 +6,11 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-height: 110px;
+    min-height: 80px;
     border-radius: 14px !important;
     padding: 0 !important;
     color: #ffffff !important;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
     overflow: hidden;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
@@ -64,29 +64,29 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    padding: 16px 20px 12px 20px;
+    padding: 10px 16px 8px 16px;
 }
 .dash-kpi-value {
-    font-size: 34px;
+    font-size: 24px;
     font-weight: 700;
     line-height: 1.1;
     letter-spacing: -0.02em;
 }
 .dash-kpi-label {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 500;
-    margin-top: 4px;
+    margin-top: 2px;
     opacity: 0.95;
     text-transform: capitalize;
 }
 .dash-kpi-sales {
-    font-size: 11.5px;
+    font-size: 10.5px;
     font-weight: 600;
-    margin-top: 4px;
+    margin-top: 2px;
     opacity: 0.95;
 }
 .dash-kpi-icon {
-    font-size: 40px;
+    font-size: 26px;
     line-height: 1;
     opacity: 0.32;
     transition: transform 0.2s ease, opacity 0.2s ease;
@@ -99,7 +99,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 20px 10px 20px;
+    padding: 5px 16px 6px 16px;
     border-top: 1px solid rgba(255, 255, 255, 0.18);
     font-size: 11.5px;
     font-weight: 600;
@@ -137,16 +137,7 @@
 
 <div class="content-wrapper full-screen-dash">
 
-    <div class="dash-header-bar">
-        <h1 class="dash-header-title">
-            <svg class="crm-svg-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0072f0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-3px; margin-right:8px;"><rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect></svg> Dashboard
-        </h1>
-        <div>
-            <button type="button" class="dash-theme-btn" id="dashThemeToggle" title="Toggle Light / Dark Mode">
-                <i class="fa fa-moon-o"></i> <span>Dark / Light Mode</span>
-            </button>
-        </div>
-    </div>
+    
 
     <div class="dash-content-body">
 
@@ -285,169 +276,7 @@
                 </a>
             </div>
         </div>
-
-        <div class="row" style="margin-top: 10px;">
-            <div class="col-md-6 col-xs-12">
-                <div class="dash-round-card">
-                    <h4 class="dash-round-title">Sales pipeline</h4>
-                    <div style="width:100%; min-height:280px; display:flex; align-items:center; justify-content:center;">
-                        <svg viewBox="0 0 380 320" width="100%" height="280" style="max-height:280px; display:block; margin:0 auto;" xmlns="http://www.w3.org/2000/svg">
-                            <g>
-                                <path d="M 190.0 45.0 A 105 105 0 0 1 293.4 168.7 L 253.0 162.3 A 64 64 0 0 0 190.0 86.0 Z" fill="#01509e" stroke="#ffffff" stroke-width="1.5" />
-                                <path d="M 293.4 168.7 A 105 105 0 0 1 190.1 255.0 L 190.1 214.0 A 64 64 0 0 0 253.0 162.3 Z" fill="#00a8f3" stroke="#ffffff" stroke-width="1.5" />
-                                <path d="M 190.1 255.0 A 105 105 0 0 1 92.0 187.8 L 130.3 173.0 A 64 64 0 0 0 190.1 214.0 Z" fill="#5c2bb1" stroke="#ffffff" stroke-width="1.5" />
-                                <path d="M 92.0 187.8 A 105 105 0 0 1 103.3 90.8 L 137.2 114.0 A 64 64 0 0 0 130.3 173.0 Z" fill="#6c7d93" stroke="#ffffff" stroke-width="1.5" />
-                                <path d="M 103.3 90.8 A 105 105 0 0 1 156.0 50.7 L 169.3 89.5 A 64 64 0 0 0 137.2 114.0 Z" fill="#ff6b6b" stroke="#ffffff" stroke-width="1.5" />
-                                <path d="M 156.0 50.7 A 105 105 0 0 1 190.0 45.0 L 190.0 86.0 A 64 64 0 0 0 169.3 89.5 Z" fill="#00b69c" stroke="#ffffff" stroke-width="1.5" />
-                                <polyline points="272.7,81.1 285.7,70.1 305.7,70.1" fill="none" stroke="#94a3b8" stroke-width="1" />
-                                <text x="309.7" y="73.6" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="start">Lead In 26.85%</text>
-                                <polyline points="259.1,232.8 269.9,245.8 289.9,245.8" fill="none" stroke="#94a3b8" stroke-width="1" />
-                                <text x="293.9" y="249.3" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="start">Closed Lost 21.32%</text>
-                                <polyline points="129.1,239.1 119.5,253.1 99.5,253.1" fill="none" stroke="#94a3b8" stroke-width="1" />
-                                <text x="95.5" y="256.6" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="end">Contact Made 18.46%</text>
-                                <polyline points="83.0,137.6 66.1,135.8 46.1,135.8" fill="none" stroke="#94a3b8" stroke-width="1" />
-                                <text x="42.1" y="139.3" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="end">Interview 14.85%</text>
-                                <polyline points="124.7,64.3 114.4,50.8 94.4,50.8" fill="none" stroke="#94a3b8" stroke-width="1" />
-                                <text x="90.4" y="54.3" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="end">Proposal 9.84%</text>
-                                <polyline points="172.3,43.7 169.5,26.9 149.5,26.9" fill="none" stroke="#94a3b8" stroke-width="1" />
-                                <text x="145.5" y="30.4" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="end">Negotiation 5.06%</text>
-                            </g>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-xs-12">
-                <div class="dash-round-card">
-                    <h4 class="dash-round-title">Deal loss reasons</h4>
-                    <div style="width:100%; min-height:280px; display:flex; align-items:center; justify-content:center;">
-                        <svg viewBox="0 0 380 320" width="100%" height="280" style="max-height:280px; display:block; margin:0 auto;" xmlns="http://www.w3.org/2000/svg">
-                            <g>
-                                <path d="M 190.0 45.0 A 105 105 0 0 1 282.1 200.4 L 246.1 180.7 A 64 64 0 0 0 190.0 86.0 Z" fill="#01509e" stroke="#ffffff" stroke-width="1.5" />
-                                <path d="M 282.1 200.4 A 105 105 0 0 1 163.5 251.6 L 173.8 211.9 A 64 64 0 0 0 246.1 180.7 Z" fill="#00a8f3" stroke="#ffffff" stroke-width="1.5" />
-                                <path d="M 163.5 251.6 A 105 105 0 0 1 86.3 166.3 L 126.8 160.0 A 64 64 0 0 0 173.8 211.9 Z" fill="#5c2bb1" stroke="#ffffff" stroke-width="1.5" />
-                                <path d="M 86.3 166.3 A 105 105 0 0 1 111.7 80.2 L 142.4 107.5 A 64 64 0 0 0 126.8 160.0 Z" fill="#6c7d93" stroke="#ffffff" stroke-width="1.5" />
-                                <path d="M 111.7 80.2 A 105 105 0 0 1 190.0 45.0 L 190.0 86.0 A 64 64 0 0 0 142.4 107.5 Z" fill="#ff6b6b" stroke="#ffffff" stroke-width="1.5" />
-                                <polyline points="282.6,95.1 297.2,86.5 317.2,86.5" fill="none" stroke="#94a3b8" stroke-width="1" />
-                                <text x="321.2" y="90.0" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="start">Feature limitations 32.97%</text>
-                                <polyline points="232.7,249.0 239.3,264.6 259.3,264.6" fill="none" stroke="#94a3b8" stroke-width="1" />
-                                <text x="263.3" y="268.1" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="start">Budget constraints 21.1%</text>
-                                <polyline points="110.1,222.4 97.5,233.8 77.5,233.8" fill="none" stroke="#94a3b8" stroke-width="1" />
-                                <text x="73.5" y="237.3" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="end">Price too high 18.46%</text>
-                                <polyline points="86.6,119.7 70.3,114.9 50.3,114.9" fill="none" stroke="#94a3b8" stroke-width="1" />
-                                <text x="46.3" y="118.4" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="end">Better alter... 14.07%</text>
-                                <polyline points="146.0,51.7 139.0,36.2 119.0,36.2" fill="none" stroke="#94a3b8" stroke-width="1" />
-                                <text x="115.0" y="39.7" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="end">Lack of urgency 13.41%</text>
-                            </g>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="dash-section-divider" style="margin-top: 10px; margin-bottom: 12px;">
-            <h3 class="dash-section-title" style="margin-bottom:0;">
-                <span class="dash-section-title-icon">
-                    <span></span><span></span>
-                </span>
-                <span>Achievement and Projection</span>
-            </h3>
-        </div>
-
-        <div class="row">
-            <div class="col-md-6 col-xs-12">
-                <div class="dash-chart-card">
-                    <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important;">
-                        <h4 class="dash-chart-title" style="margin:0 !important; margin-right:20px !important;">
-                            <i class="fa fa-bar-chart"></i> My Achievement
-                        </h4>
-                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:16px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
-                            <span style="display:inline-flex; align-items:center; gap:6px;">
-                                <span style="display:inline-block; width:10px; height:10px; background-color:#0072f0; border-radius:2px;"></span>
-                                <span>Target</span>
-                            </span>
-                            <span style="display:inline-flex; align-items:center; gap:6px;">
-                                <span style="display:inline-block; width:10px; height:10px; background-color:#16a34a; border-radius:2px;"></span>
-                                <span>Achieved</span>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="dash-chart-body">
-                        <canvas id="barChartAchieveMy" height="230"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-xs-12">
-                <div class="dash-chart-card">
-                    <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important;">
-                        <h4 class="dash-chart-title" style="margin:0 !important; margin-right:20px !important;">
-                            <i class="fa fa-bar-chart"></i> Team Achievement
-                        </h4>
-                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:16px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
-                            <span style="display:inline-flex; align-items:center; gap:6px;">
-                                <span style="display:inline-block; width:10px; height:10px; background-color:#0072f0; border-radius:2px;"></span>
-                                <span>Target</span>
-                            </span>
-                            <span style="display:inline-flex; align-items:center; gap:6px;">
-                                <span style="display:inline-block; width:10px; height:10px; background-color:#16a34a; border-radius:2px;"></span>
-                                <span>Achieved</span>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="dash-chart-body">
-                        <canvas id="barChartAchieveTeam" height="230"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="dash-section-divider" style="margin-top: 14px; margin-bottom: 12px;">
-            <h3 class="dash-section-title" style="margin-bottom:0;">
-                <span class="dash-section-title-icon">
-                    <span></span><span></span>
-                </span>
-                <span>My Projection and Team Projection</span>
-            </h3>
-        </div>
-
-        <div class="row">
-            <div class="col-md-6 col-xs-12">
-                <div class="dash-chart-card">
-                    <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important;">
-                        <h4 class="dash-chart-title" style="margin:0 !important; margin-right:20px !important;">
-                            <i class="fa fa-line-chart"></i> My Projection
-                        </h4>
-                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
-                            <span style="display:inline-block; width:10px; height:10px; background-color:#0072f0; border-radius:2px;"></span>
-                            <span>Projection</span>
-                        </div>
-                    </div>
-                    <div class="dash-chart-body">
-                        <canvas id="barChart2" height="230"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-xs-12">
-                <div class="dash-chart-card">
-                    <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important;">
-                        <h4 class="dash-chart-title" style="margin:0 !important; margin-right:20px !important;">
-                            <i class="fa fa-line-chart"></i> Team Projection
-                        </h4>
-                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
-                            <span style="display:inline-block; width:10px; height:10px; background-color:#0072f0; border-radius:2px;"></span>
-                            <span>Projection</span>
-                        </div>
-                    </div>
-                    <div class="dash-chart-body">
-                        <canvas id="barChart4" height="230"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <?php
+<?php
             $my_db_total = 0;
             if (!empty($dashboard_db_state)) {
                 foreach($dashboard_db_state as $item) {
@@ -490,7 +319,106 @@
             }
         ?>
 
-        <div class="dash-section-divider" style="margin-top: 18px; margin-bottom: 12px;">
+        <div class="row" style="margin-top: 10px;">
+            <div class="col-md-6 col-xs-12">
+                <div class="dash-chart-card" style="margin-bottom: 14px;">
+                    <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important;">
+                        <h4 class="dash-chart-title" style="margin:0 !important; font-size:14px; font-weight:700;">
+                            Target vs Achievement
+                        </h4>
+                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:12px; font-size:11px; font-weight:600; color:#475569;">
+                            <span style="display:inline-flex; align-items:center; gap:5px;"><span style="display:inline-block; width:9px; height:9px; background-color:#01509e; border-radius:50%;"></span> Target</span>
+                            <span style="display:inline-flex; align-items:center; gap:5px;"><span style="display:inline-block; width:9px; height:9px; background-color:#00c6f0; border-radius:50%;"></span> Achieved</span>
+                        </div>
+                    </div>
+                    <div class="dash-chart-body" style="padding:10px 14px;">
+                        <canvas id="lineChartTargetAchieve" height="200"></canvas>
+                    </div>
+                </div>
+
+                <div class="dash-chart-card" style="margin-bottom: 14px;">
+                    <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important;">
+                        <h4 class="dash-chart-title" style="margin:0 !important; font-size:14px; font-weight:700;">
+                            Target vs Projection
+                        </h4>
+                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:12px; font-size:11px; font-weight:600; color:#475569;">
+                            <span style="display:inline-flex; align-items:center; gap:5px;"><span style="display:inline-block; width:9px; height:9px; background-color:#01509e; border-radius:50%;"></span> Target</span>
+                            <span style="display:inline-flex; align-items:center; gap:5px;"><span style="display:inline-block; width:9px; height:9px; background-color:#00c6f0; border-radius:50%;"></span> Projected</span>
+                        </div>
+                    </div>
+                    <div class="dash-chart-body" style="padding:10px 14px;">
+                        <canvas id="lineChartTargetProject" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xs-12">
+                <div class="dash-round-card" style="margin-bottom: 14px;">
+                    <h4 class="dash-round-title" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                        <span style="display:flex; align-items:center; gap:6px;">
+                            <i class="fa fa-bullseye" style="color:#0072f0;"></i> My Lead
+                        </span>
+                        <span class="badge" style="background:#0072f0; color:#ffffff; font-size:11px; font-weight:600;"><?php echo number_format($my_lead_total); ?> Total</span>
+                    </h4>
+                    <div style="width:100%; min-height:200px; display:flex; align-items:center; justify-content:center;">
+                        <svg viewBox="0 0 380 320" width="100%" height="200" style="max-height:200px; display:block; margin:0 auto;" xmlns="http://www.w3.org/2000/svg">
+                            <g>
+                                <path d="M 190.0 45.0 A 105 105 0 0 1 293.4 168.7 L 253.0 162.3 A 64 64 0 0 0 190.0 86.0 Z" fill="#01509e" stroke="#ffffff" stroke-width="1.5" />
+                                <path d="M 293.4 168.7 A 105 105 0 0 1 190.1 255.0 L 190.1 214.0 A 64 64 0 0 0 253.0 162.3 Z" fill="#00a8f3" stroke="#ffffff" stroke-width="1.5" />
+                                <path d="M 190.1 255.0 A 105 105 0 0 1 92.0 187.8 L 130.3 173.0 A 64 64 0 0 0 190.1 214.0 Z" fill="#5c2bb1" stroke="#ffffff" stroke-width="1.5" />
+                                <path d="M 92.0 187.8 A 105 105 0 0 1 103.3 90.8 L 137.2 114.0 A 64 64 0 0 0 130.3 173.0 Z" fill="#6c7d93" stroke="#ffffff" stroke-width="1.5" />
+                                <path d="M 103.3 90.8 A 105 105 0 0 1 156.0 50.7 L 169.3 89.5 A 64 64 0 0 0 137.2 114.0 Z" fill="#ff6b6b" stroke="#ffffff" stroke-width="1.5" />
+                                <path d="M 156.0 50.7 A 105 105 0 0 1 190.0 45.0 L 190.0 86.0 A 64 64 0 0 0 169.3 89.5 Z" fill="#00b69c" stroke="#ffffff" stroke-width="1.5" />
+                                <polyline points="272.7,81.1 285.7,70.1 305.7,70.1" fill="none" stroke="#94a3b8" stroke-width="1" />
+                                <text x="309.7" y="73.6" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="start">Lead In 26.85%</text>
+                                <polyline points="259.1,232.8 269.9,245.8 289.9,245.8" fill="none" stroke="#94a3b8" stroke-width="1" />
+                                <text x="293.9" y="249.3" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="start">Closed Lost 21.32%</text>
+                                <polyline points="129.1,239.1 119.5,253.1 99.5,253.1" fill="none" stroke="#94a3b8" stroke-width="1" />
+                                <text x="95.5" y="256.6" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="end">Contact Made 18.46%</text>
+                                <polyline points="83.0,137.6 66.1,135.8 46.1,135.8" fill="none" stroke="#94a3b8" stroke-width="1" />
+                                <text x="42.1" y="139.3" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="end">Interview 14.85%</text>
+                                <polyline points="124.7,64.3 114.4,50.8 94.4,50.8" fill="none" stroke="#94a3b8" stroke-width="1" />
+                                <text x="90.4" y="54.3" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="end">Proposal 9.84%</text>
+                                <polyline points="172.3,43.7 169.5,26.9 149.5,26.9" fill="none" stroke="#94a3b8" stroke-width="1" />
+                                <text x="145.5" y="30.4" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="end">Negotiation 5.06%</text>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="dash-round-card" style="margin-bottom: 14px;">
+                    <h4 class="dash-round-title" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                        <span style="display:flex; align-items:center; gap:6px;">
+                            <i class="fa fa-shopping-cart" style="color:#0072f0;"></i> My Order
+                        </span>
+                        <span class="badge" style="background:#0072f0; color:#ffffff; font-size:11px; font-weight:600;"><?php echo number_format($my_order_total); ?> Total</span>
+                    </h4>
+                    <div style="width:100%; min-height:200px; display:flex; align-items:center; justify-content:center;">
+                        <svg viewBox="0 0 380 320" width="100%" height="200" style="max-height:200px; display:block; margin:0 auto;" xmlns="http://www.w3.org/2000/svg">
+                            <g>
+                                <path d="M 190.0 45.0 A 105 105 0 0 1 282.1 200.4 L 246.1 180.7 A 64 64 0 0 0 190.0 86.0 Z" fill="#01509e" stroke="#ffffff" stroke-width="1.5" />
+                                <path d="M 282.1 200.4 A 105 105 0 0 1 163.5 251.6 L 173.8 211.9 A 64 64 0 0 0 246.1 180.7 Z" fill="#00a8f3" stroke="#ffffff" stroke-width="1.5" />
+                                <path d="M 163.5 251.6 A 105 105 0 0 1 86.3 166.3 L 126.8 160.0 A 64 64 0 0 0 173.8 211.9 Z" fill="#5c2bb1" stroke="#ffffff" stroke-width="1.5" />
+                                <path d="M 86.3 166.3 A 105 105 0 0 1 111.7 80.2 L 142.4 107.5 A 64 64 0 0 0 126.8 160.0 Z" fill="#6c7d93" stroke="#ffffff" stroke-width="1.5" />
+                                <path d="M 111.7 80.2 A 105 105 0 0 1 190.0 45.0 L 190.0 86.0 A 64 64 0 0 0 142.4 107.5 Z" fill="#ff6b6b" stroke="#ffffff" stroke-width="1.5" />
+                                <polyline points="282.6,95.1 297.2,86.5 317.2,86.5" fill="none" stroke="#94a3b8" stroke-width="1" />
+                                <text x="321.2" y="90.0" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="start">Feature limitations 32.97%</text>
+                                <polyline points="232.7,249.0 239.3,264.6 259.3,264.6" fill="none" stroke="#94a3b8" stroke-width="1" />
+                                <text x="263.3" y="268.1" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="start">Budget constraints 21.1%</text>
+                                <polyline points="110.1,222.4 97.5,233.8 77.5,233.8" fill="none" stroke="#94a3b8" stroke-width="1" />
+                                <text x="73.5" y="237.3" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="end">Price too high 18.46%</text>
+                                <polyline points="86.6,119.7 70.3,114.9 50.3,114.9" fill="none" stroke="#94a3b8" stroke-width="1" />
+                                <text x="46.3" y="118.4" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="end">Better alter... 14.07%</text>
+                                <polyline points="146.0,51.7 139.0,36.2 119.0,36.2" fill="none" stroke="#94a3b8" stroke-width="1" />
+                                <text x="115.0" y="39.7" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="end">Lack of urgency 13.41%</text>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+<div class="dash-section-divider" style="margin-top: 18px; margin-bottom: 12px;">
             <h3 class="dash-section-title" style="margin-bottom:0;">
                 <span class="dash-section-title-icon">
                     <span></span><span></span>
@@ -635,7 +563,8 @@
             </div>
         </div>
 
-        <div class="dash-section-divider" style="margin-top: 18px; margin-bottom: 12px;">
+        
+<div class="dash-section-divider" style="margin-top: 18px; margin-bottom: 12px;">
             <h3 class="dash-section-title" style="margin-bottom:0;">
                 <span class="dash-section-title-icon">
                     <span></span><span></span>
@@ -712,7 +641,8 @@
             </div>
         </div>
 
-        <div class="dash-section-divider" style="margin-top: 18px; margin-bottom: 12px;">
+        
+<div class="dash-section-divider" style="margin-top: 18px; margin-bottom: 12px;">
             <h3 class="dash-section-title" style="margin-bottom:0;">
                 <span class="dash-section-title-icon">
                     <span></span><span></span>
@@ -1344,7 +1274,102 @@
             </div>
         </div>
 
-        <div class="dash-drilldown-panel" id="dashDrilldownPanel">
+        
+
+        <div class="dash-section-divider" style="margin-top: 18px; margin-bottom: 12px;">
+            <h3 class="dash-section-title" style="margin-bottom:0;">
+                <span class="dash-section-title-icon">
+                    <span></span><span></span>
+                </span>
+                <span>Achievement and Projection</span>
+            </h3>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-xs-12">
+                <div class="dash-chart-card">
+                    <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important;">
+                        <h4 class="dash-chart-title" style="margin:0 !important; margin-right:20px !important;">
+                            <i class="fa fa-bar-chart"></i> My Achievement
+                        </h4>
+                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:16px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
+                            <span style="display:inline-flex; align-items:center; gap:6px;">
+                                <span style="display:inline-block; width:10px; height:10px; background-color:#0072f0; border-radius:2px;"></span>
+                                <span>Target</span>
+                            </span>
+                            <span style="display:inline-flex; align-items:center; gap:6px;">
+                                <span style="display:inline-block; width:10px; height:10px; background-color:#16a34a; border-radius:2px;"></span>
+                                <span>Achieved</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="dash-chart-body">
+                        <canvas id="barChartAchieveMy" height="230"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xs-12">
+                <div class="dash-chart-card">
+                    <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important;">
+                        <h4 class="dash-chart-title" style="margin:0 !important; margin-right:20px !important;">
+                            <i class="fa fa-bar-chart"></i> Team Achievement
+                        </h4>
+                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:16px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
+                            <span style="display:inline-flex; align-items:center; gap:6px;">
+                                <span style="display:inline-block; width:10px; height:10px; background-color:#0072f0; border-radius:2px;"></span>
+                                <span>Target</span>
+                            </span>
+                            <span style="display:inline-flex; align-items:center; gap:6px;">
+                                <span style="display:inline-block; width:10px; height:10px; background-color:#16a34a; border-radius:2px;"></span>
+                                <span>Achieved</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="dash-chart-body">
+                        <canvas id="barChartAchieveTeam" height="230"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" style="margin-top: 14px;">
+            <div class="col-md-6 col-xs-12">
+                <div class="dash-chart-card">
+                    <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important;">
+                        <h4 class="dash-chart-title" style="margin:0 !important; margin-right:20px !important;">
+                            <i class="fa fa-line-chart"></i> My Projection
+                        </h4>
+                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
+                            <span style="display:inline-block; width:10px; height:10px; background-color:#0072f0; border-radius:2px;"></span>
+                            <span>Projection</span>
+                        </div>
+                    </div>
+                    <div class="dash-chart-body">
+                        <canvas id="barChart2" height="230"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xs-12">
+                <div class="dash-chart-card">
+                    <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important;">
+                        <h4 class="dash-chart-title" style="margin:0 !important; margin-right:20px !important;">
+                            <i class="fa fa-line-chart"></i> Team Projection
+                        </h4>
+                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
+                            <span style="display:inline-block; width:10px; height:10px; background-color:#0072f0; border-radius:2px;"></span>
+                            <span>Projection</span>
+                        </div>
+                    </div>
+                    <div class="dash-chart-body">
+                        <canvas id="barChart4" height="230"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+<div class="dash-drilldown-panel" id="dashDrilldownPanel">
             <div class="dash-drilldown-header">
                 <h4 class="dash-drilldown-title">
                     <i class="fa fa-list-alt" style="color:#0072f0;"></i>
@@ -1379,6 +1404,7 @@
 
     </div>
 </div>
+
 
 <script>
 $(function () {
@@ -1592,6 +1618,92 @@ $(function () {
 
     renderAchieveChart('barChartAchieveMy', achieveMonthsMy, achieveTargetMy, achieveDataMy, achieveDatesMy, '<?php echo base_url(); ?>manager/leads');
     renderAchieveChart('barChartAchieveTeam', achieveMonthsTeam, achieveTargetTeam, achieveDataTeam, achieveDatesTeam, '<?php echo base_url(); ?>manager/team/leads');
+
+    var canvasAchieveLine = document.getElementById('lineChartTargetAchieve');
+    if (canvasAchieveLine) {
+        var ctxAch = canvasAchieveLine.getContext('2d');
+        new Chart(ctxAch).Line({
+            labels: (achieveMonthsMy && achieveMonthsMy.length > 0) ? achieveMonthsMy : months,
+            datasets: [
+                {
+                    label: 'Target',
+                    fillColor: 'rgba(1, 80, 158, 0.08)',
+                    strokeColor: '#01509e',
+                    pointColor: '#01509e',
+                    pointStrokeColor: '#ffffff',
+                    pointHighlightFill: '#ffffff',
+                    pointHighlightStroke: '#01509e',
+                    data: (achieveTargetMy && achieveTargetMy.length > 0) ? achieveTargetMy : [10, 15, 20, 25, 30, 35]
+                },
+                {
+                    label: 'Achieved',
+                    fillColor: 'rgba(0, 198, 240, 0.08)',
+                    strokeColor: '#00c6f0',
+                    pointColor: '#00c6f0',
+                    pointStrokeColor: '#ffffff',
+                    pointHighlightFill: '#ffffff',
+                    pointHighlightStroke: '#00c6f0',
+                    data: (achieveDataMy && achieveDataMy.length > 0) ? achieveDataMy : [8, 12, 18, 22, 28, 30]
+                }
+            ]
+        }, {
+            responsive: true,
+            maintainAspectRatio: false,
+            bezierCurve: true,
+            bezierCurveTension: 0.3,
+            pointDot: true,
+            pointDotRadius: 3,
+            datasetStrokeWidth: 2,
+            scaleGridLineColor: 'rgba(0,0,0,.04)',
+            scaleFontSize: 9,
+            scaleFontStyle: '600',
+            scaleFontColor: '#475569'
+        });
+    }
+
+    var canvasProjectLine = document.getElementById('lineChartTargetProject');
+    if (canvasProjectLine) {
+        var ctxProj = canvasProjectLine.getContext('2d');
+        var projTargetData = (achieveTargetMy && achieveTargetMy.length > 0) ? achieveTargetMy.slice(0, months.length) : myProData.map(function(v){ return Math.round(v * 1.15); });
+        new Chart(ctxProj).Line({
+            labels: months,
+            datasets: [
+                {
+                    label: 'Target',
+                    fillColor: 'rgba(1, 80, 158, 0.08)',
+                    strokeColor: '#01509e',
+                    pointColor: '#01509e',
+                    pointStrokeColor: '#ffffff',
+                    pointHighlightFill: '#ffffff',
+                    pointHighlightStroke: '#01509e',
+                    data: projTargetData
+                },
+                {
+                    label: 'Projected',
+                    fillColor: 'rgba(0, 198, 240, 0.08)',
+                    strokeColor: '#00c6f0',
+                    pointColor: '#00c6f0',
+                    pointStrokeColor: '#ffffff',
+                    pointHighlightFill: '#ffffff',
+                    pointHighlightStroke: '#00c6f0',
+                    data: myProData
+                }
+            ]
+        }, {
+            responsive: true,
+            maintainAspectRatio: false,
+            bezierCurve: true,
+            bezierCurveTension: 0.3,
+            pointDot: true,
+            pointDotRadius: 3,
+            datasetStrokeWidth: 2,
+            scaleGridLineColor: 'rgba(0,0,0,.04)',
+            scaleFontSize: 9,
+            scaleFontStyle: '600',
+            scaleFontColor: '#475569'
+        });
+    }
+
 
     $('.crm-modern-stat-chip').on('click', function(e) {
         var targetUrl = $(this).attr('href');

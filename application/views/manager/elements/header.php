@@ -58,7 +58,7 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.5/css/responsive.dataTables.min.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/bootstrap/developer.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/multiselect/multiselect.css">
-<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-dashboard.css?v=20261031_v1805">
+<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-dashboard.css?v=20261031_v1810">
 <link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/plugins/table_export/css/tableexport.css" />
 
 <script src="<?php echo base_url();?>assets/plugins/table_export/FileSaver.min.js"></script>
@@ -179,7 +179,7 @@
 
       <?php if($is_admin || has_section_perm('my_zone') || has_section_perm('database') || has_section_perm('leads') || has_section_perm('tasks') || has_section_perm('internal_tasks') || has_section_perm('external_tasks')){ ?>
       <li class="<?php if(($route1=="leads" && $route2!="review_leads") || $route1=="verticals" || $route1=="database-transfer" || in_array($route1, array('tasks')) || ($route1=="orders" && ($route2=="my" || (isset($_GET['scope']) && $_GET['scope']=="my"))) || $route1=="sales"){ echo "active";}else{ echo "";}?>"> 
-        <a href="javascript:void(0);"><i class="fa fa-th-large"></i> <span>My Zone</span> </a>
+        <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:4px;"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg> <span>My Zone</span> </a>
         <ul>
           <?php if($is_admin || has_section_perm('database', 'write')){ ?>
           <li><a href="<?php echo base_url();?>manager/leads/add"><i class="fa fa-plus"></i>Add Database</a></li>
@@ -213,7 +213,7 @@
       <?php } ?>
 
       <?php if($is_admin || has_section_perm('team')){ ?>
-      <li class="<?php if(in_array($route1, array('team')) || ($route1=="orders" && ($route2=="team" || (isset($_GET['scope']) && $_GET['scope']=="team")))){ echo "active";}else{ echo "";}?>"> <a href="javascript:void(0);"><i class="fa fa-users"></i> <span>Team</span> </a>
+      <li class="<?php if(in_array($route1, array('team')) || ($route1=="orders" && ($route2=="team" || (isset($_GET['scope']) && $_GET['scope']=="team")))){ echo "active";}else{ echo "";}?>"> <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:4px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> <span>Team</span> </a>
         <ul>
           <li><a href="<?php echo base_url();?>manager/team/chart"><i class="fa fa-sitemap"></i>Chart</a></li>
           <li><a href="<?php echo base_url();?>manager/team/database"><i class="fa fa-database"></i>Database</a></li>
@@ -232,7 +232,7 @@
 
       <?php if($can_see_review){ ?>
       <li class="<?php if(($route1=="leads" && $route2=="review_leads") || $route1=="back-office" || ($route1=="orders" && $route2!="my" && $route2!="team" && (!isset($_GET['scope']) || !in_array($_GET['scope'], array('my', 'team'))))){ echo "active";}else{ echo "";}?>"> 
-        <a href="javascript:void(0);"><i class="fa fa-briefcase"></i> <span>Back Office</span> </a>
+        <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:4px;"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg> <span>Back Office</span> </a>
         <ul>
           <li><a href="<?php echo base_url();?>manager/leads/review_leads"><i class="fa fa-check-square-o"></i>Pending Leads Approval</a></li>
           <li><a href="<?php echo base_url();?>manager/orders/pending_process"><i class="fa fa-hourglass-half"></i>Pending Order Process</a></li>
@@ -327,7 +327,7 @@
       <?php } ?>
 
       <?php if($is_admin || has_section_perm('reports')){ ?>
-      <li class="<?php if($route1=="reports" || $route1=="download-report" || $route1=="admin-reports" || $route1=="revenue-list" || $route1=="company-projections"){ echo "active";}else{ echo "";}?>"> <a href="javascript:void(0);"><i class="fa fa-bar-chart"></i> <span>Reports</span> </a>
+      <li class="<?php if($route1=="reports" || $route1=="download-report" || $route1=="admin-reports" || $route1=="revenue-list" || $route1=="company-projections"){ echo "active";}else{ echo "";}?>"> <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:4px;"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg> <span>Reports</span> </a>
         <ul>
           <li><a href="<?php echo base_url();?>manager/reports/revenue-list"><i class="fa fa-money"></i>Revenue List</a></li>
           <li><a href="<?php echo base_url();?>manager/reports/company-projections"><i class="fa fa-line-chart"></i>Company Projections</a></li>
@@ -710,7 +710,7 @@ $(function() {
 
       <?php if($is_admin || has_section_perm('my_zone') || has_section_perm('database') || has_section_perm('leads') || has_section_perm('tasks') || has_section_perm('internal_tasks') || has_section_perm('external_tasks')){ ?>
       <li class="<?php if(($route1=="leads" && $route2!="review_leads") || $route1=="verticals" || $route1=="database-transfer" || in_array($route1, array('tasks')) || ($route1=="orders" && ($route2=="my" || (isset($_GET['scope']) && $_GET['scope']=="my"))) || $route1=="sales"){ echo "active";}else{ echo "";}?> treeview"> 
-        <a href="javascript:void(0);"><i class="fa fa-th-large"></i> <span>My Zone</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
+        <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:6px;"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg> <span>My Zone</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu">
           <?php if($is_admin || has_section_perm('database', 'write')){ ?>
           <li><a href="<?php echo base_url();?>manager/leads/add"><i class="fa fa-plus"></i>Add Database</a></li>
@@ -745,7 +745,7 @@ $(function() {
 
       <?php if($is_admin || has_section_perm('team')){ ?>
       <li class="<?php if(in_array($route1, array('team')) || ($route1=="orders" && ($route2=="team" || (isset($_GET['scope']) && $_GET['scope']=="team")))){ echo "active";}else{ echo "";}?> treeview"> 
-        <a href="javascript:void(0);"><i class="fa fa-users"></i> <span>Team</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
+        <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:6px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> <span>Team</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu">
           <li><a href="<?php echo base_url();?>manager/team/chart"><i class="fa fa-sitemap"></i>Chart</a></li>
           <li><a href="<?php echo base_url();?>manager/team/database"><i class="fa fa-database"></i>Database</a></li>
@@ -764,7 +764,7 @@ $(function() {
 
       <?php if($can_see_review){ ?>
       <li class="<?php if(($route1=="leads" && $route2=="review_leads") || ($route1=="tasks" && $route2=="external" && isset($_GET['review'])) || $route1=="back-office" || ($route1=="orders" && $route2!="my" && $route2!="team" && (!isset($_GET['scope']) || !in_array($_GET['scope'], array('my', 'team'))))){ echo "active";}else{ echo "";}?> treeview"> 
-        <a href="javascript:void(0);"><i class="fa fa-briefcase"></i> <span>Back Office</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
+        <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:6px;"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg> <span>Back Office</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu">
           <li><a href="<?php echo base_url();?>manager/leads/review_leads"><i class="fa fa-check-square-o"></i>Pending Leads Approval</a></li>
           <li><a href="<?php echo base_url();?>manager/orders/pending_process"><i class="fa fa-hourglass-half"></i>Pending Order Process</a></li>
@@ -863,7 +863,7 @@ $(function() {
 
       <?php if($is_admin || has_section_perm('reports')){ ?>
       <li class="<?php if($route1=="reports" || $route1=="download-report" || $route1=="admin-reports" || $route1=="revenue-list" || $route1=="company-projections"){ echo "active menu-open";}else{ echo "";}?> treeview"> 
-        <a href="javascript:void(0);"><i class="fa fa-bar-chart"></i> <span>Reports</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
+        <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:6px;"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg> <span>Reports</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu" style="<?php if($route1=="reports" || $route1=="download-report" || $route1=="admin-reports" || $route1=="revenue-list" || $route1=="company-projections"){ echo "display: block;"; } ?>">
           <li><a href="<?php echo base_url();?>manager/reports/revenue-list"><i class="fa fa-money"></i>Revenue List</a></li>
           <li><a href="<?php echo base_url();?>manager/reports/company-projections"><i class="fa fa-line-chart"></i>Company Projections</a></li>

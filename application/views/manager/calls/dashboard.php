@@ -184,7 +184,7 @@ html, body {
 }
 
 #middleContentArea {
-  display: flex;
+  display: none;
   flex: 1 1 auto !important;
   min-width: 420px !important;
 
@@ -893,17 +893,20 @@ html, body {
         <span class="dock-lbl">Follow-up</span>
       </button>
       <div class="dock-flyout-menu" id="flyoutFollowup">
+        <a href="javascript:void(0)" class="dock-flyout-item" onclick="selectFollowupMenu('missed', 'All Missed Follow-ups')">
+          <span>All Missed</span>
+        </a>
         <a href="javascript:void(0)" class="dock-flyout-item" onclick="selectFollowupMenu('last7', 'Last 7 Days Follow-ups')">
-          <span>Last Seven Days</span>
+          <span>Last 7 Days</span>
         </a>
         <a href="javascript:void(0)" class="dock-flyout-item" onclick="selectFollowupMenu('today', 'Today Follow-ups')">
           <span>Today</span>
         </a>
         <a href="javascript:void(0)" class="dock-flyout-item" onclick="selectFollowupMenu('next7', 'Next 7 Days Follow-ups')">
-          <span>Next Seven Days</span>
+          <span>Next 7 Days</span>
         </a>
-        <a href="javascript:void(0)" class="dock-flyout-item" onclick="selectFollowupMenu('all_future', 'All Future Follow-ups')">
-          <span>All Future</span>
+        <a href="javascript:void(0)" class="dock-flyout-item" onclick="selectFollowupMenu('future', 'Future Follow-ups')">
+          <span>Future</span>
         </a>
       </div>
     </div>
@@ -964,10 +967,11 @@ html, body {
       </div>
 
       <div class="apple-segmented-group" id="subnavFollowup" style="display:none;">
-        <button type="button" class="apple-segment-btn" data-filter="last7" onclick="openMenuQueue('followup', 'last7', 'Last 7 Days Follow-ups')">Last Seven Days</button>
+        <button type="button" class="apple-segment-btn" data-filter="missed" onclick="openMenuQueue('followup', 'missed', 'All Missed Follow-ups')">All Missed</button>
+        <button type="button" class="apple-segment-btn" data-filter="last7" onclick="openMenuQueue('followup', 'last7', 'Last 7 Days Follow-ups')">Last 7 Days</button>
         <button type="button" class="apple-segment-btn active" data-filter="today" onclick="openMenuQueue('followup', 'today', 'Today Follow-ups')">Today</button>
-        <button type="button" class="apple-segment-btn" data-filter="next7" onclick="openMenuQueue('followup', 'next7', 'Next 7 Days Follow-ups')">Next Seven Days</button>
-        <button type="button" class="apple-segment-btn" data-filter="all_future" onclick="openMenuQueue('followup', 'all_future', 'All Future Follow-ups')">All Future</button>
+        <button type="button" class="apple-segment-btn" data-filter="next7" onclick="openMenuQueue('followup', 'next7', 'Next 7 Days Follow-ups')">Next 7 Days</button>
+        <button type="button" class="apple-segment-btn" data-filter="future" onclick="openMenuQueue('followup', 'future', 'Future Follow-ups')">Future</button>
       </div>
 
       <div class="apple-segmented-group" id="subnavLogsPeriod" style="display:none;">
@@ -1970,7 +1974,7 @@ function openDialerHome() {
   $('.crm-dock-btn').removeClass('active');
   $('#dockBtnCallHome').addClass('active');
   hideAllMiddleViews();
-  openManualDialerMode();
+  $('#middleContentArea').hide();
   $('#subnavFollowup').hide();
   $('#subnavLogsPeriod').hide();
   $('#dialerSuggestions').hide();
@@ -2350,11 +2354,7 @@ function stopAutoDialSession() {
 }
 
 function closeMiddleArea() {
-  hideAllMiddleViews();
-  openManualDialerMode();
-  $('#subnavFollowup').hide();
-  $('#subnavLogsPeriod').hide();
-  $('.crm-dock-btn').removeClass('active');
+  openDialerHome();
 }
 
 function openMiddleArea() {
@@ -3293,9 +3293,7 @@ function escapeJs(str) {
 }
 
 $(document).ready(function() {
-  if (window.innerWidth <= 991) {
-    switchMobileDialerView('keypad');
-  }
+  openDialerHome();
   if ($('#dialerRangeSelect').length && $.fn.select2) {
     $('#dialerRangeSelect').select2({
       tags: true,

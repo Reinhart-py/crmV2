@@ -2745,3 +2745,33 @@ table.dataTable {
     margin-bottom: 6px !important;
   }
 }
+
+
+/* Global SVG Icons for Navbar and Mobile Navigation */
+.crm-svg-ico {
+  display: inline-block !important;
+  vertical-align: -2px !important;
+  stroke: currentColor !important;
+  fill: none !important;
+  stroke-width: 2 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+ul.munk_menu > li > a .crm-svg-ico,
+.sidebar-menu > li > a .crm-svg-ico {
+  width: 15px !important;
+  height: 15px !important;
+  margin-right: 5px !important;
+  flex-shrink: 0 !important;
+  stroke: currentColor !important;
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+ul.munk_menu > li.active > a .crm-svg-ico,
+.sidebar-menu > li.active > a .crm-svg-ico {
+  stroke: #ffffff !important;
+  color: #ffffff !important;
+}

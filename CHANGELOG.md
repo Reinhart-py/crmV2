@@ -2,6 +2,31 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.80.6] - 2026-10-31
+- **Timestamp**: `2026-10-31 16:05:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Delivered Dashboard UI layout enhancements and Dialer home page view updates: reduced top KPI card sizes, added Target vs Achievement and Target vs Projection two-line graphs for My Leads, added My Lead and My Order donut state charts, reorganized sections with a single combined Achievement and Projection area (4 cards), removed redundant Dashboard title/dark mode bar, added SVG icons to all main navigation items, and defaulted Dialer to clean keypad home view with 5 Follow-up filters (All Missed, Last 7 Days, Today, Next 7 Days, Future).
+- **Detailed Changes & Technical Implementation**:
+  - **1. Dashboard Top Cards & Graphs (`manager/dashboard.php`)**:
+    - Compacted top 8 KPI cards by ~35% height with streamlined typography, reduced padding, and smaller icons for space efficiency.
+    - Added two-line graph for **Target vs Achievement** (Target & Achieved lines for My Leads).
+    - Added two-line graph for **Target vs Projection** (Target & Projected lines for My Leads).
+    - Integrated **My Lead** and **My Order** circular donut state charts alongside line graphs.
+  - **2. Navigation Bar SVG Icons (`header.php`, `crm-dashboard.css`)**:
+    - Replaced font-awesome icons with dedicated inline SVG icons for My Zone, Team, Back Office, and Reports in both desktop navbar (`ul.munk_menu`) and mobile drawer (`ul.sidebar-menu`).
+    - Configured `.crm-svg-ico` styles to ensure permanent visibility across active/inactive states and themes.
+  - **3. Section Reorganization & Combined Projections (`manager/dashboard.php`)**:
+    - Removed redundant `.dash-header-bar` (Dashboard title & dark mode button), lifting dashboard content upward.
+    - Combined My Projection and Team Projection under one main section: **Achievement and Projection** containing 4 cards (My Achievement, Team Achievement, My Projection, Team Projection).
+    - Reordered sections: Top Cards + Graphs -> Operation Activity -> Operational Activity and Breakdown -> Achievement and Projection.
+  - **4. Dialer Home Page & Follow-up Filters (`calls/dashboard.php`, `ci_admin_calls.php`)**:
+    - Set `#middleContentArea` to hidden on home load so the Dialer home page displays only the focused keypad and sidebar.
+    - Clicking Cancel or navigating back resets view to the clean Dialer home page.
+    - Updated Follow-up filter categories to 5 items: `All Missed`, `Last 7 Days`, `Today`, `Next 7 Days`, and `Future`.
+    - Added backend handler in `ci_admin_calls.php` for `missed` / `all_missed` queries.
+  - **5. Zero Comments Rule Compliance**:
+    - Confirmed zero comments across all modified PHP files and verified syntax with `php -l`.
+
 ### [v1.80.5] - 2026-10-31
 - **Timestamp**: `2026-10-31 15:02:00 +0530`
 - **Author**: Reinhart-py
