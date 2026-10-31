@@ -299,7 +299,7 @@ class Ci_admin_model extends CI_model {
 			$colors = array();
 			$month_dates = array();
 
-			for ($i = 9; $i >= 0; $i--) {
+			for ($i = 11; $i >= 0; $i--) {
 				$d1 = date("Y-m-01", strtotime("-$i month"));
 				$d2 = date("Y-m-t", strtotime("-$i month"));
 				$month_key = date("Y-m", strtotime("-$i month"));

@@ -2,6 +2,31 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.81.1] - 2026-10-31
+- **Timestamp**: `2026-10-31 17:49:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Delivered 100% zoom full screen visibility for upper dashboard section, renamed side charts to My Leads and My Orders with square proportions aligning to Target vs Projection, added interactive dark hover tooltips for donut slices, simplified top 8 KPI cards without extra bottom bars, renamed sections and legends, and upgraded Achievement and Projection graphs to 12 months.
+- **Detailed Changes & Technical Implementation**:
+  - **1. 100% Zoom Desktop Frame Visibility (`manager/dashboard.php`)**:
+    - Reduced top 8 cards height to 52px with compact padding and typography, removing dividing lines and extra footer link bars.
+    - Entire card is an anchor link with uniform background gradient (`.dash-kpi-col1`, `.dash-kpi-col2`, `.dash-kpi-col3`, `.dash-kpi-col4`).
+    - Adjusted Target vs Achievement and Target vs Projection canvas heights to 110px.
+    - Set the combined height of the entire upper dashboard section to ~410px, guaranteeing full visibility on standard 1080p desktop viewports at 100% zoom without scrolling.
+  - **2. Square Side Charts & Hover Tooltips (`manager/dashboard.php`)**:
+    - Renamed **My Lead** to **My Leads** and **My Order** to **My Orders**.
+    - Styled both side charts as square cards (~203px height each) with bottom borders aligning to the pixel with the Target vs Projection card.
+    - Added floating dark interactive tooltips (`#donutHoverTooltip`) displaying status name, count, and percentage on slice hover/click.
+    - Applied bold, saturated colors matching the reference image.
+  - **3. Section and Legend Renaming (`manager/dashboard.php`)**:
+    - Renamed `Operational Activity and Breakdown` -> `Operational Activity`.
+    - Renamed `Database States and Lead States` -> `Database States`.
+    - Renamed `My Orders and Team Orders` -> `Orders`.
+    - Renamed `Achieved` to `Achievement` and `Projected` to `Projection` across legends and chart dataset labels.
+  - **4. 12-Month Range in Achievement and Projection (`ci_admin_model.php`)**:
+    - Updated `dashboard_achievement_graph()` loop from 10 months to the previous 12 months (`$i = 11; $i >= 0; $i--`).
+  - **5. Zero Comments Rule Compliance**:
+    - Confirmed zero comments across modified PHP files and verified syntax with `php -l`.
+
 ### [v1.81.0] - 2026-10-31
 - **Timestamp**: `2026-10-31 17:13:00 +0530`
 - **Author**: Reinhart-py
