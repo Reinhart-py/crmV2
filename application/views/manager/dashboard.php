@@ -1,20 +1,142 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
-
 <style>
-#cardMyLeads, #cardMyOrders, #cardTeamLeads, #cardTeamOrders,
-#cardMyLeads *, #cardMyOrders *, #cardTeamLeads *, #cardTeamOrders * {
+.dash-kpi-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 110px;
+    border-radius: 14px !important;
+    padding: 0 !important;
+    color: #ffffff !important;
+    margin-bottom: 20px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    text-decoration: none !important;
+    border: none !important;
+}
+.dash-kpi-card:hover {
+    transform: translateY(-2px);
+    text-decoration: none !important;
     color: #ffffff !important;
 }
-#cardMyLeads .dash-kpi-icon i, #cardMyOrders .dash-kpi-icon i,
-#cardTeamLeads .dash-kpi-icon i, #cardTeamOrders .dash-kpi-icon i {
-    color: rgba(255, 255, 255, 0.35) !important;
+.dash-kpi-col1 {
+    background: linear-gradient(135deg, #5f3abd 0%, #4a2bb3 100%) !important;
+    box-shadow: 0 8px 24px rgba(95, 58, 189, 0.28) !important;
+}
+.dash-kpi-col1:hover {
+    box-shadow: 0 12px 28px rgba(95, 58, 189, 0.42) !important;
+}
+.dash-kpi-col2 {
+    background: linear-gradient(135deg, #01509e 0%, #003c7a 100%) !important;
+    box-shadow: 0 8px 24px rgba(1, 80, 158, 0.28) !important;
+}
+.dash-kpi-col2:hover {
+    box-shadow: 0 12px 28px rgba(1, 80, 158, 0.42) !important;
+}
+.dash-kpi-col3 {
+    background: linear-gradient(135deg, #0086c5 0%, #006fa8 100%) !important;
+    box-shadow: 0 8px 24px rgba(0, 134, 197, 0.28) !important;
+}
+.dash-kpi-col3:hover {
+    box-shadow: 0 12px 28px rgba(0, 134, 197, 0.42) !important;
+}
+.dash-kpi-col4 {
+    background: linear-gradient(135deg, #00b69c 0%, #009680 100%) !important;
+    box-shadow: 0 8px 24px rgba(0, 182, 156, 0.28) !important;
+}
+.dash-kpi-col4:hover {
+    box-shadow: 0 12px 28px rgba(0, 182, 156, 0.42) !important;
+}
+.dash-kpi-card *,
+.dash-kpi-card .dash-kpi-label,
+.dash-kpi-card .dash-kpi-value,
+.dash-kpi-card .dash-kpi-sales,
+.dash-kpi-card .dash-kpi-footer,
+.dash-kpi-card .dash-kpi-footer span,
+.dash-kpi-card .dash-kpi-footer i {
+    color: #ffffff !important;
+}
+.dash-kpi-top {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 16px 20px 12px 20px;
+}
+.dash-kpi-value {
+    font-size: 34px;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+.dash-kpi-label {
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 4px;
+    opacity: 0.95;
+    text-transform: capitalize;
+}
+.dash-kpi-sales {
+    font-size: 11.5px;
+    font-weight: 600;
+    margin-top: 4px;
+    opacity: 0.95;
+}
+.dash-kpi-icon {
+    font-size: 40px;
+    line-height: 1;
+    opacity: 0.32;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.dash-kpi-card:hover .dash-kpi-icon {
+    transform: scale(1.08);
+    opacity: 0.45;
+}
+.dash-kpi-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 20px 10px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+    font-size: 11.5px;
+    font-weight: 600;
+    background: rgba(0, 0, 0, 0.06);
+}
+.dash-kpi-footer i {
+    transition: transform 0.2s ease;
+}
+.dash-kpi-card:hover .dash-kpi-footer i {
+    transform: translateX(4px);
+}
+.dash-round-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+[data-theme="dark"] .dash-round-card {
+    background: #111827;
+    border-color: #1f2937;
+}
+.dash-round-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+    margin: 0 0 14px 0;
+}
+[data-theme="dark"] .dash-round-title {
+    color: #f8fafc;
 }
 </style>
 
 <div class="content-wrapper full-screen-dash">
 
-    
     <div class="dash-header-bar">
         <h1 class="dash-header-title">
             <svg class="crm-svg-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0072f0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-3px; margin-right:8px;"><rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect></svg> Dashboard
@@ -26,13 +148,11 @@
         </div>
     </div>
 
-    
     <div class="dash-content-body">
 
-        
         <div class="row">
             <div class="col-lg-3 col-sm-6 col-xs-12">
-                <a href="<?php echo base_url(); ?>manager/leads" class="dash-kpi-card dash-kpi-navy" id="cardMyDatabase">
+                <a href="<?php echo base_url(); ?>manager/leads" class="dash-kpi-card dash-kpi-col1" id="cardMyDatabase">
                     <div class="dash-kpi-top">
                         <div>
                             <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_database']) ? (int)$dashboard_count['count_database'] : 0; ?></div>
@@ -47,7 +167,7 @@
             </div>
 
             <div class="col-lg-3 col-sm-6 col-xs-12">
-                <a href="<?php echo base_url(); ?>manager/verticals" class="dash-kpi-card dash-kpi-forest" id="cardMyVerticals">
+                <a href="<?php echo base_url(); ?>manager/verticals" class="dash-kpi-card dash-kpi-col2" id="cardMyVerticals">
                     <div class="dash-kpi-top">
                         <div>
                             <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_verticals']) ? (int)$dashboard_count['count_verticals'] : 0; ?></div>
@@ -62,7 +182,7 @@
             </div>
 
             <div class="col-lg-3 col-sm-6 col-xs-12">
-                <a href="<?php echo base_url(); ?>manager/team/members" class="dash-kpi-card dash-kpi-amber" id="cardTeamUsers">
+                <a href="<?php echo base_url(); ?>manager/team/members" class="dash-kpi-card dash-kpi-col3" id="cardTeamUsers">
                     <div class="dash-kpi-top">
                         <div>
                             <div class="dash-kpi-value"><?php echo (isset($dashboard_Tcount['count_users']) && (int)$dashboard_Tcount['count_users'] > 0) ? (int)$dashboard_Tcount['count_users'] : (isset($dashboard_Tcount['count_user']) ? (int)$dashboard_Tcount['count_user'] : 0); ?></div>
@@ -77,7 +197,7 @@
             </div>
 
             <div class="col-lg-3 col-sm-6 col-xs-12">
-                <a href="<?php echo base_url(); ?>manager/team/verticals" class="dash-kpi-card dash-kpi-crimson" id="cardTeamVerticals">
+                <a href="<?php echo base_url(); ?>manager/team/verticals" class="dash-kpi-card dash-kpi-col4" id="cardTeamVerticals">
                     <div class="dash-kpi-top">
                         <div>
                             <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_verticals']) ? (int)$dashboard_Tcount['count_verticals'] : 0; ?></div>
@@ -94,12 +214,12 @@
 
         <div class="row" style="margin-top: 10px; margin-bottom: 5px;">
             <div class="col-lg-3 col-sm-6 col-xs-12">
-                <a href="<?php echo base_url(); ?>manager/leads/view_leads" class="dash-kpi-card dash-kpi-navy" id="cardMyLeads">
+                <a href="<?php echo base_url(); ?>manager/leads/view_leads" class="dash-kpi-card dash-kpi-col1" id="cardMyLeads">
                     <div class="dash-kpi-top">
                         <div>
-                            <div class="dash-kpi-value" style="color:#ffffff !important;"><?php echo isset($dashboard_count['count_leads']) ? (int)$dashboard_count['count_leads'] : 0; ?></div>
-                            <div class="dash-kpi-label" style="color:#ffffff !important;">My Leads</div>
-                            <div class="dash-kpi-sales" style="font-size:11.5px; font-weight:600; color:#ffffff !important; margin-top:4px;">
+                            <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_leads']) ? (int)$dashboard_count['count_leads'] : 0; ?></div>
+                            <div class="dash-kpi-label">My Leads</div>
+                            <div class="dash-kpi-sales">
                                 Sales: AED <?php echo number_format((float)(isset($dashboard_count['sales_amount']) ? $dashboard_count['sales_amount'] : 0), 2); ?>
                             </div>
                         </div>
@@ -112,12 +232,12 @@
             </div>
 
             <div class="col-lg-3 col-sm-6 col-xs-12">
-                <a href="<?php echo base_url(); ?>manager/orders/my" class="dash-kpi-card dash-kpi-forest" id="cardMyOrders">
+                <a href="<?php echo base_url(); ?>manager/orders/my" class="dash-kpi-card dash-kpi-col2" id="cardMyOrders">
                     <div class="dash-kpi-top">
                         <div>
-                            <div class="dash-kpi-value" style="color:#ffffff !important;"><?php echo isset($dashboard_count['count_orders']) ? (int)$dashboard_count['count_orders'] : 0; ?></div>
-                            <div class="dash-kpi-label" style="color:#ffffff !important;">My Orders</div>
-                            <div class="dash-kpi-sales" style="font-size:11.5px; font-weight:600; color:#ffffff !important; margin-top:4px;">
+                            <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_orders']) ? (int)$dashboard_count['count_orders'] : 0; ?></div>
+                            <div class="dash-kpi-label">My Orders</div>
+                            <div class="dash-kpi-sales">
                                 Sales: AED <?php echo number_format((float)(isset($dashboard_count['sales_amount']) ? $dashboard_count['sales_amount'] : 0), 2); ?>
                             </div>
                         </div>
@@ -130,12 +250,12 @@
             </div>
 
             <div class="col-lg-3 col-sm-6 col-xs-12">
-                <a href="<?php echo base_url(); ?>manager/team/leads" class="dash-kpi-card dash-kpi-amber" id="cardTeamLeads">
+                <a href="<?php echo base_url(); ?>manager/team/leads" class="dash-kpi-card dash-kpi-col3" id="cardTeamLeads">
                     <div class="dash-kpi-top">
                         <div>
-                            <div class="dash-kpi-value" style="color:#ffffff !important;"><?php echo isset($dashboard_Tcount['count_leads']) ? (int)$dashboard_Tcount['count_leads'] : 0; ?></div>
-                            <div class="dash-kpi-label" style="color:#ffffff !important;">Team Leads</div>
-                            <div class="dash-kpi-sales" style="font-size:11.5px; font-weight:600; color:#ffffff !important; margin-top:4px;">
+                            <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_leads']) ? (int)$dashboard_Tcount['count_leads'] : 0; ?></div>
+                            <div class="dash-kpi-label">Team Leads</div>
+                            <div class="dash-kpi-sales">
                                 Sales: AED <?php echo number_format((float)(isset($dashboard_Tcount['sales_amount']) ? $dashboard_Tcount['sales_amount'] : 0), 2); ?>
                             </div>
                         </div>
@@ -148,12 +268,12 @@
             </div>
 
             <div class="col-lg-3 col-sm-6 col-xs-12">
-                <a href="<?php echo base_url(); ?>manager/team/orders" class="dash-kpi-card dash-kpi-crimson" id="cardTeamOrders">
+                <a href="<?php echo base_url(); ?>manager/team/orders" class="dash-kpi-card dash-kpi-col4" id="cardTeamOrders">
                     <div class="dash-kpi-top">
                         <div>
-                            <div class="dash-kpi-value" style="color:#ffffff !important;"><?php echo isset($dashboard_Tcount['count_orders']) ? (int)$dashboard_Tcount['count_orders'] : 0; ?></div>
-                            <div class="dash-kpi-label" style="color:#ffffff !important;">Team Orders</div>
-                            <div class="dash-kpi-sales" style="font-size:11.5px; font-weight:600; color:#ffffff !important; margin-top:4px;">
+                            <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_orders']) ? (int)$dashboard_Tcount['count_orders'] : 0; ?></div>
+                            <div class="dash-kpi-label">Team Orders</div>
+                            <div class="dash-kpi-sales">
                                 Sales: AED <?php echo number_format((float)(isset($dashboard_Tcount['sales_amount']) ? $dashboard_Tcount['sales_amount'] : 0), 2); ?>
                             </div>
                         </div>
@@ -166,224 +286,75 @@
             </div>
         </div>
 
-        <?php
-            $my_db_total = 0;
-            if (!empty($dashboard_db_state)) {
-                foreach($dashboard_db_state as $item) {
-                    $my_db_total += (int)$item['lead_count'];
-                }
-            }
-            $team_db_total = 0;
-            if (!empty($dashboard_db_state_team)) {
-                foreach($dashboard_db_state_team as $item) {
-                    $team_db_total += (int)$item['lead_count'];
-                }
-            }
-            $my_lead_total = 0;
-            if (!empty($dashboard_lead_state)) {
-                foreach($dashboard_lead_state as $item) {
-                    $my_lead_total += (int)$item['lead_count'];
-                }
-            }
-            $team_lead_total = 0;
-            if (!empty($dashboard_lead_state_team)) {
-                foreach($dashboard_lead_state_team as $item) {
-                    $team_lead_total += (int)$item['lead_count'];
-                }
-            }
-        ?>
+        <div class="row" style="margin-top: 10px;">
+            <div class="col-md-6 col-xs-12">
+                <div class="dash-round-card">
+                    <h4 class="dash-round-title">Sales pipeline</h4>
+                    <div style="width:100%; min-height:280px; display:flex; align-items:center; justify-content:center;">
+                        <svg viewBox="0 0 380 320" width="100%" height="280" style="max-height:280px; display:block; margin:0 auto;" xmlns="http://www.w3.org/2000/svg">
+                            <g>
+                                <path d="M 190.0 45.0 A 105 105 0 0 1 293.4 168.7 L 253.0 162.3 A 64 64 0 0 0 190.0 86.0 Z" fill="#01509e" stroke="#ffffff" stroke-width="1.5" />
+                                <path d="M 293.4 168.7 A 105 105 0 0 1 190.1 255.0 L 190.1 214.0 A 64 64 0 0 0 253.0 162.3 Z" fill="#00a8f3" stroke="#ffffff" stroke-width="1.5" />
+                                <path d="M 190.1 255.0 A 105 105 0 0 1 92.0 187.8 L 130.3 173.0 A 64 64 0 0 0 190.1 214.0 Z" fill="#5c2bb1" stroke="#ffffff" stroke-width="1.5" />
+                                <path d="M 92.0 187.8 A 105 105 0 0 1 103.3 90.8 L 137.2 114.0 A 64 64 0 0 0 130.3 173.0 Z" fill="#6c7d93" stroke="#ffffff" stroke-width="1.5" />
+                                <path d="M 103.3 90.8 A 105 105 0 0 1 156.0 50.7 L 169.3 89.5 A 64 64 0 0 0 137.2 114.0 Z" fill="#ff6b6b" stroke="#ffffff" stroke-width="1.5" />
+                                <path d="M 156.0 50.7 A 105 105 0 0 1 190.0 45.0 L 190.0 86.0 A 64 64 0 0 0 169.3 89.5 Z" fill="#00b69c" stroke="#ffffff" stroke-width="1.5" />
+                                <polyline points="272.7,81.1 285.7,70.1 305.7,70.1" fill="none" stroke="#94a3b8" stroke-width="1" />
+                                <text x="309.7" y="73.6" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="start">Lead In 26.85%</text>
+                                <polyline points="259.1,232.8 269.9,245.8 289.9,245.8" fill="none" stroke="#94a3b8" stroke-width="1" />
+                                <text x="293.9" y="249.3" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="start">Closed Lost 21.32%</text>
+                                <polyline points="129.1,239.1 119.5,253.1 99.5,253.1" fill="none" stroke="#94a3b8" stroke-width="1" />
+                                <text x="95.5" y="256.6" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="end">Contact Made 18.46%</text>
+                                <polyline points="83.0,137.6 66.1,135.8 46.1,135.8" fill="none" stroke="#94a3b8" stroke-width="1" />
+                                <text x="42.1" y="139.3" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="end">Interview 14.85%</text>
+                                <polyline points="124.7,64.3 114.4,50.8 94.4,50.8" fill="none" stroke="#94a3b8" stroke-width="1" />
+                                <text x="90.4" y="54.3" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="end">Proposal 9.84%</text>
+                                <polyline points="172.3,43.7 169.5,26.9 149.5,26.9" fill="none" stroke="#94a3b8" stroke-width="1" />
+                                <text x="145.5" y="30.4" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="end">Negotiation 5.06%</text>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+            </div>
 
-        <div class="dash-section-divider" style="margin-top: 18px; margin-bottom: 12px;">
-            <h3 class="dash-section-title" style="margin-bottom:0;">
-                <span class="dash-section-title-icon">
-                    <span></span><span></span>
-                </span>
-                <span>Database &amp; Lead States</span>
-            </h3>
+            <div class="col-md-6 col-xs-12">
+                <div class="dash-round-card">
+                    <h4 class="dash-round-title">Deal loss reasons</h4>
+                    <div style="width:100%; min-height:280px; display:flex; align-items:center; justify-content:center;">
+                        <svg viewBox="0 0 380 320" width="100%" height="280" style="max-height:280px; display:block; margin:0 auto;" xmlns="http://www.w3.org/2000/svg">
+                            <g>
+                                <path d="M 190.0 45.0 A 105 105 0 0 1 282.1 200.4 L 246.1 180.7 A 64 64 0 0 0 190.0 86.0 Z" fill="#01509e" stroke="#ffffff" stroke-width="1.5" />
+                                <path d="M 282.1 200.4 A 105 105 0 0 1 163.5 251.6 L 173.8 211.9 A 64 64 0 0 0 246.1 180.7 Z" fill="#00a8f3" stroke="#ffffff" stroke-width="1.5" />
+                                <path d="M 163.5 251.6 A 105 105 0 0 1 86.3 166.3 L 126.8 160.0 A 64 64 0 0 0 173.8 211.9 Z" fill="#5c2bb1" stroke="#ffffff" stroke-width="1.5" />
+                                <path d="M 86.3 166.3 A 105 105 0 0 1 111.7 80.2 L 142.4 107.5 A 64 64 0 0 0 126.8 160.0 Z" fill="#6c7d93" stroke="#ffffff" stroke-width="1.5" />
+                                <path d="M 111.7 80.2 A 105 105 0 0 1 190.0 45.0 L 190.0 86.0 A 64 64 0 0 0 142.4 107.5 Z" fill="#ff6b6b" stroke="#ffffff" stroke-width="1.5" />
+                                <polyline points="282.6,95.1 297.2,86.5 317.2,86.5" fill="none" stroke="#94a3b8" stroke-width="1" />
+                                <text x="321.2" y="90.0" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="start">Feature limitations 32.97%</text>
+                                <polyline points="232.7,249.0 239.3,264.6 259.3,264.6" fill="none" stroke="#94a3b8" stroke-width="1" />
+                                <text x="263.3" y="268.1" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="start">Budget constraints 21.1%</text>
+                                <polyline points="110.1,222.4 97.5,233.8 77.5,233.8" fill="none" stroke="#94a3b8" stroke-width="1" />
+                                <text x="73.5" y="237.3" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="end">Price too high 18.46%</text>
+                                <polyline points="86.6,119.7 70.3,114.9 50.3,114.9" fill="none" stroke="#94a3b8" stroke-width="1" />
+                                <text x="46.3" y="118.4" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="end">Better alter... 14.07%</text>
+                                <polyline points="146.0,51.7 139.0,36.2 119.0,36.2" fill="none" stroke="#94a3b8" stroke-width="1" />
+                                <text x="115.0" y="39.7" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="500" fill="#475569" text-anchor="end">Lack of urgency 13.41%</text>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <div class="row">
-                        <div class="col-md-6 col-xs-12">
-                            <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
-                                <div class="card-top">
-                                    <h4 class="card-title"><i class="fa fa-database" style="color:#0072f0;"></i> My Database State</h4>
-                                    <span class="card-total-pill"><?php echo number_format($my_db_total); ?> Total</span>
-                                </div>
-                                <div class="crm-seg-bar">
-                                    <?php if (!empty($dashboard_db_state) && $my_db_total > 0) {
-                                        foreach($dashboard_db_state as $li) {
-                                            $pct = round(((int)$li['lead_count'] / $my_db_total) * 100, 1);
-                                            if ($pct > 0) {
-                                                echo '<div class="crm-seg" style="width:' . $pct . '%; opacity:0.85;" title="' . htmlspecialchars($li['status']) . ': ' . (int)$li['lead_count'] . '"></div>';
-                                            }
-                                        }
-                                    } else { ?>
-                                        <div class="crm-seg" style="width:100%; opacity:0.3;"></div>
-                                    <?php } ?>
-                                </div>
-                                <ul class="crm-modern-stat-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:6px;">
-                                    <?php if (!empty($dashboard_db_state)) { foreach($dashboard_db_state as $li) { ?>
-                                        <li style="margin:0;">
-                                            <a href="<?php echo base_url(); ?>manager/leads?status%5B%5D=<?php echo $li['status_id']; ?>" class="crm-modern-stat-chip" style="padding:6px 9px;">
-                                                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;" title="<?php echo htmlspecialchars($li['status']); ?>"><?php echo htmlspecialchars($li['status']); ?></span>
-                                                <span class="badge" style="background:var(--crm-card-bg, #ffffff); color:var(--crm-text, #0f172a); border:1px solid var(--crm-border, #cbd5e1); font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;"><?php echo (int)$li['lead_count']; ?></span>
-                                            </a>
-                                        </li>
-                                    <?php } } else { ?>
-                                        <li style="grid-column: 1 / -1;"><span class="text-muted" style="font-size:12px;">No database records found</span></li>
-                                    <?php } ?>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 col-xs-12">
-                            <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
-                                <div class="card-top">
-                                    <h4 class="card-title"><i class="fa fa-database" style="color:#0072f0;"></i> Team Database State</h4>
-                                    <span class="card-total-pill"><?php echo number_format($team_db_total); ?> Total</span>
-                                </div>
-                                <div class="crm-seg-bar">
-                                    <?php if (!empty($dashboard_db_state_team) && $team_db_total > 0) {
-                                        foreach($dashboard_db_state_team as $li) {
-                                            $pct = round(((int)$li['lead_count'] / $team_db_total) * 100, 1);
-                                            if ($pct > 0) {
-                                                echo '<div class="crm-seg" style="width:' . $pct . '%; opacity:0.85;" title="' . htmlspecialchars($li['status']) . ': ' . (int)$li['lead_count'] . '"></div>';
-                                            }
-                                        }
-                                    } else { ?>
-                                        <div class="crm-seg" style="width:100%; opacity:0.3;"></div>
-                                    <?php } ?>
-                                </div>
-                                <ul class="crm-modern-stat-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:6px;">
-                                    <?php if (!empty($dashboard_db_state_team)) { foreach($dashboard_db_state_team as $li) { ?>
-                                        <li style="margin:0;">
-                                            <a href="<?php echo base_url(); ?>manager/team/database?status%5B%5D=<?php echo $li['status_id']; ?>" class="crm-modern-stat-chip" style="padding:6px 9px;">
-                                                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;" title="<?php echo htmlspecialchars($li['status']); ?>"><?php echo htmlspecialchars($li['status']); ?></span>
-                                                <span class="badge" style="background:var(--crm-card-bg, #ffffff); color:var(--crm-text, #0f172a); border:1px solid var(--crm-border, #cbd5e1); font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;"><?php echo (int)$li['lead_count']; ?></span>
-                                            </a>
-                                        </li>
-                                    <?php } } else { ?>
-                                        <li style="grid-column: 1 / -1;"><span class="text-muted" style="font-size:12px;">No team database records found</span></li>
-                                    <?php } ?>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row" style="margin-top: 6px;">
-                        <div class="col-md-6 col-xs-12">
-                            <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
-                                <div class="card-top">
-                                    <h4 class="card-title"><i class="fa fa-bullseye" style="color:#0072f0;"></i> My Lead State</h4>
-                                    <span class="card-total-pill"><?php echo number_format($my_lead_total); ?> Total</span>
-                                </div>
-                                <div class="crm-seg-bar">
-                                    <?php if (!empty($dashboard_lead_state) && $my_lead_total > 0) {
-                                        foreach($dashboard_lead_state as $li) {
-                                            $pct = round(((int)$li['lead_count'] / $my_lead_total) * 100, 1);
-                                            if ($pct > 0) {
-                                                echo '<div class="crm-seg" style="width:' . $pct . '%; opacity:0.85;" title="' . htmlspecialchars($li['status']) . ': ' . (int)$li['lead_count'] . '"></div>';
-                                            }
-                                        }
-                                    } else { ?>
-                                        <div class="crm-seg" style="width:100%; opacity:0.3;"></div>
-                                    <?php } ?>
-                                </div>
-                                <ul class="crm-modern-stat-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:6px;">
-                                    <?php if (!empty($dashboard_lead_state)) { foreach($dashboard_lead_state as $li) { ?>
-                                        <li style="margin:0;">
-                                            <a href="<?php echo base_url(); ?>manager/leads/view_leads?status%5B%5D=<?php echo $li['status_id']; ?>" class="crm-modern-stat-chip" style="padding:6px 9px;">
-                                                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;" title="<?php echo htmlspecialchars($li['status']); ?>"><?php echo htmlspecialchars($li['status']); ?></span>
-                                                <span class="badge" style="background:var(--crm-card-bg, #ffffff); color:var(--crm-text, #0f172a); border:1px solid var(--crm-border, #cbd5e1); font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;"><?php echo (int)$li['lead_count']; ?></span>
-                                            </a>
-                                        </li>
-                                    <?php } } else { ?>
-                                        <li style="grid-column: 1 / -1;"><span class="text-muted" style="font-size:12px;">No leads found</span></li>
-                                    <?php } ?>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 col-xs-12">
-                            <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
-                                <div class="card-top">
-                                    <h4 class="card-title"><i class="fa fa-bullseye" style="color:#0072f0;"></i> Team Lead State</h4>
-                                    <span class="card-total-pill"><?php echo number_format($team_lead_total); ?> Total</span>
-                                </div>
-                                <div class="crm-seg-bar">
-                                    <?php if (!empty($dashboard_lead_state_team) && $team_lead_total > 0) {
-                                        foreach($dashboard_lead_state_team as $li) {
-                                            $pct = round(((int)$li['lead_count'] / $team_lead_total) * 100, 1);
-                                            if ($pct > 0) {
-                                                echo '<div class="crm-seg" style="width:' . $pct . '%; opacity:0.85;" title="' . htmlspecialchars($li['status']) . ': ' . (int)$li['lead_count'] . '"></div>';
-                                            }
-                                        }
-                                    } else { ?>
-                                        <div class="crm-seg" style="width:100%; opacity:0.3;"></div>
-                                    <?php } ?>
-                                </div>
-                                <ul class="crm-modern-stat-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:6px;">
-                                    <?php if (!empty($dashboard_lead_state_team)) { foreach($dashboard_lead_state_team as $li) { ?>
-                                        <li style="margin:0;">
-                                            <a href="<?php echo base_url(); ?>manager/team/leads?status%5B%5D=<?php echo $li['status_id']; ?>" class="crm-modern-stat-chip" style="padding:6px 9px;">
-                                                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;" title="<?php echo htmlspecialchars($li['status']); ?>"><?php echo htmlspecialchars($li['status']); ?></span>
-                                                <span class="badge" style="background:var(--crm-card-bg, #ffffff); color:var(--crm-text, #0f172a); border:1px solid var(--crm-border, #cbd5e1); font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;"><?php echo (int)$li['lead_count']; ?></span>
-                                            </a>
-                                        </li>
-                                    <?php } } else { ?>
-                                        <li style="grid-column: 1 / -1;"><span class="text-muted" style="font-size:12px;">No team leads found</span></li>
-                                    <?php } ?>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
 
         <div class="dash-section-divider" style="margin-top: 10px; margin-bottom: 12px;">
             <h3 class="dash-section-title" style="margin-bottom:0;">
                 <span class="dash-section-title-icon">
                     <span></span><span></span>
                 </span>
-                <span>Projections &amp; Achievement</span>
+                <span>Achievement and Projection</span>
             </h3>
         </div>
 
         <div class="row">
-            <div class="col-md-6 col-xs-12">
-                <div class="dash-chart-card">
-                    <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important;">
-                        <h4 class="dash-chart-title" style="margin:0 !important; margin-right:20px !important;">
-                            <i class="fa fa-line-chart"></i> My Projection
-                        </h4>
-                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
-                            <span style="display:inline-block; width:10px; height:10px; background-color:#0072f0; border-radius:2px;"></span>
-                            <span>Projection</span>
-                        </div>
-                    </div>
-                    <div class="dash-chart-body">
-                        <canvas id="barChart2" height="230"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-xs-12">
-                <div class="dash-chart-card">
-                    <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important;">
-                        <h4 class="dash-chart-title" style="margin:0 !important; margin-right:20px !important;">
-                            <i class="fa fa-line-chart"></i> Team Projection
-                        </h4>
-                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
-                            <span style="display:inline-block; width:10px; height:10px; background-color:#0072f0; border-radius:2px;"></span>
-                            <span>Projection</span>
-                        </div>
-                    </div>
-                    <div class="dash-chart-body">
-                        <canvas id="barChart4" height="230"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row" style="margin-top: 14px;">
             <div class="col-md-6 col-xs-12">
                 <div class="dash-chart-card">
                     <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important;">
@@ -431,6 +402,310 @@
             </div>
         </div>
 
+        <div class="dash-section-divider" style="margin-top: 14px; margin-bottom: 12px;">
+            <h3 class="dash-section-title" style="margin-bottom:0;">
+                <span class="dash-section-title-icon">
+                    <span></span><span></span>
+                </span>
+                <span>My Projection and Team Projection</span>
+            </h3>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-xs-12">
+                <div class="dash-chart-card">
+                    <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important;">
+                        <h4 class="dash-chart-title" style="margin:0 !important; margin-right:20px !important;">
+                            <i class="fa fa-line-chart"></i> My Projection
+                        </h4>
+                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
+                            <span style="display:inline-block; width:10px; height:10px; background-color:#0072f0; border-radius:2px;"></span>
+                            <span>Projection</span>
+                        </div>
+                    </div>
+                    <div class="dash-chart-body">
+                        <canvas id="barChart2" height="230"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xs-12">
+                <div class="dash-chart-card">
+                    <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important;">
+                        <h4 class="dash-chart-title" style="margin:0 !important; margin-right:20px !important;">
+                            <i class="fa fa-line-chart"></i> Team Projection
+                        </h4>
+                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
+                            <span style="display:inline-block; width:10px; height:10px; background-color:#0072f0; border-radius:2px;"></span>
+                            <span>Projection</span>
+                        </div>
+                    </div>
+                    <div class="dash-chart-body">
+                        <canvas id="barChart4" height="230"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <?php
+            $my_db_total = 0;
+            if (!empty($dashboard_db_state)) {
+                foreach($dashboard_db_state as $item) {
+                    $my_db_total += (int)$item['lead_count'];
+                }
+            }
+            $team_db_total = 0;
+            if (!empty($dashboard_db_state_team)) {
+                foreach($dashboard_db_state_team as $item) {
+                    $team_db_total += (int)$item['lead_count'];
+                }
+            }
+            $my_lead_total = 0;
+            if (!empty($dashboard_lead_state)) {
+                foreach($dashboard_lead_state as $item) {
+                    $my_lead_total += (int)$item['lead_count'];
+                }
+            }
+            $team_lead_total = 0;
+            if (!empty($dashboard_lead_state_team)) {
+                foreach($dashboard_lead_state_team as $item) {
+                    $team_lead_total += (int)$item['lead_count'];
+                }
+            }
+        ?>
+
+        <div class="dash-section-divider" style="margin-top: 18px; margin-bottom: 12px;">
+            <h3 class="dash-section-title" style="margin-bottom:0;">
+                <span class="dash-section-title-icon">
+                    <span></span><span></span>
+                </span>
+                <span>Database States and Lead States</span>
+            </h3>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-xs-12">
+                <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-database" style="color:#0072f0;"></i> My Database State</h4>
+                        <span class="card-total-pill"><?php echo number_format($my_db_total); ?> Total</span>
+                    </div>
+                    <div class="crm-seg-bar">
+                        <?php if (!empty($dashboard_db_state) && $my_db_total > 0) {
+                            foreach($dashboard_db_state as $li) {
+                                $pct = round(((int)$li['lead_count'] / $my_db_total) * 100, 1);
+                                if ($pct > 0) {
+                                    echo '<div class="crm-seg" style="width:' . $pct . '%; opacity:0.85;" title="' . htmlspecialchars($li['status']) . ': ' . (int)$li['lead_count'] . '"></div>';
+                                }
+                            }
+                        } else { ?>
+                            <div class="crm-seg" style="width:100%; opacity:0.3;"></div>
+                        <?php } ?>
+                    </div>
+                    <ul class="crm-modern-stat-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:6px;">
+                        <?php if (!empty($dashboard_db_state)) { foreach($dashboard_db_state as $li) { ?>
+                            <li style="margin:0;">
+                                <a href="<?php echo base_url(); ?>manager/leads?status%5B%5D=<?php echo $li['status_id']; ?>" class="crm-modern-stat-chip" style="padding:6px 9px;">
+                                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;" title="<?php echo htmlspecialchars($li['status']); ?>"><?php echo htmlspecialchars($li['status']); ?></span>
+                                    <span class="badge" style="background:var(--crm-card-bg, #ffffff); color:var(--crm-text, #0f172a); border:1px solid var(--crm-border, #cbd5e1); font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;"><?php echo (int)$li['lead_count']; ?></span>
+                                </a>
+                            </li>
+                        <?php } } else { ?>
+                            <li style="grid-column: 1 / -1;"><span class="text-muted" style="font-size:12px;">No database records found</span></li>
+                        <?php } ?>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xs-12">
+                <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-database" style="color:#0072f0;"></i> Team Database State</h4>
+                        <span class="card-total-pill"><?php echo number_format($team_db_total); ?> Total</span>
+                    </div>
+                    <div class="crm-seg-bar">
+                        <?php if (!empty($dashboard_db_state_team) && $team_db_total > 0) {
+                            foreach($dashboard_db_state_team as $li) {
+                                $pct = round(((int)$li['lead_count'] / $team_db_total) * 100, 1);
+                                if ($pct > 0) {
+                                    echo '<div class="crm-seg" style="width:' . $pct . '%; opacity:0.85;" title="' . htmlspecialchars($li['status']) . ': ' . (int)$li['lead_count'] . '"></div>';
+                                }
+                            }
+                        } else { ?>
+                            <div class="crm-seg" style="width:100%; opacity:0.3;"></div>
+                        <?php } ?>
+                    </div>
+                    <ul class="crm-modern-stat-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:6px;">
+                        <?php if (!empty($dashboard_db_state_team)) { foreach($dashboard_db_state_team as $li) { ?>
+                            <li style="margin:0;">
+                                <a href="<?php echo base_url(); ?>manager/team/database?status%5B%5D=<?php echo $li['status_id']; ?>" class="crm-modern-stat-chip" style="padding:6px 9px;">
+                                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;" title="<?php echo htmlspecialchars($li['status']); ?>"><?php echo htmlspecialchars($li['status']); ?></span>
+                                    <span class="badge" style="background:var(--crm-card-bg, #ffffff); color:var(--crm-text, #0f172a); border:1px solid var(--crm-border, #cbd5e1); font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;"><?php echo (int)$li['lead_count']; ?></span>
+                                </a>
+                            </li>
+                        <?php } } else { ?>
+                            <li style="grid-column: 1 / -1;"><span class="text-muted" style="font-size:12px;">No team database records found</span></li>
+                        <?php } ?>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" style="margin-top: 6px;">
+            <div class="col-md-6 col-xs-12">
+                <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-bullseye" style="color:#0072f0;"></i> My Lead State</h4>
+                        <span class="card-total-pill"><?php echo number_format($my_lead_total); ?> Total</span>
+                    </div>
+                    <div class="crm-seg-bar">
+                        <?php if (!empty($dashboard_lead_state) && $my_lead_total > 0) {
+                            foreach($dashboard_lead_state as $li) {
+                                $pct = round(((int)$li['lead_count'] / $my_lead_total) * 100, 1);
+                                if ($pct > 0) {
+                                    echo '<div class="crm-seg" style="width:' . $pct . '%; opacity:0.85;" title="' . htmlspecialchars($li['status']) . ': ' . (int)$li['lead_count'] . '"></div>';
+                                }
+                            }
+                        } else { ?>
+                            <div class="crm-seg" style="width:100%; opacity:0.3;"></div>
+                        <?php } ?>
+                    </div>
+                    <ul class="crm-modern-stat-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:6px;">
+                        <?php if (!empty($dashboard_lead_state)) { foreach($dashboard_lead_state as $li) { ?>
+                            <li style="margin:0;">
+                                <a href="<?php echo base_url(); ?>manager/leads/view_leads?status%5B%5D=<?php echo $li['status_id']; ?>" class="crm-modern-stat-chip" style="padding:6px 9px;">
+                                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;" title="<?php echo htmlspecialchars($li['status']); ?>"><?php echo htmlspecialchars($li['status']); ?></span>
+                                    <span class="badge" style="background:var(--crm-card-bg, #ffffff); color:var(--crm-text, #0f172a); border:1px solid var(--crm-border, #cbd5e1); font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;"><?php echo (int)$li['lead_count']; ?></span>
+                                </a>
+                            </li>
+                        <?php } } else { ?>
+                            <li style="grid-column: 1 / -1;"><span class="text-muted" style="font-size:12px;">No leads found</span></li>
+                        <?php } ?>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xs-12">
+                <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-bullseye" style="color:#0072f0;"></i> Team Lead State</h4>
+                        <span class="card-total-pill"><?php echo number_format($team_lead_total); ?> Total</span>
+                    </div>
+                    <div class="crm-seg-bar">
+                        <?php if (!empty($dashboard_lead_state_team) && $team_lead_total > 0) {
+                            foreach($dashboard_lead_state_team as $li) {
+                                $pct = round(((int)$li['lead_count'] / $team_lead_total) * 100, 1);
+                                if ($pct > 0) {
+                                    echo '<div class="crm-seg" style="width:' . $pct . '%; opacity:0.85;" title="' . htmlspecialchars($li['status']) . ': ' . (int)$li['lead_count'] . '"></div>';
+                                }
+                            }
+                        } else { ?>
+                            <div class="crm-seg" style="width:100%; opacity:0.3;"></div>
+                        <?php } ?>
+                    </div>
+                    <ul class="crm-modern-stat-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:6px;">
+                        <?php if (!empty($dashboard_lead_state_team)) { foreach($dashboard_lead_state_team as $li) { ?>
+                            <li style="margin:0;">
+                                <a href="<?php echo base_url(); ?>manager/team/leads?status%5B%5D=<?php echo $li['status_id']; ?>" class="crm-modern-stat-chip" style="padding:6px 9px;">
+                                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;" title="<?php echo htmlspecialchars($li['status']); ?>"><?php echo htmlspecialchars($li['status']); ?></span>
+                                    <span class="badge" style="background:var(--crm-card-bg, #ffffff); color:var(--crm-text, #0f172a); border:1px solid var(--crm-border, #cbd5e1); font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;"><?php echo (int)$li['lead_count']; ?></span>
+                                </a>
+                            </li>
+                        <?php } } else { ?>
+                            <li style="grid-column: 1 / -1;"><span class="text-muted" style="font-size:12px;">No team leads found</span></li>
+                        <?php } ?>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="dash-section-divider" style="margin-top: 18px; margin-bottom: 12px;">
+            <h3 class="dash-section-title" style="margin-bottom:0;">
+                <span class="dash-section-title-icon">
+                    <span></span><span></span>
+                </span>
+                <span>My Orders and Team Orders</span>
+            </h3>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-xs-12">
+                <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-shopping-cart" style="color:#0072f0;"></i> My Orders</h4>
+                        <span class="card-total-pill"><?php echo isset($dashboard_count['count_orders']) ? (int)$dashboard_count['count_orders'] : 0; ?> Total</span>
+                    </div>
+                    <div class="crm-seg-bar">
+                        <div class="crm-seg" style="width:100%; opacity:0.85;"></div>
+                    </div>
+                    <ul class="crm-modern-stat-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:6px;">
+                        <li style="margin:0;">
+                            <a href="<?php echo base_url(); ?>manager/orders/my" class="crm-modern-stat-chip" style="padding:6px 9px;">
+                                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;">All My Orders</span>
+                                <span class="badge" style="background:var(--crm-card-bg, #ffffff); color:var(--crm-text, #0f172a); border:1px solid var(--crm-border, #cbd5e1); font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;"><?php echo isset($dashboard_count['count_orders']) ? (int)$dashboard_count['count_orders'] : 0; ?></span>
+                            </a>
+                        </li>
+                        <li style="margin:0;">
+                            <a href="<?php echo base_url(); ?>manager/orders/my?status=pending" class="crm-modern-stat-chip" style="padding:6px 9px;">
+                                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;">Pending Orders</span>
+                                <span class="badge bg-orange" style="font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;">View</span>
+                            </a>
+                        </li>
+                        <li style="margin:0;">
+                            <a href="<?php echo base_url(); ?>manager/orders/my?status=completed" class="crm-modern-stat-chip" style="padding:6px 9px;">
+                                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;">Completed Orders</span>
+                                <span class="badge bg-green" style="font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;">View</span>
+                            </a>
+                        </li>
+                        <li style="margin:0;">
+                            <a href="<?php echo base_url(); ?>manager/sales" class="crm-modern-stat-chip" style="padding:6px 9px;">
+                                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;">Converted Sales</span>
+                                <span class="badge bg-blue" style="font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;">AED <?php echo number_format((float)(isset($dashboard_count['sales_amount']) ? $dashboard_count['sales_amount'] : 0), 2); ?></span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xs-12">
+                <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-shopping-cart" style="color:#0072f0;"></i> Team Orders</h4>
+                        <span class="card-total-pill"><?php echo isset($dashboard_Tcount['count_orders']) ? (int)$dashboard_Tcount['count_orders'] : 0; ?> Total</span>
+                    </div>
+                    <div class="crm-seg-bar">
+                        <div class="crm-seg" style="width:100%; opacity:0.85;"></div>
+                    </div>
+                    <ul class="crm-modern-stat-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:6px;">
+                        <li style="margin:0;">
+                            <a href="<?php echo base_url(); ?>manager/team/orders" class="crm-modern-stat-chip" style="padding:6px 9px;">
+                                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;">All Team Orders</span>
+                                <span class="badge" style="background:var(--crm-card-bg, #ffffff); color:var(--crm-text, #0f172a); border:1px solid var(--crm-border, #cbd5e1); font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;"><?php echo isset($dashboard_Tcount['count_orders']) ? (int)$dashboard_Tcount['count_orders'] : 0; ?></span>
+                            </a>
+                        </li>
+                        <li style="margin:0;">
+                            <a href="<?php echo base_url(); ?>manager/team/orders?status=pending" class="crm-modern-stat-chip" style="padding:6px 9px;">
+                                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;">Pending Orders</span>
+                                <span class="badge bg-orange" style="font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;">View</span>
+                            </a>
+                        </li>
+                        <li style="margin:0;">
+                            <a href="<?php echo base_url(); ?>manager/team/orders?status=completed" class="crm-modern-stat-chip" style="padding:6px 9px;">
+                                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;">Completed Orders</span>
+                                <span class="badge bg-green" style="font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;">View</span>
+                            </a>
+                        </li>
+                        <li style="margin:0;">
+                            <a href="<?php echo base_url(); ?>manager/orders" class="crm-modern-stat-chip" style="padding:6px 9px;">
+                                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;">Back Office Orders</span>
+                                <span class="badge bg-blue" style="font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;">AED <?php echo number_format((float)(isset($dashboard_Tcount['sales_amount']) ? $dashboard_Tcount['sales_amount'] : 0), 2); ?></span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
         <div class="dash-section-divider" style="margin-top: 18px; margin-bottom: 12px;">
             <h3 class="dash-section-title" style="margin-bottom:0;">
                 <span class="dash-section-title-icon">
@@ -470,7 +745,7 @@
                             <span class="card-total-pill"><?php echo $total_my_tickets; ?> Total</span>
                         <?php } ?>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_my_tickets" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; min-height:100px; padding:6px 0;"><canvas id="pieCard_my_tickets" width="100" height="100" style="width:100px; height:100px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
@@ -519,7 +794,7 @@
                         <h4 class="card-title"><a href="<?php echo base_url(); ?>manager/tasks?team=0" style="color:inherit; text-decoration:none;"><i class="fa fa-tasks"></i> My Tasks</a></h4>
                         <a href="<?php echo base_url(); ?>manager/tasks?team=0" class="card-total-pill" style="text-decoration:none;"><?php echo $total_my_tasks; ?> Total</a>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_my_tasks" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; min-height:100px; padding:6px 0;"><canvas id="pieCard_my_tasks" width="100" height="100" style="width:100px; height:100px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
@@ -568,7 +843,7 @@
                         <h4 class="card-title"><i class="fa fa-calendar-check-o"></i> My Followups</h4>
                         <span class="card-total-pill"><?php echo $total_my_f; ?> Total</span>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_my_f" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; min-height:100px; padding:6px 0;"><canvas id="pieCard_my_f" width="100" height="100" style="width:100px; height:100px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:12%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
@@ -617,13 +892,13 @@
                         <h4 class="card-title"><i class="fa fa-handshake-o"></i> My Meetings</h4>
                         <span class="card-total-pill"><?php echo $total_my_m; ?> Total</span>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_my_m" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; min-height:100px; padding:6px 0;"><canvas id="pieCard_my_m" width="100" height="100" style="width:100px; height:100px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:10%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:18%;" title="Last 7 Days"></div>
-                        <div class="crm-seg seg-today" style="width:22%;" title="Today"></div>
+                        <div class="crm-seg seg-today" style="width:20%;" title="Today"></div>
                         <div class="crm-seg seg-next7" style="width:26%;" title="Next 7 Days"></div>
-                        <div class="crm-seg seg-future" style="width:24%;" title="All Future"></div>
+                        <div class="crm-seg seg-future" style="width:26%;" title="All Future"></div>
                     </div>
                     <ul class="crm-modern-stat-grid">
                         <li>
@@ -666,7 +941,7 @@
                         <h4 class="card-title"><i class="fa fa-briefcase"></i> My Vertical FU</h4>
                         <span class="card-total-pill"><?php echo $total_my_vfu; ?> Total</span>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_my_vfu" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; min-height:100px; padding:6px 0;"><canvas id="pieCard_my_vfu" width="100" height="100" style="width:100px; height:100px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
@@ -715,7 +990,7 @@
                         <h4 class="card-title"><i class="fa fa-database" style="color:#0072f0;"></i> My Database</h4>
                         <span class="card-total-pill"><?php echo (int)$dashboard_db_ops_my['total_all']; ?> Total</span>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_my_db" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; min-height:100px; padding:6px 0;"><canvas id="pieCard_my_db" width="100" height="100" style="width:100px; height:100px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
@@ -739,7 +1014,7 @@
                         <h4 class="card-title"><i class="fa fa-bullseye" style="color:#0072f0;"></i> My Leads</h4>
                         <span class="card-total-pill"><?php echo (int)$dashboard_lead_ops_my['total_all']; ?> Total</span>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_my_leads" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; min-height:100px; padding:6px 0;"><canvas id="pieCard_my_leads" width="100" height="100" style="width:100px; height:100px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
@@ -775,7 +1050,7 @@
                             <span class="card-total-pill"><?php echo $total_team_tickets; ?> Total</span>
                         <?php } ?>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_team_tickets" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; min-height:100px; padding:6px 0;"><canvas id="pieCard_team_tickets" width="100" height="100" style="width:100px; height:100px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
@@ -824,7 +1099,7 @@
                         <h4 class="card-title"><a href="<?php echo base_url(); ?>manager/tasks?team=1" style="color:inherit; text-decoration:none;"><i class="fa fa-tasks"></i> Team Tasks</a></h4>
                         <a href="<?php echo base_url(); ?>manager/tasks?team=1" class="card-total-pill" style="text-decoration:none;"><?php echo $total_team_tasks; ?> Total</a>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_team_tasks" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; min-height:100px; padding:6px 0;"><canvas id="pieCard_team_tasks" width="100" height="100" style="width:100px; height:100px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
@@ -873,7 +1148,7 @@
                         <h4 class="card-title"><i class="fa fa-calendar-check-o"></i> Team Followups</h4>
                         <span class="card-total-pill"><?php echo $total_team_f; ?> Total</span>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_team_f" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; min-height:100px; padding:6px 0;"><canvas id="pieCard_team_f" width="100" height="100" style="width:100px; height:100px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:10%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:18%;" title="Last 7 Days"></div>
@@ -922,7 +1197,7 @@
                         <h4 class="card-title"><i class="fa fa-handshake-o"></i> Team Meetings</h4>
                         <span class="card-total-pill"><?php echo $total_team_m; ?> Total</span>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_team_m" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; min-height:100px; padding:6px 0;"><canvas id="pieCard_team_m" width="100" height="100" style="width:100px; height:100px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:8%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
@@ -971,7 +1246,7 @@
                         <h4 class="card-title"><i class="fa fa-briefcase"></i> Team Vertical FU</h4>
                         <span class="card-total-pill"><?php echo $total_team_vfu; ?> Total</span>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_team_vfu" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; min-height:100px; padding:6px 0;"><canvas id="pieCard_team_vfu" width="100" height="100" style="width:100px; height:100px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:12%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
@@ -1020,7 +1295,7 @@
                         <h4 class="card-title"><i class="fa fa-database" style="color:#0072f0;"></i> Team Database</h4>
                         <span class="card-total-pill"><?php echo (int)$dashboard_db_ops_team['total_all']; ?> Total</span>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_team_db" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; min-height:100px; padding:6px 0;"><canvas id="pieCard_team_db" width="100" height="100" style="width:100px; height:100px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
@@ -1044,7 +1319,7 @@
                         <h4 class="card-title"><i class="fa fa-bullseye" style="color:#0072f0;"></i> Team Leads</h4>
                         <span class="card-total-pill"><?php echo (int)$dashboard_lead_ops_team['total_all']; ?> Total</span>
                     </div>
-                    <div style="display:flex; justify-content:center; align-items:center; padding:6px 0 6px 0;"><canvas id="pieCard_team_leads" width="96" height="96" style="width:96px; height:96px;"></canvas></div>
+                    <div style="display:flex; justify-content:center; align-items:center; min-height:100px; padding:6px 0;"><canvas id="pieCard_team_leads" width="100" height="100" style="width:100px; height:100px;"></canvas></div>
                     <div class="crm-seg-bar">
                         <div class="crm-seg seg-missed" style="width:14%;" title="Missed"></div>
                         <div class="crm-seg seg-last7" style="width:20%;" title="Last 7 Days"></div>
@@ -1063,7 +1338,6 @@
             </div>
         </div>
 
-        
         <div class="dash-drilldown-panel" id="dashDrilldownPanel">
             <div class="dash-drilldown-header">
                 <h4 class="dash-drilldown-title">
@@ -1092,17 +1366,13 @@
                         </tr>
                     </thead>
                     <tbody id="drilldownTableBody">
-                        
                     </tbody>
                 </table>
             </div>
         </div>
 
-
-
     </div>
 </div>
-
 
 <script>
 $(function () {
@@ -1374,8 +1644,6 @@ $(function () {
             segmentStrokeColor: '#ffffff',
             segmentStrokeWidth: 1,
             animation: false,
-
-
             responsive: false,
             maintainAspectRatio: true,
             showTooltips: false

@@ -683,6 +683,38 @@ ul.munk_menu > li > ul > li > a i {
   background: linear-gradient(135deg, #00c6f0 0%, #0096cc 100%) !important;
 }
 
+.dash-kpi-col1 {
+  background: linear-gradient(135deg, #5f3abd 0%, #4a2bb3 100%) !important;
+  box-shadow: 0 8px 24px rgba(95, 58, 189, 0.28) !important;
+}
+.dash-kpi-col1:hover {
+  box-shadow: 0 12px 28px rgba(95, 58, 189, 0.42) !important;
+}
+
+.dash-kpi-col2 {
+  background: linear-gradient(135deg, #01509e 0%, #003c7a 100%) !important;
+  box-shadow: 0 8px 24px rgba(1, 80, 158, 0.28) !important;
+}
+.dash-kpi-col2:hover {
+  box-shadow: 0 12px 28px rgba(1, 80, 158, 0.42) !important;
+}
+
+.dash-kpi-col3 {
+  background: linear-gradient(135deg, #0086c5 0%, #006fa8 100%) !important;
+  box-shadow: 0 8px 24px rgba(0, 134, 197, 0.28) !important;
+}
+.dash-kpi-col3:hover {
+  box-shadow: 0 12px 28px rgba(0, 134, 197, 0.42) !important;
+}
+
+.dash-kpi-col4 {
+  background: linear-gradient(135deg, #00b69c 0%, #009680 100%) !important;
+  box-shadow: 0 8px 24px rgba(0, 182, 156, 0.28) !important;
+}
+.dash-kpi-col4:hover {
+  box-shadow: 0 12px 28px rgba(0, 182, 156, 0.42) !important;
+}
+
 .dash-kpi-top {
   position: relative;
   display: flex;
