@@ -7,6 +7,11 @@ class Ci_admin_model extends CI_model {
 	}
 	
 	   public function dashboard_countdata(){
+		if (!$this->db->field_exists('currency', 'ci_user')) {
+			$this->db->query("SET SESSION innodb_strict_mode=0");
+			$this->db->query("ALTER TABLE `ci_user` MODIFY `department` TEXT, MODIFY `office` TEXT, MODIFY `visa_type` TEXT, MODIFY `visa_by` TEXT");
+			$this->db->query("ALTER TABLE `ci_user` ADD `currency` VARCHAR(10) NOT NULL DEFAULT 'AED'");
+		}
 		$manager_id = (int)$this->session->userdata('manager_id');
 		$user_role = (int)($this->session->userdata('manager_role') ? $this->session->userdata('manager_role') : $this->session->userdata('user_role'));
 		$is_admin = ($user_role === 1 || $user_role === 4 || $manager_id === 1);
@@ -16,7 +21,8 @@ class Ci_admin_model extends CI_model {
 			'count_vetricals' => 0,
 			'count_leads' => 0,
 			'count_orders' => 0,
-			'sales_amount' => 0.00
+			'sales_amount' => 0.00,
+			'cash_received' => 0.00
 		
 		);
 
@@ -37,7 +43,8 @@ class Ci_admin_model extends CI_model {
 			 AND (A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)) as count_leads,
 
 			(SELECT count(id) FROM ci_orders WHERE created_by = " . $manager_id . ") as count_orders,
-			(SELECT COALESCE(SUM(CAST(COALESCE(NULLIF(pricing_amount, 0), NULLIF(mrr, 0), 0) AS DECIMAL(12,2))), 0) FROM ci_orders WHERE created_by = " . $manager_id . " AND (status = 'Sales' OR status = 'Closed / Sold' OR status = 'Completed' OR (sales_ref_no IS NOT NULL AND sales_ref_no != ''))) as sales_amount";
+			(SELECT COALESCE(SUM(CAST(COALESCE(NULLIF(pricing_amount, 0), NULLIF(mrr, 0), 0) AS DECIMAL(12,2))), 0) FROM ci_orders WHERE created_by = " . $manager_id . " AND (status = 'Sales' OR status = 'Closed / Sold' OR status = 'Completed' OR (sales_ref_no IS NOT NULL AND sales_ref_no != ''))) as sales_amount,
+			(SELECT COALESCE(SUM(amount), 0) FROM ci_payments WHERE recorded_by = " . $manager_id . ") as cash_received";
 
 		$rows = $this->db->query($sql);
 		if ($rows && is_object($rows) && $rows->num_rows() >= 1) {
@@ -46,6 +53,9 @@ class Ci_admin_model extends CI_model {
 		$data['count_vetricals'] = isset($data['count_verticals']) ? $data['count_verticals'] : 0;
 		if (!isset($data['sales_amount'])) {
 			$data['sales_amount'] = 0.00;
+		}
+		if (!isset($data['cash_received'])) {
+			$data['cash_received'] = 0.00;
 		}
 		return $data;
 	   }
@@ -77,7 +87,8 @@ class Ci_admin_model extends CI_model {
 				'count_leads' => 0,
 				'count_orders' => 0,
 				'count_today_birth' => 0,
-				'sales_amount' => 0.00
+				'sales_amount' => 0.00,
+				'cash_received' => 0.00
 			
 			);
 
@@ -95,7 +106,8 @@ class Ci_admin_model extends CI_model {
 				 AND (A.company_status IS NULL OR LOWER(A.company_status) != 'closed')) as count_leads,
 				" . $vert_team_sql . " as count_verticals,
 				(SELECT count(id) FROM ci_orders WHERE FIND_IN_SET(created_by, '" . $team_str . "') > 0) as count_orders,
-				(SELECT COALESCE(SUM(CAST(COALESCE(NULLIF(pricing_amount, 0), NULLIF(mrr, 0), 0) AS DECIMAL(12,2))), 0) FROM ci_orders WHERE FIND_IN_SET(created_by, '" . $team_str . "') > 0 AND (status = 'Sales' OR status = 'Closed / Sold' OR status = 'Completed' OR (sales_ref_no IS NOT NULL AND sales_ref_no != ''))) as sales_amount";
+				(SELECT COALESCE(SUM(CAST(COALESCE(NULLIF(pricing_amount, 0), NULLIF(mrr, 0), 0) AS DECIMAL(12,2))), 0) FROM ci_orders WHERE FIND_IN_SET(created_by, '" . $team_str . "') > 0 AND (status = 'Sales' OR status = 'Closed / Sold' OR status = 'Completed' OR (sales_ref_no IS NOT NULL AND sales_ref_no != ''))) as sales_amount,
+				(SELECT COALESCE(SUM(amount), 0) FROM ci_payments WHERE FIND_IN_SET(recorded_by, '" . $team_str . "') > 0) as cash_received";
 
 			$rows = $this->db->query($sql);
 			if ($rows && is_object($rows) && $rows->num_rows() >= 1) {
@@ -106,6 +118,9 @@ class Ci_admin_model extends CI_model {
 			$data['count_vetricals'] = isset($data['count_verticals']) ? $data['count_verticals'] : 0;
 			if (!isset($data['sales_amount'])) {
 				$data['sales_amount'] = 0.00;
+			}
+			if (!isset($data['cash_received'])) {
+				$data['cash_received'] = 0.00;
 			}
 			return $data;
 		}

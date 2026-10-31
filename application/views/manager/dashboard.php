@@ -6,10 +6,10 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    min-height: 64px;
-    height: 64px;
-    border-radius: 8px !important;
-    padding: 8px 12px !important;
+    min-height: 52px;
+    height: 52px;
+    border-radius: 7px !important;
+    padding: 6px 10px !important;
     color: #ffffff !important;
     margin-bottom: 6px;
     overflow: hidden;
@@ -100,7 +100,7 @@
     background: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
-    padding: 8px 14px;
+    padding: 8px 12px;
     margin-bottom: 6px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.03);
     box-sizing: border-box;
@@ -110,7 +110,7 @@
     border: 1px solid #e2e8f0 !important;
     border-top: 2px solid #0084ff !important;
     border-radius: 8px !important;
-    padding: 6px 12px !important;
+    padding: 5px 10px !important;
     margin-bottom: 6px !important;
     box-shadow: 0 1px 3px rgba(0,0,0,0.03) !important;
     overflow: hidden !important;
@@ -121,15 +121,21 @@
 }
 .dash-top-chart-body {
     position: relative !important;
-    height: 200px !important;
-    max-height: 200px !important;
+    height: 145px !important;
+    max-height: 145px !important;
     padding: 0 !important;
     overflow: hidden !important;
 }
 .dash-top-chart-body canvas {
-    height: 200px !important;
-    max-height: 200px !important;
+    height: 145px !important;
+    max-height: 145px !important;
     width: 100% !important;
+}
+[data-theme="dark"] .dash-round-meta {
+    color: #94a3b8 !important;
+}
+[data-theme="dark"] .dash-round-meta strong {
+    color: #f8fafc !important;
 }
 [data-theme="dark"] .dash-round-card {
     background: #111827;
@@ -172,7 +178,7 @@
 
 <?php
 if (!function_exists('render_donut_chart_svg')) {
-    function render_donut_chart_svg($items, $w = 320, $h = 250, $cx = 160, $cy = 125, $r_out = 72, $r_in = 44, $type = 'Lead') {
+    function render_donut_chart_svg($items, $w = 380, $h = 195, $cx = 190, $cy = 98, $r_out = 64, $r_in = 38, $type = 'Lead') {
         $total = 0;
         foreach ($items as $it) {
             $total += (float)$it['count'];
@@ -202,24 +208,25 @@ if (!function_exists('render_donut_chart_svg')) {
             $display_pct = $total > 0 ? number_format(($it['count'] / $total) * 100, 1) . '%' : '0.0%';
             $paths .= '<path d="' . $d . '" fill="' . $it['color'] . '" stroke="#ffffff" stroke-width="2.5" class="donut-slice" data-label="' . htmlspecialchars($it['label']) . '" data-count="' . (int)$it['count'] . '" data-pct="' . $display_pct . '" data-type="' . $type . '" style="cursor:pointer; transition:transform 0.15s ease, opacity 0.15s ease;" />';
             $mid = $current_angle + $angle_delta / 2;
-            $p1_x = $cx + ($r_out + 4) * cos($mid);
-            $p1_y = $cy + ($r_out + 4) * sin($mid);
-            $p2_x = $cx + ($r_out + 18) * cos($mid);
-            $p2_y = $cy + ($r_out + 18) * sin($mid);
+            $p1_x = $cx + ($r_out + 3) * cos($mid);
+            $p1_y = $cy + ($r_out + 3) * sin($mid);
+            $p2_x = $cx + ($r_out + 14) * cos($mid);
+            $p2_y = $cy + ($r_out + 14) * sin($mid);
             $is_right = cos($mid) >= 0;
-            $p3_x = $p2_x + ($is_right ? 12 : -12);
+            $p3_x = $p2_x + ($is_right ? 8 : -8);
             $p3_y = $p2_y;
             $anchor = $is_right ? 'start' : 'end';
             $tx = $p3_x + ($is_right ? 3 : -3);
             $ty = $p3_y + 3;
-            $lbl = htmlspecialchars($it['label']) . ' ' . $display_pct;
+            $lbl = htmlspecialchars($it['label']) . ': ' . (int)$it['count'];
             $callouts .= sprintf('<polyline points="%.1f,%.1f %.1f,%.1f %.1f,%.1f" fill="none" stroke="#94a3b8" stroke-width="1.2" />', $p1_x, $p1_y, $p2_x, $p2_y, $p3_x, $p3_y);
-            $callouts .= sprintf('<text x="%.1f" y="%.1f" font-size="9.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="700" fill="#1e293b" class="donut-callout-text" text-anchor="%s">%s</text>', $tx, $ty, $anchor, $lbl);
+            $callouts .= sprintf('<text x="%.1f" y="%.1f" font-size="9" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="700" fill="#1e293b" class="donut-callout-text" text-anchor="%s">%s</text>', $tx, $ty, $anchor, $lbl);
             $current_angle = $next_angle;
         }
         return '<svg viewBox="0 0 ' . $w . ' ' . $h . '" width="100%" height="' . $h . '" xmlns="http://www.w3.org/2000/svg" style="display:block; margin:0 auto; overflow:visible;"><g>' . $paths . $callouts . '</g></svg>';
     }
 }
+$curr = !empty($user_currency) ? $user_currency : 'AED';
 $my_db_total = 0;
 if (!empty($dashboard_db_state)) {
     foreach($dashboard_db_state as $item) {
@@ -338,7 +345,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                                 <div style="min-width:0; flex:1;">
                                     <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_leads']) ? (int)$dashboard_count['count_leads'] : 0; ?></div>
                                     <div class="dash-kpi-label">My Leads</div>
-                                    <div class="dash-kpi-sales">Sales: AED <?php echo number_format((float)(isset($dashboard_count['sales_amount']) ? $dashboard_count['sales_amount'] : 0), 2); ?></div>
+                                    <div class="dash-kpi-sales"><?php echo $curr . ' ' . number_format((float)(isset($dashboard_count['sales_amount']) ? $dashboard_count['sales_amount'] : 0), 2); ?></div>
                                 </div>
                                 <div class="dash-kpi-icon"><i class="fa fa-bullseye"></i></div>
                             </div>
@@ -350,7 +357,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                                 <div style="min-width:0; flex:1;">
                                     <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_orders']) ? (int)$dashboard_count['count_orders'] : 0; ?></div>
                                     <div class="dash-kpi-label">My Orders</div>
-                                    <div class="dash-kpi-sales">Sales: AED <?php echo number_format((float)(isset($dashboard_count['sales_amount']) ? $dashboard_count['sales_amount'] : 0), 2); ?></div>
+                                    <div class="dash-kpi-sales"><?php echo $curr . ' ' . number_format((float)(isset($dashboard_count['sales_amount']) ? $dashboard_count['sales_amount'] : 0), 2); ?></div>
                                 </div>
                                 <div class="dash-kpi-icon"><i class="fa fa-shopping-cart"></i></div>
                             </div>
@@ -362,7 +369,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                                 <div style="min-width:0; flex:1;">
                                     <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_leads']) ? (int)$dashboard_Tcount['count_leads'] : 0; ?></div>
                                     <div class="dash-kpi-label">Team Leads</div>
-                                    <div class="dash-kpi-sales">Sales: AED <?php echo number_format((float)(isset($dashboard_Tcount['sales_amount']) ? $dashboard_Tcount['sales_amount'] : 0), 2); ?></div>
+                                    <div class="dash-kpi-sales"><?php echo $curr . ' ' . number_format((float)(isset($dashboard_Tcount['sales_amount']) ? $dashboard_Tcount['sales_amount'] : 0), 2); ?></div>
                                 </div>
                                 <div class="dash-kpi-icon"><i class="fa fa-bullseye"></i></div>
                             </div>
@@ -374,7 +381,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                                 <div style="min-width:0; flex:1;">
                                     <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_orders']) ? (int)$dashboard_Tcount['count_orders'] : 0; ?></div>
                                     <div class="dash-kpi-label">Team Orders</div>
-                                    <div class="dash-kpi-sales">Sales: AED <?php echo number_format((float)(isset($dashboard_Tcount['sales_amount']) ? $dashboard_Tcount['sales_amount'] : 0), 2); ?></div>
+                                    <div class="dash-kpi-sales"><?php echo $curr . ' ' . number_format((float)(isset($dashboard_Tcount['sales_amount']) ? $dashboard_Tcount['sales_amount'] : 0), 2); ?></div>
                                 </div>
                                 <div class="dash-kpi-icon"><i class="fa fa-shopping-cart"></i></div>
                             </div>
@@ -382,55 +389,67 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                     </div>
                 </div>
 
-                <div class="dash-top-chart-card" style="margin-bottom: 8px; padding: 6px 12px; border-radius: 8px;">
-                    <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important; margin-bottom: 2px !important; padding:4px 0 !important; border-bottom:none !important;">
-                        <h4 class="dash-chart-title" style="margin:0 !important; font-size:12.5px; font-weight:700;">
+                <div class="dash-top-chart-card" style="height: 180px; max-height: 180px; margin-bottom: 6px; padding: 5px 10px; border-radius: 8px; box-sizing: border-box;">
+                    <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important; margin-bottom: 2px !important; padding:2px 0 !important; border-bottom:none !important;">
+                        <h4 class="dash-chart-title" style="margin:0 !important; font-size:12px; font-weight:700;">
                             Target vs Achievement
                         </h4>
-                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:12px; font-size:10.5px; font-weight:600; color:#475569;">
-                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#00c6f0; border-radius:50%;"></span> Target</span>
-                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#16a34a; border-radius:50%;"></span> Achievement</span>
+                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:10px; font-size:10px; font-weight:600; color:#475569;">
+                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:7px; height:7px; background-color:#00c6f0; border-radius:50%;"></span> Target</span>
+                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:7px; height:7px; background-color:#16a34a; border-radius:50%;"></span> Achievement</span>
                         </div>
                     </div>
-                    <div class="dash-top-chart-body">
-                        <canvas id="lineChartTargetAchieve" height="200"></canvas>
+                    <div class="dash-top-chart-body" style="height: 145px !important; max-height: 145px !important;">
+                        <canvas id="lineChartTargetAchieve" height="145"></canvas>
                     </div>
                 </div>
 
-                <div class="dash-top-chart-card" style="margin-bottom: 0px; padding: 6px 12px; border-radius: 8px;">
-                    <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important; margin-bottom: 2px !important; padding:4px 0 !important; border-bottom:none !important;">
-                        <h4 class="dash-chart-title" style="margin:0 !important; font-size:12.5px; font-weight:700;">
+                <div class="dash-top-chart-card" style="height: 180px; max-height: 180px; margin-bottom: 0px; padding: 5px 10px; border-radius: 8px; box-sizing: border-box;">
+                    <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important; margin-bottom: 2px !important; padding:2px 0 !important; border-bottom:none !important;">
+                        <h4 class="dash-chart-title" style="margin:0 !important; font-size:12px; font-weight:700;">
                             Target vs Projection
                         </h4>
-                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:12px; font-size:10.5px; font-weight:600; color:#475569;">
-                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#00c6f0; border-radius:50%;"></span> Target</span>
-                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#0072f0; border-radius:50%;"></span> Projection</span>
+                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:10px; font-size:10px; font-weight:600; color:#475569;">
+                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:7px; height:7px; background-color:#00c6f0; border-radius:50%;"></span> Target</span>
+                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:7px; height:7px; background-color:#0072f0; border-radius:50%;"></span> Projection</span>
                         </div>
                     </div>
-                    <div class="dash-top-chart-body">
-                        <canvas id="lineChartTargetProject" height="200"></canvas>
+                    <div class="dash-top-chart-body" style="height: 145px !important; max-height: 145px !important;">
+                        <canvas id="lineChartTargetProject" height="145"></canvas>
                     </div>
                 </div>
             </div>
 
             <div class="col-lg-4 col-md-5 col-xs-12" style="padding-left: 6px; padding-right: 10px;">
-                <div class="dash-round-card" style="width: 100%; height: 315px; margin-bottom: 8px; padding: 10px 14px; border-radius: 10px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
-                    <div class="dash-round-title" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; font-size:13.5px; font-weight:700;">
+                <div class="dash-round-card" style="width: 100%; height: 238px; max-height: 238px; margin-bottom: 6px; padding: 6px 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
+                    <div class="dash-round-title" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0; font-size:13px; font-weight:700;">
                         <span>My Leads</span>
-                        <span class="badge" style="background:#0072f0; color:#ffffff; font-size:11px; font-weight:600; padding:2px 9px; border-radius:10px;"><?php echo isset($mylead_donut['total']) ? (int)$mylead_donut['total'] : 0; ?> Total</span>
+                        <div class="dash-round-meta" style="display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:#64748b;">
+                            <span><strong style="color:#0f172a; font-weight:700;"><?php echo isset($mylead_donut['total']) ? (int)$mylead_donut['total'] : 0; ?></strong> Total</span>
+                            <span style="color:#cbd5e1;">&bull;</span>
+                            <span>Sales: <strong style="color:#0f172a; font-weight:700;"><?php echo $curr . ' ' . number_format((float)(isset($dashboard_count['sales_amount']) ? $dashboard_count['sales_amount'] : 0), 2); ?></strong></span>
+                            <span style="color:#cbd5e1;">&bull;</span>
+                            <span>Received: <strong style="color:#0f172a; font-weight:700;"><?php echo $curr . ' ' . number_format((float)(isset($dashboard_count['cash_received']) ? $dashboard_count['cash_received'] : 0), 2); ?></strong></span>
+                        </div>
                     </div>
                     <div style="width:100%; display:flex; align-items:center; justify-content:center; flex:1; overflow:visible;">
-                        <?php echo render_donut_chart_svg($lead_items, 320, 250, 160, 125, 72, 44, 'Lead'); ?>
+                        <?php echo render_donut_chart_svg($lead_items, 380, 195, 190, 98, 64, 38, 'Lead'); ?>
                     </div>
                 </div>
 
-                <div class="dash-round-card" style="width: 100%; height: 315px; margin-bottom: 0px; padding: 10px 14px; border-radius: 10px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
-                    <div class="dash-round-title" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; font-size:13.5px; font-weight:700;">
+                <div class="dash-round-card" style="width: 100%; height: 238px; max-height: 238px; margin-bottom: 0px; padding: 6px 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
+                    <div class="dash-round-title" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0; font-size:13px; font-weight:700;">
                         <span>My Orders</span>
-                        <span class="badge" style="background:#0072f0; color:#ffffff; font-size:11px; font-weight:600; padding:2px 9px; border-radius:10px;"><?php echo isset($myorder_donut['total']) ? (int)$myorder_donut['total'] : 0; ?> Total</span>
+                        <div class="dash-round-meta" style="display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:#64748b;">
+                            <span><strong style="color:#0f172a; font-weight:700;"><?php echo isset($myorder_donut['total']) ? (int)$myorder_donut['total'] : 0; ?></strong> Total</span>
+                            <span style="color:#cbd5e1;">&bull;</span>
+                            <span>Sales: <strong style="color:#0f172a; font-weight:700;"><?php echo $curr . ' ' . number_format((float)(isset($dashboard_count['sales_amount']) ? $dashboard_count['sales_amount'] : 0), 2); ?></strong></span>
+                            <span style="color:#cbd5e1;">&bull;</span>
+                            <span>Received: <strong style="color:#0f172a; font-weight:700;"><?php echo $curr . ' ' . number_format((float)(isset($dashboard_count['cash_received']) ? $dashboard_count['cash_received'] : 0), 2); ?></strong></span>
+                        </div>
                     </div>
                     <div style="width:100%; display:flex; align-items:center; justify-content:center; flex:1; overflow:visible;">
-                        <?php echo render_donut_chart_svg($order_items, 320, 250, 160, 125, 72, 44, 'Order'); ?>
+                        <?php echo render_donut_chart_svg($order_items, 380, 195, 190, 98, 64, 38, 'Order'); ?>
                     </div>
                 </div>
             </div>
