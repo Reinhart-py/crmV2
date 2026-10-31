@@ -727,16 +727,27 @@ html, body {
 }
 
 @media (max-width: 991px) {
+  html, body {
+    height: auto !important;
+    min-height: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .wrapper {
+    height: auto !important;
+    min-height: 100% !important;
+    overflow: visible !important;
+  }
   .content-wrapper.glass-calling-wrapper {
     height: auto !important;
     min-height: calc(100vh - 60px) !important;
     max-height: none !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
+    overflow: visible !important;
     flex-direction: column !important;
     flex-wrap: wrap !important;
-    gap: 12px !important;
-    padding: 10px !important;
+    gap: 8px !important;
+    padding: 8px !important;
   }
   .crm-dialer-dock {
     width: 100% !important;
@@ -744,45 +755,117 @@ html, body {
     max-height: none !important;
     flex-direction: row !important;
     justify-content: space-around !important;
-    gap: 6px !important;
-    padding: 6px 8px !important;
-    overflow-x: auto !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 6px 4px !important;
+    overflow: visible !important;
+    z-index: 1001 !important;
   }
   .dock-item-wrapper {
     width: auto !important;
+    flex: 1 !important;
+    max-width: 65px !important;
+    position: relative !important;
   }
   .crm-dock-btn {
-    width: 60px !important;
+    width: 100% !important;
     height: 48px !important;
+    padding: 4px 2px !important;
+    border-radius: 10px !important;
+  }
+  .crm-dock-btn .dock-lbl {
+    font-size: 9.5px !important;
+    white-space: nowrap !important;
   }
   .dock-flyout-menu {
-    left: 0 !important;
+    left: 50% !important;
     top: 100% !important;
+    transform: translateX(-50%) !important;
     margin-top: 6px !important;
-    min-width: 180px !important;
+    min-width: 200px !important;
+    max-width: 260px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16) !important;
+    z-index: 10000 !important;
+  }
+  .dock-flyout-menu.show-mobile-flyout {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
   }
   .dock-flyout-menu::before {
     display: none !important;
   }
+  .dialer-mobile-nav-bar {
+    display: flex !important;
+    width: 100% !important;
+    background: #ffffff;
+    border: 1px solid #e5e5ea;
+    border-radius: 12px;
+    padding: 4px;
+    gap: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+    box-sizing: border-box;
+  }
+  .btn-dialer-mobile-tab {
+    flex: 1;
+    height: 38px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: #636366;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.14s ease;
+  }
+  .btn-dialer-mobile-tab.active {
+    background: #0072f0 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(0, 114, 240, 0.28) !important;
+  }
   #middleContentArea {
     width: 100% !important;
-    min-width: 100% !important;
-    max-width: 100% !important;
-    height: auto !important;
-    max-height: 540px !important;
-    flex: none !important;
-    overflow-y: auto !important;
-  }
-  .crm-dialer-panel {
-    width: 100% !important;
-    min-width: 100% !important;
+    min-width: 0 !important;
     max-width: 100% !important;
     height: auto !important;
     max-height: none !important;
-    margin-left: 0 !important;
+    flex: none !important;
+    overflow-y: visible !important;
+  }
+  .crm-dialer-panel {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 360px !important;
+    margin: 0 auto !important;
+    height: auto !important;
+    max-height: none !important;
+    align-self: center !important;
   }
   .middle-body {
     overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    max-height: 70vh !important;
+  }
+  .queue-table {
+    min-width: 520px !important;
+  }
+  .sheet-table {
+    min-width: 520px !important;
+  }
+}
+@media (min-width: 992px) {
+  .dialer-mobile-nav-bar {
+    display: none !important;
+  }
+  #middleContentArea {
+    display: flex !important;
+  }
+  .crm-dialer-panel {
+    display: flex !important;
   }
 }
 </style>
@@ -804,29 +887,29 @@ html, body {
       </button>
     </div>
 
-    <div class="dock-item-wrapper">
-      <button type="button" class="crm-dock-btn" id="dockBtnFollowup" title="Follow-up" onclick="openMenuQueue('followup', 'today', 'Today Follow-ups')">
+    <div class="dock-item-wrapper" id="dockWrapFollowup">
+      <button type="button" class="crm-dock-btn" id="dockBtnFollowup" title="Follow-up" onclick="handleDockFollowupClick(event)">
         <i class="fa fa-calendar-check-o"></i>
         <span class="dock-lbl">Follow-up</span>
       </button>
       <div class="dock-flyout-menu" id="flyoutFollowup">
-        <a href="javascript:void(0)" class="dock-flyout-item" onclick="openMenuQueue('followup', 'last7', 'Last 7 Days Follow-ups')">
+        <a href="javascript:void(0)" class="dock-flyout-item" onclick="selectFollowupMenu('last7', 'Last 7 Days Follow-ups')">
           <span>Last Seven Days</span>
         </a>
-        <a href="javascript:void(0)" class="dock-flyout-item" onclick="openMenuQueue('followup', 'today', 'Today Follow-ups')">
+        <a href="javascript:void(0)" class="dock-flyout-item" onclick="selectFollowupMenu('today', 'Today Follow-ups')">
           <span>Today</span>
         </a>
-        <a href="javascript:void(0)" class="dock-flyout-item" onclick="openMenuQueue('followup', 'next7', 'Next 7 Days Follow-ups')">
+        <a href="javascript:void(0)" class="dock-flyout-item" onclick="selectFollowupMenu('next7', 'Next 7 Days Follow-ups')">
           <span>Next Seven Days</span>
         </a>
-        <a href="javascript:void(0)" class="dock-flyout-item" onclick="openMenuQueue('followup', 'all_future', 'All Future Follow-ups')">
+        <a href="javascript:void(0)" class="dock-flyout-item" onclick="selectFollowupMenu('all_future', 'All Future Follow-ups')">
           <span>All Future</span>
         </a>
       </div>
     </div>
 
-    <div class="dock-item-wrapper">
-      <button type="button" class="crm-dock-btn" id="dockBtnDatabase" title="Database" onclick="openAutoDialerMode()">
+    <div class="dock-item-wrapper" id="dockWrapDatabase">
+      <button type="button" class="crm-dock-btn" id="dockBtnDatabase" title="Database" onclick="handleDockDatabaseClick(event)">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block; margin:0 auto 2px auto;">
           <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
           <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
@@ -835,11 +918,11 @@ html, body {
         <span class="dock-lbl">Database</span>
       </button>
       <div class="dock-flyout-menu" id="flyoutDatabase">
-        <a href="javascript:void(0)" class="dock-flyout-item" onclick="openAutoDialerMode()">
+        <a href="javascript:void(0)" class="dock-flyout-item" onclick="selectDatabaseMenu('auto')">
           <i class="fa fa-play-circle" style="margin-right:8px; color:#0072f0;"></i>
           <span>Auto Dialer</span>
         </a>
-        <a href="javascript:void(0)" class="dock-flyout-item" onclick="openManualDialerMode()">
+        <a href="javascript:void(0)" class="dock-flyout-item" onclick="selectDatabaseMenu('manual')">
           <i class="fa fa-keyboard-o" style="margin-right:8px; color:#64748b;"></i>
           <span>Manual Dialer</span>
         </a>
@@ -860,6 +943,17 @@ html, body {
       </button>
     </div>
 
+  </div>
+
+  <div class="dialer-mobile-nav-bar" id="dialerMobileNavBar">
+    <button type="button" class="btn-dialer-mobile-tab active" id="btnTabKeypad" onclick="switchMobileDialerView('keypad')">
+      <i class="fa fa-phone"></i>
+      <span>Dialer / Keypad</span>
+    </button>
+    <button type="button" class="btn-dialer-mobile-tab" id="btnTabWorkspace" onclick="switchMobileDialerView('workspace')">
+      <i class="fa fa-th-list"></i>
+      <span id="tabWorkspaceLabel">Queue / Content</span>
+    </button>
   </div>
 
   <div id="middleContentArea">
@@ -1555,6 +1649,104 @@ html, body {
 </div>
 
 <script>
+var activeMobileTab = 'keypad';
+
+function switchMobileDialerView(view) {
+  activeMobileTab = view;
+  if (view === 'keypad') {
+    $('#btnTabKeypad').addClass('active');
+    $('#btnTabWorkspace').removeClass('active');
+    if (window.innerWidth <= 991) {
+      $('.crm-dialer-panel').show();
+      $('#middleContentArea').hide();
+    }
+  } else {
+    $('#btnTabWorkspace').addClass('active');
+    $('#btnTabKeypad').removeClass('active');
+    if (window.innerWidth <= 991) {
+      $('#middleContentArea').show();
+      $('.crm-dialer-panel').hide();
+    }
+  }
+}
+
+function updateMobileWorkspaceTitle(title) {
+  if (title) {
+    $('#tabWorkspaceLabel').text(title);
+  }
+}
+
+function handleDockFollowupClick(e) {
+  if (window.innerWidth <= 991) {
+    if (e && e.stopPropagation) e.stopPropagation();
+    closeAllMobileFlyouts('flyoutFollowup');
+    var $m = $('#flyoutFollowup');
+    $m.toggleClass('show-mobile-flyout');
+  } else {
+    openMenuQueue('followup', 'today', 'Today Follow-ups');
+  }
+}
+
+function selectFollowupMenu(filter, title) {
+  closeAllMobileFlyouts();
+  openMenuQueue('followup', filter, title);
+  if (window.innerWidth <= 991) {
+    updateMobileWorkspaceTitle(title);
+    switchMobileDialerView('workspace');
+  }
+}
+
+function handleDockDatabaseClick(e) {
+  if (window.innerWidth <= 991) {
+    if (e && e.stopPropagation) e.stopPropagation();
+    closeAllMobileFlyouts('flyoutDatabase');
+    var $m = $('#flyoutDatabase');
+    $m.toggleClass('show-mobile-flyout');
+  } else {
+    openAutoDialerMode();
+  }
+}
+
+function selectDatabaseMenu(mode) {
+  closeAllMobileFlyouts();
+  if (mode === 'manual') {
+    openManualDialerMode();
+    if (window.innerWidth <= 991) {
+      updateMobileWorkspaceTitle('Manual Dialer');
+      switchMobileDialerView('workspace');
+    }
+  } else {
+    openAutoDialerMode();
+    if (window.innerWidth <= 991) {
+      updateMobileWorkspaceTitle('Auto Dialer');
+      switchMobileDialerView('workspace');
+    }
+  }
+}
+
+function closeAllMobileFlyouts(exceptId) {
+  $('.dock-flyout-menu').each(function() {
+    if (!exceptId || $(this).attr('id') !== exceptId) {
+      $(this).removeClass('show-mobile-flyout');
+    }
+  });
+}
+
+$(document).on('click', function(e) {
+  if (!$(e.target).closest('.dock-item-wrapper').length) {
+    closeAllMobileFlyouts();
+  }
+});
+
+$(window).on('resize', function() {
+  if (window.innerWidth > 991) {
+    $('#middleContentArea').show();
+    $('.crm-dialer-panel').show();
+  } else {
+    switchMobileDialerView(activeMobileTab);
+  }
+});
+
 var activeLead = null;
 var activeCallLogId = 0;
 var currentQueue = [];
@@ -1770,6 +1962,9 @@ function openDialerHome() {
   $('#subnavLogsPeriod').hide();
   $('#dialerSuggestions').hide();
   $('#dialerInput').focus();
+  if (window.innerWidth <= 991) {
+    switchMobileDialerView('keypad');
+  }
 }
 
 function openManualDialerMode() {
@@ -1806,6 +2001,10 @@ function openAutoDialerMode() {
   $('#btnStartManualDial').hide();
   $('#middleViewAutoDialer').show();
   openMiddleArea();
+  if (window.innerWidth <= 991) {
+    updateMobileWorkspaceTitle('Leads Dialer');
+    switchMobileDialerView('workspace');
+  }
   updateAutoDialerQueueCount();
 }
 
@@ -2146,6 +2345,10 @@ function openTeamColleagues() {
   $('#middleViewTeam').show();
 
   openMiddleArea();
+  if (window.innerWidth <= 991) {
+    updateMobileWorkspaceTitle('Team Members');
+    switchMobileDialerView('workspace');
+  }
   $('#inputTeamSearch').val('').focus();
   $('#teamColleaguesContainer').html('<div id="teamSearchPrompt" style="text-align:center; padding:50px 20px; color:#8e8e93; font-size:13px; font-weight:500;">Type at least 3 letters to search colleagues or departments</div>');
   if (!allColleagues || allColleagues.length === 0) {
@@ -2549,6 +2752,10 @@ function openMenuLogs() {
   hideAllMiddleViews();
   $('#middleViewLogs').show();
   openMiddleArea();
+  if (window.innerWidth <= 991) {
+    updateMobileWorkspaceTitle('Calling Reports');
+    switchMobileDialerView('workspace');
+  }
 
   loadDailyLogsData(currentLogsPeriod);
 }
@@ -2655,6 +2862,9 @@ function startDialing() {
   }
 
   callState = 'calling';
+  if (window.innerWidth <= 991) {
+    switchMobileDialerView('keypad');
+  }
   $('#btnToggleCall').removeClass('btn-connected').addClass('btn-calling');
   $('#dialerStatusSubtitle').text('Dialing ' + phone + '...');
 
@@ -3055,6 +3265,9 @@ function escapeJs(str) {
 }
 
 $(document).ready(function() {
+  if (window.innerWidth <= 991) {
+    switchMobileDialerView('keypad');
+  }
   if ($('.datepicker').length && $.fn.datepicker) {
     $('.datepicker').datepicker({
       format: 'yyyy-mm-dd',

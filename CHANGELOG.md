@@ -2,6 +2,25 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.80.3] - 2026-10-31
+- **Timestamp**: `2026-10-31 13:16:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Overhauled Dialer responsiveness and view management across Android devices, tablets, and mobile displays; added responsive mobile tab view switcher between Dialer Keypad and Queue Workspace; implemented touch-friendly collapsible dropdown menus for Follow-up and Database dock items; and resolved touch scrolling and viewport clipping on Android.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Mobile View Switcher (`dashboard.php`)**:
+    - Added responsive segmented tab switcher (`.dialer-mobile-nav-bar`) visible only on screens `<= 991px` toggling between `Dialer / Keypad` and `Queue / Content`.
+    - Keypad panel (`.crm-dialer-panel`) is centered and scaled full width without being pushed down by middle workspace content.
+    - Workspace area (`#middleContentArea`) displays full width with all sub-views (Team Directory, Follow-up queues, Auto/Manual Dialer, Leads, Reports) completely accessible.
+    - Initiating any call automatically transitions mobile view to Keypad so active ringing/connected status and timer are immediately visible.
+  - **2. Touch-Friendly Collapsible Dock Menus (`dashboard.php`)**:
+    - Resolved missing hover on touchscreens by converting Follow-up and Database flyout menus into touch-friendly collapsible dropdowns with outside-click dismissal.
+    - Selecting any menu option immediately opens the filtered queue and smoothly transitions to the Workspace view on mobile.
+  - **3. Android Scrolling & Table Responsiveness (`dashboard.php`)**:
+    - Removed `overflow: hidden` on mobile viewports to allow smooth momentum scrolling (`-webkit-overflow-scrolling: touch`).
+    - Added responsive horizontal scroll containers for queue and history tables (`.queue-table`, `.sheet-table`).
+  - **4. Zero Comments Rule Compliance**:
+    - Verified zero PHP comments across all modified files.
+
 ### [v1.80.2] - 2026-10-31
 - **Timestamp**: `2026-10-31 12:23:00 +0530`
 - **Author**: Reinhart-py
