@@ -2,6 +2,24 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.81.3] - 2026-10-31
+- **Timestamp**: `2026-10-31 18:15:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Guaranteed 100% full-frame visibility for the entire upper dashboard section without scrolling, expanded side cards (My Leads & My Orders) to full card styling with 221px height matching the dashboard section, resolved text overflow in top KPI cards by sizing them to 64px, and calibrated Target vs Achievement and Target vs Projection heights to 115px with .dash-top-chart-body.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Top 8 KPI Cards Overflow Resolution (`manager/dashboard.php`)**:
+    - Increased card height from 52px to 64px with padding `8px 12px` and typography adjustments (`18px` value, `11.5px` label, `9.5px` sales line).
+    - Applied `min-width: 0; flex: 1;` on text containers to completely eliminate text wrapping and overflow on My Database, My Vertical, Team Users, My Orders, etc.
+  - **2. Target vs Achievement & Target vs Projection Sizing (`manager/dashboard.php`)**:
+    - Replaced generic `.dash-chart-body` (which enforced a 240px height) with `.dash-top-chart-body` set to `height: 115px !important; max-height: 115px !important;`.
+    - Both line graphs now fit comfortably in the viewport, guaranteeing that Target vs Projection is 100% visible on the initial screen without scrolling.
+  - **3. Expanded Side Cards & Section Height Matching (`manager/dashboard.php`)**:
+    - Removed restrictive max-width constraint, allowing My Leads and My Orders to take full natural width within `col-lg-4 col-md-5`.
+    - Set each side card to `221px` height (`448px` total section height), perfectly matching the left column height (`134px` top cards + `6px` gap + `151px` chart 1 + `6px` gap + `151px` chart 2 = `448px`).
+    - Expanded Donut SVG viewBox to `0 0 320 175` with `r_out = 58px` and `r_in = 34px` for prominent, readable charts.
+  - **4. Zero Comments Rule Compliance**:
+    - Confirmed zero comments across modified PHP files and verified syntax with `php -l`.
+
 ### [v1.81.2] - 2026-10-31
 - **Timestamp**: 2026-10-31 18:05:00 +0530
 - **Author**: Reinhart-py

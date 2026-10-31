@@ -6,10 +6,10 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    min-height: 52px;
-    height: 52px;
+    min-height: 64px;
+    height: 64px;
     border-radius: 8px !important;
-    padding: 6px 10px !important;
+    padding: 8px 12px !important;
     color: #ffffff !important;
     margin-bottom: 6px;
     overflow: hidden;
@@ -60,13 +60,14 @@
 .dash-kpi-value {
     font-size: 18px;
     font-weight: 700;
-    line-height: 1;
+    line-height: 1.1;
     letter-spacing: -0.02em;
+    margin-bottom: 2px;
 }
 .dash-kpi-label {
-    font-size: 11px;
+    font-size: 11.5px;
     font-weight: 600;
-    margin-top: 2px;
+    line-height: 1.2;
     opacity: 0.95;
     text-transform: capitalize;
     white-space: nowrap;
@@ -74,8 +75,9 @@
     text-overflow: ellipsis;
 }
 .dash-kpi-sales {
-    font-size: 9px;
-    font-weight: 600;
+    font-size: 9.5px;
+    font-weight: 500;
+    line-height: 1.2;
     margin-top: 2px;
     opacity: 0.92;
     white-space: nowrap;
@@ -83,10 +85,12 @@
     text-overflow: ellipsis;
 }
 .dash-kpi-icon {
-    font-size: 18px;
+    font-size: 19px;
     line-height: 1;
     opacity: 0.35;
     transition: transform 0.2s ease, opacity 0.2s ease;
+    flex-shrink: 0;
+    margin-left: 4px;
 }
 .dash-kpi-card:hover .dash-kpi-icon {
     transform: scale(1.1);
@@ -96,9 +100,36 @@
     background: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
-    padding: 8px 12px;
+    padding: 8px 14px;
     margin-bottom: 6px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    box-sizing: border-box;
+}
+.dash-top-chart-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-top: 2px solid #0084ff !important;
+    border-radius: 8px !important;
+    padding: 6px 12px !important;
+    margin-bottom: 6px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03) !important;
+    overflow: hidden !important;
+}
+[data-theme="dark"] .dash-top-chart-card {
+    background: #111827 !important;
+    border-color: #1f2937 !important;
+}
+.dash-top-chart-body {
+    position: relative !important;
+    height: 115px !important;
+    max-height: 115px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+.dash-top-chart-body canvas {
+    height: 115px !important;
+    max-height: 115px !important;
+    width: 100% !important;
 }
 [data-theme="dark"] .dash-round-card {
     background: #111827;
@@ -141,7 +172,7 @@
 
 <?php
 if (!function_exists('render_donut_chart_svg')) {
-    function render_donut_chart_svg($items, $w = 280, $h = 164, $cx = 140, $cy = 82, $r_out = 56, $r_in = 33, $type = 'Lead') {
+    function render_donut_chart_svg($items, $w = 320, $h = 175, $cx = 160, $cy = 87, $r_out = 58, $r_in = 34, $type = 'Lead') {
         $total = 0;
         foreach ($items as $it) {
             $total += (float)$it['count'];
@@ -252,12 +283,12 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
 ?>
 
         <div class="row" style="margin-top: 4px; margin-bottom: 8px;">
-            <div class="col-lg-8 col-md-7 col-xs-12" style="padding-left: 12px; padding-right: 8px;">
+            <div class="col-lg-8 col-md-7 col-xs-12" style="padding-left: 10px; padding-right: 6px;">
                 <div class="row" style="margin-left:-3px; margin-right:-3px;">
                     <div class="col-xs-3" style="padding-left:3px; padding-right:3px;">
                         <a href="<?php echo base_url(); ?>manager/leads" class="dash-kpi-card dash-kpi-col1" id="cardMyDatabase">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                                <div>
+                                <div style="min-width:0; flex:1;">
                                     <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_database']) ? (int)$dashboard_count['count_database'] : 0; ?></div>
                                     <div class="dash-kpi-label">My Database</div>
                                 </div>
@@ -268,7 +299,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                     <div class="col-xs-3" style="padding-left:3px; padding-right:3px;">
                         <a href="<?php echo base_url(); ?>manager/verticals" class="dash-kpi-card dash-kpi-col2" id="cardMyVerticals">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                                <div>
+                                <div style="min-width:0; flex:1;">
                                     <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_verticals']) ? (int)$dashboard_count['count_verticals'] : 0; ?></div>
                                     <div class="dash-kpi-label">My Vertical</div>
                                 </div>
@@ -279,7 +310,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                     <div class="col-xs-3" style="padding-left:3px; padding-right:3px;">
                         <a href="<?php echo base_url(); ?>manager/team/members" class="dash-kpi-card dash-kpi-col3" id="cardTeamUsers">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                                <div>
+                                <div style="min-width:0; flex:1;">
                                     <div class="dash-kpi-value"><?php echo (isset($dashboard_Tcount['count_users']) && (int)$dashboard_Tcount['count_users'] > 0) ? (int)$dashboard_Tcount['count_users'] : (isset($dashboard_Tcount['count_user']) ? (int)$dashboard_Tcount['count_user'] : 0); ?></div>
                                     <div class="dash-kpi-label">Team Users</div>
                                 </div>
@@ -290,7 +321,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                     <div class="col-xs-3" style="padding-left:3px; padding-right:3px;">
                         <a href="<?php echo base_url(); ?>manager/team/verticals" class="dash-kpi-card dash-kpi-col4" id="cardTeamVerticals">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                                <div>
+                                <div style="min-width:0; flex:1;">
                                     <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_verticals']) ? (int)$dashboard_Tcount['count_verticals'] : 0; ?></div>
                                     <div class="dash-kpi-label">Team Verticals</div>
                                 </div>
@@ -304,7 +335,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                     <div class="col-xs-3" style="padding-left:3px; padding-right:3px;">
                         <a href="<?php echo base_url(); ?>manager/leads/view_leads" class="dash-kpi-card dash-kpi-col1" id="cardMyLeads">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                                <div>
+                                <div style="min-width:0; flex:1;">
                                     <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_leads']) ? (int)$dashboard_count['count_leads'] : 0; ?></div>
                                     <div class="dash-kpi-label">My Leads</div>
                                     <div class="dash-kpi-sales">Sales: AED <?php echo number_format((float)(isset($dashboard_count['sales_amount']) ? $dashboard_count['sales_amount'] : 0), 2); ?></div>
@@ -316,7 +347,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                     <div class="col-xs-3" style="padding-left:3px; padding-right:3px;">
                         <a href="<?php echo base_url(); ?>manager/orders/my" class="dash-kpi-card dash-kpi-col2" id="cardMyOrders">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                                <div>
+                                <div style="min-width:0; flex:1;">
                                     <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_orders']) ? (int)$dashboard_count['count_orders'] : 0; ?></div>
                                     <div class="dash-kpi-label">My Orders</div>
                                     <div class="dash-kpi-sales">Sales: AED <?php echo number_format((float)(isset($dashboard_count['sales_amount']) ? $dashboard_count['sales_amount'] : 0), 2); ?></div>
@@ -328,7 +359,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                     <div class="col-xs-3" style="padding-left:3px; padding-right:3px;">
                         <a href="<?php echo base_url(); ?>manager/team/leads" class="dash-kpi-card dash-kpi-col3" id="cardTeamLeads">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                                <div>
+                                <div style="min-width:0; flex:1;">
                                     <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_leads']) ? (int)$dashboard_Tcount['count_leads'] : 0; ?></div>
                                     <div class="dash-kpi-label">Team Leads</div>
                                     <div class="dash-kpi-sales">Sales: AED <?php echo number_format((float)(isset($dashboard_Tcount['sales_amount']) ? $dashboard_Tcount['sales_amount'] : 0), 2); ?></div>
@@ -340,7 +371,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                     <div class="col-xs-3" style="padding-left:3px; padding-right:3px;">
                         <a href="<?php echo base_url(); ?>manager/team/orders" class="dash-kpi-card dash-kpi-col4" id="cardTeamOrders">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                                <div>
+                                <div style="min-width:0; flex:1;">
                                     <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_orders']) ? (int)$dashboard_Tcount['count_orders'] : 0; ?></div>
                                     <div class="dash-kpi-label">Team Orders</div>
                                     <div class="dash-kpi-sales">Sales: AED <?php echo number_format((float)(isset($dashboard_Tcount['sales_amount']) ? $dashboard_Tcount['sales_amount'] : 0), 2); ?></div>
@@ -351,8 +382,8 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                     </div>
                 </div>
 
-                <div class="dash-chart-card" style="margin-bottom: 6px; padding: 6px 12px; border-radius: 8px;">
-                    <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important; margin-bottom: 2px !important;">
+                <div class="dash-top-chart-card" style="margin-bottom: 6px; padding: 6px 12px; border-radius: 8px;">
+                    <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important; margin-bottom: 2px !important; padding:4px 0 !important; border-bottom:none !important;">
                         <h4 class="dash-chart-title" style="margin:0 !important; font-size:12.5px; font-weight:700;">
                             Target vs Achievement
                         </h4>
@@ -361,13 +392,13 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                             <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#16a34a; border-radius:50%;"></span> Achievement</span>
                         </div>
                     </div>
-                    <div class="dash-chart-body" style="padding:0;">
-                        <canvas id="lineChartTargetAchieve" height="110"></canvas>
+                    <div class="dash-top-chart-body">
+                        <canvas id="lineChartTargetAchieve" height="115"></canvas>
                     </div>
                 </div>
 
-                <div class="dash-chart-card" style="margin-bottom: 0px; padding: 6px 12px; border-radius: 8px;">
-                    <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important; margin-bottom: 2px !important;">
+                <div class="dash-top-chart-card" style="margin-bottom: 0px; padding: 6px 12px; border-radius: 8px;">
+                    <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important; margin-bottom: 2px !important; padding:4px 0 !important; border-bottom:none !important;">
                         <h4 class="dash-chart-title" style="margin:0 !important; font-size:12.5px; font-weight:700;">
                             Target vs Projection
                         </h4>
@@ -376,30 +407,30 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                             <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#0072f0; border-radius:50%;"></span> Projection</span>
                         </div>
                     </div>
-                    <div class="dash-chart-body" style="padding:0;">
-                        <canvas id="lineChartTargetProject" height="110"></canvas>
+                    <div class="dash-top-chart-body">
+                        <canvas id="lineChartTargetProject" height="115"></canvas>
                     </div>
                 </div>
             </div>
 
-            <div class="col-lg-4 col-md-5 col-xs-12" style="padding-left: 8px; padding-right: 12px; display: flex; flex-direction: column; align-items: flex-end;">
-                <div class="dash-round-card" style="width: 100%; max-width: 290px; height: 206px; margin-bottom: 6px; padding: 8px 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
-                    <div class="dash-round-title" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; font-size:12.5px; font-weight:700;">
+            <div class="col-lg-4 col-md-5 col-xs-12" style="padding-left: 6px; padding-right: 10px;">
+                <div class="dash-round-card" style="width: 100%; height: 221px; margin-bottom: 6px; padding: 8px 14px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
+                    <div class="dash-round-title" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; font-size:13px; font-weight:700;">
                         <span>My Leads</span>
-                        <span class="badge" style="background:#0072f0; color:#ffffff; font-size:10px; font-weight:600;"><?php echo isset($mylead_donut['total']) ? (int)$mylead_donut['total'] : 0; ?> Total</span>
+                        <span class="badge" style="background:#0072f0; color:#ffffff; font-size:10.5px; font-weight:600; padding:2px 8px; border-radius:10px;"><?php echo isset($mylead_donut['total']) ? (int)$mylead_donut['total'] : 0; ?> Total</span>
                     </div>
                     <div style="width:100%; display:flex; align-items:center; justify-content:center; flex:1; overflow:visible;">
-                        <?php echo render_donut_chart_svg($lead_items, 280, 164, 140, 82, 56, 33, 'Lead'); ?>
+                        <?php echo render_donut_chart_svg($lead_items, 320, 175, 160, 87, 58, 34, 'Lead'); ?>
                     </div>
                 </div>
 
-                <div class="dash-round-card" style="width: 100%; max-width: 290px; height: 206px; margin-bottom: 0px; padding: 8px 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
-                    <div class="dash-round-title" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; font-size:12.5px; font-weight:700;">
+                <div class="dash-round-card" style="width: 100%; height: 221px; margin-bottom: 0px; padding: 8px 14px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
+                    <div class="dash-round-title" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; font-size:13px; font-weight:700;">
                         <span>My Orders</span>
-                        <span class="badge" style="background:#0072f0; color:#ffffff; font-size:10px; font-weight:600;"><?php echo isset($myorder_donut['total']) ? (int)$myorder_donut['total'] : 0; ?> Total</span>
+                        <span class="badge" style="background:#0072f0; color:#ffffff; font-size:10.5px; font-weight:600; padding:2px 8px; border-radius:10px;"><?php echo isset($myorder_donut['total']) ? (int)$myorder_donut['total'] : 0; ?> Total</span>
                     </div>
                     <div style="width:100%; display:flex; align-items:center; justify-content:center; flex:1; overflow:visible;">
-                        <?php echo render_donut_chart_svg($order_items, 280, 164, 140, 82, 56, 33, 'Order'); ?>
+                        <?php echo render_donut_chart_svg($order_items, 320, 175, 160, 87, 58, 34, 'Order'); ?>
                     </div>
                 </div>
             </div>
