@@ -231,8 +231,16 @@
 
 <div class="content-wrapper qc-page-wrapper">
   <div class="qc-top-header">
-    <div>
+    <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
       <h1 class="qc-page-title">Quality Check</h1>
+      <div style="display:inline-flex; align-items:center; gap:8px;">
+        <button type="button" class="btn btn-sm" id="btnExpandAll" onclick="expandAllSections()" title="Expand all sections" style="background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; font-weight:600; color:#334155; padding:5px 12px; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+          <i class="fa fa-expand" style="color:#0072f0;"></i> <span>Expand All</span>
+        </button>
+        <button type="button" class="btn btn-sm" id="btnCollapseAll" onclick="collapseAllSections()" title="Collapse all sections" style="background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; font-weight:600; color:#334155; padding:5px 12px; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+          <i class="fa fa-compress" style="color:#0072f0;"></i> <span>Collapse All</span>
+        </button>
+      </div>
     </div>
 
     <div class="qc-progress-card">
@@ -279,7 +287,10 @@
     ?>
       <div class="qc-section-card" id="section_card_<?php echo $pIndex; ?>">
         <div class="qc-section-header">
-          <div class="qc-section-header-left">
+          <div class="qc-section-header-left" onclick="toggleSingleSection(<?php echo $pIndex; ?>)" style="cursor:pointer; user-select:none;">
+            <button type="button" class="btn btn-xs qc-sec-toggle-btn" id="sec_toggle_btn_<?php echo $pIndex; ?>" style="background:transparent; border:none; padding:2px; color:#64748b; cursor:pointer;">
+              <i class="fa fa-chevron-up" id="sec_chevron_<?php echo $pIndex; ?>"></i>
+            </button>
             <span><?php echo $parent_svg; ?></span>
             <span class="qc-section-title"><?php echo htmlspecialchars($parent['title']); ?></span>
             <span class="badge" style="background:#e0f2fe; color:#0369a1; font-weight:700; font-size:11px; padding:3px 8px; border-radius:10px;">
@@ -304,8 +315,8 @@
           <table class="qc-table" id="qc_table_<?php echo $pIndex; ?>">
             <thead>
               <tr>
-                <th class="th-select-all">All</th>
                 <th class="th-page">Page / Route</th>
+                <th class="th-select-all">All</th>
                 <th class="th-chk">UI</th>
                 <th class="th-chk">UX</th>
                 <th class="th-chk">Func</th>
@@ -325,15 +336,15 @@
                 $target_url = (strpos($child['url'], 'http') === 0) ? $child['url'] : base_url($child['url']);
               ?>
                 <tr id="row_<?php echo $k; ?>" class="<?php echo $is_row_all ? 'row-all-checked' : ''; ?>" data-key="<?php echo $k; ?>" data-sec="<?php echo $pIndex; ?>">
-                  <td>
-                    <input type="checkbox" class="qc-chk-box qc-row-select-all" data-key="<?php echo $k; ?>" <?php echo $is_row_all ? 'checked' : ''; ?> onchange="toggleRowSelectAll(this)" title="Toggle all checks for this page">
-                  </td>
                   <td class="td-page">
                     <a href="<?php echo $target_url; ?>" target="_blank" class="qc-page-link" title="Open page in new tab">
                       <span><?php echo htmlspecialchars($child['title']); ?></span>
                       <i class="fa fa-external-link" style="font-size:11px; opacity:0.75;"></i>
                     </a>
                     <span class="qc-route-sub"><?php echo htmlspecialchars($child['url']); ?></span>
+                  </td>
+                  <td>
+                    <input type="checkbox" class="qc-chk-box qc-row-select-all" data-key="<?php echo $k; ?>" <?php echo $is_row_all ? 'checked' : ''; ?> onchange="toggleRowSelectAll(this)" title="Toggle all checks for this page">
                   </td>
                   <td>
                     <input type="checkbox" class="qc-chk-box qc-chk-single" data-key="<?php echo $k; ?>" data-field="chk_ui" <?php echo $row_data['chk_ui'] ? 'checked' : ''; ?> onchange="onSingleCheckChange(this)">
@@ -392,6 +403,29 @@
 
 <script>
 var csrfName = '<?php echo $this->security->get_csrf_token_name(); ?>';
+
+function collapseAllSections() {
+  $('.qc-table-responsive').slideUp(180);
+  $('.qc-sec-toggle-btn i').removeClass('fa-chevron-up').addClass('fa-chevron-down');
+}
+
+function expandAllSections() {
+  $('.qc-table-responsive').slideDown(180);
+  $('.qc-sec-toggle-btn i').removeClass('fa-chevron-down').addClass('fa-chevron-up');
+}
+
+function toggleSingleSection(secIdx) {
+  var $card = $('#section_card_' + secIdx);
+  var $table = $card.find('.qc-table-responsive');
+  var $icon = $('#sec_chevron_' + secIdx);
+  $table.slideToggle(180, function() {
+    if ($table.is(':visible')) {
+      $icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+    } else {
+      $icon.removeClass('fa-chevron-up').addClass('fa-chevron-down');
+    }
+  });
+}
 var csrfHash = '<?php echo $this->security->get_csrf_hash(); ?>';
 
 function updateQcProgressBar() {

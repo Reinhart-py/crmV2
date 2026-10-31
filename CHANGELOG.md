@@ -2,6 +2,20 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.80.2] - 2026-10-31
+- **Timestamp**: `2026-10-31 12:23:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Enhanced QC Panel with global Collapse All and Expand All buttons, individual section collapse/expand toggles, and repositioned the "All" select checkbox directly beside the UI checkmark column.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Expand All & Collapse All Toolbar Controls (`qc.php`)**:
+    - Added clean, minimalist Expand All and Collapse All buttons in `.qc-top-header` with smooth slide transitions (`slideDown` / `slideUp`).
+    - Added accordion-style chevron toggle buttons on each section card header allowing users to collapse or expand individual sections on demand.
+  - **2. Column Reordering (`qc.php`)**:
+    - Moved `Page / Route` to the first column (aligned left).
+    - Positioned `All` select-all checkbox immediately beside the `UI` checkmark column (first box of the checkmark columns group: `All | UI | UX | Func | Nav | Data | Perm | Error`).
+  - **3. Zero Comments Rule Compliance**:
+    - Confirmed zero PHP comments across all modified files.
+
 ### [v1.80.1] - 2026-10-31
 - **Timestamp**: `2026-10-31 12:15:00 +0530`
 - **Author**: Reinhart-py
