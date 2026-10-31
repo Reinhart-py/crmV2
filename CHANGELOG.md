@@ -2,6 +2,24 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.81.4] - 2026-10-31
+- **Timestamp**: `2026-10-31 18:32:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Transformed side cards (My Leads & My Orders) into true squares (315px height by ~330px width) filling the full upper viewport frame, scaled Target vs Achievement and Target vs Projection to 200px height for optimal legibility, perfectly aligned the bottom of My Orders with Target vs Projection, and pushed Operational Activity below the initial screen fold.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Square Side Cards Architecture (`manager/dashboard.php`)**:
+    - Increased side cards height to 315px each (`315px + 8px gap + 315px = 638px` total right column height).
+    - Inside `col-lg-4 col-md-5` (width ~330px), each card achieves a natural 1:1 square aspect ratio (`330px x 315px`).
+    - Expanded Donut SVG dimensions to `viewBox="0 0 320 250"` with `cx = 160, cy = 125, r_out = 72px, r_in = 44px` (outer diameter 144px), providing generous margins for callouts and prominent donut geometry.
+  - **2. Graph Height Calibration & Bottom Alignment (`manager/dashboard.php`)**:
+    - Increased `.dash-top-chart-body` height and canvas height to 200px for both Target vs Achievement and Target vs Projection.
+    - Total left column height (`134px` top cards + `8px` gap + `244px` chart 1 + `8px` gap + `244px` chart 2 = `638px`) aligns down to the exact pixel with the right column height (`638px`).
+    - The bottom border of My Orders and Target vs Projection sit on the exact same horizontal baseline.
+  - **3. Screen Frame Boundary & Fold Separation (`manager/dashboard.php`)**:
+    - Increased top margin on the section divider for Operational Activity to 28px, ensuring Operational Activity stays cleanly below the initial screen fold on standard desktop viewports.
+  - **4. Zero Comments Rule Compliance**:
+    - Confirmed zero comments across modified PHP files and verified syntax with `php -l`.
+
 ### [v1.81.3] - 2026-10-31
 - **Timestamp**: `2026-10-31 18:15:00 +0530`
 - **Author**: Reinhart-py

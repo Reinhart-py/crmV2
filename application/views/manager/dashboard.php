@@ -121,14 +121,14 @@
 }
 .dash-top-chart-body {
     position: relative !important;
-    height: 115px !important;
-    max-height: 115px !important;
+    height: 200px !important;
+    max-height: 200px !important;
     padding: 0 !important;
     overflow: hidden !important;
 }
 .dash-top-chart-body canvas {
-    height: 115px !important;
-    max-height: 115px !important;
+    height: 200px !important;
+    max-height: 200px !important;
     width: 100% !important;
 }
 [data-theme="dark"] .dash-round-card {
@@ -172,7 +172,7 @@
 
 <?php
 if (!function_exists('render_donut_chart_svg')) {
-    function render_donut_chart_svg($items, $w = 320, $h = 175, $cx = 160, $cy = 87, $r_out = 58, $r_in = 34, $type = 'Lead') {
+    function render_donut_chart_svg($items, $w = 320, $h = 250, $cx = 160, $cy = 125, $r_out = 72, $r_in = 44, $type = 'Lead') {
         $total = 0;
         foreach ($items as $it) {
             $total += (float)$it['count'];
@@ -200,12 +200,12 @@ if (!function_exists('render_donut_chart_svg')) {
             $y2_in = $cy + $r_in * sin($next_angle);
             $d = sprintf("M %.1f %.1f A %d %d 0 %d 1 %.1f %.1f L %.1f %.1f A %d %d 0 %d 0 %.1f %.1f Z", $x1_out, $y1_out, $r_out, $r_out, $large_arc, $x2_out, $y2_out, $x2_in, $y2_in, $r_in, $r_in, $large_arc, $x1_in, $y1_in);
             $display_pct = $total > 0 ? number_format(($it['count'] / $total) * 100, 1) . '%' : '0.0%';
-            $paths .= '<path d="' . $d . '" fill="' . $it['color'] . '" stroke="#ffffff" stroke-width="2" class="donut-slice" data-label="' . htmlspecialchars($it['label']) . '" data-count="' . (int)$it['count'] . '" data-pct="' . $display_pct . '" data-type="' . $type . '" style="cursor:pointer; transition:transform 0.15s ease, opacity 0.15s ease;" />';
+            $paths .= '<path d="' . $d . '" fill="' . $it['color'] . '" stroke="#ffffff" stroke-width="2.5" class="donut-slice" data-label="' . htmlspecialchars($it['label']) . '" data-count="' . (int)$it['count'] . '" data-pct="' . $display_pct . '" data-type="' . $type . '" style="cursor:pointer; transition:transform 0.15s ease, opacity 0.15s ease;" />';
             $mid = $current_angle + $angle_delta / 2;
-            $p1_x = $cx + ($r_out + 3) * cos($mid);
-            $p1_y = $cy + ($r_out + 3) * sin($mid);
-            $p2_x = $cx + ($r_out + 12) * cos($mid);
-            $p2_y = $cy + ($r_out + 12) * sin($mid);
+            $p1_x = $cx + ($r_out + 4) * cos($mid);
+            $p1_y = $cy + ($r_out + 4) * sin($mid);
+            $p2_x = $cx + ($r_out + 18) * cos($mid);
+            $p2_y = $cy + ($r_out + 18) * sin($mid);
             $is_right = cos($mid) >= 0;
             $p3_x = $p2_x + ($is_right ? 12 : -12);
             $p3_y = $p2_y;
@@ -214,7 +214,7 @@ if (!function_exists('render_donut_chart_svg')) {
             $ty = $p3_y + 3;
             $lbl = htmlspecialchars($it['label']) . ' ' . $display_pct;
             $callouts .= sprintf('<polyline points="%.1f,%.1f %.1f,%.1f %.1f,%.1f" fill="none" stroke="#94a3b8" stroke-width="1.2" />', $p1_x, $p1_y, $p2_x, $p2_y, $p3_x, $p3_y);
-            $callouts .= sprintf('<text x="%.1f" y="%.1f" font-size="9" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="700" fill="#1e293b" class="donut-callout-text" text-anchor="%s">%s</text>', $tx, $ty, $anchor, $lbl);
+            $callouts .= sprintf('<text x="%.1f" y="%.1f" font-size="9.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="700" fill="#1e293b" class="donut-callout-text" text-anchor="%s">%s</text>', $tx, $ty, $anchor, $lbl);
             $current_angle = $next_angle;
         }
         return '<svg viewBox="0 0 ' . $w . ' ' . $h . '" width="100%" height="' . $h . '" xmlns="http://www.w3.org/2000/svg" style="display:block; margin:0 auto; overflow:visible;"><g>' . $paths . $callouts . '</g></svg>';
@@ -382,7 +382,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                     </div>
                 </div>
 
-                <div class="dash-top-chart-card" style="margin-bottom: 6px; padding: 6px 12px; border-radius: 8px;">
+                <div class="dash-top-chart-card" style="margin-bottom: 8px; padding: 6px 12px; border-radius: 8px;">
                     <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important; margin-bottom: 2px !important; padding:4px 0 !important; border-bottom:none !important;">
                         <h4 class="dash-chart-title" style="margin:0 !important; font-size:12.5px; font-weight:700;">
                             Target vs Achievement
@@ -393,7 +393,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                         </div>
                     </div>
                     <div class="dash-top-chart-body">
-                        <canvas id="lineChartTargetAchieve" height="115"></canvas>
+                        <canvas id="lineChartTargetAchieve" height="200"></canvas>
                     </div>
                 </div>
 
@@ -408,35 +408,35 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                         </div>
                     </div>
                     <div class="dash-top-chart-body">
-                        <canvas id="lineChartTargetProject" height="115"></canvas>
+                        <canvas id="lineChartTargetProject" height="200"></canvas>
                     </div>
                 </div>
             </div>
 
             <div class="col-lg-4 col-md-5 col-xs-12" style="padding-left: 6px; padding-right: 10px;">
-                <div class="dash-round-card" style="width: 100%; height: 221px; margin-bottom: 6px; padding: 8px 14px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
-                    <div class="dash-round-title" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; font-size:13px; font-weight:700;">
+                <div class="dash-round-card" style="width: 100%; height: 315px; margin-bottom: 8px; padding: 10px 14px; border-radius: 10px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
+                    <div class="dash-round-title" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; font-size:13.5px; font-weight:700;">
                         <span>My Leads</span>
-                        <span class="badge" style="background:#0072f0; color:#ffffff; font-size:10.5px; font-weight:600; padding:2px 8px; border-radius:10px;"><?php echo isset($mylead_donut['total']) ? (int)$mylead_donut['total'] : 0; ?> Total</span>
+                        <span class="badge" style="background:#0072f0; color:#ffffff; font-size:11px; font-weight:600; padding:2px 9px; border-radius:10px;"><?php echo isset($mylead_donut['total']) ? (int)$mylead_donut['total'] : 0; ?> Total</span>
                     </div>
                     <div style="width:100%; display:flex; align-items:center; justify-content:center; flex:1; overflow:visible;">
-                        <?php echo render_donut_chart_svg($lead_items, 320, 175, 160, 87, 58, 34, 'Lead'); ?>
+                        <?php echo render_donut_chart_svg($lead_items, 320, 250, 160, 125, 72, 44, 'Lead'); ?>
                     </div>
                 </div>
 
-                <div class="dash-round-card" style="width: 100%; height: 221px; margin-bottom: 0px; padding: 8px 14px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
-                    <div class="dash-round-title" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; font-size:13px; font-weight:700;">
+                <div class="dash-round-card" style="width: 100%; height: 315px; margin-bottom: 0px; padding: 10px 14px; border-radius: 10px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
+                    <div class="dash-round-title" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; font-size:13.5px; font-weight:700;">
                         <span>My Orders</span>
-                        <span class="badge" style="background:#0072f0; color:#ffffff; font-size:10.5px; font-weight:600; padding:2px 8px; border-radius:10px;"><?php echo isset($myorder_donut['total']) ? (int)$myorder_donut['total'] : 0; ?> Total</span>
+                        <span class="badge" style="background:#0072f0; color:#ffffff; font-size:11px; font-weight:600; padding:2px 9px; border-radius:10px;"><?php echo isset($myorder_donut['total']) ? (int)$myorder_donut['total'] : 0; ?> Total</span>
                     </div>
                     <div style="width:100%; display:flex; align-items:center; justify-content:center; flex:1; overflow:visible;">
-                        <?php echo render_donut_chart_svg($order_items, 320, 175, 160, 87, 58, 34, 'Order'); ?>
+                        <?php echo render_donut_chart_svg($order_items, 320, 250, 160, 125, 72, 44, 'Order'); ?>
                     </div>
                 </div>
             </div>
         </div>
 
-<div class="dash-section-divider" style="margin-top: 18px; margin-bottom: 12px;">
+<div class="dash-section-divider" style="margin-top: 28px; margin-bottom: 14px;">
             <h3 class="dash-section-title" style="margin-bottom:0;">
                 <span class="dash-section-title-icon">
                     <span></span><span></span>
