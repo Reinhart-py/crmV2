@@ -113,8 +113,8 @@
         $is_admin = ($m_role === 1 || $current_user_id === 1);
         $is_support = ($m_role === 4);
         $user_team_count = $current_user_id ? count($this->ci_admin_model->fetchTeamList($current_user_id, '')) : 0;
-        $can_see_review = ($is_admin || $m_role === 2 || $m_role === 4 || has_section_perm('back_office') || has_section_perm('lead_review'));
-        $is_hr = ($is_admin || $m_role === 7 || has_section_perm('hr'));
+        $can_see_review = ($is_admin || has_section_perm('back_office') || has_section_perm('lead_review'));
+        $is_hr = ($is_admin || has_section_perm('hr'));
 
         $current_user_name = '';
         $current_user_gender = '';
@@ -344,7 +344,9 @@
   </nav>
 
   <div class="header-quick-actions">
+    <?php if($is_admin || has_section_perm('live')){ ?>
     <a href="<?php echo base_url();?>manager/live" class="live-nav-badge <?php echo ($route1 === 'live') ? 'active' : ''; ?>" title="Live Operations Report" style="display:inline-flex; align-items:center; justify-content:center; text-decoration:none; margin-right:8px; padding:4px 12px; border-radius:6px; <?php echo ($route1 === 'live') ? 'background:#00c6f0; color:#ffffff; border:1px solid #00c6f0;' : 'background:transparent; color:#00c6f0; border:1px solid #00c6f0;'; ?> font-weight:700; font-size:12px; letter-spacing:0.06em; transition:all 0.2s ease;">LIVE</a>
+    <?php } ?>
     <?php if(has_section_perm('calls')){ ?>
     <a href="<?php echo base_url();?>manager/calls" class="global-theme-btn" title="Phone Dialer & Calls" style="display:inline-flex; align-items:center; justify-content:center; text-decoration:none; margin-right:6px; color:#2563eb;">
       <i class="fa fa-phone"></i>
@@ -668,9 +670,21 @@ $(function() {
   });
 
   $(document).on('click', '.notif-item-link', function(e) {
-    if ($(this).attr('data-unread') === '1') {
-      var nid = $(this).attr('data-notif-id');
-      sendMarkNotifRead(nid);
+    var href = $(this).attr('href');
+    var isUnread = $(this).attr('data-unread') === '1';
+    var nid = $(this).attr('data-notif-id');
+    if (isUnread && nid) {
+      if (navigator.sendBeacon) {
+        var fd = new FormData();
+        fd.append('notif_id', nid);
+        fd.append('<?php echo $this->security->get_csrf_token_name(); ?>', '<?php echo $this->security->get_csrf_hash(); ?>');
+        navigator.sendBeacon('<?php echo base_url(); ?>manager/ajax_mark_notifications_read', fd);
+      } else {
+        sendMarkNotifRead(nid);
+      }
+    }
+    if (href && href !== '#' && href !== 'javascript:void(0);') {
+      window.location.href = href;
     }
   });
 });
@@ -699,7 +713,7 @@ $(function() {
         $is_admin = ($m_role === 1 || $current_user_id === 1);
         $is_support = ($m_role === 4);
         $user_team_count = $current_user_id ? count($this->ci_admin_model->fetchTeamList($current_user_id, '')) : 0;
-        $can_see_review = ($is_admin || $m_role === 2 || $m_role === 4 || has_section_perm('back_office') || has_section_perm('lead_review'));
+        $can_see_review = ($is_admin || has_section_perm('back_office') || has_section_perm('lead_review'));
       ?>
       <?php if($is_admin || has_section_perm('dashboard')){ ?>
       <li class="<?php if($route1=="dashboard"){ echo "active";}else{ echo "";}?>"> 
@@ -707,9 +721,11 @@ $(function() {
       </li>
       <?php } ?>
 
+      <?php if($is_admin || has_section_perm('calls')){ ?>
       <li class="<?php if($route1=="calls"){ echo "active";}else{ echo "";}?>"> 
         <a href="<?php echo base_url();?>manager/calls"> <i class="fa fa-phone" style="margin-right:6px; color:#2563eb;"></i> <span>Phone Dialer</span> </a> 
       </li>
+      <?php } ?>
 
       <?php if($is_admin || has_section_perm('my_zone') || has_section_perm('database') || has_section_perm('leads') || has_section_perm('tasks') || has_section_perm('internal_tasks') || has_section_perm('external_tasks')){ ?>
       <li class="<?php if(($route1=="leads" && $route2!="review_leads") || $route1=="verticals" || $route1=="database-transfer" || in_array($route1, array('tasks')) || ($route1=="orders" && ($route2=="my" || (isset($_GET['scope']) && $_GET['scope']=="my"))) || $route1=="sales"){ echo "active";}else{ echo "";}?> treeview"> 

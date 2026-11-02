@@ -1056,16 +1056,16 @@ public function dashboard_MyPro($table='ci_leads'){
 					   }
 				   }
 			   } elseif ($stage === 'database') {
-				   $where1 = "(A.lead_assign = $uid OR (A.created_by = $uid AND (A.lead_assign = 0 OR A.lead_assign IS NULL)) OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET($uid, A.agents) > 0))";	
+				   $where1 = "(A.lead_assign = $uid OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET($uid, A.agents) > 0))";	
 				   $this->db->where($where1);
 				   $this->db->where("(A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)");
 			   } elseif ($stage === 'lead') {
-				   $where1 = "(A.lead_assign = $uid OR (A.created_by = $uid AND (A.lead_assign = 0 OR A.lead_assign IS NULL)) OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET($uid, A.agents) > 0))";	
+				   $where1 = "(A.lead_assign = $uid OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET($uid, A.agents) > 0))";	
 				   $this->db->where($where1);
 				   $this->db->where("(A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)");
 			   } else {
 				   if ($urole !== 1 && $urole !== 4 && $uid !== 1) {
-					   $where1 = "(A.lead_assign = $uid OR (A.created_by = $uid AND (A.lead_assign = 0 OR A.lead_assign IS NULL)) OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET($uid, A.agents) > 0))";	
+					   $where1 = "(A.lead_assign = $uid OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET($uid, A.agents) > 0))";	
 					   $this->db->where($where1);
 				   }
 				   if ($stage !== 'kam') {
@@ -1391,9 +1391,9 @@ public function dashboard_MyPro($table='ci_leads'){
 
 		if (!empty($alloc_filter)) {
 			if ($alloc_filter == 'non_allotted') {
-				$this->db->where("(A.created_by = 0 OR A.created_by IS NULL OR A.created_by = '' OR A.database_category = 'Non-Allotted Database' OR (A.created_by = 1 AND (A.lead_assign = 0 OR A.lead_assign IS NULL)))");
+				$this->db->where("(A.lead_assign = 0 OR A.lead_assign IS NULL OR A.database_category = 'Non-Allotted Database')");
 			} elseif ($alloc_filter == 'allotted') {
-				$this->db->where("((A.created_by > 1 OR (A.created_by = 1 AND A.lead_assign > 0)) AND (A.database_category != 'Non-Allotted Database' OR A.database_category IS NULL))");
+				$this->db->where("(A.lead_assign > 0 AND (A.database_category != 'Non-Allotted Database' OR A.database_category IS NULL))");
 			}
 		}
 
@@ -2581,10 +2581,10 @@ public function dashboard_MyPro($table='ci_leads'){
 		$manager_id = (int)$this->session->userdata('manager_id');
 		if (!empty($manager_id)) {
 			$last_activity = $this->session->userdata('last_activity_time');
-			$timeout_seconds = 600; 
+			$timeout_seconds = 300; 
 
 			if (!empty($last_activity) && (time() - $last_activity) > $timeout_seconds) {
-				$this->log_admin_action('session_timeout', 'Logged out due to 10 minutes of inactivity', 'TIMEOUT', $manager_id);
+				$this->log_admin_action('session_timeout', 'Logged out due to 5 minutes of inactivity', 'TIMEOUT', $manager_id);
 				$this->db->where('id', $manager_id)->update('ci_user', array('is_online' => 0));
 				$this->session->unset_userdata('manager_id');
 				$this->session->unset_userdata('manager_email');
@@ -2793,7 +2793,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			'awards', 'integrations', 'system', 'users', 'roles'
 		);
 
-		if ($role_id === 1 || $role_id === 2) {
+		if ($role_id === 1) {
 			$res = array();
 			foreach ($sections as $s) {
 				$res[$s] = 'write';
@@ -2814,7 +2814,7 @@ public function dashboard_MyPro($table='ci_leads'){
 
 		$res = array();
 		foreach ($sections as $s) {
-			$res[$s] = 'read';
+			$res[$s] = 'no_access';
 		}
 		self::$_role_perms_cache[$role_id] = $res;
 		return $res;
@@ -2831,16 +2831,12 @@ public function dashboard_MyPro($table='ci_leads'){
 			}
 		}
 
-		if ($role === 1 || $role === 2 || $user_id === 1) {
+		if ($role === 1 || $user_id === 1) {
 			return true;
 		}
 
 		$user_pdata = $this->get_user_permission_data($user_id);
 		if ($user_pdata['mode'] === 'admin') {
-			return true;
-		}
-
-		if ($section === 'calls' && $user_id > 0) {
 			return true;
 		}
 
@@ -3029,7 +3025,10 @@ public function dashboard_MyPro($table='ci_leads'){
 		}
 		$user_role = (int)$this->session->userdata('manager_role');
 		$is_admin = ($user_role === 1 || $user_id === 1);
-		$is_backoffice = ($is_admin || $user_role === 2 || $user_role === 4 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
+		$is_backoffice = (!$is_admin && ($user_role === 2 || has_section_perm('back_office') || has_section_perm('kam', 'write')));
+		$is_sales = (!$is_admin && !$is_backoffice && ($user_role === 3 || $user_role === 5 || $user_role === 6));
+		$is_support = (!$is_admin && !$is_backoffice && $user_role === 4);
+		$is_hr = (!$is_admin && $user_role === 7);
 
 		$notifs = array();
 
@@ -3042,7 +3041,7 @@ public function dashboard_MyPro($table='ci_leads'){
 					'id' => 'action_pending_leads',
 					'type' => 'action_required',
 					'icon' => 'fa fa-check-square-o',
-					'color' => '#000000',
+					'color' => '#0072f0',
 					'title' => 'Pending Leads Approval',
 					'message' => $pending_leads_count . ' database lead' . ($pending_leads_count == 1 ? '' : 's') . ' awaiting approval',
 					'time' => $pl_time,
@@ -3060,7 +3059,7 @@ public function dashboard_MyPro($table='ci_leads'){
 					'id' => 'action_pending_orders',
 					'type' => 'action_required',
 					'icon' => 'fa fa-hourglass-half',
-					'color' => '#000000',
+					'color' => '#0072f0',
 					'title' => 'Pending Order Process',
 					'message' => $pending_orders_count . ' order request' . ($pending_orders_count == 1 ? '' : 's') . ' awaiting processing',
 					'time' => $po_time,
@@ -3069,37 +3068,206 @@ public function dashboard_MyPro($table='ci_leads'){
 					'is_read' => 0
 				);
 			}
-		}
 
-		$due_followups = $this->db->select('O.id, O.order_no, O.client_name, O.followup_date, O.followup_time')
-			->from('ci_orders O')
-			->where_in('O.status', array('Approved', 'In Progress', 'Under Review'))
-			->where('O.followup_date IS NOT NULL', null, false)
-			->where('O.followup_date <=', date('Y-m-d'))
-			->where("(O.assigned_to = {$user_id} OR O.created_by = {$user_id})")
-			->limit(5)
-			->get()
-			->result_array();
-		if (!empty($due_followups)) {
-			foreach ($due_followups as $df) {
+			$pending_sales_count = $this->db->group_start()
+				->where('status', 'Pending Sales Approval')
+				->or_where('status', 'pending_sales_approval')
+				->or_where('approval_status', 'pending_approval')
+				->group_end()
+				->count_all_results('ci_orders');
+			if ($pending_sales_count > 0) {
+				$latest_ps = $this->db->select_max('created_at')
+					->group_start()
+					->where('status', 'Pending Sales Approval')
+					->or_where('status', 'pending_sales_approval')
+					->or_where('approval_status', 'pending_approval')
+					->group_end()
+					->get('ci_orders')
+					->row_array();
+				$ps_time = !empty($latest_ps['created_at']) ? $latest_ps['created_at'] : date('Y-m-d H:i:s');
 				$notifs[] = array(
-					'id' => 'order_fu_' . $df['id'],
-					'type' => 'followup_due',
+					'id' => 'action_pending_sales',
+					'type' => 'action_required',
 					'icon' => 'fa fa-clock-o',
-					'color' => '#000000',
-					'title' => 'Order Follow-up Due',
-					'message' => '#' . $df['order_no'] . ' - ' . $df['client_name'] . ' (Due: ' . date('d M', strtotime($df['followup_date'])) . ')',
-					'time' => $df['followup_date'] . ' ' . (!empty($df['followup_time']) ? $df['followup_time'] : '09:00:00'),
-					'time_ago' => 'Due Today',
-					'link' => base_url('manager/orders/followups'),
+					'color' => '#0072f0',
+					'title' => 'Pending Sales Approval',
+					'message' => $pending_sales_count . ' order' . ($pending_sales_count == 1 ? '' : 's') . ' awaiting sales approval',
+					'time' => $ps_time,
+					'time_ago' => 'Action Required',
+					'link' => base_url('manager/orders/pending_sales_approval'),
 					'is_read' => 0
 				);
 			}
 		}
 
+		if ($is_sales) {
+			$due_lead_fu = $this->db->select('L.id, L.customer, L.followup_date, L.followup_time')
+				->from('ci_leads L')
+				->where('L.followup_date <=', date('Y-m-d'))
+				->where('L.followup_date IS NOT NULL', null, false)
+				->where('L.followup_date !=', '')
+				->where("(L.lead_assign = {$user_id} OR L.created_by = {$user_id})")
+				->order_by('L.id', 'DESC')
+				->limit(5)
+				->get()
+				->result_array();
+			if (!empty($due_lead_fu)) {
+				foreach ($due_lead_fu as $dlf) {
+					$notifs[] = array(
+						'id' => 'lead_fu_' . $dlf['id'],
+						'type' => 'followup_due',
+						'icon' => 'fa fa-calendar-check-o',
+						'color' => '#2563eb',
+						'title' => 'Lead Follow-up Due',
+						'message' => $dlf['customer'] . ' - Follow-up scheduled for ' . date('d M', strtotime($dlf['followup_date'])),
+						'time' => $dlf['followup_date'] . ' ' . (!empty($dlf['followup_time']) ? $dlf['followup_time'] : '09:00:00'),
+						'time_ago' => 'Due Today',
+						'link' => base_url('manager/leads/followups'),
+						'is_read' => 0
+					);
+				}
+			}
+
+			$meetings_today = $this->db->select('L.id, L.customer, L.m_date, L.m_time')
+				->from('ci_leads L')
+				->where('L.m_date', date('d-m-Y'))
+				->where("(L.lead_assign = {$user_id} OR L.created_by = {$user_id})")
+				->limit(5)
+				->get()
+				->result_array();
+			if (!empty($meetings_today)) {
+				foreach ($meetings_today as $mt) {
+					$notifs[] = array(
+						'id' => 'meet_' . $mt['id'],
+						'type' => 'meeting_today',
+						'icon' => 'fa fa-handshake-o',
+						'color' => '#16a34a',
+						'title' => 'Meeting Scheduled Today',
+						'message' => $mt['customer'] . ' at ' . (!empty($mt['m_time']) ? $mt['m_time'] : 'scheduled time'),
+						'time' => date('Y-m-d') . ' ' . (!empty($mt['m_time']) ? $mt['m_time'] : '10:00:00'),
+						'time_ago' => 'Today',
+						'link' => base_url('manager/leads/meetings'),
+						'is_read' => 0
+					);
+				}
+			}
+
+			$due_followups = $this->db->select('O.id, O.order_no, O.client_name, O.followup_date, O.followup_time')
+				->from('ci_orders O')
+				->where_in('O.status', array('Approved', 'In Progress', 'Under Review'))
+				->where('O.followup_date IS NOT NULL', null, false)
+				->where('O.followup_date <=', date('Y-m-d'))
+				->where("(O.assigned_to = {$user_id} OR O.created_by = {$user_id})")
+				->limit(5)
+				->get()
+				->result_array();
+			if (!empty($due_followups)) {
+				foreach ($due_followups as $df) {
+					$notifs[] = array(
+						'id' => 'order_fu_' . $df['id'],
+						'type' => 'followup_due',
+						'icon' => 'fa fa-clock-o',
+						'color' => '#0072f0',
+						'title' => 'Order Follow-up Due',
+						'message' => '#' . $df['order_no'] . ' - ' . $df['client_name'] . ' (Due: ' . date('d M', strtotime($df['followup_date'])) . ')',
+						'time' => $df['followup_date'] . ' ' . (!empty($df['followup_time']) ? $df['followup_time'] : '09:00:00'),
+						'time_ago' => 'Due Today',
+						'link' => base_url('manager/orders/followups'),
+						'is_read' => 0
+					);
+				}
+			}
+
+			$this->db->select('OL.*, O.order_no, O.client_name');
+			$this->db->from('ci_order_history OL');
+			$this->db->join('ci_orders O', 'O.id = OL.order_id', 'INNER');
+			$this->db->where("(O.created_by = {$user_id} OR O.assigned_to = {$user_id})");
+			$order_logs = $this->db->order_by('OL.id', 'DESC')->limit(5)->get()->result_array();
+			if (!empty($order_logs)) {
+				foreach ($order_logs as $ol) {
+					$notifs[] = array(
+						'id' => 'ord_' . $ol['id'],
+						'type' => 'order',
+						'icon' => 'fa fa-shopping-cart',
+						'color' => '#0072f0',
+						'title' => 'Order Status Update',
+						'message' => (!empty($ol['order_no']) ? '#' . $ol['order_no'] . ' - ' : '') . ($ol['notes'] ?: 'Order updated'),
+						'time' => $ol['created_at'],
+						'time_ago' => !empty($ol['created_at']) ? date('d M, H:i', strtotime($ol['created_at'])) : '',
+						'link' => base_url('manager/orders/view/' . $ol['order_id']),
+						'is_read' => 0
+					);
+				}
+			}
+		}
+
+		if ($is_support) {
+			$open_tickets = $this->db->where_in('status', array('Open', 'In Progress'))
+				->where("(assigned_to = {$user_id} OR assigned_to = 0)")
+				->count_all_results('ci_tickets');
+			if ($open_tickets > 0) {
+				$notifs[] = array(
+					'id' => 'action_open_tickets',
+					'type' => 'ticket',
+					'icon' => 'fa fa-ticket',
+					'color' => '#dc2626',
+					'title' => 'Active Support Tickets',
+					'message' => $open_tickets . ' ticket' . ($open_tickets == 1 ? '' : 's') . ' awaiting response',
+					'time' => date('Y-m-d H:i:s'),
+					'time_ago' => 'Action Required',
+					'link' => base_url('manager/team/tickets'),
+					'is_read' => 0
+				);
+			}
+		}
+
+		if ($is_hr) {
+			$pending_leaves = $this->db->where('status', 'Pending')->count_all_results('ci_leaves');
+			if ($pending_leaves > 0) {
+				$notifs[] = array(
+					'id' => 'action_pending_leaves',
+					'type' => 'hr',
+					'icon' => 'fa fa-user-times',
+					'color' => '#0072f0',
+					'title' => 'Leave Applications',
+					'message' => $pending_leaves . ' leave request' . ($pending_leaves == 1 ? '' : 's') . ' awaiting HR approval',
+					'time' => date('Y-m-d H:i:s'),
+					'time_ago' => 'Action Required',
+					'link' => base_url('manager/hr'),
+					'is_read' => 0
+				);
+			}
+		}
+
+		if ($is_admin) {
+			$admin_security_logs = $this->db->select('*')
+				->from('ci_admin_logs')
+				->where_in('activity', array('security_alert', 'concurrent_logout', 'session_timeout', 'maintenance_mode', 'role_permission_update'))
+				->order_by('id', 'DESC')
+				->limit(5)
+				->get()
+				->result_array();
+			if (!empty($admin_security_logs)) {
+				foreach ($admin_security_logs as $asl) {
+					$notifs[] = array(
+						'id' => 'admin_sec_' . $asl['id'],
+						'type' => 'security',
+						'icon' => 'fa fa-shield',
+						'color' => '#dc2626',
+						'title' => ucwords(str_replace('_', ' ', $asl['activity'])),
+						'message' => !empty($asl['details']) ? $asl['details'] : $asl['activity'],
+						'time' => $asl['created_at'],
+						'time_ago' => !empty($asl['created_at']) ? date('d M, H:i', strtotime($asl['created_at'])) : '',
+						'link' => base_url('manager/system/admin_logs'),
+						'is_read' => 0
+					);
+				}
+			}
+		}
+
 		$db_notifs = $this->db->select('*')
 			->from('ci_notifications')
-			->where("(user_id = " . $user_id . " OR user_id = 0)")
+			->where('user_id', $user_id)
 			->order_by('id', 'DESC')
 			->limit(15)
 			->get()
@@ -3119,79 +3287,6 @@ public function dashboard_MyPro($table='ci_leads'){
 					'link' => !empty($dn['link']) ? $dn['link'] : base_url('manager/dashboard'),
 					'is_read' => (int)($dn['is_read'] ?? 0)
 				);
-			}
-		}
-
-		$this->db->select('OL.*, O.order_no, O.client_name, O.created_by as ord_creator, O.assigned_to as ord_assigned');
-		$this->db->from('ci_order_history OL');
-		$this->db->join('ci_orders O', 'O.id = OL.order_id', 'LEFT');
-		if (!$is_backoffice) {
-			$this->db->where("(O.created_by = {$user_id} OR O.assigned_to = {$user_id} OR O.lead_id IN (SELECT id FROM ci_leads WHERE created_by = {$user_id} OR lead_assign = {$user_id}))");
-		}
-		$order_logs = $this->db->order_by('OL.id', 'DESC')->limit(10)->get()->result_array();
-
-		if (!empty($order_logs)) {
-			foreach ($order_logs as $ol) {
-				$act = $ol['action'];
-				$icon = 'fa fa-shopping-cart';
-				$color = '#2563eb';
-				$title = 'Order Update';
-				if ($act === 'convert_to_sales') {
-					$icon = 'fa fa-line-chart';
-					$color = '#16a34a';
-					$title = 'Order Converted to Sales';
-				} elseif ($act === 'reject' || $act === 'cancel') {
-					$icon = 'fa fa-ban';
-					$color = '#dc2626';
-					$title = 'Order Rejected/Cancelled';
-				} elseif ($act === 'approve') {
-					$icon = 'fa fa-check-circle';
-					$color = '#16a34a';
-					$title = 'Order Approved';
-				} elseif ($act === 'quick_accept') {
-					$icon = 'fa fa-handshake-o';
-					$color = '#0072f0';
-					$title = 'Order Accepted';
-				}
-				$notifs[] = array(
-					'id' => 'ord_' . $ol['id'],
-					'type' => 'order',
-					'icon' => $icon,
-					'color' => $color,
-					'title' => $title,
-					'message' => (!empty($ol['order_no']) ? '#' . $ol['order_no'] . ' - ' : '') . (!empty($ol['client_name']) ? $ol['client_name'] . ': ' : '') . ($ol['notes'] ?: 'Order status updated'),
-					'time' => $ol['created_at'],
-					'time_ago' => !empty($ol['created_at']) ? date('d M, H:i', strtotime($ol['created_at'])) : '',
-					'link' => base_url('manager/orders/view/' . $ol['order_id']),
-					'is_read' => 0
-				);
-			}
-		}
-
-		if ($is_backoffice) {
-			$admin_logs = $this->db->select('AL.*')
-				->from('ci_admin_logs AL')
-				->where_in('AL.activity', array('lead_transfer', 'transfer_to_lead', 'convert_to_lead', 'convert_to_sales', 'request_conversion', 'reject_conversion', 'request_order', 'convert_to_order'))
-				->order_by('AL.id', 'DESC')
-				->limit(10)
-				->get()
-				->result_array();
-
-			if (!empty($admin_logs)) {
-				foreach ($admin_logs as $al) {
-					$notifs[] = array(
-						'id' => 'admin_' . $al['id'],
-						'type' => 'activity',
-						'icon' => 'fa fa-bolt',
-						'color' => '#0084ff',
-						'title' => ucwords(str_replace('_', ' ', $al['activity'])),
-						'message' => !empty($al['details']) ? $al['details'] : $al['activity'],
-						'time' => $al['created_at'],
-						'time_ago' => !empty($al['created_at']) ? date('d M, H:i', strtotime($al['created_at'])) : '',
-						'link' => base_url('manager/dashboard'),
-						'is_read' => 0
-					);
-				}
 			}
 		}
 

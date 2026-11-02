@@ -17,12 +17,18 @@ class Ci_admin_events extends CI_Controller {
 
 	public function if_not_login($url = '')
 	{
-		if ($this->session->userdata('manager_id') == '') {
+		$mgr_id = (int)$this->session->userdata('manager_id');
+		$mgr_role = (int)$this->session->userdata('manager_role');
+		if ($mgr_id === 0) {
 			if ($url != '') {
 				redirect($url);
 			} else {
 				redirect('/manager/login');
 			}
+		} elseif ($mgr_role !== 1 && $mgr_id !== 1 && !has_section_perm('events')) {
+			$this->session->set_flashdata('error_message', 'Access denied. You do not have permission to view Events.');
+			redirect('manager/dashboard');
+			exit;
 		}
 	}
 

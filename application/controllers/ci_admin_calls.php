@@ -28,12 +28,12 @@ class Ci_admin_calls extends CI_Controller
 		$role = (int)$this->session->userdata('manager_role');
 
 		if ($role != 1 && $role != 4) {
-			$this->db->where('A.lead_assign', $manager_id);
+			$this->db->where("(A.lead_assign = {$manager_id} OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET({$manager_id}, A.agents) > 0))");
 		} else {
 			$assigned_row = $this->db->query("SELECT COUNT(*) AS total FROM ci_leads WHERE lead_assign = " . (int)$manager_id . " AND (contact1 != '' OR alt_contact != '' OR mobile != '' OR contact2 != '')")->row_array();
 			$assigned_cnt = !empty($assigned_row['total']) ? (int)$assigned_row['total'] : 0;
 			if ($assigned_cnt > 0) {
-				$this->db->where('A.lead_assign', $manager_id);
+				$this->db->where("(A.lead_assign = {$manager_id} OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET({$manager_id}, A.agents) > 0))");
 			}
 		}
 
@@ -236,12 +236,12 @@ class Ci_admin_calls extends CI_Controller
 		$this->db->join('ci_pipeline as P', 'P.lead_id = A.id', 'left');
 
 		if ($role != 1 && $role != 4) {
-			$this->db->where('A.lead_assign', $manager_id);
+			$this->db->where("(A.lead_assign = {$manager_id} OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET({$manager_id}, A.agents) > 0))");
 		} else {
 			$assigned_row = $this->db->query("SELECT COUNT(*) AS total FROM ci_leads WHERE lead_assign = " . (int)$manager_id . " AND (contact1 != '' OR alt_contact != '' OR mobile != '' OR contact2 != '')")->row_array();
 			$assigned_cnt = !empty($assigned_row['total']) ? (int)$assigned_row['total'] : 0;
 			if ($assigned_cnt > 0) {
-				$this->db->where('A.lead_assign', $manager_id);
+				$this->db->where("(A.lead_assign = {$manager_id} OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET({$manager_id}, A.agents) > 0))");
 			}
 		}
 
@@ -389,12 +389,12 @@ class Ci_admin_calls extends CI_Controller
 		$this->db->where('A.id', $lead_id);
 
 		if ($role != 1 && $role != 4) {
-			$this->db->where('A.lead_assign', $manager_id);
+			$this->db->where("(A.lead_assign = {$manager_id} OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET({$manager_id}, A.agents) > 0))");
 		} else {
 			$assigned_row = $this->db->query("SELECT COUNT(*) AS total FROM ci_leads WHERE lead_assign = " . (int)$manager_id . " AND (contact1 != '' OR alt_contact != '' OR mobile != '' OR contact2 != '')")->row_array();
 			$assigned_cnt = !empty($assigned_row['total']) ? (int)$assigned_row['total'] : 0;
 			if ($assigned_cnt > 0) {
-				$this->db->where('A.lead_assign', $manager_id);
+				$this->db->where("(A.lead_assign = {$manager_id} OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET({$manager_id}, A.agents) > 0))");
 			}
 		}
 

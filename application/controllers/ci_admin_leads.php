@@ -1077,7 +1077,7 @@ function __construct()
 
 				$creator_id = (int)$this->session->userdata('manager_id');
 				$manager_role = (int)$this->session->userdata('manager_role');
-				if (($manager_role == 1 || $manager_role == 4) && !empty($this->input->post('primary_owner'))) {
+				if (!empty($this->input->post('primary_owner'))) {
 					$assigned_primary = (int)$this->input->post('primary_owner');
 				} else {
 					$assigned_primary = $creator_id;
@@ -1347,7 +1347,7 @@ function __construct()
 
 			$existing_owner = !empty($data['list']['lead_assign']) ? (int)$data['list']['lead_assign'] : (!empty($data['list']['created_by']) ? (int)$data['list']['created_by'] : (int)$this->session->userdata('manager_id'));
 			$manager_role = (int)$this->session->userdata('manager_role');
-			if (($manager_role == 1 || $manager_role == 4) && !empty($this->input->post('primary_owner'))) {
+			if (!empty($this->input->post('primary_owner'))) {
 				$assigned_primary = (int)$this->input->post('primary_owner');
 			} else {
 				$assigned_primary = $existing_owner;
@@ -2125,9 +2125,13 @@ $data['info2']=$this->if_not_login();
 			$username_val = $get_val($row, array('username', 'user', 'assigneduser', 'agent'));
 			$assigned_user_id = 0;
 			if (!empty($username_val)) {
-				$username_clean = ltrim($username_val, "'=@+-");
-				$u_match = $this->db->where('email', $username_clean)
+				$username_clean = trim(ltrim($username_val, "'=@+-"));
+				$u_match = $this->db->group_start()
+					->where('email', $username_clean)
+					->or_where('c_username', $username_clean)
 					->or_where('name', $username_clean)
+					->or_where('emp_id', $username_clean)
+					->group_end()
 					->get('ci_user')->row_array();
 				if (!empty($u_match['id'])) {
 					$assigned_user_id = (int)$u_match['id'];

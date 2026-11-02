@@ -11,6 +11,11 @@ class Ci_admin extends CI_Controller {
 		 header("Cache-Control: post-check=0, pre-check=0", false);
 		 header("Pragma: no-cache");
 		 header('Cache-Control: no-cache');
+		header('X-Content-Type-Options: nosniff');
+		header('X-Frame-Options: SAMEORIGIN');
+		header('X-XSS-Protection: 1; mode=block');
+		header('Referrer-Policy: strict-origin-when-cross-origin');
+		header('Permissions-Policy: geolocation=(self), microphone=(self)');
   
 	}
 	
@@ -497,5 +502,53 @@ class Ci_admin extends CI_Controller {
 		}
 		header('Content-Type: application/json');
 		echo json_encode(array('status' => true, 'notif_id' => $notif_id));
+	}
+
+	public function sitemap_xml()
+	{
+		$base = base_url();
+		$urls = array(
+			array('loc' => $base, 'priority' => '1.0', 'changefreq' => 'daily'),
+			array('loc' => $base . 'manager/login', 'priority' => '0.8', 'changefreq' => 'monthly'),
+			array('loc' => $base . 'manager/dashboard', 'priority' => '0.9', 'changefreq' => 'always'),
+			array('loc' => $base . 'manager/leads', 'priority' => '0.9', 'changefreq' => 'always'),
+			array('loc' => $base . 'manager/leads/view_leads', 'priority' => '0.9', 'changefreq' => 'always'),
+			array('loc' => $base . 'manager/orders/my', 'priority' => '0.8', 'changefreq' => 'daily'),
+			array('loc' => $base . 'manager/sales', 'priority' => '0.8', 'changefreq' => 'daily'),
+			array('loc' => $base . 'manager/calls', 'priority' => '0.8', 'changefreq' => 'daily'),
+			array('loc' => $base . 'manager/leads/followups', 'priority' => '0.7', 'changefreq' => 'daily'),
+			array('loc' => $base . 'manager/leads/meetings', 'priority' => '0.7', 'changefreq' => 'daily'),
+			array('loc' => $base . 'manager/tasks/internal', 'priority' => '0.6', 'changefreq' => 'daily'),
+			array('loc' => $base . 'manager/tasks/external', 'priority' => '0.6', 'changefreq' => 'daily'),
+			array('loc' => $base . 'manager/database-transfer', 'priority' => '0.5', 'changefreq' => 'weekly'),
+			array('loc' => $base . 'manager/sitemap', 'priority' => '0.5', 'changefreq' => 'weekly')
+		);
+
+		header('Content-Type: application/xml; charset=utf-8');
+		$xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+		$xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+		foreach ($urls as $u) {
+			$xml .= "  <url>\n";
+			$xml .= "    <loc>" . htmlspecialchars($u['loc'], ENT_XML1) . "</loc>\n";
+			$xml .= "    <lastmod>" . date('Y-m-d') . "</lastmod>\n";
+			$xml .= "    <changefreq>" . $u['changefreq'] . "</changefreq>\n";
+			$xml .= "    <priority>" . $u['priority'] . "</priority>\n";
+			$xml .= "  </url>\n";
+		}
+		$xml .= '</urlset>';
+		echo $xml;
+		exit;
+	}
+
+	public function sitemap_html()
+	{
+		$this->if_not_login();
+		$data = array();
+		$data['info'] = array(
+			'title' => 'CRM Sitemap - Seven Strokes',
+			'page_heading' => 'CRM Sitemap & Directory'
+		);
+		$data['info2'] = $this->if_not_login();
+		$this->load->view('manager/sitemap', $data);
 	}
 }

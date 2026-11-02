@@ -675,7 +675,7 @@
             </div>
             <?php 
               $cur_user_role = (int)$this->session->userdata('manager_role');
-              if ($cur_user_role == 1 || $cur_user_role == 4) { 
+              if ($cur_user_role == 1 || $cur_user_role == 2 || $cur_user_role == 4 || has_section_perm('database', 'write')) { 
                 $owner_id = !empty($list['lead_assign']) ? (int)$list['lead_assign'] : (!empty($list['created_by']) ? (int)$list['created_by'] : (int)$this->session->userdata('manager_id'));
             ?>
             <div class="col-lg-4 col-sm-6">

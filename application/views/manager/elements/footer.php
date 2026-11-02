@@ -368,6 +368,49 @@ $(document).ready(function() {
             }
         }
     });
+
+    function initUniversalPasswordToggles() {
+        $('input[type="password"]').each(function() {
+            var $pwd = $(this);
+            if ($pwd.data('has-eye-toggle')) return;
+            $pwd.data('has-eye-toggle', true);
+            var $wrap = $pwd.parent();
+            if ($wrap.css('position') === 'static' || !$wrap.css('position')) {
+                $wrap.css('position', 'relative');
+            }
+            $pwd.css('padding-right', '38px');
+            var $btn = $('<button type="button" class="btn btn-link btn-pwd-eye" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); z-index:5; color:#64748b; padding:4px 6px; text-decoration:none; outline:none; border:none; background:transparent; cursor:pointer;" title="Toggle Password Visibility"><i class="fa fa-eye"></i></button>');
+            $btn.on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if ($pwd.attr('type') === 'password') {
+                    $pwd.attr('type', 'text');
+                    $btn.find('i').removeClass('fa-eye').addClass('fa-eye-slash');
+                } else {
+                    $pwd.attr('type', 'password');
+                    $btn.find('i').removeClass('fa-eye-slash').addClass('fa-eye');
+                }
+            });
+            $pwd.after($btn);
+        });
+    }
+    initUniversalPasswordToggles();
+    $(document).ajaxComplete(function() {
+        initUniversalPasswordToggles();
+    });
+
+    var crmIdleSecs = 0;
+    var crmMaxIdleSecs = 300;
+    $(document).on('mousemove keydown scroll click touchstart', function() {
+        crmIdleSecs = 0;
+    });
+    setInterval(function() {
+        crmIdleSecs += 5;
+        if (crmIdleSecs >= crmMaxIdleSecs) {
+            window.location.href = '<?php echo base_url(); ?>manager/logout?timeout=1';
+        }
+    }, 5000);
+
 });
 </script>
 

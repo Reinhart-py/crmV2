@@ -1207,7 +1207,7 @@ html, body {
           <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(135px, 1fr)); gap:8px; margin-bottom:14px; padding:12px; background:#f8fafc; border-radius:10px; border:1px solid #f1f5f9;">
             <?php if(!empty($statuses)){ foreach($statuses as $st){ ?>
               <label style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:500; color:#334155; margin:0; cursor:pointer;">
-                <input type="checkbox" class="cbx-auto-stage" value="<?php echo (int)$st['id']; ?>" onchange="updateAutoDialerQueueCount()" style="margin:0; width:15px; height:15px; accent-color:#0072f0;">
+                <input type="checkbox" class="cbx-auto-stage" value="<?php echo (int)$st['id']; ?>" checked onchange="updateAutoDialerQueueCount()" style="margin:0; width:15px; height:15px; accent-color:#0072f0;">
                 <span><?php echo htmlspecialchars($st['status']); ?></span>
               </label>
             <?php } } ?>

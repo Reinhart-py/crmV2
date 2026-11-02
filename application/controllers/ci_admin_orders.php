@@ -988,12 +988,24 @@ class Ci_admin_orders extends CI_Controller {
 					'created_at' => $now
 				));
 				$this->ci_admin_model->log_admin_action('reject_order_request', "Rejected order request for Lead #{$id}", 'SUCCESS', $cur_uid, $cur_name);
+				$sales_owner = !empty($lead['order_requested_by']) ? (int)$lead['order_requested_by'] : (!empty($lead['lead_assign']) ? (int)$lead['lead_assign'] : (int)$lead['created_by']);
+				if ($sales_owner > 0) {
+					$this->ci_admin_model->add_notification(
+						$sales_owner,
+						'order_rejected',
+						'Order Request Rejected',
+						"Order request for {$lead['customer']} was rejected: " . ($reason ?: 'Not specified'),
+						base_url('manager/leads/view/' . base64_encode($id)),
+						'fa fa-times-circle',
+						'#dc2626'
+					);
+				}
 				$this->session->set_flashdata('message', 'Lead-to-Order request has been rejected. Lead unlocked.');
 				redirect('manager/orders/pending_process');
 				return;
 			}
 
-			if ($action_type === 'approve_order' || $action_type === 'process_order') {
+			if ($action_type === 'approve_order' || $action_type === 'process_order' || $action_type === 'send_for_approval') {
 				$orig_snapshot = !empty($lead['salesperson_snapshot']) ? $lead['salesperson_snapshot'] : json_encode($lead);
 				$this->db->where('lead_id', $id)->update('ci_pipeline', array('salesperson_snapshot' => $orig_snapshot));
 
@@ -1188,6 +1200,18 @@ class Ci_admin_orders extends CI_Controller {
 					));
 
 					$this->ci_admin_model->log_admin_action('send_for_approval', "Order #{$order_no} submitted for Sales Approval", 'SUCCESS', $cur_uid, $cur_name);
+					$target_salesperson = !empty($lead['order_requested_by']) ? (int)$lead['order_requested_by'] : (!empty($lead['lead_assign']) ? (int)$lead['lead_assign'] : (int)$lead['created_by']);
+					if ($target_salesperson > 0) {
+						$this->ci_admin_model->add_notification(
+							$target_salesperson,
+							'order_sent_for_sales_approval',
+							'Order Submitted for Sales Approval',
+							"Order #{$order_no} ({$customer_val}) has been processed and submitted for Sales Approval.",
+							base_url('manager/orders/view/' . $new_order_id),
+							'fa fa-paper-plane',
+							'#0072f0'
+						);
+					}
 					$this->session->set_flashdata('message', "Order #{$order_no} sent for Sales Approval successfully!");
 					redirect('manager/orders/pending_sales_approval');
 					return;
@@ -1343,6 +1367,18 @@ class Ci_admin_orders extends CI_Controller {
 		));
 
 		$this->ci_admin_model->log_admin_action('sales_approval_granted', "Approved Sales for Order #{$order['order_no']} (Sales #{$sales_ref})", 'SUCCESS', $cur_uid, $cur_name);
+		$ord_owner = !empty($order['created_by']) ? (int)$order['created_by'] : 0;
+		if ($ord_owner > 0) {
+			$this->ci_admin_model->add_notification(
+				$ord_owner,
+				'sales_approved',
+				'Order Approved - Sales Record Created',
+				"Order #{$order['order_no']} has been approved. Sales Ref: #{$sales_ref}.",
+				base_url('manager/orders/view/' . $id),
+				'fa fa-check-circle',
+				'#16a34a'
+			);
+		}
 		$this->session->set_flashdata('message', "Order #{$order['order_no']} approved as Sales #{$sales_ref}!");
 		redirect('manager/kam/onboard?order_id=' . $id . '&lead_id=' . (int)$order['lead_id']);
 	}

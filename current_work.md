@@ -5,6 +5,36 @@
 ---
 
 ## Current Active Task
+  32. Role Visibility & Permissions Enforcement, Database Allotment & Import Logic, Order "Send for Approval" Lifecycle, Dialer Scoping, Inactivity Timeout, Password Eye Toggle, and Sitemap / Security Add-ons:
+      - **Role 2 (Back Office) Permissions & Access Enforcement (`ci_admin_model.php`, `header.php`, `ci_admin_report.php`, `ci_admin_events.php`, `ci_roles`)**:
+        - Removed hardcoded role 2 bypasses from `ci_admin_model::get_role_permissions` and `ci_admin_model::check_permission`. Permissions for Back Office and all non-admin roles are now dynamically read from `ci_roles.permissions` and `ci_user_permissions`. Missing/unspecified permissions default to `'no_access'`.
+        - Cleaned database configuration for Role 2 in `ci_roles`: Back Office has explicit `'write'` access to `dashboard`, `my_zone`, `team`, and `back_office` (and `calls`), while `kam`, `hr`, `reports`, `system`, `events`, and `live` are strictly `'no_access'`.
+        - Updated navigation checks in `header.php` (desktop topbar and mobile drawer) so menus are strictly hidden when a role or user lacks permissions (`kam`, `hr`, `reports`, `system`, `live`, `calls`).
+        - Added server-side permission enforcement guards in `ci_admin_report.php` and `ci_admin_events.php` redirecting unauthorized access to `manager/dashboard`.
+      - **Database Allotment & Import Logic (`ci_admin_leads.php`, `ci_admin_model.php`)**:
+        - Refactored `ci_admin_model::get_Myleads`: Removed `(A.created_by = $uid AND (A.lead_assign = 0 OR A.lead_assign IS NULL))` from My Zone queries. Personal database views now strictly show only leads explicitly allotted to the logged-in user (`A.lead_assign = $uid`) or where they are a collaborator (`FIND_IN_SET($uid, A.agents)`). Unallotted leads (`lead_assign = 0`) never appear in the importer's or admin's personal database.
+        - Refactored `ci_admin_leads::import_action`: When importing CSV leads, if the username column is empty, records are automatically designated to the non-allotted database space (`lead_assign = 0`, `database_category = 'Non-Allotted Database'`). If a username is provided, it is validated against `ci_user` (`c_username`, `email`, `name`, `emp_id`); valid matches are allotted to that user ID, while invalid usernames flag clear row errors and are skipped. Importer/Admin does not receive imported leads unless their username is explicitly listed in that row.
+        - Refactored `ci_admin_model::getAllocationLeads`: Non-allotted database filter strictly isolates `(A.lead_assign = 0 OR A.lead_assign IS NULL OR A.database_category = 'Non-Allotted Database')`, while allotted filter isolates `A.lead_assign > 0`.
+        - Updated `ci_admin_leads::add()` and `ci_admin_leads::edit()` along with `add-database.php` and `editleads.php` to allow `primary_owner` selection by any authorized role with write permissions.
+      - **"Send for Approval" Back Office Order Processing Fix (`ci_admin_orders.php`)**:
+        - Fixed `ci_admin_orders::edit_pending()` action type check to accept `'send_for_approval'` in addition to `'approve_order'` and `'process_order'`.
+        - Order records (`O%010d`) are created with `approval_status = 'pending_sales_approval'`, pipeline state updated, order history logged, and instant notification dispatched to the salesperson.
+      - **Phone Dialer Allotment Scoping & UI Count (`ci_admin_calls.php`, `calls/dashboard.php`)**:
+        - Updated `_apply_lead_filters`, `ajax_get_queue`, and `ajax_get_lead_details` in `ci_admin_calls.php` to strictly filter by allotted ownership: `(A.lead_assign = {$manager_id} OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET({$manager_id}, A.agents) > 0))`.
+        - Defaulted auto-dialer stage checkboxes (`.cbx-auto-stage`) to `checked` so all active stages are selected on open, immediately displaying the exact ready count (e.g. 77 records) rather than "0 records ready".
+      - **Inactivity Timeout (5 Minutes) & Password Visibility Toggle (`loginpage.php`, `footer.php`, `ci_admin_model.php`)**:
+        - Updated session inactivity timeout to 5 minutes (300 seconds) on the server in `ci_admin_model::check_auth_timeout()` and client-side idle tracking in `footer.php`.
+        - Updated session expiration message on `loginpage.php` to "5 minutes".
+        - Added eye icon password toggle button on `#login_password` in `loginpage.php` and universal password toggle helper `initUniversalPasswordToggles()` in `footer.php`.
+      - **Sitemap & Security Headers (`ci_admin.php`, `routes.php`, `sitemap.php`, `.htaccess`)**:
+        - Implemented dynamic XML sitemap (`/sitemap.xml`) conforming to sitemap protocol.
+        - Implemented HTML application directory sitemap (`/manager/sitemap`) with View Database dual-box styling and Royal Blue accents.
+        - Configured HTTP security headers: `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `X-XSS-Protection: 1; mode=block`, `Referrer-Policy: strict-origin-when-cross-origin`, and `Permissions-Policy: geolocation=(self), microphone=(self)`.
+      - **Performance Optimization**:
+        - Added 11 B-Tree database indexes across `ci_leads`, `ci_user`, `ci_followup`, `ci_pipeline`, and `ci_orders`, eliminating table scans across lead records.
+      - **Zero Comments Integrity**:
+        - Verified zero comments in all modified/created PHP files (`//`, `/* ... */`, `<!-- ... -->`) and verified syntax with `php -l`.
+
   30. Database Production Synchronization & Error Fixes:
       - Resolved Error 1054 on session timeout by adding geo columns (`latitude`, `longitude`, `accuracy`, `location_status`) to `ci_admin_logs` and defensively verifying columns in `ci_admin_model::log_admin_action()`.
       - Resolved Error 1146 (`Table crm7strokes.ci_user doesn't exist`) by copying all 51 database tables and records from `127_0_0_1.sql` to `crm7strokes`.

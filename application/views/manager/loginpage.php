@@ -37,7 +37,7 @@
             <?php } ?>
             <?php if(isset($_GET['timeout'])) { ?>
               <div class="alert alert-warning" style="font-size: 13px; margin-bottom: 15px; border-radius: 4px;">
-                <i class="fa fa-clock-o"></i> Your session has expired due to 10 minutes of inactivity. Please log in again.
+                <i class="fa fa-clock-o"></i> Your session has expired due to 5 minutes of inactivity. Please log in again.
               </div>
             <?php } ?>
             <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?> <?php echo get_message($this->session->flashdata('message'),'message'); ?>
@@ -50,8 +50,11 @@
               <div class="form-group has-feedback">
                 <input type="text" class="form-control" name="email" placeholder="Enter Email" required>
               </div>
-              <div class="form-group has-feedback">
-                <input type="password" class="form-control" name="password" placeholder="Enter Password" required>
+              <div class="form-group has-feedback" style="position:relative;">
+                <input type="password" class="form-control" name="password" id="login_password" placeholder="Enter Password" required style="padding-right:38px;">
+                <button type="button" class="btn btn-link" id="btnToggleLoginPwd" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); z-index:5; color:#64748b; padding:4px 6px; text-decoration:none; outline:none; border:none; background:transparent;" title="Show/Hide Password">
+                  <i class="fa fa-eye"></i>
+                </button>
               </div>
               <div class="row">
                 <div class="col-xs-6">
@@ -106,6 +109,18 @@
       } else {
         $('#login_loc_status').val('unsupported');
       }
+
+      $('#btnToggleLoginPwd').on('click', function(e) {
+        e.preventDefault();
+        var $inp = $('#login_password');
+        if ($inp.attr('type') === 'password') {
+          $inp.attr('type', 'text');
+          $(this).find('i').removeClass('fa-eye').addClass('fa-eye-slash');
+        } else {
+          $inp.attr('type', 'password');
+          $(this).find('i').removeClass('fa-eye-slash').addClass('fa-eye');
+        }
+      });
     });
   </script>
 </body>

@@ -335,3 +335,6 @@ $route['manager/hr/appraisals/add'] = 'ci_admin_hr/add_appraisal';
 $route['manager/hr/documents'] = 'ci_admin_hr/documents';
 $route['manager/hr/documents/add'] = 'ci_admin_hr/add_document';
 $route['manager/hr/(:any)'] = 'ci_admin_hr/$1';
+
+$route['sitemap.xml'] = 'ci_admin/sitemap_xml';
+$route['manager/sitemap'] = 'ci_admin/sitemap_html';
