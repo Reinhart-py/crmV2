@@ -5,7 +5,13 @@
 ---
 
 ## Current Active Task
-  23. Dedicated Dialer Page Modular Architecture & Clean Theme (`application/views/manager/calls/dashboard.php`, `application/controllers/ci_admin_calls.php`).
+  30. Database Production Synchronization & Error Fixes:
+      - Resolved Error 1054 on session timeout by adding geo columns (`latitude`, `longitude`, `accuracy`, `location_status`) to `ci_admin_logs` and defensively verifying columns in `ci_admin_model::log_admin_action()`.
+      - Resolved Error 1146 (`Table crm7strokes.ci_user doesn't exist`) by copying all 51 database tables and records from `127_0_0_1.sql` to `crm7strokes`.
+      - Modernized `database/localhost.sql` to 3.4 MB full schema with `crm7strokes` database name, `crm.7strokes.com` domain, and `FOREIGN_KEY_CHECKS = 0` header.
+      - Enlarge dashboard donut circular charts (`r_out = 104`, `r_in = 64`) and outside status/count typography (`11.5px bold 700`) for My Leads and My Orders.
+      - Confirmed Import Database access in both System and Reports navigation.
+      - Verified zero PHP comments across all modified files and clean lint checks.
   24. Dialer Click Responsiveness & Modern Navigation Pills (`dashboard.php`, `ci_admin_calls.php`).
   25. Role Permission Fix, White Sleek 3CX Softphone UI, Team Colleague Dialer & Status Reports (`dashboard.php`, `ci_admin_calls.php`, `ci_admin_model.php`, `header.php`).
   26. Roles & Permissions Switcher (`manager/roles`): Segmented toggle between Role-Wise and User-Wise permissions, live user selector, Role Default / Full Admin / Custom modes, role preset loader, and bulk action toggles (`ci_admin_roles.php`, `roles/index.php`, `ci_admin_model.php`).

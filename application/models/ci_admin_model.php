@@ -2500,6 +2500,7 @@ public function dashboard_MyPro($table='ci_leads'){
 		return !empty($ip) ? $ip : '127.0.0.1';
 	}
 
+	private static $_admin_logs_has_geo = null;
 	public function log_admin_action($activity, $details = '', $status = 'SUCCESS', $user_id = null, $username = null, $lat = null, $lng = null, $accuracy = null, $loc_status = null)
 	{
 		if ($user_id === null) {
@@ -2541,12 +2542,26 @@ public function dashboard_MyPro($table='ci_leads'){
 			'activity' => $activity,
 			'status' => $status,
 			'details' => $details,
-			'created_at' => $now,
-			'latitude' => (!empty($lat) && is_numeric($lat)) ? $lat : null,
-			'longitude' => (!empty($lng) && is_numeric($lng)) ? $lng : null,
-			'accuracy' => (!empty($accuracy) && is_numeric($accuracy)) ? (float)$accuracy : null,
-			'location_status' => !empty($loc_status) ? substr($loc_status, 0, 50) : null
+			'created_at' => $now
 		);
+
+		if (self::$_admin_logs_has_geo === null) {
+			$chk = $this->db->query("SHOW COLUMNS FROM `ci_admin_logs` LIKE 'latitude'");
+			if ($chk && $chk->num_rows() > 0) {
+				self::$_admin_logs_has_geo = true;
+			} else {
+				@$this->db->query("ALTER TABLE `ci_admin_logs` ADD COLUMN `latitude` DECIMAL(10,8) NULL, ADD COLUMN `longitude` DECIMAL(11,8) NULL, ADD COLUMN `accuracy` DECIMAL(10,2) NULL, ADD COLUMN `location_status` VARCHAR(50) NULL");
+				$chk2 = $this->db->query("SHOW COLUMNS FROM `ci_admin_logs` LIKE 'latitude'");
+				self::$_admin_logs_has_geo = ($chk2 && $chk2->num_rows() > 0);
+			}
+		}
+
+		if (self::$_admin_logs_has_geo) {
+			$log_data['latitude'] = (!empty($lat) && is_numeric($lat)) ? $lat : null;
+			$log_data['longitude'] = (!empty($lng) && is_numeric($lng)) ? $lng : null;
+			$log_data['accuracy'] = (!empty($accuracy) && is_numeric($accuracy)) ? (float)$accuracy : null;
+			$log_data['location_status'] = !empty($loc_status) ? substr($loc_status, 0, 50) : null;
+		}
 
 		if ($activity === 'login' && $status === 'SUCCESS') {
 			$log_data['login_time'] = $now;

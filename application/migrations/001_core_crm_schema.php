@@ -67,11 +67,37 @@ class Migration_001_core_crm_schema {
             `login_time` DATETIME NULL,
             `logout_time` DATETIME NULL,
             `details` TEXT NULL,
+            `latitude` DECIMAL(10,8) NULL,
+            `longitude` DECIMAL(11,8) NULL,
+            `accuracy` DECIMAL(10,2) NULL,
+            `location_status` VARCHAR(50) NULL,
             `created_at` DATETIME NOT NULL,
             PRIMARY KEY (`id`),
             KEY `idx_user_id` (`user_id`),
             KEY `idx_created_at` (`created_at`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+
+        $admin_log_cols = array(
+            'latitude' => "DECIMAL(10,8) NULL",
+            'longitude' => "DECIMAL(11,8) NULL",
+            'accuracy' => "DECIMAL(10,2) NULL",
+            'location_status' => "VARCHAR(50) NULL",
+            'logout_time' => "DATETIME NULL"
+        );
+        foreach ($admin_log_cols as $col => $def) {
+            $chk = $db->query("SHOW COLUMNS FROM `ci_admin_logs` LIKE '$col'");
+            $exists = false;
+            if ($chk) {
+                if (is_object($chk) && method_exists($chk, 'num_rows')) {
+                    $exists = ($chk->num_rows() > 0);
+                } elseif (isset($chk->num_rows)) {
+                    $exists = ($chk->num_rows > 0);
+                }
+            }
+            if (!$exists) {
+                $db->query("ALTER TABLE `ci_admin_logs` ADD `$col` $def");
+            }
+        }
 
         $cols = array(
             'customer' => "VARCHAR(255) NULL",

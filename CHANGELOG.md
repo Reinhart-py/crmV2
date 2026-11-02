@@ -1,3 +1,12 @@
+## [2026-11-02] - Database Production Synchronization, Schema Decoupling & Dashboard Chart Calibration
+### Changed & Fixed
+- **Database Error 1054 (Unknown column 'latitude' in 'ci_admin_logs')**: Resolved by adding geolocation columns (`latitude`, `longitude`, `accuracy`, `location_status`) to `001_core_crm_schema.php` and implementing dynamic column existence verification in `ci_admin_model::log_admin_action()` so missing columns are created on-the-fly and safely bypassed if absent.
+- **Database Error 1146 (Table 'crm7strokes.ci_user' doesn't exist)**: Synchronized all 51 core tables and complete data from `database/127_0_0_1.sql` into `crm7strokes`, restoring all user accounts, leads, pipelines, and configuration.
+- **Modernized `database/localhost.sql`**: Updated SQL dump to 3.4 MB containing full 51 tables, updated naming to `crm7strokes` and domain to `crm.7strokes.com`, enabled UTF-8 encoding, and included `FOREIGN_KEY_CHECKS = 0` to prevent foreign key errors during cPanel import.
+- **Larger Donut Charts in My Leads & My Orders**: Scaled up outer donut radius to `104px` (inner `64px`) and enlarged callout typography to `11.5px bold 700` (`#0f172a`) to fully utilize box dimensions.
+- **Import Database in Reports Navigation**: Confirmed and wired `Import Database` option into the Reports dropdown in both the desktop navbar and mobile sidebar drawer.
+- **Zero PHP Comments & Lint Verification**: Preserved 0 comments across all PHP files with clean `php -l` verification.
+
 ## [2026-10-31] - Dashboard UI & Layout Calibration (First-Frame Fit & Baseline Alignment)
 ### Changed
 - **Upper Dashboard Sizing & 100% Zoom Fit**: Calibrated heights across top KPI cards (52px), Target vs Achievement / Projection cards (180px, 145px canvas), and My Leads / My Orders cards (238px) so the entire upper section fits within the initial desktop frame without scrolling.

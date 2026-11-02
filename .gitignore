@@ -18,6 +18,7 @@ cookies.txt
 *.tmp
 scratch/
 assets/uploads/
+database/127_0_0_1.sql
 
 # Agent Memory & Local Preferences (strictly ignored from Git)
 project_memory.md
