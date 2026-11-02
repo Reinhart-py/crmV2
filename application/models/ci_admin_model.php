@@ -2371,26 +2371,26 @@ public function dashboard_MyPro($table='ci_leads'){
 					return $result;
 		}	
 
-	  public function fetchTeamList($parent = 0, $user_tree_array = '') {
- 
-		if (!is_array($user_tree_array))
-		$user_tree_array = array();
-	 
-	 	$sql = "SELECT name,id FROM ci_user WHERE manager=".$parent." AND id!=".$parent;
-	  
-	  	$rows = $this->db->query($sql);	
-		if($rows && is_object($rows) && $rows->num_rows()>=1){
-			foreach($rows->result_array() as  $row){
-				
-				$user_tree_array[] = $row['id'];
-				$user_tree_array = $this->fetchTeamList($row['id'], $user_tree_array);	
-				}
+	private static $_team_list_cache = array();
+	public function fetchTeamList($parent = 0, $user_tree_array = '') {
+		$parent = (int)$parent;
+		if (!is_array($user_tree_array)) {
+			if (isset(self::$_team_list_cache[$parent])) {
+				return self::$_team_list_cache[$parent];
 			}
-
-			return $user_tree_array;
-			
-
-	  
+			$user_tree_array = array();
+		}
+		$sql = "SELECT id FROM ci_user WHERE manager=" . $parent . " AND id!=" . $parent;
+		$rows = $this->db->query($sql);
+		if($rows && is_object($rows) && $rows->num_rows() >= 1){
+			foreach($rows->result_array() as $row){
+				$child_id = (int)$row['id'];
+				$user_tree_array[] = $child_id;
+				$user_tree_array = $this->fetchTeamList($child_id, $user_tree_array);
+			}
+		}
+		self::$_team_list_cache[$parent] = array_values(array_unique($user_tree_array));
+		return self::$_team_list_cache[$parent];
 	}
 
 	  public function get_member($mid){
@@ -2602,12 +2602,16 @@ public function dashboard_MyPro($table='ci_leads'){
 
 			
 			$this->session->set_userdata('last_activity_time', time());
-			$client_ip = $this->get_client_ip();
-			$this->db->where('id', $manager_id)->update('ci_user', array(
-				'last_active_at' => date('Y-m-d H:i:s'),
-				'last_ip' => $client_ip,
-				'is_online' => 1
-			));
+			$last_db_ping = (int)$this->session->userdata('last_db_user_ping');
+			if (empty($last_db_ping) || (time() - $last_db_ping) > 60) {
+				$this->session->set_userdata('last_db_user_ping', time());
+				$client_ip = $this->get_client_ip();
+				$this->db->where('id', $manager_id)->update('ci_user', array(
+					'last_active_at' => date('Y-m-d H:i:s'),
+					'last_ip' => $client_ip,
+					'is_online' => 1
+				));
+			}
 		}
 	}
 

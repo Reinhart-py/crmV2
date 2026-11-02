@@ -178,7 +178,7 @@
 
 <?php
 if (!function_exists('render_donut_chart_svg')) {
-    function render_donut_chart_svg($items, $w = 380, $h = 240, $cx = 190, $cy = 120, $r_out = 76, $r_in = 46, $type = 'Lead') {
+    function render_donut_chart_svg($items, $w = 430, $h = 240, $cx = 215, $cy = 120, $r_out = 92, $r_in = 56, $type = 'Lead') {
         $total = 0;
         foreach ($items as $it) {
             $total += (float)$it['count'];
@@ -429,7 +429,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                         </div>
                     </div>
                     <div style="width:100%; display:flex; align-items:center; justify-content:center; flex:1; overflow:visible;">
-                        <?php echo render_donut_chart_svg($lead_items, 380, 240, 190, 120, 76, 46, 'Lead'); ?>
+                        <?php echo render_donut_chart_svg($lead_items, 430, 240, 215, 120, 92, 56, 'Lead'); ?>
                     </div>
                 </div>
 
@@ -441,7 +441,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                         </div>
                     </div>
                     <div style="width:100%; display:flex; align-items:center; justify-content:center; flex:1; overflow:visible;">
-                        <?php echo render_donut_chart_svg($order_items, 380, 240, 190, 120, 76, 46, 'Order'); ?>
+                        <?php echo render_donut_chart_svg($order_items, 430, 240, 215, 120, 92, 56, 'Order'); ?>
                     </div>
                 </div>
             </div>

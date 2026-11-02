@@ -8,6 +8,10 @@ application/logs/*
 !application/logs/index.html
 !application/logs/.htaccess
 
+error_log
+*.log
+.ftpquota
+.htaccess.phpupgrader.*
 cookie.txt
 cookies.txt
 *.tmp

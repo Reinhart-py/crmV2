@@ -298,7 +298,7 @@
           <li><a href="<?php echo base_url();?>manager/terms"><i class="fa fa-list"></i>Category</a></li>
           <?php } ?>
           <?php if($is_admin || has_section_perm('leads_import')){ ?>
-          <li><a href="<?php echo base_url();?>manager/leads/import"><i class="fa fa-upload"></i>Import Leads</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/import"><i class="fa fa-upload"></i>Import Database</a></li>
           <?php } ?>
           <?php if($is_admin || has_section_perm('leads_export')){ ?>
           <li><a href="<?php echo base_url();?>manager/leads/export"><i class="fa fa-download"></i>Export Leads</a></li>
@@ -333,6 +333,9 @@
           <li><a href="<?php echo base_url();?>manager/reports/company-projections"><i class="fa fa-line-chart"></i>Company Projections</a></li>
           <li><a href="https://7strokes.maxvendor47.workers.dev/" target="_blank"><i class="fa fa-database"></i>Generate Data</a></li>
           <li><a href="<?php echo base_url();?>manager/download-report"><i class="fa fa-file-pdf-o"></i>Report</a></li>
+          <?php if($is_admin || has_section_perm('leads_import')){ ?>
+          <li><a href="<?php echo base_url();?>manager/leads/import"><i class="fa fa-upload"></i>Import Database</a></li>
+          <?php } ?>
         </ul>
       </li>
       <?php } ?>
@@ -830,7 +833,7 @@ $(function() {
           <li><a href="<?php echo base_url();?>manager/terms"><i class="fa fa-list"></i>Category</a></li>
           <?php } ?>
           <?php if($is_admin || has_section_perm('leads_import')){ ?>
-          <li><a href="<?php echo base_url();?>manager/leads/import"><i class="fa fa-upload"></i>Import Leads</a></li>
+          <li><a href="<?php echo base_url();?>manager/leads/import"><i class="fa fa-upload"></i>Import Database</a></li>
           <?php } ?>
           <?php if($is_admin || has_section_perm('leads_export')){ ?>
           <li><a href="<?php echo base_url();?>manager/leads/export"><i class="fa fa-download"></i>Export Leads</a></li>
@@ -869,6 +872,9 @@ $(function() {
           <li><a href="<?php echo base_url();?>manager/reports/company-projections"><i class="fa fa-line-chart"></i>Company Projections</a></li>
           <li><a href="https://7strokes.maxvendor47.workers.dev/" target="_blank"><i class="fa fa-database"></i>Generate Data</a></li>
           <li><a href="<?php echo base_url();?>manager/download-report"><i class="fa fa-file-pdf-o"></i>Report</a></li>
+          <?php if($is_admin || has_section_perm('leads_import')){ ?>
+          <li><a href="<?php echo base_url();?>manager/leads/import"><i class="fa fa-upload"></i>Import Database</a></li>
+          <?php } ?>
         </ul>
       </li>
       <?php } ?>

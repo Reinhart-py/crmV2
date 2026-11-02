@@ -24,7 +24,17 @@ if (php_sapi_name() === 'cli-server') {
  * NOTE: If you change these, also change the error_reporting() code below
  *
  */
-	define('ENVIRONMENT', 'development');
+	if (!defined('ENVIRONMENT')) {
+		$ci_env = getenv('CI_ENV');
+		if (!$ci_env && isset($_SERVER['CI_ENV'])) {
+			$ci_env = $_SERVER['CI_ENV'];
+		}
+		if (!$ci_env) {
+			$http_host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
+			$ci_env = ($http_host === 'localhost' || strpos($http_host, '127.0.0.1') !== false || php_sapi_name() === 'cli-server') ? 'development' : 'production';
+		}
+		define('ENVIRONMENT', $ci_env);
+	}
 /*
  *---------------------------------------------------------------
  * ERROR REPORTING

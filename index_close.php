@@ -1,1 +1,0 @@
-<h2>Temp Down</h2>
