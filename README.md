@@ -104,7 +104,7 @@ Total Alphabets (Letters)    : +2,655,328 letters (+2,782,220 inserted / -126,89
 ### 1. Executive Dashboard (No Clutter, All Signal)
 - **Top 8 KPI Cards**: Instant counts for My Database, My Verticals, Team Users, Team Verticals, Leads, and Orders styled in Royal Blue (`#0072f0`). The whole card is clickable.
 - **12-Month Projections**: Clean line charts showing Target vs Achievement and Target vs Projection across a full 12-month rolling window.
-- **Apple-Style Donut Charts**: Crisp, high-res SVG circular charts for **My Leads** and **My Orders**. Big bold donut rings (196px diameter), high-contrast status percentages, and clear outside text labels.
+- **Apple-Style Donut Charts**: Crisp, high-res SVG circular charts for **My Leads** and **My Orders**. Big bold donut rings (220px diameter, 110px outer radius, 68px inner cutout), high-contrast status percentages on hover, and clear outside text labels showing status names and exact counts (e.g., `Busy: 0`, `DNCR: 0`).
 - **Operational Activity Grid**: Live cards for tickets, tasks, follow-ups, and meetings.
 
 ### 2. My Zone (Your Daily Grind)
@@ -218,73 +218,110 @@ php migration_runner.php rollback
 
 ---
 
-## cPanel Hosting Guide (Step-by-Step)
+## cPanel Hosting Guide (Step-by-Step Production Setup)
 
-Here is how to get this running on cPanel in under 10 minutes:
+Here is how to get Seven Strokes CRM running on cPanel from scratch in under 10 minutes, even if you are on budget shared hosting:
 
-### Step 1: Check Your PHP Version
-1. Log into your cPanel account.
-2. Go to **Software** > **MultiPHP Manager**.
-3. Select your domain (`crm.7strokes.com`) and choose **PHP 7.4**, **PHP 8.0**, **PHP 8.1**, or **PHP 8.2**.
-4. In **MultiPHP INI Editor**, set:
-   - `memory_limit = 256M`
-   - `max_input_vars = 5000` (Crucial for large role permission matrices!)
+### Step 1: Configure PHP Version & INI Limits
+1. Log into your cPanel account dashboard.
+2. Under **Software**, open **MultiPHP Manager**.
+3. Locate your CRM domain/subdomain (`crm.7strokes.com`) and select **PHP 8.1** (or **PHP 8.2** / **PHP 7.4**). Click **Apply**.
+4. Now open **MultiPHP INI Editor** (in basic or advanced mode) for your CRM domain:
+   - `memory_limit = 256M` (or `512M` for heavy PDF reports)
+   - `max_input_vars = 5000` *(Crucial! The Role Permissions matrix has hundreds of checkbox fields. A default limit of 1000 will silently truncate saved permissions).*
    - `upload_max_filesize = 64M`
+   - `post_max_size = 64M`
+   - `max_execution_time = 300`
 
-### Step 2: Create Your Database
-1. In cPanel, go to **Databases** > **MySQL Databases**.
-2. Create a new database named `crm7strokes` (your full name will look like `yourcpaneluser_crm7strokes`).
-3. Create a database user with a strong password.
-4. Under **Add User To Database**, add your user to the database and select **ALL PRIVILEGES**.
+### Step 2: Create Your MySQL Database & User
+1. In cPanel, click **MySQL Databases** under the **Databases** category.
+2. In **Create New Database**, enter `crm7strokes` and click **Create Database**.  
+   *Note: cPanel will prepend your account username, so your full database name will look like `user_crm7strokes`.*
+3. Scroll down to **Add New User**, enter a username (e.g. `user_crmadmin`), generate a strong password, and click **Create User**.
+4. Scroll down to **Add User To Database**:
+   - Select your user (`user_crmadmin`) and database (`user_crm7strokes`).
+   - Click **Add**.
+   - Check **ALL PRIVILEGES** and click **Make Changes**.
 
-### Step 3: Upload the Code
-1. In cPanel, open **File Manager** and go to your site directory (e.g. `public_html/` or your subdomain folder).
-2. Upload the project zip and extract it.
-3. Make sure `.htaccess` is present (click **Settings** at the top-right of File Manager and check **Show Hidden Files**).
+### Step 3: Deploy the Codebase
+You can deploy using either **Git Version Control** or **File Manager ZIP**:
 
-### Step 4: Setup Your `.env` File
-1. In File Manager, copy `.env.example` to `.env`.
-2. Edit `.env` with your database name, user, password, and URL:
+#### Option A: Using cPanel Git Version Control (Recommended)
+1. In cPanel, open **Git™ Version Control**.
+2. Click **Create**, enter the clone URL: `https://github.com/Reinhart-py/crmV2.git`.
+3. Set your deployment path (e.g., `public_html` or `subdomains/crm`).
+4. Click **Create** to clone the latest production code directly.
+
+#### Option B: Using File Manager
+1. Zip the project repository on your local computer.
+2. In cPanel **File Manager**, navigate to your target folder (e.g. `public_html/` or your subdomain folder).
+3. Click **Upload**, drop the zip file, and once upload hits 100%, right-click and choose **Extract**.
+4. **Important**: Click the gear icon (**Settings**) at the top right of File Manager and ensure **Show Hidden Files (dotfiles)** is checked so `.htaccess` and `.env` are visible.
+
+### Step 4: Configure the Environment (`.env`)
+1. In File Manager (or via Terminal), locate [`.env.example`](file:///c:/Users/SRJ%20feb/Downloads/softwares/CRM/2026.10.08-1%20-%20crm.rolextogroup.com/crm.rolextogroup.com/.env.example) in the CRM root directory.
+2. Copy or rename it to `.env`.
+3. Open `.env` and fill in your actual cPanel values:
    ```env
+   # Database Configuration
    DB_HOST=localhost
+   DB_PORT=3306
    DB_NAME=yourcpaneluser_crm7strokes
-   DB_USER=yourcpaneluser_crmuser
+   DB_USER=yourcpaneluser_crmadmin
    DB_PASS=YourStrongPasswordHere
+
+   # Base URL & Environment
    BASE_URL=https://crm.7strokes.com/
    CI_ENV=production
+
+   # Optional Telephony / AI Integrations
+   GROQ_API_KEY=
+   PBX_ENDPOINT=
    ```
+4. Save the file. `.env` is ignored by git, keeping your production credentials safe from public commits.
 
 ### Step 5: Import Base Database & Run Migrations
-1. Open **phpMyAdmin** from cPanel and select your database.
-2. Click **Import**, choose [`database/localhost.sql`](file:///c:/Users/SRJ%20feb/Downloads/softwares/CRM/2026.10.08-1%20-%20crm.rolextogroup.com/crm.rolextogroup.com/database/localhost.sql), and hit **Go**.  
-   *(Notice: All old hardcoded rolexto references and database names have been completely removed, so it will import smoothly without any `#1044 Access Denied` errors).*
-3. Open **Terminal** in cPanel (or SSH) inside your CRM folder and run:
-   ```bash
-   php migration_runner.php
-   ```
-   *This applies all latest tables, fields, and performance indexes in seconds.*
+1. Open **phpMyAdmin** from cPanel and click your database (`yourcpaneluser_crm7strokes`) on the left navigation tree.
+2. Click the **Import** tab at the top.
+3. Click **Choose File**, select [`database/localhost.sql`](file:///c:/Users/SRJ%20feb/Downloads/softwares/CRM/2026.10.08-1%20-%20crm.rolextogroup.com/crm.rolextogroup.com/database/localhost.sql) (3.4 MB), and click **Import** (or **Go**).  
+   *Notice: All 51 tables are included. All old hardcoded database names have been completely removed, so the import runs cleanly without `#1044 Access Denied` errors.*
+4. Run migrations to ensure all latest tables, fields, and indexes are active:
+   - **If you have Terminal / SSH access**:
+     ```bash
+     php migration_runner.php
+     ```
+   - **If your hosting does not offer Terminal access**:
+     Simply visit the secure migration URL in your browser:
+     ```
+     https://crm.7strokes.com/migration_runner.php?key=crm7strokes_migrate
+     ```
+     *(This runs all pending migrations and displays an execution timing report directly in your browser).*
 
-### Step 6: Verify Permissions
-Make sure folders have standard permissions:
-- Regular folders: `0755`
-- Files: `0644`
-- Writable folders:
-  - `application/cache/` -> `0755`
-  - `application/logs/` -> `0755`
-  - `assets/uploads/` -> `0755`
+### Step 6: Verify Permissions & Apache Clean URLs
+1. Ensure standard web server file permissions in File Manager:
+   - Regular directories: `0755`
+   - Files: `0644`
+   - Writable directories (must be `0755` or `0775`):
+     - `application/cache/`
+     - `application/logs/`
+     - `assets/uploads/`
+     - `assets/uploads/avatars/`
+2. Verify that [`.htaccess`](file:///c:/Users/SRJ%20feb/Downloads/softwares/CRM/2026.10.08-1%20-%20crm.rolextogroup.com/crm.rolextogroup.com/.htaccess) exists in your site root with the CodeIgniter rewrite rules active so URLs like `manager/dashboard` work cleanly without `index.php` in the path.
 
 ### Step 7: Turn On SSL & Force HTTPS
-1. In cPanel, go to **SSL/TLS Status**, select your domain, and click **Run AutoSSL**.
-2. Once the green lock appears, go to **Domains** > **Domains** and switch **Force HTTPS Redirect** to **ON**.
+1. In cPanel, navigate to **SSL/TLS Status**.
+2. Select your CRM domain and click **Run AutoSSL** to generate a free Let's Encrypt / Sectigo SSL certificate.
+3. Once the green padlock appears, go to **Domains** > **Domains** and toggle **Force HTTPS Redirect** to **ON**.
 
-### Step 8: Setup Background Cron Job
-To keep auto follow-up alerts, reminders, and background syncs ticking:
-1. In cPanel, open **Cron Jobs**.
-2. Add a new cron job running every minute (`* * * * *`):
+### Step 8: Setup Automated Background Cron Job
+The CRM handles auto-dialer queues, follow-up notifications, and background housekeeping through a cron job:
+1. In cPanel, click **Cron Jobs** under the **Advanced** section.
+2. Under **Add New Cron Job**, select **Once Per Minute** (`* * * * *`).
+3. In the **Command** field, enter the full path to PHP and your CRM index:
    ```bash
    /usr/local/bin/php /home/yourcpaneluser/public_html/index.php ci_cron run >/dev/null 2>&1
    ```
-   *(Replace `/home/yourcpaneluser/public_html/` with your actual server path).*
+   *Tip: You can find your exact home directory path (`/home/yourcpaneluser`) in the right-hand **General Information** sidebar of your cPanel home page.*
 
 ---
 
