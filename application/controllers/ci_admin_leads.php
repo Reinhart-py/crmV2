@@ -2399,7 +2399,7 @@ $data['info2']=$this->if_not_login();
 		fputcsv($output, $headers);
 
 		$sample_row = array(
-			'admin@rolextogroup.com',
+			'admin@7strokes.com',
 			'Sample Enterprise LLC',
 			'John Doe',
 			'+971 50 123 4567',

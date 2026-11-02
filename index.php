@@ -1,4 +1,25 @@
 <?php
+if (file_exists(__DIR__ . '/.env')) {
+	$env_lines = file(__DIR__ . '/.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+	foreach ($env_lines as $el) {
+		$el = trim($el);
+		if ($el === '' || $el[0] === '#') continue;
+		if (strpos($el, '=') !== false) {
+			list($k, $v) = explode('=', $el, 2);
+			$k = trim($k);
+			$v = trim($v);
+			if (strlen($v) > 1 && (($v[0] === '"' && $v[-1] === '"') || ($v[0] === "'" && $v[-1] === "'"))) {
+				$v = substr($v, 1, -1);
+			}
+			if (!array_key_exists($k, $_SERVER) && !array_key_exists($k, $_ENV)) {
+				putenv("$k=$v");
+				$_ENV[$k] = $v;
+				$_SERVER[$k] = $v;
+			}
+		}
+	}
+}
+
 if (php_sapi_name() === 'cli-server') {
 	$file = __DIR__ . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 	if (is_file($file)) {

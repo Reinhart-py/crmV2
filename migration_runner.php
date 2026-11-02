@@ -15,9 +15,19 @@ if (!$cfg) {
 }
 
 $port = !empty($cfg['port']) ? (int)$cfg['port'] : 3306;
-$mysqli = new mysqli($cfg['hostname'], $cfg['username'], $cfg['password'], $cfg['database'], $port);
+mysqli_report(MYSQLI_REPORT_OFF);
+$mysqli = @new mysqli($cfg['hostname'], $cfg['username'], $cfg['password'], '', $port);
 if ($mysqli->connect_error) {
-    die("Database Connection Error (" . $mysqli->connect_errno . "): " . $mysqli->connect_error . "\n");
+    $mysqli = @new mysqli($cfg['hostname'], $cfg['username'], $cfg['password'], $cfg['database'], $port);
+    if ($mysqli->connect_error) {
+        die("Database Connection Error (" . $mysqli->connect_errno . "): " . $mysqli->connect_error . "\n");
+    }
+} else {
+    $db_name = $mysqli->real_escape_string($cfg['database']);
+    $mysqli->query("CREATE DATABASE IF NOT EXISTS `$db_name` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+    if (!$mysqli->select_db($cfg['database'])) {
+        die("Error selecting database '" . $cfg['database'] . "': " . $mysqli->error . "\n");
+    }
 }
 
 $mysqli->query("SET NAMES utf8mb4");

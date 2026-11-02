@@ -178,7 +178,7 @@
 
 <?php
 if (!function_exists('render_donut_chart_svg')) {
-    function render_donut_chart_svg($items, $w = 430, $h = 240, $cx = 215, $cy = 120, $r_out = 92, $r_in = 56, $type = 'Lead') {
+    function render_donut_chart_svg($items, $w = 460, $h = 250, $cx = 230, $cy = 125, $r_out = 98, $r_in = 60, $type = 'Lead') {
         $total = 0;
         foreach ($items as $it) {
             $total += (float)$it['count'];
@@ -210,17 +210,17 @@ if (!function_exists('render_donut_chart_svg')) {
             $mid = $current_angle + $angle_delta / 2;
             $p1_x = $cx + ($r_out + 3) * cos($mid);
             $p1_y = $cy + ($r_out + 3) * sin($mid);
-            $p2_x = $cx + ($r_out + 14) * cos($mid);
-            $p2_y = $cy + ($r_out + 14) * sin($mid);
+            $p2_x = $cx + ($r_out + 12) * cos($mid);
+            $p2_y = $cy + ($r_out + 12) * sin($mid);
             $is_right = cos($mid) >= 0;
-            $p3_x = $p2_x + ($is_right ? 8 : -8);
+            $p3_x = $p2_x + ($is_right ? 10 : -10);
             $p3_y = $p2_y;
             $anchor = $is_right ? 'start' : 'end';
-            $tx = $p3_x + ($is_right ? 3 : -3);
-            $ty = $p3_y + 3;
+            $tx = $p3_x + ($is_right ? 4 : -4);
+            $ty = $p3_y + 3.5;
             $lbl = htmlspecialchars($it['label']) . ': ' . (int)$it['count'];
-            $callouts .= sprintf('<polyline points="%.1f,%.1f %.1f,%.1f %.1f,%.1f" fill="none" stroke="#94a3b8" stroke-width="1.2" />', $p1_x, $p1_y, $p2_x, $p2_y, $p3_x, $p3_y);
-            $callouts .= sprintf('<text x="%.1f" y="%.1f" font-size="9" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="700" fill="#1e293b" class="donut-callout-text" text-anchor="%s">%s</text>', $tx, $ty, $anchor, $lbl);
+            $callouts .= sprintf('<polyline points="%.1f,%.1f %.1f,%.1f %.1f,%.1f" fill="none" stroke="#94a3b8" stroke-width="1.3" />', $p1_x, $p1_y, $p2_x, $p2_y, $p3_x, $p3_y);
+            $callouts .= sprintf('<text x="%.1f" y="%.1f" font-size="10.5" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="700" fill="#0f172a" class="donut-callout-text" text-anchor="%s">%s</text>', $tx, $ty, $anchor, $lbl);
             $current_angle = $next_angle;
         }
         return '<svg viewBox="0 0 ' . $w . ' ' . $h . '" width="100%" height="' . $h . '" xmlns="http://www.w3.org/2000/svg" style="display:block; margin:0 auto; overflow:visible;"><g>' . $paths . $callouts . '</g></svg>';
@@ -429,7 +429,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                         </div>
                     </div>
                     <div style="width:100%; display:flex; align-items:center; justify-content:center; flex:1; overflow:visible;">
-                        <?php echo render_donut_chart_svg($lead_items, 430, 240, 215, 120, 92, 56, 'Lead'); ?>
+                        <?php echo render_donut_chart_svg($lead_items, 460, 250, 230, 125, 98, 60, 'Lead'); ?>
                     </div>
                 </div>
 
@@ -441,7 +441,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                         </div>
                     </div>
                     <div style="width:100%; display:flex; align-items:center; justify-content:center; flex:1; overflow:visible;">
-                        <?php echo render_donut_chart_svg($order_items, 430, 240, 215, 120, 92, 56, 'Order'); ?>
+                        <?php echo render_donut_chart_svg($order_items, 460, 250, 230, 125, 98, 60, 'Order'); ?>
                     </div>
                 </div>
             </div>

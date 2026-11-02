@@ -103,7 +103,7 @@
                 <div class="box-body">
                   <div class="form-group">
                     <label>PBX FQDN / Server Host</label>
-                    <input type="text" name="endpoint" class="form-control" placeholder="https://pbx.rolextogroup.com:5001" value="<?php echo htmlspecialchars($p['endpoint']); ?>" required />
+                    <input type="text" name="endpoint" class="form-control" placeholder="https://pbx.7strokes.com:5001" value="<?php echo htmlspecialchars($p['endpoint']); ?>" required />
                   </div>
                   <div class="row">
                     <div class="col-md-6 form-group">
@@ -166,7 +166,7 @@
                   <div class="row">
                     <div class="col-md-8 form-group">
                       <label>SMTP Host</label>
-                      <input type="text" name="config[smtp_host]" class="form-control" placeholder="mail.rolextogroup.com" value="<?php echo htmlspecialchars($e['config']['smtp_host'] ?? ''); ?>" required />
+                      <input type="text" name="config[smtp_host]" class="form-control" placeholder="mail.7strokes.com" value="<?php echo htmlspecialchars($e['config']['smtp_host'] ?? ''); ?>" required />
                     </div>
                     <div class="col-md-4 form-group">
                       <label>SMTP Port</label>
@@ -186,7 +186,7 @@
                   <div class="row">
                     <div class="col-md-6 form-group">
                       <label>From Email</label>
-                      <input type="email" name="config[from_email]" class="form-control" value="<?php echo htmlspecialchars($e['config']['from_email'] ?? 'noreply@rolextogroup.com'); ?>" />
+                      <input type="email" name="config[from_email]" class="form-control" value="<?php echo htmlspecialchars($e['config']['from_email'] ?? 'noreply@7strokes.com'); ?>" />
                     </div>
                     <div class="col-md-6 form-group">
                       <label>From Name</label>
@@ -306,7 +306,7 @@
                     </div>
                     <div class="col-md-6 form-group">
                       <label>Admin Notification Email</label>
-                      <input type="email" name="config[notify_email]" class="form-control" value="<?php echo htmlspecialchars($c['config']['notify_email'] ?? 'compliance@rolextogroup.com'); ?>" />
+                      <input type="email" name="config[notify_email]" class="form-control" value="<?php echo htmlspecialchars($c['config']['notify_email'] ?? 'compliance@7strokes.com'); ?>" />
                     </div>
                   </div>
                   <div class="form-group">
@@ -344,16 +344,16 @@
                   <div class="row">
                     <div class="col-md-6 form-group">
                       <label>Primary Support Routing Email</label>
-                      <input type="email" name="config[support_email]" class="form-control" value="<?php echo htmlspecialchars($h['config']['support_email'] ?? 'support@rolextogroup.com'); ?>" required />
+                      <input type="email" name="config[support_email]" class="form-control" value="<?php echo htmlspecialchars($h['config']['support_email'] ?? 'support@7strokes.com'); ?>" required />
                     </div>
                     <div class="col-md-6 form-group">
                       <label>Escalation Manager Email</label>
-                      <input type="email" name="config[escalation_email]" class="form-control" value="<?php echo htmlspecialchars($h['config']['escalation_email'] ?? 'escalations@rolextogroup.com'); ?>" />
+                      <input type="email" name="config[escalation_email]" class="form-control" value="<?php echo htmlspecialchars($h['config']['escalation_email'] ?? 'escalations@7strokes.com'); ?>" />
                     </div>
                   </div>
                   <div class="form-group">
                     <label>External Ticketing Portal URL (Optional)</label>
-                    <input type="url" name="endpoint" class="form-control" placeholder="https://support.rolextogroup.com" value="<?php echo htmlspecialchars($h['endpoint']); ?>" />
+                    <input type="url" name="endpoint" class="form-control" placeholder="https://support.7strokes.com" value="<?php echo htmlspecialchars($h['endpoint']); ?>" />
                   </div>
                   <div class="form-group">
                     <label>Status</label>

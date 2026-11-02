@@ -1,354 +1,325 @@
 <div align="center">
 
-# Seven Strokes CRM Platform (v2)
+# Seven Strokes CRM (v2)
 
-### Enterprise Commercial Operations, Telephony & Key Account Management System
+### The no-nonsense commercial ops, softphone dialer & key account management powerhouse.
 
-[![PHP Version](https://img.shields.io/badge/PHP-7.4%20|%208.0%20|%208.1%20|%208.2-777bb4?style=for-the-badge&logo=php&logoColor=white)](https://www.php.net/)
-[![CodeIgniter](https://img.shields.io/badge/CodeIgniter-3.x%20Core-ee4326?style=for-the-badge&logo=codeigniter&logoColor=white)](https://codeigniter.com/)
-[![MySQL](https://img.shields.io/badge/MySQL-5.7%20--%208.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
-[![License](https://img.shields.io/badge/License-Proprietary%20%C2%A9%202026-0072f0?style=for-the-badge)](#copyright--intellectual-property-rights)
-[![Architecture](https://img.shields.io/badge/Architecture-Apple--Style%20Minimalist-0f172a?style=for-the-badge&logo=apple&logoColor=white)](#design-system--ui-standards)
-[![Production](https://img.shields.io/badge/Status-Production%20Ready-16a34a?style=for-the-badge)](#production-deployment-guide-cpanel)
+[![PHP Version](https://img.shields.io/badge/PHP-7.4%20to%208.2-777bb4?style=for-the-badge&logo=php&logoColor=white)](https://www.php.net/)
+[![CodeIgniter](https://img.shields.io/badge/CodeIgniter-3.x%20Hardened-ee4326?style=for-the-badge&logo=codeigniter&logoColor=white)](https://codeigniter.com/)
+[![MySQL](https://img.shields.io/badge/MySQL-5.7%20|%208.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![License](https://img.shields.io/badge/License-Proprietary%20%C2%A9%202026-0072f0?style=for-the-badge)](#copyright--can-you-claim-this-crm)
+[![Vibe](https://img.shields.io/badge/Design-Apple--Style%20Clean-0f172a?style=for-the-badge&logo=apple&logoColor=white)](#design-vibe--apple-style-rules)
+[![Production](https://img.shields.io/badge/Production-Battle%20Tested-16a34a?style=for-the-badge)](#cpanel-hosting-guide-step-by-step)
 
 <br/>
 
-**Seven Strokes CRM** is an enterprise-grade commercial operations operating system engineered for high-velocity sales organizations, corporate service providers, key account managers (KAM), HR leaders, and executive leadership. Featuring an Apple-style minimalist design aesthetic, sub-second query latency, unified telephony with WebRTC / 3CX dialing, live operations pivot boards, and automated compliance lifecycles.
+**Seven Strokes CRM** is an all-in-one operations platform built for fast-moving sales reps, back office gatekeepers, key account managers (KAM), and executives. 
+
+Old CRMs usually feel like using software from 2004—bulky boxes, neon rainbow buttons, and loading spinners that take forever. We scrapped all that bloat. This CRM looks like a clean Apple desktop app, runs buttery smooth on any regular cPanel hosting, dials prospects straight from your browser, and keeps raw leads strictly separated from approved money-making sales.
 
 </div>
 
 ---
 
-## Table of Contents
+## Quick Navigation
 
-- [What is Seven Strokes CRM v2?](#what-is-seven-strokes-crm-v2)
-- [Quantitative Codebase Evolution](#quantitative-codebase-evolution)
+- [Why We Built This (The Real Story)](#why-we-built-this-the-real-story)
 - [System Architecture & Workflow](#system-architecture--workflow)
-- [Core Modules & Capabilities](#core-modules--capabilities)
-  - [1. Executive Dashboard](#1-executive-dashboard)
-  - [2. My Zone (Personal Operations)](#2-my-zone-personal-operations)
-  - [3. Team Management & Organizational Hierarchy](#3-team-management--organizational-hierarchy)
-  - [4. Back Office & Verification Gate](#4-back-office--verification-gate)
-  - [5. Phone Dialer & Telephony Engine](#5-phone-dialer--telephony-engine)
-  - [6. Live Operations Section](#6-live-operations-section)
-  - [7. Key Account Management (KAM)](#7-key-account-management-kam)
-  - [8. HR Operations & Geofencing](#8-hr-operations--geofencing)
-  - [9. Granular Roles & Access Control (ACL)](#9-granular-roles--access-control-acl)
-  - [10. Quality Check Panel (QC)](#10-quality-check-panel-qc)
-- [Database Performance & Migration System](#database-performance--migration-system)
-- [Production Deployment Guide (cPanel)](#production-deployment-guide-cpanel)
-- [Troubleshooting Matrix](#troubleshooting-matrix)
-- [Copyright & Intellectual Property Rights](#copyright--intellectual-property-rights)
+- [How Much Code Actually Changed? (Stats)](#how-much-code-actually-changed-stats)
+- [Feature Breakdown: What's In The Box](#feature-breakdown-whats-in-the-box)
+- [Security: Environment (.env) & Zero Secrets](#security-environment-env--zero-secrets)
+- [Database Migrations (The Modern Way)](#database-migrations-the-modern-way)
+- [cPanel Hosting Guide (Step-by-Step)](#cpanel-hosting-guide-step-by-step)
+- [Troubleshooting & Gotchas](#troubleshooting--gotchas)
+- [Copyright: Can You Claim This CRM?](#copyright--can-you-claim-this-crm)
 
 ---
 
-## What is Seven Strokes CRM v2?
+## Why We Built This (The Real Story)
 
-Seven Strokes CRM transforms commercial sales and account servicing from disconnected spreadsheets and legacy forms into a single, cohesive, high-performance ecosystem. Built on a hardened CodeIgniter foundation and enhanced with modern asynchronous frontend components, it enforces strict entity boundaries between raw prospective data, qualified leads, locked client orders, and finalized commercial sales.
+Most legacy CRMs have two massive headaches:
+1. **Sales reps mess up client data**: A rep edits a client name mid-order, changes the price on a whim, or marks a cold lead as "Sale Won" before anyone verified payment. Pure chaos.
+2. **Servers crawl on their knees**: The old database was doing over **400 unindexed SQL queries** just to render the dashboard once. On shared cPanel hosting, that felt like dial-up internet.
 
-### Core Distinctions
-- **Zero UI Clutter**: Strictly compliant with Apple-style desktop ergonomics—crisp hairline borders (`1px solid #e2e8f0`), balanced whitespace, royal blue corporate accents (`#0072f0`), and zero decorative status badges or tutorial banners.
-- **Dual-Box List Architecture**: Standardized dual-box layout across all table views (Box 1: Inline filters; Box 2: Responsive DataTables with standard action dropdowns).
-- **Sub-Second Performance**: Indexed database architecture eliminating full-table scans, throttled session write locks, and static request-level memoization.
-- **Enterprise Telephony**: Integrated WebRTC/3CX softphone with 4-stage calling queues, instant call logging, and Groq AI call analysis.
-
----
-
-## Quantitative Codebase Evolution
-
-The following audit metrics quantify the transformation from the original base codebase (`d5d67fd`) to the modern enterprise release (`v2`):
-
-```
-========================================================================================
-SEVEN STROKES CRM - QUANTITATIVE EVOLUTION METRICS AUDIT
-Comparison: Initial Commit (d5d67fd) -> Enterprise Release v2 (HEAD)
-========================================================================================
-Files Touched / Created      : 177 files
-Total Inserted Lines         : +91,267 lines
-Total Deleted Lines          : -6,987 lines
-----------------------------------------------------------------------------------------
-NET CODE GROWTH              : +84,280 lines
-Total Inserted Words         : +641,059 words
-Total Deleted Words          : -18,212 words
-----------------------------------------------------------------------------------------
-NET WORD GROWTH              : +622,847 words
-Total Inserted Characters    : +5,690,960 characters
-Total Deleted Characters     : -255,270 characters
-----------------------------------------------------------------------------------------
-NET CHARACTER GROWTH         : +5,435,690 characters
-Total Alphabets (Letters)    : +2,655,328 letters (+2,782,220 inserted / -126,892 deleted)
-========================================================================================
-```
-
-### Architectural Evolution Summary
-
-| Dimension | Legacy Base Version (v1) | Enterprise Platform (v2) |
-|---|---|---|
-| **Design Language** | Outdated AdminLTE 2, bulky cartoon borders, rainbow colors | Apple-style minimalist aesthetic, hairline borders, Royal Blue theme (`#0072f0`) |
-| **Table Views** | Disjointed custom tables, inconsistent filtering | Dual-Box layout (Box 1 Filter Form, Box 2 DataTables) across all list modules |
-| **Telephony** | None | Full softphone dialer, 4-stage queues, audio IVR, Groq AI transcription analysis |
-| **Live Operations** | Manual page reloads, no real-time status | Pivot board with silent 10s background sync and full-screen TV Presentation Mode |
-| **Entity Boundaries** | Database records and Leads mixed together | Strict separation: Database (`D%010d`), Lead (`L%010d`), Order (`O%010d`), Sales (`S%010d`) |
-| **Order Security** | Editable by anyone at any time | Automatic lead locking (`is_locked=1`) upon order submission; Back Office approval required |
-| **Migrations** | None (manual SQL queries) | Versioned migration runner tracking applied batches in `schema_migrations` |
-| **Performance** | Unindexed MySQL tables, 400+ queries per page load | Multi-column database indexes, query memoization, Gzip compression, and asset caching |
-| **Mobile Access** | Non-responsive layout, broken controls | Responsive mobile drawer sidebar, touch-optimized softphone dock |
+We fixed both:
+- **Strict Entity Separation**: A record starts as a cold Database row (`D0000000001`). Once verified, it becomes a Lead (`L0000000001`). Once an order is submitted, the record gets **locked immediately** (`is_locked=1`) so reps can't alter prices behind your back. Only Back Office and Admins can approve it into a confirmed Sale (`S0000000001`).
+- **Performance That Hits Different**: Added composite indexes on every heavy foreign key, cached team lookups in memory, and throttled session writes. The dashboard now loads instantly without melting your server CPU.
 
 ---
 
 ## System Architecture & Workflow
 
+Here is the exact lifecycle of how data flows through Seven Strokes CRM—from cold calling to renewal contracts:
+
 ```mermaid
 flowchart TD
-    A["Raw Prospect / Cold Contact"] -->|"Data Entry / Import Database"| B["Database Record (D%010d)"]
-    B -->|"Dialer / Telephony Outreach"| C{"Customer Interest?"}
-    C -->|"No / DND / Busy"| D["Follow-up Scheduled"]
-    D -->|"Queue Alert"| B
-    C -->|"Yes (Qualified)"| E["Request Lead Conversion"]
-    E -->|"Back Office Review"| F{"Back Office Decision"}
-    F -->|"Rejected"| B
-    F -->|"Approved"| G["Qualified Lead (L%010d)"]
-    G -->|"Commercial Agreement Reached"| H["Create Order (O%010d)"]
-    H -->|"Record Locked (is_locked=1)"| I["Pending Order Process"]
-    I -->|"Back Office Audit & Acceptance"| J["Completed Order"]
-    J -->|"Admin Sales Verification"| K["Sales Record (S%010d)"]
-    K -->|"Onboard Client"| L["Key Account Management (KAM)"]
-    L -->|"Compliance & Lifecycle"| M["Trade License, VAT & Corporate Tax Renewal"]
+    A["Cold Contact / Raw Prospect"] -->|"Manual Entry or CSV Import"| B["Database Record (D%010d)"]
+    B -->|"Telephony Softphone Outreach"| C{"Customer Interested?"}
+    C -->|"Busy / No Answer / DND"| D["Auto Follow-up Scheduled"]
+    D -->|"Queue Alert Hits Queue"| B
+    C -->|"Yes! Meeting / Hot Deal"| E["Request Lead Conversion"]
+    E -->|"Back Office Review Gate"| F{"Back Office Decision"}
+    F -->|"Rejected (Needs Work)"| B
+    F -->|"Verified & Approved"| G["Qualified Lead (L%010d)"]
+    G -->|"Commercial Deal Closed"| H["Create Order (O%010d)"]
+    H -->|"Record Auto-Locked (is_locked=1)"| I["Pending Order Process"]
+    I -->|"Back Office Verifies Pricing & Docs"| J["Order Accepted"]
+    J -->|"Admin Sales Sign-Off"| K["Confirmed Sale (S%010d)"]
+    K -->|"Client Onboarding"| L["Key Account Management (KAM)"]
+    L -->|"Automated Compliance Tracking"| M["Trade License Expiry, VAT & Tax Returns"]
 ```
 
 ---
 
-## Core Modules & Capabilities
+## How Much Code Actually Changed? (Stats)
 
-### 1. Executive Dashboard
-- **Key Metrics Row**: 8 top KPI cards for Database, Verticals, Users, Leads, and Orders with Royal Blue styling (`#0072f0` / `#0084ff`).
-- **Dynamic Projections**: Visual line graphs showing 12-month Target vs Achievement and Target vs Projection.
-- **Apple-Style SVG Donut Charts**: High-resolution vector circular charts for **My Leads** and **My Orders** with callout percentages, total amounts, and hover breakdowns.
-- **Operational Activity Section**: Sub-second overview of tickets, tasks, follow-ups, meetings, and stage conversions.
+We didn't just tweak a few colors. We overhauled the entire codebase from the ground up compared to the initial legacy base commit (`d5d67fd`):
 
-### 2. My Zone (Personal Operations)
-- **Add & View Database**: Structured entry and dual-box filtering for initial prospect data.
-- **View Leads**: Pipeline stage tracking for verified leads.
-- **View Orders (`manager/orders/my`)**: Personal deal pipeline with strict view-only permissions.
-- **View Sales**: Verified closed revenue records.
-- **Follow-ups & Meetings**: Daily schedule tracking with automatic overdue alerts.
-- **Verticals & Tasks**: Industry verticals, internal tasks, external tasks, and database transfers.
-
-### 3. Team Management & Organizational Hierarchy
-- **Interactive Hierarchy Tree**: Dynamic reporting structure with upward navigation to managers and downward expansion to team reportees.
-- **Team Activity Monitoring**: Real-time visibility into team databases, leads, orders, verticals, follow-ups, meetings, and tickets.
-- **Database Assignment**: Balanced bulk distribution of prospective database records across sales agents.
-
-### 4. Back Office & Verification Gate
-- **Pending Leads Approval (`manager/leads/review_leads`)**: Mandatory verification gate converting raw database records into qualified leads.
-- **Pending Order Process (`manager/orders/pending_process`)**: Pricing audit, document verification, and operational acceptance.
-- **Onboard Client (`manager/kam/onboard`)**: Corporate legal profile registration, trade license, and jurisdiction recording.
-- **View All Orders (`manager/orders`)**: Administrative order pipeline with "View", "Make Changes", and "Accept" actions.
-
-### 5. Phone Dialer & Telephony Engine
-- **Cross-Device Layout**: Responsive dock adapting from mobile smartphones to ultra-wide desktop monitors.
-- **Sequential Calling Queues**:
-  1. Last Seven Days
-  2. Today
-  3. Next Seven Days
-  4. All Future
-- **Telephony Features**: WebRTC / 3CX integration, real connected duration timers, dual-contact switching, instant call logging, and Groq AI call analysis.
-
-### 6. Live Operations Section
-- **Pivot Sheet Table Layout**: Clean tabular layout displaying My Stats, Team Stats, and Performance Recognition.
-- **Color Coded Windows**: Today (Emerald Green), Last 7 Days (Warm Amber), This Month (Royal Blue), This Quarter (Soft Purple).
-- **Background Sync**: Silent AJAX polling every 10 seconds updates values without page reload.
-- **TV Presentation Mode**: Dedicated distraction-free layout for commercial floor displays.
-
-### 7. Key Account Management (KAM)
-- **Corporate Client Directory**: Complete portfolio overview with trade license numbers, Emirates, and jurisdiction details.
-- **Automated Service Schedules**: Compliance tracking for trade license renewals, corporate tax filings, and VAT deadlines.
-- **Assignee Transfers**: Reassign corporate portfolios across account managers with complete historical audit logs.
-
-### 8. HR Operations & Geofencing
-- **People Operations**: Target assignment, employee lifecycle tracking, daily attendance, GPS geofenced check-ins, and shift management.
-- **Leave & Payroll**: Leave approvals, holiday calendars, automated payroll generation, and taxation calculation.
-- **Appraisals & Document Vault**: Performance reviews and secure employee document storage.
-
-### 9. Granular Roles & Access Control (ACL)
-- **Role Permission Matrix**: Configure No Access, View Only, or Full Access per module and route.
-- **Bulk Toggles**: Fast section-wide and global permission assignments.
-- **Concurrent Session Enforcement**: Single-device active session enforcement preventing simultaneous credential sharing.
-
-### 10. Quality Check Panel (QC)
-- **Direct Navigation Links**: Every module and page opens directly in a new tab.
-- **7-Point Audit Checklist**: UI Responsiveness, UX, Functionality, Navigation, Data Accuracy, Permissions, and Error Handling.
-- **AJAX Remarks Drawer**: Instant recording and saving of QA observations.
+```
+========================================================================================
+SEVEN STROKES CRM - QUANTITATIVE EVOLUTION AUDIT
+Baseline: Initial Commit (d5d67fd)  -->  Current Enterprise v2 (HEAD)
+========================================================================================
+Files Created / Updated      : 177 files
+Total Added Lines            : +91,267 lines
+Total Removed Lines          : -6,987 lines
+----------------------------------------------------------------------------------------
+NET CODE ADDED               : +84,280 lines
+Total Added Words            : +641,059 words
+Total Removed Words          : -18,212 words
+----------------------------------------------------------------------------------------
+NET WORDS ADDED              : +622,847 words
+Total Added Characters       : +5,690,960 chars
+Total Removed Characters     : -255,270 chars
+----------------------------------------------------------------------------------------
+NET CHARACTERS ADDED         : +5,435,690 chars
+Total Alphabets (Letters)    : +2,655,328 letters (+2,782,220 inserted / -126,892 removed)
+========================================================================================
+```
 
 ---
 
-## Database Performance & Migration System
+## Feature Breakdown: What's In The Box
 
-Seven Strokes CRM v2 features a versioned, enterprise-grade database migration runner and query optimization engine:
+### 1. Executive Dashboard (No Clutter, All Signal)
+- **Top 8 KPI Cards**: Instant counts for My Database, My Verticals, Team Users, Team Verticals, Leads, and Orders styled in Royal Blue (`#0072f0`). The whole card is clickable.
+- **12-Month Projections**: Clean line charts showing Target vs Achievement and Target vs Projection across a full 12-month rolling window.
+- **Apple-Style Donut Charts**: Crisp, high-res SVG circular charts for **My Leads** and **My Orders**. Big bold donut rings (196px diameter), high-contrast status percentages, and clear outside text labels.
+- **Operational Activity Grid**: Live cards for tickets, tasks, follow-ups, and meetings.
 
-### Migration Architecture
+### 2. My Zone (Your Daily Grind)
+- **Add & View Database**: Quick prospect entry with dual-box table filtering.
+- **View Leads**: Pipeline status view for verified leads.
+- **View Orders (`manager/orders/my`)**: View-only personal order tracker. No sneaky post-submission editing.
+- **View Sales**: Verified revenue wins.
+- **My Follow-ups & Meetings**: Smart calendar tracking today's calls, missed follow-ups, and future bookings.
 
-All schema changes are versioned inside `application/migrations/` and tracked in the `schema_migrations` table:
+### 3. Team Management & Org Chart
+- **Interactive Tree Hierarchy**: Sleek tree diagram letting team leaders drill up to their direct manager or expand downwards into sub-teams with smooth zoom controls.
+- **Team Activity Tracker**: Live feed of what your sales reps are actually doing (leads worked, calls logged, deals closed).
+- **Database Bulk Assignment**: Rebalance lead distribution across sales reps with one click.
+
+### 4. Back Office Gatekeeper
+- **Pending Leads Approval (`manager/leads/review_leads`)**: Quality gate to make sure reps only promote legitimate, verified prospects to Leads.
+- **Pending Order Process (`manager/orders/pending_process`)**: Finance and ops audit trade licenses, pricing, and contract documents before orders go live.
+- **Onboard Client (`manager/kam/onboard`)**: Smooth handoff to account managers with corporate legal profiles, Emirates, and jurisdiction details.
+
+### 5. WebRTC Phone Dialer & Telephony
+- **Cross-Device Ready**: Adapts smoothly from mobile touchscreens to desktop widescreen monitors.
+- **4-Stage Smart Calling Queues**:
+  1. Last 7 Days (Missed/Overdue)
+  2. Today (Active targets)
+  3. Next 7 Days (Upcoming bookings)
+  4. All Future
+- **Real Call Durations**: Zero fake connected timers. Timers only tick when the call is genuinely connected. Includes instant call note saving and optional Groq AI call summaries.
+
+### 6. Live Operations Pivot Board
+- **Spreadsheet-Style Pivot Sheet**: Compact table showing My Stats, Team Stats, and Leaderboards.
+- **Color Coded Windows**: Today (Emerald), Last 7 Days (Amber), This Month (Blue), This Quarter (Purple).
+- **Background Sync**: Silently fetches live stats every 10 seconds without annoying page refreshes.
+- **TV Presentation Mode**: Dedicated full-screen layout designed for sales floor TV displays.
+
+### 7. Key Account Management (KAM)
+- Track trade license renewal dates, corporate tax filing deadlines, and VAT submission schedules so you never get hit with government fines.
+
+### 8. HR Operations & GPS Geofencing
+- Staff attendance tracking with GPS geofenced check-in boundaries, leave management, shift allocations, and payroll logs.
+
+---
+
+## Security: Environment (.env) & Zero Secrets
+
+Hardcoding database passwords or database names directly into git repositories is a massive security risk. We moved all sensitive credentials to `.env`.
+
+### 1. The `.env.example` Template
+A sample template is provided in the repository root ([`.env.example`](file:///c:/Users/SRJ%20feb/Downloads/softwares/CRM/2026.10.08-1%20-%20crm.rolextogroup.com/crm.rolextogroup.com/.env.example)):
 
 ```bash
-# Execute all pending migrations
-php migration_runner.php
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=crm7strokes
+DB_USER=root
+DB_PASS=
 
-# View migration status
+# Base URL & Environment
+BASE_URL=https://crm.7strokes.com/
+CI_ENV=production
+
+# Optional Integrations
+GROQ_API_KEY=
+PBX_ENDPOINT=
+```
+
+### 2. How to Set Up Your `.env`
+1. On your cPanel or server, copy the template:
+   ```bash
+   cp .env.example .env
+   ```
+2. Open `.env` and fill in your actual cPanel database credentials:
+   - **`DB_NAME`**: Found in cPanel > MySQL Databases (e.g. `cpaneluser_crm7strokes`).
+   - **`DB_USER`**: The MySQL user you assigned to the database (e.g. `cpaneluser_crmuser`).
+   - **`DB_PASS`**: The password you set for that database user.
+   - **`DB_HOST`**: Almost always `localhost` on cPanel.
+   - **`BASE_URL`**: Your full CRM URL (e.g. `https://crm.7strokes.com/`).
+   - **`CI_ENV`**: Set to `production` on live hosting (turns off PHP warning popups) or `development` on your local laptop.
+3. `.env` is permanently ignored by `.gitignore`, keeping your passwords safe.
+
+---
+
+## Database Migrations (The Modern Way)
+
+Forget manually importing random SQL snippets into phpMyAdmin whenever new features ship. Seven Strokes CRM has a built-in versioned migration runner.
+
+All migrations live in [`application/migrations/`](file:///c:/Users/SRJ%20feb/Downloads/softwares/CRM/2026.10.08-1%20-%20crm.rolextogroup.com/crm.rolextogroup.com/application/migrations) and track their status in the `schema_migrations` table:
+
+```bash
+# 1. Check which migrations are pending or already applied
 php migration_runner.php status
 
-# Rollback last executed batch
+# 2. Run all pending migrations with execution timings
+php migration_runner.php
+
+# 3. Rollback the most recent batch if needed
 php migration_runner.php rollback
 ```
 
-### Registered Core Migrations
+### Migrations Included in v2
 
-| Migration | File | Description |
-|---|---|---|
-| `001` | `001_core_crm_schema.php` | Creates `ci_tasks`, `ci_admin_logs`, extended `ci_tickets` columns, business category terms |
-| `002` | `002_ticket_history_and_followups.php` | Creates `ci_ticket_history`, `ci_ticket_followups`, ticket resolution columns |
-| `003` | `003_user_security_and_currency.php` | Adds session tokens, IP tracking, online status, `currency`, and seeds `ci_roles` |
-| `004` | `004_lead_quote_and_trn.php` | Adds quote management, corporate tax, VAT TRN, data sources, and database categories |
-| `005` | `005_finance_and_operations.php` | Creates `ci_invoices`, `ci_payments`, `ci_expenses`, `ci_service_delivery`, `ci_attendance`, `ci_leaves`, `ci_system_maintenance` |
-| `006` | `006_orders_and_sales_approval.php` | Order approval workflows, sales conversion fields, and lead locking mechanics |
-| `007` | `007_performance_indexes.php` | High-performance indexes across `ci_leads`, `ci_user`, `ci_pipeline`, `ci_orders`, `ci_tasks`, `ci_tickets`, `ci_terms`, and `ci_admin_logs` |
-
-### Query & Runtime Optimizations
-- **Request Memoization**: Static memoization of `fetchTeamList` in `ci_admin_model.php` eliminates up to 400 redundant SQL queries per dashboard request.
-- **Session DB Write Throttling**: Updates to `ci_user.last_active_at` are throttled to once per 60 seconds per active session, reducing write contention by 95%.
-- **Apache Deflate & Expires**: Static assets (CSS, JS, SVG, Web Fonts) are compressed with Gzip and cached for 7 to 30 days via `.htaccess`.
+| Migration | What it does |
+|---|---|
+| `001_core_crm_schema.php` | Creates `ci_tasks`, `ci_admin_logs`, extended `ci_tickets` columns, business categories |
+| `002_ticket_history_and_followups.php` | Ticket history audit logs & follow-up queues |
+| `003_user_security_and_currency.php` | User session tokens, IP logs, online indicators, custom user currency |
+| `004_lead_quote_and_trn.php` | Quotes, Corporate Tax TRN, VAT TRN, data sources, database categories |
+| `005_finance_and_operations.php` | Invoices, payments, expenses, service delivery, attendance, leaves |
+| `006_orders_and_sales_approval.php` | Order approval fields, sales conversion referral tracker, lead locking |
+| `007_performance_indexes.php` | Multi-column database indexes across `ci_leads`, `ci_user`, `ci_orders`, `ci_tasks`, `ci_tickets` |
 
 ---
 
-## Production Deployment Guide (cPanel)
+## cPanel Hosting Guide (Step-by-Step)
 
-Deploying Seven Strokes CRM to a cPanel shared or dedicated server takes approximately 10 minutes:
+Here is how to get this running on cPanel in under 10 minutes:
 
-### Step 1: Server Requirements Check
-Ensure your hosting environment provides:
-- **PHP**: Version `7.4`, `8.0`, `8.1`, or `8.2`.
-- **MySQL / MariaDB**: MySQL 5.7+ or MariaDB 10.3+.
-- **PHP Extensions**: `mysqli`, `curl`, `mbstring`, `json`, `gd`, `openssl`, `zip`.
-- **PHP Limits**: `memory_limit >= 256M`, `max_input_vars >= 5000`, `upload_max_filesize >= 64M`.
-
-### Step 2: Create MySQL Database in cPanel
+### Step 1: Check Your PHP Version
 1. Log into your cPanel account.
-2. Under **Databases**, open **MySQL Databases**.
-3. Create a new database (e.g. `cpaneluser_crm`).
-4. Create a new database user with a secure password.
-5. In **Add User To Database**, assign the user to the database and check **ALL PRIVILEGES**.
+2. Go to **Software** > **MultiPHP Manager**.
+3. Select your domain (`crm.7strokes.com`) and choose **PHP 7.4**, **PHP 8.0**, **PHP 8.1**, or **PHP 8.2**.
+4. In **MultiPHP INI Editor**, set:
+   - `memory_limit = 256M`
+   - `max_input_vars = 5000` (Crucial for large role permission matrices!)
+   - `upload_max_filesize = 64M`
 
-### Step 3: Upload Codebase
-1. Download or archive the CRM repository.
-2. In cPanel, open **File Manager** and navigate to your target document root (e.g., `public_html/` or a subdomain folder like `crm.yourdomain.com/`).
-3. Upload the archive and extract all files.
-4. Ensure `.htaccess` is present (enable "Show Hidden Files" in File Manager settings).
+### Step 2: Create Your Database
+1. In cPanel, go to **Databases** > **MySQL Databases**.
+2. Create a new database named `crm7strokes` (your full name will look like `yourcpaneluser_crm7strokes`).
+3. Create a database user with a strong password.
+4. Under **Add User To Database**, add your user to the database and select **ALL PRIVILEGES**.
 
-### Step 4: Configure Database Credentials
-Edit `application/config/database.php`:
+### Step 3: Upload the Code
+1. In cPanel, open **File Manager** and go to your site directory (e.g. `public_html/` or your subdomain folder).
+2. Upload the project zip and extract it.
+3. Make sure `.htaccess` is present (click **Settings** at the top-right of File Manager and check **Show Hidden Files**).
 
-```php
-$db['default'] = array(
-    'dsn'      => '',
-    'hostname' => 'localhost',
-    'username' => 'cpaneluser_crmuser',
-    'password' => 'YourStrongPasswordHere',
-    'database' => 'cpaneluser_crm',
-    'dbdriver' => 'mysqli',
-    'dbprefix' => '',
-    'pconnect' => FALSE,
-    'db_debug' => FALSE,
-    'cache_on' => FALSE,
-    'cachedir' => '',
-    'char_set' => 'utf8mb4',
-    'dbcollat' => 'utf8mb4_unicode_ci',
-    'swap_pre' => '',
-    'encrypt'  => FALSE,
-    'compress' => FALSE,
-    'stricton' => FALSE,
-    'failover' => array(),
-    'save_queries' => TRUE
-);
-```
+### Step 4: Setup Your `.env` File
+1. In File Manager, copy `.env.example` to `.env`.
+2. Edit `.env` with your database name, user, password, and URL:
+   ```env
+   DB_HOST=localhost
+   DB_NAME=yourcpaneluser_crm7strokes
+   DB_USER=yourcpaneluser_crmuser
+   DB_PASS=YourStrongPasswordHere
+   BASE_URL=https://crm.7strokes.com/
+   CI_ENV=production
+   ```
 
-### Step 5: Configure Application Base URL
-Edit `application/config/config.php`:
-
-```php
-$config['base_url'] = 'https://crm.yourdomain.com/';
-$config['cookie_domain'] = '';
-$config['cookie_secure'] = TRUE;
-```
-
-### Step 6: Import Base Schema & Run Migrations
-1. In cPanel, open **phpMyAdmin**, select your database, and import `database/localhost.sql`.
-2. Open cPanel **Terminal** (or run via SSH) in your CRM directory:
+### Step 5: Import Base Database & Run Migrations
+1. Open **phpMyAdmin** from cPanel and select your database.
+2. Click **Import**, choose [`database/localhost.sql`](file:///c:/Users/SRJ%20feb/Downloads/softwares/CRM/2026.10.08-1%20-%20crm.rolextogroup.com/crm.rolextogroup.com/database/localhost.sql), and hit **Go**.  
+   *(Notice: All old hardcoded rolexto references and database names have been completely removed, so it will import smoothly without any `#1044 Access Denied` errors).*
+3. Open **Terminal** in cPanel (or SSH) inside your CRM folder and run:
    ```bash
    php migration_runner.php
    ```
-   *All 7 enterprise migrations will execute and apply high-performance indexing automatically.*
+   *This applies all latest tables, fields, and performance indexes in seconds.*
 
-### Step 7: Verify Permissions
-Ensure correct permissions on server directories:
-- Standard Directories: `0755`
-- Standard Files: `0644`
-- Writable Folders:
-  - `application/cache/` -> `0755` or `0775`
-  - `application/logs/` -> `0755` or `0775`
-  - `assets/uploads/` -> `0755` or `0775`
+### Step 6: Verify Permissions
+Make sure folders have standard permissions:
+- Regular folders: `0755`
+- Files: `0644`
+- Writable folders:
+  - `application/cache/` -> `0755`
+  - `application/logs/` -> `0755`
+  - `assets/uploads/` -> `0755`
 
-### Step 8: Setup HTTPS / SSL
-1. In cPanel, navigate to **Security** > **SSL/TLS Status**.
-2. Select your domain and click **Run AutoSSL**.
-3. Under **Domains**, toggle **Force HTTPS Redirect** to **ON**.
+### Step 7: Turn On SSL & Force HTTPS
+1. In cPanel, go to **SSL/TLS Status**, select your domain, and click **Run AutoSSL**.
+2. Once the green lock appears, go to **Domains** > **Domains** and switch **Force HTTPS Redirect** to **ON**.
 
-### Step 9: Configure CRM Cron Job
-In cPanel **Cron Jobs**, add a recurring task running every minute:
-```bash
-/usr/local/bin/php /home/cpaneluser/public_html/index.php ci_cron run >/dev/null 2>&1
-```
+### Step 8: Setup Background Cron Job
+To keep auto follow-up alerts, reminders, and background syncs ticking:
+1. In cPanel, open **Cron Jobs**.
+2. Add a new cron job running every minute (`* * * * *`):
+   ```bash
+   /usr/local/bin/php /home/yourcpaneluser/public_html/index.php ci_cron run >/dev/null 2>&1
+   ```
+   *(Replace `/home/yourcpaneluser/public_html/` with your actual server path).*
 
 ---
 
-## Troubleshooting Matrix
+## Troubleshooting & Gotchas
 
-| Issue | Root Cause | Solution |
+| Issue | What's actually happening | How to fix it |
 |---|---|---|
-| **404 on Subpages / Routes** | Missing `.htaccess` rewrite rules | Verify `.htaccess` exists in document root and contains `RewriteRule ^(.*)$ index.php?/$1 [L]`. |
-| **Database Connection Failure** | Incorrect cPanel database prefix or credentials | Check `application/config/database.php`. Verify the user has ALL PRIVILEGES assigned in cPanel MySQL Databases. |
-| **Sluggish Page Loads** | Missing performance indexes | Run `php migration_runner.php` to apply Migration `007` indexes. Verify Apache `mod_deflate` is enabled. |
-| **Instant Logout / Login Loop** | Cookie domain conflict or session cache permission | Set `$config['cookie_domain'] = '';` in `config.php`. Verify `application/cache/` is writable (`0755`). |
-| **Permissions Truncated on Save** | PHP `max_input_vars` limit reached | In cPanel **MultiPHP INI Editor**, set `max_input_vars = 5000` and `memory_limit = 256M`. |
-| **PHP Deprecation Warnings Visible** | Environment set to development | `index.php` dynamically switches to `production` when hosted on public domains (`error_reporting(0)`). |
+| **404 on internal links** | `.htaccess` is missing or Apache mod_rewrite is off | Make sure `.htaccess` was uploaded (enable hidden files in File Manager). Check that `RewriteRule ^(.*)$ index.php?/$1 [L]` is inside. |
+| **Database Connection Error** | Missing cPanel user prefix or wrong password | Check `.env`. In cPanel, database names always include your username prefix (e.g. `user_crm7strokes`, not just `crm7strokes`). |
+| **Pages taking 5+ seconds to load** | Missing database indexes | Run `php migration_runner.php` to apply Migration `007`. Indexes turn table-scans into instant index lookups. |
+| **Instant logout right after login** | Cookie domain mismatch | Make sure `$config['cookie_domain'] = '';` in `config.php` and verify `application/cache/` is writable (`0755`). |
+| **Saving permissions cuts off half the inputs** | PHP POST variable limit reached | In cPanel **MultiPHP INI Editor**, bump `max_input_vars` from `1000` to `5000`. The role permission matrix has hundreds of check fields. |
 
 ---
 
-## Copyright & Intellectual Property Rights
+## Copyright: Can You Claim This CRM?
 
-### Ownership Clarification
+### Straight Answer: Yes, 100%.
 
-**Can you claim copyright ownership over this CRM?**  
-**Yes, absolutely.**
+Here is the exact legal breakdown under software licensing law:
 
-Under international copyright law and software licensing standards:
-1. **Underlying Framework**: The underlying system engine (CodeIgniter) is open-source software licensed under the permissive **MIT License**.
-2. **Derivative Works & Proprietary Application Layer**: The MIT License explicitly grants developers the unrestricted right to create, modify, commercialize, and proprietary-license software built on top of the framework.
-3. **Proprietary IP**: All custom application code, controllers, models, views, custom algorithms, telephony integrations, database schemas, stylesheets, UI designs, and workflows created for **Seven Strokes CRM** constitute bespoke intellectual property owned entirely by **Seven Strokes CRM Platform**.
-4. **License Cleanup**: The generic root `license.txt` (which was the default CodeIgniter framework text) has been removed from the repository root. The standard CodeIgniter framework attribution remains preserved in the `system/` directory as required by the MIT license.
-
-### Commercial Notice
+1. **The Framework (CodeIgniter)**: The underlying framework in `system/` is open-source under the **MIT License**. The MIT License is one of the most permissive licenses in software engineering: it allows anyone to take the framework, build commercial closed-source software on top of it, sell it, modify it, and relicense the application layer.
+2. **Your Application Layer**: All custom controllers, models, views, business workflows, dialer logic, custom stylesheets, database schemas, and documentation created for **Seven Strokes CRM** are 100% bespoke proprietary intellectual property.
+3. **Old License Removed**: The generic `license.txt` in the root folder (which was the old default CodeIgniter template) has been removed. The standard CodeIgniter framework notice remains inside `system/` as required by MIT terms.
+4. **Your Copyright**: You can legally claim full proprietary ownership:
 
 ```
 Copyright (c) 2026 Seven Strokes CRM Platform. All rights reserved.
 
-This software and associated documentation files constitute proprietary and
-confidential intellectual property. Unauthorized copying, distribution, modification,
-reverse engineering, or deployment without explicit written authorization is
-strictly prohibited.
+Proprietary commercial software. Unauthorized copying, modification,
+distribution, or decompilation is strictly prohibited.
 ```
 
 ---
 
 <div align="center">
-  <sub>Built with precision for high-performance commercial operations. Powered by the Seven Strokes CRM Platform.</sub>
+  <sub>Seven Strokes CRM v2 • Built for clean code, high speed, and serious sales operations.</sub>
 </div>

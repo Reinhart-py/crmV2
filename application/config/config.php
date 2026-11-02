@@ -22,11 +22,14 @@
 | a PHP script and you can easily do that on your own.
 |
 */
-if (!empty($_SERVER['HTTP_HOST'])) {
+$env_base = getenv('BASE_URL');
+if (!empty($env_base)) {
+	$config['base_url'] = rtrim($env_base, '/') . '/';
+} elseif (!empty($_SERVER['HTTP_HOST'])) {
 	$protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https://" : "http://";
 	$config['base_url'] = $protocol . $_SERVER['HTTP_HOST'] . '/';
 } else {
-	$config['base_url'] = 'https://crm.rolextogroup.com/';
+	$config['base_url'] = 'https://crm.7strokes.com/';
 }
 
 /*

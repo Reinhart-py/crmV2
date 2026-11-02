@@ -48,16 +48,51 @@
 $active_group = 'default';
 $active_record = TRUE;
  
+if (!function_exists('crm_load_env')) {
+	function crm_load_env($path) {
+		if (!file_exists($path) || !is_readable($path)) {
+			return;
+		}
+		$lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+		foreach ($lines as $line) {
+			$line = trim($line);
+			if ($line === '' || $line[0] === '#') {
+				continue;
+			}
+			if (strpos($line, '=') !== false) {
+				list($key, $val) = explode('=', $line, 2);
+				$key = trim($key);
+				$val = trim($val);
+				if (strlen($val) > 1 && (($val[0] === '"' && $val[-1] === '"') || ($val[0] === "'" && $val[-1] === "'"))) {
+					$val = substr($val, 1, -1);
+				}
+				if (!array_key_exists($key, $_SERVER) && !array_key_exists($key, $_ENV)) {
+					putenv("$key=$val");
+					$_ENV[$key] = $val;
+					$_SERVER[$key] = $val;
+				}
+			}
+		}
+	}
+}
+
+crm_load_env(defined('FCPATH') ? FCPATH . '.env' : __DIR__ . '/../../.env');
+
 $is_local = (
     (isset($_SERVER['REMOTE_ADDR']) && in_array($_SERVER['REMOTE_ADDR'], array('127.0.0.1', '::1'))) ||
     (isset($_SERVER['HTTP_HOST']) && (strpos($_SERVER['HTTP_HOST'], 'localhost') !== FALSE || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== FALSE)) ||
     (php_sapi_name() === 'cli')
 );
 
-$db['default']['hostname'] = '127.0.0.1';
-$db['default']['username'] = $is_local ? 'root' : 'jaipuuwy_crmrolexto';
-$db['default']['password'] = $is_local ? '' : '&K94v7ogU457';
-$db['default']['database'] = 'jaipuuwy_crmrolexto';
+$env_host = getenv('DB_HOST') ? getenv('DB_HOST') : (getenv('DB_HOSTNAME') ? getenv('DB_HOSTNAME') : '127.0.0.1');
+$env_user = getenv('DB_USER') ? getenv('DB_USER') : (getenv('DB_USERNAME') ? getenv('DB_USERNAME') : ($is_local ? 'root' : 'crm7strokes'));
+$env_pass = getenv('DB_PASS') ? getenv('DB_PASS') : (getenv('DB_PASSWORD') !== false ? getenv('DB_PASSWORD') : '');
+$env_name = getenv('DB_NAME') ? getenv('DB_NAME') : (getenv('DB_DATABASE') ? getenv('DB_DATABASE') : 'crm7strokes');
+
+$db['default']['hostname'] = $env_host;
+$db['default']['username'] = $env_user;
+$db['default']['password'] = $env_pass;
+$db['default']['database'] = $env_name;
 $db['default']['dbdriver'] = 'mysqli';
 $db['default']['dbprefix'] = '';
 $db['default']['pconnect'] = FALSE;

@@ -8,6 +8,7 @@ application/logs/*
 !application/logs/index.html
 !application/logs/.htaccess
 
+.env
 error_log
 *.log
 .ftpquota
