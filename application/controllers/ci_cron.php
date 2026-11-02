@@ -10,6 +10,21 @@ class Ci_cron extends CI_Controller {
 		$this->load->model('ci_admin_model');
 	}
 
+	public function run()
+	{
+		$processed_recurring = $this->_run_task_recurrence();
+		$reminders_count = $this->_process_daily_reminders();
+		header('Content-Type: application/json');
+		echo json_encode(array(
+			'status' => true,
+			'message' => 'CRM Master Cron executed successfully',
+			'spawned_tasks' => $processed_recurring,
+			'reminders_count' => $reminders_count,
+			'timestamp' => date('Y-m-d H:i:s')
+		));
+		exit();
+	}
+
 	public function daily_schedule_reminders()
 	{
 		$processed_recurring = $this->_run_task_recurrence();

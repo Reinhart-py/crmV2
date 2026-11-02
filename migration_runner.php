@@ -86,6 +86,12 @@ if (php_sapi_name() === 'cli') {
         $action = strtolower(trim($argv[1]));
     }
 } else {
+    $expected_key = getenv('MIGRATION_KEY') ? getenv('MIGRATION_KEY') : 'crm7strokes_migrate';
+    $provided_key = isset($_GET['key']) ? trim($_GET['key']) : '';
+    if ($provided_key !== $expected_key) {
+        header('Content-Type: application/json', true, 403);
+        die(json_encode(array('status' => 'error', 'message' => 'Unauthorized. Please provide ?key=' . $expected_key . ' or execute via server CLI.')));
+    }
     if (isset($_GET['action'])) {
         $action = strtolower(trim($_GET['action']));
     }
