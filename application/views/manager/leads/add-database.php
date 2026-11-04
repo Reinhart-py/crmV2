@@ -1049,7 +1049,7 @@
     </div>
       
       <div class="box-footer text-center">
-        <button id="add_btn" type="submit" class="btn btn-info">Submit</button>
+        <button id="add_btn" type="submit" class="btn btn-primary" style="background:#0072f0; border-color:#0072f0; border-radius:4px; font-weight:600; padding:6px 18px;">Save</button>
         <button type="reset" class="btn btn-default">Cancel</button>
       </div>
       </form> 

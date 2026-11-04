@@ -21,33 +21,33 @@
                     $back_url = ($order['status'] === 'Sales') ? base_url('manager/sales') : base_url('manager/orders/my');
                   }
                 ?>
-                <a href="<?php echo $back_url; ?>" class="btn btn-info">Back</a>
+                <a href="<?php echo $back_url; ?>" class="btn btn-default" style="background:#0072f0; border-color:#0072f0; color:#ffffff; font-weight:600; border-radius:4px; padding:6px 16px;">Back</a>
               </div>
 
               <div class="pull-right">
                 <?php if(!empty($can_approve) && ($order['approval_status'] === 'pending' || $order['status'] === 'Pending Sales Approval')){ ?>
-                  <button type="button" class="btn btn-success" data-toggle="modal" data-target="#approveOrderModal" style="background:#16a34a; border-color:#15803d; font-weight:600; margin-right:5px;">
+                  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#approveOrderModal" style="background:#0072f0; border-color:#0072f0; color:#ffffff; font-weight:600; border-radius:4px; margin-right:5px; padding:6px 14px;">
                     <i class="fa fa-check"></i> Approve Order
                   </button>
-                  <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#rejectOrderModal" style="background:#dc2626; border-color:#b91c1c; font-weight:600; margin-right:5px;">
+                  <button type="button" class="btn btn-default" data-toggle="modal" data-target="#rejectOrderModal" style="background:#f1f5f9; border-color:#cbd5e1; color:#334155; font-weight:600; border-radius:4px; margin-right:5px; padding:6px 14px;">
                     <i class="fa fa-times"></i> Reject
                   </button>
                 <?php } ?>
 
                 <?php if(!empty($can_edit)){ ?>
-                  <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#updateStatusModal" style="background:#f59e0b; border-color:#d97706; color:#ffffff; font-weight:600; margin-right:5px;">
+                  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#updateStatusModal" style="background:#0072f0; border-color:#0072f0; color:#ffffff; font-weight:600; border-radius:4px; margin-right:5px; padding:6px 14px;">
                     <i class="fa fa-refresh"></i> Update Status
                   </button>
                 <?php } ?>
 
                 <?php if(!empty($can_assign_operation)){ ?>
-                  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#assignOperationModal" style="background:#2563eb; border-color:#1d4ed8; font-weight:600; margin-right:5px;">
+                  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#assignOperationModal" style="background:#0072f0; border-color:#0072f0; color:#ffffff; font-weight:600; border-radius:4px; margin-right:5px; padding:6px 14px;">
                     <i class="fa fa-user-plus"></i> Assign to Operations
                   </button>
                 <?php } ?>
 
                 <?php if(!empty($can_edit) && !empty($can_approve) && $order['status'] !== 'Sales'){ ?>
-                  <button type="button" class="btn btn-success" data-toggle="modal" data-target="#convertToSalesModal" style="background:#10b981; border-color:#059669; font-weight:600; margin-right:5px;">
+                  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#convertToSalesModal" style="background:#0072f0; border-color:#0072f0; color:#ffffff; font-weight:600; border-radius:4px; margin-right:5px; padding:6px 14px;">
                     <i class="fa fa-line-chart"></i> Convert to Sales
                   </button>
                 <?php } ?>

@@ -516,6 +516,76 @@
         </div>
       </div>
 
+      <!-- Followup Field -->
+      <div class="box box-default">
+        <div class="box-header with-border" style="position: relative; text-align: center; padding: 14px 15px; min-height: 48px;">
+          <h3 class="box-title" style="float: none; display: inline-block; font-weight: 600; font-size: 18px; margin: 0; line-height: 24px;">Followup Field</h3>
+        </div>
+        <div class="box-body">
+          <div class="row">
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Next Follow Up Date</label>
+                <div class="input-group">
+                  <input type="text" class="form-control datepicker" name="followup_date" id="followup_date" value="<?php echo !empty($lead['followup_date']) && $lead['followup_date'] != '0000-00-00' ? date('d-m-Y', strtotime($lead['followup_date'])) : ''; ?>">
+                  <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Next Follow Up Time</label>
+                <div class="input-group bootstrap-timepicker timepicker">
+                  <input type="text" class="form-control input-small timepicker" name="followup_time" value="<?php echo htmlspecialchars($lead['followup_time'] ?? '11:00 AM'); ?>">
+                  <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-6 col-sm-12">
+              <div class="form-group">
+                <label>Followup Remark</label>
+                <input type="text" class="form-control" name="followup_remark" placeholder="Follow-up instructions or remark...">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Meeting Field -->
+      <div class="box box-default">
+        <div class="box-header with-border" style="position: relative; text-align: center; padding: 14px 15px; min-height: 48px;">
+          <h3 class="box-title" style="float: none; display: inline-block; font-weight: 600; font-size: 18px; margin: 0; line-height: 24px;">Meeting Field</h3>
+        </div>
+        <div class="box-body">
+          <div class="row">
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Next Meeting Date</label>
+                <div class="input-group">
+                  <input type="text" class="form-control datepicker" name="m_date" value="<?php echo !empty($lead['m_date']) && $lead['m_date'] != '0000-00-00' ? date('d-m-Y', strtotime($lead['m_date'])) : ''; ?>">
+                  <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-3 col-sm-6">
+              <div class="form-group">
+                <label>Next Meeting Time</label>
+                <div class="input-group bootstrap-timepicker timepicker">
+                  <input type="text" class="form-control input-small timepicker" name="m_time" value="<?php echo htmlspecialchars($lead['m_time'] ?? '11:00 AM'); ?>">
+                  <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-6 col-sm-12">
+              <div class="form-group">
+                <label>Meeting Remark / Location</label>
+                <input type="text" class="form-control" name="m_remark" placeholder="Meeting location, agenda or notes...">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="box box-default">
         <div class="box-header with-border" style="position: relative; text-align: center; padding: 14px 15px; min-height: 48px;">
           <h3 class="box-title" style="float: none; display: inline-block; font-weight: 600; font-size: 18px; margin: 0; line-height: 24px;">Back Office Updates</h3>

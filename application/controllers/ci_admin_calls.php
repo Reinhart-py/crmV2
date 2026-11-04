@@ -950,8 +950,14 @@ class Ci_admin_calls extends CI_Controller
 			$lead_update['remark'] = $remarks;
 		}
 
-		$next_date = trim($this->input->post('next_followup'));
-		$next_time = trim($this->input->post('next_followup_time'));
+		$next_date = trim((string)$this->input->post('next_followup'));
+		if (empty($next_date)) {
+			$next_date = trim((string)$this->input->post('followup_date'));
+		}
+		$next_time = trim((string)$this->input->post('next_followup_time'));
+		if (empty($next_time)) {
+			$next_time = trim((string)$this->input->post('followup_time'));
+		}
 		if (!empty($next_date)) {
 			$lead_update['followup_date'] = db_date($next_date);
 		}

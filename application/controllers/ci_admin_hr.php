@@ -1001,4 +1001,77 @@ class Ci_admin_hr extends CI_Controller {
 		}
 		redirect('manager/hr/documents');
 	}
+
+	public function events_plans()
+	{
+		$data = array();
+		$data['info'] = array(
+			'title' => 'Events & Plans - HR & Training',
+			'page_heading' => 'Events & Plans'
+		);
+		$cur_uid = (int)$this->session->userdata('manager_id');
+		$cur_role = (int)$this->session->userdata('manager_role');
+		$data['is_admin'] = ($cur_role === 1 || $cur_uid === 1);
+
+		$events = array(
+			array('id' => 1, 'title' => 'Annual Performance & Awards Gala', 'event_type' => 'Company Event', 'event_date' => date('Y-12-20'), 'event_time' => '07:00 PM', 'location' => 'Grand Ballroom, Dubai', 'description' => 'Annual celebration of top achievers and team milestones.'),
+			array('id' => 2, 'title' => 'Q1 Sales & Strategy Kickoff', 'event_type' => 'Strategic Plan', 'event_date' => date('Y-m-d', strtotime('+7 days')), 'event_time' => '10:00 AM', 'location' => 'Main Conference Room & Zoom', 'description' => 'Reviewing corporate revenue targets, client verticals and expansion goals.'),
+			array('id' => 3, 'title' => 'Customer Success & Retention Workshop', 'event_type' => 'Training Event', 'event_date' => date('Y-m-d', strtotime('+14 days')), 'event_time' => '02:30 PM', 'location' => 'Training Room B', 'description' => 'Interactive session for account managers on onboarding SLA and client retention.')
+		);
+		$data['events'] = $events;
+
+		$this->load->view('manager/hr/events_plans', $data);
+	}
+
+	public function training()
+	{
+		$data = array();
+		$data['info'] = array(
+			'title' => 'Training Modules & LMS - HR & Training',
+			'page_heading' => 'Training & Development'
+		);
+		$cur_uid = (int)$this->session->userdata('manager_id');
+		$cur_role = (int)$this->session->userdata('manager_role');
+		$data['is_admin'] = ($cur_role === 1 || $cur_uid === 1);
+
+		$modules = array(
+			array('id' => 1, 'title' => 'Seven Strokes CRM Mastery & Workflow Standard', 'category' => 'Core Systems', 'duration' => '45 mins', 'status' => 'Completed', 'progress' => 100, 'description' => 'Complete walkthrough of database leads, pipeline conversions, and order processing.'),
+			array('id' => 2, 'title' => 'Enterprise Sales Closing & Objection Handling', 'category' => 'Sales Academy', 'duration' => '60 mins', 'status' => 'In Progress', 'progress' => 65, 'description' => 'Key techniques for dealing with enterprise corporate decision makers in the UAE market.'),
+			array('id' => 3, 'title' => 'UAE Corporate Tax & VAT Regulatory Essentials', 'category' => 'Product Knowledge', 'duration' => '30 mins', 'status' => 'Pending', 'progress' => 0, 'description' => 'Compliance principles, FTA filings, and service scope advisory for accounting clients.'),
+			array('id' => 4, 'title' => 'Customer Onboarding, KYC & Anti-Money Laundering', 'category' => 'Compliance', 'duration' => '40 mins', 'status' => 'Completed', 'progress' => 100, 'description' => 'Mandatory annual AML and documentation compliance verification module.')
+		);
+		$data['modules'] = $modules;
+
+		$this->load->view('manager/hr/training', $data);
+	}
+
+	public function search_topics()
+	{
+		$data = array();
+		$data['info'] = array(
+			'title' => 'HR Knowledge Base & Search Topics - HR & Training',
+			'page_heading' => 'Search Topics'
+		);
+		$query = trim((string)$this->input->get('q'));
+		$data['query'] = $query;
+
+		$topics = array(
+			array('id' => 1, 'title' => 'Leave Policy & Annual Holiday Entitlements', 'category' => 'Leaves & Attendance', 'summary' => 'Guidelines on statutory paid annual leave, sick leave certificate requirements, and advance approval notice.'),
+			array('id' => 2, 'title' => 'Working Hours, Shift Rosters & Grace Periods', 'category' => 'Operations', 'summary' => 'Overview of 9-hour daily shifts, check-in punch limits, overtime authorization, and weekly off schedules.'),
+			array('id' => 3, 'title' => 'Employee Health Insurance & Medical Coverage', 'category' => 'Benefits', 'summary' => 'Comprehensive policy on health network cards, direct billing clinics, dental riders, and dependent coverage.'),
+			array('id' => 4, 'title' => 'Performance Appraisals, KPIs & Commission Payouts', 'category' => 'Compensation', 'summary' => 'Calculation methodology for monthly sales incentives, quarterly target achievements, and yearly reviews.'),
+			array('id' => 5, 'title' => 'Code of Conduct, IT Usage & Data Privacy Standard', 'category' => 'Governance', 'summary' => 'Rules governing CRM client confidentiality, password security, device maintenance, and professional ethics.')
+		);
+
+		if (!empty($query)) {
+			$q_lower = strtolower($query);
+			$topics = array_filter($topics, function($t) use ($q_lower) {
+				return (strpos(strtolower($t['title']), $q_lower) !== false || strpos(strtolower($t['category']), $q_lower) !== false || strpos(strtolower($t['summary']), $q_lower) !== false);
+			});
+		}
+		$data['topics'] = $topics;
+
+		$this->load->view('manager/hr/search_topics', $data);
+	}
+
 }

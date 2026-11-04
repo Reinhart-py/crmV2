@@ -273,14 +273,17 @@
 
       <?php if(!$is_presentation && $is_hr){ ?>
       <li class="<?php if($route1=="hr"){ echo "active";}else{ echo "";}?>"> 
-        <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:4px;"><rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><line x1="15" y1="8" x2="17" y2="8"></line><line x1="15" y1="12" x2="17" y2="12"></line><line x1="7" y1="16" x2="17" y2="16"></line></svg> <span>HR</span> </a>
+        <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:4px;"><rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><line x1="15" y1="8" x2="17" y2="8"></line><line x1="15" y1="12" x2="17" y2="12"></line><line x1="7" y1="16" x2="17" y2="16"></line></svg> <span>HR & Training</span> </a>
         <ul>
           <li><a href="<?php echo base_url();?>manager/hr"><i class="fa fa-th-large"></i>Overview</a></li>
-          <li><a href="<?php echo base_url();?>manager/hr/targets"><i class="fa fa-crosshairs"></i>Targets</a></li>
-          <li><a href="<?php echo base_url();?>manager/hr/lifecycle"><svg class="crm-svg-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:6px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>Employee Lifecycle</a></li>
           <li><a href="<?php echo base_url();?>manager/hr/attendance"><i class="fa fa-map-marker"></i>Attendance & GPS</a></li>
           <li><a href="<?php echo base_url();?>manager/hr/shifts"><i class="fa fa-clock-o"></i>Shifts</a></li>
-          <li><a href="<?php echo base_url();?>manager/hr/leaves"><i class="fa fa-calendar-check-o"></i>Leaves</a></li>
+          <li><a href="<?php echo base_url();?>manager/hr/leaves"><i class="fa fa-calendar-check-o"></i>Holiday Request</a></li>
+          <li><a href="<?php echo base_url();?>manager/hr/events_plans"><i class="fa fa-calendar"></i>Events & Plans</a></li>
+          <li><a href="<?php echo base_url();?>manager/hr/training"><i class="fa fa-graduation-cap"></i>Training</a></li>
+          <li><a href="<?php echo base_url();?>manager/hr/search_topics"><i class="fa fa-search"></i>Search Topics</a></li>
+          <li><a href="<?php echo base_url();?>manager/hr/targets"><i class="fa fa-crosshairs"></i>Targets</a></li>
+          <li><a href="<?php echo base_url();?>manager/hr/lifecycle"><i class="fa fa-users"></i>Employee Lifecycle</a></li>
           <li><a href="<?php echo base_url();?>manager/hr/payroll"><i class="fa fa-money"></i>Payroll</a></li>
           <li><a href="<?php echo base_url();?>manager/hr/taxation"><i class="fa fa-calculator"></i>Taxation & Gratuity</a></li>
           <li><a href="<?php echo base_url();?>manager/hr/appraisals"><i class="fa fa-star-o"></i>Appraisals</a></li>
@@ -363,12 +366,12 @@
         <i class="fa fa-bell-o"></i>
         <span class="notif-badge" id="notifBadge" style="display:none; position:absolute; top:-4px; right:-4px; background:#dc2626; color:#ffffff; font-size:10px; font-weight:700; border-radius:10px; min-width:16px; height:16px; line-height:16px; text-align:center; padding:0 3px;"></span>
       </button>
-      <div class="smartphone-notif-dropdown" id="smartphoneNotifDropdown" style="display:none; position:absolute; right:0; top:44px; width:440px; max-width:calc(100vw - 24px); background:#f8fafc; border:1px solid #e2e8f0; border-radius:18px; box-shadow:0 20px 50px rgba(0,0,0,0.18); z-index:999999; overflow:hidden;">
-        <div style="padding:14px 18px; background:#0f172a; color:#ffffff; display:flex; align-items:center; justify-content:space-between;">
+      <div class="smartphone-notif-dropdown" id="smartphoneNotifDropdown" style="display:none; position:absolute; right:0; top:44px; width:440px; max-width:calc(100vw - 24px); background:#ffffff; border:1px solid #cbd5e1; border-radius:4px; box-shadow:0 12px 32px rgba(0,0,0,0.12); z-index:999999; overflow:hidden;">
+        <div style="padding:12px 16px; background:#0072f0; color:#ffffff; display:flex; align-items:center; justify-content:space-between;">
           <span style="font-weight:700; font-size:13.5px; letter-spacing:-0.2px;">Notification Centre</span>
           <div style="display:flex; align-items:center; gap:8px;">
-            <button type="button" id="btnRequestNotifPerm" style="background:rgba(255,255,255,0.12); border:none; color:#38bdf8; font-size:11px; font-weight:600; padding:4px 10px; border-radius:6px; cursor:pointer; display:none;">Enable Alerts</button>
-            <button type="button" id="btnMarkNotifRead" style="background:rgba(255,255,255,0.12); border:none; color:#cbd5e1; font-size:11px; font-weight:600; padding:4px 10px; border-radius:6px; cursor:pointer;">Mark all as read</button>
+            <button type="button" id="btnRequestNotifPerm" style="background:rgba(255,255,255,0.2); border:none; color:#ffffff; font-size:11px; font-weight:600; padding:4px 10px; border-radius:3px; cursor:pointer; display:none;">Enable Alerts</button>
+            <button type="button" id="btnMarkNotifRead" style="background:rgba(255,255,255,0.2); border:none; color:#ffffff; font-size:11px; font-weight:600; padding:4px 10px; border-radius:3px; cursor:pointer;">Mark all as read</button>
           </div>
         </div>
         <div id="notifListContainer" style="max-height:440px; overflow-y:auto; padding:8px 10px; background:#f8fafc;">
@@ -564,22 +567,24 @@ $(function() {
                 newArrivals.push(n);
               }
               var isUnread = (n.is_read == 0);
-              var cardBorder = isUnread ? 'border:1px solid #bfdbfe; border-left:3px solid #0072f0;' : 'border:1px solid #e2e8f0;';
+              var cardBorder = isUnread ? 'border:1px solid #bfdbfe; border-left:4px solid #0072f0;' : 'border:1px solid #e2e8f0;';
               var cardBg = isUnread ? '#ffffff' : '#f8fafc';
-              html += '<a href="' + (n.link || 'javascript:void(0);') + '" class="notif-item-link" data-notif-id="' + n.id + '" data-unread="' + (isUnread ? '1' : '0') + '" style="display:flex; align-items:flex-start; margin-bottom:8px; padding:12px 14px; border-radius:12px; background:' + cardBg + '; ' + cardBorder + ' box-shadow:0 1px 3px rgba(0,0,0,0.03); text-decoration:none; color:inherit; transition:background 0.15s ease;">';
-              html += '  <div style="width:34px; height:34px; border-radius:8px; background:' + (n.color || '#0072f0') + '18; color:' + (n.color || '#0072f0') + '; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-right:12px; font-size:14px;"><i class="' + (n.icon || 'fa fa-bell') + '"></i></div>';
-              html += '  <div style="flex:1; min-width:0;">';
-              html += '    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">';
-              html += '      <span style="font-size:12.5px; font-weight:700; color:#0f172a; letter-spacing:-0.2px;">' + $('<div>').text(n.title).html() + '</span>';
-              html += '      <div style="display:inline-flex; align-items:center; gap:6px;">';
-              if (isUnread) {
-                html += '        <button type="button" class="btn-single-notif-read" data-notif-id="' + n.id + '" title="Mark as read" style="background:rgba(0,114,240,0.08); border:none; border-radius:4px; padding:2px 6px; color:#0072f0; font-size:10px; font-weight:600; cursor:pointer; line-height:1.2;">Mark read</button>';
+              html += '<a href="' + (n.link || 'javascript:void(0);') + '" class="notif-item-link" data-notif-id="' + n.id + '" data-unread="' + (isUnread ? '1' : '0') + '" style="display:block; margin-bottom:8px; padding:10px 14px; border-radius:4px; background:' + cardBg + '; ' + cardBorder + ' box-shadow:0 1px 2px rgba(0,0,0,0.04); text-decoration:none; color:inherit; transition:background 0.15s ease;">';
+              html += '  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">';
+              var cleanTitle = (n.title && n.title.toLowerCase() !== 'notification' && n.title.trim() !== n.message.trim()) ? $('<div>').text(n.title).html() : '';
+              if (cleanTitle) {
+                html += '    <span style="font-size:12px; font-weight:700; color:#0072f0; letter-spacing:-0.1px;">' + cleanTitle + '</span>';
+              } else {
+                html += '    <span></span>';
               }
-              html += '        <span style="font-size:10.5px; color:#94a3b8; font-weight:500; margin-left:2px; white-space:nowrap;">' + (n.time_ago || '') + '</span>';
-              html += '      </div>';
+              html += '    <div style="display:inline-flex; align-items:center; gap:6px;">';
+              if (isUnread) {
+                html += '      <button type="button" class="btn-single-notif-read" data-notif-id="' + n.id + '" title="Mark as read" style="background:rgba(0,114,240,0.1); border:none; border-radius:3px; padding:2px 6px; color:#0072f0; font-size:10px; font-weight:600; cursor:pointer; line-height:1.2;">Mark read</button>';
+              }
+              html += '      <span style="font-size:10.5px; color:#94a3b8; font-weight:500; white-space:nowrap;">' + (n.time_ago || '') + '</span>';
               html += '    </div>';
-              html += '    <div style="font-size:12px; color:#334155; line-height:1.45; white-space:normal; word-wrap:break-word; word-break:break-word;">' + $('<div>').text(n.message).html() + '</div>';
               html += '  </div>';
+              html += '  <div style="font-size:12.5px; color:#1e293b; line-height:1.45; white-space:normal; word-wrap:break-word; word-break:break-word;">' + $('<div>').text(n.message).html() + '</div>';
               html += '</a>';
             });
 

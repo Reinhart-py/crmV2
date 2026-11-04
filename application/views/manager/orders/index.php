@@ -116,17 +116,18 @@
                                         </td>
                                         <td style="text-align: center;">
                                             <?php if (isset($status_filter) && $status_filter === 'followups'): ?>
-                                                <button type="button" class="btn btn-sm btn-open-followup" 
-                                                    data-order-id="<?php echo $ord['id']; ?>" 
-                                                    data-order-no="<?php echo htmlspecialchars($ord['order_no']); ?>" 
-                                                    data-client-name="<?php echo htmlspecialchars($ord['client_name'] ?: ($ord['lead_customer'] ?: 'Client #'.$ord['client_id'])); ?>" 
-                                                    data-status="<?php echo htmlspecialchars($ord['status']); ?>" 
-                                                    data-fdate="<?php echo !empty($ord['followup_date']) ? $ord['followup_date'] : ''; ?>" 
-                                                    data-ftime="<?php echo !empty($ord['followup_time']) ? htmlspecialchars($ord['followup_time']) : ''; ?>" 
-                                                    data-remarks="<?php echo htmlspecialchars(!empty($ord['operational_instructions']) ? $ord['operational_instructions'] : ''); ?>"
-                                                    class="btn btn-sm btn-warning" style="font-weight: 700; border-radius: 4px; padding: 4px 12px;">
-                                                    <i class="fa fa-commenting-o"></i> Add Follow-up
-                                                </button>
+                                                <div class="btn-group" style="min-width: 85px;">
+                                                    <button type="button" class="btn btn-sm btn-default" style="border: 1px solid #cbd5e1; font-weight: 600;">Action</button>
+                                                    <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false" style="background:#0072f0; border-color:#0072f0;">
+                                                        <span class="caret"></span>
+                                                        <span class="sr-only">Toggle Dropdown</span>
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-right" role="menu" style="border: 1px solid #cbd5e1; border-radius: 4px; box-shadow: 0 4px 14px rgba(0,0,0,0.12);">
+                                                        <li><a href="<?php echo base_url(); ?>manager/orders/view/<?php echo $ord['id']; ?>" style="font-weight: 600;"><i class="fa fa-eye" style="margin-right: 6px; color:#0072f0;"></i> Preview</a></li>
+                                                        <li><a href="<?php echo base_url(); ?>manager/orders/edit_pending/<?php echo $ord['id']; ?>" style="font-weight: 600;"><i class="fa fa-pencil" style="margin-right: 6px; color:#0072f0;"></i> Edit</a></li>
+                                                        <li><a href="<?php echo base_url(); ?>manager/orders/add_followup/<?php echo $ord['id']; ?>" style="font-weight: 600;"><i class="fa fa-commenting-o" style="margin-right: 6px; color:#0072f0;"></i> Add Follow-Up</a></li>
+                                                    </ul>
+                                                </div>
                                             <?php elseif (!empty($can_edit_orders)): ?>
                                                 <div class="btn-group" style="min-width: 85px;">
                                                     <button type="button" class="btn btn-sm btn-default" >Action</button>

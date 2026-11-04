@@ -1040,6 +1040,7 @@ html, body {
         </div>
 
         <form id="formRecordDetails">
+          <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
           <input type="hidden" name="lead_id" id="editLeadId" value="0">
           <input type="hidden" name="call_log_id" id="editCallLogId" value="0">
           <input type="hidden" name="call_duration" id="editCallDuration" value="0">
@@ -1329,6 +1330,7 @@ html, body {
           </div>
 
           <form id="formManualDetails">
+            <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
             <input type="hidden" name="lead_id" id="manualEditLeadId" value="0">
             <input type="hidden" name="call_log_id" id="manualEditCallLogId" value="0">
             <input type="hidden" name="call_duration" id="manualEditCallDuration" value="0">
@@ -1666,6 +1668,28 @@ html, body {
 </div>
 
 <script>
+// Auto-attach CSRF token to all AJAX POST requests in dialer
+$.ajaxPrefilter(function(options, originalOptions, jqXHR) {
+  if (options.type && options.type.toUpperCase() === 'POST') {
+    var csrfName = '<?php echo $this->security->get_csrf_token_name(); ?>';
+    var csrfMatch = document.cookie.match(new RegExp('(?:^|;\\s*)csrf_cookie_name=([^;]+)'));
+    var csrfToken = csrfMatch ? decodeURIComponent(csrfMatch[1]) : '<?php echo $this->security->get_csrf_hash(); ?>';
+    if (typeof options.data === 'string') {
+      if (options.data.indexOf(csrfName + '=') === -1) {
+        options.data += (options.data.length ? '&' : '') + encodeURIComponent(csrfName) + '=' + encodeURIComponent(csrfToken);
+      }
+    } else if ($.isPlainObject(options.data)) {
+      if (!options.data[csrfName]) {
+        options.data[csrfName] = csrfToken;
+      }
+    } else if (window.FormData && options.data instanceof FormData) {
+      if (!options.data.has(csrfName)) {
+        options.data.append(csrfName, csrfToken);
+      }
+    }
+  }
+});
+
 var activeMobileTab = 'keypad';
 
 function switchMobileDialerView(view) {

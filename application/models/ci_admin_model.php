@@ -1030,6 +1030,9 @@ public function dashboard_MyPro($table='ci_leads'){
 				   $this->db->where("P.conversion_status", 'pending');
 			   } elseif ($stage === 'lead') {
 				   $this->db->where("P.pipeline_stage", 'lead');
+				   $this->db->where("(P.order_ref_no IS NULL OR P.order_ref_no = '')");
+				   $this->db->where("(P.order_request_status IS NULL OR P.order_request_status NOT IN ('approved', 'ordered', 'processed', 'pending_sales_approval'))");
+				   $this->db->where("NOT EXISTS (SELECT 1 FROM ci_orders ord WHERE ord.lead_id = A.id)", NULL, FALSE);
 			   } elseif ($stage === 'pending_approval') {
 				   $this->db->where("P.conversion_status", 'pending');
 			   } elseif ($stage === 'back_office') {

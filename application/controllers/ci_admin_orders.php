@@ -54,6 +54,7 @@ class Ci_admin_orders extends CI_Controller {
 				'page_heading' => 'My Orders'
 			);
 			$this->db->where("(O.created_by = {$cur_uid} OR O.assigned_to = {$cur_uid} OR A.created_by = {$cur_uid} OR A.lead_assign = {$cur_uid} OR FIND_IN_SET({$cur_uid}, A.agents) > 0 OR O.lead_id IN (SELECT lead_id FROM ci_lead_transfers WHERE from_user_id = {$cur_uid} OR to_user_id = {$cur_uid}) OR O.lead_id IN (SELECT lead_id FROM ci_pipeline WHERE conversion_requested_by = {$cur_uid} OR order_requested_by = {$cur_uid}) OR O.lead_id IN (SELECT lead_id FROM ci_pipeline_logs WHERE action_by = {$cur_uid}))");
+			$this->db->where("(O.sales_ref_no IS NULL OR O.sales_ref_no = '') AND O.status != 'Sales'");
 			$can_edit_orders = false;
 			$reset_url = base_url('manager/orders/my');
 		} elseif ($scope === 'team') {
@@ -71,6 +72,7 @@ class Ci_admin_orders extends CI_Controller {
 			if (!empty($team_members)) {
 				$team_str = implode(',', $team_members);
 				$this->db->where("(FIND_IN_SET(O.created_by, '{$team_str}') > 0 OR FIND_IN_SET(O.assigned_to, '{$team_str}') > 0)");
+				$this->db->where("(O.sales_ref_no IS NULL OR O.sales_ref_no = '') AND O.status != 'Sales'");
 			} else {
 				$this->db->where('1 = 0', NULL, FALSE);
 			}
@@ -128,6 +130,7 @@ class Ci_admin_orders extends CI_Controller {
 				'page_heading' => 'Open Orders'
 			);
 			$this->db->where_not_in('O.status', array('Fulfilled', 'Completed', 'Sales', 'Cancelled', 'Rejected'));
+			$this->db->where("(O.sales_ref_no IS NULL OR O.sales_ref_no = '')");
 			$can_edit_orders = $is_backoffice;
 			$reset_url = base_url('manager/orders/open');
 		} else {
@@ -139,6 +142,7 @@ class Ci_admin_orders extends CI_Controller {
 				'title' => 'View All Orders - Back Office',
 				'page_heading' => 'View All Orders'
 			);
+			$this->db->where("(O.sales_ref_no IS NULL OR O.sales_ref_no = '') AND O.status != 'Sales'");
 			$can_edit_orders = true;
 			$reset_url = base_url('manager/orders');
 		}
@@ -1088,10 +1092,54 @@ class Ci_admin_orders extends CI_Controller {
 					'close_date' => !empty($close_date) ? db_date($close_date) : null,
 					'remark' => $remarks
 				);
+
+				$fu_date = trim((string)$this->input->post('followup_date', true));
+				$fu_time = trim((string)$this->input->post('followup_time', true));
+				$fu_remark = trim((string)$this->input->post('followup_remark', true));
+				if (!empty($fu_date)) {
+					$lead_update['followup_date'] = db_date($fu_date);
+				}
+				if (!empty($fu_time)) {
+					$lead_update['followup_time'] = $fu_time;
+				}
+
+				$m_date = trim((string)$this->input->post('m_date', true));
+				$m_time = trim((string)$this->input->post('m_time', true));
+				$m_remark = trim((string)$this->input->post('m_remark', true));
+				if (!empty($m_date)) {
+					$lead_update['m_date'] = db_date($m_date);
+				}
+				if (!empty($m_time)) {
+					$lead_update['m_time'] = $m_time;
+				}
 				if ($status_id > 0) {
 					$lead_update['status'] = $status_id;
 				}
 				$this->db->where('id', $id)->update('ci_leads', $lead_update);
+
+				if (!empty($fu_remark) || !empty($fu_date)) {
+					$this->db->insert('ci_followup', array(
+						'lead_id' => $id,
+						'lead_type' => 'order',
+						'user_id' => $cur_uid,
+						'followup_date' => !empty($fu_date) ? db_date($fu_date) : date('Y-m-d'),
+						'followup_time' => !empty($fu_time) ? $fu_time : date('H:i:s'),
+						'followup_remark' => !empty($fu_remark) ? $fu_remark : 'Order Processing Follow-up',
+						'followup_result' => 'Followup Scheduled'
+					));
+				}
+
+				if (!empty($m_date)) {
+					$this->db->insert('ci_followup', array(
+						'lead_id' => $id,
+						'lead_type' => 'meeting',
+						'user_id' => $cur_uid,
+						'followup_date' => db_date($m_date),
+						'followup_time' => !empty($m_time) ? $m_time : '11:00 AM',
+						'followup_remark' => !empty($m_remark) ? "Meeting: {$m_remark}" : 'Order Processing Meeting',
+						'followup_result' => 'Meeting Scheduled'
+					));
+				}
 
 				$bo_cat = $this->input->post('bo_cat');
 				$bo_date = $this->input->post('bo_date');
@@ -1772,4 +1820,76 @@ class Ci_admin_orders extends CI_Controller {
 		$this->session->set_flashdata('message', "Closed order successfully assigned to {$assigned_name}.");
 		redirect('manager/orders?status=closed');
 	}
+
+	public function add_followup($order_id = 0)
+	{
+		$this->if_not_login();
+		$order_id = (int)$order_id;
+		$cur_uid = (int)$this->session->userdata('manager_id');
+		$cur_role = (int)$this->session->userdata('manager_role');
+		$is_backoffice = ($cur_role === 1 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('back_office'));
+		if (!$is_backoffice) {
+			redirect('manager/orders/my');
+			return;
+		}
+
+		$order = $this->db->select('O.*, A.customer as lead_customer, A.lead_id as lead_code, A.poc, A.contact1')
+			->from('ci_orders O')
+			->join('ci_leads A', 'O.lead_id = A.id', 'LEFT')
+			->where('O.id', $order_id)
+			->get()->row_array();
+
+		if (empty($order)) {
+			$this->session->set_flashdata('error_message', 'Order not found.');
+			redirect('manager/orders/followups');
+			return;
+		}
+
+		if ($this->input->server('REQUEST_METHOD') === 'POST') {
+			$f_date = trim((string)$this->input->post('followup_date'));
+			$f_time = trim((string)$this->input->post('followup_time'));
+			$f_remark = trim((string)$this->input->post('followup_remark'));
+			$f_status = trim((string)$this->input->post('order_status'));
+
+			$update_order = array(
+				'followup_date' => !empty($f_date) ? db_date($f_date) : date('Y-m-d'),
+				'followup_time' => !empty($f_time) ? $f_time : date('H:i:s'),
+				'operational_instructions' => $f_remark,
+				'updated_at' => date('Y-m-d H:i:s')
+			);
+			if (!empty($f_status)) {
+				$update_order['status'] = $f_status;
+			}
+			$this->db->where('id', $order_id)->update('ci_orders', $update_order);
+
+			$followup_data = array(
+				'lead_id' => !empty($order['lead_id']) ? $order['lead_id'] : $order_id,
+				'lead_type' => 'order',
+				'user_id' => $cur_uid,
+				'followup_date' => !empty($f_date) ? db_date($f_date) : date('Y-m-d'),
+				'followup_time' => !empty($f_time) ? $f_time : date('H:i:s'),
+				'followup_remark' => !empty($f_remark) ? "Order #{$order['order_no']}: {$f_remark}" : "Follow-up added for Order #{$order['order_no']}",
+				'followup_result' => !empty($f_status) ? $f_status : 'Followup Added'
+			);
+			$this->db->insert('ci_followup', $followup_data);
+
+			$this->session->set_flashdata('message', 'Follow-up recorded successfully.');
+			redirect('manager/orders/followups');
+			return;
+		}
+
+		$data = array();
+		$data['info'] = array(
+			'title' => 'Add Order Follow-Up: ' . $order['order_no'],
+			'page_heading' => 'Add Order Follow-Up'
+		);
+		$data['order'] = $order;
+		$lead_ref_id = !empty($order['lead_id']) ? $order['lead_id'] : $order_id;
+		$data['history'] = $this->db->where('lead_id', $lead_ref_id)
+			->order_by('id', 'DESC')
+			->get('ci_followup')->result_array();
+
+		$this->load->view('manager/orders/add_followup', $data);
+	}
+
 }
