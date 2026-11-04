@@ -157,6 +157,47 @@
 [data-theme="dark"] .donut-slice {
     stroke: #111827 !important;
 }
+
+/* Enhanced Text Visibility for Older Users & High Contrast */
+.dash-section-title span:last-child {
+    font-size: 17px !important;
+    font-weight: 800 !important;
+    color: #0f172a !important;
+}
+.crm-modern-stat-card .card-title {
+    font-size: 14.5px !important;
+    font-weight: 800 !important;
+    color: #0f172a !important;
+}
+.crm-modern-stat-card .card-total-pill {
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    padding: 3px 10px !important;
+    color: #0369a1 !important;
+    background: #e0f2fe !important;
+    border: 1px solid #bae6fd !important;
+}
+.crm-modern-stat-chip span:first-child {
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+}
+.crm-modern-stat-chip .badge {
+    font-size: 12.5px !important;
+    font-weight: 800 !important;
+    padding: 3px 8px !important;
+    min-width: 30px !important;
+}
+.crm-modern-stat-chip {
+    padding: 6px 10px !important;
+    background: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+}
+.crm-modern-stat-chip:hover {
+    background: #f1f5f9 !important;
+    border-color: #94a3b8 !important;
+}
+
 </style>
 
 <div class="content-wrapper full-screen-dash">
@@ -429,7 +470,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                         </div>
                     </div>
                     <div style="width:100%; display:flex; align-items:center; justify-content:center; flex:1; overflow:visible;">
-                        <?php echo render_donut_chart_svg($lead_items, 460, 250, 230, 125, 110, 68, 'Lead'); ?>
+                        <?php echo render_donut_chart_svg($lead_items, 480, 260, 240, 130, 120, 72, 'Lead'); ?>
                     </div>
                 </div>
 
@@ -441,7 +482,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                         </div>
                     </div>
                     <div style="width:100%; display:flex; align-items:center; justify-content:center; flex:1; overflow:visible;">
-                        <?php echo render_donut_chart_svg($order_items, 460, 250, 230, 125, 110, 68, 'Order'); ?>
+                        <?php echo render_donut_chart_svg($order_items, 480, 260, 240, 130, 120, 72, 'Order'); ?>
                     </div>
                 </div>
             </div>
@@ -1493,11 +1534,16 @@ $(function () {
         <?php echo isset($dashboard_TeamPro['lead_number']['pt_11']) ? (int)$dashboard_TeamPro['lead_number']['pt_11'] : 0; ?>
     ];
 
+    var isMobileAndroid = (window.innerWidth <= 768);
     if (typeof Chart !== 'undefined' && Chart.Scale) {
         var origCalcXRotation = Chart.Scale.prototype.calculateXLabelRotation;
         Chart.Scale.prototype.calculateXLabelRotation = function() {
             origCalcXRotation.apply(this, arguments);
-            this.xLabelRotation = 0;
+            if (window.innerWidth <= 768) {
+                this.xLabelRotation = 65;
+            } else {
+                this.xLabelRotation = 0;
+            }
         };
     }
 
@@ -1510,13 +1556,13 @@ $(function () {
         scaleShowVerticalLines: false,
         barShowStroke: true,
         barStrokeWidth: 1,
-        barValueSpacing: 4,
-        barDatasetSpacing: 1,
+        barValueSpacing: isMobileAndroid ? 1 : 4,
+        barDatasetSpacing: isMobileAndroid ? 0 : 1,
         responsive: true,
         maintainAspectRatio: false,
-        scaleFontSize: 9,
+        scaleFontSize: isMobileAndroid ? 8 : 10,
         scaleFontStyle: '600',
-        scaleFontColor: '#475569',
+        scaleFontColor: '#1e293b',
         scaleFontFamily: "'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif"
     };
 

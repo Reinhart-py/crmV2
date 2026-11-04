@@ -63,6 +63,17 @@ class Ci_admin_roles extends CI_Controller {
 			'page_heading' => 'All Roles'
 		);
 		$data['info2'] = $this->if_not_login();
+		$chk_pres = $this->db->get_where('ci_roles', array('title' => 'Presentation'))->row_array();
+		if (empty($chk_pres)) {
+			$this->db->insert('ci_roles', array(
+				'title' => 'Presentation',
+				'parent_id' => 0,
+				'level' => 5,
+				'status' => 1,
+				'permissions' => json_encode(array('live' => 'read', 'live_presentation' => 'read')),
+				'created' => date('Y-m-d')
+			));
+		}
 		$data['user_list'] = $this->comman_model->getAll(array("status" => 1), array('id', 'ASC'), 'ci_roles');
 		$data['active_users'] = $this->db->query("SELECT u.id as user_id, u.name, u.email, u.user_type, u.department, r.title as role_title, up.permission_mode, up.permissions as custom_perms FROM ci_user u LEFT JOIN ci_roles r ON u.user_type = r.id LEFT JOIN ci_user_permissions up ON u.id = up.user_id WHERE u.status = 1 ORDER BY u.name ASC")->result_array();
 		$data['roles_list'] = $data['user_list'];

@@ -50,8 +50,8 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <button type="submit" class="btn btn-default" style="background: #000000; color: #ffffff; border: 1px solid #000000; font-weight: 600; padding: 6px 16px;">Search</button>
-                                    <a href="<?php echo htmlspecialchars($reset_url ?? base_url('manager/orders')); ?>" class="btn btn-default" style="background: #ffffff; color: #000000; border: 1px solid #000000; font-weight: 600; padding: 6px 14px;"> Reset</a>
+                                    <button type="submit" class="btn btn-default" class="btn btn-primary" style="font-weight: 600; padding: 6px 16px;">Search</button>
+                                    <a href="<?php echo htmlspecialchars($reset_url ?? base_url('manager/orders')); ?>" class="btn btn-default" class="btn btn-default" style="font-weight: 600; padding: 6px 14px;"> Reset</a>
                                 </div>
                             </form>
                         </div>
@@ -104,7 +104,15 @@
                                             <?php 
                                                 $st = $ord['status'];
                                             ?>
-                                            <span class="label" style="background: #000000; color: #ffffff; font-weight: 700; font-size: 11px; padding: 4px 8px; border: 1px solid #000000;"><?php echo htmlspecialchars($st); ?></span>
+                                            <?php
+                                                $badge_color = '#6b7280';
+                                                if(in_array($st, ['Open','Submitted','In Progress'])) $badge_color = '#2563eb';
+                                                elseif(in_array($st, ['Approved','Fulfilled','Completed'])) $badge_color = '#16a34a';
+                                                elseif(in_array($st, ['Closed','Sales'])) $badge_color = '#7c3aed';
+                                                elseif(in_array($st, ['Cancelled','Rejected','Lost'])) $badge_color = '#dc2626';
+                                                elseif($st === 'Pending Sales Approval') $badge_color = '#d97706';
+                                            ?>
+                                            <span class="label" style="background: <?php echo $badge_color; ?>; color: #ffffff; font-weight: 600; font-size: 11px; padding: 3px 8px; border-radius: 3px;"><?php echo htmlspecialchars($st); ?></span>
                                         </td>
                                         <td style="text-align: center;">
                                             <?php if (isset($status_filter) && $status_filter === 'followups'): ?>
@@ -116,18 +124,18 @@
                                                     data-fdate="<?php echo !empty($ord['followup_date']) ? $ord['followup_date'] : ''; ?>" 
                                                     data-ftime="<?php echo !empty($ord['followup_time']) ? htmlspecialchars($ord['followup_time']) : ''; ?>" 
                                                     data-remarks="<?php echo htmlspecialchars(!empty($ord['operational_instructions']) ? $ord['operational_instructions'] : ''); ?>"
-                                                    style="background: #000000; color: #ffffff; font-weight: 700; border: 1px solid #000000; border-radius: 4px; padding: 4px 12px;">
+                                                    class="btn btn-sm btn-warning" style="font-weight: 700; border-radius: 4px; padding: 4px 12px;">
                                                     <i class="fa fa-commenting-o"></i> Add Follow-up
                                                 </button>
                                             <?php elseif (!empty($can_edit_orders)): ?>
                                                 <div class="btn-group" style="min-width: 85px;">
-                                                    <button type="button" class="btn btn-sm btn-default" style="background: #000000; color: #ffffff; border: 1px solid #000000; font-weight: 600;">Action</button>
-                                                    <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false" style="background: #000000; color: #ffffff; border: 1px solid #000000;">
+                                                    <button type="button" class="btn btn-sm btn-default" >Action</button>
+                                                    <button type="button" class="btn btn-sm btn-warning dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                                                         <span class="caret"></span>
                                                         <span class="sr-only">Toggle Dropdown</span>
                                                     </button>
                                                     <ul class="dropdown-menu dropdown-menu-right" role="menu" style="border: 1px solid #000000; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-                                                        <li><a href="<?php echo base_url(); ?>manager/orders/view/<?php echo $ord['id']; ?>" data-toggle="tooltip" title="View" style="font-weight: 600; color: #000000;"><i class="fa fa-eye" style="margin-right: 6px;"></i> View</a></li>
+                                                        <li><a href="<?php echo base_url(); ?>manager/orders/view/<?php echo $ord['id']; ?>" data-toggle="tooltip" title="View" style="font-weight: 600;"><i class="fa fa-eye" style="margin-right: 6px;"></i> View</a></li>
                                                         <li><a href="javascript:void(0);" class="btn-open-followup"
                                                             data-order-id="<?php echo $ord['id']; ?>" 
                                                             data-order-no="<?php echo htmlspecialchars($ord['order_no']); ?>" 
@@ -135,28 +143,28 @@
                                                             data-status="<?php echo htmlspecialchars($ord['status']); ?>" 
                                                             data-fdate="<?php echo !empty($ord['followup_date']) ? $ord['followup_date'] : ''; ?>" 
                                                             data-ftime="<?php echo !empty($ord['followup_time']) ? htmlspecialchars($ord['followup_time']) : ''; ?>" 
-                                                            data-remarks="<?php echo htmlspecialchars(!empty($ord['operational_instructions']) ? $ord['operational_instructions'] : ''); ?>" style="font-weight: 600; color: #000000;"><i class="fa fa-commenting-o" style="margin-right: 6px;"></i> Add Follow-up</a></li>
-                                                        <li><a href="<?php echo base_url(); ?>manager/orders/edit_pending/<?php echo $ord['id']; ?>" data-toggle="tooltip" title="Make Changes" style="font-weight: 600; color: #000000;"><i class="fa fa-pencil" style="margin-right: 6px;"></i> Make Changes</a></li>
+                                                            data-remarks="<?php echo htmlspecialchars(!empty($ord['operational_instructions']) ? $ord['operational_instructions'] : ''); ?>" style="font-weight: 600;"><i class="fa fa-commenting-o" style="margin-right: 6px;"></i> Add Follow-up</a></li>
+                                                        <li><a href="<?php echo base_url(); ?>manager/orders/edit_pending/<?php echo $ord['id']; ?>" data-toggle="tooltip" title="Make Changes" style="font-weight: 600;"><i class="fa fa-pencil" style="margin-right: 6px;"></i> Make Changes</a></li>
                                                         <?php if ($ord['status'] === 'Fulfilled' || $ord['status'] === 'Completed'): ?>
-                                                            <li><a href="<?php echo base_url(); ?>manager/orders/mark_closed_sold/<?php echo $ord['id']; ?>" onclick="return confirm('Mark this completed order as Closed / Sold?');" data-toggle="tooltip" title="Mark as Closed / Sold" style="font-weight: 600; color: #000000;"><i class="fa fa-flag-checkered text-success" style="margin-right: 6px;"></i> Mark as Closed / Sold</a></li>
+                                                            <li><a href="<?php echo base_url(); ?>manager/orders/mark_closed_sold/<?php echo $ord['id']; ?>" onclick="return confirm('Mark this completed order as Closed / Sold?');" data-toggle="tooltip" title="Mark as Closed / Sold" style="font-weight: 600;"><i class="fa fa-flag-checkered text-success" style="margin-right: 6px;"></i> Mark as Closed / Sold</a></li>
                                                         <?php endif; ?>
                                                         <?php if (($status_filter === 'closed' || $ord['status'] === 'Closed' || $ord['status'] === 'Sales') && ($this->session->userdata('manager_role') == 1 || $this->session->userdata('manager_id') == 1)): ?>
-                                                            <li><a href="javascript:void(0);" class="btn-open-assign-order" data-order-id="<?php echo $ord['id']; ?>" data-order-no="<?php echo htmlspecialchars($ord['order_no']); ?>" data-assigned-to="<?php echo (int)($ord['assigned_to'] ?? 0); ?>" data-assigned-dept="<?php echo htmlspecialchars($ord['assigned_dept'] ?? 'Operations'); ?>" style="font-weight: 600; color: #000000;"><i class="fa fa-user-plus text-primary" style="margin-right: 6px;"></i> Assign Order</a></li>
+                                                            <li><a href="javascript:void(0);" class="btn-open-assign-order" data-order-id="<?php echo $ord['id']; ?>" data-order-no="<?php echo htmlspecialchars($ord['order_no']); ?>" data-assigned-to="<?php echo (int)($ord['assigned_to'] ?? 0); ?>" data-assigned-dept="<?php echo htmlspecialchars($ord['assigned_dept'] ?? 'Operations'); ?>" style="font-weight: 600;"><i class="fa fa-user-plus text-primary" style="margin-right: 6px;"></i> Assign Order</a></li>
                                                         <?php endif; ?>
                                                         <?php if ($ord['approval_status'] === 'pending' || $ord['status'] === 'Submitted'): ?>
-                                                            <li><a href="<?php echo base_url(); ?>manager/orders/quick_accept/<?php echo $ord['id']; ?>" onclick="return confirm('Accept and approve this order?');" data-toggle="tooltip" title="Accept" style="font-weight: 600; color: #000000;"><i class="fa fa-check" style="margin-right: 6px;"></i> Accept</a></li>
+                                                            <li><a href="<?php echo base_url(); ?>manager/orders/quick_accept/<?php echo $ord['id']; ?>" onclick="return confirm('Accept and approve this order?');" data-toggle="tooltip" title="Accept" style="font-weight: 600;"><i class="fa fa-check" style="margin-right: 6px;"></i> Accept</a></li>
                                                         <?php endif; ?>
                                                     </ul>
                                                 </div>
                                             <?php else: ?>
                                                 <div class="btn-group" style="min-width: 85px;">
-                                                    <button type="button" class="btn btn-sm btn-default" style="background: #000000; color: #ffffff; border: 1px solid #000000; font-weight: 600;">Action</button>
-                                                    <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false" style="background: #000000; color: #ffffff; border: 1px solid #000000;">
+                                                    <button type="button" class="btn btn-sm btn-default" >Action</button>
+                                                    <button type="button" class="btn btn-sm btn-warning dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                                                         <span class="caret"></span>
                                                         <span class="sr-only">Toggle Dropdown</span>
                                                     </button>
                                                     <ul class="dropdown-menu dropdown-menu-right" role="menu" style="border: 1px solid #000000; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-                                                        <li><a href="<?php echo base_url(); ?>manager/orders/view/<?php echo $ord['id']; ?>" data-toggle="tooltip" title="Preview" style="font-weight: 600; color: #000000;"><i class="fa fa-eye" style="margin-right: 6px;"></i> Preview</a></li>
+                                                        <li><a href="<?php echo base_url(); ?>manager/orders/view/<?php echo $ord['id']; ?>" data-toggle="tooltip" title="Preview" style="font-weight: 600;"><i class="fa fa-eye" style="margin-right: 6px;"></i> Preview</a></li>
                                                         <li><a href="javascript:void(0);" class="btn-open-followup"
                                                             data-order-id="<?php echo $ord['id']; ?>" 
                                                             data-order-no="<?php echo htmlspecialchars($ord['order_no']); ?>" 
@@ -164,7 +172,7 @@
                                                             data-status="<?php echo htmlspecialchars($ord['status']); ?>" 
                                                             data-fdate="<?php echo !empty($ord['followup_date']) ? $ord['followup_date'] : ''; ?>" 
                                                             data-ftime="<?php echo !empty($ord['followup_time']) ? htmlspecialchars($ord['followup_time']) : ''; ?>" 
-                                                            data-remarks="<?php echo htmlspecialchars(!empty($ord['operational_instructions']) ? $ord['operational_instructions'] : ''); ?>" style="font-weight: 600; color: #000000;"><i class="fa fa-commenting-o" style="margin-right: 6px;"></i> Add Follow-up</a></li>
+                                                            data-remarks="<?php echo htmlspecialchars(!empty($ord['operational_instructions']) ? $ord['operational_instructions'] : ''); ?>" style="font-weight: 600;"><i class="fa fa-commenting-o" style="margin-right: 6px;"></i> Add Follow-up</a></li>
                                                     </ul>
                                                 </div>
                                             <?php endif; ?>
@@ -185,51 +193,98 @@
 </div>
 
 <div class="modal fade" id="orderFollowupModal" tabindex="-1" role="dialog" aria-labelledby="orderFollowupModalLabel">
-    <div class="modal-dialog" role="document" style="max-width: 500px;">
-        <div class="modal-content" style="border-radius: 6px; border: 1px solid #000000; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
-            <div class="modal-header" style="background: #000000; color: #ffffff; border-top-left-radius: 5px; border-top-right-radius: 5px; padding: 14px 18px;">
+    <div class="modal-dialog" role="document" style="max-width: 680px;">
+        <div class="modal-content" style="border-radius: 6px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); overflow: hidden;">
+            <div class="modal-header" style="background: #2563eb; color: #ffffff; padding: 14px 20px;">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: #ffffff; opacity: 0.8;"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="orderFollowupModalLabel" style="font-size: 17px; font-weight: 700; color: #ffffff; margin: 0;">Order Follow-Up</h4>
-                <div style="font-size: 12px; color: #cccccc; margin-top: 3px;">
+                <h4 class="modal-title" id="orderFollowupModalLabel" style="font-size: 16px; font-weight: 700; color: #ffffff; margin: 0;">
+                    <i class="fa fa-calendar-check-o" style="margin-right: 6px;"></i> Order Follow-Up
+                </h4>
+                <div style="font-size: 12px; color: #dbeafe; margin-top: 3px;">
                     Order: <strong id="modalOrderNoDisplay" style="color: #ffffff;"></strong> | Client: <strong id="modalClientNameDisplay" style="color: #ffffff;"></strong>
                 </div>
             </div>
             <form id="orderFollowupForm" method="post">
                 <input type="hidden" name="order_id" id="modalOrderId" value="">
                 <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
-                <div class="modal-body" style="padding: 18px; background: #ffffff;">
+                <div class="modal-body" style="padding: 20px; background: #ffffff;">
                     <div id="modalFollowupAlert" style="display: none;" class="alert"></div>
 
-                    <div class="form-group">
-                        <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #475569;">Next Follow-Up Date</label>
-                        <input type="text" class="form-control datepicker" name="followup_date" id="modalFollowupDate" placeholder="YYYY-MM-DD" autocomplete="off" style="border: 1px solid #cbd5e1; border-radius: 4px;">
+                    <!-- Follow Up Field Box matching Add Database -->
+                    <div class="box box-default with-border" style="border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 16px;">
+                        <div class="box-header with-border" style="background: #f8fafc; padding: 10px 14px; border-bottom: 1px solid #e2e8f0;">
+                            <h4 class="box-title" style="font-size: 13px; font-weight: 700; color: #0f172a; margin: 0;">Follow Up Field</h4>
+                        </div>
+                        <div class="box-body" style="padding: 14px;">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label style="font-size: 12px; font-weight: 600; color: #475569;">Next Follow Up Date</label>
+                                        <input type="text" class="form-control datepicker" name="followup_date" id="modalFollowupDate" placeholder="YYYY-MM-DD" autocomplete="off" style="border-radius: 4px;">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label style="font-size: 12px; font-weight: 600; color: #475569;">Next Follow Up Time</label>
+                                        <input type="text" class="form-control" name="followup_time" id="modalFollowupTime" placeholder="e.g. 11:30 AM" autocomplete="off" style="border-radius: 4px;">
+                                    </div>
+                                </div>
+                                <div class="col-xs-12">
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <label style="font-size: 12px; font-weight: 600; color: #475569;">Follow-Up Remark <span class="text-danger">*</span></label>
+                                        <textarea name="remarks" id="modalFollowupRemarks" class="form-control" rows="3" placeholder="Enter follow-up details..." required style="border-radius: 4px; resize: vertical;"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #475569;">Next Follow-Up Time</label>
-                        <input type="text" class="form-control" name="followup_time" id="modalFollowupTime" placeholder="e.g. 02:30 PM" autocomplete="off" style="border: 1px solid #cbd5e1; border-radius: 4px;">
+                    <!-- Meeting Field Box matching Add Database -->
+                    <div class="box box-default with-border" style="border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 16px;">
+                        <div class="box-header with-border" style="background: #f8fafc; padding: 10px 14px; border-bottom: 1px solid #e2e8f0;">
+                            <h4 class="box-title" style="font-size: 13px; font-weight: 700; color: #0f172a; margin: 0;">Meeting Field</h4>
+                        </div>
+                        <div class="box-body" style="padding: 14px;">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label style="font-size: 12px; font-weight: 600; color: #475569;">Next Meeting Date</label>
+                                        <input type="text" class="form-control datepicker" name="m_date" id="modalMeetingDate" placeholder="YYYY-MM-DD" autocomplete="off" style="border-radius: 4px;">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label style="font-size: 12px; font-weight: 600; color: #475569;">Next Meeting Time</label>
+                                        <input type="text" class="form-control" name="m_time" id="modalMeetingTime" placeholder="e.g. 03:00 PM" autocomplete="off" style="border-radius: 4px;">
+                                    </div>
+                                </div>
+                                <div class="col-xs-12">
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <label style="font-size: 12px; font-weight: 600; color: #475569;">Meeting Remark</label>
+                                        <input type="text" class="form-control" name="m_remark" id="modalMeetingRemark" placeholder="e.g. Client Office / Online Zoom" style="border-radius: 4px;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #475569;">Order Status</label>
-                        <select name="order_status" id="modalOrderStatus" class="form-control" style="border: 1px solid #cbd5e1; border-radius: 4px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 12px; font-weight: 600; color: #475569;">Order Status</label>
+                        <select name="order_status" id="modalOrderStatus" class="form-control" style="border-radius: 4px;">
                             <option value="Approved">Approved</option>
                             <option value="In Progress">In Progress</option>
+                            <option value="Follow Up">Follow Up</option>
                             <option value="Under Review">Under Review</option>
+                            <option value="Pending Sales Approval">Pending Sales Approval</option>
                             <option value="Completed">Completed</option>
                             <option value="Rejected">Rejected</option>
                             <option value="Lost">Lost</option>
                         </select>
                     </div>
-
-                    <div class="form-group" style="margin-bottom: 0;">
-                        <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #475569;">Follow-Up Remarks / Note <span class="text-danger">*</span></label>
-                        <textarea name="remarks" id="modalFollowupRemarks" class="form-control" rows="4" placeholder="Enter follow-up remarks and details..." required style="border: 1px solid #cbd5e1; border-radius: 4px; resize: vertical;"></textarea>
-                    </div>
                 </div>
-                <div class="modal-footer" style="background: #f8fafc; border-top: 1px solid #e2e8f0; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; padding: 12px 18px;">
-                    <button type="button" class="btn btn-default" data-dismiss="modal" style="font-weight: 600; background: #ffffff; color: #000000; border: 1px solid #000000; border-radius: 4px;">Cancel</button>
-                    <button type="submit" id="btnSaveFollowup" class="btn btn-default" style="background: #000000; color: #ffffff; border: 1px solid #000000; font-weight: 700; border-radius: 4px; padding: 6px 18px;">Save Follow-up</button>
+                <div class="modal-footer" style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 12px 18px;">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" id="btnSaveFollowup" class="btn btn-primary" style="background: #2563eb; border-color: #1d4ed8; color: #ffffff; font-weight: 700; padding: 6px 20px;">Save Follow-up</button>
                 </div>
             </form>
         </div>

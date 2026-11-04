@@ -626,16 +626,28 @@
           </div>
         </div>
 
-        <div class="box-footer text-center" style="background: #f8fafc; padding: 16px; border-top: 1px solid #e2e8f0;">
-          <button type="submit" name="action_type" value="send_for_approval" class="btn btn-primary" style="background: #0072f0; border-color: #0072f0; color: #ffffff; font-weight: 700; padding: 10px 24px; border-radius: 4px; margin-right: 8px;">
-            <i class="fa fa-send"></i> Send for Approval
-          </button>
-          <button type="button" class="btn btn-default" data-toggle="modal" data-target="#rejectModal" style="background: #ffffff; color: #dc2626; font-weight: 600; padding: 10px 18px; border: 1px solid #dc2626; border-radius: 4px; margin-right: 8px;">
-            <i class="fa fa-times-circle"></i> Reject
-          </button>
-          <a href="<?php echo base_url(); ?>manager/orders/pending_process" class="btn btn-default" style="background: #ffffff; color: #0f172a; font-weight: 600; padding: 10px 18px; border: 1px solid #cbd5e1; border-radius: 4px;">
-            Cancel
-          </a>
+        <div class="box-footer" style="background: #f8fafc; padding: 16px 20px; border-top: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <label style="margin: 0; font-size: 13px; font-weight: 700; color: #0f172a;">Order Status:</label>
+            <select name="order_status" id="select_order_status" class="form-control" style="width: auto; min-width: 220px; font-weight: 600; border-radius: 4px; border: 1px solid #cbd5e1; height: 38px;">
+              <option value="In Progress">In Progress (Open Orders)</option>
+              <option value="Follow Up">Follow Up (Orders Follow-up)</option>
+              <option value="Completed">Completed (Completed Orders)</option>
+              <option value="Pending Sales Approval">Pending Sales Approval (KAM Approval)</option>
+              <option value="Cancelled">Cancelled (Rejected / Lost)</option>
+            </select>
+            <button type="submit" name="action_type" value="save_order" class="btn btn-primary" style="background: #2563eb; border-color: #1d4ed8; color: #ffffff; font-weight: 700; padding: 8px 24px; border-radius: 4px; height: 38px;">
+              <i class="fa fa-save" style="margin-right: 5px;"></i> Save
+            </button>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" class="btn btn-default" data-toggle="modal" data-target="#rejectModal" style="background: #ffffff; color: #dc2626; font-weight: 600; padding: 8px 16px; border: 1px solid #dc2626; border-radius: 4px; height: 38px;">
+              <i class="fa fa-times-circle"></i> Reject
+            </button>
+            <a href="<?php echo base_url(); ?>manager/orders/pending_process" class="btn btn-default" style="background: #ffffff; color: #0f172a; font-weight: 600; padding: 8px 16px; border: 1px solid #cbd5e1; border-radius: 4px; height: 38px; display: inline-flex; align-items: center;">
+              Cancel
+            </a>
+          </div>
         </div>
       </div>
 

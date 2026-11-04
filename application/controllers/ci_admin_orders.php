@@ -1001,7 +1001,7 @@ class Ci_admin_orders extends CI_Controller {
 				return;
 			}
 
-			if ($action_type === 'approve_order' || $action_type === 'process_order' || $action_type === 'send_for_approval') {
+			if ($action_type === 'approve_order' || $action_type === 'process_order' || $action_type === 'send_for_approval' || $action_type === 'save_order') {
 				$orig_snapshot = !empty($lead['salesperson_snapshot']) ? $lead['salesperson_snapshot'] : json_encode($lead);
 				$this->db->where('lead_id', $id)->update('ci_pipeline', array('salesperson_snapshot' => $orig_snapshot));
 
@@ -1137,6 +1137,10 @@ class Ci_admin_orders extends CI_Controller {
 					$assigned_to = $onboard_mgr;
 				}
 
+				$chosen_status = trim((string)$this->input->post('order_status', true));
+				if (empty($chosen_status)) {
+					$chosen_status = ($action_type === 'send_for_approval') ? 'Pending Sales Approval' : 'In Progress';
+				}
 				$order_data = array(
 					'order_no' => $order_no,
 					'client_id' => $id,
@@ -1620,6 +1624,46 @@ class Ci_admin_orders extends CI_Controller {
 		}
 
 		$this->db->where('id', $order_id)->update('ci_orders', $update_data);
+
+		$m_date = trim((string)$this->input->post('m_date'));
+		$m_time = trim((string)$this->input->post('m_time'));
+		$m_remark = trim((string)$this->input->post('m_remark'));
+
+		if (!empty($m_date)) {
+			$this->db->insert('ci_order_history', array(
+				'order_id' => $order_id,
+				'action' => 'meeting_scheduled',
+				'notes' => "Meeting scheduled on {$m_date} {$m_time}" . (!empty($m_remark) ? " - {$m_remark}" : ""),
+				'action_by' => $cur_uid,
+				'action_by_name' => $cur_name,
+				'created_at' => $now
+			));
+		}
+
+		if (!empty($order['lead_id'])) {
+			$lid = (int)$order['lead_id'];
+			if (!empty($followup_date)) {
+				$this->db->insert('ci_followup', array(
+					'lead_id' => $lid,
+					'lead_type' => 'lead',
+					'user_id' => $cur_uid,
+					'followup_date' => date('Y-m-d', strtotime($followup_date)),
+					'followup_time' => $followup_time ?: '10:00:00',
+					'followup_remark' => $remarks ?: 'Order Follow-up',
+					'followup_result' => 'Order Follow-up'
+				));
+			}
+			if (!empty($m_date)) {
+				$this->db->insert('ci_meetings', array(
+					'lead_id' => $lid,
+					'user_id' => $cur_uid,
+					'm_date' => date('Y-m-d', strtotime($m_date)),
+					'm_time' => $m_time ?: '10:00:00',
+					'm_remark' => $m_remark ?: 'Order Meeting',
+					'created' => $now
+				));
+			}
+		}
 
 		if (!empty($remarks)) {
 			$this->db->insert('ci_order_history', array(

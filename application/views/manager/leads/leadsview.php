@@ -237,7 +237,7 @@ foreach($st_list as $cli){
                                             <th>POC Name</th>
                                             <th>Contact Number</th>
                                             <th>Next FU date</th>
-                                            <th>Created</th>
+                                            <th>Created Date</th>
                                             <th>Status</th>
                                         <?php } ?>
                                         <th>Action</th>

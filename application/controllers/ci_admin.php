@@ -132,6 +132,9 @@ class Ci_admin extends CI_Controller {
 			'title'=>'Manager Dashboard'
 			);
 		$data['info2']=$this->if_not_login();
+		if ((int)$this->session->userdata('manager_role') === 5) {
+			redirect('manager/live');
+		}
 		$data['dashboard_count']=$this->ci_admin_model->dashboard_countdata();
 		$data['dashboard_Tcount']=$this->ci_admin_model->dashboard_Tcountdata();
 		$data['dashboard_lead']=$this->ci_admin_model->dashboard_leaddata();
