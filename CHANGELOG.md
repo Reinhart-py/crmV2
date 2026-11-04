@@ -1,3 +1,27 @@
+## [2026-11-04] - Full CRM Audit, Ocean Blue UI Redesign, Dialer Campaigns & Dashboard Restore
+### Added
+- `audit today's state.md`: full audit of the CRM with a prioritized task list (working features, placeholders, broken features, security, integrations, UI, enterprise SaaS readiness).
+- Dialer campaigns: Campaign menu in the dialer (below Leads, above Logs) with Create Campaign and View Campaign; filters by country, state, city, industry, database category, data source, stages and participants; 20-digit numeric reference field; progress and per-user call stats; calls tagged with `campaign_id` (`dialer_campaign_model.php`, `ci_admin_calls.php`, `calls/dashboard.php`, `crm-dialer.css`).
+- Dialer range: custom start and end record, skip records already called (today, last 7 days, ever) and resume from the last dialed position (`ci_dialer_progress`).
+- Shared lead form script `crm-lead-form.js` and theme layer `crm-theme.css`.
+### Changed
+- Login, Forgot Password and Reset Password redesigned with one shared layout (`crm-auth.css`, `elements/auth_visual.php`).
+- Add Database and View Database edit: Manual Dialer fields shown first, all other fields in a contained Additional Details panel, secondary sections collapsible, breadcrumbs and duplicate titles removed.
+- Manual Dialer rebuilt as one compact card with a single action bar (Keep, Save, Next, Call Now, Break).
+- Back Office: Open Orders table matches View Database styling; Add Follow-Up opens a full page instead of a popup, with meeting fields and history logging.
+- Profile: avatar opens the profile page; attendance, shifts, leave and events read real data; HR Events and Training no longer show hardcoded items.
+- Ocean Blue palette applied across manager views (dashboard excluded).
+### Fixed
+- My Orders donut and KPI now use the same scope as the My Orders page and include Pending Sales Approval and Follow Up orders.
+- LIVE badge overlapping the Reports menu at laptop widths.
+- Dashboard chart labels: larger text, no rotated or clipped month labels on Android.
+### Restored
+- Dashboard original colors, KPI cards, Operational Activity cards and My Leads / My Orders donut style (approved design). Only layout fixes kept.
+### Known issues (see audit)
+- `database/localhost.sql` is tracked in git and web-accessible (P0).
+- `ci_admin_user::ajax_edit_status` and `ci_api::send_whatsapp` have no login check (P0).
+- My Zone > View Leads fails: unknown column `ci_pipeline.order_ref_no` (P0).
+- 3CX webhooks redirect to login (P1).
 ## [2026-11-02] - Role Permissions & Visibility Enforcement, Database Allotment Scoping, Order Approval Workflow & Security Add-ons
 ### Changed & Fixed
 - **Role Permissions & Visibility Enforcement (`ci_admin_model.php`, `header.php`, `ci_admin_report.php`, `ci_admin_events.php`, `ci_roles`)**:

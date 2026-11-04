@@ -23,6 +23,7 @@ Old CRMs usually feel like using software from 2004—bulky boxes, neon rainbow 
 
 ## Quick Navigation
 
+- [Current State (2026-11-04)](#current-state-2026-11-04)
 - [Why We Built This (The Real Story)](#why-we-built-this-the-real-story)
 - [System Architecture & Workflow](#system-architecture--workflow)
 - [How Much Code Actually Changed? (Stats)](#how-much-code-actually-changed-stats)
@@ -35,6 +36,28 @@ Old CRMs usually feel like using software from 2004—bulky boxes, neon rainbow 
 
 ---
 
+## Current State (2026-11-04)
+
+Read [`audit today's state.md`](audit%20today's%20state.md) before starting new work. It lists what works, what is a placeholder, what is broken, and the security fixes needed, as a prioritized task list.
+
+Key points:
+
+- **Security first**: the database dump `database/localhost.sql` is tracked in git and must be removed from the repo and its history; several endpoints need login checks; passwords use unsalted SHA-1. See audit section 3 (P0 items).
+- **Known broken**: My Zone > View Leads (missing `ci_pipeline.order_ref_no` column) and the 3CX CDR / recording webhooks (blocked by the login check).
+- **Navigation**: the top navigation bar is kept on purpose. A sidebar is planned for a later phase.
+- **Dashboard**: keeps its approved original colors. The Ocean Blue theme (`assets/dist/css/crm-theme.css`) applies to every other page and skips `.full-screen-dash`.
+
+New in this release:
+
+- Ocean Blue theme layer, redesigned Login / Forgot / Reset password pages.
+- Add Database and View Database edit: Manual Dialer fields first, all other fields in Additional Details.
+- Dialer campaigns (create, view, filters, participants, progress), custom dialing range with resume and skip-called options, single-card Manual Dialer.
+- Back Office Add Follow-Up as a full page, Open Orders table matching View Database.
+- Profile page opens from the avatar; attendance, shifts, leave and events use real data.
+
+Local development: run `php -S localhost:8091 router.php` from the project root, or `.claude/dev-server.ps1` in the worktree, which restarts the server automatically.
+
+---
 ## Why We Built This (The Real Story)
 
 Most legacy CRMs have two massive headaches:
