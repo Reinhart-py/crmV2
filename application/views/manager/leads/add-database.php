@@ -2,18 +2,7 @@
 
 
 <div class="container">
-<div class="content-wrapper"> 
-  
-  
-  
-  <section class="content-header">
-    <h1> <?php echo isset($info['page_heading']) ? $info['page_heading'] : 'Add Database'; ?> </h1>
-    <ol class="breadcrumb">
-      <li><a href="<?php echo base_url(); ?>manager/dashboard"><i class="fa fa-dashboard"></i>Home</a></li>
-      <li><a href="<?php echo base_url(); ?>manager/leads">Database</a></li>
-      <li class="active"><?php echo isset($info['page_heading']) ? $info['page_heading'] : 'Add Database'; ?></li>
-    </ol>
-  </section>
+<div class="content-wrapper">
   
   
   
@@ -32,7 +21,7 @@
         <div style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 8px;">
           <span id="topZoneIndicator" class="label" style="background: #000000; color: #ffffff; font-weight: 700; padding: 4px 12px; border-radius: 4px; font-size: 12px; letter-spacing: 0.5px; display: none;"></span>
           <span id="topDncrIndicator" class="label label-danger" style="background: #dc2626; color: #ffffff; font-weight: 700; padding: 4px 12px; border-radius: 4px; font-size: 12px; letter-spacing: 0.5px; display: none;">DNCR</span>
-          <span id="topClosedIndicator" class="label label-primary" style="background: #2563eb; color: #ffffff; font-weight: 700; padding: 4px 12px; border-radius: 4px; font-size: 12px; letter-spacing: 0.5px; display: none;">Closed</span>
+          <span id="topClosedIndicator" class="label label-primary" style="background: #1e3a8a; color: #ffffff; font-weight: 700; padding: 4px 12px; border-radius: 4px; font-size: 12px; letter-spacing: 0.5px; display: none;">Closed</span>
         </div>
       </div>
       
@@ -47,7 +36,7 @@
               <div class="form-group">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
                   <label style="margin:0;">Company Name <span class="text-danger">*</span></label>
-                  <a href="javascript:void(0);" id="toggleCompanyModeBtn" style="font-size:12px; font-weight:600; color:#0072f0; text-decoration:none;">
+                  <a href="javascript:void(0);" id="toggleCompanyModeBtn" style="font-size:12px; font-weight:600; color:#1e3a8a; text-decoration:none;">
                     <i class="fa fa-plus-circle"></i> Add New Company
                   </a>
                 </div>
@@ -505,7 +494,7 @@
       </div>
 
        
-            </div><!-- /addlWrap -->
+            </div>
 <div class="box box-default">
       <div class="box-header with-border">
         <h3 class="box-title">More Category Field</h3>
@@ -1049,7 +1038,7 @@
     </div>
       
       <div class="box-footer text-center">
-        <button id="add_btn" type="submit" class="btn btn-primary" style="background:#0072f0; border-color:#0072f0; border-radius:4px; font-weight:600; padding:6px 18px;">Save</button>
+        <button id="add_btn" type="submit" class="btn btn-primary" style="background:#1e3a8a; border-color:#1e3a8a; border-radius:4px; font-weight:600; padding:6px 18px;">Save</button>
         <button type="reset" class="btn btn-default">Cancel</button>
       </div>
       </form> 
@@ -1545,4 +1534,6 @@ $(document).ready(function() {
 
 });
 </script>
+<script src="<?php echo base_url(); ?>assets/dist/js/crm-lead-form.js?v=20261104_1"></script>
+<script>jQuery(function(){ crmCompactLeadForm('form[name="add_form"]'); });</script>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

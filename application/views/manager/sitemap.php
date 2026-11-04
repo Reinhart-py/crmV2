@@ -22,7 +22,7 @@
   <div class="box" style="background:#ffffff; border-radius:10px; border:1px solid #e2e8f0; padding:24px;">
     <div class="row">
       <div class="col-md-3 col-sm-6" style="margin-bottom:24px;">
-        <h4 style="font-size:14px; font-weight:700; color:#0072f0; margin-bottom:12px; border-bottom:2px solid #0072f0; padding-bottom:6px;">
+        <h4 style="font-size:14px; font-weight:700; color:#1e3a8a; margin-bottom:12px; border-bottom:2px solid #1e3a8a; padding-bottom:6px;">
           <i class="fa fa-th-large" style="margin-right:6px;"></i> My Zone
         </h4>
         <ul style="list-style:none; padding-left:0; line-height:2.2; font-size:13px;">
@@ -44,7 +44,7 @@
       </div>
 
       <div class="col-md-3 col-sm-6" style="margin-bottom:24px;">
-        <h4 style="font-size:14px; font-weight:700; color:#0072f0; margin-bottom:12px; border-bottom:2px solid #0072f0; padding-bottom:6px;">
+        <h4 style="font-size:14px; font-weight:700; color:#1e3a8a; margin-bottom:12px; border-bottom:2px solid #1e3a8a; padding-bottom:6px;">
           <i class="fa fa-users" style="margin-right:6px;"></i> Team
         </h4>
         <ul style="list-style:none; padding-left:0; line-height:2.2; font-size:13px;">
@@ -64,7 +64,7 @@
       </div>
 
       <div class="col-md-3 col-sm-6" style="margin-bottom:24px;">
-        <h4 style="font-size:14px; font-weight:700; color:#0072f0; margin-bottom:12px; border-bottom:2px solid #0072f0; padding-bottom:6px;">
+        <h4 style="font-size:14px; font-weight:700; color:#1e3a8a; margin-bottom:12px; border-bottom:2px solid #1e3a8a; padding-bottom:6px;">
           <i class="fa fa-briefcase" style="margin-right:6px;"></i> Back Office
         </h4>
         <ul style="list-style:none; padding-left:0; line-height:2.2; font-size:13px;">
@@ -82,7 +82,7 @@
       </div>
 
       <div class="col-md-3 col-sm-6" style="margin-bottom:24px;">
-        <h4 style="font-size:14px; font-weight:700; color:#0072f0; margin-bottom:12px; border-bottom:2px solid #0072f0; padding-bottom:6px;">
+        <h4 style="font-size:14px; font-weight:700; color:#1e3a8a; margin-bottom:12px; border-bottom:2px solid #1e3a8a; padding-bottom:6px;">
           <i class="fa fa-phone" style="margin-right:6px;"></i> Operations & Tools
         </h4>
         <ul style="list-style:none; padding-left:0; line-height:2.2; font-size:13px;">

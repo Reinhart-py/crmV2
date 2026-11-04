@@ -74,7 +74,7 @@ $is_external_task = ($task['task_scope'] === 'external');
                 <div class="form-group">
                   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
                     <label style="margin-bottom:0;">Select Company<span>*</span></label>
-                    <a href="<?php echo base_url(); ?>manager/kam/onboard" target="_blank" style="font-size:12px; color:#2563eb; font-weight:600;">
+                    <a href="<?php echo base_url(); ?>manager/kam/onboard" target="_blank" style="font-size:12px; color:#1e3a8a; font-weight:600;">
                       <i class="fa fa-plus"></i> Onboard New Client
                     </a>
                   </div>
@@ -445,7 +445,7 @@ $is_external_task = ($task['task_scope'] === 'external');
         </div>
         
         <div class="box-footer" style="background:#fff; border-top:1px solid #e2e8f0; padding:15px 20px;">
-          <button type="submit" class="btn btn-primary" style="background:#2563eb; border-color:#2563eb; font-weight:600; padding:8px 20px;">Save Changes</button>
+          <button type="submit" class="btn btn-primary" style="background:#1e3a8a; border-color:#1e3a8a; font-weight:600; padding:8px 20px;">Save Changes</button>
           <a href="<?php echo $is_external_task ? base_url().'manager/tasks/external' : base_url().'manager/tasks/internal'; ?>" class="btn btn-default" style="padding:8px 20px;">Cancel</a>
         </div>
       </div>
@@ -572,9 +572,9 @@ function onWeekdayChanged() {
 
   var help = document.getElementById("weekday_help_text");
   if (count < reqCount) {
-    help.innerHTML = '<span style="color:#d97706;">' + (reqCount - count) + ' more day(s) required.</span>';
+    help.innerHTML = '<span style="color:#475569;">' + (reqCount - count) + ' more day(s) required.</span>';
   } else {
-    help.innerHTML = '<span style="color:#16a34a;"><i class="fa fa-check"></i> ' + reqCount + ' day(s) selected.</span>';
+    help.innerHTML = '<span style="color:#0f172a;"><i class="fa fa-check"></i> ' + reqCount + ' day(s) selected.</span>';
   }
 
   renderRecurrencePreview();
@@ -761,7 +761,7 @@ function renderRecurrencePreview() {
       var item = document.createElement("div");
       item.style.fontSize = "13px";
       item.style.color = "#1e293b";
-      item.innerHTML = '<i class="fa fa-calendar-check-o" style="color:#2563eb; margin-right:8px;"></i> ' + formatDisplayDate(dt) + ' at ' + timeVal;
+      item.innerHTML = '<i class="fa fa-calendar-check-o" style="color:#1e3a8a; margin-right:8px;"></i> ' + formatDisplayDate(dt) + ' at ' + timeVal;
       listBox.appendChild(item);
     });
   }

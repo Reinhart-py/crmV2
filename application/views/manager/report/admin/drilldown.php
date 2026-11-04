@@ -79,7 +79,7 @@
                 </h1>
             </div>
             <div style="z-index: 2; display: flex; align-items: center; gap: 8px;">
-                <span class="badge" style="background: #2563eb; color: #ffffff; padding: 7px 12px; font-size: 12.5px; font-weight: 600; border-radius: 4px;">
+                <span class="badge" style="background: #1e3a8a; color: #ffffff; padding: 7px 12px; font-size: 12.5px; font-weight: 600; border-radius: 4px;">
                     <i class="fa fa-list" style="margin-right: 5px;"></i> <?php echo number_format($drilldown_data['count']); ?> Records
                 </span>
                 <?php if (isset($is_admin_or_support) && $is_admin_or_support) { ?>

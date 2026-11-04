@@ -11,6 +11,8 @@ class Ci_admin_calls extends CI_Controller
 		$this->load->library('groq_service');
 		$this->load->model('ci_admin_model');
 		$this->load->model('comman_model');
+		$this->load->model('dialer_campaign_model');
+		$this->dialer_campaign_model->ensure_schema();
 		$this->load->helper(array('form', 'url', 'text', 'date'));
 		$this->if_not_login();
 	}
@@ -200,6 +202,10 @@ class Ci_admin_calls extends CI_Controller
 		$data['s_cat'] = $s_cat;
 		$data['business_categories'] = $business_categories;
 		$data['database_categories'] = $database_categories;
+		$data['countries'] = $this->db->select('id, name')->order_by('name', 'ASC')->get('countries')->result_array();
+		$data['campaign_users'] = $this->db->select('id, name')->where('status', 1)->order_by('name', 'ASC')->get('ci_user')->result_array();
+		$data['data_sources'] = $this->db->query("SELECT DISTINCT data_source FROM ci_leads WHERE data_source IS NOT NULL AND data_source != '' ORDER BY data_source")->result_array();
+		$data['can_manage_campaigns'] = $this->dialer_campaign_model->is_manager_role($role, $manager_id) || has_section_perm('calls', 'write');
 		$data['recent_logs'] = $recent_logs;
 		$data['manager_role'] = $role;
 		$data['manager_id'] = $manager_id;
@@ -229,6 +235,16 @@ class Ci_admin_calls extends CI_Controller
 		$today = date('Y-m-d');
 		$last_date = date('Y-m-d', strtotime('-7 day'));
 		$next_date = date('Y-m-d', strtotime('+7 day'));
+
+		$campaign = null;
+		$campaign_id = (int)$this->input->get('campaign_id');
+		if ($campaign_id > 0) {
+			$campaign = $this->dialer_campaign_model->get_campaign($campaign_id, $manager_id, $role);
+			if (empty($campaign) || $campaign['status'] !== 'Active') {
+				echo json_encode(array('status' => false, 'message' => 'Campaign is not available or not active', 'leads' => array()));
+				return;
+			}
+		}
 
 		$this->db->select('A.id, A.lead_id, A.customer, A.poc, A.poc2, A.contact1, A.alt_contact, A.contact2, A.mobile, A.email, A.location, A.address, A.category, A.status, A.remark, A.followup_date, A.followup_time, A.dnd_status, A.dnd_check_date, A.tl_number, A.tl_authority, A.tl_emirate, A.tl_zone, A.s_cat, A.p_cat, A.p_details, A.industry_category, A.business_category, A.qty, A.mrc, A.revenue, A.mrr, A.quote_status, A.quote_mode, A.quote_amount, A.status_category, A.status_remarks, A.close_date, S.status as status_name, P.pipeline_stage');
 		$this->db->from('ci_leads as A');
@@ -321,6 +337,15 @@ class Ci_admin_calls extends CI_Controller
 			$this->db->where("(A.customer LIKE '%$escaped_search%' OR A.poc LIKE '%$escaped_search%' OR A.contact1 LIKE '%$escaped_search%' OR A.alt_contact LIKE '%$escaped_search%' OR A.contact2 LIKE '%$escaped_search%' OR A.mobile LIKE '%$escaped_search%' OR A.lead_id LIKE '%$escaped_search%')");
 		}
 
+		if (!empty($campaign)) {
+			$this->dialer_campaign_model->apply_filters($campaign);
+		}
+
+		if ((int)$this->input->get('positional') === 1) {
+			$this->_output_positional_queue($type, $filter, $campaign, $manager_id);
+			return;
+		}
+
 		$range_from = $this->input->get('range_from');
 		$range_to = $this->input->get('range_to');
 		$range = trim((string)$this->input->get('range'));
@@ -370,6 +395,216 @@ class Ci_admin_calls extends CI_Controller
 			'count' => count($leads),
 			'leads' => $leads
 		));
+	}
+
+	private function _campaign_from_post()
+	{
+		$cid = (int)$this->input->post('campaign_id');
+		if ($cid <= 0) {
+			return 0;
+		}
+		$campaign = $this->dialer_campaign_model->get_campaign($cid, (int)$this->session->userdata('manager_id'), (int)$this->session->userdata('manager_role'));
+		return !empty($campaign) ? $cid : 0;
+	}
+
+	private function _queue_key($type, $filter, $campaign)
+	{
+		$stages = array_filter(array_map('intval', explode(',', (string)$this->input->get('status'))));
+		sort($stages);
+		return implode('|', array(
+			!empty($campaign) ? 'campaign:' . (int)$campaign['id'] : 'type:' . $type,
+			'filter:' . $filter,
+			'stages:' . implode(',', $stages)
+		));
+	}
+
+	private function _output_positional_queue($type, $filter, $campaign, $manager_id)
+	{
+		$this->db->order_by('A.id', 'ASC');
+		$this->db->limit(10000);
+		$rows = $this->db->get()->result_array();
+		$total = count($rows);
+
+		$range_from = max(1, (int)$this->input->get('range_from'));
+		$range_to = (int)$this->input->get('range_to');
+		if ($range_to <= 0 || $range_to > $total) {
+			$range_to = $total;
+		}
+
+		$skip_mode = trim((string)$this->input->get('skip_called'));
+		$called_ids = array();
+		if ($skip_mode !== '' && $skip_mode !== 'none' && $total > 0) {
+			$this->db->select('DISTINCT lead_id', false)->from('ci_call_logs')->where('lead_id IS NOT NULL', null, false);
+			if (!empty($campaign)) {
+				$this->db->where('campaign_id', (int)$campaign['id']);
+			} else {
+				$this->db->where('user_id', $manager_id);
+			}
+			if ($skip_mode === 'today') {
+				$this->db->where('created_at >=', date('Y-m-d 00:00:00'));
+			} elseif ($skip_mode === 'week') {
+				$this->db->where('created_at >=', date('Y-m-d 00:00:00', strtotime('-6 day')));
+			}
+			$this->db->where_not_in('call_status', array('Initiated', 'Dialing'));
+			foreach ($this->db->get()->result_array() as $cr) {
+				$called_ids[(int)$cr['lead_id']] = true;
+			}
+		}
+
+		$leads = array();
+		$skipped = 0;
+		for ($i = $range_from - 1; $i < $range_to && $i < $total; $i++) {
+			$item = $rows[$i];
+			if (isset($called_ids[(int)$item['id']])) {
+				$skipped++;
+				continue;
+			}
+			$extracted = $this->_extract_lead_phones($item);
+			$item['phone_primary'] = $extracted['primary'];
+			$item['phone_alt'] = $extracted['alt'];
+			$item['has_two_numbers'] = $extracted['has_two'];
+			$item['queue_position'] = $i + 1;
+			$leads[] = $item;
+		}
+
+		$queue_key = $this->_queue_key($type, $filter, $campaign);
+		$progress = $this->dialer_campaign_model->get_progress($manager_id, $queue_key);
+
+		echo json_encode(array(
+			'status' => true,
+			'type' => $type,
+			'filter' => $filter,
+			'total_available' => $total,
+			'range_from' => $total > 0 ? $range_from : 0,
+			'range_to' => $range_to,
+			'skipped_called' => $skipped,
+			'queue_key' => $queue_key,
+			'resume_position' => (int)$progress['last_position'],
+			'resume_updated_at' => $progress['updated_at'],
+			'count' => count($leads),
+			'leads' => $leads
+		));
+	}
+
+	public function ajax_save_progress()
+	{
+		$manager_id = (int)$this->session->userdata('manager_id');
+		$queue_key = trim((string)$this->input->post('queue_key'));
+		$position = (int)$this->input->post('position');
+		$lead_id = (int)$this->input->post('lead_id');
+		if ($queue_key === '' || $position <= 0) {
+			echo json_encode(array('status' => false));
+			return;
+		}
+		$this->dialer_campaign_model->save_progress($manager_id, $queue_key, $position, $lead_id);
+		echo json_encode(array('status' => true));
+	}
+
+	public function ajax_campaigns()
+	{
+		$manager_id = (int)$this->session->userdata('manager_id');
+		$role = (int)$this->session->userdata('manager_role');
+		$list = $this->dialer_campaign_model->get_campaigns($manager_id, $role);
+		$user_names = array();
+		foreach ($this->db->select('id, name')->get('ci_user')->result_array() as $u) {
+			$user_names[(int)$u['id']] = $u['name'];
+		}
+		foreach ($list as &$cmp) {
+			$cmp['stats'] = $this->dialer_campaign_model->stats($cmp);
+			$cmp['can_manage'] = $this->dialer_campaign_model->can_manage($cmp, $manager_id, $role);
+			$names = array();
+			foreach ($this->dialer_campaign_model->participant_ids($cmp) as $pid) {
+				if (isset($user_names[$pid])) {
+					$names[] = $user_names[$pid];
+				}
+			}
+			$cmp['participant_names'] = $names;
+		}
+		unset($cmp);
+		echo json_encode(array('status' => true, 'campaigns' => $list));
+	}
+
+	public function ajax_save_campaign()
+	{
+		$manager_id = (int)$this->session->userdata('manager_id');
+		$role = (int)$this->session->userdata('manager_role');
+		$id = (int)$this->input->post('id');
+		if ($id > 0) {
+			$existing = $this->dialer_campaign_model->get_campaign($id, $manager_id, $role);
+			if (empty($existing) || !$this->dialer_campaign_model->can_manage($existing, $manager_id, $role)) {
+				echo json_encode(array('status' => false, 'message' => 'You do not have permission to edit this campaign'));
+				return;
+			}
+		}
+
+		$name = trim((string)$this->input->post('name', true));
+		if ($name === '') {
+			echo json_encode(array('status' => false, 'message' => 'Campaign name is required'));
+			return;
+		}
+		$reference_no = preg_replace('/\D/', '', (string)$this->input->post('reference_no'));
+		if (strlen($reference_no) > 20) {
+			echo json_encode(array('status' => false, 'message' => 'Reference number can contain at most 20 digits'));
+			return;
+		}
+		$daily_target = preg_replace('/\D/', '', (string)$this->input->post('daily_target'));
+
+		$status_ids = $this->input->post('status_ids');
+		$status_ids = is_array($status_ids) ? array_filter(array_map('intval', $status_ids)) : array();
+		$participants = $this->input->post('participants');
+		$participants = is_array($participants) ? array_filter(array_map('intval', $participants)) : array();
+		if (!in_array($manager_id, $participants, true) && empty($participants)) {
+			$participants[] = $manager_id;
+		}
+
+		$pipeline_type = $this->input->post('pipeline_type');
+		if (!in_array($pipeline_type, array('database', 'lead', 'all'), true)) {
+			$pipeline_type = 'database';
+		}
+		$status = $this->input->post('status');
+		if (!in_array($status, array('Active', 'Paused', 'Completed'), true)) {
+			$status = 'Active';
+		}
+		$start_date = trim((string)$this->input->post('start_date'));
+		$end_date = trim((string)$this->input->post('end_date'));
+
+		$data = array(
+			'name' => $name,
+			'description' => trim((string)$this->input->post('description', true)),
+			'reference_no' => $reference_no,
+			'country' => (int)$this->input->post('country'),
+			'state' => (int)$this->input->post('state'),
+			'city' => trim((string)$this->input->post('city', true)),
+			'industry_category' => trim((string)$this->input->post('industry_category', true)),
+			'database_category' => trim((string)$this->input->post('database_category', true)),
+			'data_source' => trim((string)$this->input->post('data_source', true)),
+			'pipeline_type' => $pipeline_type,
+			'status_ids' => implode(',', array_unique($status_ids)),
+			'participants' => implode(',', array_unique($participants)),
+			'daily_target' => $daily_target === '' ? 0 : (int)substr($daily_target, 0, 9),
+			'start_date' => ($start_date !== '' && strtotime($start_date)) ? date('Y-m-d', strtotime($start_date)) : null,
+			'end_date' => ($end_date !== '' && strtotime($end_date)) ? date('Y-m-d', strtotime($end_date)) : null,
+			'status' => $status
+		);
+		if ($id <= 0) {
+			$data['created_by'] = $manager_id;
+		}
+		$saved_id = $this->dialer_campaign_model->save_campaign($data, $id);
+		$this->ci_admin_model->log_admin_action($id > 0 ? 'campaign_update' : 'campaign_create', 'Dialer campaign #' . $saved_id . ' ' . $name, 'SUCCESS');
+		echo json_encode(array('status' => true, 'id' => $saved_id, 'message' => $id > 0 ? 'Campaign updated' : 'Campaign created'));
+	}
+
+	public function ajax_get_campaign()
+	{
+		$manager_id = (int)$this->session->userdata('manager_id');
+		$role = (int)$this->session->userdata('manager_role');
+		$campaign = $this->dialer_campaign_model->get_campaign((int)$this->input->get('id'), $manager_id, $role);
+		if (empty($campaign)) {
+			echo json_encode(array('status' => false, 'message' => 'Campaign not found'));
+			return;
+		}
+		$campaign['can_manage'] = $this->dialer_campaign_model->can_manage($campaign, $manager_id, $role);
+		echo json_encode(array('status' => true, 'campaign' => $campaign));
 	}
 
 	public function ajax_get_lead($lead_id = 0)
@@ -475,6 +710,7 @@ class Ci_admin_calls extends CI_Controller
 			'call_category' => $call_category,
 			'created_at' => date('Y-m-d H:i:s')
 		);
+		$log_data['campaign_id'] = $this->_campaign_from_post();
 		$this->db->insert('ci_call_logs', $log_data);
 		$call_log_id = $this->db->insert_id();
 
@@ -574,6 +810,7 @@ class Ci_admin_calls extends CI_Controller
 				'notes' => $remarks,
 				'is_internal' => $is_internal,
 				'call_category' => $call_category,
+				'campaign_id' => $this->_campaign_from_post(),
 				'created_at' => date('Y-m-d H:i:s')
 			));
 		}
@@ -1004,6 +1241,7 @@ class Ci_admin_calls extends CI_Controller
 				'duration' => $duration,
 				'disposition' => !empty($outcome) ? $outcome : 'Completed',
 				'notes' => $remarks,
+				'campaign_id' => $this->_campaign_from_post(),
 				'created_at' => date('Y-m-d H:i:s')
 			));
 		}

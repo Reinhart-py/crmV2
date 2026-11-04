@@ -26,7 +26,7 @@ $isTelecom = ($task['task_scope'] === 'external' && ($task['business_category'] 
                 </div>
                 <div class="pull-right">
                     <?php if(!empty($can_edit)){ ?>
-                    <a href="<?php echo base_url(); ?>manager/tasks/edit/<?php echo $task['id']; ?>" class="btn btn-primary btn-sm" style="background:#2563eb; border-color:#2563eb;">
+                    <a href="<?php echo base_url(); ?>manager/tasks/edit/<?php echo $task['id']; ?>" class="btn btn-primary btn-sm" style="background:#1e3a8a; border-color:#1e3a8a;">
                         <i class="fa fa-pencil"></i> Edit Task
                     </a>
                     <?php } ?>
@@ -110,7 +110,7 @@ $isTelecom = ($task['task_scope'] === 'external' && ($task['business_category'] 
                                     <?php if(!empty($task['is_recurring'])){ ?>
                                         <span class="label label-primary"><i class="fa fa-refresh"></i> Recurring (<?php echo htmlspecialchars($task['recurrence_freq']); ?>)</span>
                                         <?php if(!empty($task['next_occurrence'])){ ?>
-                                            <div style="font-size:11px; color:#2563eb; margin-top:3px;">
+                                            <div style="font-size:11px; color:#1e3a8a; margin-top:3px;">
                                                 Next run: <strong><?php echo simple_date($task['next_occurrence']); ?></strong>
                                             </div>
                                         <?php } ?>
@@ -155,7 +155,7 @@ $isTelecom = ($task['task_scope'] === 'external' && ($task['business_category'] 
                                     <?php if(!empty($task['invoiced']) && $task['invoiced'] === 'Yes'){ ?>
                                         <span class="label label-success" style="font-size:11px;">Invoiced</span>
                                     <?php } else { ?>
-                                        <span class="label label-warning" style="font-size:11px; background:#fef3c7; color:#92400e; border:1px solid #fde68a;">To Be Invoiced</span>
+                                        <span class="label label-warning" style="font-size:11px; background:#f8fafc; color:#334155; border:1px solid #e2e8f0;">To Be Invoiced</span>
                                     <?php } ?>
                                 </div>
                                 <?php if(!empty($task['invoiced']) && $task['invoiced'] === 'Yes'){ ?>

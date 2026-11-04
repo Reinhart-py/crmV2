@@ -185,11 +185,11 @@
     color: #ffffff;
 }
 .mode-toggle-btn.active-admin {
-    background: #16a34a;
+    background: #0f172a;
     color: #ffffff;
 }
 .mode-toggle-btn.active-custom {
-    background: #0072f0;
+    background: #1e3a8a;
     color: #ffffff;
 }
 .user-meta-bar {
@@ -243,9 +243,9 @@
     color: #ffffff;
 }
 .btn-action-primary {
-    background: #0072f0;
+    background: #1e3a8a;
     color: #ffffff;
-    border: 1px solid #0072f0;
+    border: 1px solid #1e3a8a;
     padding: 7px 18px;
     font-size: 13px;
     font-weight: 600;
@@ -330,11 +330,11 @@
     color: #ffffff;
 }
 .perm-seg-btn.val-read.active {
-    background: #0072f0;
+    background: #1e3a8a;
     color: #ffffff;
 }
 .perm-seg-btn.val-write.active {
-    background: #16a34a;
+    background: #0f172a;
     color: #ffffff;
 }
 .user-sticky-save {
@@ -753,11 +753,11 @@ function updateModeUI(mode) {
 
   if (mode === 'admin') {
     $('#btnModeAdmin').addClass('active-admin');
-    $('#metaModeBadge').text('Full Admin Rights').css({ 'background': '#16a34a', 'color': '#ffffff' });
+    $('#metaModeBadge').text('Full Admin Rights').css({ 'background': '#0f172a', 'color': '#ffffff' });
     $('#userCustomActions').hide();
   } else if (mode === 'custom') {
     $('#btnModeCustom').addClass('active-custom');
-    $('#metaModeBadge').text('Custom Permissions').css({ 'background': '#0072f0', 'color': '#ffffff' });
+    $('#metaModeBadge').text('Custom Permissions').css({ 'background': '#1e3a8a', 'color': '#ffffff' });
     $('#userCustomActions').show();
   } else {
     $('#btnModeRole').addClass('active');

@@ -16,7 +16,7 @@
     <div class="box" style="border: 1px solid #e2e8f0; border-radius: 4px; background: #ffffff;">
       <div class="box-header with-border" style="border-bottom: 1px solid #f1f5f9; padding: 14px 20px;">
         <h3 class="box-title" style="font-size: 15px; font-weight: 700; color: #0f172a; margin: 0;">
-          <i class="fa fa-calendar" style="color: #0072f0; margin-right: 6px;"></i> Scheduled Corporate Events &amp; Strategic Plans
+          <i class="fa fa-calendar" style="color: #1e3a8a; margin-right: 6px;"></i> Scheduled Corporate Events &amp; Strategic Plans
         </h3>
       </div>
       <div class="box-body" style="padding: 20px;">
@@ -26,7 +26,7 @@
               <div class="col-md-4 col-sm-6" style="margin-bottom: 20px;">
                 <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 18px; height: 100%; display: flex; flex-direction: column;">
                   <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-                    <span class="label" style="background: #0072f0; color: #ffffff; font-weight: 700; font-size: 11px; padding: 3px 8px; border-radius: 3px;">
+                    <span class="label" style="background: #1e3a8a; color: #ffffff; font-weight: 700; font-size: 11px; padding: 3px 8px; border-radius: 3px;">
                       <?php echo htmlspecialchars($ev['event_type']); ?>
                     </span>
                     <span style="font-size: 12px; font-weight: 600; color: #64748b;">
@@ -46,6 +46,8 @@
                 </div>
               </div>
             <?php endforeach; ?>
+          <?php else: ?>
+            <div class="col-xs-12"><div style="padding: 24px; text-align: center; color: #64748b; font-size: 13px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px;">No upcoming events or plans have been scheduled.</div></div>
           <?php endif; ?>
         </div>
       </div>

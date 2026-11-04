@@ -1828,11 +1828,6 @@ class Ci_admin_orders extends CI_Controller {
 		$cur_uid = (int)$this->session->userdata('manager_id');
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$is_backoffice = ($cur_role === 1 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('back_office'));
-		if (!$is_backoffice) {
-			redirect('manager/orders/my');
-			return;
-		}
-
 		$order = $this->db->select('O.*, A.customer as lead_customer, A.lead_id as lead_code, A.poc, A.contact1')
 			->from('ci_orders O')
 			->join('ci_leads A', 'O.lead_id = A.id', 'LEFT')
@@ -1842,6 +1837,11 @@ class Ci_admin_orders extends CI_Controller {
 		if (empty($order)) {
 			$this->session->set_flashdata('error_message', 'Order not found.');
 			redirect('manager/orders/followups');
+			return;
+		}
+
+		if (!$is_backoffice && (int)$order['created_by'] !== $cur_uid && (int)$order['assigned_to'] !== $cur_uid) {
+			redirect('manager/orders/my');
 			return;
 		}
 
@@ -1857,7 +1857,7 @@ class Ci_admin_orders extends CI_Controller {
 				'operational_instructions' => $f_remark,
 				'updated_at' => date('Y-m-d H:i:s')
 			);
-			if (!empty($f_status)) {
+			if (!empty($f_status) && in_array($f_status, array('Approved', 'In Progress', 'Under Review', 'Completed', 'Fulfilled', 'Sales', 'Rejected', 'Lost', 'Cancelled', 'Follow Up', 'Onboarding', 'Pending Sales Approval'), true)) {
 				$update_order['status'] = $f_status;
 			}
 			$this->db->where('id', $order_id)->update('ci_orders', $update_order);
@@ -1872,9 +1872,44 @@ class Ci_admin_orders extends CI_Controller {
 				'followup_result' => !empty($f_status) ? $f_status : 'Followup Added'
 			);
 			$this->db->insert('ci_followup', $followup_data);
-
+			$now = date('Y-m-d H:i:s');
+			$cur_name = (string)$this->session->userdata('manager_name');
+			$m_date = trim((string)$this->input->post('m_date'));
+			$m_time = trim((string)$this->input->post('m_time'));
+			$m_remark = trim((string)$this->input->post('m_remark'));
+			if (!empty($m_date)) {
+				$this->db->insert('ci_order_history', array(
+					'order_id' => $order_id,
+					'action' => 'meeting_scheduled',
+					'notes' => "Meeting scheduled on {$m_date} {$m_time}" . (!empty($m_remark) ? " - {$m_remark}" : ''),
+					'action_by' => $cur_uid,
+					'action_by_name' => $cur_name,
+					'created_at' => $now
+				));
+				if (!empty($order['lead_id'])) {
+					$this->db->insert('ci_meetings', array(
+						'lead_id' => (int)$order['lead_id'],
+						'user_id' => $cur_uid,
+						'm_date' => db_date($m_date),
+						'm_time' => !empty($m_time) ? $m_time : '10:00:00',
+						'm_remark' => !empty($m_remark) ? $m_remark : 'Order Meeting',
+						'created' => $now
+					));
+				}
+			}
+			if (!empty($f_remark)) {
+				$this->db->insert('ci_order_history', array(
+					'order_id' => $order_id,
+					'action' => 'followup',
+					'notes' => $f_remark . (!empty($f_date) ? " (Next Follow-up: {$f_date} {$f_time})" : ''),
+					'action_by' => $cur_uid,
+					'action_by_name' => $cur_name,
+					'created_at' => $now
+				));
+			}
 			$this->session->set_flashdata('message', 'Follow-up recorded successfully.');
-			redirect('manager/orders/followups');
+			$back = trim((string)$this->input->post('return_to'));
+			redirect(in_array($back, array('manager/orders/followups', 'manager/orders/open', 'manager/orders/my', 'manager/orders', 'manager/team/orders'), true) ? $back : 'manager/orders/followups');
 			return;
 		}
 

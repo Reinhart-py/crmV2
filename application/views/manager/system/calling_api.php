@@ -5,7 +5,7 @@
     
     <div style="margin-bottom: 20px;">
       <h3 style="margin: 0; font-size: 22px; font-weight: 700; color: #0f172a;">
-        <i class="fa fa-phone-square" style="color: #2563eb; margin-right: 8px;"></i>System - Calling API Settings
+        <i class="fa fa-phone-square" style="color: #1e3a8a; margin-right: 8px;"></i>System - Calling API Settings
       </h3>
     </div>
 
@@ -78,10 +78,10 @@
 
         <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #e2e8f0; padding-top: 18px; flex-wrap: wrap; gap: 10px;">
           <button type="button" class="btn btn-default" id="btnTestConnection" style="font-weight: 600; border-radius: 6px;">
-            <i class="fa fa-bolt" style="color: #f59e0b; margin-right: 4px;"></i> Test 3CX Connection
+            <i class="fa fa-bolt" style="color: #475569; margin-right: 4px;"></i> Test 3CX Connection
           </button>
 
-          <button type="submit" class="btn btn-primary" id="btnSaveConfig" style="font-weight: 700; border-radius: 6px; background: #2563eb; border-color: #1d4ed8; padding: 8px 24px;">
+          <button type="submit" class="btn btn-primary" id="btnSaveConfig" style="font-weight: 700; border-radius: 6px; background: #1e3a8a; border-color: #1e3a8a; padding: 8px 24px;">
             <i class="fa fa-save" style="margin-right: 4px;"></i> Save 3CX Configuration
           </button>
         </div>
@@ -118,11 +118,11 @@ $(document).ready(function() {
       },
       dataType: 'json',
       success: function(res) {
-        btn.prop('disabled', false).html('<i class="fa fa-bolt" style="color: #f59e0b; margin-right: 4px;"></i> Test 3CX Connection');
+        btn.prop('disabled', false).html('<i class="fa fa-bolt" style="color: #475569; margin-right: 4px;"></i> Test 3CX Connection');
         var box = $('#testConnectionStatus');
         box.show();
         if (res.status) {
-          box.css({'background': '#ecfdf5', 'color': '#065f46', 'border': '1px solid #a7f3d0'});
+          box.css({'background': '#f8fafc', 'color': '#065f46', 'border': '1px solid #e2e8f0'});
           box.html('<i class="fa fa-check-circle"></i> ' + (res.message || 'Connection to 3CX PBX successful!'));
         } else {
           box.css({'background': '#fef2f2', 'color': '#991b1b', 'border': '1px solid #fecaca'});
@@ -130,7 +130,7 @@ $(document).ready(function() {
         }
       },
       error: function() {
-        btn.prop('disabled', false).html('<i class="fa fa-bolt" style="color: #f59e0b; margin-right: 4px;"></i> Test 3CX Connection');
+        btn.prop('disabled', false).html('<i class="fa fa-bolt" style="color: #475569; margin-right: 4px;"></i> Test 3CX Connection');
         $('#testConnectionStatus').show().css({'background': '#fef2f2', 'color': '#991b1b', 'border': '1px solid #fecaca'}).html('<i class="fa fa-times-circle"></i> Request failed. Check server network connectivity.');
       }
     });

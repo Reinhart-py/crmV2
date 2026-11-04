@@ -1,4 +1,5 @@
 <?php require_once(APPPATH . "views/manager/elements/header.php"); ?>
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-dialer.css?v=20261104_1">
 
 <style>
 html, body {
@@ -80,11 +81,11 @@ html, body {
 
 .crm-dock-btn:hover {
   background: #f2f2f7;
-  color: #0072f0;
+  color: #1e3a8a;
 }
 
 .crm-dock-btn.active {
-  background: #0072f0 !important;
+  background: #1e3a8a !important;
   color: #ffffff !important;
   box-shadow: 0 3px 12px rgba(0, 114, 240, 0.35);
 }
@@ -144,7 +145,7 @@ html, body {
 
 .dock-flyout-item:hover {
   background: #f2f2f7;
-  color: #0072f0;
+  color: #1e3a8a;
 }
 
 .apple-segmented-group {
@@ -289,7 +290,7 @@ html, body {
 
 .dialer-search-input:focus, .dialer-filter-select:focus {
   background: #ffffff;
-  border-color: #0072f0;
+  border-color: #1e3a8a;
   box-shadow: 0 0 0 3px rgba(0, 114, 240, 0.12);
 }
 
@@ -508,7 +509,7 @@ html, body {
   display: none;
   font-size: 12px;
   font-weight: 600;
-  color: #0072f0;
+  color: #1e3a8a;
   align-items: center;
   gap: 6px;
   max-width: 90%;
@@ -823,7 +824,7 @@ html, body {
     transition: all 0.14s ease;
   }
   .btn-dialer-mobile-tab.active {
-    background: #0072f0 !important;
+    background: #1e3a8a !important;
     color: #ffffff !important;
     box-shadow: 0 2px 8px rgba(0, 114, 240, 0.28) !important;
   }
@@ -922,7 +923,7 @@ html, body {
       </button>
       <div class="dock-flyout-menu" id="flyoutDatabase">
         <a href="javascript:void(0)" class="dock-flyout-item" onclick="selectDatabaseMenu('auto')">
-          <i class="fa fa-play-circle" style="margin-right:8px; color:#0072f0;"></i>
+          <i class="fa fa-play-circle" style="margin-right:8px; color:#1e3a8a;"></i>
           <span>Auto Dialer</span>
         </a>
         <a href="javascript:void(0)" class="dock-flyout-item" onclick="selectDatabaseMenu('manual')">
@@ -939,6 +940,16 @@ html, body {
       </button>
     </div>
 
+          <div class="dock-item-wrapper" id="dockWrapCampaign">
+            <button type="button" class="crm-dock-btn" id="dockBtnCampaign" title="Campaign" onclick="handleDockCampaignClick(event)">
+              <i class="fa fa-flag-o"></i>
+              <span class="dock-lbl">Campaign</span>
+            </button>
+            <div class="dock-flyout-menu" id="flyoutCampaign">
+              <a href="javascript:void(0)" class="dock-flyout-item" onclick="openCampaignView('create')"><span>Create Campaign</span></a>
+              <a href="javascript:void(0)" class="dock-flyout-item" onclick="openCampaignView('list')"><span>View Campaign</span></a>
+            </div>
+          </div>
     <div class="dock-item-wrapper">
       <button type="button" class="crm-dock-btn" id="dockBtnLogs" title="Logs" onclick="openMenuLogs()">
         <i class="fa fa-list-alt"></i>
@@ -1188,16 +1199,19 @@ html, body {
 
           <div style="display:flex; justify-content:flex-end; gap:8px;">
             <button type="button" class="btn-edit-row" onclick="backToListFromDetails()">Cancel</button>
-            <button type="button" class="btn-edit-row" style="background:#0072f0; color:#ffffff;" onclick="saveRecordDetailsForm()"><i class="fa fa-save"></i> Save</button>
+            <button type="button" class="btn-edit-row" style="background:#1e3a8a; color:#ffffff;" onclick="saveRecordDetailsForm()"><i class="fa fa-save"></i> Save</button>
           </div>
         </form>
       </div>
 
       <div id="middleViewAutoDialer" style="display:none; padding:15px; height:100%; overflow-y:auto;">
         <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:18px 20px; box-shadow:0 1px 3px rgba(0,0,0,0.04); margin-bottom:16px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
+          <div class="ad-campaign-banner" id="campaignBanner" style="display:none;">
+            <span>Dialing campaign: <strong id="campaignBannerName"></strong></span>
+            <button type="button" class="btn btn-default btn-xs" onclick="exitCampaignDialing()">Exit campaign</button>
+          </div>          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
             <h3 style="font-size:16px; font-weight:700; color:#0f172a; margin:0; letter-spacing:-0.01em;" id="dialerSetupHeading">
-              <i class="fa fa-play-circle" style="color:#0072f0; margin-right:6px;" id="dialerSetupIcon"></i> <span id="dialerSetupTitle">Auto Dialer</span>
+              <i class="fa fa-play-circle" style="color:#1e3a8a; margin-right:6px;" id="dialerSetupIcon"></i> <span id="dialerSetupTitle">Auto Dialer</span>
             </h3>
             <div style="display:flex; gap:6px;">
               <button type="button" class="btn btn-xs btn-default" onclick="selectAllAutoStages(true)" style="border-radius:6px; font-size:11px; font-weight:600; padding:4px 10px;">Select All</button>
@@ -1208,7 +1222,7 @@ html, body {
           <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(135px, 1fr)); gap:8px; margin-bottom:14px; padding:12px; background:#f8fafc; border-radius:10px; border:1px solid #f1f5f9;">
             <?php if(!empty($statuses)){ foreach($statuses as $st){ ?>
               <label style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:500; color:#334155; margin:0; cursor:pointer;">
-                <input type="checkbox" class="cbx-auto-stage" value="<?php echo (int)$st['id']; ?>" checked onchange="updateAutoDialerQueueCount()" style="margin:0; width:15px; height:15px; accent-color:#0072f0;">
+                <input type="checkbox" class="cbx-auto-stage" value="<?php echo (int)$st['id']; ?>" checked onchange="updateAutoDialerQueueCount()" style="margin:0; width:15px; height:15px; accent-color:#1e3a8a;">
                 <span><?php echo htmlspecialchars($st['status']); ?></span>
               </label>
             <?php } } ?>
@@ -1224,27 +1238,28 @@ html, body {
                 <option value="120">120 Seconds</option>
               </select>
             </div>
-            <div style="flex:1 1 240px; min-width:200px;">
-              <label style="font-size:12px; font-weight:600; color:#334155; margin-bottom:4px; display:block;">Range</label>
-              <select id="dialerRangeSelect" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px; width:100%;">
-                <option value="all" selected>All (Show All Records)</option>
-                <option value="1-50">001 - 050</option>
-                <option value="1-100">001 - 100</option>
-                <option value="101-200">101 - 200</option>
-                <option value="201-300">201 - 300</option>
-                <option value="301-400">301 - 400</option>
-                <option value="401-500">401 - 500</option>
-                <option value="501-600">501 - 600</option>
-                <option value="601-700">601 - 700</option>
-                <option value="701-800">701 - 800</option>
-                <option value="801-900">801 - 900</option>
-                <option value="901-1000">901 - 1000</option>
-                <option value="1001-1500">1001 - 1500</option>
-                <option value="1501-2000">1501 - 2000</option>
-                <option value="2001-3000">2001 - 3000</option>
-                <option value="3001-5000">3001 - 5000</option>
+            <div class="ad-range" id="wrapDialerRange">
+            <div class="ad-range-field">
+              <label for="dialerRangeFrom">Start at record</label>
+              <input type="text" id="dialerRangeFrom" class="form-control crm-numeric-only" inputmode="numeric" maxlength="7" placeholder="1">
+            </div>
+            <div class="ad-range-field">
+              <label for="dialerRangeTo">End at record</label>
+              <input type="text" id="dialerRangeTo" class="form-control crm-numeric-only" inputmode="numeric" maxlength="7" placeholder="Last">
+            </div>
+            <div class="ad-range-field ad-range-wide">
+              <label for="dialerSkipCalled">Already called records</label>
+              <select id="dialerSkipCalled" class="form-control">
+                <option value="none">Include all records</option>
+                <option value="today" selected>Skip records called today</option>
+                <option value="week">Skip records called in last 7 days</option>
+                <option value="ever">Skip records ever called</option>
               </select>
             </div>
+            <div class="ad-range-field ad-range-action">
+              <button type="button" class="btn btn-default" id="btnDialerResume" onclick="resumeDialerRange()" disabled>Resume</button>
+            </div>
+          </div>
           </div>
 
           <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; padding-top:8px; border-top:1px solid #f1f5f9;">
@@ -1255,10 +1270,10 @@ html, body {
               <button type="button" id="btnDialerBreak" class="btn btn-sm btn-default btn-dialer-break" onclick="toggleDialerBreak()" style="border-radius:8px; font-weight:600; padding:7px 16px; border:1px solid #cbd5e1;">
                 <i class="fa fa-coffee"></i> Break
               </button>
-              <button type="button" id="btnStartAutoDial" class="btn btn-sm btn-primary" onclick="startAutoDialSession()" style="background:#0072f0; border-color:#0072f0; font-weight:600; padding:7px 20px; border-radius:8px;">
+              <button type="button" id="btnStartAutoDial" class="btn btn-sm btn-primary" onclick="startAutoDialSession()" style="background:#1e3a8a; border-color:#1e3a8a; font-weight:600; padding:7px 20px; border-radius:8px;">
                 <i class="fa fa-play"></i> Start Auto Dialing
               </button>
-              <button type="button" id="btnStartManualDial" class="btn btn-sm btn-primary" onclick="startManualDialSession()" style="display:none; background:#0072f0; border-color:#0072f0; font-weight:600; padding:7px 20px; border-radius:8px;">
+              <button type="button" id="btnStartManualDial" class="btn btn-sm btn-primary" onclick="startManualDialSession()" style="display:none; background:#1e3a8a; border-color:#1e3a8a; font-weight:600; padding:7px 20px; border-radius:8px;">
                 <i class="fa fa-play"></i> Start Manual Dialing
               </button>
               <button type="button" id="btnPauseAutoDial" class="btn btn-sm btn-default" onclick="toggleAutoDialPause()" style="display:none; border-radius:8px; font-weight:600; padding:7px 16px;">
@@ -1274,9 +1289,9 @@ html, body {
           </div>
         </div>
 
-        <div id="autoDialerLiveCard"  style="display:none; background:#ffffff; border:1px solid #0072f0; border-radius:12px; padding:20px; box-shadow:0 4px 14px rgba(0,114,240,0.08);">
+        <div id="autoDialerLiveCard"  style="display:none; background:#ffffff; border:1px solid #1e3a8a; border-radius:12px; padding:20px; box-shadow:0 4px 14px rgba(0,114,240,0.08);">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <span style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#0072f0; background:#e6f1fe; padding:3px 10px; border-radius:12px;" id="autoDialProgressBadge">
+            <span style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#1e3a8a; background:#eff6ff; padding:3px 10px; border-radius:12px;" id="autoDialProgressBadge">
               Lead 1 of 0
             </span>
             <span style="font-size:12px; color:#64748b;" id="autoDialStageBadge">Stage: -</span>
@@ -1285,9 +1300,9 @@ html, body {
           <p style="font-size:14px; font-weight:600; color:#334155; margin:0 0 12px 0;" id="autoDialPhone">-</p>
           <div style="font-size:12px; color:#64748b;" id="autoDialStatusText">Preparing connection...</div>
 
-          <div id="autoDialCountdownWrap" style="display:none; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:10px 14px; margin-top:12px; align-items:center; justify-content:space-between;">
-            <div style="font-size:12px; font-weight:600; color:#166534;">
-              <i class="fa fa-clock-o"></i> Next call dialing in <strong id="autoDialCountdownNum" style="font-size:15px; color:#15803d;">60</strong>s...
+          <div id="autoDialCountdownWrap" style="display:none; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 14px; margin-top:12px; align-items:center; justify-content:space-between;">
+            <div style="font-size:12px; font-weight:600; color:#0f172a;">
+              <i class="fa fa-clock-o"></i> Next call dialing in <strong id="autoDialCountdownNum" style="font-size:15px; color:#0f172a;">60</strong>s...
             </div>
             <div style="display:flex; gap:6px;">
               <button type="button" class="btn btn-xs btn-success" onclick="triggerImmediateNextAutoLead()" style="border-radius:6px; font-weight:600;"><i class="fa fa-phone"></i> Dial Now</button>
@@ -1295,206 +1310,178 @@ html, body {
             </div>
           </div>
         </div>
-      </div><div id="middleViewManualDialer" style="display:none; padding:15px; height:100%; overflow-y:auto;">
-        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:18px 20px; box-shadow:0 1px 3px rgba(0,0,0,0.04); margin-bottom:16px;">
-          
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid #f1f5f9;">
-            <div style="display:flex; align-items:center; gap:10px;">
-              <button type="button" class="btn btn-xs btn-default" onclick="backToDialerSetup()" style="border-radius:6px; font-weight:600; padding:4px 10px; border:1px solid #cbd5e1;">
-                <i class="fa fa-arrow-left"></i> Setup
-              </button>
-              <h3 style="font-size:16px; font-weight:700; color:#0f172a; margin:0;" id="manualDetailsHeaderName">Contact Details</h3>
-              <span id="manualDialProgressBadge" style="font-size:11px; font-weight:700; color:#0072f0; background:#e6f1fe; padding:3px 10px; border-radius:12px;">Contact 0 of 0</span>
+      </div><div id="middleViewManualDialer" class="md-view" style="display:none;">
+        <div class="md-card">
+          <div class="md-bar">
+            <div class="md-bar-left">
+              <button type="button" class="md-icon-btn" onclick="backToDialerSetup()" title="Back to setup"><i class="fa fa-arrow-left"></i></button>
+              <div class="md-title-wrap">
+                <h3 class="md-title" id="manualDetailsHeaderName">Contact</h3>
+                <span class="md-progress" id="manualDialProgressBadge">Contact 0 of 0</span>
+              </div>
             </div>
-            
-            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-              <button type="button" class="btn btn-sm btn-default" onclick="prevManualLead()" title="Previous Contact" style="border-radius:6px; height:32px; padding:4px 10px; border:1px solid #cbd5e1;">
-                <i class="fa fa-chevron-left"></i>
-              </button>
-              <button type="button" class="btn btn-sm btn-warning" onclick="skipManualLead()" title="Skip to next contact" style="background:#f59e0b; border-color:#d97706; color:#ffffff; border-radius:6px; font-weight:600; height:32px; padding:4px 12px;">
-                <i class="fa fa-forward"></i> Skip
-              </button>
-              <button type="button" class="btn btn-sm btn-default" onclick="saveManualRecordDetails(false)" title="Save changes" style="border-radius:6px; font-weight:600; height:32px; padding:4px 12px; border:1px solid #cbd5e1;">
-                <i class="fa fa-save"></i> Save
-              </button>
-              <button type="button" class="btn btn-sm btn-success" onclick="saveAndNextManualLead()" title="Save details and call next contact" style="background:#16a34a; border-color:#16a34a; color:#ffffff; border-radius:6px; font-weight:600; height:32px; padding:4px 14px;">
-                <i class="fa fa-arrow-right"></i> Save &amp; Next
-              </button>
-              <button type="button" class="btn btn-sm btn-primary" onclick="dialActiveManualContact()" title="Dial active contact number" style="background:#0072f0; border-color:#0072f0; border-radius:6px; font-weight:600; height:32px; padding:4px 14px;">
-                <i class="fa fa-phone"></i> Call Now
-              </button>
-              <button type="button" class="btn btn-sm btn-default btn-dialer-break" onclick="toggleDialerBreak()" style="border-radius:6px; font-weight:600; height:32px; padding:4px 12px; border:1px solid #cbd5e1;">
-                <i class="fa fa-coffee"></i> Break
-              </button>
+            <div class="md-actions">
+              <button type="button" class="md-btn" onclick="prevManualLead()" title="Previous contact"><i class="fa fa-chevron-left"></i></button>
+              <button type="button" class="md-btn" onclick="newBlankManualContact()" title="Start a blank record"><i class="fa fa-plus"></i> Blank</button>
+              <button type="button" class="md-btn btn-dialer-break" onclick="toggleDialerBreak()" title="Start or end a break"><i class="fa fa-coffee"></i> Break</button>
+              <button type="button" class="md-btn" onclick="skipManualLead()" title="Keep this record unchanged and move to the next contact">Keep</button>
+              <button type="button" class="md-btn" onclick="saveManualRecordDetails(false)" title="Save changes"><i class="fa fa-save"></i> Save</button>
+              <button type="button" class="md-btn md-btn-dark" onclick="saveAndNextManualLead()" title="Save and move to the next contact">Next <i class="fa fa-arrow-right"></i></button>
+              <button type="button" class="md-btn md-btn-primary" onclick="dialActiveManualContact()" title="Dial the active contact"><i class="fa fa-phone"></i> Call Now</button>
             </div>
           </div>
 
-          <form id="formManualDetails">
+          <form id="formManualDetails" class="md-form">
             <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
             <input type="hidden" name="lead_id" id="manualEditLeadId" value="0">
             <input type="hidden" name="call_log_id" id="manualEditCallLogId" value="0">
             <input type="hidden" name="call_duration" id="manualEditCallDuration" value="0">
 
-            <div style="background:#f8fafc; border:1px solid #f1f5f9; border-radius:10px; padding:14px; margin-bottom:14px;">
-              <h5 style="margin:0 0 10px 0; font-size:12px; font-weight:700; text-transform:uppercase; color:#475569; letter-spacing:0.5px;">1. Client &amp; Contact Information</h5>
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="form-group" style="margin-bottom:12px;">
-                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Company Name</label>
-                    <input type="text" name="customer" id="manualEditCustomer" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;">
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="form-group" style="margin-bottom:12px;">
-                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Point of Contact (POC)</label>
-                    <input type="text" name="poc" id="manualEditPoc" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;">
-                  </div>
+            <div class="md-grid">
+              <div class="md-field md-span-2">
+                <label for="manualEditCustomer">Company Name</label>
+                <input type="text" name="customer" id="manualEditCustomer" class="form-control">
+              </div>
+              <div class="md-field">
+                <label for="manualEditPoc">Point of Contact</label>
+                <input type="text" name="poc" id="manualEditPoc" class="form-control">
+              </div>
+              <div class="md-field">
+                <label for="manualEditEmail">Email</label>
+                <input type="email" name="email" id="manualEditEmail" class="form-control">
+              </div>
+              <div class="md-field">
+                <label for="manualEditContact1">Primary Phone</label>
+                <div class="md-input-group">
+                  <input type="text" name="contact1" id="manualEditContact1" class="form-control md-strong">
+                  <button type="button" class="md-dial" onclick="dialManualPhoneField('primary')" title="Dial primary phone"><i class="fa fa-phone"></i></button>
                 </div>
               </div>
-
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="form-group" style="margin-bottom:12px;">
-                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Primary Phone</label>
-                    <div style="display:flex; gap:6px;">
-                      <input type="text" name="contact1" id="manualEditContact1" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px; font-weight:600;">
-                      <button type="button" class="btn btn-default" onclick="dialManualPhoneField('primary')" title="Dial Primary Phone" style="border-radius:8px; height:36px; color:#0072f0; border:1px solid #cbd5e1;"><i class="fa fa-phone"></i></button>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="form-group" style="margin-bottom:12px;">
-                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Alt Phone</label>
-                    <div style="display:flex; gap:6px;">
-                      <input type="text" name="alt_contact" id="manualEditAltContact" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;">
-                      <button type="button" class="btn btn-default" onclick="dialManualPhoneField('alt')" title="Dial Alt Phone" style="border-radius:8px; height:36px; color:#0072f0; border:1px solid #cbd5e1;"><i class="fa fa-phone"></i></button>
-                    </div>
-                  </div>
+              <div class="md-field">
+                <label for="manualEditAltContact">Alt Phone</label>
+                <div class="md-input-group">
+                  <input type="text" name="alt_contact" id="manualEditAltContact" class="form-control">
+                  <button type="button" class="md-dial" onclick="dialManualPhoneField('alt')" title="Dial alternative phone"><i class="fa fa-phone"></i></button>
                 </div>
               </div>
-
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="form-group" style="margin-bottom:12px;">
-                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Email Address</label>
-                    <input type="email" name="email" id="manualEditEmail" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;">
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="form-group" style="margin-bottom:12px;">
-                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Location</label>
-                    <input type="text" name="location" id="manualEditLocation" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;">
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="form-group" style="margin-bottom:12px;">
-                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">DNCR Registry</label>
-                    <select name="dnd_status" id="manualEditDndStatus" class="form-control" onchange="toggleManualDncrDateRow()" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;">
-                      <option value="No">No (Clean)</option>
-                      <option value="Yes">Yes (DND Active)</option>
-                    </select>
-                  </div>
-                </div>
+              <div class="md-field">
+                <label for="manualEditLocation">Location</label>
+                <input type="text" name="location" id="manualEditLocation" class="form-control">
               </div>
-            </div>
-
-            <div style="background:#f8fafc; border:1px solid #f1f5f9; border-radius:10px; padding:14px; margin-bottom:14px;">
-              <h5 style="margin:0 0 10px 0; font-size:12px; font-weight:700; text-transform:uppercase; color:#475569; letter-spacing:0.5px;">2. Business Scope &amp; Commercials</h5>
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="form-group" style="margin-bottom:12px;">
-                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Authority</label>
-                    <select name="tl_authority" id="manualEditAuthority" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;">
-                      <option value="">Select Authority</option>
-                      <option value="DED">DED</option>
-                      <option value="DMCC">DMCC</option>
-                      <option value="SHAMS">SHAMS</option>
-                      <option value="IFZA">IFZA</option>
-                      <option value="RAKEZ">RAKEZ</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="col-md-2">
-                  <div class="form-group" style="margin-bottom:12px;">
-                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Quantity</label>
-                    <input type="number" name="qty" id="manualEditQty" value="1" min="1" class="form-control" oninput="calculateManualMrrTotal()" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;">
-                  </div>
-                </div>
-                <div class="col-md-2">
-                  <div class="form-group" style="margin-bottom:12px;">
-                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">MRC</label>
-                    <input type="text" name="mrc" id="manualEditMrc" class="form-control" oninput="calculateManualMrrTotal()" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;">
-                  </div>
-                </div>
-                <div class="col-md-2">
-                  <div class="form-group" style="margin-bottom:12px;">
-                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Calculated MRR</label>
-                    <input type="text" name="mrr" id="manualEditMrr" readonly class="form-control" style="background:#f1f5f9; border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px; font-weight:700; color:#16a34a;">
-                  </div>
-                </div>
+              <div class="md-field">
+                <label for="manualEditDndStatus">DNCR Registry</label>
+                <select name="dnd_status" id="manualEditDndStatus" class="form-control" onchange="toggleManualDncrDateRow()">
+                  <option value="No">No (Clean)</option>
+                  <option value="Yes">Yes (DND Active)</option>
+                </select>
               </div>
-            </div>
-
-            <div style="background:#f8fafc; border:1px solid #f1f5f9; border-radius:10px; padding:14px; margin-bottom:14px;">
-              <h5 style="margin:0 0 10px 0; font-size:12px; font-weight:700; text-transform:uppercase; color:#475569; letter-spacing:0.5px;">3. Status, Follow-Up &amp; Remarks</h5>
-              <div class="row">
-                <div class="col-md-4">
-                  <div class="form-group" style="margin-bottom:12px;">
-                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Call / Lead Status</label>
-                    <select name="status" id="manualEditStatus" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;">
-                      <?php if(!empty($statuses)){
-                        foreach($statuses as $st){ ?>
-                          <option value="<?php echo $st['id']; ?>"><?php echo htmlspecialchars($st['status']); ?></option>
-                      <?php } } ?>
-                    </select>
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="form-group" style="margin-bottom:12px;">
-                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Next Follow-up Date</label>
-                    <input type="text" name="followup_date" id="manualEditNextFollowup" class="form-control datepicker" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;">
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="form-group" style="margin-bottom:12px;">
-                    <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Follow-up Time</label>
-                    <input type="text" name="followup_time" id="manualEditNextFollowupTime" class="form-control" value="11:00 AM" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;">
-                  </div>
-                </div>
+              <div class="md-field">
+                <label for="manualEditAuthority">Authority</label>
+                <select name="tl_authority" id="manualEditAuthority" class="form-control">
+                  <option value="">Select Authority</option>
+                  <option value="DED">DED</option>
+                  <option value="DMCC">DMCC</option>
+                  <option value="SHAMS">SHAMS</option>
+                  <option value="IFZA">IFZA</option>
+                  <option value="RAKEZ">RAKEZ</option>
+                  <option value="Other">Other</option>
+                </select>
               </div>
-
-              <div class="form-group" style="margin-bottom:0;">
-                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Call Remark / Discussion Notes</label>
-                <textarea name="remark" id="manualEditRemark" rows="3" class="form-control" placeholder="Discussion notes, commitments, objections..." style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px;"></textarea>
+              <div class="md-field">
+                <label for="manualEditQty">Quantity</label>
+                <input type="number" name="qty" id="manualEditQty" value="1" min="1" class="form-control" oninput="calculateManualMrrTotal()">
               </div>
-            </div>
-
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; padding-top:8px;">
-              <div style="display:flex; gap:8px;">
-                <button type="button" class="btn btn-sm btn-default" onclick="newBlankManualContact()" style="border-radius:6px; border:1px solid #cbd5e1;">
-                  <i class="fa fa-user-plus"></i> Blank Record
-                </button>
-                <button type="button" class="btn btn-sm btn-default" onclick="prevManualLead()" style="border-radius:6px; border:1px solid #cbd5e1;">
-                  <i class="fa fa-chevron-left"></i> Previous
-                </button>
+              <div class="md-field">
+                <label for="manualEditMrc">MRC</label>
+                <input type="text" name="mrc" id="manualEditMrc" class="form-control" inputmode="decimal" oninput="calculateManualMrrTotal()">
               </div>
-              <div style="display:flex; gap:8px;">
-                <button type="button" class="btn btn-sm btn-warning" onclick="skipManualLead()" style="background:#f59e0b; border-color:#d97706; color:#ffffff; font-weight:600; border-radius:6px; padding:6px 14px;">
-                  <i class="fa fa-forward"></i> Skip
-                </button>
-                <button type="button" class="btn btn-sm btn-default" onclick="saveManualRecordDetails(false)" style="font-weight:600; border-radius:6px; padding:6px 14px; border:1px solid #cbd5e1;">
-                  <i class="fa fa-save"></i> Save
-                </button>
-                <button type="button" class="btn btn-sm btn-success" onclick="saveAndNextManualLead()" style="background:#16a34a; border-color:#16a34a; color:#ffffff; font-weight:600; border-radius:6px; padding:6px 16px;">
-                  <i class="fa fa-arrow-right"></i> Save &amp; Next
-                </button>
-                <button type="button" class="btn btn-sm btn-primary" onclick="dialActiveManualContact()" style="background:#0072f0; border-color:#0072f0; font-weight:600; border-radius:6px; padding:6px 16px;">
-                  <i class="fa fa-phone"></i> Call Now
-                </button>
+              <div class="md-field">
+                <label for="manualEditMrr">Calculated MRR</label>
+                <input type="text" name="mrr" id="manualEditMrr" readonly class="form-control md-readonly">
+              </div>
+              <div class="md-field">
+                <label for="manualEditStatus">Call / Lead Status</label>
+                <select name="status" id="manualEditStatus" class="form-control">
+                  <?php if(!empty($statuses)){
+                    foreach($statuses as $st){ ?>
+                      <option value="<?php echo $st['id']; ?>"><?php echo htmlspecialchars($st['status']); ?></option>
+                  <?php } } ?>
+                </select>
+              </div>
+              <div class="md-field">
+                <label for="manualEditNextFollowup">Next Follow-up Date</label>
+                <input type="text" name="followup_date" id="manualEditNextFollowup" class="form-control datepicker">
+              </div>
+              <div class="md-field">
+                <label for="manualEditNextFollowupTime">Follow-up Time</label>
+                <input type="text" name="followup_time" id="manualEditNextFollowupTime" class="form-control" value="11:00 AM">
+              </div>
+              <div class="md-field md-span-full">
+                <label for="manualEditRemark">Call Remark / Discussion Notes</label>
+                <textarea name="remark" id="manualEditRemark" rows="2" class="form-control" placeholder="Discussion notes, commitments, objections"></textarea>
               </div>
             </div>
           </form>
+        </div>
+      </div>
+      <div id="middleViewCampaignForm" class="cmp-view" style="display:none;">
+        <form id="formCampaign" class="cmp-card" onsubmit="saveCampaign(); return false;" autocomplete="off">
+          <input type="hidden" name="id" id="campaignId" value="0">
+          <div class="cmp-card-head">
+            <h3 id="campaignFormTitle">New campaign</h3>
+            <button type="button" class="btn btn-default btn-sm" onclick="openCampaignView('list')">View campaigns</button>
+          </div>
+          <div class="cmp-alert" id="campaignFormError" style="display:none;"></div>
+          <div class="cmp-section-label">Campaign</div>
+          <div class="cmp-grid">
+            <div class="cmp-field cmp-span-2"><label for="campaignName">Campaign name *</label><input type="text" id="campaignName" name="name" class="form-control" maxlength="150" required></div>
+            <div class="cmp-field"><label for="campaignReference">Reference number</label><input type="text" id="campaignReference" name="reference_no" class="form-control crm-numeric-only" inputmode="numeric" maxlength="20" placeholder="Up to 20 digits"></div>
+            <div class="cmp-field"><label for="campaignStatus">Status</label><select id="campaignStatus" name="status" class="form-control"><option value="Active">Active</option><option value="Paused">Paused</option><option value="Completed">Completed</option></select></div>
+            <div class="cmp-field cmp-span-full"><label for="campaignDescription">Description</label><textarea id="campaignDescription" name="description" class="form-control" rows="2"></textarea></div>
+          </div>
+          <div class="cmp-section-label">Target segment</div>
+          <div class="cmp-grid">
+            <div class="cmp-field"><label for="campaignCountry">Country</label><select id="campaignCountry" name="country" class="form-control" onchange="loadCampaignStates(this.value)"><option value="">Any country</option><?php if (!empty($countries)) { foreach ($countries as $co) { ?><option value="<?php echo (int)$co['id']; ?>"><?php echo htmlspecialchars($co['name']); ?></option><?php } } ?></select></div>
+            <div class="cmp-field"><label for="campaignState">State / Region</label><select id="campaignState" name="state" class="form-control"><option value="">Any state / region</option></select></div>
+            <div class="cmp-field"><label for="campaignCity">City</label><input type="text" id="campaignCity" name="city" class="form-control" maxlength="150" placeholder="Any city"></div>
+            <div class="cmp-field"><label for="campaignIndustry">Industry</label><select id="campaignIndustry" name="industry_category" class="form-control"><option value="">Any industry</option><?php if (!empty($business_categories)) { foreach ($business_categories as $bc) { ?><option value="<?php echo htmlspecialchars($bc['title']); ?>"><?php echo htmlspecialchars($bc['title']); ?></option><?php } } ?></select></div>
+            <div class="cmp-field"><label for="campaignPipeline">Records</label><select id="campaignPipeline" name="pipeline_type" class="form-control"><option value="database">Database</option><option value="lead">Leads</option><option value="all">Database and Leads</option></select></div>
+            <div class="cmp-field"><label for="campaignDbCategory">Database category</label><select id="campaignDbCategory" name="database_category" class="form-control"><option value="">Any category</option><?php if (!empty($database_categories)) { foreach ($database_categories as $dc) { ?><option value="<?php echo htmlspecialchars($dc['title']); ?>"><?php echo htmlspecialchars($dc['title']); ?></option><?php } } ?></select></div>
+            <div class="cmp-field"><label for="campaignDataSource">Data source</label><select id="campaignDataSource" name="data_source" class="form-control"><option value="">Any source</option><?php if (!empty($data_sources)) { foreach ($data_sources as $ds) { ?><option value="<?php echo htmlspecialchars($ds['data_source']); ?>"><?php echo htmlspecialchars($ds['data_source']); ?></option><?php } } ?></select></div>
+            <div class="cmp-field"><label for="campaignDailyTarget">Daily call target</label><input type="text" id="campaignDailyTarget" name="daily_target" class="form-control crm-numeric-only" inputmode="numeric" maxlength="6" placeholder="Optional"></div>
+            <div class="cmp-field cmp-span-full"><label>Lead stages</label>
+              <div class="cmp-checks"><?php if (!empty($statuses)) { foreach ($statuses as $st) { ?><label><input type="checkbox" class="cbx-campaign-stage" name="status_ids[]" value="<?php echo (int)$st['id']; ?>"> <?php echo htmlspecialchars($st['status']); ?></label><?php } } ?></div>
+              <div class="cmp-hint">Leave all unchecked to include every stage.</div>
+            </div>
+          </div>
+          <div class="cmp-section-label">Participation and schedule</div>
+          <div class="cmp-grid">
+            <div class="cmp-field cmp-span-2"><label for="campaignParticipants">Participants</label><select id="campaignParticipants" name="participants[]" class="form-control" multiple size="5"><?php if (!empty($campaign_users)) { foreach ($campaign_users as $cu) { ?><option value="<?php echo (int)$cu['id']; ?>"><?php echo htmlspecialchars($cu['name']); ?></option><?php } } ?></select><div class="cmp-hint">Each participant dials the matching records allotted to them. Hold Ctrl to select several.</div></div>
+            <div class="cmp-field"><label for="campaignStart">Start date</label><input type="date" id="campaignStart" name="start_date" class="form-control"></div>
+            <div class="cmp-field"><label for="campaignEnd">End date</label><input type="date" id="campaignEnd" name="end_date" class="form-control"></div>
+          </div>
+          <div class="cmp-foot">
+            <button type="button" class="btn btn-default" onclick="resetCampaignForm()">Reset</button>
+            <button type="submit" class="btn btn-primary" id="btnSaveCampaign">Save campaign</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="middleViewCampaignList" class="cmp-view" style="display:none;">
+        <div class="cmp-card">
+          <div class="cmp-card-head">
+            <h3>Campaigns</h3>
+            <div class="cmp-head-actions">
+              <select id="campaignStatusFilter" class="form-control input-sm" onchange="renderCampaignList()">
+                <option value="">All statuses</option>
+                <option value="Active">Active</option>
+                <option value="Paused">Paused</option>
+                <option value="Completed">Completed</option>
+              </select>
+              <button type="button" class="btn btn-primary btn-sm" onclick="openCampaignView('create')">Create campaign</button>
+            </div>
+          </div>
+          <div id="campaignListBody"></div>
         </div>
       </div>
       <div id="middleViewLogs" style="display:none;">
@@ -1508,7 +1495,7 @@ html, body {
             <div class="sheet-stat-lbl">Connected</div>
           </div>
           <div class="sheet-stat-card">
-            <div class="sheet-stat-val" id="logStatNewCalls" style="color:#0072f0;">0</div>
+            <div class="sheet-stat-val" id="logStatNewCalls" style="color:#1e3a8a;">0</div>
             <div class="sheet-stat-lbl">New Calls</div>
           </div>
           <div class="sheet-stat-card">
@@ -1818,6 +1805,8 @@ function hideAllMiddleViews() {
   $('#middleViewLogs').hide();
   $('#middleViewAutoDialer').hide();
   $('#middleViewManualDialer').hide();
+  $('#middleViewCampaignForm').hide();
+  $('#middleViewCampaignList').hide();
 }
 
 var audioCtx = null;
@@ -2025,6 +2014,10 @@ function openManualDialerMode() {
 }
 
 var dialerMode = 'auto';
+var activeCampaign = null;
+var dialerQueueKey = '';
+var dialerResumePosition = 0;
+var dialerQueueRequestSeq = 0;
 var isOnBreak = false;
 
 function openAutoDialerMode() {
@@ -2103,6 +2096,7 @@ function openFollowupAllFeaturesMode() {
 
 function backToDialerSetup() {
   hideAllMiddleViews();
+  $('#middleAreaTitle').text(dialerMode === 'manual' ? 'Manual Dialer' : (dialerMode === 'leads' ? 'Leads Dialer' : 'Auto Dialer'));
   $('#middleViewAutoDialer').show();
   openMiddleArea();
 }
@@ -2115,6 +2109,7 @@ function startManualDialSession() {
   manualDialerQueue = autoDialerQueue.slice();
   manualDialerIndex = 0;
   hideAllMiddleViews();
+  $('#middleAreaTitle').text('');
   $('#middleViewManualDialer').show();
   displayManualLead(0);
 }
@@ -2136,10 +2131,10 @@ function toggleDialerBreak() {
           clearInterval(autoDialerCountdownInterval);
           autoDialerCountdownInterval = null;
         }
-        $('.btn-dialer-break').html('<i class="fa fa-coffee" style="color:#d97706;"></i> <strong>On Break</strong>').css({
-          'background': '#fef3c7',
-          'border-color': '#f59e0b',
-          'color': '#92400e'
+        $('.btn-dialer-break').html('<i class="fa fa-coffee" style="color:#475569;"></i> <strong>On Break</strong>').css({
+          'background': '#f8fafc',
+          'border-color': '#475569',
+          'color': '#334155'
         });
         showToast('Break started - Break status recorded in Admin Logs');
       } else {
@@ -2163,6 +2158,294 @@ function selectAllAutoStages(check) {
   updateAutoDialerQueueCount();
 }
 
+function saveDialerProgress(lead) {
+  if (!lead || !lead.queue_position || !dialerQueueKey) {
+    return;
+  }
+  $.ajax({
+    url: '<?php echo base_url(); ?>manager/calls/ajax_save_progress',
+    type: 'POST',
+    data: { queue_key: dialerQueueKey, position: lead.queue_position, lead_id: lead.id },
+    dataType: 'json'
+  });
+}
+
+function resumeDialerRange() {
+  if (dialerResumePosition > 0) {
+    $('#dialerRangeFrom').val(dialerResumePosition + 1);
+    updateAutoDialerQueueCount();
+  }
+}
+
+function restrictNumericInput(el) {
+  var max = parseInt(el.getAttribute('maxlength'), 10) || 20;
+  var clean = String(el.value || '').replace(/\D/g, '').slice(0, max);
+  if (clean !== el.value) {
+    el.value = clean;
+  }
+}
+
+$(document).on('input', '.crm-numeric-only', function() {
+  restrictNumericInput(this);
+});
+$(document).on('keypress', '.crm-numeric-only', function(e) {
+  if (e.which && (e.which < 48 || e.which > 57)) {
+    e.preventDefault();
+  }
+});
+$(document).on('paste', '.crm-numeric-only', function() {
+  var el = this;
+  setTimeout(function() { restrictNumericInput(el); }, 0);
+});
+
+var dialerRangeTimer = null;
+$(document).on('input change', '#dialerRangeFrom, #dialerRangeTo, #dialerSkipCalled', function() {
+  clearTimeout(dialerRangeTimer);
+  dialerRangeTimer = setTimeout(updateAutoDialerQueueCount, 350);
+});
+
+$.ajaxPrefilter(function(options) {
+  if (!activeCampaign || !options.type || options.type.toUpperCase() !== 'POST') {
+    return;
+  }
+  if (String(options.url).indexOf('manager/calls/') === -1 || typeof options.data !== 'string') {
+    return;
+  }
+  if (options.data.indexOf('campaign_id=') === -1) {
+    options.data += (options.data.length ? '&' : '') + 'campaign_id=' + encodeURIComponent(activeCampaign.id);
+  }
+});
+
+var campaignCache = [];
+
+function campaignEscape(v) {
+  return $('<div>').text(v == null ? '' : String(v)).html();
+}
+
+function openCampaignView(view) {
+  closeAllMobileFlyouts();
+  $('.crm-dock-btn').removeClass('active');
+  $('#dockBtnCampaign').addClass('active');
+  $('#subnavFollowup').hide();
+  $('#subnavLogsPeriod').hide();
+  hideAllMiddleViews();
+  if (view === 'create') {
+    $('#middleAreaTitle').text('Create Campaign');
+    resetCampaignForm();
+    $('#middleViewCampaignForm').show();
+  } else {
+    $('#middleAreaTitle').text('Campaigns');
+    $('#middleViewCampaignList').show();
+    loadCampaignList();
+  }
+  openMiddleArea();
+  if (window.innerWidth <= 991) {
+    updateMobileWorkspaceTitle(view === 'create' ? 'Create Campaign' : 'Campaigns');
+    switchMobileDialerView('workspace');
+  }
+}
+
+function handleDockCampaignClick(e) {
+  if (window.innerWidth <= 991) {
+    if (e && e.stopPropagation) e.stopPropagation();
+    closeAllMobileFlyouts('flyoutCampaign');
+    $('#flyoutCampaign').toggleClass('show-mobile-flyout');
+  } else {
+    openCampaignView('list');
+  }
+}
+
+function resetCampaignForm() {
+  var form = document.getElementById('formCampaign');
+  if (!form) { return; }
+  form.reset();
+  $('#campaignId').val('0');
+  $('#campaignState').html('<option value="">Any state / region</option>');
+  $('#campaignFormTitle').text('New campaign');
+  $('#campaignFormError').hide().text('');
+}
+
+function loadCampaignStates(countryId, selected) {
+  var $state = $('#campaignState');
+  $state.html('<option value="">Any state / region</option>');
+  if (!countryId) { return; }
+  $.ajax({
+    url: '<?php echo base_url(); ?>ci_admin_user/get_state',
+    type: 'POST',
+    data: { c_id: countryId },
+    success: function(html) {
+      var $tmp = $('<select>').html(html);
+      $tmp.find('option').each(function() {
+        var v = $(this).attr('value');
+        if (v) {
+          $state.append($('<option>').val(v).text($(this).text()));
+        }
+      });
+      if (selected) { $state.val(String(selected)); }
+    }
+  });
+}
+
+function saveCampaign() {
+  var $err = $('#campaignFormError');
+  $err.hide().text('');
+  if (!$.trim($('#campaignName').val())) {
+    $err.text('Campaign name is required').show();
+    return;
+  }
+  var $btn = $('#btnSaveCampaign').prop('disabled', true);
+  $.ajax({
+    url: '<?php echo base_url(); ?>manager/calls/ajax_save_campaign',
+    type: 'POST',
+    data: $('#formCampaign').serialize(),
+    dataType: 'json',
+    success: function(res) {
+      if (res && res.status) {
+        showToast(res.message || 'Campaign saved');
+        openCampaignView('list');
+      } else {
+        $err.text(res && res.message ? res.message : 'Unable to save campaign').show();
+      }
+    },
+    error: function() {
+      $err.text('Unable to save campaign').show();
+    },
+    complete: function() {
+      $btn.prop('disabled', false);
+    }
+  });
+}
+
+function editCampaign(id) {
+  $.getJSON('<?php echo base_url(); ?>manager/calls/ajax_get_campaign', { id: id }, function(res) {
+    if (!res || !res.status) {
+      showToast(res && res.message ? res.message : 'Campaign not found');
+      return;
+    }
+    var c = res.campaign;
+    openCampaignView('create');
+    $('#middleAreaTitle').text('Edit Campaign');
+    $('#campaignFormTitle').text('Edit campaign');
+    $('#campaignId').val(c.id);
+    $('#campaignName').val(c.name);
+    $('#campaignReference').val(c.reference_no || '');
+    $('#campaignDescription').val(c.description || '');
+    $('#campaignCountry').val(String(c.country || ''));
+    loadCampaignStates(c.country, c.state);
+    $('#campaignCity').val(c.city || '');
+    $('#campaignIndustry').val(c.industry_category || '');
+    $('#campaignDbCategory').val(c.database_category || '');
+    $('#campaignDataSource').val(c.data_source || '');
+    $('#campaignPipeline').val(c.pipeline_type || 'database');
+    $('#campaignDailyTarget').val(parseInt(c.daily_target, 10) > 0 ? c.daily_target : '');
+    $('#campaignStart').val(c.start_date || '');
+    $('#campaignEnd').val(c.end_date || '');
+    $('#campaignStatus').val(c.status || 'Active');
+    var stages = String(c.status_ids || '').split(',');
+    $('.cbx-campaign-stage').each(function() { $(this).prop('checked', stages.indexOf($(this).val()) !== -1); });
+    var people = String(c.participants || '').split(',');
+    $('#campaignParticipants option').each(function() { $(this).prop('selected', people.indexOf($(this).val()) !== -1); });
+  });
+}
+
+function loadCampaignList() {
+  var $body = $('#campaignListBody');
+  $body.html('<div class="cmp-empty">Loading campaigns...</div>');
+  $.getJSON('<?php echo base_url(); ?>manager/calls/ajax_campaigns', function(res) {
+    campaignCache = (res && res.campaigns) ? res.campaigns : [];
+    renderCampaignList();
+  }).fail(function() {
+    $body.html('<div class="cmp-empty">Unable to load campaigns</div>');
+  });
+}
+
+function renderCampaignList() {
+  var $body = $('#campaignListBody');
+  var filter = $('#campaignStatusFilter').val() || '';
+  var list = campaignCache.filter(function(c) { return !filter || c.status === filter; });
+  if (!list.length) {
+    $body.html('<div class="cmp-empty">No campaigns found. Create a campaign to start calling a targeted segment.</div>');
+    return;
+  }
+  var html = '';
+  list.forEach(function(c) {
+    var s = c.stats || {};
+    var filters = [];
+    if (c.country_name) { filters.push(c.country_name); }
+    if (c.state_name) { filters.push(c.state_name); }
+    if (c.city) { filters.push(c.city); }
+    if (c.industry_category) { filters.push(c.industry_category); }
+    if (c.database_category) { filters.push(c.database_category); }
+    if (c.data_source) { filters.push(c.data_source); }
+    var pipeline = c.pipeline_type === 'lead' ? 'Leads' : (c.pipeline_type === 'all' ? 'Database and Leads' : 'Database');
+    var dates = (c.start_date || c.end_date) ? ((c.start_date || 'Open') + ' to ' + (c.end_date || 'Open')) : 'No date limit';
+    html += '<div class="cmp-row" data-id="' + c.id + '">' +
+      '<div class="cmp-main">' +
+        '<div class="cmp-name">' + campaignEscape(c.name) + (c.reference_no ? ' <span class="cmp-ref">#' + campaignEscape(c.reference_no) + '</span>' : '') + '</div>' +
+        '<div class="cmp-meta">' + campaignEscape(pipeline) + ' &middot; ' + campaignEscape(filters.length ? filters.join(', ') : 'All records') + '</div>' +
+        '<div class="cmp-meta">' + campaignEscape((c.participant_names || []).join(', ') || 'No participants') + ' &middot; ' + campaignEscape(dates) + '</div>' +
+      '</div>' +
+      '<div class="cmp-progress">' +
+        '<div class="cmp-progress-top"><span>' + (s.leads_called || 0) + ' of ' + (s.total_records || 0) + ' called</span><span>' + (s.progress || 0) + '%</span></div>' +
+        '<div class="cmp-bar"><span style="width:' + (s.progress || 0) + '%"></span></div>' +
+        '<div class="cmp-meta">' + (s.calls || 0) + ' calls &middot; ' + (s.connected || 0) + ' connected &middot; ' + (s.calls_today || 0) + ' today' + (parseInt(c.daily_target, 10) > 0 ? ' / ' + c.daily_target + ' target' : '') + '</div>' +
+      '</div>' +
+      '<div class="cmp-status cmp-status-' + String(c.status).toLowerCase() + '">' + campaignEscape(c.status) + '</div>' +
+      '<div class="cmp-actions">' +
+        '<button type="button" class="btn btn-default btn-sm" onclick="toggleCampaignDetails(' + c.id + ')">Details</button>' +
+        (c.can_manage ? '<button type="button" class="btn btn-default btn-sm" onclick="editCampaign(' + c.id + ')">Edit</button>' : '') +
+        (c.status === 'Active' ? '<button type="button" class="btn btn-primary btn-sm" onclick="startCampaignDialing(' + c.id + ')">Dial</button>' : '') +
+      '</div>' +
+      '<div class="cmp-details" id="cmpDetails' + c.id + '" style="display:none;">' + renderCampaignDetails(c) + '</div>' +
+    '</div>';
+  });
+  $body.html(html);
+}
+
+function renderCampaignDetails(c) {
+  var s = c.stats || {};
+  var rows = (s.per_user || []).map(function(u) {
+    return '<tr><td>' + campaignEscape(u.name || ('User ' + u.user_id)) + '</td><td>' + u.calls + '</td><td>' + u.leads_called + '</td></tr>';
+  }).join('');
+  return (c.description ? '<p class="cmp-desc">' + campaignEscape(c.description) + '</p>' : '') +
+    '<div class="cmp-meta">Created by ' + campaignEscape(c.created_by_name || '-') + (s.last_call ? ' &middot; Last call ' + campaignEscape(s.last_call) : '') + '</div>' +
+    '<table class="table table-condensed cmp-table"><thead><tr><th>Participant</th><th>Calls</th><th>Records called</th></tr></thead><tbody>' +
+    (rows || '<tr><td colspan="3">No calls logged for this campaign yet</td></tr>') + '</tbody></table>';
+}
+
+function toggleCampaignDetails(id) {
+  $('#cmpDetails' + id).toggle();
+}
+
+function startCampaignDialing(id) {
+  var c = null;
+  campaignCache.forEach(function(item) { if (parseInt(item.id, 10) === parseInt(id, 10)) { c = item; } });
+  if (!c) { return; }
+  activeCampaign = { id: parseInt(c.id, 10), name: c.name };
+  $('#dialerRangeFrom').val('');
+  $('#dialerRangeTo').val('');
+  if (c.pipeline_type === 'lead') {
+    openLeadsDialerMode();
+  } else {
+    openAutoDialerMode();
+  }
+  updateCampaignBanner();
+}
+
+function exitCampaignDialing() {
+  activeCampaign = null;
+  updateCampaignBanner();
+  updateAutoDialerQueueCount();
+}
+
+function updateCampaignBanner() {
+  if (activeCampaign) {
+    $('#campaignBannerName').text(activeCampaign.name);
+    $('#campaignBanner').css('display', 'flex');
+  } else {
+    $('#campaignBanner').hide();
+  }
+}
 function updateAutoDialerQueueCount() {
   var selectedStages = [];
   $('.cbx-auto-stage:checked').each(function() {
@@ -2179,23 +2462,15 @@ function updateAutoDialerQueueCount() {
   } else if (dialerMode === 'followup') {
     qType = 'followup';
   }
-  var rangeVal = $('#dialerRangeSelect').val() || 'all';
-  var rFrom = '';
-  var rTo = '';
-  if (rangeVal && rangeVal !== 'all') {
-    if (rangeVal.indexOf('-') > -1) {
-      var parts = rangeVal.split('-');
-      rFrom = parseInt(parts[0], 10) || 0;
-      rTo = parseInt(parts[1], 10) || 0;
-    } else {
-      var num = parseInt(rangeVal, 10);
-      if (!isNaN(num) && num > 0) {
-        rFrom = 1;
-        rTo = num;
-      }
-    }
+  var rFrom = parseInt($('#dialerRangeFrom').val(), 10) || 1;
+  var rTo = parseInt($('#dialerRangeTo').val(), 10) || 0;
+  if (rTo > 0 && rTo < rFrom) {
+    $('#autoDialerQueueCount').text('End record must be greater than or equal to the start record');
+    autoDialerQueue = [];
+    return;
   }
 
+  var requestId = ++dialerQueueRequestSeq;
   $('#autoDialerQueueCount').html('<i class="fa fa-spinner fa-spin"></i> Calculating queue...');
   $.ajax({
     url: '<?php echo base_url(); ?>manager/calls/ajax_get_queue',
@@ -2204,19 +2479,36 @@ function updateAutoDialerQueueCount() {
       type: qType,
       filter: 'all',
       status: selectedStages.join(','),
-      range: rangeVal,
+      positional: 1,
       range_from: rFrom,
-      range_to: rTo
+      range_to: rTo,
+      skip_called: $('#dialerSkipCalled').val() || 'none',
+      campaign_id: activeCampaign ? activeCampaign.id : 0
     },
     dataType: 'json',
     success: function(res) {
+      if (requestId !== dialerQueueRequestSeq) {
+        return;
+      }
       if (res && res.status && res.leads) {
         autoDialerQueue = res.leads;
-        var suffix = (rangeVal && rangeVal !== 'all') ? (' (Range: ' + rangeVal + ')') : '';
-        $('#autoDialerQueueCount').text(res.leads.length + ' records ready to dial' + suffix);
+        dialerQueueKey = res.queue_key || '';
+        dialerResumePosition = parseInt(res.resume_position, 10) || 0;
+        var total = parseInt(res.total_available, 10) || 0;
+        var summary = res.leads.length + ' records ready';
+        if (total > 0) {
+          summary += ' (records ' + res.range_from + '-' + res.range_to + ' of ' + total + ')';
+        }
+        if (res.skipped_called > 0) {
+          summary += ', ' + res.skipped_called + ' already called skipped';
+        }
+        $('#autoDialerQueueCount').text(summary);
+        var canResume = dialerResumePosition > 0 && dialerResumePosition < total;
+        $('#btnDialerResume').prop('disabled', !canResume).text(canResume ? ('Resume from ' + (dialerResumePosition + 1)) : 'Resume');
       } else {
         autoDialerQueue = [];
-        $('#autoDialerQueueCount').text('0 records in selected criteria');
+        $('#autoDialerQueueCount').text(res && res.message ? res.message : '0 records in selected criteria');
+        $('#btnDialerResume').prop('disabled', true).text('Resume');
       }
     },
     error: function() {
@@ -2253,6 +2545,7 @@ function dialCurrentAutoLead() {
   }
 
   var l = autoDialerQueue[autoDialerIndex];
+  saveDialerProgress(l);
   var phone = l.phone_primary || l.contact1 || l.alt_contact || '';
   if (!phone) {
     autoDialerIndex++;
@@ -2616,7 +2909,7 @@ function renderQueueTable(leads) {
 
     html += '<td>';
     if (p1) {
-      html += '<div><a href="javascript:void(0)" style="color:#0072f0; text-decoration:none; font-weight:600;" onclick="quickDialNumber(\'' + escapeJs(p1) + '\', ' + l.id + ')"><i class="fa fa-phone"></i> ' + escapeHtml(p1) + '</a></div>';
+      html += '<div><a href="javascript:void(0)" style="color:#1e3a8a; text-decoration:none; font-weight:600;" onclick="quickDialNumber(\'' + escapeJs(p1) + '\', ' + l.id + ')"><i class="fa fa-phone"></i> ' + escapeHtml(p1) + '</a></div>';
     }
     if (p2) {
       html += '<div><a href="javascript:void(0)" style="color:#8e8e93; text-decoration:none;" onclick="quickDialNumber(\'' + escapeJs(p2) + '\', ' + l.id + ')"><i class="fa fa-mobile"></i> ' + escapeHtml(p2) + '</a></div>';
@@ -2860,7 +3153,7 @@ function renderStatusBreakdown(items) {
       var item = items[i];
       html += '<tr>';
       html += '  <td><strong style="color:#1d1d1f;">' + escapeHtml(item.status_name) + '</strong></td>';
-      html += '  <td style="text-align:center; color:#0072f0; font-weight:600;">' + item.new_calls + '</td>';
+      html += '  <td style="text-align:center; color:#1e3a8a; font-weight:600;">' + item.new_calls + '</td>';
       html += '  <td style="text-align:center; color:#ff9500; font-weight:600;">' + item.followup_calls + '</td>';
       html += '  <td style="text-align:center; font-weight:700; color:#1d1d1f;">' + item.total_calls + '</td>';
       html += '  <td style="text-align:right; font-weight:600; color:#1d1d1f;">' + item.percentage + '%</td>';
@@ -2879,12 +3172,12 @@ function renderRecentLogs(logs) {
       var log = logs[i];
       var phone = log.phone_number || '';
       var cust = log.customer_name || (log.lead_customer ? log.lead_customer : 'Direct Call');
-      var cat = log.call_category === 'followup' ? '<span style="color:#ff9500; font-weight:600;">Follow-up</span>' : '<span style="color:#0072f0; font-weight:600;">New Call</span>';
+      var cat = log.call_category === 'followup' ? '<span style="color:#ff9500; font-weight:600;">Follow-up</span>' : '<span style="color:#1e3a8a; font-weight:600;">New Call</span>';
 
       html += '<tr>';
       html += '  <td style="font-size:11.5px; color:#8e8e93; font-weight:500;">' + escapeHtml(log.created_at) + '</td>';
       html += '  <td><strong style="color:#1d1d1f;">' + escapeHtml(cust) + '</strong></td>';
-      html += '  <td><a href="javascript:void(0)" style="color:#0072f0; text-decoration:none; font-weight:600;" onclick="quickDialNumber(\'' + escapeJs(phone) + '\')"><i class="fa fa-phone"></i> ' + escapeHtml(phone) + '</a></td>';
+      html += '  <td><a href="javascript:void(0)" style="color:#1e3a8a; text-decoration:none; font-weight:600;" onclick="quickDialNumber(\'' + escapeJs(phone) + '\')"><i class="fa fa-phone"></i> ' + escapeHtml(phone) + '</a></td>';
       html += '  <td>' + cat + '</td>';
       html += '  <td><span style="font-weight:600; color:#1d1d1f;">' + escapeHtml(log.disposition || log.call_status) + '</span></td>';
       html += '  <td>' + (log.duration || 0) + 's</td>';
@@ -3019,7 +3312,7 @@ function endActiveCall() {
       dataType: 'json',
       success: function(res) {
         if (res && res.status && res.summary) {
-          $('#autoDialAiBadge').html('<strong><i class="fa fa-magic" style="color:#0072f0;"></i> Groq AI Summary:</strong> ' + escapeHtml(res.summary) + '<br><small style="color:#475569;"><strong>Next Action:</strong> ' + escapeHtml(res.next_action) + '</small>').show();
+          $('#autoDialAiBadge').html('<strong><i class="fa fa-magic" style="color:#1e3a8a;"></i> Groq AI Summary:</strong> ' + escapeHtml(res.summary) + '<br><small style="color:#475569;"><strong>Next Action:</strong> ' + escapeHtml(res.next_action) + '</small>').show();
           if ($('#editRemark').length) {
             $('#editRemark').val(res.summary);
           }
@@ -3097,8 +3390,9 @@ function displayManualLead(idx) {
   }
   manualDialerIndex = idx;
   var l = manualDialerQueue[idx];
+  saveDialerProgress(l);
 
-  $('#manualDetailsHeaderName').text(l.customer ? ('Manual Call - ' + l.customer) : 'Manual Call');
+  $('#manualDetailsHeaderName').text(l.customer || 'Unnamed contact');
   $('#manualDialProgressBadge').text('Contact ' + (idx + 1) + ' of ' + manualDialerQueue.length);
 
   $('#manualEditLeadId').val(l.id || 0);

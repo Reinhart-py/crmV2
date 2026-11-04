@@ -171,7 +171,7 @@
                                             <?php if(!empty($li['owner_name'])){ ?>
                                                 <?php echo htmlspecialchars($li['owner_name']); ?>
                                             <?php } else { ?>
-                                                <span class="label label-warning" style="background:#f59e0b; color:#fff;">Non-Allotted</span>
+                                                <span class="label label-warning" style="background:#475569; color:#fff;">Non-Allotted</span>
                                             <?php } ?>
                                         </td>
                                         <td>

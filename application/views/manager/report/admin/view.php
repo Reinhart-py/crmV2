@@ -208,7 +208,7 @@
                             <span class="input-group-addon" style="padding: 4px 8px; font-size: 11px;">to</span>
                             <input type="text" class="input-sm form-control datepicker" name="d2" placeholder="To" value="<?php echo isset($filters['d2']) ? htmlspecialchars($filters['d2']) : ''; ?>" autocomplete="off" style="border-radius: 0 4px 4px 0; font-size: 12px;" />
                         </div>
-                        <button type="submit" class="btn btn-sm btn-primary" style="background: #2563eb; border-color: #1d4ed8; color: #ffffff; font-weight: 600; border-radius: 4px; padding: 4px 10px; font-size: 11px;">
+                        <button type="submit" class="btn btn-sm btn-primary" style="background: #1e3a8a; border-color: #1e3a8a; color: #ffffff; font-weight: 600; border-radius: 4px; padding: 4px 10px; font-size: 11px;">
                             Run
                         </button>
                     </div>
@@ -390,7 +390,7 @@
         <div class="box" style="border-radius: 6px; border: 1px solid var(--crm-border); background: #ffffff; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
             <div class="box-header with-border" style="padding: 10px 16px; background: #f8fafc; border-bottom: 1px solid var(--crm-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
                 <h4 class="box-title" style="font-size: 13px; font-weight: 700; color: #1e293b; margin: 0;">
-                    <i class="fa fa-columns" style="color: #2563eb; margin-right: 6px;"></i> Configurable Column Selector (PowerSheet)
+                    <i class="fa fa-columns" style="color: #1e3a8a; margin-right: 6px;"></i> Configurable Column Selector (PowerSheet)
                 </h4>
                 <div style="display: flex; gap: 6px;">
                     <button type="button" class="btn btn-xs btn-default" onclick="selectAllCols(true)" style="font-weight: 600; font-size: 11px;">Select All</button>
@@ -414,14 +414,14 @@
                         foreach ($report_data['available_fields'] as $col_key => $col_label) { 
                             $is_checked = in_array($col_key, $active_cols);
                         ?>
-                        <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: normal; color: #334155; margin: 0; cursor: pointer; padding: 5px 8px; border-radius: 4px; background: <?php echo $is_checked ? '#f0fdf4' : '#ffffff'; ?>; border: 1px solid <?php echo $is_checked ? '#86efac' : '#e2e8f0'; ?>;">
-                            <input type="checkbox" name="columns[]" value="<?php echo $col_key; ?>" class="custom-col-cb" <?php echo $is_checked ? 'checked' : ''; ?> onchange="this.parentElement.style.background = this.checked ? '#f0fdf4' : '#ffffff'; this.parentElement.style.borderColor = this.checked ? '#86efac' : '#e2e8f0';" />
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: normal; color: #334155; margin: 0; cursor: pointer; padding: 5px 8px; border-radius: 4px; background: <?php echo $is_checked ? '#f8fafc' : '#ffffff'; ?>; border: 1px solid <?php echo $is_checked ? '#86efac' : '#e2e8f0'; ?>;">
+                            <input type="checkbox" name="columns[]" value="<?php echo $col_key; ?>" class="custom-col-cb" <?php echo $is_checked ? 'checked' : ''; ?> onchange="this.parentElement.style.background = this.checked ? '#f8fafc' : '#ffffff'; this.parentElement.style.borderColor = this.checked ? '#86efac' : '#e2e8f0';" />
                             <span><?php echo htmlspecialchars($col_label); ?></span>
                         </label>
                         <?php } ?>
                     </div>
                     <div style="display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--crm-border); padding-top: 10px;">
-                        <button type="submit" class="btn btn-sm btn-primary" style="background: #2563eb; border-color: #2563eb; font-weight: 600; font-size: 12px; border-radius: 4px; padding: 5px 16px;">
+                        <button type="submit" class="btn btn-sm btn-primary" style="background: #1e3a8a; border-color: #1e3a8a; font-weight: 600; font-size: 12px; border-radius: 4px; padding: 5px 16px;">
                             <i class="fa fa-check"></i> Apply Selected Columns
                         </button>
                     </div>
@@ -476,7 +476,7 @@
                         ?>
                         <td style="text-align: <?php echo $align; ?>; <?php echo $indent; ?>">
                             <?php if (!empty($cell_url) && $is_numeric) { ?>
-                            <a href="<?php echo $cell_url; ?>" style="color: #2563eb; font-weight: 700; text-decoration: underline;">
+                            <a href="<?php echo $cell_url; ?>" style="color: #1e3a8a; font-weight: 700; text-decoration: underline;">
                                 <?php echo htmlspecialchars($cell_val); ?>
                             </a>
                             <?php } else { ?>
@@ -507,7 +507,7 @@
                         ?>
                         <td style="text-align: <?php echo $align; ?>;">
                             <?php if (!empty($cell_url) && $is_numeric) { ?>
-                            <a href="<?php echo $cell_url; ?>" style="color: #2563eb; font-weight: 700; text-decoration: underline;">
+                            <a href="<?php echo $cell_url; ?>" style="color: #1e3a8a; font-weight: 700; text-decoration: underline;">
                                 <?php echo htmlspecialchars($cell_val); ?>
                             </a>
                             <?php } else { ?>
@@ -534,7 +534,7 @@
                         ?>
                         <td style="text-align: <?php echo $align; ?>;">
                             <?php if (!empty($cell_url) && $is_numeric) { ?>
-                            <a href="<?php echo $cell_url; ?>" style="color: #2563eb; font-weight: 800; text-decoration: underline;">
+                            <a href="<?php echo $cell_url; ?>" style="color: #1e3a8a; font-weight: 800; text-decoration: underline;">
                                 <?php echo htmlspecialchars($cell_val); ?>
                             </a>
                             <?php } else { ?>
@@ -565,7 +565,7 @@
 function selectAllCols(check) {
     document.querySelectorAll('.custom-col-cb').forEach(function(cb) {
         cb.checked = check;
-        cb.parentElement.style.background = check ? '#f0fdf4' : '#ffffff';
+        cb.parentElement.style.background = check ? '#f8fafc' : '#ffffff';
         cb.parentElement.style.borderColor = check ? '#86efac' : '#e2e8f0';
     });
 }
@@ -575,7 +575,7 @@ function resetDefaultCols() {
     document.querySelectorAll('.custom-col-cb').forEach(function(cb) {
         var isDef = defs.indexOf(cb.value) !== -1;
         cb.checked = isDef;
-        cb.parentElement.style.background = isDef ? '#f0fdf4' : '#ffffff';
+        cb.parentElement.style.background = isDef ? '#f8fafc' : '#ffffff';
         cb.parentElement.style.borderColor = isDef ? '#86efac' : '#e2e8f0';
     });
 }

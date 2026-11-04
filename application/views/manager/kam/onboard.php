@@ -31,7 +31,7 @@
               <div class="form-group">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
                   <label style="margin:0;">Assigned Client (Company Name) <span class="text-danger">*</span></label>
-                  <a href="javascript:void(0);" id="toggleKamCompanyModeBtn" style="font-size:12px; font-weight:600; color:#0072f0; text-decoration:none;">
+                  <a href="javascript:void(0);" id="toggleKamCompanyModeBtn" style="font-size:12px; font-weight:600; color:#1e3a8a; text-decoration:none;">
                     <i class="fa fa-plus-circle"></i> Add New Company
                   </a>
                 </div>

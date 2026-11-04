@@ -58,7 +58,7 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.5/css/responsive.dataTables.min.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/bootstrap/developer.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/multiselect/multiselect.css">
-<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-dashboard.css?v=20261031_v1810">
+<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-dashboard.css?v=20261104_1">
 <link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/plugins/table_export/css/tableexport.css" />
 
 <script src="<?php echo base_url();?>assets/plugins/table_export/FileSaver.min.js"></script>
@@ -69,6 +69,7 @@
 <script src="<?php echo base_url();?>assets/bootstrap/js/jquery.validate.js"></script>
 <link rel="stylesheet" href="<?php echo base_url();?>assets/bootstrap/css/bootstrap-toggle.min.css">
 <script src="<?php echo base_url();?>assets/bootstrap/js/bootstrap-toggle.min.js"></script>
+<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-theme.css?v=20261104_1">
 
 
 
@@ -354,10 +355,10 @@
 
   <div class="header-quick-actions">
     <?php if($is_admin || has_section_perm('live')){ ?>
-    <a href="<?php echo base_url();?>manager/live" class="live-nav-badge <?php echo ($route1 === 'live') ? 'active' : ''; ?>" title="Live Operations Report" style="display:inline-flex; align-items:center; justify-content:center; text-decoration:none; margin-right:8px; padding:4px 12px; border-radius:6px; <?php echo ($route1 === 'live') ? 'background:#00c6f0; color:#ffffff; border:1px solid #00c6f0;' : 'background:transparent; color:#00c6f0; border:1px solid #00c6f0;'; ?> font-weight:700; font-size:12px; letter-spacing:0.06em; transition:all 0.2s ease;">LIVE</a>
+    <a href="<?php echo base_url();?>manager/live" class="live-nav-badge <?php echo ($route1 === 'live') ? 'active' : ''; ?>" title="Live Operations Report" style="display:inline-flex; align-items:center; justify-content:center; text-decoration:none; margin-right:8px; padding:4px 12px; border-radius:6px; font-weight:700; font-size:12px; letter-spacing:0.06em; transition:all 0.2s ease;">LIVE</a>
     <?php } ?>
     <?php if(!$is_presentation && has_section_perm('calls')){ ?>
-    <a href="<?php echo base_url();?>manager/calls" class="global-theme-btn" title="Phone Dialer & Calls" style="display:inline-flex; align-items:center; justify-content:center; text-decoration:none; margin-right:6px; color:#2563eb;">
+    <a href="<?php echo base_url();?>manager/calls" class="global-theme-btn" title="Phone Dialer & Calls" style="display:inline-flex; align-items:center; justify-content:center; text-decoration:none; margin-right:6px; color:#1e3a8a;">
       <i class="fa fa-phone"></i>
     </a>
     <?php } ?>
@@ -367,7 +368,7 @@
         <span class="notif-badge" id="notifBadge" style="display:none; position:absolute; top:-4px; right:-4px; background:#dc2626; color:#ffffff; font-size:10px; font-weight:700; border-radius:10px; min-width:16px; height:16px; line-height:16px; text-align:center; padding:0 3px;"></span>
       </button>
       <div class="smartphone-notif-dropdown" id="smartphoneNotifDropdown" style="display:none; position:absolute; right:0; top:44px; width:440px; max-width:calc(100vw - 24px); background:#ffffff; border:1px solid #cbd5e1; border-radius:4px; box-shadow:0 12px 32px rgba(0,0,0,0.12); z-index:999999; overflow:hidden;">
-        <div style="padding:12px 16px; background:#0072f0; color:#ffffff; display:flex; align-items:center; justify-content:space-between;">
+        <div style="padding:12px 16px; background:#1e3a8a; color:#ffffff; display:flex; align-items:center; justify-content:space-between;">
           <span style="font-weight:700; font-size:13.5px; letter-spacing:-0.2px;">Notification Centre</span>
           <div style="display:flex; align-items:center; gap:8px;">
             <button type="button" id="btnRequestNotifPerm" style="background:rgba(255,255,255,0.2); border:none; color:#ffffff; font-size:11px; font-weight:600; padding:4px 10px; border-radius:3px; cursor:pointer; display:none;">Enable Alerts</button>
@@ -384,9 +385,10 @@
     </button>
 
     <div class="profile-menu-container">
-      <button type="button" class="profile-avatar-btn" id="profileMenuToggle" aria-haspopup="true" aria-expanded="false" title="<?php echo htmlspecialchars($current_user_name); ?>">
+      <button type="button" class="profile-avatar-btn" id="profileMenuToggle" title="Open my profile: <?php echo htmlspecialchars($current_user_name); ?>">
         <img src="<?php echo base_url() . $user_avatar; ?>" alt="<?php echo htmlspecialchars($current_user_name); ?>" class="profile-avatar-img" />
       </button>
+      <button type="button" class="profile-caret-btn" id="profileMenuCaret" aria-haspopup="true" aria-expanded="false" title="Account menu"><span class="crm-collapse-caret" aria-hidden="true"></span></button>
 
       <div class="google-profile-dropdown" id="googleProfileDropdown">
         <div class="google-profile-card">
@@ -395,7 +397,7 @@
           </div>
           <div class="google-greeting-name">Hi, <?php echo htmlspecialchars($current_user_name); ?></div>
           <?php if (!empty($current_user_role_name)) { ?>
-            <div class="google-user-role" style="font-size:12px; font-weight:700; color:#0072f0; margin-top:2px; text-transform:uppercase; letter-spacing:0.5px;"><?php echo htmlspecialchars($current_user_role_name); ?></div>
+            <div class="google-user-role" style="font-size:12px; font-weight:700; color:#1e3a8a; margin-top:2px; text-transform:uppercase; letter-spacing:0.5px;"><?php echo htmlspecialchars($current_user_role_name); ?></div>
           <?php } ?>
           <?php if (!empty($current_user_email)) { ?>
             <div class="google-user-email"><?php echo htmlspecialchars($current_user_email); ?></div>
@@ -471,8 +473,15 @@ $(function() {
 
   $(document).on('click', '#profileMenuToggle', function(e) {
     e.preventDefault();
+    window.location.href = '<?php echo base_url(); ?>manager/profile';
+  });
+
+  $(document).on('click', '#profileMenuCaret', function(e) {
+    e.preventDefault();
     e.stopPropagation();
+    var open = !$('#googleProfileDropdown').is(':visible');
     $('#googleProfileDropdown').fadeToggle(150);
+    $(this).attr('aria-expanded', open ? 'true' : 'false');
   });
 
   $(document).on('click', function(e) {
@@ -567,19 +576,19 @@ $(function() {
                 newArrivals.push(n);
               }
               var isUnread = (n.is_read == 0);
-              var cardBorder = isUnread ? 'border:1px solid #bfdbfe; border-left:4px solid #0072f0;' : 'border:1px solid #e2e8f0;';
+              var cardBorder = isUnread ? 'border:1px solid #bfdbfe; border-left:4px solid #1e3a8a;' : 'border:1px solid #e2e8f0;';
               var cardBg = isUnread ? '#ffffff' : '#f8fafc';
               html += '<a href="' + (n.link || 'javascript:void(0);') + '" class="notif-item-link" data-notif-id="' + n.id + '" data-unread="' + (isUnread ? '1' : '0') + '" style="display:block; margin-bottom:8px; padding:10px 14px; border-radius:4px; background:' + cardBg + '; ' + cardBorder + ' box-shadow:0 1px 2px rgba(0,0,0,0.04); text-decoration:none; color:inherit; transition:background 0.15s ease;">';
               html += '  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">';
               var cleanTitle = (n.title && n.title.toLowerCase() !== 'notification' && n.title.trim() !== n.message.trim()) ? $('<div>').text(n.title).html() : '';
               if (cleanTitle) {
-                html += '    <span style="font-size:12px; font-weight:700; color:#0072f0; letter-spacing:-0.1px;">' + cleanTitle + '</span>';
+                html += '    <span style="font-size:12px; font-weight:700; color:#1e3a8a; letter-spacing:-0.1px;">' + cleanTitle + '</span>';
               } else {
                 html += '    <span></span>';
               }
               html += '    <div style="display:inline-flex; align-items:center; gap:6px;">';
               if (isUnread) {
-                html += '      <button type="button" class="btn-single-notif-read" data-notif-id="' + n.id + '" title="Mark as read" style="background:rgba(0,114,240,0.1); border:none; border-radius:3px; padding:2px 6px; color:#0072f0; font-size:10px; font-weight:600; cursor:pointer; line-height:1.2;">Mark read</button>';
+                html += '      <button type="button" class="btn-single-notif-read" data-notif-id="' + n.id + '" title="Mark as read" style="background:rgba(0,114,240,0.1); border:none; border-radius:3px; padding:2px 6px; color:#1e3a8a; font-size:10px; font-weight:600; cursor:pointer; line-height:1.2;">Mark read</button>';
               }
               html += '      <span style="font-size:10.5px; color:#94a3b8; font-weight:500; white-space:nowrap;">' + (n.time_ago || '') + '</span>';
               html += '    </div>';
@@ -739,7 +748,7 @@ $(function() {
 
       <?php if(!$is_presentation && ($is_admin || has_section_perm('calls'))){ ?>
       <li class="<?php if($route1=="calls"){ echo "active";}else{ echo "";}?>"> 
-        <a href="<?php echo base_url();?>manager/calls"> <i class="fa fa-phone" style="margin-right:6px; color:#2563eb;"></i> <span>Phone Dialer</span> </a> 
+        <a href="<?php echo base_url();?>manager/calls"> <i class="fa fa-phone" style="margin-right:6px; color:#1e3a8a;"></i> <span>Phone Dialer</span> </a> 
       </li>
       <?php } ?>
 

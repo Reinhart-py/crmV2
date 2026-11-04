@@ -42,7 +42,7 @@ class Ci_admin_model extends CI_model {
 			 AND (A.lead_assign = " . $manager_id . " OR (A.created_by = " . $manager_id . " AND (A.lead_assign = 0 OR A.lead_assign IS NULL)) OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET(" . $manager_id . ", A.agents) > 0)) 
 			 AND (A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)) as count_leads,
 
-			(SELECT count(id) FROM ci_orders WHERE created_by = " . $manager_id . ") as count_orders,
+			(SELECT COUNT(DISTINCT O.id) FROM ci_orders O LEFT JOIN ci_leads A ON O.lead_id = A.id WHERE " . $this->my_orders_scope_sql($manager_id) . ") as count_orders,
 			(SELECT COALESCE(SUM(CAST(COALESCE(NULLIF(pricing_amount, 0), NULLIF(mrr, 0), 0) AS DECIMAL(12,2))), 0) FROM ci_orders WHERE created_by = " . $manager_id . " AND (status = 'Sales' OR status = 'Closed / Sold' OR status = 'Completed' OR (sales_ref_no IS NOT NULL AND sales_ref_no != ''))) as sales_amount,
 			(SELECT COALESCE(SUM(amount), 0) FROM ci_payments WHERE recorded_by = " . $manager_id . ") as cash_received";
 
@@ -384,12 +384,12 @@ class Ci_admin_model extends CI_model {
 				$manager_id = (int)$this->session->userdata('manager_id');
 			}
 			$specs = array(
-				array('label' => 'Busy', 'cond' => "l.status = 45 OR LOWER(l.call_status) LIKE '%busy%' OR LOWER(l.call_status) LIKE '%not responding%'", 'color' => '#01509e'),
-				array('label' => 'DNCR', 'cond' => "l.status = 46 OR LOWER(l.call_status) LIKE '%dncr%' OR LOWER(l.call_status) LIKE '%dnd%' OR l.dnd_status = 'Yes'", 'color' => '#00a8f3'),
-				array('label' => 'Following Up', 'cond' => "l.status = 47 OR LOWER(l.call_status) LIKE '%follow%' OR LOWER(l.call_status) LIKE '%callback%'", 'color' => '#5c2bb1'),
-				array('label' => 'Future', 'cond' => "l.status = 48 OR LOWER(l.call_status) LIKE '%future%'", 'color' => '#6c7d93'),
-				array('label' => 'Not Interested', 'cond' => "l.status = 49 OR LOWER(l.call_status) LIKE '%not interested%'", 'color' => '#ff6b6b'),
-				array('label' => 'Not Valid', 'cond' => "l.status = 50 OR LOWER(l.call_status) LIKE '%not valid%' OR LOWER(l.call_status) LIKE '%invalid%'", 'color' => '#00b69c')
+				array('label' => 'Busy', 'cond' => "l.status = 45 OR LOWER(l.call_status) LIKE '%busy%' OR LOWER(l.call_status) LIKE '%not responding%'", 'color' => '#1e3a8a'),
+				array('label' => 'DNCR', 'cond' => "l.status = 46 OR LOWER(l.call_status) LIKE '%dncr%' OR LOWER(l.call_status) LIKE '%dnd%' OR l.dnd_status = 'Yes'", 'color' => '#2563eb'),
+				array('label' => 'Following Up', 'cond' => "l.status = 47 OR LOWER(l.call_status) LIKE '%follow%' OR LOWER(l.call_status) LIKE '%callback%'", 'color' => '#60a5fa'),
+				array('label' => 'Future', 'cond' => "l.status = 48 OR LOWER(l.call_status) LIKE '%future%'", 'color' => '#0f172a'),
+				array('label' => 'Not Interested', 'cond' => "l.status = 49 OR LOWER(l.call_status) LIKE '%not interested%'", 'color' => '#475569'),
+				array('label' => 'Not Valid', 'cond' => "l.status = 50 OR LOWER(l.call_status) LIKE '%not valid%' OR LOWER(l.call_status) LIKE '%invalid%'", 'color' => '#94a3b8')
 			);
 			$lead_scope = "(l.lead_assign = {$manager_id} OR (l.created_by = {$manager_id} AND (l.lead_assign = 0 OR l.lead_assign IS NULL)) OR (l.agents IS NOT NULL AND l.agents != '' AND FIND_IN_SET({$manager_id}, l.agents) > 0)) AND (l.company_status IS NULL OR LOWER(l.company_status) != 'closed')";
 			
@@ -416,38 +416,102 @@ class Ci_admin_model extends CI_model {
 			);
 		}
 
+		public function my_orders_scope_sql($manager_id){
+			$uid = (int)$manager_id;
+			return "(O.created_by = {$uid} OR O.assigned_to = {$uid} OR A.created_by = {$uid} OR A.lead_assign = {$uid} OR FIND_IN_SET({$uid}, A.agents) > 0 OR O.lead_id IN (SELECT lead_id FROM ci_lead_transfers WHERE from_user_id = {$uid} OR to_user_id = {$uid}) OR O.lead_id IN (SELECT lead_id FROM ci_pipeline WHERE conversion_requested_by = {$uid} OR order_requested_by = {$uid}) OR O.lead_id IN (SELECT lead_id FROM ci_pipeline_logs WHERE action_by = {$uid})) AND (O.sales_ref_no IS NULL OR O.sales_ref_no = '') AND O.status != 'Sales'";
+		}
+
+		public function hr_attendance_summary($uid){
+			$uid = (int)$uid;
+			$today = $this->db->where('user_id', $uid)->where('attendance_date', date('Y-m-d'))->order_by('id', 'ASC')->limit(1)->get('ci_attendance')->row_array();
+			$month_start = date('Y-m-01');
+			$row = $this->db->query("SELECT COUNT(DISTINCT attendance_date) AS days_present, SUM(CASE WHEN LOWER(status) LIKE '%late%' THEN 1 ELSE 0 END) AS late_logins, COUNT(*) AS total_records, SUM(CASE WHEN latitude IS NOT NULL AND longitude IS NOT NULL THEN 1 ELSE 0 END) AS gps_records FROM ci_attendance WHERE user_id = {$uid} AND attendance_date >= '{$month_start}'")->row_array();
+			$total = !empty($row['total_records']) ? (int)$row['total_records'] : 0;
+			return array(
+				'today' => $today,
+				'days_present' => !empty($row['days_present']) ? (int)$row['days_present'] : 0,
+				'late_logins' => !empty($row['late_logins']) ? (int)$row['late_logins'] : 0,
+				'gps_compliance' => $total > 0 ? round(((int)$row['gps_records'] / $total) * 100) : null
+			);
+		}
+
+		public function hr_upcoming_events($uid, $limit = 0){
+			$uid = (int)$uid;
+			$this->db->select('id, title, description, event_type, start_date, location')
+				->from('ci_events')
+				->where('start_date >=', date('Y-m-d 00:00:00'))
+				->where("(status IS NULL OR status = 'active')", null, false)
+				->where("(visibility = 'public' OR assigned_user_id = {$uid} OR created_by = {$uid})", null, false)
+				->order_by('start_date', 'ASC');
+			if ((int)$limit > 0) {
+				$this->db->limit((int)$limit);
+			}
+			$events = array();
+			foreach ($this->db->get()->result_array() as $ev) {
+				$events[] = array(
+					'id' => $ev['id'],
+					'title' => $ev['title'],
+					'event_type' => ucwords(str_replace('_', ' ', (string)$ev['event_type'])),
+					'event_date' => $ev['start_date'],
+					'event_time' => date('h:i A', strtotime($ev['start_date'])),
+					'location' => (string)$ev['location'],
+					'description' => (string)$ev['description']
+				);
+			}
+			return $events;
+		}
+
+		public function hr_leave_summary($uid){
+			$uid = (int)$uid;
+			$year_start = date('Y-01-01');
+			$used = $this->db->query("SELECT leave_type, SUM(total_days) AS days FROM ci_leaves WHERE user_id = {$uid} AND status = 'Approved' AND from_date >= '{$year_start}' GROUP BY leave_type ORDER BY leave_type")->result_array();
+			$pending = $this->db->query("SELECT COUNT(*) AS c FROM ci_leaves WHERE user_id = {$uid} AND status = 'Pending'")->row_array();
+			return array(
+				'used_by_type' => $used,
+				'pending' => !empty($pending['c']) ? (int)$pending['c'] : 0
+			);
+		}
+
 		public function dashboard_myorder_donut_data($manager_id = 0){
 			if ($manager_id <= 0) {
 				$manager_id = (int)$this->session->userdata('manager_id');
 			}
-			$specs = array(
-				array('label' => 'Submitted', 'cond' => "O.status = 'Submitted'", 'color' => '#01509e'),
-				array('label' => 'Approved', 'cond' => "O.status = 'Approved'", 'color' => '#00a8f3'),
-				array('label' => 'In Progress', 'cond' => "O.status = 'In Progress'", 'color' => '#5c2bb1'),
-				array('label' => 'Onboarding', 'cond' => "O.status = 'Onboarding'", 'color' => '#6c7d93'),
-				array('label' => 'Under Review', 'cond' => "O.status = 'Under Review'", 'color' => '#eab308'),
-				array('label' => 'Completed', 'cond' => "O.status IN ('Completed', 'Fulfilled') AND (O.sales_ref_no IS NULL OR O.sales_ref_no = '') AND O.status != 'Sales'", 'color' => '#16a34a'),
-				array('label' => 'Sales', 'cond' => "O.status = 'Sales' OR (O.sales_ref_no IS NOT NULL AND O.sales_ref_no != '')", 'color' => '#00b69c'),
-				array('label' => 'Canceled', 'cond' => "O.status IN ('Cancelled', 'Canceled', 'Rejected', 'Lost')", 'color' => '#ff6b6b')
+			$palette = array('#1e3a8a', '#2563eb', '#60a5fa', '#0f172a', '#475569', '#94a3b8', '#bfdbfe', '#cbd5e1');
+			$merge_map = array(
+				'fulfilled' => 'Completed',
+				'completed' => 'Completed',
+				'canceled' => 'Cancelled',
+				'cancelled' => 'Cancelled',
+				'rejected' => 'Cancelled',
+				'lost' => 'Cancelled'
 			);
-			$order_scope = "(O.created_by = {$manager_id} OR O.assigned_to = {$manager_id})";
+			$sql = "SELECT O.status, COUNT(DISTINCT O.id) AS cnt FROM ci_orders O LEFT JOIN ci_leads A ON O.lead_id = A.id WHERE " . $this->my_orders_scope_sql($manager_id) . " GROUP BY O.status ORDER BY cnt DESC";
+			$query = $this->db->query($sql);
+			$rows = ($query && is_object($query)) ? $query->result_array() : array();
+
+			$grouped = array();
+			foreach ($rows as $r) {
+				$raw = trim((string)$r['status']);
+				$key = strtolower($raw);
+				$label = isset($merge_map[$key]) ? $merge_map[$key] : ($raw !== '' ? $raw : 'Draft');
+				if (!isset($grouped[$label])) {
+					$grouped[$label] = 0;
+				}
+				$grouped[$label] += (int)$r['cnt'];
+			}
+			arsort($grouped);
 
 			$items = array();
-			$total = 0;
-			foreach ($specs as $sp) {
-				$sql = "SELECT COUNT(O.id) as cnt FROM ci_orders O WHERE ({$sp['cond']}) AND ({$order_scope})";
-				$row = $this->db->query($sql)->row_array();
-				$count = !empty($row['cnt']) ? (int)$row['cnt'] : 0;
-				$total += $count;
+			$total = array_sum($grouped);
+			$i = 0;
+			foreach ($grouped as $label => $count) {
 				$items[] = array(
-					'label' => $sp['label'],
+					'label' => $label,
 					'count' => $count,
-					'color' => $sp['color'],
-					'percentage' => 0.0
+					'color' => $palette[$i % count($palette)],
+					'percentage' => $total > 0 ? round(($count / $total) * 100, 2) : 0.0
 				);
-			}
-			foreach ($items as &$it) {
-				$it['percentage'] = $total > 0 ? round(($it['count'] / $total) * 100, 2) : 0.0;
+				$i++;
 			}
 			return array(
 				'total' => $total,

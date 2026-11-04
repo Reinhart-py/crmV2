@@ -100,8 +100,8 @@
       cursor: pointer;
     }
     .tv-btn {
-      background: #0072f0;
-      border: 1px solid #0072f0;
+      background: #1e3a8a;
+      border: 1px solid #1e3a8a;
       border-radius: 6px;
       padding: 6px 12px;
       font-size: 12.5px;
@@ -114,7 +114,7 @@
       transition: background 0.15s ease;
     }
     .tv-btn:hover {
-      background: #0056b3;
+      background: #172554;
     }
     .tv-btn-sec {
       background: #f8fafc;
@@ -179,7 +179,7 @@
     .tv-kpi-growth {
       font-size: 12.5px;
       font-weight: 600;
-      color: #16a34a;
+      color: #0f172a;
       display: inline-flex;
       align-items: center;
       gap: 4px;
@@ -244,7 +244,7 @@
       position: relative;
     }
     .tv-prod-bar-fill {
-      background: #0072f0;
+      background: #1e3a8a;
       height: 100%;
       border-radius: 4px;
       transition: width 0.4s ease;
@@ -324,7 +324,7 @@
     }
     .tv-rep-growth {
       font-weight: 600;
-      color: #16a34a;
+      color: #0f172a;
       display: inline-flex;
       align-items: center;
       gap: 2px;
@@ -354,7 +354,7 @@
     }
     .tv-tab-btn.active {
       background: #ffffff;
-      color: #0072f0;
+      color: #1e3a8a;
       box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
   </style>
@@ -442,17 +442,17 @@
                 <text x="25" y="144" fill="#94a3b8" font-size="10" font-weight="600">0</text>
 
                 <!-- Chart Path -->
-                <path id="salesLinePath" d="M 60,130 L 130,95 L 205,108 L 280,75 L 355,90 L 430,65 L 505,35" fill="none" stroke="#0072f0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                <path id="salesLinePath" d="M 60,130 L 130,95 L 205,108 L 280,75 L 355,90 L 430,65 L 505,35" fill="none" stroke="#1e3a8a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
                 
                 <!-- Data Points -->
                 <g id="salesPoints">
-                  <circle cx="60" cy="130" r="4" fill="#0072f0" />
-                  <circle cx="130" cy="95" r="4" fill="#0072f0" />
-                  <circle cx="205" cy="108" r="4" fill="#0072f0" />
-                  <circle cx="280" cy="75" r="4" fill="#0072f0" />
-                  <circle cx="355" cy="90" r="4" fill="#0072f0" />
-                  <circle cx="430" cy="65" r="4" fill="#0072f0" />
-                  <circle cx="505" cy="35" r="4" fill="#0072f0" />
+                  <circle cx="60" cy="130" r="4" fill="#1e3a8a" />
+                  <circle cx="130" cy="95" r="4" fill="#1e3a8a" />
+                  <circle cx="205" cy="108" r="4" fill="#1e3a8a" />
+                  <circle cx="280" cy="75" r="4" fill="#1e3a8a" />
+                  <circle cx="355" cy="90" r="4" fill="#1e3a8a" />
+                  <circle cx="430" cy="65" r="4" fill="#1e3a8a" />
+                  <circle cx="505" cy="35" r="4" fill="#1e3a8a" />
                 </g>
 
                 <!-- X Axis Labels -->
@@ -508,10 +508,10 @@
             <div class="tv-donut-wrap">
               <div style="position:relative; width:130px; height:130px; display:flex; align-items:center; justify-content:center;">
                 <svg class="tv-donut-svg" viewBox="0 0 42 42">
-                  <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#0072f0" stroke-width="6" stroke-dasharray="46 54" stroke-dashoffset="0"></circle>
-                  <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#16a34a" stroke-width="6" stroke-dasharray="28 72" stroke-dashoffset="-46"></circle>
-                  <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#f59e0b" stroke-width="6" stroke-dasharray="17 83" stroke-dashoffset="-74"></circle>
-                  <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#7c3aed" stroke-width="6" stroke-dasharray="9 91" stroke-dashoffset="-91"></circle>
+                  <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#1e3a8a" stroke-width="6" stroke-dasharray="46 54" stroke-dashoffset="0"></circle>
+                  <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#0f172a" stroke-width="6" stroke-dasharray="28 72" stroke-dashoffset="-46"></circle>
+                  <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#475569" stroke-width="6" stroke-dasharray="17 83" stroke-dashoffset="-74"></circle>
+                  <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#1e3a8a" stroke-width="6" stroke-dasharray="9 91" stroke-dashoffset="-91"></circle>
                 </svg>
                 <div style="position:absolute; text-align:center;">
                   <div style="font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase;">Total</div>
@@ -520,10 +520,10 @@
               </div>
 
               <div class="tv-donut-legend">
-                <div class="tv-legend-item"><span class="tv-legend-dot" style="background:#0072f0;"></span> <span>Direct CRM</span> <span style="margin-left:auto; font-weight:700;">46%</span></div>
-                <div class="tv-legend-item"><span class="tv-legend-dot" style="background:#16a34a;"></span> <span>Field Sales</span> <span style="margin-left:auto; font-weight:700;">28%</span></div>
-                <div class="tv-legend-item"><span class="tv-legend-dot" style="background:#f59e0b;"></span> <span>Referrals</span> <span style="margin-left:auto; font-weight:700;">17%</span></div>
-                <div class="tv-legend-item"><span class="tv-legend-dot" style="background:#7c3aed;"></span> <span>Corporate</span> <span style="margin-left:auto; font-weight:700;">9%</span></div>
+                <div class="tv-legend-item"><span class="tv-legend-dot" style="background:#1e3a8a;"></span> <span>Direct CRM</span> <span style="margin-left:auto; font-weight:700;">46%</span></div>
+                <div class="tv-legend-item"><span class="tv-legend-dot" style="background:#0f172a;"></span> <span>Field Sales</span> <span style="margin-left:auto; font-weight:700;">28%</span></div>
+                <div class="tv-legend-item"><span class="tv-legend-dot" style="background:#475569;"></span> <span>Referrals</span> <span style="margin-left:auto; font-weight:700;">17%</span></div>
+                <div class="tv-legend-item"><span class="tv-legend-dot" style="background:#1e3a8a;"></span> <span>Corporate</span> <span style="margin-left:auto; font-weight:700;">9%</span></div>
               </div>
             </div>
           </div>
@@ -590,7 +590,7 @@
                   <td style="padding:12px 14px; font-weight:700; color:#0f172a;"><?php echo htmlspecialchars($st['metric']); ?></td>
                   <td style="padding:12px 14px; font-weight:600;"><?php echo is_numeric($st['today']) ? number_format($st['today']) : htmlspecialchars($st['today']); ?></td>
                   <td style="padding:12px 14px; font-weight:600;"><?php echo is_numeric($st['seven_days']) ? number_format($st['seven_days']) : htmlspecialchars($st['seven_days']); ?></td>
-                  <td style="padding:12px 14px; font-weight:700; color:#0072f0;"><?php echo is_numeric($st['month']) ? number_format($st['month']) : htmlspecialchars($st['month']); ?></td>
+                  <td style="padding:12px 14px; font-weight:700; color:#1e3a8a;"><?php echo is_numeric($st['month']) ? number_format($st['month']) : htmlspecialchars($st['month']); ?></td>
                   <td style="padding:12px 14px; font-weight:600;"><?php echo is_numeric($st['quarter']) ? number_format($st['quarter']) : htmlspecialchars($st['quarter']); ?></td>
                 </tr>
             <?php } } ?>
@@ -694,7 +694,7 @@
                 cHtml += '  <td style="padding:12px 14px; font-weight:700; color:#0f172a;">' + $('<div>').text(s.metric).html() + '</td>';
                 cHtml += '  <td style="padding:12px 14px; font-weight:600;">' + (isNaN(s.today) ? s.today : Number(s.today).toLocaleString()) + '</td>';
                 cHtml += '  <td style="padding:12px 14px; font-weight:600;">' + (isNaN(s.seven_days) ? s.seven_days : Number(s.seven_days).toLocaleString()) + '</td>';
-                cHtml += '  <td style="padding:12px 14px; font-weight:700; color:#0072f0;">' + (isNaN(s.month) ? s.month : Number(s.month).toLocaleString()) + '</td>';
+                cHtml += '  <td style="padding:12px 14px; font-weight:700; color:#1e3a8a;">' + (isNaN(s.month) ? s.month : Number(s.month).toLocaleString()) + '</td>';
                 cHtml += '  <td style="padding:12px 14px; font-weight:600;">' + (isNaN(s.quarter) ? s.quarter : Number(s.quarter).toLocaleString()) + '</td>';
                 cHtml += '</tr>';
               });

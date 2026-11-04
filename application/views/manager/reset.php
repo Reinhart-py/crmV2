@@ -14,63 +14,39 @@
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="<?php echo base_url(); ?>assets/logo.png">
-  <link rel="stylesheet" href="<?php echo base_url(); ?>assets/bootstrap/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css">
-  <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/AdminLTE.min.css">
-  <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/mos.css"> 
-  <link rel="stylesheet" href="<?php echo base_url(); ?>assets/plugins/iCheck/square/blue.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-auth.css?v=20261104_1">
 </head>
-<body class="login-page" style="height:auto">
-  <div class="d-flex align-items-center m-height">
-    <div class="login-box ">
-      <div class="row"> 
-        <div>
-          <div class="login-box-body">
-            <div class="login-logo mb-5">
-              <a href="<?php echo base_url(); ?>"><img src="<?php echo base_url(); ?>assets/logo.png" alt="7 Strokes" style="max-height: 80px; max-width: 100%;"></a>
-            </div>
-            <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?> <?php echo get_message($this->session->flashdata('message'),'message'); ?>
-            <form action="<?php echo base_url(); ?>ci_admin/fchange_password" method="post">
-              <div class="form-group has-feedback">
-                <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
-                <input type="hidden" name="token" value="<?php echo $token; ?>">
-                <input type="password" class="form-control" name="password" placeholder="Enter New Password" required="">
-                <span class="glyphicon glyphicon-lock form-control-feedback"></span>
-              </div>
-              <div class="form-group has-feedback">
-                <input required="" type="password" class="form-control" name="change_password" placeholder="Repeat Password">
-                <span class="glyphicon glyphicon-lock form-control-feedback"></span>
-              </div>
-              <div class="row">
-                <div class="col-xs-6">
-                  <div class="text-left">
-                    <button type="submit" class="btn btn-danger">Save Password</button>   
-                  </div>   
-                </div>
-                <div class="col-xs-6">
-                  <div class="text-right ">
-                    <a href="<?php echo base_url(); ?>manager/login" class="fpass">Login</a>
-                  </div> 
-                </div>
-              </div>
-            </form>
+<body class="auth-page">
+  <div class="auth-shell">
+<?php require(APPPATH . 'views/manager/elements/auth_visual.php'); ?>
+    <div class="auth-panel">
+      <div class="auth-brand"><img src="<?php echo base_url(); ?>assets/logo.png" alt="Seven Strokes"></div>
+      <h1 class="auth-title">Set a new password</h1>
+      <p class="auth-sub">Choose a new password for your CRM account.</p>
+      <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?> <?php echo get_message($this->session->flashdata('message'),'message'); ?>
+      <form action="<?php echo base_url(); ?>ci_admin/fchange_password" method="post">
+        <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
+        <input type="hidden" name="token" value="<?php echo $token; ?>">
+        <div class="auth-field">
+          <div class="auth-field-head"><label class="auth-label" for="reset_password">New password</label></div>
+          <div class="auth-input-wrap">
+            <i class="fa fa-lock"></i>
+            <input type="password" class="auth-input" id="reset_password" name="password" placeholder="Enter new password" required>
           </div>
         </div>
-      </div>
+        <div class="auth-field">
+          <div class="auth-field-head"><label class="auth-label" for="reset_password_repeat">Repeat password</label></div>
+          <div class="auth-input-wrap">
+            <i class="fa fa-lock"></i>
+            <input type="password" class="auth-input" id="reset_password_repeat" name="change_password" placeholder="Repeat new password" required>
+          </div>
+        </div>
+        <button type="submit" class="auth-btn" style="margin-top: 6px;">Save password</button>
+      </form>
+      <p class="auth-alt">Back to <a href="<?php echo base_url(); ?>manager/login" class="auth-link">Sign in</a></p>
     </div>
   </div>
-  <script src="<?php echo base_url(); ?>assets/plugins/jQuery/jquery-2.2.3.min.js"></script>
-  <script src="<?php echo base_url(); ?>assets/bootstrap/js/bootstrap.min.js"></script>
-  <script src="<?php echo base_url(); ?>assets/plugins/iCheck/icheck.min.js"></script>
-  <script>
-    $(function () {
-      $('input').iCheck({
-        checkboxClass: 'icheckbox_square-blue',
-        radioClass: 'iradio_square-blue',
-        increaseArea: '20%'
-      });
-    });
-  </script>
 </body>
 </html>

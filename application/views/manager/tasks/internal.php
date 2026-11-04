@@ -73,7 +73,7 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <button type="submit" class="btn btn-primary" style="background:#2563eb; border-color:#2563eb;">Search</button>
+                                    <button type="submit" class="btn btn-primary" style="background:#1e3a8a; border-color:#1e3a8a;">Search</button>
                                     <a href="<?php echo base_url(); ?>manager/tasks/internal" class="btn btn-default">Reset</a>
                                 </div>
                             </form>
@@ -81,7 +81,7 @@
                         <div class="x_col-sm-auto text-center pt-4 pt-md-0">
                             <?php if(!empty($can_create)){ ?>
                             <div>
-                                <a href="<?php echo base_url(); ?>manager/tasks/add?scope=internal" class="btn btn-primary" style="background:#2563eb; border-color:#2563eb;">
+                                <a href="<?php echo base_url(); ?>manager/tasks/add?scope=internal" class="btn btn-primary" style="background:#1e3a8a; border-color:#1e3a8a;">
                                     <i class="fa fa-plus"></i> Add Internal Task
                                 </a>
                             </div>
@@ -130,13 +130,13 @@
                                                 <?php if(!empty($li['invoiced'])){ ?>
                                                     <span class="label label-success" style="font-size:10px; font-weight:normal;">Invoiced<?php if(!empty($li['invoice_ref'])) echo ': '.htmlspecialchars($li['invoice_ref']); ?></span>
                                                 <?php } else { ?>
-                                                    <span class="label label-warning" style="font-size:10px; font-weight:normal; background:#fef3c7; color:#92400e; border:1px solid #fde68a;">To Be Invoiced</span>
+                                                    <span class="label label-warning" style="font-size:10px; font-weight:normal; background:#f8fafc; color:#334155; border:1px solid #e2e8f0;">To Be Invoiced</span>
                                                 <?php } ?>
                                             </div>
                                         <?php } ?>
                                     </td>
                                     <td>
-                                        <a href="<?php echo base_url(); ?>manager/tasks/view/<?php echo $li['id']; ?>" style="font-weight:600; color:#2563eb;">
+                                        <a href="<?php echo base_url(); ?>manager/tasks/view/<?php echo $li['id']; ?>" style="font-weight:600; color:#1e3a8a;">
                                             <?php echo htmlspecialchars($li['customer']); ?>
                                         </a>
                                         <?php if(!empty($li['task_id'])){ ?>

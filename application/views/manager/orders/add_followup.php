@@ -1,139 +1,123 @@
 <?php require_once(APPPATH . "views/manager/elements/header.php"); ?>
+<?php
+  $return_to = trim((string)$this->input->get('return'));
+  $allowed_returns = array('manager/orders/followups', 'manager/orders/open', 'manager/orders/my', 'manager/orders', 'manager/team/orders');
+  if (!in_array($return_to, $allowed_returns, true)) {
+    $return_to = 'manager/orders/followups';
+  }
+  $client_label = !empty($order['client_name']) ? $order['client_name'] : (!empty($order['lead_customer']) ? $order['lead_customer'] : 'Client #' . $order['client_id']);
+  $status_options = array('Approved', 'In Progress', 'Follow Up', 'Under Review', 'Pending Sales Approval', 'Completed', 'Rejected', 'Lost', 'Cancelled');
+  $current_status = (string)$order['status'];
+?>
 
-<div class="content-wrapper px-4">
-  <section class="content-header" style="padding: 15px 15px 5px 15px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-      <h1 style="font-size: 20px; font-weight: 800; color: #0f172a; margin: 0; letter-spacing: -0.02em;">
-        <?php echo $info['page_heading']; ?>: <?php echo htmlspecialchars($order['order_no']); ?>
-      </h1>
-      <a href="<?php echo base_url('manager/orders/followups'); ?>" class="btn btn-default" style="border: 1px solid #cbd5e1; font-weight: 600; border-radius: 4px; padding: 6px 14px;">
-        <i class="fa fa-arrow-left"></i> Back to Orders Follow-up
-      </a>
-    </div>
-  </section>
-
-  <section class="content" style="padding-top: 10px;">
+<div class="content-wrapper">
+  <div class="container crm-page">
     <?php echo get_message($this->session->flashdata('error_message'), 'error_message'); ?>
     <?php echo get_message($this->session->flashdata('message'), 'message'); ?>
 
-    <!-- 1. Order & Client Details Pill Box -->
-    <div class="box" style="border: 1px solid #e2e8f0; border-radius: 4px; background: #ffffff; margin-bottom: 20px;">
-      <div class="box-body" style="padding: 18px 20px;">
-        <div class="row">
-          <div class="col-md-3 col-sm-6">
-            <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; display: block; margin-bottom: 2px;">Order Number</span>
-            <span style="font-size: 14px; font-weight: 800; color: #0072f0;"><?php echo htmlspecialchars($order['order_no']); ?></span>
-          </div>
-          <div class="col-md-3 col-sm-6">
-            <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; display: block; margin-bottom: 2px;">Company / Client</span>
-            <span style="font-size: 14px; font-weight: 700; color: #0f172a;">
-              <?php echo htmlspecialchars(!empty($order['client_name']) ? $order['client_name'] : (!empty($order['lead_customer']) ? $order['lead_customer'] : 'Client #' . $order['client_id'])); ?>
-            </span>
-          </div>
-          <div class="col-md-3 col-sm-6">
-            <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; display: block; margin-bottom: 2px;">Contact Person / Phone</span>
-            <span style="font-size: 13px; font-weight: 600; color: #334155;">
-              <?php echo htmlspecialchars(!empty($order['poc']) ? $order['poc'] . ' - ' : ''); ?><?php echo htmlspecialchars($order['contact1'] ?? '-'); ?>
-            </span>
-          </div>
-          <div class="col-md-3 col-sm-6">
-            <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; display: block; margin-bottom: 2px;">Current Status</span>
-            <span class="label" style="background: #0072f0; color: #ffffff; font-weight: 700; font-size: 12px; padding: 4px 10px; border-radius: 3px;">
-              <?php echo htmlspecialchars($order['status']); ?>
-            </span>
-          </div>
+    <form action="<?php echo base_url('manager/orders/add_followup/' . $order['id']); ?>" method="post" name="order_followup_form" class="crm-compact-form">
+      <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
+      <input type="hidden" name="return_to" value="<?php echo htmlspecialchars($return_to); ?>">
+
+      <div class="box">
+        <div class="box-header with-border">
+          <h3 class="box-title">Add Follow-Up</h3>
+          <a href="<?php echo base_url($return_to); ?>" class="btn btn-default btn-sm">Back</a>
         </div>
-      </div>
-    </div>
+        <div class="box-body">
+          <div class="crm-summary">
+            <div><span>Order</span><strong><?php echo htmlspecialchars($order['order_no']); ?></strong></div>
+            <div><span>Client</span><strong><?php echo htmlspecialchars($client_label); ?></strong></div>
+            <div><span>Contact</span><strong><?php echo htmlspecialchars(trim((!empty($order['poc']) ? $order['poc'] . ' ' : '') . (!empty($order['contact1']) ? $order['contact1'] : '')) ?: '-'); ?></strong></div>
+            <div><span>Current status</span><strong><?php echo htmlspecialchars($current_status); ?></strong></div>
+          </div>
 
-    <!-- 2. Add Follow-Up Form -->
-    <div class="box" style="border: 1px solid #e2e8f0; border-radius: 4px; background: #ffffff; margin-bottom: 20px;">
-      <div class="box-header with-border" style="border-bottom: 1px solid #f1f5f9; padding: 14px 20px;">
-        <h3 class="box-title" style="font-size: 15px; font-weight: 700; color: #0f172a; margin: 0;">
-          <i class="fa fa-calendar-plus-o" style="color: #0072f0; margin-right: 6px;"></i> Schedule Follow-up / Update Status
-        </h3>
-      </div>
-      <form action="<?php echo base_url('manager/orders/add_followup/' . $order['id']); ?>" method="post">
-        <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
-
-        <div class="box-body" style="padding: 20px;">
           <div class="row">
-            <div class="col-md-4 col-sm-6">
+            <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
               <div class="form-group">
-                <label style="font-weight: 700; font-size: 12px; color: #334155; margin-bottom: 4px;">Next Follow-up Date *</label>
-                <div class="input-group">
-                  <input type="text" name="followup_date" class="form-control datepicker" required value="<?php echo !empty($order['followup_date']) ? date('d-m-Y', strtotime($order['followup_date'])) : date('d-m-Y'); ?>" style="border: 1px solid #cbd5e1; border-radius: 4px 0 0 4px; height: 38px;">
-                  <span class="input-group-addon" style="background: #f8fafc; border: 1px solid #cbd5e1; border-left: none; border-radius: 0 4px 4px 0;"><i class="fa fa-calendar"></i></span>
-                </div>
+                <label for="ofDate">Next follow-up date *</label>
+                <input type="text" id="ofDate" name="followup_date" class="form-control datepicker" required autocomplete="off" value="<?php echo !empty($order['followup_date']) ? date('d-m-Y', strtotime($order['followup_date'])) : date('d-m-Y'); ?>">
               </div>
             </div>
-
-            <div class="col-md-4 col-sm-6">
+            <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
               <div class="form-group">
-                <label style="font-weight: 700; font-size: 12px; color: #334155; margin-bottom: 4px;">Next Follow-up Time</label>
-                <div class="input-group bootstrap-timepicker timepicker">
-                  <input type="text" name="followup_time" class="form-control input-small timepicker" value="<?php echo !empty($order['followup_time']) ? htmlspecialchars($order['followup_time']) : '11:00 AM'; ?>" style="border: 1px solid #cbd5e1; border-radius: 4px 0 0 4px; height: 38px;">
-                  <span class="input-group-addon" style="background: #f8fafc; border: 1px solid #cbd5e1; border-left: none; border-radius: 0 4px 4px 0;"><i class="fa fa-clock-o"></i></span>
-                </div>
+                <label for="ofTime">Next follow-up time</label>
+                <input type="text" id="ofTime" name="followup_time" class="form-control timepicker" autocomplete="off" value="<?php echo !empty($order['followup_time']) ? htmlspecialchars($order['followup_time']) : '11:00 AM'; ?>">
               </div>
             </div>
-
-            <div class="col-md-4 col-sm-12">
+            <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
               <div class="form-group">
-                <label style="font-weight: 700; font-size: 12px; color: #334155; margin-bottom: 4px;">Order Status</label>
-                <select name="order_status" class="form-control" style="border: 1px solid #cbd5e1; border-radius: 4px; height: 38px; font-weight: 600;">
-                  <option value="Follow Up" <?php echo ($order['status'] === 'Follow Up' || $order['status'] === 'Open') ? 'selected' : ''; ?>>Follow Up</option>
-                  <option value="In Progress" <?php echo ($order['status'] === 'In Progress') ? 'selected' : ''; ?>>In Progress</option>
-                  <option value="Completed" <?php echo ($order['status'] === 'Completed') ? 'selected' : ''; ?>>Completed</option>
-                  <option value="Pending Sales Approval" <?php echo ($order['status'] === 'Pending Sales Approval') ? 'selected' : ''; ?>>Pending Sales Approval</option>
-                  <option value="Cancelled" <?php echo ($order['status'] === 'Cancelled' || $order['status'] === 'Rejected') ? 'selected' : ''; ?>>Cancelled / Lost</option>
+                <label for="ofStatus">Order status</label>
+                <select id="ofStatus" name="order_status" class="form-control">
+                  <?php foreach ($status_options as $opt) { ?>
+                  <option value="<?php echo $opt; ?>" <?php echo ($current_status === $opt || ($opt === 'Follow Up' && $current_status === 'Open')) ? 'selected' : ''; ?>><?php echo $opt; ?></option>
+                  <?php } ?>
                 </select>
               </div>
             </div>
+            <div class="col-xs-12">
+              <div class="form-group">
+                <label for="ofRemark">Follow-up remarks / operational instructions *</label>
+                <textarea id="ofRemark" name="followup_remark" rows="3" class="form-control" required placeholder="Client conversation notes, commitments and next actions"></textarea>
+              </div>
+            </div>
+          </div>
 
-            <div class="col-sm-12">
-              <div class="form-group" style="margin-bottom: 0;">
-                <label style="font-weight: 700; font-size: 12px; color: #334155; margin-bottom: 4px;">Follow-up Remarks / Operational Instructions *</label>
-                <textarea name="followup_remark" rows="3" class="form-control" placeholder="Enter follow-up details, client conversation notes, or action items..." required style="border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px;"></textarea>
+          <div class="crm-addl">
+            <button type="button" class="crm-addl-toggle" aria-expanded="false" onclick="var p=this.parentNode;var o=!p.classList.contains('is-open');p.classList.toggle('is-open',o);this.setAttribute('aria-expanded',o?'true':'false');">Schedule a meeting<span class="crm-collapse-caret" aria-hidden="true"></span></button>
+            <div class="crm-addl-body">
+              <div class="row crm-addl-grid">
+                <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
+                  <div class="form-group">
+                    <label for="ofMeetDate">Meeting date</label>
+                    <input type="text" id="ofMeetDate" name="m_date" class="form-control datepicker" autocomplete="off">
+                  </div>
+                </div>
+                <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
+                  <div class="form-group">
+                    <label for="ofMeetTime">Meeting time</label>
+                    <input type="text" id="ofMeetTime" name="m_time" class="form-control" placeholder="e.g. 03:00 PM" autocomplete="off">
+                  </div>
+                </div>
+                <div class="col-lg-6 col-md-4 col-xs-12">
+                  <div class="form-group">
+                    <label for="ofMeetRemark">Meeting location / remark</label>
+                    <input type="text" id="ofMeetRemark" name="m_remark" class="form-control" placeholder="Client office or online meeting">
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-
-        <div class="box-footer" style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 14px 20px; display: flex; justify-content: flex-end; gap: 10px;">
-          <a href="<?php echo base_url('manager/orders/followups'); ?>" class="btn btn-default" style="border: 1px solid #cbd5e1; border-radius: 4px; font-weight: 600; padding: 6px 18px;">Cancel</a>
-          <button type="submit" class="btn btn-primary" style="background: #0072f0; border-color: #0072f0; border-radius: 4px; font-weight: 700; padding: 6px 22px;">
-            <i class="fa fa-save" style="margin-right: 5px;"></i> Save Follow-up
-          </button>
+        <div class="box-footer crm-form-actions">
+          <a href="<?php echo base_url($return_to); ?>" class="btn btn-default">Cancel</a>
+          <button type="submit" class="btn btn-primary">Save follow-up</button>
         </div>
-      </form>
-    </div>
+      </div>
+    </form>
 
-    <!-- 3. Follow-up & Activity History -->
-    <div class="box" style="border: 1px solid #e2e8f0; border-radius: 4px; background: #ffffff;">
-      <div class="box-header with-border" style="border-bottom: 1px solid #f1f5f9; padding: 14px 20px;">
-        <h3 class="box-title" style="font-size: 15px; font-weight: 700; color: #0f172a; margin: 0;">
-          <i class="fa fa-history" style="color: #64748b; margin-right: 6px;"></i> Follow-up History &amp; Activity Log
-        </h3>
+    <div class="box crm-plain-box">
+      <div class="box-header with-border">
+        <h3 class="box-title">Follow-up history</h3>
       </div>
       <div class="box-body" style="padding: 0;">
         <?php if (!empty($history)): ?>
           <div class="table-responsive">
-            <table class="table table-striped table-bordered" style="margin-bottom: 0;">
+            <table class="table table-bordered crm-table" style="margin-bottom: 0;">
               <thead>
-                <tr style="background: #f8fafc;">
-                  <th style="font-weight: 700; width: 140px;">Follow-up Date</th>
-                  <th style="font-weight: 700; width: 110px;">Time</th>
-                  <th style="font-weight: 700; width: 130px;">Result / Type</th>
-                  <th style="font-weight: 700;">Remarks / Notes</th>
+                <tr>
+                  <th style="width: 130px;">Date</th>
+                  <th style="width: 100px;">Time</th>
+                  <th style="width: 160px;">Result / Type</th>
+                  <th>Remarks</th>
                 </tr>
               </thead>
               <tbody>
                 <?php foreach ($history as $h): ?>
                   <tr>
-                    <td style="font-weight: 600;"><?php echo !empty($h['followup_date']) ? date('d-m-Y', strtotime($h['followup_date'])) : '-'; ?></td>
+                    <td><?php echo !empty($h['followup_date']) ? date('d-m-Y', strtotime($h['followup_date'])) : '-'; ?></td>
                     <td><?php echo htmlspecialchars($h['followup_time'] ?? '-'); ?></td>
-                    <td><span class="label label-info" style="border-radius: 3px; font-weight: 600;"><?php echo htmlspecialchars($h['followup_result'] ?? 'Follow-up'); ?></span></td>
+                    <td><?php echo htmlspecialchars($h['followup_result'] ?? 'Follow-up'); ?></td>
                     <td style="white-space: normal; line-height: 1.45;"><?php echo nl2br(htmlspecialchars($h['followup_remark'] ?? '')); ?></td>
                   </tr>
                 <?php endforeach; ?>
@@ -141,13 +125,11 @@
             </table>
           </div>
         <?php else: ?>
-          <div style="padding: 30px; text-align: center; color: #94a3b8; font-size: 13px;">
-            No past follow-ups recorded yet for this order.
-          </div>
+          <div style="padding: 24px; text-align: center; color: #94a3b8; font-size: 13px;">No follow-ups recorded for this order yet.</div>
         <?php endif; ?>
       </div>
     </div>
-  </section>
+  </div>
 </div>
 
 <?php require_once(APPPATH . "views/manager/elements/footer.php"); ?>

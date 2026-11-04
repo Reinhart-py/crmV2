@@ -34,38 +34,38 @@
        
        <?php } } ?>
           <?php if (!empty($is_already_lead)) { ?>
-            <span class="btn btn-default" style="cursor:default; background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; font-weight:600; margin-right:5px;">
-              <i class="fa fa-check-circle" style="color:#10b981;"></i> Converted to Lead
+            <span class="btn btn-default" style="cursor:default; background:#f8fafc; color:#065f46; border:1px solid #e2e8f0; font-weight:600; margin-right:5px;">
+              <i class="fa fa-check-circle" style="color:#0f172a;"></i> Converted to Lead
             </span>
             <?php if (!empty($sales_ref_no)) { ?>
-              <span class="btn btn-default" style="cursor:default; background:#f0fdf4; color:#15803d; border:1px solid #86efac; font-weight:600; margin-right:5px;">
-                <i class="fa fa-trophy" style="color:#16a34a;"></i> Converted to Sales (<?php echo htmlspecialchars($sales_ref_no); ?>)
+              <span class="btn btn-default" style="cursor:default; background:#f8fafc; color:#0f172a; border:1px solid #86efac; font-weight:600; margin-right:5px;">
+                <i class="fa fa-trophy" style="color:#0f172a;"></i> Converted to Sales (<?php echo htmlspecialchars($sales_ref_no); ?>)
               </span>
               <?php if (!empty($order_info['id'])) { ?>
-              <a href="<?php echo base_url(); ?>manager/orders/view/<?php echo $order_info['id']; ?>" class="btn btn-default" style="background:#f8fafc; color:#2563eb; border:1px solid #cbd5e1; font-weight:600; margin-right:5px;">
+              <a href="<?php echo base_url(); ?>manager/orders/view/<?php echo $order_info['id']; ?>" class="btn btn-default" style="background:#f8fafc; color:#1e3a8a; border:1px solid #cbd5e1; font-weight:600; margin-right:5px;">
                 <i class="fa fa-shopping-cart"></i> View Order (<?php echo htmlspecialchars($order_ref_no); ?>)
               </a>
               <?php } ?>
             <?php } elseif (!empty($order_ref_no) || (!empty($p_info['order_request_status']) && in_array($p_info['order_request_status'], array('pending', 'approved', 'processed', 'ordered')))) { ?>
               <span class="btn btn-default" style="cursor:default; background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; font-weight:600; margin-right:5px;">
-                <i class="fa fa-hourglass-half" style="color:#2563eb;"></i> Order <?php echo !empty($order_ref_no) ? htmlspecialchars($order_ref_no) : 'Pending Process'; ?>
+                <i class="fa fa-hourglass-half" style="color:#1e3a8a;"></i> Order <?php echo !empty($order_ref_no) ? htmlspecialchars($order_ref_no) : 'Pending Process'; ?>
               </span>
               <?php if (!empty($order_info['id'])) { ?>
-              <a href="<?php echo base_url(); ?>manager/orders/view/<?php echo $order_info['id']; ?>" class="btn btn-default" style="background:#f8fafc; color:#2563eb; border:1px solid #cbd5e1; font-weight:600; margin-right:5px;">
+              <a href="<?php echo base_url(); ?>manager/orders/view/<?php echo $order_info['id']; ?>" class="btn btn-default" style="background:#f8fafc; color:#1e3a8a; border:1px solid #cbd5e1; font-weight:600; margin-right:5px;">
                 <i class="fa fa-shopping-cart"></i> View Order (<?php echo htmlspecialchars($order_ref_no); ?>)
               </a>
               <?php } ?>
             <?php } else { ?>
-              <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#requestOrderModal" style="background:#f59e0b; border-color:#d97706; color:#ffffff; font-weight:600; margin-right:5px;">
+              <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#requestOrderModal" style="background:#475569; border-color:#475569; color:#ffffff; font-weight:600; margin-right:5px;">
                 <i class="fa fa-shopping-cart"></i> Request Order
               </button>
             <?php } ?>
           <?php } elseif (!empty($is_pending_review)) { ?>
-            <span class="btn btn-default" style="cursor:default; background:#fffbeb; color:#92400e; border:1px solid #fde68a; font-weight:600; margin-right:5px;">
-              <i class="fa fa-clock-o" style="color:#f59e0b;"></i> Conversion Request Pending
+            <span class="btn btn-default" style="cursor:default; background:#f8fafc; color:#334155; border:1px solid #e2e8f0; font-weight:600; margin-right:5px;">
+              <i class="fa fa-clock-o" style="color:#475569;"></i> Conversion Request Pending
             </span>
             <?php if (!empty($can_review_conversion)) { ?>
-              <button type="button" class="btn btn-success" data-toggle="modal" data-target="#convertLeadModal" style="background:#16a34a; border-color:#15803d; font-weight:600; margin-right:5px;">
+              <button type="button" class="btn btn-success" data-toggle="modal" data-target="#convertLeadModal" style="background:#0f172a; border-color:#0f172a; font-weight:600; margin-right:5px;">
                 <i class="fa fa-check-circle"></i> Approve &amp; Convert
               </button>
               <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#rejectLeadModal" style="background:#dc2626; border-color:#b91c1c; font-weight:600; margin-right:5px;">
@@ -74,11 +74,11 @@
             <?php } ?>
           <?php } else { ?>
             <?php if (!empty($can_convert_to_lead)) { ?>
-              <button type="button" class="btn btn-success" data-toggle="modal" data-target="#convertLeadModal" style="background:#16a34a; border-color:#15803d; font-weight:600; margin-right:5px;">
+              <button type="button" class="btn btn-success" data-toggle="modal" data-target="#convertLeadModal" style="background:#0f172a; border-color:#0f172a; font-weight:600; margin-right:5px;">
                 <i class="fa fa-check-circle"></i> Convert to Lead
               </button>
             <?php } ?>
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#requestLeadModal" style="background:#2563eb; border-color:#1d4ed8; font-weight:600; margin-right:5px;">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#requestLeadModal" style="background:#1e3a8a; border-color:#1e3a8a; font-weight:600; margin-right:5px;">
               <i class="fa fa-paper-plane"></i> Request Conversion
             </button>
           <?php } ?>
@@ -103,13 +103,13 @@
 </div>
 
 <?php if (!empty($is_locked_for_user)) { ?>
-<div class="alert alert-warning" style="background:#fffbeb; border:1px solid #fde68a; color:#92400e; font-weight:600; padding:12px 16px; margin-bottom:15px; border-radius:6px;">
-  <i class="fa fa-lock" style="font-size:16px; margin-right:8px; color:#d97706;"></i>
+<div class="alert alert-warning" style="background:#f8fafc; border:1px solid #e2e8f0; color:#334155; font-weight:600; padding:12px 16px; margin-bottom:15px; border-radius:6px;">
+  <i class="fa fa-lock" style="font-size:16px; margin-right:8px; color:#475569;"></i>
   This Lead is currently locked because an Order conversion process is active. Editing is restricted to Back Office administrators.
 </div>
 <?php } ?>
 
-<div class="box box-default" style="border-radius:6px; margin-bottom:15px; border-top:3px solid #2563eb;">
+<div class="box box-default" style="border-radius:6px; margin-bottom:15px; border-top:3px solid #1e3a8a;">
   <div class="box-body" style="padding:12px 18px;">
     <div class="row text-center">
       <div class="col-xs-6 col-sm-3" style="border-right:1px solid #e2e8f0;">
@@ -122,7 +122,7 @@
         <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Lead Ref</div>
         <div style="font-size:15px; font-weight:700; color:#0f172a; margin-top:3px;">
           <?php if (!empty($lead_ref_no)) { ?>
-            <span class="label" style="background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; font-size:13px; font-weight:700;"><?php echo htmlspecialchars($lead_ref_no); ?></span>
+            <span class="label" style="background:#f8fafc; color:#065f46; border:1px solid #e2e8f0; font-size:13px; font-weight:700;"><?php echo htmlspecialchars($lead_ref_no); ?></span>
           <?php } else { ?>
             <span style="color:#94a3b8; font-size:13px;">—</span>
           <?php } ?>
@@ -144,7 +144,7 @@
         <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Sales Ref</div>
         <div style="font-size:15px; font-weight:700; color:#0f172a; margin-top:3px;">
           <?php if (!empty($sales_ref_no)) { ?>
-            <span class="label" style="background:#f0fdf4; color:#15803d; border:1px solid #86efac; font-size:13px; font-weight:700;"><?php echo htmlspecialchars($sales_ref_no); ?></span>
+            <span class="label" style="background:#f8fafc; color:#0f172a; border:1px solid #86efac; font-size:13px; font-weight:700;"><?php echo htmlspecialchars($sales_ref_no); ?></span>
           <?php } else { ?>
             <span style="color:#94a3b8; font-size:13px;">—</span>
           <?php } ?>
@@ -176,7 +176,7 @@
             <span class="label label-danger" style="background:#dc2626; color:#ffffff; font-weight:700; padding:2px 7px; border-radius:3px; font-size:12px; margin-left:6px; letter-spacing:0.5px;">DNCR</span>
           <?php } ?>
           <?php if(!empty($p_info['company_status']) && strtolower($p_info['company_status']) == 'closed'){ ?>
-            <span class="label label-primary" style="background:#2563eb; color:#ffffff; font-weight:700; padding:2px 7px; border-radius:3px; font-size:12px; margin-left:6px; letter-spacing:0.5px;">Closed</span>
+            <span class="label label-primary" style="background:#1e3a8a; color:#ffffff; font-weight:700; padding:2px 7px; border-radius:3px; font-size:12px; margin-left:6px; letter-spacing:0.5px;">Closed</span>
           <?php } ?>
         </h3>    
           </div>
@@ -769,7 +769,7 @@
 <div class="box box-default">
       <div class="box-header">
 		<div class="col-sm-12">
-       		<h3 class="box-title"><i class="fa fa-history" style="color:#2563eb;"></i> Ownership &amp; Transfer History</h3>
+       		<h3 class="box-title"><i class="fa fa-history" style="color:#1e3a8a;"></i> Ownership &amp; Transfer History</h3>
         </div>
         </div>
 <div class="box-body">
@@ -802,7 +802,7 @@
 <div class="box box-default">
       <div class="box-header">
 		<div class="col-sm-12">
-       		<h3 class="box-title"><i class="fa fa-history" style="color:#16a34a;"></i> Pipeline &amp; Conversion History</h3>
+       		<h3 class="box-title"><i class="fa fa-history" style="color:#0f172a;"></i> Pipeline &amp; Conversion History</h3>
         </div>
         </div>
 <div class="box-body">
@@ -822,7 +822,7 @@
             <tr>
               <td><?php echo date('d-m-Y h:i A', strtotime($pl['created_at'])); ?></td>
               <td><span class="label label-primary" style="font-size:11px;"><?php echo htmlspecialchars(ucwords(str_replace('_', ' ', $pl['action']))); ?></span></td>
-              <td><?php echo htmlspecialchars(ucfirst($pl['stage_from'] ?? 'database')); ?> &rarr; <strong style="color:#16a34a;"><?php echo htmlspecialchars(ucfirst($pl['stage_to'] ?? 'lead')); ?></strong></td>
+              <td><?php echo htmlspecialchars(ucfirst($pl['stage_from'] ?? 'database')); ?> &rarr; <strong style="color:#0f172a;"><?php echo htmlspecialchars(ucfirst($pl['stage_to'] ?? 'lead')); ?></strong></td>
               <td><?php echo htmlspecialchars($pl['action_by_name'] ?? ('User #'.$pl['action_by'])); ?></td>
               <td><?php echo htmlspecialchars($pl['remarks'] ?? '-'); ?></td>
             </tr>
@@ -840,7 +840,7 @@
     <div class="table-responsive border" style="background:#ffffff; border-radius:8px; border:1px solid #e2e8f0; padding:15px; margin-bottom:20px;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #f1f5f9; padding-bottom:10px;">
         <h4 style="margin:0; font-weight:700; color:#0f172a; font-size:16px;">
-          <i class="fa fa-phone" style="color:#2563eb; margin-right:6px;"></i> Call History &amp; Post-Call AI Intelligence
+          <i class="fa fa-phone" style="color:#1e3a8a; margin-right:6px;"></i> Call History &amp; Post-Call AI Intelligence
         </h4>
         <span class="badge" style="background:#f1f5f9; color:#475569; font-weight:600;"><?php echo count($call_logs); ?> Calls</span>
       </div>
@@ -930,14 +930,14 @@
                   </div>
                 <?php } ?>
                 <?php if(!empty($cl['ai_next_action'])){ ?>
-                  <div style="font-size:11px; color:#2563eb; font-weight:500;">
+                  <div style="font-size:11px; color:#1e3a8a; font-weight:500;">
                     <i class="fa fa-arrow-right"></i> Next: <?php echo htmlspecialchars($cl['ai_next_action']); ?>
                     <?php if(!empty($cl['ai_follow_up_date'])){ echo ' (' . date('d-m-Y', strtotime($cl['ai_follow_up_date'])) . ')'; } ?>
                   </div>
                 <?php } ?>
                 <?php if(!empty($cl['transcript'])){ ?>
                   <details style="margin-top:6px; font-size:11px; color:#64748b;">
-                    <summary style="cursor:pointer; color:#2563eb; font-weight:500;">View Full Transcript</summary>
+                    <summary style="cursor:pointer; color:#1e3a8a; font-weight:500;">View Full Transcript</summary>
                     <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; padding:6px; margin-top:4px; max-height:120px; overflow-y:auto; font-family:monospace; white-space:pre-wrap;">
                       <?php echo htmlspecialchars($cl['transcript']); ?>
                     </div>

@@ -167,7 +167,7 @@
                                             <?php endif; ?>
                                         </td>
                                         <td>
-                                            <a href="<?php echo base_url(); ?>manager/kam/view/<?php echo $li['id']; ?>" class="btn btn-sm btn-default" style="color:#0072f0; font-weight:600; border:1px solid #cbd5e1; border-radius:4px; padding:4px 12px; display:inline-block;" title="View Client Details">
+                                            <a href="<?php echo base_url(); ?>manager/kam/view/<?php echo $li['id']; ?>" class="btn btn-sm btn-default" style="color:#1e3a8a; font-weight:600; border:1px solid #cbd5e1; border-radius:4px; padding:4px 12px; display:inline-block;" title="View Client Details">
                                                 <i class="fa fa-eye"></i> View
                                             </a>
                                         </td>

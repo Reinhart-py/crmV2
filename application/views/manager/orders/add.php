@@ -3,7 +3,7 @@
 <div class="content-wrapper">
   <section class="content-header" style="display:flex; justify-content:space-between; align-items:center; padding:15px 15px 5px 15px;">
     <h1 style="margin:0; font-size:22px; font-weight:800; color:#000000; letter-spacing:-0.02em;">
-      <i class="fa fa-plus-circle" style="color:#000000; margin-right:8px;"></i><?php echo $info['page_heading']; ?>
+      <?php echo $info['page_heading']; ?>
     </h1>
     <div>
       <a href="<?php echo base_url(); ?>manager/orders" class="btn btn-default" style="font-weight:600; background:#ffffff; color:#000000; border:1px solid #000000;">

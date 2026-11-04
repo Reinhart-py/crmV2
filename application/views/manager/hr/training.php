@@ -16,7 +16,7 @@
     <div class="box" style="border: 1px solid #e2e8f0; border-radius: 4px; background: #ffffff;">
       <div class="box-header with-border" style="border-bottom: 1px solid #f1f5f9; padding: 14px 20px;">
         <h3 class="box-title" style="font-size: 15px; font-weight: 700; color: #0f172a; margin: 0;">
-          <i class="fa fa-graduation-cap" style="color: #0072f0; margin-right: 6px;"></i> Professional Training Modules &amp; Compliance Courses
+          <i class="fa fa-graduation-cap" style="color: #1e3a8a; margin-right: 6px;"></i> Professional Training Modules &amp; Compliance Courses
         </h3>
       </div>
       <div class="box-body" style="padding: 20px;">
@@ -26,10 +26,10 @@
               <div class="col-md-6 col-sm-12" style="margin-bottom: 20px;">
                 <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 18px;">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #0072f0;">
+                    <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #1e3a8a;">
                       <?php echo htmlspecialchars($mod['category']); ?>
                     </span>
-                    <span class="label" style="background: <?php echo $mod['progress'] == 100 ? '#16a34a' : ($mod['progress'] > 0 ? '#0072f0' : '#64748b'); ?>; color:#ffffff; font-weight:600; font-size:11px; border-radius:3px;">
+                    <span class="label" style="background: <?php echo $mod['progress'] == 100 ? '#0f172a' : ($mod['progress'] > 0 ? '#1e3a8a' : '#64748b'); ?>; color:#ffffff; font-weight:600; font-size:11px; border-radius:3px;">
                       <?php echo htmlspecialchars($mod['status']); ?> (<?php echo $mod['progress']; ?>%)
                     </span>
                   </div>
@@ -41,18 +41,20 @@
                   </p>
                   
                   <div style="background: #e2e8f0; border-radius: 4px; height: 8px; overflow: hidden; margin-bottom: 12px;">
-                    <div style="background: #0072f0; height: 100%; width: <?php echo $mod['progress']; ?>%; border-radius: 4px;"></div>
+                    <div style="background: #1e3a8a; height: 100%; width: <?php echo $mod['progress']; ?>%; border-radius: 4px;"></div>
                   </div>
 
                   <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #64748b;">
                     <span><i class="fa fa-clock-o"></i> Duration: <?php echo htmlspecialchars($mod['duration']); ?></span>
-                    <button type="button" class="btn btn-sm btn-primary" style="background: #0072f0; border-color: #0072f0; border-radius: 4px; font-weight: 600; padding: 3px 12px;">
+                    <button type="button" class="btn btn-sm btn-primary" style="background: #1e3a8a; border-color: #1e3a8a; border-radius: 4px; font-weight: 600; padding: 3px 12px;">
                       <?php echo $mod['progress'] == 100 ? 'Review Module' : 'Continue Course'; ?>
                     </button>
                   </div>
                 </div>
               </div>
             <?php endforeach; ?>
+          <?php else: ?>
+            <div class="col-xs-12"><div style="padding: 24px; text-align: center; color: #64748b; font-size: 13px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px;">No training modules have been assigned to you yet.</div></div>
           <?php endif; ?>
         </div>
       </div>

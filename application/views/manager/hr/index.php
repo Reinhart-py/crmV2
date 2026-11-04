@@ -46,7 +46,7 @@
         margin-top: 6px;
       }
       .hr-progress-fill {
-        background: #0072f0;
+        background: #1e3a8a;
         height: 100%;
         border-radius: 999px;
         transition: width 0.3s ease;
@@ -1000,7 +1000,7 @@
 
               <div id="gratuityResultBox" style="margin-top:20px; padding:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; display:none;">
                 <div style="font-size:12px; color:#64748b; text-transform:uppercase;">Estimated Gratuity Payable</div>
-                <div id="gratuityResultValue" style="font-size:24px; font-weight:700; color:#0072f0; margin-top:4px;">0.00</div>
+                <div id="gratuityResultValue" style="font-size:24px; font-weight:700; color:#1e3a8a; margin-top:4px;">0.00</div>
                 <div id="gratuityResultFormula" style="font-size:11px; color:#475569; margin-top:4px;"></div>
               </div>
             </div>

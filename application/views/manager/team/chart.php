@@ -102,14 +102,14 @@
     cursor: pointer;
 }
 .tree-card:hover {
-    border-color: #0072f0;
+    border-color: #1e3a8a;
     box-shadow: 0 6px 16px rgba(0, 114, 240, 0.12);
     transform: translateY(-2px);
     color: #0f172a;
 }
 .tree-card.root-card {
-    background: linear-gradient(135deg, #0072f0 0%, #0056b3 100%);
-    border-color: #0056b3;
+    background: linear-gradient(135deg, #1e3a8a 0%, #172554 100%);
+    border-color: #172554;
     color: #ffffff;
     box-shadow: 0 4px 14px rgba(0, 114, 240, 0.25);
 }
@@ -267,8 +267,8 @@
     transition: all 0.15s ease;
 }
 .tree-subcard:hover {
-    border-color: #0072f0;
-    color: #0072f0;
+    border-color: #1e3a8a;
+    color: #1e3a8a;
     transform: translateY(-1px);
     box-shadow: 0 3px 8px rgba(0, 114, 240, 0.1);
 }

@@ -23,7 +23,7 @@
         <?php if((isset($p_info['name']))&&(!empty($p_info['name']))){echo htmlspecialchars($p_info['name']);}else echo ""; ?>
       </h3>
       <?php if (!empty($p_info['role_title'])) { ?>
-        <div style="font-size:12px; font-weight:700; color:#0072f0; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;"><?php echo htmlspecialchars($p_info['role_title']); ?></div>
+        <div style="font-size:12px; font-weight:700; color:#1e3a8a; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;"><?php echo htmlspecialchars($p_info['role_title']); ?></div>
       <?php } ?>
       <span style="font-size:12px; color:#64748b;"><?php echo htmlspecialchars($p_info['email'] ?? ''); ?></span>
     </div>
@@ -38,6 +38,9 @@
     </a>
   </div>
 </div>
+<details class="pf-details col-xs-12">
+<summary>Personal and company details</summary>
+<div class="row">
   <div class="col-md-6">
       <div class="table-responsive border">
           <table class="table">
@@ -50,7 +53,7 @@
               <?php if (!empty($p_info['role_title'])) { ?>
               <tr>
                 <th scope="col">Role</th>
-                <td><span class="label label-primary" style="background:#0072f0; font-size:11px; padding:3px 8px;"><?php echo htmlspecialchars($p_info['role_title']); ?></span></td>
+                <td><span class="label label-primary" style="background:#1e3a8a; font-size:11px; padding:3px 8px;"><?php echo htmlspecialchars($p_info['role_title']); ?></span></td>
               </tr>
               <?php } ?>
    
@@ -324,199 +327,62 @@
   </div>
 
 </div>
+</details>
+</div>
 </div>
 
-    <!-- <div class="box product-box-default box-solid">
-      <div class="box-header with-border">
-        <h3 class="box-title" style="text-transform:capitalize"><b>
-          <?php //if((isset($p_info['name']))&&(!empty($p_info['name']))){echo $p_info['name'];}else echo ""; ?>
-          </b></h3>
-          
-          </div>
-        <div class="box-body">
-          <div class="row user-view-information">
-
-              <div class="col-xs-4 col-md-2">Name</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['name']; ?></div>
-              <div class="col-xs-4 col-md-2">Gender</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['gender']; ?></div>
-
-              <div class="col-xs-4 col-md-2">DOB</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['dob']; ?></div>
-
-              <div class="col-xs-4 col-md-2">Email</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['email']; ?></div>
-
-
-              <div class="col-xs-4 col-md-2">Mobile</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['mobile']; ?></div>
-
-              <div class="col-xs-4 col-md-3">UAE Alternate Contect No</div>
-              <div class="col-xs-8 col-md-3"><?//php echo $p_info['uae_mobile']; ?></div>
-
-
-              <div class="col-xs-4 col-md-2">Address</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['address']; ?></div>
-
-              <div class="col-xs-4 col-md-2">City</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['city']; ?></div>
-
-              <div class="col-xs-4 col-md-2">Country</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['country_name']; ?></div>
-
-              <div class="col-xs-4 col-md-2">State / Province / Emirate</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['state_name']; ?></div>
-
-
-              <div class="col-xs-4 col-md-2">User Name</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['c_username']; ?></div>
-              <div class="col-xs-4 col-md-2">Employee ID</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['emp_id']; ?></div>
-              <div class="col-xs-4 col-md-2">Salary</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['c_salary']; ?></div>
-              <div class="col-xs-4 col-md-2">Date of Joining</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['c_doj']; ?></div>
-              <div class="col-xs-4 col-md-2">Date of Leaving</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['c_dol']; ?></div>
-              <div class="col-xs-4 col-md-2">Department</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['department']; ?></div>
-              <div class="col-xs-4 col-md-2">Office Code / Work Location</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['office']; ?></div>
-              <div class="col-xs-4 col-md-2">Nationality</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['national']; ?></div>
-              <div class="col-xs-4 col-md-2">Blood Group</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['blood']; ?></div>
-              <div class="col-xs-4 col-md-2">Passport Number</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['p_no']; ?></div>
-
-
-              <div class="col-xs-4 col-md-2">Passport Expiry Date</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['p_exdate']; ?></div>
-
-              <div class="col-xs-4 col-md-2">Visa Type</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['visa_type']; ?></div>
-
-
-              <div class="col-xs-4 col-md-2">Visa Reference No.</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['visa_no']; ?></div>
-
-              <div class="col-xs-4 col-md-2">Visa Issue By</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['visa_by']; ?></div>
-
-              <div class="col-xs-4 col-md-2">Visa Expiry Date</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['visa_expiry']; ?></div>
-
-              <div class="col-xs-4 col-md-2">National ID / EID Number</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['eid_no']; ?></div>
-
-              <div class="col-xs-4 col-md-2">EID Expiry Date</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['eid_expiry']; ?></div>
-
-              <div class="col-xs-4 col-md-3">Emg. Contact Person Name</div>
-              <div class="col-xs-8 col-md-3"><?//php echo $p_info['h_contact_name']; ?></div>
-
-
-              <div class="col-xs-4 col-md-3">Emg. Contact Person Relation</div>
-              <div class="col-xs-8 col-md-3"><?//php echo $p_info['h_contact_relation']; ?></div>
-
-              <div class="col-xs-4 col-md-3">Emg. Contact Person Contact No.</div>
-              <div class="col-xs-8 col-md-3"><?//php echo $p_info['h_contact_no']; ?></div>
-
-              <div class="col-xs-4 col-md-3">Emg. Contact Person Alternate Contact No.</div>
-              <div class="col-xs-8 col-md-3"><?//php echo $p_info['h_contact_no2']; ?></div>
-
-              <div class="col-xs-4 col-md-2">Bank Name</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['bank']; ?></div>
-
-              <div class="col-xs-4 col-md-2">Bank Country</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['bank_country']; ?></div>
-
-              <div class="col-xs-4 col-md-2">Bank Account Number</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['bank_no']; ?></div>
-
-              <div class="col-xs-4 col-md-3">IFSC/Sort Code/Branch Code</div>
-              <div class="col-xs-8 col-md-3"><?//php echo $p_info['ifsc']; ?></div>
-
-              <div class="col-xs-4 col-md-2">IBAN</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['iban']; ?></div>
-
-              <div class="col-xs-4 col-md-2">SWIFT</div>
-              <div class="col-xs-8 col-md-4"><?//php echo $p_info['swift']; ?></div>
-
-
-
-
-
-          </div>
-        </div>
-      </div>
-    </div>
-   
-
-<!-- HR & Employee Services Portal Section -->
-<div class="row" style="margin-top: 25px;">
+<div class="row" style="margin-top: 12px;">
   <div class="col-xs-12">
     <div class="box box-default" style="border: 1px solid #e2e8f0; border-radius: 6px; background: #ffffff; box-shadow: 0 4px 14px rgba(0,0,0,0.03);">
       <div class="box-header with-border" style="padding: 16px 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
         <h3 class="box-title" style="font-size: 16px; font-weight: 700; color: #0f172a; margin: 0;">
-          <i class="fa fa-id-badge" style="color: #0072f0; margin-right: 8px;"></i> HR &amp; Employee Services
+          <i class="fa fa-id-badge" style="color: #1e3a8a; margin-right: 8px;"></i> HR &amp; Employee Services
         </h3>
         <span style="font-size: 12px; color: #64748b; font-weight: 500;">Access your personal employee workspace and development tools</span>
       </div>
 
       <div class="box-body" style="padding: 20px;">
-        <!-- HR Navigation Tabs -->
         <ul class="nav nav-pills" id="hrProfileTabs" style="margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; gap: 6px; display: flex; flex-wrap: wrap;">
-          <li class="active"><a href="#tabAttendance" data-toggle="pill" style="border-radius: 4px; font-weight: 600; padding: 8px 16px;"><i class="fa fa-map-marker" style="margin-right: 5px;"></i> Attendance</a></li>
-          <li><a href="#tabShifts" data-toggle="pill" style="border-radius: 4px; font-weight: 600; padding: 8px 16px;"><i class="fa fa-clock-o" style="margin-right: 5px;"></i> Shifts</a></li>
-          <li><a href="#tabHoliday" data-toggle="pill" style="border-radius: 4px; font-weight: 600; padding: 8px 16px;"><i class="fa fa-calendar-check-o" style="margin-right: 5px;"></i> Holiday Request</a></li>
-          <li><a href="#tabEvents" data-toggle="pill" style="border-radius: 4px; font-weight: 600; padding: 8px 16px;"><i class="fa fa-calendar" style="margin-right: 5px;"></i> Events and Plans</a></li>
-          <li><a href="#tabTraining" data-toggle="pill" style="border-radius: 4px; font-weight: 600; padding: 8px 16px;"><i class="fa fa-graduation-cap" style="margin-right: 5px;"></i> Training</a></li>
-          <li><a href="#tabTopics" data-toggle="pill" style="border-radius: 4px; font-weight: 600; padding: 8px 16px;"><i class="fa fa-search" style="margin-right: 5px;"></i> Search Topics</a></li>
+          <li class="active"><a href="#tabAttendance" data-toggle="pill" style="border-radius: 4px; font-weight: 600; padding: 8px 16px;">Attendance</a></li>
+          <li><a href="#tabShifts" data-toggle="pill" style="border-radius: 4px; font-weight: 600; padding: 8px 16px;">Shifts</a></li>
+          <li><a href="#tabHoliday" data-toggle="pill" style="border-radius: 4px; font-weight: 600; padding: 8px 16px;">Holiday Request</a></li>
+          <li><a href="#tabEvents" data-toggle="pill" style="border-radius: 4px; font-weight: 600; padding: 8px 16px;">Events and Plans</a></li>
+          <li><a href="#tabTraining" data-toggle="pill" style="border-radius: 4px; font-weight: 600; padding: 8px 16px;">Training</a></li>
+          <li><a href="#tabTopics" data-toggle="pill" style="border-radius: 4px; font-weight: 600; padding: 8px 16px;">Search Topics</a></li>
         </ul>
 
         <div class="tab-content" style="padding-top: 10px;">
-          <!-- 1. Attendance Tab -->
           <div class="tab-pane active" id="tabAttendance">
+            <?php $my_att = $this->ci_admin_model->hr_attendance_summary((int)$this->session->userdata('manager_id')); ?>
             <div class="row">
-              <div class="col-md-4 col-sm-12" style="margin-bottom: 15px;">
-                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 18px; text-align: center;">
-                  <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; display: block; margin-bottom: 8px;">Today's Attendance</span>
-                  <div style="font-size: 22px; font-weight: 800; color: #16a34a; margin-bottom: 10px;">
-                    <i class="fa fa-check-circle"></i> Clocked In
-                  </div>
-                  <span style="font-size: 12px; color: #64748b; display: block; margin-bottom: 14px;">First Check-in Today: <strong>08:58 AM</strong></span>
-                  <a href="<?php echo base_url('manager/hr/attendance'); ?>" class="btn btn-primary" style="background: #0072f0; border-color: #0072f0; border-radius: 4px; font-weight: 600; width: 100%;">
-                    <i class="fa fa-history"></i> View Full Attendance Log
-                  </a>
+              <div class="col-md-4 col-sm-12" style="margin-bottom: 12px;">
+                <div class="pf-panel pf-panel-center">
+                  <span class="pf-item-type" style="color: var(--crm-muted);">Today</span>
+                  <?php if (!empty($my_att['today'])) { ?>
+                    <div class="pf-stat"><?php echo !empty($my_att['today']['out_time']) ? 'Clocked out' : 'Clocked in'; ?></div>
+                    <span class="pf-note" style="margin-top: 0;">In <?php echo !empty($my_att['today']['in_time']) ? date('h:i A', strtotime($my_att['today']['in_time'])) : '-'; ?><?php echo !empty($my_att['today']['out_time']) ? ' &middot; Out ' . date('h:i A', strtotime($my_att['today']['out_time'])) : ''; ?></span>
+                  <?php } else { ?>
+                    <div class="pf-stat">Not clocked in</div>
+                  <?php } ?>
+                  <a href="<?php echo base_url('manager/hr/attendance'); ?>" class="btn btn-primary btn-sm" style="margin-top: 10px;">Open attendance</a>
                 </div>
               </div>
               <div class="col-md-8 col-sm-12">
                 <div class="row">
-                  <div class="col-sm-4" style="margin-bottom: 15px;">
-                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 14px; text-align: center;">
-                      <span style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Days Present</span>
-                      <h3 style="font-size: 24px; font-weight: 800; color: #0072f0; margin: 6px 0 0 0;">22</h3>
-                    </div>
+                  <div class="col-xs-4" style="margin-bottom: 12px;">
+                    <div class="pf-panel pf-panel-center"><span class="pf-item-type" style="color: var(--crm-muted);">Days present</span><div class="pf-stat"><?php echo (int)$my_att['days_present']; ?></div><span class="pf-note" style="margin-top: 0;"><?php echo date('F'); ?></span></div>
                   </div>
-                  <div class="col-sm-4" style="margin-bottom: 15px;">
-                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 14px; text-align: center;">
-                      <span style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Late Logins</span>
-                      <h3 style="font-size: 24px; font-weight: 800; color: #d97706; margin: 6px 0 0 0;">0</h3>
-                    </div>
+                  <div class="col-xs-4" style="margin-bottom: 12px;">
+                    <div class="pf-panel pf-panel-center"><span class="pf-item-type" style="color: var(--crm-muted);">Late logins</span><div class="pf-stat"><?php echo (int)$my_att['late_logins']; ?></div><span class="pf-note" style="margin-top: 0;"><?php echo date('F'); ?></span></div>
                   </div>
-                  <div class="col-sm-4" style="margin-bottom: 15px;">
-                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 14px; text-align: center;">
-                      <span style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">GPS Compliance</span>
-                      <h3 style="font-size: 24px; font-weight: 800; color: #16a34a; margin: 6px 0 0 0;">100%</h3>
-                    </div>
+                  <div class="col-xs-4" style="margin-bottom: 12px;">
+                    <div class="pf-panel pf-panel-center"><span class="pf-item-type" style="color: var(--crm-muted);">GPS compliance</span><div class="pf-stat"><?php echo $my_att['gps_compliance'] === null ? '-' : (int)$my_att['gps_compliance'] . '%'; ?></div><span class="pf-note" style="margin-top: 0;"><?php echo date('F'); ?></span></div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- 2. Shifts Tab -->
           <div class="tab-pane" id="tabShifts">
             <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 18px;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
@@ -525,117 +391,102 @@
                   Manage Shifts
                 </a>
               </div>
+              <?php
+                $my_shift_uid = (int)$this->session->userdata('manager_id');
+                $my_shift = $this->db->select('S.shift_name, S.start_time, S.end_time, S.grace_period_mins, S.working_hours, S.status, SA.effective_from, SA.effective_to')
+                  ->from('ci_hr_shift_assignments SA')
+                  ->join('ci_hr_shifts S', 'S.id = SA.shift_id', 'inner')
+                  ->where('SA.user_id', $my_shift_uid)
+                  ->where('SA.effective_from <=', date('Y-m-d'))
+                  ->where('(SA.effective_to IS NULL OR SA.effective_to >= "' . date('Y-m-d') . '")', null, false)
+                  ->order_by('SA.effective_from', 'DESC')
+                  ->limit(1)
+                  ->get()->row_array();
+              ?>
+              <?php if (!empty($my_shift)) { ?>
               <div class="row">
                 <div class="col-md-6">
                   <table class="table table-bordered" style="background: #ffffff; margin-bottom: 0;">
-                    <tr><th style="width: 140px; font-weight: 600;">Shift Name</th><td>General Corporate Shift</td></tr>
-                    <tr><th style="font-weight: 600;">Working Hours</th><td>09:00 AM - 06:00 PM (9.0 Hours)</td></tr>
-                    <tr><th style="font-weight: 600;">Grace Period</th><td>15 Minutes</td></tr>
+                    <tr><th style="width: 140px; font-weight: 600;">Shift Name</th><td><?php echo htmlspecialchars($my_shift['shift_name']); ?></td></tr>
+                    <tr><th style="font-weight: 600;">Working Hours</th><td><?php echo date('h:i A', strtotime($my_shift['start_time'])) . ' - ' . date('h:i A', strtotime($my_shift['end_time'])) . ' (' . number_format((float)$my_shift['working_hours'], 1) . ' Hours)'; ?></td></tr>
+                    <tr><th style="font-weight: 600;">Grace Period</th><td><?php echo (int)$my_shift['grace_period_mins']; ?> Minutes</td></tr>
                   </table>
                 </div>
                 <div class="col-md-6">
                   <table class="table table-bordered" style="background: #ffffff; margin-bottom: 0;">
-                    <tr><th style="width: 140px; font-weight: 600;">Working Days</th><td>Monday to Friday</td></tr>
-                    <tr><th style="font-weight: 600;">Weekly Off</th><td>Saturday, Sunday</td></tr>
-                    <tr><th style="font-weight: 600;">Shift Status</th><td><span class="label label-success" style="border-radius: 3px;">Active</span></td></tr>
+                    <tr><th style="width: 140px; font-weight: 600;">Effective From</th><td><?php echo date('d M Y', strtotime($my_shift['effective_from'])); ?></td></tr>
+                    <tr><th style="font-weight: 600;">Effective To</th><td><?php echo !empty($my_shift['effective_to']) ? date('d M Y', strtotime($my_shift['effective_to'])) : 'Ongoing'; ?></td></tr>
+                    <tr><th style="font-weight: 600;">Shift Status</th><td><span class="label label-primary"><?php echo htmlspecialchars($my_shift['status']); ?></span></td></tr>
                   </table>
                 </div>
               </div>
-            </div>
+              <?php } else { ?>
+              <div style="padding: 16px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; color: #64748b; font-size: 13px;">No shift is currently assigned to you. Contact HR to have a shift assigned.</div>
+              <?php } ?>            </div>
           </div>
 
-          <!-- 3. Holiday Request Tab -->
           <div class="tab-pane" id="tabHoliday">
+            <?php $my_leave = $this->ci_admin_model->hr_leave_summary((int)$this->session->userdata('manager_id')); ?>
             <div class="row">
-              <div class="col-md-6" style="margin-bottom: 15px;">
-                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 18px;">
-                  <h4 style="margin: 0 0 12px 0; font-size: 15px; font-weight: 700; color: #0f172a;">Annual &amp; Statutory Leave Balances</h4>
+              <div class="col-md-7" style="margin-bottom: 12px;">
+                <div class="pf-panel">
+                  <h4 class="pf-panel-title">Leave taken this year</h4>
+                  <?php if (!empty($my_leave['used_by_type'])) { ?>
                   <table class="table table-bordered" style="background: #ffffff; margin-bottom: 0;">
-                    <tr><th style="font-weight: 600;">Annual Leave</th><td><strong>22 Days</strong> Remaining (8 Days Used)</td></tr>
-                    <tr><th style="font-weight: 600;">Sick Leave</th><td><strong>13 Days</strong> Remaining (2 Days Used)</td></tr>
-                    <tr><th style="font-weight: 600;">Public Holidays</th><td>Observed as per UAE Official Federal Calendar</td></tr>
+                    <?php foreach ($my_leave['used_by_type'] as $lv) { ?>
+                    <tr><th style="font-weight: 600; width: 50%;"><?php echo htmlspecialchars($lv['leave_type']); ?></th><td><?php echo (int)$lv['days']; ?> day<?php echo ((int)$lv['days'] === 1) ? '' : 's'; ?> approved</td></tr>
+                    <?php } ?>
                   </table>
+                  <?php } else { ?>
+                  <div class="pf-empty">No approved leave recorded for <?php echo date('Y'); ?>.</div>
+                  <?php } ?>
+                  <div class="pf-note"><?php echo (int)$my_leave['pending']; ?> request<?php echo ((int)$my_leave['pending'] === 1) ? '' : 's'; ?> awaiting approval</div>
                 </div>
               </div>
-              <div class="col-md-6" style="margin-bottom: 15px;">
-                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 18px; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100%;">
-                  <span style="font-size: 13px; color: #475569; margin-bottom: 14px;">Need time off for vacation, emergency, or medical rest?</span>
-                  <a href="<?php echo base_url('manager/hr/leaves'); ?>" class="btn btn-primary" style="background: #0072f0; border-color: #0072f0; border-radius: 4px; font-weight: 700; padding: 10px 20px;">
-                    <i class="fa fa-calendar-plus-o"></i> Submit New Holiday / Leave Request
-                  </a>
+              <div class="col-md-5" style="margin-bottom: 12px;">
+                <div class="pf-panel pf-panel-center">
+                  <span class="pf-note" style="margin: 0 0 12px;">Request time off for vacation, emergencies or medical rest.</span>
+                  <a href="<?php echo base_url('manager/hr/leaves'); ?>" class="btn btn-primary">Submit holiday / leave request</a>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- 4. Events and Plans Tab -->
           <div class="tab-pane" id="tabEvents">
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 18px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #0f172a;">Upcoming Company Events &amp; Team Plans</h4>
-                <a href="<?php echo base_url('manager/hr/events_plans'); ?>" class="btn btn-sm btn-default" style="border: 1px solid #cbd5e1; font-weight: 600; border-radius: 4px;">
-                  View All Events
-                </a>
+            <?php $my_events = $this->ci_admin_model->hr_upcoming_events((int)$this->session->userdata('manager_id'), 6); ?>
+            <div class="pf-panel">
+              <div class="pf-panel-head">
+                <h4 class="pf-panel-title">Upcoming events and plans</h4>
+                <a href="<?php echo base_url('manager/hr/events_plans'); ?>" class="btn btn-sm btn-default">View all</a>
               </div>
+              <?php if (!empty($my_events)) { ?>
               <div class="row">
+                <?php foreach ($my_events as $ev) { ?>
                 <div class="col-md-4 col-sm-6" style="margin-bottom: 10px;">
-                  <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 14px;">
-                    <span class="label" style="background: #0072f0; font-size: 10px; border-radius: 2px;">Company Event</span>
-                    <h5 style="font-weight: 700; margin: 8px 0 4px 0; color: #0f172a;">Annual Gala &amp; Awards</h5>
-                    <span style="font-size: 12px; color: #64748b;"><i class="fa fa-calendar-o"></i> 20 Dec 2026</span>
+                  <div class="pf-item">
+                    <span class="pf-item-type"><?php echo htmlspecialchars($ev['event_type']); ?></span>
+                    <h5 class="pf-item-title"><?php echo htmlspecialchars($ev['title']); ?></h5>
+                    <span class="pf-note"><?php echo date('d M Y', strtotime($ev['event_date'])) . ' &middot; ' . htmlspecialchars($ev['event_time']); ?><?php echo !empty($ev['location']) ? ' &middot; ' . htmlspecialchars($ev['location']) : ''; ?></span>
                   </div>
                 </div>
-                <div class="col-md-4 col-sm-6" style="margin-bottom: 10px;">
-                  <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 14px;">
-                    <span class="label" style="background: #16a34a; font-size: 10px; border-radius: 2px;">Strategic Plan</span>
-                    <h5 style="font-weight: 700; margin: 8px 0 4px 0; color: #0f172a;">Q1 Sales Kickoff</h5>
-                    <span style="font-size: 12px; color: #64748b;"><i class="fa fa-calendar-o"></i> 11 Nov 2026</span>
-                  </div>
-                </div>
-                <div class="col-md-4 col-sm-6" style="margin-bottom: 10px;">
-                  <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 14px;">
-                    <span class="label" style="background: #7c3aed; font-size: 10px; border-radius: 2px;">Workshop</span>
-                    <h5 style="font-weight: 700; margin: 8px 0 4px 0; color: #0f172a;">Client Retention &amp; SLA</h5>
-                    <span style="font-size: 12px; color: #64748b;"><i class="fa fa-calendar-o"></i> 18 Nov 2026</span>
-                  </div>
-                </div>
+                <?php } ?>
               </div>
+              <?php } else { ?>
+              <div class="pf-empty">No upcoming events or plans have been scheduled.</div>
+              <?php } ?>
             </div>
           </div>
 
-          <!-- 5. Training Tab -->
           <div class="tab-pane" id="tabTraining">
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 18px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #0f172a;">Learning &amp; Professional Development</h4>
-                <a href="<?php echo base_url('manager/hr/training'); ?>" class="btn btn-sm btn-default" style="border: 1px solid #cbd5e1; font-weight: 600; border-radius: 4px;">
-                  Access LMS
-                </a>
+            <div class="pf-panel">
+              <div class="pf-panel-head">
+                <h4 class="pf-panel-title">Learning and development</h4>
+                <a href="<?php echo base_url('manager/hr/training'); ?>" class="btn btn-sm btn-default">Open training</a>
               </div>
-              <div class="row">
-                <div class="col-md-6" style="margin-bottom: 10px;">
-                  <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 14px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                      <strong style="font-size: 13.5px; color: #0f172a;">Seven Strokes CRM Mastery</strong>
-                      <span class="label label-success" style="border-radius: 3px;">100% Completed</span>
-                    </div>
-                    <span style="font-size: 12px; color: #64748b;">Core pipeline and order processing certification</span>
-                  </div>
-                </div>
-                <div class="col-md-6" style="margin-bottom: 10px;">
-                  <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 14px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                      <strong style="font-size: 13.5px; color: #0f172a;">Enterprise Sales &amp; Closing</strong>
-                      <span class="label label-primary" style="background: #0072f0; border-radius: 3px;">65% In Progress</span>
-                    </div>
-                    <span style="font-size: 12px; color: #64748b;">Objection handling &amp; enterprise client pitching</span>
-                  </div>
-                </div>
-              </div>
+              <div class="pf-empty">No training modules have been assigned to you yet.</div>
             </div>
           </div>
 
-          <!-- 6. Search Topics Tab -->
           <div class="tab-pane" id="tabTopics">
             <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 18px;">
               <h4 style="margin: 0 0 12px 0; font-size: 15px; font-weight: 700; color: #0f172a;">Search Employee Handbook &amp; Policies</h4>
@@ -643,7 +494,7 @@
                 <div class="input-group">
                   <input type="text" name="q" class="form-control" placeholder="Search leave rules, health insurance, code of conduct, shift timings..." style="border: 1px solid #cbd5e1; border-radius: 4px 0 0 4px; height: 40px;">
                   <span class="input-group-btn">
-                    <button type="submit" class="btn btn-primary" style="background: #0072f0; border-color: #0072f0; border-radius: 0 4px 4px 0; height: 40px; font-weight: 700;">
+                    <button type="submit" class="btn btn-primary" style="background: #1e3a8a; border-color: #1e3a8a; border-radius: 0 4px 4px 0; height: 40px; font-weight: 700;">
                       <i class="fa fa-search"></i> Search Topics
                     </button>
                   </span>

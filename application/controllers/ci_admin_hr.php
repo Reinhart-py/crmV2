@@ -1013,11 +1013,7 @@ class Ci_admin_hr extends CI_Controller {
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$data['is_admin'] = ($cur_role === 1 || $cur_uid === 1);
 
-		$events = array(
-			array('id' => 1, 'title' => 'Annual Performance & Awards Gala', 'event_type' => 'Company Event', 'event_date' => date('Y-12-20'), 'event_time' => '07:00 PM', 'location' => 'Grand Ballroom, Dubai', 'description' => 'Annual celebration of top achievers and team milestones.'),
-			array('id' => 2, 'title' => 'Q1 Sales & Strategy Kickoff', 'event_type' => 'Strategic Plan', 'event_date' => date('Y-m-d', strtotime('+7 days')), 'event_time' => '10:00 AM', 'location' => 'Main Conference Room & Zoom', 'description' => 'Reviewing corporate revenue targets, client verticals and expansion goals.'),
-			array('id' => 3, 'title' => 'Customer Success & Retention Workshop', 'event_type' => 'Training Event', 'event_date' => date('Y-m-d', strtotime('+14 days')), 'event_time' => '02:30 PM', 'location' => 'Training Room B', 'description' => 'Interactive session for account managers on onboarding SLA and client retention.')
-		);
+		$events = $this->ci_admin_model->hr_upcoming_events($cur_uid);
 		$data['events'] = $events;
 
 		$this->load->view('manager/hr/events_plans', $data);
@@ -1034,12 +1030,7 @@ class Ci_admin_hr extends CI_Controller {
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$data['is_admin'] = ($cur_role === 1 || $cur_uid === 1);
 
-		$modules = array(
-			array('id' => 1, 'title' => 'Seven Strokes CRM Mastery & Workflow Standard', 'category' => 'Core Systems', 'duration' => '45 mins', 'status' => 'Completed', 'progress' => 100, 'description' => 'Complete walkthrough of database leads, pipeline conversions, and order processing.'),
-			array('id' => 2, 'title' => 'Enterprise Sales Closing & Objection Handling', 'category' => 'Sales Academy', 'duration' => '60 mins', 'status' => 'In Progress', 'progress' => 65, 'description' => 'Key techniques for dealing with enterprise corporate decision makers in the UAE market.'),
-			array('id' => 3, 'title' => 'UAE Corporate Tax & VAT Regulatory Essentials', 'category' => 'Product Knowledge', 'duration' => '30 mins', 'status' => 'Pending', 'progress' => 0, 'description' => 'Compliance principles, FTA filings, and service scope advisory for accounting clients.'),
-			array('id' => 4, 'title' => 'Customer Onboarding, KYC & Anti-Money Laundering', 'category' => 'Compliance', 'duration' => '40 mins', 'status' => 'Completed', 'progress' => 100, 'description' => 'Mandatory annual AML and documentation compliance verification module.')
-		);
+		$modules = array();
 		$data['modules'] = $modules;
 
 		$this->load->view('manager/hr/training', $data);

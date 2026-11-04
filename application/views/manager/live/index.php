@@ -56,7 +56,7 @@
     display: inline-block;
     width: 4px;
     height: 16px;
-    background: #0072f0;
+    background: #1e3a8a;
     border-radius: 2px;
 }
 .live-sheet-table-card {
@@ -117,19 +117,19 @@
 }
 
 .live-excel-table th.col-header-today {
-    background: #ecfdf5 !important;
+    background: #f8fafc !important;
     color: #065f46 !important;
-    border-bottom: 2px solid #10b981 !important;
+    border-bottom: 2px solid #0f172a !important;
 }
 .live-excel-table td.col-val-today {
-    background: #f0fdf4 !important;
-    color: #047857 !important;
+    background: #f8fafc !important;
+    color: #0f172a !important;
 }
 
 .live-excel-table th.col-header-7d {
-    background: #fffbeb !important;
-    color: #92400e !important;
-    border-bottom: 2px solid #f59e0b !important;
+    background: #f8fafc !important;
+    color: #334155 !important;
+    border-bottom: 2px solid #475569 !important;
 }
 .live-excel-table td.col-val-7d {
     background: #fefce8 !important;
@@ -139,21 +139,21 @@
 .live-excel-table th.col-header-month {
     background: #eff6ff !important;
     color: #1e40af !important;
-    border-bottom: 2px solid #3b82f6 !important;
+    border-bottom: 2px solid #1e3a8a !important;
 }
 .live-excel-table td.col-val-month {
-    background: #f0f9ff !important;
-    color: #0284c7 !important;
+    background: #eff6ff !important;
+    color: #1e3a8a !important;
 }
 
 .live-excel-table th.col-header-quarter {
     background: #f5f3ff !important;
     color: #5b21b6 !important;
-    border-bottom: 2px solid #8b5cf6 !important;
+    border-bottom: 2px solid #1e3a8a !important;
 }
 .live-excel-table td.col-val-quarter {
     background: #faf5ff !important;
-    color: #7c3aed !important;
+    color: #1e3a8a !important;
 }
 
 .live-excel-table tr:hover td {
@@ -167,7 +167,7 @@
 }
 .live-excel-table td.col-perf-name {
     font-weight: 600;
-    color: #0072f0;
+    color: #1e3a8a;
     width: 34%;
 }
 

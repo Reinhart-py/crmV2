@@ -6,97 +6,137 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    min-height: 60px;
-    height: 60px;
+    min-height: 58px;
+    height: 58px;
     border-radius: 8px !important;
     padding: 7px 12px !important;
-    color: #ffffff !important;
     margin-bottom: 6px;
     overflow: hidden;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
     cursor: pointer;
     text-decoration: none !important;
-    border: none !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-left: 3px solid var(--crm-ocean, #1e3a8a) !important;
+    box-shadow: none !important;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 .dash-kpi-card:hover {
-    transform: translateY(-2px);
     text-decoration: none !important;
-    color: #ffffff !important;
-}
-.dash-kpi-col1 {
-    background: linear-gradient(135deg, #5f3abd 0%, #4a2bb3 100%) !important;
-    box-shadow: 0 4px 12px rgba(95, 58, 189, 0.22) !important;
-}
-.dash-kpi-col1:hover {
-    box-shadow: 0 8px 18px rgba(95, 58, 189, 0.35) !important;
-}
-.dash-kpi-col2 {
-    background: linear-gradient(135deg, #01509e 0%, #003c7a 100%) !important;
-    box-shadow: 0 4px 12px rgba(1, 80, 158, 0.22) !important;
-}
-.dash-kpi-col2:hover {
-    box-shadow: 0 8px 18px rgba(1, 80, 158, 0.35) !important;
-}
-.dash-kpi-col3 {
-    background: linear-gradient(135deg, #0086c5 0%, #006fa8 100%) !important;
-    box-shadow: 0 4px 12px rgba(0, 134, 197, 0.22) !important;
-}
-.dash-kpi-col3:hover {
-    box-shadow: 0 8px 18px rgba(0, 134, 197, 0.35) !important;
-}
-.dash-kpi-col4 {
-    background: linear-gradient(135deg, #00b69c 0%, #009680 100%) !important;
-    box-shadow: 0 4px 12px rgba(0, 182, 156, 0.22) !important;
-}
-.dash-kpi-col4:hover {
-    box-shadow: 0 8px 18px rgba(0, 182, 156, 0.35) !important;
-}
-.dash-kpi-card *,
-.dash-kpi-card .dash-kpi-label,
-.dash-kpi-card .dash-kpi-value,
-.dash-kpi-card .dash-kpi-sales {
-    color: #ffffff !important;
+    background: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+    border-left-color: var(--crm-ocean, #1e3a8a) !important;
 }
 .dash-kpi-value {
-    font-size: 18px;
+    font-size: 19px;
     font-weight: 700;
     line-height: 1.1;
     letter-spacing: -0.02em;
     margin-bottom: 2px;
+    color: #0f172a !important;
 }
 .dash-kpi-label {
     font-size: 11.5px;
     font-weight: 600;
     line-height: 1.2;
-    opacity: 0.95;
-    text-transform: capitalize;
+    color: #475569 !important;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 .dash-kpi-sales {
-    font-size: 9.5px;
-    font-weight: 500;
+    font-size: 10.5px;
+    font-weight: 600;
     line-height: 1.2;
     margin-top: 2px;
-    opacity: 0.92;
+    color: var(--crm-ocean, #1e3a8a) !important;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
-.dash-kpi-icon {
-    font-size: 19px;
-    line-height: 1;
-    opacity: 0.35;
-    transition: transform 0.2s ease, opacity 0.2s ease;
-    flex-shrink: 0;
-    margin-left: 4px;
+[data-theme="dark"] .dash-kpi-card {
+    background: #111827 !important;
+    border-color: #1f2937 !important;
+    border-left-color: #1e3a8a !important;
 }
-.dash-kpi-card:hover .dash-kpi-icon {
-    transform: scale(1.1);
-    opacity: 0.5;
+[data-theme="dark"] .dash-kpi-value { color: #f8fafc !important; }
+[data-theme="dark"] .dash-kpi-label { color: #94a3b8 !important; }
+[data-theme="dark"] .dash-kpi-sales { color: #93c5fd !important; }
+.dash-donut-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    width: 100%;
+    height: 100%;
+    padding: 4px 4px 0;
 }
-.dash-round-card {
+.dash-donut-svg {
+    width: 190px;
+    height: 190px;
+    flex: 0 0 190px;
+    display: block;
+}
+.dash-donut-total {
+    font-size: 30px;
+    font-weight: 700;
+    fill: #0f172a;
+    font-family: inherit;
+}
+.dash-donut-caption {
+    font-size: 12px;
+    font-weight: 600;
+    fill: #64748b;
+    font-family: inherit;
+}
+.dash-donut-legend {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+    flex: 0 1 240px;
+    max-height: 220px;
+    overflow-y: auto;
+}
+.dash-donut-legend li {
+    display: grid;
+    grid-template-columns: 10px minmax(0, 1fr) auto 46px;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 12.5px;
+    line-height: 1.2;
+}
+.dash-donut-legend li:last-child { border-bottom: none; }
+.dash-donut-swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.dash-donut-name { color: #334155; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dash-donut-count { color: #0f172a; font-weight: 700; text-align: right; }
+.dash-donut-pct { color: #64748b; font-weight: 500; text-align: right; font-size: 11.5px; }
+.dash-donut-empty {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    font-size: 13px;
+    font-weight: 500;
+}
+.donut-slice { transition: opacity 0.15s ease; }
+.dash-donut-svg:hover .donut-slice { opacity: 0.55; }
+.dash-donut-svg .donut-slice:hover { opacity: 1; }
+[data-theme="dark"] .dash-donut-total { fill: #f8fafc; }
+[data-theme="dark"] .dash-donut-name { color: #cbd5e1; }
+[data-theme="dark"] .dash-donut-count { color: #f8fafc; }
+[data-theme="dark"] .dash-donut-legend li { border-bottom-color: #1f2937; }
+@media (max-width: 767px) {
+    .col-xs-3:has(> .dash-kpi-card) { width: 50%; }
+}
+@media (max-width: 480px) {
+    .dash-donut-wrap { flex-direction: column; gap: 10px; }
+    .dash-donut-svg { width: 160px; height: 160px; flex-basis: 160px; }
+    .dash-donut-legend { flex-basis: auto; width: 100%; max-height: none; }
+}.dash-round-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
@@ -108,7 +148,7 @@
 .dash-top-chart-card {
     background: #ffffff !important;
     border: 1px solid #e2e8f0 !important;
-    border-top: 2px solid #0084ff !important;
+    border-top: 2px solid #1e3a8a !important;
     border-radius: 8px !important;
     padding: 6px 12px !important;
     margin-bottom: 8px !important;
@@ -173,9 +213,9 @@
     font-size: 13px !important;
     font-weight: 700 !important;
     padding: 3px 10px !important;
-    color: #0369a1 !important;
-    background: #e0f2fe !important;
-    border: 1px solid #bae6fd !important;
+    color: #1e3a8a !important;
+    background: #eff6ff !important;
+    border: 1px solid #bfdbfe !important;
 }
 .crm-modern-stat-chip span:first-child {
     font-size: 13px !important;
@@ -206,7 +246,7 @@
 
     <div class="dash-content-body">
 
-<div id="donutHoverTooltip" style="display:none; position:fixed; z-index:99999; pointer-events:none; background:#12072b; color:#ffffff; border-radius:6px; padding:9px 13px; font-size:11.5px; box-shadow:0 10px 28px rgba(0,0,0,0.45); border:1px solid rgba(255,255,255,0.18); min-width:170px; line-height:1.4;">
+<div id="donutHoverTooltip" style="display:none; position:fixed; z-index:99999; pointer-events:none; background:#0f172a; color:#ffffff; border-radius:6px; padding:9px 13px; font-size:11.5px; box-shadow:0 10px 28px rgba(0,0,0,0.45); border:1px solid rgba(255,255,255,0.18); min-width:170px; line-height:1.4;">
     <div style="display:flex; justify-content:space-between; margin-bottom:3px; gap:12px;">
         <span style="color:#ffffff; font-weight:700;" id="donutTipTitle">Lead: Status</span>
         <span style="color:#ffffff; font-weight:700;" id="donutTipStage">Busy</span>
@@ -219,52 +259,54 @@
 
 <?php
 if (!function_exists('render_donut_chart_svg')) {
-    function render_donut_chart_svg($items, $w = 460, $h = 250, $cx = 230, $cy = 125, $r_out = 110, $r_in = 68, $type = 'Lead') {
+    function render_donut_chart_svg($items, $type = 'Lead') {
         $total = 0;
         foreach ($items as $it) {
-            $total += (float)$it['count'];
+            $total += (int)$it['count'];
         }
-        $n = count($items);
+        if ($total <= 0) {
+            return '<div class="dash-donut-empty">No ' . strtolower($type) . ' data yet</div>';
+        }
+        $size = 200;
+        $cx = 100;
+        $cy = 100;
+        $r_out = 96;
+        $r_in = 62;
         $current_angle = -M_PI / 2;
         $paths = '';
-        $callouts = '';
+        $legend = '';
+        $visible = array();
         foreach ($items as $it) {
-            $pct = $total > 0 ? (($it['count'] / $total) * 100) : (100 / max(1, $n));
-            $angle_delta = ($pct / 100) * (2 * M_PI);
-            if ($angle_delta <= 0.001) {
-                $current_angle += $angle_delta;
-                continue;
+            if ((int)$it['count'] > 0) {
+                $visible[] = $it;
             }
-            $next_angle = $current_angle + $angle_delta;
-            $large_arc = ($angle_delta > M_PI) ? 1 : 0;
-            $x1_out = $cx + $r_out * cos($current_angle);
-            $y1_out = $cy + $r_out * sin($current_angle);
-            $x2_out = $cx + $r_out * cos($next_angle);
-            $y2_out = $cy + $r_out * sin($next_angle);
-            $x1_in = $cx + $r_in * cos($current_angle);
-            $y1_in = $cy + $r_in * sin($current_angle);
-            $x2_in = $cx + $r_in * cos($next_angle);
-            $y2_in = $cy + $r_in * sin($next_angle);
-            $d = sprintf("M %.1f %.1f A %d %d 0 %d 1 %.1f %.1f L %.1f %.1f A %d %d 0 %d 0 %.1f %.1f Z", $x1_out, $y1_out, $r_out, $r_out, $large_arc, $x2_out, $y2_out, $x2_in, $y2_in, $r_in, $r_in, $large_arc, $x1_in, $y1_in);
-            $display_pct = $total > 0 ? number_format(($it['count'] / $total) * 100, 1) . '%' : '0.0%';
-            $paths .= '<path d="' . $d . '" fill="' . $it['color'] . '" stroke="#ffffff" stroke-width="2.5" class="donut-slice" data-label="' . htmlspecialchars($it['label']) . '" data-count="' . (int)$it['count'] . '" data-pct="' . $display_pct . '" data-type="' . $type . '" style="cursor:pointer; transition:transform 0.15s ease, opacity 0.15s ease;" />';
-            $mid = $current_angle + $angle_delta / 2;
-            $p1_x = $cx + ($r_out + 2) * cos($mid);
-            $p1_y = $cy + ($r_out + 2) * sin($mid);
-            $p2_x = $cx + ($r_out + 9) * cos($mid);
-            $p2_y = $cy + ($r_out + 9) * sin($mid);
-            $is_right = cos($mid) >= 0;
-            $p3_x = $p2_x + ($is_right ? 8 : -8);
-            $p3_y = $p2_y;
-            $anchor = $is_right ? 'start' : 'end';
-            $tx = $p3_x + ($is_right ? 4 : -4);
-            $ty = $p3_y + 3.5;
-            $lbl = htmlspecialchars($it['label']) . ': ' . (int)$it['count'];
-            $callouts .= sprintf('<polyline points="%.1f,%.1f %.1f,%.1f %.1f,%.1f" fill="none" stroke="#94a3b8" stroke-width="1.3" />', $p1_x, $p1_y, $p2_x, $p2_y, $p3_x, $p3_y);
-            $callouts .= sprintf('<text x="%.1f" y="%.1f" font-size="12" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="700" fill="#0f172a" class="donut-callout-text" text-anchor="%s">%s</text>', $tx, $ty, $anchor, $lbl);
-            $current_angle = $next_angle;
         }
-        return '<svg viewBox="0 0 ' . $w . ' ' . $h . '" width="100%" height="' . $h . '" xmlns="http://www.w3.org/2000/svg" style="display:block; margin:0 auto; overflow:visible;"><g>' . $paths . $callouts . '</g></svg>';
+        foreach ($visible as $it) {
+            $count = (int)$it['count'];
+            $display_pct = number_format(($count / $total) * 100, 1) . '%';
+            $data_attr = ' class="donut-slice" data-label="' . htmlspecialchars($it['label']) . '" data-count="' . $count . '" data-pct="' . $display_pct . '" data-type="' . $type . '"';
+            if (count($visible) === 1) {
+                $paths .= '<circle cx="' . $cx . '" cy="' . $cy . '" r="' . (($r_out + $r_in) / 2) . '" fill="none" stroke="' . $it['color'] . '" stroke-width="' . ($r_out - $r_in) . '"' . $data_attr . ' style="cursor:pointer;" />';
+            } else {
+                $angle_delta = ($count / $total) * (2 * M_PI);
+                $next_angle = $current_angle + $angle_delta;
+                $large_arc = ($angle_delta > M_PI) ? 1 : 0;
+                $d = sprintf(
+                    "M %.2f %.2f A %d %d 0 %d 1 %.2f %.2f L %.2f %.2f A %d %d 0 %d 0 %.2f %.2f Z",
+                    $cx + $r_out * cos($current_angle), $cy + $r_out * sin($current_angle),
+                    $r_out, $r_out, $large_arc,
+                    $cx + $r_out * cos($next_angle), $cy + $r_out * sin($next_angle),
+                    $cx + $r_in * cos($next_angle), $cy + $r_in * sin($next_angle),
+                    $r_in, $r_in, $large_arc,
+                    $cx + $r_in * cos($current_angle), $cy + $r_in * sin($current_angle)
+                );
+                $paths .= '<path d="' . $d . '" fill="' . $it['color'] . '" stroke="#ffffff" stroke-width="2"' . $data_attr . ' style="cursor:pointer;" />';
+                $current_angle = $next_angle;
+            }
+            $legend .= '<li><span class="dash-donut-swatch" style="background:' . $it['color'] . ';"></span><span class="dash-donut-name">' . htmlspecialchars($it['label']) . '</span><span class="dash-donut-count">' . $count . '</span><span class="dash-donut-pct">' . $display_pct . '</span></li>';
+        }
+        $center = '<text x="' . $cx . '" y="' . ($cy - 2) . '" text-anchor="middle" class="dash-donut-total">' . $total . '</text><text x="' . $cx . '" y="' . ($cy + 18) . '" text-anchor="middle" class="dash-donut-caption">' . htmlspecialchars($type) . 's</text>';
+        return '<div class="dash-donut-wrap"><svg viewBox="0 0 ' . $size . ' ' . $size . '" class="dash-donut-svg" xmlns="http://www.w3.org/2000/svg">' . $paths . $center . '</svg><ul class="dash-donut-legend">' . $legend . '</ul></div>';
     }
 }
 $curr = !empty($user_currency) ? $user_currency : 'AED';
@@ -309,25 +351,8 @@ if (!empty($dashboard_order_state_team)) {
     $team_order_total = isset($dashboard_Tcount['count_orders']) ? (int)$dashboard_Tcount['count_orders'] : 0;
 }
 
-$lead_items = !empty($mylead_donut['items']) ? $mylead_donut['items'] : array(
-    array('label' => 'Busy', 'count' => 0, 'color' => '#0072f0'),
-    array('label' => 'DNCR', 'count' => 0, 'color' => '#00bbf9'),
-    array('label' => 'Following Up', 'count' => 0, 'color' => '#6366f1'),
-    array('label' => 'Future', 'count' => 0, 'color' => '#64748b'),
-    array('label' => 'Not Interested', 'count' => 0, 'color' => '#ff5964'),
-    array('label' => 'Not Valid', 'count' => 0, 'color' => '#00b4d8')
-);
-
-$order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array(
-    array('label' => 'Submitted', 'count' => 0, 'color' => '#0072f0'),
-    array('label' => 'Approved', 'count' => 0, 'color' => '#00bbf9'),
-    array('label' => 'In Progress', 'count' => 0, 'color' => '#6366f1'),
-    array('label' => 'Onboarding', 'count' => 0, 'color' => '#64748b'),
-    array('label' => 'Under Review', 'count' => 0, 'color' => '#f59e0b'),
-    array('label' => 'Completed', 'count' => 0, 'color' => '#10b981'),
-    array('label' => 'Sales', 'count' => 0, 'color' => '#00b4d8'),
-    array('label' => 'Canceled', 'count' => 0, 'color' => '#ff5964')
-);
+$lead_items = !empty($mylead_donut['items']) ? $mylead_donut['items'] : array();
+$order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array();
 ?>
 
         <div class="row" style="margin-top: 4px; margin-bottom: 8px;">
@@ -340,7 +365,6 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                                     <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_database']) ? (int)$dashboard_count['count_database'] : 0; ?></div>
                                     <div class="dash-kpi-label">My Database</div>
                                 </div>
-                                <div class="dash-kpi-icon"><i class="fa fa-database"></i></div>
                             </div>
                         </a>
                     </div>
@@ -351,7 +375,6 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                                     <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_verticals']) ? (int)$dashboard_count['count_verticals'] : 0; ?></div>
                                     <div class="dash-kpi-label">My Vertical</div>
                                 </div>
-                                <div class="dash-kpi-icon"><i class="ion ion-stats-bars"></i></div>
                             </div>
                         </a>
                     </div>
@@ -362,7 +385,6 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                                     <div class="dash-kpi-value"><?php echo (isset($dashboard_Tcount['count_users']) && (int)$dashboard_Tcount['count_users'] > 0) ? (int)$dashboard_Tcount['count_users'] : (isset($dashboard_Tcount['count_user']) ? (int)$dashboard_Tcount['count_user'] : 0); ?></div>
                                     <div class="dash-kpi-label">Team Users</div>
                                 </div>
-                                <div class="dash-kpi-icon"><i class="ion ion-person-add"></i></div>
                             </div>
                         </a>
                     </div>
@@ -373,7 +395,6 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                                     <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_verticals']) ? (int)$dashboard_Tcount['count_verticals'] : 0; ?></div>
                                     <div class="dash-kpi-label">Team Verticals</div>
                                 </div>
-                                <div class="dash-kpi-icon"><i class="ion ion-stats-bars"></i></div>
                             </div>
                         </a>
                     </div>
@@ -388,7 +409,6 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                                     <div class="dash-kpi-label">My Leads</div>
                                     <div class="dash-kpi-sales"><?php echo $curr . ' ' . number_format((float)(isset($dashboard_count['sales_amount']) ? $dashboard_count['sales_amount'] : 0), 2); ?></div>
                                 </div>
-                                <div class="dash-kpi-icon"><i class="fa fa-bullseye"></i></div>
                             </div>
                         </a>
                     </div>
@@ -400,7 +420,6 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                                     <div class="dash-kpi-label">My Orders</div>
                                     <div class="dash-kpi-sales"><?php echo $curr . ' ' . number_format((float)(isset($dashboard_count['sales_amount']) ? $dashboard_count['sales_amount'] : 0), 2); ?></div>
                                 </div>
-                                <div class="dash-kpi-icon"><i class="fa fa-shopping-cart"></i></div>
                             </div>
                         </a>
                     </div>
@@ -412,7 +431,6 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                                     <div class="dash-kpi-label">Team Leads</div>
                                     <div class="dash-kpi-sales"><?php echo $curr . ' ' . number_format((float)(isset($dashboard_Tcount['sales_amount']) ? $dashboard_Tcount['sales_amount'] : 0), 2); ?></div>
                                 </div>
-                                <div class="dash-kpi-icon"><i class="fa fa-bullseye"></i></div>
                             </div>
                         </a>
                     </div>
@@ -424,7 +442,6 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                                     <div class="dash-kpi-label">Team Orders</div>
                                     <div class="dash-kpi-sales"><?php echo $curr . ' ' . number_format((float)(isset($dashboard_Tcount['sales_amount']) ? $dashboard_Tcount['sales_amount'] : 0), 2); ?></div>
                                 </div>
-                                <div class="dash-kpi-icon"><i class="fa fa-shopping-cart"></i></div>
                             </div>
                         </a>
                     </div>
@@ -436,8 +453,8 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                             Target vs Achievement
                         </h4>
                         <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:10px; font-size:10.5px; font-weight:600; color:#475569;">
-                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#00c6f0; border-radius:50%;"></span> Target</span>
-                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#16a34a; border-radius:50%;"></span> Achievement</span>
+                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#94a3b8; border-radius:50%;"></span> Target</span>
+                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#1e3a8a; border-radius:50%;"></span> Achievement</span>
                         </div>
                     </div>
                     <div class="dash-top-chart-body" style="height: 184px !important; max-height: 184px !important;">
@@ -451,8 +468,8 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                             Target vs Projection
                         </h4>
                         <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:10px; font-size:10.5px; font-weight:600; color:#475569;">
-                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#00c6f0; border-radius:50%;"></span> Target</span>
-                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#0072f0; border-radius:50%;"></span> Projection</span>
+                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#94a3b8; border-radius:50%;"></span> Target</span>
+                            <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#1e3a8a; border-radius:50%;"></span> Projection</span>
                         </div>
                     </div>
                     <div class="dash-top-chart-body" style="height: 184px !important; max-height: 184px !important;">
@@ -462,7 +479,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
             </div>
 
             <div class="col-lg-4 col-md-5 col-xs-12" style="padding-left: 6px; padding-right: 10px;">
-                <div class="dash-round-card" style="width: 100%; height: 289px; max-height: 289px; margin-bottom: 8px; padding: 8px 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
+                <div class="dash-round-card" style="width: 100%; min-height: 289px; margin-bottom: 8px; padding: 8px 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
                     <div class="dash-round-title" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0; font-size:13px; font-weight:700;">
                         <span>My Leads</span>
                         <div class="dash-round-meta" style="display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; color:#64748b;">
@@ -470,11 +487,11 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                         </div>
                     </div>
                     <div style="width:100%; display:flex; align-items:center; justify-content:center; flex:1; overflow:visible;">
-                        <?php echo render_donut_chart_svg($lead_items, 480, 260, 240, 130, 120, 72, 'Lead'); ?>
+                        <?php echo render_donut_chart_svg($lead_items, 'Lead'); ?>
                     </div>
                 </div>
 
-                <div class="dash-round-card" style="width: 100%; height: 289px; max-height: 289px; margin-bottom: 0px; padding: 8px 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
+                <div class="dash-round-card" style="width: 100%; min-height: 289px; margin-bottom: 0px; padding: 8px 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
                     <div class="dash-round-title" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0; font-size:13px; font-weight:700;">
                         <span>My Orders</span>
                         <div class="dash-round-meta" style="display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; color:#64748b;">
@@ -482,7 +499,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                         </div>
                     </div>
                     <div style="width:100%; display:flex; align-items:center; justify-content:center; flex:1; overflow:visible;">
-                        <?php echo render_donut_chart_svg($order_items, 480, 260, 240, 130, 120, 72, 'Order'); ?>
+                        <?php echo render_donut_chart_svg($order_items, 'Order'); ?>
                     </div>
                 </div>
             </div>
@@ -516,9 +533,9 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                     <div class="card-top">
                         <h4 class="card-title">
                             <?php if(has_section_perm('tickets', 'read')){ ?>
-                                <a href="<?php echo base_url(); ?>manager/tickets?assigned_user=<?php echo (int)$this->session->userdata('manager_id'); ?>&status=Open" style="color:inherit; text-decoration:none;"><i class="fa fa-ticket" style="color:#2563eb;"></i> My Tickets</a>
+                                <a href="<?php echo base_url(); ?>manager/tickets?assigned_user=<?php echo (int)$this->session->userdata('manager_id'); ?>&status=Open" style="color:inherit; text-decoration:none;"><i class="fa fa-ticket" style="color:#1e3a8a;"></i> My Tickets</a>
                             <?php } else { ?>
-                                <span><i class="fa fa-ticket" style="color:#2563eb;"></i> My Tickets</span>
+                                <span><i class="fa fa-ticket" style="color:#1e3a8a;"></i> My Tickets</span>
                             <?php } ?>
                         </h4>
                         <?php if(has_section_perm('tickets', 'read')){ ?>
@@ -769,7 +786,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
             <div class="crm-col-7 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
-                        <h4 class="card-title"><i class="fa fa-database" style="color:#0072f0;"></i> My Database</h4>
+                        <h4 class="card-title"><i class="fa fa-database" style="color:#1e3a8a;"></i> My Database</h4>
                         <span class="card-total-pill"><?php echo (int)$dashboard_db_ops_my['total_all']; ?> Total</span>
                     </div>
                     <div style="display:flex; justify-content:center; align-items:center; min-height:100px; padding:6px 0;"><canvas id="pieCard_my_db" width="100" height="100" style="width:100px; height:100px;"></canvas></div>
@@ -793,7 +810,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
             <div class="crm-col-7 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
-                        <h4 class="card-title"><i class="fa fa-bullseye" style="color:#0072f0;"></i> My Leads</h4>
+                        <h4 class="card-title"><i class="fa fa-bullseye" style="color:#1e3a8a;"></i> My Leads</h4>
                         <span class="card-total-pill"><?php echo (int)$dashboard_lead_ops_my['total_all']; ?> Total</span>
                     </div>
                     <div style="display:flex; justify-content:center; align-items:center; min-height:100px; padding:6px 0;"><canvas id="pieCard_my_leads" width="100" height="100" style="width:100px; height:100px;"></canvas></div>
@@ -821,9 +838,9 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                     <div class="card-top">
                         <h4 class="card-title">
                             <?php if(has_section_perm('tickets', 'read')){ ?>
-                                <a href="<?php echo base_url(); ?>manager/tickets?team=1&status=Open" style="color:inherit; text-decoration:none;"><i class="fa fa-ticket" style="color:#2563eb;"></i> Team Tickets</a>
+                                <a href="<?php echo base_url(); ?>manager/tickets?team=1&status=Open" style="color:inherit; text-decoration:none;"><i class="fa fa-ticket" style="color:#1e3a8a;"></i> Team Tickets</a>
                             <?php } else { ?>
-                                <span><i class="fa fa-ticket" style="color:#2563eb;"></i> Team Tickets</span>
+                                <span><i class="fa fa-ticket" style="color:#1e3a8a;"></i> Team Tickets</span>
                             <?php } ?>
                         </h4>
                         <?php if(has_section_perm('tickets', 'read')){ ?>
@@ -1074,7 +1091,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
             <div class="crm-col-7 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
-                        <h4 class="card-title"><i class="fa fa-database" style="color:#0072f0;"></i> Team Database</h4>
+                        <h4 class="card-title"><i class="fa fa-database" style="color:#1e3a8a;"></i> Team Database</h4>
                         <span class="card-total-pill"><?php echo (int)$dashboard_db_ops_team['total_all']; ?> Total</span>
                     </div>
                     <div style="display:flex; justify-content:center; align-items:center; min-height:100px; padding:6px 0;"><canvas id="pieCard_team_db" width="100" height="100" style="width:100px; height:100px;"></canvas></div>
@@ -1098,7 +1115,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
             <div class="crm-col-7 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
-                        <h4 class="card-title"><i class="fa fa-bullseye" style="color:#0072f0;"></i> Team Leads</h4>
+                        <h4 class="card-title"><i class="fa fa-bullseye" style="color:#1e3a8a;"></i> Team Leads</h4>
                         <span class="card-total-pill"><?php echo (int)$dashboard_lead_ops_team['total_all']; ?> Total</span>
                     </div>
                     <div style="display:flex; justify-content:center; align-items:center; min-height:100px; padding:6px 0;"><canvas id="pieCard_team_leads" width="100" height="100" style="width:100px; height:100px;"></canvas></div>
@@ -1133,7 +1150,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
             <div class="col-md-6 col-xs-12">
                 <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
                     <div class="card-top">
-                        <h4 class="card-title"><i class="fa fa-database" style="color:#0072f0;"></i> My Database States</h4>
+                        <h4 class="card-title"><i class="fa fa-database" style="color:#1e3a8a;"></i> My Database States</h4>
                         <span class="card-total-pill"><?php echo number_format($my_db_total); ?> Total</span>
                     </div>
                     <div class="crm-seg-bar">
@@ -1166,7 +1183,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
             <div class="col-md-6 col-xs-12">
                 <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
                     <div class="card-top">
-                        <h4 class="card-title"><i class="fa fa-database" style="color:#0072f0;"></i> Team Database States</h4>
+                        <h4 class="card-title"><i class="fa fa-database" style="color:#1e3a8a;"></i> Team Database States</h4>
                         <span class="card-total-pill"><?php echo number_format($team_db_total); ?> Total</span>
                     </div>
                     <div class="crm-seg-bar">
@@ -1201,7 +1218,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
             <div class="col-md-6 col-xs-12">
                 <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
                     <div class="card-top">
-                        <h4 class="card-title"><i class="fa fa-bullseye" style="color:#0072f0;"></i> My Lead States</h4>
+                        <h4 class="card-title"><i class="fa fa-bullseye" style="color:#1e3a8a;"></i> My Lead States</h4>
                         <span class="card-total-pill"><?php echo number_format($my_lead_total); ?> Total</span>
                     </div>
                     <div class="crm-seg-bar">
@@ -1234,7 +1251,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
             <div class="col-md-6 col-xs-12">
                 <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
                     <div class="card-top">
-                        <h4 class="card-title"><i class="fa fa-bullseye" style="color:#0072f0;"></i> Team Lead States</h4>
+                        <h4 class="card-title"><i class="fa fa-bullseye" style="color:#1e3a8a;"></i> Team Lead States</h4>
                         <span class="card-total-pill"><?php echo number_format($team_lead_total); ?> Total</span>
                     </div>
                     <div class="crm-seg-bar">
@@ -1279,7 +1296,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
             <div class="col-md-6 col-xs-12">
                 <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
                     <div class="card-top">
-                        <h4 class="card-title"><i class="fa fa-shopping-cart" style="color:#0072f0;"></i> My Orders</h4>
+                        <h4 class="card-title"><i class="fa fa-shopping-cart" style="color:#1e3a8a;"></i> My Orders</h4>
                         <span class="card-total-pill"><?php echo number_format($my_order_total); ?> Total</span>
                     </div>
                     <div class="crm-seg-bar">
@@ -1312,7 +1329,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
             <div class="col-md-6 col-xs-12">
                 <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
                     <div class="card-top">
-                        <h4 class="card-title"><i class="fa fa-shopping-cart" style="color:#0072f0;"></i> Team Orders</h4>
+                        <h4 class="card-title"><i class="fa fa-shopping-cart" style="color:#1e3a8a;"></i> Team Orders</h4>
                         <span class="card-total-pill"><?php echo number_format($team_order_total); ?> Total</span>
                     </div>
                     <div class="crm-seg-bar">
@@ -1357,15 +1374,15 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                 <div class="dash-chart-card">
                     <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important;">
                         <h4 class="dash-chart-title" style="margin:0 !important; margin-right:20px !important;">
-                            <i class="fa fa-bar-chart"></i> My Achievement
+                            My Achievement
                         </h4>
                         <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:16px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
                             <span style="display:inline-flex; align-items:center; gap:6px;">
-                                <span style="display:inline-block; width:10px; height:10px; background-color:#0072f0; border-radius:2px;"></span>
+                                <span style="display:inline-block; width:10px; height:10px; background-color:#94a3b8; border-radius:2px;"></span>
                                 <span>Target</span>
                             </span>
                             <span style="display:inline-flex; align-items:center; gap:6px;">
-                                <span style="display:inline-block; width:10px; height:10px; background-color:#16a34a; border-radius:2px;"></span>
+                                <span style="display:inline-block; width:10px; height:10px; background-color:#1e3a8a; border-radius:2px;"></span>
                                 <span>Achievement</span>
                             </span>
                         </div>
@@ -1380,15 +1397,15 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                 <div class="dash-chart-card">
                     <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important;">
                         <h4 class="dash-chart-title" style="margin:0 !important; margin-right:20px !important;">
-                            <i class="fa fa-bar-chart"></i> Team Achievement
+                            Team Achievement
                         </h4>
                         <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:16px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
                             <span style="display:inline-flex; align-items:center; gap:6px;">
-                                <span style="display:inline-block; width:10px; height:10px; background-color:#0072f0; border-radius:2px;"></span>
+                                <span style="display:inline-block; width:10px; height:10px; background-color:#94a3b8; border-radius:2px;"></span>
                                 <span>Target</span>
                             </span>
                             <span style="display:inline-flex; align-items:center; gap:6px;">
-                                <span style="display:inline-block; width:10px; height:10px; background-color:#16a34a; border-radius:2px;"></span>
+                                <span style="display:inline-block; width:10px; height:10px; background-color:#1e3a8a; border-radius:2px;"></span>
                                 <span>Achievement</span>
                             </span>
                         </div>
@@ -1405,10 +1422,10 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                 <div class="dash-chart-card">
                     <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important;">
                         <h4 class="dash-chart-title" style="margin:0 !important; margin-right:20px !important;">
-                            <i class="fa fa-line-chart"></i> My Projection
+                            My Projection
                         </h4>
                         <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
-                            <span style="display:inline-block; width:10px; height:10px; background-color:#0072f0; border-radius:2px;"></span>
+                            <span style="display:inline-block; width:10px; height:10px; background-color:#1e3a8a; border-radius:2px;"></span>
                             <span>Projection</span>
                         </div>
                     </div>
@@ -1422,10 +1439,10 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                 <div class="dash-chart-card">
                     <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important;">
                         <h4 class="dash-chart-title" style="margin:0 !important; margin-right:20px !important;">
-                            <i class="fa fa-line-chart"></i> Team Projection
+                            Team Projection
                         </h4>
                         <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
-                            <span style="display:inline-block; width:10px; height:10px; background-color:#0072f0; border-radius:2px;"></span>
+                            <span style="display:inline-block; width:10px; height:10px; background-color:#1e3a8a; border-radius:2px;"></span>
                             <span>Projection</span>
                         </div>
                     </div>
@@ -1439,7 +1456,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
 <div class="dash-drilldown-panel" id="dashDrilldownPanel">
             <div class="dash-drilldown-header">
                 <h4 class="dash-drilldown-title">
-                    <i class="fa fa-list-alt" style="color:#0072f0;"></i>
+                    <i class="fa fa-list-alt" style="color:#1e3a8a;"></i>
                     <span id="drilldownTitle">Operational Metric Drill-Down</span>
                     <span class="badge bg-blue" id="drilldownCountBadge" style="margin-left:8px; font-size:12px;">0 Records</span>
                 </h4>
@@ -1539,13 +1556,26 @@ $(function () {
         var origCalcXRotation = Chart.Scale.prototype.calculateXLabelRotation;
         Chart.Scale.prototype.calculateXLabelRotation = function() {
             origCalcXRotation.apply(this, arguments);
-            if (window.innerWidth <= 768) {
-                this.xLabelRotation = 65;
-            } else {
-                this.xLabelRotation = 0;
+            this.xLabelRotation = 0;
+            if (this.xLabels && this.xLabels.length) {
+                this.ctx.font = this.font;
+                var firstW = this.ctx.measureText(this.xLabels[0]).width;
+                var lastW = this.ctx.measureText(this.xLabels[this.xLabels.length - 1]).width;
+                this.xScalePaddingRight = lastW / 2 + 4;
+                this.xScalePaddingLeft = Math.max(this.xScalePaddingLeft, firstW / 2 + 4);
             }
         };
     }
+
+    function formatChartLabels(list) {
+        return (list || []).map(function(lbl) {
+            var parts = String(lbl).split('-');
+            if (parts.length !== 2) { return lbl; }
+            return isMobileAndroid ? parts[0] : parts[0] + " '" + parts[1];
+        });
+    }
+    var chartScaleFontSize = isMobileAndroid ? 10 : 12;
+    var chartScaleLabel = "<%= Number(value).toLocaleString() %>";
 
     var chartOptions = {
         scaleBeginAtZero: true,
@@ -1560,9 +1590,10 @@ $(function () {
         barDatasetSpacing: isMobileAndroid ? 0 : 1,
         responsive: true,
         maintainAspectRatio: false,
-        scaleFontSize: isMobileAndroid ? 8 : 10,
+        scaleFontSize: chartScaleFontSize,
         scaleFontStyle: '600',
-        scaleFontColor: '#1e293b',
+        scaleFontColor: '#0f172a',
+        scaleLabel: chartScaleLabel,
         scaleFontFamily: "'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif"
     };
 
@@ -1585,13 +1616,13 @@ $(function () {
         canvas2.style.cursor = 'pointer';
         var ctx2 = canvas2.getContext('2d');
         chartInstance2 = new Chart(ctx2).Bar({
-            labels: months,
+            labels: formatChartLabels(months),
             datasets: [{
                 label: 'My Projection',
-                fillColor: '#00c6f0',
-                strokeColor: '#0096cc',
-                highlightFill: '#38d9f8',
-                highlightStroke: '#0096cc',
+                fillColor: '#94a3b8',
+                strokeColor: '#64748b',
+                highlightFill: '#cbd5e1',
+                highlightStroke: '#64748b',
                 data: myProData
             }]
         }, chartOptions);
@@ -1601,7 +1632,7 @@ $(function () {
                 var activeBars = chartInstance2.getBarsAtEvent(evt);
                 if (activeBars && activeBars.length > 0) {
                     var barLabel = activeBars[0].label;
-                    var idx = months.indexOf(barLabel);
+                    var idx = formatChartLabels(months).indexOf(barLabel);
                     if (idx !== -1 && monthDates[idx]) {
                         window.location.href = '<?php echo base_url(); ?>manager/leads?exp_d1=' + encodeURIComponent(monthDates[idx].d1) + '&exp_d2=' + encodeURIComponent(monthDates[idx].d2);
                     }
@@ -1616,13 +1647,13 @@ $(function () {
         canvas4.style.cursor = 'pointer';
         var ctx4 = canvas4.getContext('2d');
         chartInstance4 = new Chart(ctx4).Bar({
-            labels: months,
+            labels: formatChartLabels(months),
             datasets: [{
                 label: 'Team Projection',
-                fillColor: '#00c6f0',
-                strokeColor: '#0096cc',
-                highlightFill: '#38d9f8',
-                highlightStroke: '#0096cc',
+                fillColor: '#94a3b8',
+                strokeColor: '#64748b',
+                highlightFill: '#cbd5e1',
+                highlightStroke: '#64748b',
                 data: teamProData
             }]
         }, chartOptions);
@@ -1632,7 +1663,7 @@ $(function () {
                 var activeBars = chartInstance4.getBarsAtEvent(evt);
                 if (activeBars && activeBars.length > 0) {
                     var barLabel = activeBars[0].label;
-                    var idx = months.indexOf(barLabel);
+                    var idx = formatChartLabels(months).indexOf(barLabel);
                     if (idx !== -1 && teamMonthDates[idx]) {
                         window.location.href = '<?php echo base_url(); ?>manager/team/leads?exp_d1=' + encodeURIComponent(teamMonthDates[idx].d1) + '&exp_d2=' + encodeURIComponent(teamMonthDates[idx].d2);
                     }
@@ -1652,22 +1683,22 @@ $(function () {
             multiTooltipTemplate: "<%= datasetLabel %>: <%= 'AED ' + Number(value).toLocaleString() %>"
         });
         var inst = new Chart(ctx).Bar({
-            labels: labels,
+            labels: formatChartLabels(labels),
             datasets: [
                 {
                     label: 'Target',
-                    fillColor: 'rgba(0, 198, 240, 0.85)',
-                    strokeColor: '#00c6f0',
-                    highlightFill: 'rgba(0, 198, 240, 1)',
-                    highlightStroke: '#0096cc',
+                    fillColor: 'rgba(148, 163, 184, 0.75)',
+                    strokeColor: '#94a3b8',
+                    highlightFill: 'rgba(148, 163, 184, 1)',
+                    highlightStroke: '#64748b',
                     data: target
                 },
                 {
                     label: 'Achievement',
-                    fillColor: 'rgba(22, 163, 74, 0.85)',
-                    strokeColor: '#16a34a',
-                    highlightFill: 'rgba(22, 163, 74, 1)',
-                    highlightStroke: '#15803d',
+                    fillColor: 'rgba(30, 58, 138, 0.9)',
+                    strokeColor: '#1e3a8a',
+                    highlightFill: 'rgba(30, 58, 138, 1)',
+                    highlightStroke: '#172554',
                     data: achieve
                 }
             ]
@@ -1678,7 +1709,7 @@ $(function () {
                 var activeBars = inst.getBarsAtEvent(evt);
                 if (activeBars && activeBars.length > 0) {
                     var barLabel = activeBars[0].label;
-                    var idx = labels.indexOf(barLabel);
+                    var idx = formatChartLabels(labels).indexOf(barLabel);
                     if (idx !== -1 && dates && dates[idx]) {
                         window.location.href = baseUrl + '?exp_d1=' + encodeURIComponent(dates[idx].d1) + '&exp_d2=' + encodeURIComponent(dates[idx].d2);
                     }
@@ -1695,26 +1726,26 @@ $(function () {
     if (canvasAchieveLine) {
         var ctxAch = canvasAchieveLine.getContext('2d');
         new Chart(ctxAch).Line({
-            labels: (achieveMonthsMy && achieveMonthsMy.length > 0) ? achieveMonthsMy : months,
+            labels: formatChartLabels((achieveMonthsMy && achieveMonthsMy.length > 0) ? achieveMonthsMy : months),
             datasets: [
                 {
                     label: 'Target',
-                    fillColor: 'rgba(0, 198, 240, 0.08)',
-                    strokeColor: '#00c6f0',
-                    pointColor: '#00c6f0',
+                    fillColor: 'rgba(148, 163, 184, 0.06)',
+                    strokeColor: '#94a3b8',
+                    pointColor: '#94a3b8',
                     pointStrokeColor: '#ffffff',
                     pointHighlightFill: '#ffffff',
-                    pointHighlightStroke: '#00c6f0',
+                    pointHighlightStroke: '#94a3b8',
                     data: (achieveTargetMy && achieveTargetMy.length > 0) ? achieveTargetMy : months.map(function(){ return 0; })
                 },
                 {
                     label: 'Achievement',
-                    fillColor: 'rgba(22, 163, 74, 0.08)',
-                    strokeColor: '#16a34a',
-                    pointColor: '#16a34a',
+                    fillColor: 'rgba(30, 58, 138, 0.07)',
+                    strokeColor: '#1e3a8a',
+                    pointColor: '#1e3a8a',
                     pointStrokeColor: '#ffffff',
                     pointHighlightFill: '#ffffff',
-                    pointHighlightStroke: '#16a34a',
+                    pointHighlightStroke: '#1e3a8a',
                     data: (achieveDataMy && achieveDataMy.length > 0) ? achieveDataMy : months.map(function(){ return 0; })
                 }
             ]
@@ -1726,10 +1757,12 @@ $(function () {
             pointDot: true,
             pointDotRadius: 3,
             datasetStrokeWidth: 2,
-            scaleGridLineColor: 'rgba(0,0,0,.04)',
-            scaleFontSize: 9,
+            scaleGridLineColor: 'rgba(15,23,42,.06)',
+            scaleFontSize: chartScaleFontSize,
             scaleFontStyle: '600',
-            scaleFontColor: '#475569'
+            scaleFontColor: '#0f172a',
+            scaleFontFamily: "'Plus Jakarta Sans', 'Segoe UI', Roboto, Arial, sans-serif",
+            scaleLabel: chartScaleLabel
         });
     }
 
@@ -1738,26 +1771,26 @@ $(function () {
         var ctxProj = canvasProjectLine.getContext('2d');
         var projTargetData = (achieveTargetMy && achieveTargetMy.length > 0) ? achieveTargetMy.slice(0, months.length) : months.map(function(){ return 0; });
         new Chart(ctxProj).Line({
-            labels: months,
+            labels: formatChartLabels(months),
             datasets: [
                 {
                     label: 'Target',
-                    fillColor: 'rgba(0, 198, 240, 0.08)',
-                    strokeColor: '#00c6f0',
-                    pointColor: '#00c6f0',
+                    fillColor: 'rgba(148, 163, 184, 0.06)',
+                    strokeColor: '#94a3b8',
+                    pointColor: '#94a3b8',
                     pointStrokeColor: '#ffffff',
                     pointHighlightFill: '#ffffff',
-                    pointHighlightStroke: '#00c6f0',
+                    pointHighlightStroke: '#94a3b8',
                     data: projTargetData
                 },
                 {
                     label: 'Projection',
-                    fillColor: 'rgba(0, 114, 240, 0.08)',
-                    strokeColor: '#0072f0',
-                    pointColor: '#0072f0',
+                    fillColor: 'rgba(30, 58, 138, 0.07)',
+                    strokeColor: '#1e3a8a',
+                    pointColor: '#1e3a8a',
                     pointStrokeColor: '#ffffff',
                     pointHighlightFill: '#ffffff',
-                    pointHighlightStroke: '#0072f0',
+                    pointHighlightStroke: '#1e3a8a',
                     data: myProData
                 }
             ]
@@ -1769,10 +1802,12 @@ $(function () {
             pointDot: true,
             pointDotRadius: 3,
             datasetStrokeWidth: 2,
-            scaleGridLineColor: 'rgba(0,0,0,.04)',
-            scaleFontSize: 9,
+            scaleGridLineColor: 'rgba(15,23,42,.06)',
+            scaleFontSize: chartScaleFontSize,
             scaleFontStyle: '600',
-            scaleFontColor: '#475569'
+            scaleFontColor: '#0f172a',
+            scaleFontFamily: "'Plus Jakarta Sans', 'Segoe UI', Roboto, Arial, sans-serif",
+            scaleLabel: chartScaleLabel
         });
     }
 
@@ -1823,10 +1858,10 @@ $(function () {
             data = [{ value: 1, color: '#e2e8f0', label: 'Empty' }];
         } else {
             if (m > 0) data.push({ value: m, color: '#dd4b39', label: 'All Missed' });
-            if (l > 0) data.push({ value: l, color: '#ff851b', label: 'Last 7 Days' });
+            if (l > 0) data.push({ value: l, color: '#475569', label: 'Last 7 Days' });
             if (t > 0) data.push({ value: t, color: '#00c0ef', label: 'Today' });
-            if (n > 0) data.push({ value: n, color: '#0164e8', label: 'Next 7 Days' });
-            if (f > 0) data.push({ value: f, color: '#00a65a', label: 'All Future' });
+            if (n > 0) data.push({ value: n, color: '#1e3a8a', label: 'Next 7 Days' });
+            if (f > 0) data.push({ value: f, color: '#0f172a', label: 'All Future' });
         }
         var chartInst = new Chart(ctx).Doughnut(data, {
             percentageInnerCutout: 52,

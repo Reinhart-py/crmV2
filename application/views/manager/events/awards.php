@@ -3,14 +3,14 @@
 <div class="content-wrapper">
   <section class="content-header" style="display:flex; justify-content:space-between; align-items:center; padding:15px 15px 5px 15px;">
     <h1 style="margin:0; font-size:20px; font-weight:700; color:#0f172a;">
-      <i class="fa fa-trophy" style="color:#f59e0b; margin-right:8px;"></i><?php echo $info['page_heading']; ?>
+      <i class="fa fa-trophy" style="color:#475569; margin-right:8px;"></i><?php echo $info['page_heading']; ?>
     </h1>
     <div style="display:flex; gap:8px;">
       <a href="<?php echo base_url(); ?>manager/events" class="btn btn-default" style="font-weight:600; padding:6px 14px; border-radius:5px;">
-        <i class="fa fa-calendar-check-o" style="color:#2563eb;"></i> Events Calendar
+        <i class="fa fa-calendar-check-o" style="color:#1e3a8a;"></i> Events Calendar
       </a>
       <?php if($can_manage){ ?>
-      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addAwardModal" style="background:#f59e0b; border-color:#d97706; font-weight:600; padding:6px 14px; border-radius:5px; color:#ffffff;">
+      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addAwardModal" style="background:#475569; border-color:#475569; font-weight:600; padding:6px 14px; border-radius:5px; color:#ffffff;">
         <i class="fa fa-star"></i> Concur Award
       </button>
       <?php } ?>
@@ -51,7 +51,7 @@
               </div>
               <?php } ?>
 
-              <button type="submit" class="btn btn-sm btn-primary" style="background:#2563eb; border-color:#1d4ed8; font-weight:600; height:32px;">
+              <button type="submit" class="btn btn-sm btn-primary" style="background:#1e3a8a; border-color:#1e3a8a; font-weight:600; height:32px;">
                 <i class="fa fa-filter"></i> Filter
               </button>
               <a href="<?php echo base_url(); ?>manager/awards" class="btn btn-sm btn-default" style="height:32px;">Reset</a>
@@ -99,13 +99,13 @@
                           <?php } ?>
                         </td>
                         <td>
-                          <span class="label label-warning" style="background:#fef3c7; color:#b45309; border:1px solid #fde68a;">
+                          <span class="label label-warning" style="background:#f8fafc; color:#b45309; border:1px solid #e2e8f0;">
                             <i class="fa fa-trophy"></i> <?php echo htmlspecialchars($aw['category']); ?>
                           </span>
                         </td>
                         <td><?php echo date('d-m-Y', strtotime($aw['award_date'])); ?></td>
                         <td class="text-center">
-                          <strong style="color:#16a34a;">+<?php echo $aw['reward_points']; ?></strong>
+                          <strong style="color:#0f172a;">+<?php echo $aw['reward_points']; ?></strong>
                         </td>
                         <td><?php echo htmlspecialchars($aw['creator_name'] ?: 'Management'); ?></td>
                         <?php if($can_manage){ ?>
@@ -128,10 +128,10 @@
       </div>
 
       <div class="col-md-4">
-        <div class="box box-default" style="border-radius:6px; border-top:3px solid #f59e0b;">
+        <div class="box box-default" style="border-radius:6px; border-top:3px solid #475569;">
           <div class="box-header with-border">
             <h3 class="box-title" style="font-size:15px; font-weight:600; color:#1e293b;">
-              <i class="fa fa-star" style="color:#f59e0b; margin-right:6px;"></i>Recognition Leaderboard
+              <i class="fa fa-star" style="color:#475569; margin-right:6px;"></i>Recognition Leaderboard
             </h3>
           </div>
           <div class="box-body" style="padding:15px;">
@@ -139,7 +139,7 @@
               <ul class="list-group" style="margin-bottom:0;">
                 <?php foreach($leaderboard as $rank => $lb){ 
                   $medal_color = '#94a3b8';
-                  if($rank == 0) $medal_color = '#f59e0b';
+                  if($rank == 0) $medal_color = '#475569';
                   elseif($rank == 1) $medal_color = '#94a3b8';
                   elseif($rank == 2) $medal_color = '#cd7f32';
                 ?>
@@ -153,7 +153,7 @@
                         <div style="font-size:11px; color:#64748b;"><?php echo htmlspecialchars($lb['department'] ?: 'Sales'); ?> &bull; <?php echo $lb['total_awards']; ?> award<?php echo $lb['total_awards'] == 1 ? '' : 's'; ?></div>
                       </div>
                     </div>
-                    <span class="badge" style="background:#fef3c7; color:#92400e; font-size:12px; font-weight:700; padding:4px 8px;">
+                    <span class="badge" style="background:#f8fafc; color:#334155; font-size:12px; font-weight:700; padding:4px 8px;">
                       <?php echo number_format($lb['total_points']); ?> pts
                     </span>
                   </li>
@@ -179,7 +179,7 @@
       <form action="<?php echo base_url(); ?>manager/awards/add" method="post">
         <div class="modal-header" style="border-bottom:1px solid #e2e8f0;">
           <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title" style="font-weight:700; color:#0f172a;"><i class="fa fa-trophy" style="color:#f59e0b;"></i> Concur Employee Award</h4>
+          <h4 class="modal-title" style="font-weight:700; color:#0f172a;"><i class="fa fa-trophy" style="color:#475569;"></i> Concur Employee Award</h4>
         </div>
         <div class="modal-body" style="padding:20px;">
           <div class="form-group">
@@ -227,7 +227,7 @@
         </div>
         <div class="modal-footer" style="border-top:1px solid #e2e8f0;">
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary" style="background:#f59e0b; border-color:#d97706; font-weight:600; color:#ffffff;">Concur Award</button>
+          <button type="submit" class="btn btn-primary" style="background:#475569; border-color:#475569; font-weight:600; color:#ffffff;">Concur Award</button>
         </div>
       </form>
     </div>

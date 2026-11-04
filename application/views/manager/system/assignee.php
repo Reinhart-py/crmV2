@@ -5,7 +5,7 @@
         <h1><?php echo htmlspecialchars($info['page_heading'] ?? 'Onboarded Client Assignees'); ?></h1>
         <?php if ($can_edit) { ?>
         <div>
-            <button type="button" class="btn btn-primary" id="btnAssignNewCompany" style="background:#0072f0; border-color:#0072f0; font-weight:600; border-radius:4px;">
+            <button type="button" class="btn btn-primary" id="btnAssignNewCompany" style="background:#1e3a8a; border-color:#1e3a8a; font-weight:600; border-radius:4px;">
                 <i class="fa fa-user-plus"></i> Assign Company
             </button>
         </div>
@@ -96,7 +96,7 @@
                                             <td>
                                                 <?php if ($primary_id > 0) { ?>
                                                     <span style="display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: #1e293b;">
-                                                        <i class="fa fa-user-circle" style="color: #0072f0; font-size: 15px;"></i>
+                                                        <i class="fa fa-user-circle" style="color: #1e3a8a; font-size: 15px;"></i>
                                                         <?php echo htmlspecialchars($primary_name); ?>
                                                     </span>
                                                 <?php } else { ?>
@@ -115,7 +115,7 @@
                                                 <?php } ?>
                                             </td>
                                             <td>
-                                                <span class="label label-success" style="background:#16a34a; font-weight: 500; font-size: 11px; padding: 3px 7px;">Active</span>
+                                                <span class="label label-success" style="background:#0f172a; font-weight: 500; font-size: 11px; padding: 3px 7px;">Active</span>
                                             </td>
                                             <td>
                                                 <?php echo !empty($c['created_at']) ? date('d-m-Y', strtotime($c['created_at'])) : '-'; ?>
@@ -123,7 +123,7 @@
                                             <td style="text-align: center;">
                                                 <?php if ($can_edit) { ?>
                                                     <button type="button" class="btn btn-xs btn-primary btn-open-assign" 
-                                                            style="background:#0072f0; border-color:#0072f0; padding: 4px 10px; font-size: 12px; font-weight: 500; border-radius: 4px;"
+                                                            style="background:#1e3a8a; border-color:#1e3a8a; padding: 4px 10px; font-size: 12px; font-weight: 500; border-radius: 4px;"
                                                             data-kam-id="<?php echo $kam_id; ?>"
                                                             data-client-name="<?php echo htmlspecialchars($client_name, ENT_QUOTES, 'UTF-8'); ?>"
                                                             data-owner-name="<?php echo htmlspecialchars($owner_name, ENT_QUOTES, 'UTF-8'); ?>"
@@ -156,7 +156,7 @@
             <div class="modal-header" style="border-bottom: 1px solid #f1f5f9; padding: 16px 20px;">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="font-size: 24px; color: #64748b; opacity: 0.8;"><span aria-hidden="true">&times;</span></button>
                 <h4 class="modal-title" id="assignModalLabel" style="font-weight: 700; color: #0f172a; font-size: 17px;">
-                    <i class="fa fa-users" style="color: #0072f0; margin-right: 6px;"></i> Assign Client Team
+                    <i class="fa fa-users" style="color: #1e3a8a; margin-right: 6px;"></i> Assign Client Team
                 </h4>
             </div>
             <form id="assignTeamForm" method="post">
@@ -208,7 +208,7 @@
                 </div>
                 <div class="modal-footer" style="border-top: 1px solid #f1f5f9; padding: 14px 20px; background: #fafafa; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
                     <button type="button" class="btn btn-default" data-dismiss="modal" style="border-color: #cbd5e1; color: #475569; font-weight: 500;">Cancel</button>
-                    <button type="submit" id="btnSaveAssignee" class="btn btn-primary" style="background: #0072f0; border-color: #0072f0; font-weight: 600; padding: 6px 18px;">
+                    <button type="submit" id="btnSaveAssignee" class="btn btn-primary" style="background: #1e3a8a; border-color: #1e3a8a; font-weight: 600; padding: 6px 18px;">
                         <i class="fa fa-check"></i> Save Assignment
                     </button>
                 </div>
@@ -282,7 +282,7 @@ $(document).ready(function() {
             $('#modal_primary_assignee').val('').trigger('change');
             $('#modal_collaborators').val([]).trigger('change');
         }
-        $('#assignModalLabel').html('<i class="fa fa-user-plus" style="color: #0072f0; margin-right: 6px;"></i> Assign Company');
+        $('#assignModalLabel').html('<i class="fa fa-user-plus" style="color: #1e3a8a; margin-right: 6px;"></i> Assign Company');
         $('#assignModal').modal('show');
     });
 
@@ -310,7 +310,7 @@ $(document).ready(function() {
             $('#modal_collaborators').val(collabs);
         }
 
-        $('#assignModalLabel').html('<i class="fa fa-users" style="color: #0072f0; margin-right: 6px;"></i> Assign Client Team');
+        $('#assignModalLabel').html('<i class="fa fa-users" style="color: #1e3a8a; margin-right: 6px;"></i> Assign Client Team');
         $('#assignModal').modal('show');
     });
 

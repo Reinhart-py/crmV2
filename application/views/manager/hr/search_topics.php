@@ -20,7 +20,7 @@
           <div class="input-group">
             <input type="text" name="q" class="form-control" placeholder="Search HR policies, holiday rules, insurance guidelines, company benefits..." value="<?php echo htmlspecialchars($query ?? ''); ?>" style="border: 1px solid #cbd5e1; border-radius: 4px 0 0 4px; height: 42px; font-size: 14px;">
             <span class="input-group-btn">
-              <button type="submit" class="btn btn-primary" style="background: #0072f0; border-color: #0072f0; border-radius: 0 4px 4px 0; height: 42px; padding: 0 20px; font-weight: 700;">
+              <button type="submit" class="btn btn-primary" style="background: #1e3a8a; border-color: #1e3a8a; border-radius: 0 4px 4px 0; height: 42px; padding: 0 20px; font-weight: 700;">
                 <i class="fa fa-search"></i> Search
               </button>
             </span>
@@ -33,7 +33,7 @@
     <div class="box" style="border: 1px solid #e2e8f0; border-radius: 4px; background: #ffffff;">
       <div class="box-header with-border" style="border-bottom: 1px solid #f1f5f9; padding: 14px 20px;">
         <h3 class="box-title" style="font-size: 15px; font-weight: 700; color: #0f172a; margin: 0;">
-          <i class="fa fa-book" style="color: #0072f0; margin-right: 6px;"></i> Employee Handbook &amp; HR Topics
+          <i class="fa fa-book" style="color: #1e3a8a; margin-right: 6px;"></i> Employee Handbook &amp; HR Topics
         </h3>
       </div>
       <div class="box-body" style="padding: 20px;">
@@ -42,7 +42,7 @@
             <?php foreach ($topics as $tp): ?>
               <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px;">
                 <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
-                  <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #0072f0;">
+                  <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #1e3a8a;">
                     <?php echo htmlspecialchars($tp['category']); ?>
                   </span>
                 </div>

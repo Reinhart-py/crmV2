@@ -61,7 +61,7 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <button type="submit" class="btn btn-primary" style="background:#2563eb; border-color:#2563eb;">Search</button>
+                                    <button type="submit" class="btn btn-primary" style="background:#1e3a8a; border-color:#1e3a8a;">Search</button>
                                     <a href="<?php echo base_url(); ?>manager/tasks/external" class="btn btn-default">Reset</a>
                                 </div>
                             </form>
@@ -69,7 +69,7 @@
                         <div class="x_col-sm-auto text-center pt-4 pt-md-0">
                             <?php if(!empty($can_create)){ ?>
                             <div>
-                                <a href="<?php echo base_url(); ?>manager/tasks/add?scope=external" class="btn btn-primary" style="background:#2563eb; border-color:#2563eb;">
+                                <a href="<?php echo base_url(); ?>manager/tasks/add?scope=external" class="btn btn-primary" style="background:#1e3a8a; border-color:#1e3a8a;">
                                     <i class="fa fa-plus"></i> Add External Task
                                 </a>
                             </div>
@@ -118,7 +118,7 @@
                                         <?php } ?>
                                     </td>
                                     <td>
-                                        <a href="<?php echo base_url(); ?>manager/tasks/view/<?php echo $li['id']; ?>" style="font-weight:600; color:#2563eb;">
+                                        <a href="<?php echo base_url(); ?>manager/tasks/view/<?php echo $li['id']; ?>" style="font-weight:600; color:#1e3a8a;">
                                             <?php echo htmlspecialchars($li['customer']); ?>
                                         </a>
                                         <?php if(!empty($li['task_id'])){ ?>

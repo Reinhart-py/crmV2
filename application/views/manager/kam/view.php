@@ -37,7 +37,7 @@ $display_tl_exp = !empty($lead['tl_expire_date']) && $lead['tl_expire_date'] != 
             </p>
         </div>
         <div style="display:flex; gap:8px;">
-            <a href="<?php echo base_url('manager/kam/task-followup?client=' . urlencode($display_company)); ?>" class="btn btn-default" style="border:1px solid #cbd5e1; font-weight:600; color:#0072f0; background:#ffffff;">
+            <a href="<?php echo base_url('manager/kam/task-followup?client=' . urlencode($display_company)); ?>" class="btn btn-default" style="border:1px solid #cbd5e1; font-weight:600; color:#1e3a8a; background:#ffffff;">
                 <i class="fa fa-calendar-check-o"></i> Task Follow-Up
             </a>
             <a href="<?php echo base_url('manager/kam/my-client'); ?>" class="btn btn-default" style="border:1px solid #cbd5e1; font-weight:600; background:#ffffff;">
@@ -88,7 +88,7 @@ $display_tl_exp = !empty($lead['tl_expire_date']) && $lead['tl_expire_date'] != 
                     </div>
                     <div class="col-md-3 col-sm-6" style="margin-bottom:15px;">
                         <span style="display:block; font-size:11px; font-weight:600; text-transform:uppercase; color:#64748b; letter-spacing:0.5px;">Client Status</span>
-                        <span class="label" style="background:#0072f0; color:#ffffff; font-weight:600; padding:3px 8px; border-radius:4px; font-size:12px; display:inline-block; margin-top:2px;"><?php echo htmlspecialchars($display_status); ?></span>
+                        <span class="label" style="background:#1e3a8a; color:#ffffff; font-weight:600; padding:3px 8px; border-radius:4px; font-size:12px; display:inline-block; margin-top:2px;"><?php echo htmlspecialchars($display_status); ?></span>
                     </div>
                 </div>
 
@@ -107,7 +107,7 @@ $display_tl_exp = !empty($lead['tl_expire_date']) && $lead['tl_expire_date'] != 
                     </div>
                     <div class="col-md-3 col-sm-6" style="margin-bottom:15px;">
                         <span style="display:block; font-size:11px; font-weight:600; text-transform:uppercase; color:#64748b; letter-spacing:0.5px;">Monthly Recurring Revenue (MRR)</span>
-                        <span style="font-size:15px; font-weight:700; color:#16a34a;">AED <?php echo number_format((float)$display_mrr, 2); ?></span>
+                        <span style="font-size:15px; font-weight:700; color:#0f172a;">AED <?php echo number_format((float)$display_mrr, 2); ?></span>
                     </div>
                 </div>
             </div>
@@ -162,7 +162,7 @@ $display_tl_exp = !empty($lead['tl_expire_date']) && $lead['tl_expire_date'] != 
                 <h3 class="box-title" style="font-size:15px; font-weight:700; color:#1e293b; margin:0;">
                     Upcoming Scheduled Tasks
                 </h3>
-                <a href="<?php echo base_url('manager/kam/task-followup?client=' . urlencode($display_company)); ?>" class="btn btn-sm btn-primary" style="background:#0072f0; border-color:#0072f0; font-weight:600; border-radius:4px;">
+                <a href="<?php echo base_url('manager/kam/task-followup?client=' . urlencode($display_company)); ?>" class="btn btn-sm btn-primary" style="background:#1e3a8a; border-color:#1e3a8a; font-weight:600; border-radius:4px;">
                     <i class="fa fa-calendar-check-o"></i> View All in Task Follow-Up
                 </a>
             </div>

@@ -87,7 +87,7 @@
                                             <td>
                                                 <?php if (!empty($c['assignee_name'])) { ?>
                                                     <span style="display: inline-flex; align-items: center; gap: 5px; font-weight: 600; color: #1e293b;">
-                                                        <i class="fa fa-user" style="color: #0072f0;"></i>
+                                                        <i class="fa fa-user" style="color: #1e3a8a;"></i>
                                                         <?php echo htmlspecialchars($c['assignee_name']); ?>
                                                     </span>
                                                 <?php } else { ?>
@@ -125,13 +125,13 @@
                                                                 </li>
                                                                 <li>
                                                                     <a href="<?php echo base_url('manager/leads/edit/' . $encoded_lead_id); ?>">
-                                                                        <i class="fa fa-pencil" style="color: #0072f0; margin-right: 6px;"></i> Edit Details
+                                                                        <i class="fa fa-pencil" style="color: #1e3a8a; margin-right: 6px;"></i> Edit Details
                                                                     </a>
                                                                 </li>
                                                             <?php } else { ?>
                                                                 <li>
                                                                     <a href="<?php echo base_url('manager/kam/onboard?company_id=' . (int)$c['id']); ?>">
-                                                                        <i class="fa fa-pencil" style="color: #0072f0; margin-right: 6px;"></i> Manage Company
+                                                                        <i class="fa fa-pencil" style="color: #1e3a8a; margin-right: 6px;"></i> Manage Company
                                                                     </a>
                                                                 </li>
                                                             <?php } ?>

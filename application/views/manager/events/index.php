@@ -64,8 +64,8 @@ body[data-theme="dark"] .fc-toolbar h2 {
   color: #0f172a !important;
 }
 .fc-button.fc-state-active {
-  background: #2563eb !important;
-  border-color: #1d4ed8 !important;
+  background: #1e3a8a !important;
+  border-color: #1e3a8a !important;
   color: #ffffff !important;
 }
 body[data-theme="dark"] .fc-button {
@@ -77,8 +77,8 @@ body[data-theme="dark"] .fc-button:hover {
   background: #475569 !important;
 }
 body[data-theme="dark"] .fc-button.fc-state-active {
-  background: #2563eb !important;
-  border-color: #1d4ed8 !important;
+  background: #1e3a8a !important;
+  border-color: #1e3a8a !important;
   color: #ffffff !important;
 }
 .fc th {
@@ -171,8 +171,8 @@ body[data-theme="dark"] .gcal-nav-tabs {
   transition: all 0.2s;
 }
 .gcal-tab-btn.active {
-  color: #2563eb;
-  border-bottom-color: #2563eb;
+  color: #1e3a8a;
+  border-bottom-color: #1e3a8a;
 }
 body[data-theme="dark"] .gcal-tab-btn {
   color: #94a3b8;
@@ -187,11 +187,11 @@ body[data-theme="dark"] .gcal-tab-btn.active {
   <div class="gcal-wrapper">
     <div class="gcal-header-bar">
       <h1 class="gcal-title">
-        <i class="fa fa-calendar-check-o" style="color:#2563eb;"></i>
+        <i class="fa fa-calendar-check-o" style="color:#1e3a8a;"></i>
         <span>Events &amp; Awards Calendar</span>
       </h1>
       <div style="display:flex; gap:10px; align-items:center;">
-        <button type="button" class="btn btn-primary" id="openCreateModalBtn" style="background:#2563eb; border-color:#1d4ed8; font-weight:600; padding:7px 16px; border-radius:6px;">
+        <button type="button" class="btn btn-primary" id="openCreateModalBtn" style="background:#1e3a8a; border-color:#1e3a8a; font-weight:600; padding:7px 16px; border-radius:6px;">
           <i class="fa fa-plus"></i> Create Event / Award
         </button>
       </div>
@@ -205,13 +205,13 @@ body[data-theme="dark"] .gcal-tab-btn.active {
 
       <div class="gcal-legend">
         <span style="font-weight:700; margin-right:4px;">Legend:</span>
-        <span class="gcal-legend-item"><i class="fa fa-users" style="color:#2563eb;"></i> Meeting</span>
-        <span class="gcal-legend-item"><i class="fa fa-building-o" style="color:#16a34a;"></i> Company Event</span>
-        <span class="gcal-legend-item"><i class="fa fa-graduation-cap" style="color:#0284c7;"></i> Training</span>
-        <span class="gcal-legend-item"><i class="fa fa-flag-checkered" style="color:#8b5cf6;"></i> Milestone</span>
+        <span class="gcal-legend-item"><i class="fa fa-users" style="color:#1e3a8a;"></i> Meeting</span>
+        <span class="gcal-legend-item"><i class="fa fa-building-o" style="color:#0f172a;"></i> Company Event</span>
+        <span class="gcal-legend-item"><i class="fa fa-graduation-cap" style="color:#1e3a8a;"></i> Training</span>
+        <span class="gcal-legend-item"><i class="fa fa-flag-checkered" style="color:#1e3a8a;"></i> Milestone</span>
         <span class="gcal-legend-item"><i class="fa fa-plane" style="color:#dc2626;"></i> Holiday</span>
         <span class="gcal-legend-item"><i class="fa fa-bell" style="color:#0d9488;"></i> Reminder</span>
-        <span class="gcal-legend-item"><i class="fa fa-trophy" style="color:#d97706;"></i> Award / Achievement</span>
+        <span class="gcal-legend-item"><i class="fa fa-trophy" style="color:#475569;"></i> Award / Achievement</span>
         <span class="gcal-legend-item"><i class="fa fa-birthday-cake" style="color:#ec4899;"></i> Birthday</span>
       </div>
     </div>
@@ -282,7 +282,7 @@ body[data-theme="dark"] .gcal-tab-btn.active {
           </div>
           <div style="display:flex; justify-content:flex-end; gap:8px;">
             <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary" id="saveEventBtn" style="background:#2563eb; border-color:#1d4ed8; font-weight:600;">Save Event</button>
+            <button type="submit" class="btn btn-primary" id="saveEventBtn" style="background:#1e3a8a; border-color:#1e3a8a; font-weight:600;">Save Event</button>
           </div>
         </form>
 
@@ -330,7 +330,7 @@ body[data-theme="dark"] .gcal-tab-btn.active {
           </div>
           <div style="display:flex; justify-content:flex-end; gap:8px;">
             <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary" id="saveAwardBtn" style="background:#d97706; border-color:#b45309; font-weight:600;">Record Award</button>
+            <button type="submit" class="btn btn-primary" id="saveAwardBtn" style="background:#475569; border-color:#b45309; font-weight:600;">Record Award</button>
           </div>
         </form>
       </div>
@@ -356,7 +356,7 @@ body[data-theme="dark"] .gcal-tab-btn.active {
           <span id="detailLocation"></span>
         </div>
         <div id="detailEmployeeRow" style="margin-bottom:10px; font-size:13px; color:#475569; display:none;">
-          <i class="fa fa-user" style="width:16px; color:#2563eb; margin-right:6px;"></i>
+          <i class="fa fa-user" style="width:16px; color:#1e3a8a; margin-right:6px;"></i>
           <span id="detailEmployee"></span>
         </div>
         <div id="detailDescriptionRow" style="margin-top:15px; padding:10px 14px; background:#f8fafc; border-radius:6px; font-size:13px; color:#334155; line-height:1.5;"></div>
@@ -441,9 +441,9 @@ $(function() {
       
       var badgeHtml = '';
       if (calEvent.item_type === 'award') {
-        badgeHtml = '<span class="label" style="background:#d97706; padding:4px 8px; font-size:11px;"><i class="fa fa-trophy"></i> ' + (calEvent.category || 'Award') + '</span>';
+        badgeHtml = '<span class="label" style="background:#475569; padding:4px 8px; font-size:11px;"><i class="fa fa-trophy"></i> ' + (calEvent.category || 'Award') + '</span>';
         if (calEvent.points) {
-          badgeHtml += ' <span class="label" style="background:#2563eb; padding:4px 8px; font-size:11px;">+' + calEvent.points + ' Points</span>';
+          badgeHtml += ' <span class="label" style="background:#1e3a8a; padding:4px 8px; font-size:11px;">+' + calEvent.points + ' Points</span>';
         }
       } else if (calEvent.item_type === 'birthday') {
         badgeHtml = '<span class="label" style="background:#ec4899; padding:4px 8px; font-size:11px;"><i class="fa fa-birthday-cake"></i> Employee Birthday</span>';

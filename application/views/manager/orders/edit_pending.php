@@ -27,7 +27,7 @@
     <div class="box box-default collapsed-box" style="border: 1px solid #cbd5e1; border-radius: 4px; margin-bottom: 16px;">
       <div class="box-header with-border" style="background: #f8fafc; padding: 10px 15px; cursor: pointer;" data-widget="collapse">
         <h3 class="box-title" style="font-size: 13px; font-weight: 700; color: #000000; text-transform: uppercase; letter-spacing: 0.03em;">
-          <i class="fa fa-history" style="margin-right: 6px;"></i> Original Salesperson Submission (#<?php echo htmlspecialchars($lead['lead_ref_no'] ?: ($lead['db_ref_no'] ?: $lead['id'])); ?>) - Submitted by <?php echo htmlspecialchars($lead['requested_by_name'] ?: 'Salesperson'); ?>
+          Original Salesperson Submission (#<?php echo htmlspecialchars($lead['lead_ref_no'] ?: ($lead['db_ref_no'] ?: $lead['id'])); ?>) - Submitted by <?php echo htmlspecialchars($lead['requested_by_name'] ?: 'Salesperson'); ?>
         </h3>
         <div class="box-tools pull-right">
           <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button>
@@ -37,7 +37,7 @@
         <div class="row" style="font-size: 12px; line-height: 1.8;">
           <div class="col-sm-12" style="margin-bottom: 10px;">
             <h5 style="font-size: 13px; font-weight: 700; color: #1e293b; text-transform: uppercase; margin: 0 0 6px 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
-              <i class="fa fa-building" style="color: #0072f0; margin-right: 6px;"></i> Primary &amp; Account Information
+              Primary &amp; Account Information
             </h5>
           </div>
           <div class="col-sm-3"><strong>Company:</strong> <?php echo htmlspecialchars($orig['customer'] ?? '-'); ?></div>
@@ -56,7 +56,7 @@
 
           <div class="col-sm-12" style="margin-top: 14px; margin-bottom: 10px;">
             <h5 style="font-size: 13px; font-weight: 700; color: #1e293b; text-transform: uppercase; margin: 0 0 6px 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
-              <i class="fa fa-id-card" style="color: #0072f0; margin-right: 6px;"></i> Trade License &amp; Corporate Compliance
+              Trade License &amp; Corporate Compliance
             </h5>
           </div>
           <div class="col-sm-3"><strong>Trade License No:</strong> <?php echo htmlspecialchars($orig['tl_number'] ?? '-'); ?></div>
@@ -78,7 +78,7 @@
 
           <div class="col-sm-12" style="margin-top: 14px; margin-bottom: 10px;">
             <h5 style="font-size: 13px; font-weight: 700; color: #1e293b; text-transform: uppercase; margin: 0 0 6px 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
-              <i class="fa fa-map-marker" style="color: #0072f0; margin-right: 6px;"></i> Location &amp; Quotation Details
+              Location &amp; Quotation Details
             </h5>
           </div>
           <div class="col-sm-3"><strong>Location / Area:</strong> <?php echo htmlspecialchars($orig['location'] ?? '-'); ?></div>
@@ -87,7 +87,7 @@
           <div class="col-sm-3"><strong>Service Category:</strong> <?php echo htmlspecialchars($orig['servicecat'] ?? '-'); ?></div>
           <div class="col-sm-3"><strong>Monthly Retainer (MRC):</strong> AED <?php echo number_format((float)($orig['mrc'] ?? 0), 2); ?></div>
           <div class="col-sm-3"><strong>One-Time Revenue:</strong> AED <?php echo number_format((float)($orig['revenue'] ?? 0), 2); ?></div>
-          <div class="col-sm-3"><strong>Total MRR:</strong> <strong style="color: #16a34a;">AED <?php echo number_format((float)($orig['mrr'] ?? 0), 2); ?></strong></div>
+          <div class="col-sm-3"><strong>Total MRR:</strong> <strong style="color: #0f172a;">AED <?php echo number_format((float)($orig['mrr'] ?? 0), 2); ?></strong></div>
           <div class="col-sm-3"><strong>Advance Amount:</strong> AED <?php echo number_format((float)($orig['advance_amount'] ?? 0), 2); ?></div>
           <div class="col-sm-3"><strong>Timeline:</strong> <?php echo htmlspecialchars($orig['timeline'] ?? '-'); ?></div>
           <div class="col-sm-3"><strong>Payment Terms:</strong> <?php echo htmlspecialchars($orig['payment_terms'] ?? '-'); ?></div>
@@ -107,10 +107,10 @@
       <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
       <input type="hidden" name="action_type" value="send_for_approval">
 
-      <div class="box box-default" style="border: 1px solid #00c6f0; border-radius: 6px; margin-bottom: 16px;">
-        <div class="box-header with-border" style="background: #f0fbff; padding: 12px 18px;">
-          <h3 class="box-title" style="color: #0369a1; font-weight: 700; font-size: 15px; margin: 0;">
-            <i class="fa fa-user-plus" style="margin-right: 8px;"></i> Assign Order Onboard Client
+      <div class="box box-default" style="border: 1px solid #1e3a8a; border-radius: 6px; margin-bottom: 16px;">
+        <div class="box-header with-border" style="background: #eff6ff; padding: 12px 18px;">
+          <h3 class="box-title" style="color: #1e3a8a; font-weight: 700; font-size: 15px; margin: 0;">
+            Assign Order Onboard Client
           </h3>
         </div>
         <div class="box-body" style="padding: 18px;">
@@ -706,7 +706,7 @@
               <option value="Pending Sales Approval">Pending Sales Approval (KAM Approval)</option>
               <option value="Cancelled">Cancelled (Rejected / Lost)</option>
             </select>
-            <button type="submit" name="action_type" value="save_order" class="btn btn-primary" style="background: #2563eb; border-color: #1d4ed8; color: #ffffff; font-weight: 700; padding: 8px 24px; border-radius: 4px; height: 38px;">
+            <button type="submit" name="action_type" value="save_order" class="btn btn-primary" style="background: #1e3a8a; border-color: #1e3a8a; color: #ffffff; font-weight: 700; padding: 8px 24px; border-radius: 4px; height: 38px;">
               <i class="fa fa-save" style="margin-right: 5px;"></i> Save
             </button>
           </div>
@@ -736,7 +736,7 @@
         <input type="hidden" name="action_type" value="reject_order">
         <div class="modal-header" style="background: #000000; color: #ffffff; padding: 14px 18px; border-bottom: 1px solid #000000;">
           <button type="button" class="close" data-dismiss="modal" style="color: #ffffff; opacity: 0.8;">&times;</button>
-          <h4 class="modal-title" style="font-size: 15px; font-weight: 700; color: #ffffff; margin: 0;"><i class="fa fa-times-circle"></i> Reject Order Request</h4>
+          <h4 class="modal-title" style="font-size: 15px; font-weight: 700; color: #ffffff; margin: 0;">Reject Order Request</h4>
         </div>
         <div class="modal-body" style="padding: 20px; background: #ffffff; color: #000000;">
           <p style="font-size: 13px; color: #475569; margin-bottom: 14px;">Please specify the reason for rejecting this Lead-to-Order conversion request. The lead will be returned to normal state and unlocked.</p>

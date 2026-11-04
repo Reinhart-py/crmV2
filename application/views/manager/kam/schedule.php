@@ -357,8 +357,8 @@ $(document).ready(function() {
               var st = mData ? (mData.status || 'Not Applicable') : 'Not Applicable';
               var color = '#94a3b8';
               var bg = '#f8fafc';
-              if (st === 'Approved') { color = '#16a34a'; bg = '#dcfce7'; }
-              else if (st === 'Pending') { color = '#d97706'; bg = '#fef3c7'; }
+              if (st === 'Approved') { color = '#0f172a'; bg = '#f1f5f9'; }
+              else if (st === 'Pending') { color = '#475569'; bg = '#f8fafc'; }
               else if (st === 'Expired') { color = '#dc2626'; bg = '#fee2e2'; }
               mHtml += '<td class="text-center" style="background:' + bg + '; color:' + color + '; font-weight:600; font-size:11px; padding:6px 2px;">' + st + '</td>';
             });

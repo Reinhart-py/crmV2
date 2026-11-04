@@ -49,7 +49,7 @@
                                         <?php foreach ($orders as $ord) { ?>
                                         <tr>
                                             <td>
-                                                <strong style="color:#0072f0;"><?php echo htmlspecialchars($ord['order_no']); ?></strong>
+                                                <strong style="color:#1e3a8a;"><?php echo htmlspecialchars($ord['order_no']); ?></strong>
                                             </td>
                                             <td>
                                                 <strong><?php echo htmlspecialchars(!empty($ord['company_name']) ? $ord['company_name'] : $ord['client_name']); ?></strong>
@@ -60,7 +60,7 @@
                                             </td>
                                             <td><?php echo htmlspecialchars($ord['service_title'] ?: 'General'); ?></td>
                                             <td>
-                                                <strong style="color:#16a34a;">AED <?php echo number_format((float)($ord['pricing_amount'] ?: $ord['mrr']), 2); ?></strong>
+                                                <strong style="color:#0f172a;">AED <?php echo number_format((float)($ord['pricing_amount'] ?: $ord['mrr']), 2); ?></strong>
                                             </td>
                                             <td><?php echo htmlspecialchars($ord['created_by_name'] ?: 'Staff'); ?></td>
                                             <td><?php echo htmlspecialchars($ord['assigned_to_name'] ?: 'Unassigned'); ?></td>

@@ -2,17 +2,7 @@
 
 
 <div class="container">
-<div class="content-wrapper"> 
-  
-  
-  
-  <section class="content-header">
-    <h1> Leads </h1>
-    <ol class="breadcrumb">
-      <li><a href="#"><i class="fa fa-dashboard"></i>Home</a></li>
-      <li class="active">Leads</li>
-    </ol>
-  </section>
+<div class="content-wrapper">
   
   
   
@@ -99,7 +89,7 @@
         <div style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 8px;">
           <span id="topZoneIndicator" class="label" style="background: #000000; color: #ffffff; font-weight: 700; padding: 4px 12px; border-radius: 4px; font-size: 12px; letter-spacing: 0.5px; display: none;"></span>
           <span id="topDncrIndicator" class="label label-danger" style="background: #dc2626; color: #ffffff; font-weight: 700; padding: 4px 12px; border-radius: 4px; font-size: 12px; letter-spacing: 0.5px; <?php echo (isset($list['dnd_status']) && strtolower($list['dnd_status']) == 'yes') ? '' : 'display:none;'; ?>">DNCR</span>
-          <span id="topClosedIndicator" class="label label-primary" style="background: #2563eb; color: #ffffff; font-weight: 700; padding: 4px 12px; border-radius: 4px; font-size: 12px; letter-spacing: 0.5px; <?php echo (isset($list['company_status']) && strtolower($list['company_status']) == 'closed') ? '' : 'display:none;'; ?>">Closed</span>
+          <span id="topClosedIndicator" class="label label-primary" style="background: #1e3a8a; color: #ffffff; font-weight: 700; padding: 4px 12px; border-radius: 4px; font-size: 12px; letter-spacing: 0.5px; <?php echo (isset($list['company_status']) && strtolower($list['company_status']) == 'closed') ? '' : 'display:none;'; ?>">Closed</span>
         </div>
       </div>
       
@@ -1653,4 +1643,6 @@ $(document).ready(function() {
 
 });
 </script>
+<script src="<?php echo base_url(); ?>assets/dist/js/crm-lead-form.js?v=20261104_1"></script>
+<script>jQuery(function(){ crmCompactLeadForm('form[name="add_form"]'); });</script>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

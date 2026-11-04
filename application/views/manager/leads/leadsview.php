@@ -278,10 +278,10 @@ foreach($st_list as $cli){
                                             <td><?php echo htmlspecialchars($li['requested_by_name'] ?? 'Staff'); ?></td>
                                             <td><?php echo !empty($li['conversion_requested_at']) ? date('d-m-Y H:i', strtotime($li['conversion_requested_at'])) : '-'; ?></td>
                                             <td><span title="<?php echo htmlspecialchars($li['conversion_reason'] ?? ''); ?>"><?php echo htmlspecialchars(mb_strimwidth($li['conversion_reason'] ?? '-', 0, 35, '...')); ?></span></td>
-                                            <td><span class="label label-warning" style="background:#f59e0b; color:#ffffff; font-weight:600; font-size:11px;">Pending Review</span></td>
+                                            <td><span class="label label-warning" style="background:#475569; color:#ffffff; font-weight:600; font-size:11px;">Pending Review</span></td>
                                             <td>
                                                 <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>" class="btn btn-xs btn-default" style="margin-right:4px;">Preview</a>
-                                                <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($li['id']); ?>" class="btn btn-xs btn-primary" style="background:#2563eb; border-color:#1d4ed8;">Edit</a>
+                                                <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($li['id']); ?>" class="btn btn-xs btn-primary" style="background:#1e3a8a; border-color:#1e3a8a;">Edit</a>
                                             </td>
                                         <?php } else { ?>
                                             <td><?php echo $li['poc']; ?></td>

@@ -85,7 +85,7 @@
                                     <div id="transfer_user_dropdown" style="display:none; position:absolute; top:100%; left:0; width:100%; z-index:9999; background:#fff; border:1px solid #cbd5e1; border-radius:4px; box-shadow:0 8px 16px rgba(0,0,0,0.12); max-height:200px; overflow-y:auto; margin-top:2px;"></div>
                                 </div>
 
-                                <button type="submit" id="btnConfirmTransfer" class="btn btn-sm btn-primary" disabled style="background:#2563eb; border-color:#2563eb; font-weight:600;">
+                                <button type="submit" id="btnConfirmTransfer" class="btn btn-sm btn-primary" disabled style="background:#1e3a8a; border-color:#1e3a8a; font-weight:600;">
                                     <i class="fa fa-exchange"></i> Transfer
                                 </button>
                             </div>
@@ -129,7 +129,7 @@
                                             <?php if(!empty($li['assigned_to_name'])){ ?>
                                                 <span class="label label-success" style="font-size:11px;"><?php echo htmlspecialchars($li['assigned_to_name']); ?></span>
                                             <?php } else { ?>
-                                                <span class="label label-warning" style="font-size:11px; background:#f59e0b; color:#fff;">Unassigned</span>
+                                                <span class="label label-warning" style="font-size:11px; background:#475569; color:#fff;">Unassigned</span>
                                             <?php } ?>
                                         </td>
                                         <td><?php echo isset($li['servicecat']) ? $li['servicecat'] : (isset($li['p_cat']) ? $li['p_cat'] : '-'); ?></td>
@@ -159,7 +159,7 @@
                                                     <li> <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($li['id']); ?>"
                                                             data-toggle="tooltip" title="Edit">Edit</a> </li>
                                                     <li> <a href="javascript:void(0);" onclick="transferSingleLead(<?php echo $li['id']; ?>, '<?php echo addslashes(htmlspecialchars($li['customer'])); ?>')">
-                                                            <i class="fa fa-exchange" style="color:#2563eb; margin-right:4px;"></i> Transfer</a> </li>
+                                                            <i class="fa fa-exchange" style="color:#1e3a8a; margin-right:4px;"></i> Transfer</a> </li>
                                                 </ul>
                                             </div>
                                         </td>

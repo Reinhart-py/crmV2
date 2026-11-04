@@ -37,7 +37,7 @@
             </div>
             <div class="col-md-3 col-sm-6 col-xs-12">
                 <div class="info-box" style="border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-                    <span class="info-box-icon" style="background: #0284c7; color: #fff; border-radius: 6px 0 0 6px;"><i class="fa fa-calendar"></i></span>
+                    <span class="info-box-icon" style="background: #1e3a8a; color: #fff; border-radius: 6px 0 0 6px;"><i class="fa fa-calendar"></i></span>
                     <div class="info-box-content">
                         <span class="info-box-text" style="font-size: 12px; color: #64748b; font-weight: 600;">Meetings Scheduled</span>
                         <span class="info-box-number" style="font-size: 14px; margin-top: 5px;">
@@ -48,7 +48,7 @@
             </div>
             <div class="col-md-3 col-sm-6 col-xs-12">
                 <div class="info-box" style="border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-                    <span class="info-box-icon" style="background: #10b981; color: #fff; border-radius: 6px 0 0 6px;"><i class="fa fa-plus"></i></span>
+                    <span class="info-box-icon" style="background: #0f172a; color: #fff; border-radius: 6px 0 0 6px;"><i class="fa fa-plus"></i></span>
                     <div class="info-box-content">
                         <span class="info-box-text" style="font-size: 12px; color: #64748b; font-weight: 600;">Onboard Account</span>
                         <span class="info-box-number" style="font-size: 14px; margin-top: 5px;">

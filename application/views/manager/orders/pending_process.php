@@ -63,7 +63,7 @@
                                         </td>
                                         <td>
                                             <a href="<?php echo base_url('manager/leads/view/' . $encoded_id); ?>">
-                                                <strong style="color: #2563eb;"><?php echo htmlspecialchars(!empty($p['lead_ref_no']) ? $p['lead_ref_no'] : ('L' . str_pad($lead_id, 10, '0', STR_PAD_LEFT))); ?></strong>
+                                                <strong style="color: #1e3a8a;"><?php echo htmlspecialchars(!empty($p['lead_ref_no']) ? $p['lead_ref_no'] : ('L' . str_pad($lead_id, 10, '0', STR_PAD_LEFT))); ?></strong>
                                             </a>
                                         </td>
                                         <td>
@@ -92,7 +92,7 @@
                                                     </li>
                                                     <li>
                                                         <a href="<?php echo base_url('manager/orders/edit_pending/' . $lead_id); ?>" title="Process Order">
-                                                            <i class="fa fa-cogs" style="color: #0072f0; margin-right: 6px;"></i> Process Order
+                                                            <i class="fa fa-cogs" style="color: #1e3a8a; margin-right: 6px;"></i> Process Order
                                                         </a>
                                                     </li>
                                                 </ul>
