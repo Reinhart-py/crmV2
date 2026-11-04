@@ -1,3 +1,10 @@
+## [2026-11-04] - Login Background Image & Full Setup / Deployment Guide
+### Changed
+- Login, Forgot Password and Reset Password now use `assets/background-auth.jpg`: blurred full-page background with the sharp image in the card's left panel, responsive on desktop and mobile. Only CSS and the visual panel changed; authentication logic is untouched (`assets/dist/css/crm-auth.css`, `application/views/manager/elements/auth_visual.php`).
+- README rewritten as a complete setup guide: real tech stack (CodeIgniter 2.2.6 patched for PHP 8.2), local setup, every environment variable the code reads, settings stored in the database and hardcoded in files, migrations, cPanel, Netlify limits, AWS (EC2 + RDS) deployment, troubleshooting and log locations.
+### Audit additions
+- SEC-13 session cookie can likely be forged (cookie sessions signed with the placeholder key), SEC-14 SMTP credentials hardcoded in `mail_model.php`, SEC-15 migration runner web key default and leaked in error, SEC-16 `db_debug` on in production, SEC-17 `3cx_config.json` tracked in git.
+- Corrected framework version in the audit: CodeIgniter 2.2.6, not 3.
 ## [2026-11-04] - Full CRM Audit, Ocean Blue UI Redesign, Dialer Campaigns & Dashboard Restore
 ### Added
 - `audit today's state.md`: full audit of the CRM with a prioritized task list (working features, placeholders, broken features, security, integrations, UI, enterprise SaaS readiness).

@@ -8,9 +8,27 @@ body.auth-page {
   justify-content: center;
   padding: 24px;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: #e8edf3;
+  background: #0b1f4d;
   color: #0f172a;
+  position: relative;
+  isolation: isolate;
   -webkit-font-smoothing: antialiased;
+}
+body.auth-page::before {
+  content: "";
+  position: fixed;
+  inset: -40px;
+  z-index: -2;
+  background: #0b1f4d url("../../background-auth.jpg") center / cover no-repeat;
+  filter: blur(22px) saturate(1.05);
+  transform: scale(1.06);
+}
+body.auth-page::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: rgba(11, 31, 77, 0.18);
 }
 .auth-shell {
   width: 100%;
@@ -22,48 +40,14 @@ body.auth-page {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  box-shadow: 0 30px 60px -30px rgba(15, 23, 42, 0.35), 0 0 0 1px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 40px 80px -30px rgba(2, 6, 23, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.35);
 }
 .auth-visual {
   position: relative;
   overflow: hidden;
   border-radius: 14px;
-  background: #0b1f4d;
-  color: #ffffff;
-  padding: 36px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-}
-.auth-visual svg.auth-lines {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-.auth-visual-copy { position: relative; z-index: 1; }
-.auth-visual-kicker {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.6);
-  margin: 0 0 12px;
-}
-.auth-visual-title {
-  font-size: 26px;
-  line-height: 1.25;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  margin: 0 0 10px;
-  color: #ffffff;
-}
-.auth-visual-text {
-  font-size: 13.5px;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.72);
-  margin: 0;
-  max-width: 340px;
+  min-height: 100%;
+  background: #0b1f4d url("../../background-auth.jpg") 42% center / cover no-repeat;
 }
 .auth-panel {
   display: flex;
@@ -194,9 +178,7 @@ body.auth-page {
 @media (max-width: 860px) {
   body.auth-page { padding: 16px; align-items: flex-start; }
   .auth-shell { grid-template-columns: 1fr; min-height: 0; max-width: 480px; }
-  .auth-visual { min-height: 150px; padding: 22px; }
-  .auth-visual-title { font-size: 19px; }
-  .auth-visual-text { display: none; }
+  .auth-visual { min-height: 160px; background-position: center 40%; }
   .auth-panel { padding: 26px 18px 18px; }
   .auth-title { font-size: 24px; }
 }

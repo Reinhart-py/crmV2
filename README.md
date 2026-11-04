@@ -5,7 +5,7 @@
 ### The no-nonsense commercial ops, softphone dialer & key account management powerhouse.
 
 [![PHP Version](https://img.shields.io/badge/PHP-7.4%20to%208.2-777bb4?style=for-the-badge&logo=php&logoColor=white)](https://www.php.net/)
-[![CodeIgniter](https://img.shields.io/badge/CodeIgniter-3.x%20Hardened-ee4326?style=for-the-badge&logo=codeigniter&logoColor=white)](https://codeigniter.com/)
+[![CodeIgniter](https://img.shields.io/badge/CodeIgniter-2.2.6%20Patched-ee4326?style=for-the-badge&logo=codeigniter&logoColor=white)](https://codeigniter.com/)
 [![MySQL](https://img.shields.io/badge/MySQL-5.7%20|%208.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
 [![License](https://img.shields.io/badge/License-Proprietary%20%C2%A9%202026-0072f0?style=for-the-badge)](#copyright--can-you-claim-this-crm)
 [![Vibe](https://img.shields.io/badge/Design-Apple--Style%20Clean-0f172a?style=for-the-badge&logo=apple&logoColor=white)](#design-vibe--apple-style-rules)
@@ -28,10 +28,14 @@ Old CRMs usually feel like using software from 2004—bulky boxes, neon rainbow 
 - [System Architecture & Workflow](#system-architecture--workflow)
 - [How Much Code Actually Changed? (Stats)](#how-much-code-actually-changed-stats)
 - [Feature Breakdown: What's In The Box](#feature-breakdown-whats-in-the-box)
-- [Security: Environment (.env) & Zero Secrets](#security-environment-env--zero-secrets)
-- [Database Migrations (The Modern Way)](#database-migrations-the-modern-way)
-- [cPanel Hosting Guide (Step-by-Step)](#cpanel-hosting-guide-step-by-step)
-- [Troubleshooting & Gotchas](#troubleshooting--gotchas)
+- [Tech Stack](#tech-stack-what-this-project-really-uses)
+- [1. Local Setup](#1-local-setup-step-by-step)
+- [2. Environment Variables and Config Files](#2-environment-variables-and-config-files)
+- [3. Database Migrations](#3-database-migrations)
+- [4. Deploy on cPanel](#4-deploy-on-cpanel-shared-hosting)
+- [5. Netlify: Can This CRM Run There?](#5-netlify-can-this-crm-run-there)
+- [6. Deploy on AWS](#6-deploy-on-aws)
+- [7. Troubleshooting](#7-troubleshooting)
 - [Copyright: Can You Claim This CRM?](#copyright--can-you-claim-this-crm)
 
 ---
@@ -170,193 +174,532 @@ Total Alphabets (Letters)    : +2,655,328 letters (+2,782,220 inserted / -126,89
 
 ---
 
-## Security: Environment (.env) & Zero Secrets
+## Tech Stack (What This Project Really Uses)
 
-Hardcoding database passwords or database names directly into git repositories is a massive security risk. We moved all sensitive credentials to `.env`.
+| Part | What is used | Where |
+|---|---|---|
+| Language | PHP (tested on PHP 8.2.33). Works on PHP 8.1 and 8.2. PHP 8.3+ is not tested. | everywhere |
+| Framework | CodeIgniter **2.2.6**, patched locally to run on PHP 8 (for example a `group_start()` shim in the database driver). | `system/` |
+| Database | MySQL 5.7 / 8.0 or MariaDB 10.4+ through the `mysqli` driver | `application/config/database.php` |
+| Web server | Apache with `mod_rewrite` (uses `.htaccess`). For local work the PHP built-in server with `router.php` also works. | `.htaccess`, `router.php` |
+| Front end | Server-rendered PHP views, jQuery 2.2.3, Bootstrap 3, AdminLTE, Chart.js 1.x, DataTables, Select2 (all bundled in `assets/`) | `application/views/`, `assets/` |
+| Email | PHPMailer (bundled) | `application/libraries/phpmailer/`, `application/models/mail_model.php` |
+| Optional services | Groq (AI transcription and summaries), 3CX (calling), WhatsApp Cloud API, SMTP | `application/libraries/Groq_service.php`, `application/libraries/Threecx.php`, `application/controllers/ci_api.php` |
 
-### 1. The `.env.example` Template
-A sample template is provided in the repository root ([`.env.example`](file:///c:/Users/SRJ%20feb/Downloads/softwares/CRM/2026.10.08-1%20-%20crm.rolextogroup.com/crm.rolextogroup.com/.env.example)):
+There is **no Composer and no npm build**. All PHP and JavaScript libraries are already inside the repository. Google Fonts and a few DataTables files load from public CDNs.
+
+Required PHP extensions:
+
+| Extension | Why |
+|---|---|
+| `mysqli` | database connection |
+| `curl` | Groq, 3CX and WhatsApp API calls, integration connection tests |
+| `mbstring` | text handling |
+| `openssl` | HTTPS calls and SMTP TLS |
+| `json` | AJAX responses (built in on PHP 8) |
+| `session` | login sessions (built in) |
+
+Check what you have:
 
 ```bash
-# Database Configuration
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=crm7strokes
-DB_USER=root
-DB_PASS=
-
-# Base URL & Environment
-BASE_URL=https://crm.7strokes.com/
-CI_ENV=production
-
-# Optional Integrations
-GROQ_API_KEY=
-PBX_ENDPOINT=
+php -v
+php -m
 ```
-
-### 2. How to Set Up Your `.env`
-1. On your cPanel or server, copy the template:
-   ```bash
-   cp .env.example .env
-   ```
-2. Open `.env` and fill in your actual cPanel database credentials:
-   - **`DB_NAME`**: Found in cPanel > MySQL Databases (e.g. `cpaneluser_crm7strokes`).
-   - **`DB_USER`**: The MySQL user you assigned to the database (e.g. `cpaneluser_crmuser`).
-   - **`DB_PASS`**: The password you set for that database user.
-   - **`DB_HOST`**: Almost always `localhost` on cPanel.
-   - **`BASE_URL`**: Your full CRM URL (e.g. `https://crm.7strokes.com/`).
-   - **`CI_ENV`**: Set to `production` on live hosting (turns off PHP warning popups) or `development` on your local laptop.
-3. `.env` is permanently ignored by `.gitignore`, keeping your passwords safe.
 
 ---
 
-## Database Migrations (The Modern Way)
+## 1. Local Setup (Step by Step)
 
-Forget manually importing random SQL snippets into phpMyAdmin whenever new features ship. Seven Strokes CRM has a built-in versioned migration runner.
+### 1.1 Install the tools
 
-All migrations live in [`application/migrations/`](file:///c:/Users/SRJ%20feb/Downloads/softwares/CRM/2026.10.08-1%20-%20crm.rolextogroup.com/crm.rolextogroup.com/application/migrations) and track their status in the `schema_migrations` table:
+- **Git**
+- **PHP 8.2** with the extensions listed above
+- **MySQL or MariaDB**. The easiest option on Windows is **XAMPP** (includes Apache, MariaDB and phpMyAdmin). On macOS you can use MAMP or Homebrew. On Linux use your package manager.
+
+### 1.2 Get the code
 
 ```bash
-# 1. Check which migrations are pending or already applied
+git clone https://github.com/Reinhart-py/crmV2.git
+cd crmV2
+```
+
+### 1.3 Create the database
+
+Create an empty database named `crm7strokes` (any name works, but then change `DB_NAME`).
+
+Using the MySQL command line:
+
+```bash
+mysql -u root -p -e "CREATE DATABASE crm7strokes CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+```
+
+Or in phpMyAdmin: **Databases > Create database > `crm7strokes`**.
+
+### 1.4 Import the base data
+
+The repository has a full SQL file at `database/localhost.sql` (about 3.4 MB, 51 tables).
+
+```bash
+mysql -u root -p crm7strokes < database/localhost.sql
+```
+
+Or in phpMyAdmin: select `crm7strokes` > **Import** > choose `database/localhost.sql` > **Go**.
+
+> Warning: this file currently contains real CRM data. Do not share it. The audit (SEC-1) asks to replace it with a schema-only file. Treat every account in it as compromised until passwords are reset.
+
+### 1.5 Create the `.env` file
+
+```bash
+cp .env.example .env
+```
+
+On Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Edit `.env` for local work:
+
+```env
+DB_HOST=localhost
+DB_NAME=crm7strokes
+DB_USER=root
+DB_PASS=
+BASE_URL=http://localhost:8080/
+CI_ENV=development
+```
+
+All variables are explained in section 2.
+
+### 1.6 Run the database migrations
+
+```bash
 php migration_runner.php status
-
-# 2. Run all pending migrations with execution timings
 php migration_runner.php
+```
 
-# 3. Rollback the most recent batch if needed
+### 1.7 Start the app
+
+Option A, PHP built-in server (no Apache needed). Run this in the project root:
+
+```bash
+php -S localhost:8080 router.php
+```
+
+Open http://localhost:8080/
+
+Option B, XAMPP Apache: put the project in `C:\xampp\htdocs\crmV2`, make sure `mod_rewrite` is on and `AllowOverride All` is set for `htdocs`, set `BASE_URL=http://localhost/crmV2/`, then open http://localhost/crmV2/
+
+> Note: `.htaccess` uses `RewriteBase /`. If you serve the CRM from a sub folder like `/crmV2/`, change it to `RewriteBase /crmV2/`.
+
+### 1.8 Log in
+
+There is no default admin account. Users come from the `ci_user` table in the imported data. The login field is the `c_username` column and passwords are stored as SHA-1 hashes (the audit asks to change this to `password_hash`).
+
+To set a known password for an existing admin user on your local copy:
+
+```sql
+SELECT id, c_username, name, user_type FROM ci_user WHERE user_type = 1 AND status = 1;
+UPDATE ci_user SET c_password = SHA1('ChangeMe-Local-Only-123') WHERE c_username = 'the_admin_username';
+```
+
+Role IDs (`ci_user.user_type`): `1` Admin, `2` Back Office, `3` Salesperson, `4` KAM, `5` Presentation.
+
+Logging in from a second browser logs out the first one (single active session), and the session ends after 5 minutes without activity.
+
+---
+
+## 2. Environment Variables and Config Files
+
+### 2.1 How `.env` is loaded
+
+- The file must be in the project root, next to `index.php`: `crmV2/.env`.
+- It is read by `index.php` and again by `application/config/database.php`. Each line is `KEY=value`. Lines starting with `#` are comments. Quotes around values are removed.
+- A value that already exists as a real server environment variable (for example set by Apache `SetEnv` or the hosting panel) wins over `.env`.
+- `.env` is listed in `.gitignore`. Never commit it.
+
+### 2.2 All variables the code reads
+
+| Variable | Used for | Default if empty | Read in |
+|---|---|---|---|
+| `DB_HOST` (or `DB_HOSTNAME`) | Database server | `127.0.0.1` | `application/config/database.php` |
+| `DB_USER` (or `DB_USERNAME`) | Database user | `root` on localhost, otherwise `crm7strokes` | `application/config/database.php` |
+| `DB_PASS` (or `DB_PASSWORD`) | Database password | empty | `application/config/database.php` |
+| `DB_NAME` (or `DB_DATABASE`) | Database name | `crm7strokes` | `application/config/database.php` |
+| `BASE_URL` | Full site URL with a trailing slash, used for every link and asset | detected from the request host | `application/config/config.php` |
+| `CI_ENV` | `development` shows PHP errors, `production` hides them | `development` on localhost, otherwise `production` | `index.php` |
+| `MIGRATION_KEY` | Secret for running `migration_runner.php` from a browser | `crm7strokes_migrate` (change it, see audit SEC-15) | `migration_runner.php` |
+| `GROQ_API_KEY` | Groq AI key for call transcription and summaries | value saved in System > Integrations | `application/libraries/Groq_service.php` |
+| `GROQ_TRANSCRIPTION_MODEL` | Groq speech-to-text model | `whisper-large-v3-turbo` | `application/libraries/Groq_service.php` |
+| `GROQ_CHAT_MODEL` / `GROQ_SUMMARY_MODEL` | Groq model for call summaries | `openai/gpt-oss-20b` | `application/libraries/Groq_service.php` |
+| `THREECX_PBX_FQDN` | 3CX PBX host name | default only; `application/config/3cx_config.json` overrides it | `application/libraries/Threecx.php` |
+| `THREECX_CLIENT_ID` | 3CX API client ID | default only; `application/config/3cx_config.json` overrides it | `application/libraries/Threecx.php` |
+| `THREECX_CLIENT_SECRET` | 3CX API client secret | default only; `application/config/3cx_config.json` overrides it | `application/libraries/Threecx.php` |
+| `THREECX_EXTENSION` | Default 3CX extension | default only; `application/config/3cx_config.json` overrides it | `application/libraries/Threecx.php` |
+
+Not used by the code (safe to leave empty):
+
+- `DB_PORT`: listed in `.env.example` but `database.php` does not read it. For a non-default port, add `$db['default']['port'] = 3307;` in `application/config/database.php`.
+- `PBX_ENDPOINT`: listed in `.env.example` but nothing reads it. Use the `THREECX_*` variables instead.
+
+Example production `.env` (dummy values):
+
+```env
+DB_HOST=localhost
+DB_NAME=cpaneluser_crm7strokes
+DB_USER=cpaneluser_crmadmin
+DB_PASS=replace-with-a-strong-password
+BASE_URL=https://crm.example.com/
+CI_ENV=production
+MIGRATION_KEY=replace-with-a-long-random-string
+GROQ_API_KEY=
+THREECX_PBX_FQDN=
+THREECX_CLIENT_ID=
+THREECX_CLIENT_SECRET=
+THREECX_EXTENSION=
+```
+
+### 2.3 Settings saved in the database (admin screen)
+
+Open **System > Integrations** (`/manager/system/integrations`) as an admin. Values are stored in the `ci_integration_settings` table:
+
+| Service | Fields |
+|---|---|
+| Groq | API key, transcription model, summary model, fallback model, temperature |
+| 3CX | API key / secret, endpoint, bearer token, webhook secret |
+| Email SMTP | host, port, user, password, encryption, from email, from name |
+| WhatsApp | API key (access token), phone number ID, WABA ID |
+| Cron, Helpdesk | endpoint and key fields |
+
+`GROQ_*` environment variables override the saved Groq values.
+
+3CX click-to-call settings are saved separately from **System > Calling API** (`/manager/system/calling-api`) into `application/config/3cx_config.json`. Values in that file override the `THREECX_*` environment variables, which are only defaults. That file holds the 3CX client secret and is **tracked in git** (today it contains no secrets). Never commit it after entering real values, and make sure PHP can write to it on the server.
+
+### 2.4 Settings written directly in code (change them by editing the file)
+
+| Setting | File | Current value | What to do |
+|---|---|---|---|
+| Encryption key (also signs the session cookie) | `application/config/config.php` | `abcdef123456` | Replace with a long random string before going live (audit SEC-6, SEC-13). |
+| Secure cookies | `application/config/config.php` | `cookie_secure = FALSE` | Set `TRUE` when the site runs on HTTPS. |
+| Error log level | `application/config/config.php` | `log_threshold = 0` (off) | Set `1` (errors only) in production. Logs go to `application/logs/`. |
+| Session lifetime cookie | `application/config/config.php` | `sess_expiration = 7200` | The 5 minute idle logout is separate, in `ci_admin_model::check_auth_timeout()` and `application/views/manager/elements/footer.php`. |
+| CSRF | `application/config/config.php` | on, token `csrf_test_name` | Keep on. |
+| Database debug output | `application/config/database.php` | `db_debug = TRUE` | Set `FALSE` in production (audit SEC-16). |
+| SMTP server for password reset emails | `application/models/mail_model.php` | hardcoded host and login | Edit host, port, user and password here. The Integrations SMTP screen is not used by this mailer yet (audit SEC-14). |
+| Clean URLs base path | `.htaccess` | `RewriteBase /` | Change if the CRM is in a sub folder. |
+
+### 2.5 Development vs production
+
+| Item | Development | Production |
+|---|---|---|
+| `CI_ENV` | `development` | `production` |
+| `BASE_URL` | `http://localhost:8080/` | `https://your-domain/` |
+| `encryption_key` | any | long random value |
+| `cookie_secure` | `FALSE` | `TRUE` |
+| `db_debug` | `TRUE` | `FALSE` |
+| `log_threshold` | `0` or `4` | `1` |
+| `MIGRATION_KEY` | any | long random value, or run migrations by SSH only |
+
+---
+
+## 3. Database Migrations
+
+Migrations live in `application/migrations/` and are tracked in the `schema_migrations` table.
+
+```bash
+php migration_runner.php status
+php migration_runner.php
 php migration_runner.php rollback
 ```
 
-### Migrations Included in v2
+Without SSH you can open `https://your-domain/migration_runner.php?key=YOUR_MIGRATION_KEY` (add `&action=status` to only see the status). Set `MIGRATION_KEY` first; see audit SEC-15 about locking this down.
 
 | Migration | What it does |
 |---|---|
 | `001_core_crm_schema.php` | Creates `ci_tasks`, `ci_admin_logs`, extended `ci_tickets` columns, business categories |
-| `002_ticket_history_and_followups.php` | Ticket history audit logs & follow-up queues |
-| `003_user_security_and_currency.php` | User session tokens, IP logs, online indicators, custom user currency |
+| `002_ticket_history_and_followups.php` | Ticket history audit logs and follow-up queues |
+| `003_user_security_and_currency.php` | User session tokens, IP logs, online indicators, user currency |
 | `004_lead_quote_and_trn.php` | Quotes, Corporate Tax TRN, VAT TRN, data sources, database categories |
 | `005_finance_and_operations.php` | Invoices, payments, expenses, service delivery, attendance, leaves |
-| `006_orders_and_sales_approval.php` | Order approval fields, sales conversion referral tracker, lead locking |
-| `007_performance_indexes.php` | Multi-column database indexes across `ci_leads`, `ci_user`, `ci_orders`, `ci_tasks`, `ci_tickets` |
+| `006_orders_and_sales_approval.php` | Order approval fields, sales conversion tracking, lead locking |
+| `007_performance_indexes.php` | Indexes on `ci_leads`, `ci_user`, `ci_orders`, `ci_tasks`, `ci_tickets` |
+
+Some tables and columns are also created by the app at runtime the first time a page needs them (for example `ci_dialer_campaigns`, `ci_dialer_progress` and `ci_call_logs.campaign_id` when the Dialer opens). The audit (BUG-4) asks to move these into migrations.
 
 ---
 
-## cPanel Hosting Guide (Step-by-Step Production Setup)
+## 4. Deploy on cPanel (Shared Hosting)
 
-Here is how to get Seven Strokes CRM running on cPanel from scratch in under 10 minutes, even if you are on budget shared hosting:
-
-### Step 1: Configure PHP Version & INI Limits
-1. Log into your cPanel account dashboard.
-2. Under **Software**, open **MultiPHP Manager**.
-3. Locate your CRM domain/subdomain (`crm.7strokes.com`) and select **PHP 8.1** (or **PHP 8.2** / **PHP 7.4**). Click **Apply**.
-4. Now open **MultiPHP INI Editor** (in basic or advanced mode) for your CRM domain:
-   - `memory_limit = 256M` (or `512M` for heavy PDF reports)
-   - `max_input_vars = 5000` *(Crucial! The Role Permissions matrix has hundreds of checkbox fields. A default limit of 1000 will silently truncate saved permissions).*
+### 4.1 PHP version and limits
+1. cPanel > **Software > MultiPHP Manager**: select the CRM domain and choose **PHP 8.2** (or 8.1). Click **Apply**.
+2. cPanel > **Select PHP Version > Extensions** (name depends on the host): make sure `mysqli`, `curl`, `mbstring` and `openssl` are ticked.
+3. cPanel > **MultiPHP INI Editor** for the CRM domain:
+   - `memory_limit = 256M`
+   - `max_input_vars = 5000` (the role permission matrix has hundreds of checkboxes; the default 1000 cuts saved permissions)
    - `upload_max_filesize = 64M`
    - `post_max_size = 64M`
    - `max_execution_time = 300`
 
-### Step 2: Create Your MySQL Database & User
-1. In cPanel, click **MySQL Databases** under the **Databases** category.
-2. In **Create New Database**, enter `crm7strokes` and click **Create Database**.  
-   *Note: cPanel will prepend your account username, so your full database name will look like `user_crm7strokes`.*
-3. Scroll down to **Add New User**, enter a username (e.g. `user_crmadmin`), generate a strong password, and click **Create User**.
-4. Scroll down to **Add User To Database**:
-   - Select your user (`user_crmadmin`) and database (`user_crm7strokes`).
-   - Click **Add**.
-   - Check **ALL PRIVILEGES** and click **Make Changes**.
+### 4.2 Database
+1. cPanel > **MySQL Databases** > create database `crm7strokes` (cPanel adds your prefix, for example `cpaneluser_crm7strokes`).
+2. Create a user with a strong password.
+3. **Add User To Database** > tick **ALL PRIVILEGES**.
+4. phpMyAdmin > select the database > **Import** > `database/localhost.sql`.
 
-### Step 3: Deploy the Codebase
-You can deploy using either **Git Version Control** or **File Manager ZIP**:
+### 4.3 Upload the code
+The CRM has no `public/` folder. `index.php` is in the project root, so the **Document Root must point to the project root**.
 
-#### Option A: Using cPanel Git Version Control (Recommended)
-1. In cPanel, open **Git™ Version Control**.
-2. Click **Create**, enter the clone URL: `https://github.com/Reinhart-py/crmV2.git`.
-3. Set your deployment path (e.g., `public_html` or `subdomains/crm`).
-4. Click **Create** to clone the latest production code directly.
+- Main domain: upload into `public_html/`.
+- Subdomain (recommended), for example `crm.example.com`: cPanel > **Domains** > create the subdomain and set its Document Root to `/home/cpaneluser/crm.example.com` (or `public_html/crm`), then upload there.
 
-#### Option B: Using File Manager
-1. Zip the project repository on your local computer.
-2. In cPanel **File Manager**, navigate to your target folder (e.g. `public_html/` or your subdomain folder).
-3. Click **Upload**, drop the zip file, and once upload hits 100%, right-click and choose **Extract**.
-4. **Important**: Click the gear icon (**Settings**) at the top right of File Manager and ensure **Show Hidden Files (dotfiles)** is checked so `.htaccess` and `.env` are visible.
+Ways to upload:
+- **Git Version Control**: cPanel > **Git Version Control** > **Create** > clone URL `https://github.com/Reinhart-py/crmV2.git` > path = the Document Root.
+- **File Manager**: zip the project, upload, right-click > **Extract**. In File Manager **Settings** tick **Show Hidden Files** so `.htaccess` and `.env` are visible.
 
-### Step 4: Configure the Environment (`.env`)
-1. In File Manager (or via Terminal), locate [`.env.example`](file:///c:/Users/SRJ%20feb/Downloads/softwares/CRM/2026.10.08-1%20-%20crm.rolextogroup.com/crm.rolextogroup.com/.env.example) in the CRM root directory.
-2. Copy or rename it to `.env`.
-3. Open `.env` and fill in your actual cPanel values:
-   ```env
-   # Database Configuration
-   DB_HOST=localhost
-   DB_PORT=3306
-   DB_NAME=yourcpaneluser_crm7strokes
-   DB_USER=yourcpaneluser_crmadmin
-   DB_PASS=YourStrongPasswordHere
+### 4.4 `.env`
+In the CRM root, copy `.env.example` to `.env` and fill in the cPanel values (see section 2.2 example). `DB_HOST` is almost always `localhost` on cPanel.
 
-   # Base URL & Environment
-   BASE_URL=https://crm.7strokes.com/
-   CI_ENV=production
+### 4.5 Migrations
+- With **Terminal** in cPanel:
+  ```bash
+  cd ~/public_html
+  php migration_runner.php
+  ```
+- Without Terminal: open `https://crm.example.com/migration_runner.php?key=YOUR_MIGRATION_KEY` once.
 
-   # Optional Telephony / AI Integrations
-   GROQ_API_KEY=
-   PBX_ENDPOINT=
-   ```
-4. Save the file. `.env` is ignored by git, keeping your production credentials safe from public commits.
+### 4.6 Folders and permissions
+- Folders `755`, files `644`.
+- These must be writable by PHP (`755`, or `775` if your host needs it):
+  - `application/cache/`
+  - `application/logs/`
+  - `assets/uploads/avatars/`
+  - `assets/uploads/recordings/`
+  - `assets/uploads/tickets/`
 
-### Step 5: Import Base Database & Run Migrations
-1. Open **phpMyAdmin** from cPanel and click your database (`yourcpaneluser_crm7strokes`) on the left navigation tree.
-2. Click the **Import** tab at the top.
-3. Click **Choose File**, select [`database/localhost.sql`](file:///c:/Users/SRJ%20feb/Downloads/softwares/CRM/2026.10.08-1%20-%20crm.rolextogroup.com/crm.rolextogroup.com/database/localhost.sql) (3.4 MB), and click **Import** (or **Go**).  
-   *Notice: All 51 tables are included. All old hardcoded database names have been completely removed, so the import runs cleanly without `#1044 Access Denied` errors.*
-4. Run migrations to ensure all latest tables, fields, and indexes are active:
-   - **If you have Terminal / SSH access**:
-     ```bash
-     php migration_runner.php
-     ```
-   - **If your hosting does not offer Terminal access**:
-     Simply visit the secure migration URL in your browser:
-     ```
-     https://crm.7strokes.com/migration_runner.php?key=crm7strokes_migrate
-     ```
-     *(This runs all pending migrations and displays an execution timing report directly in your browser).*
+  Create the upload folders if they do not exist (`assets/uploads/` is in `.gitignore`):
+  ```bash
+  mkdir -p assets/uploads/avatars assets/uploads/recordings assets/uploads/tickets
+  ```
+- `.env` should be `600` or `640`.
 
-### Step 6: Verify Permissions & Apache Clean URLs
-1. Ensure standard web server file permissions in File Manager:
-   - Regular directories: `0755`
-   - Files: `0644`
-   - Writable directories (must be `0755` or `0775`):
-     - `application/cache/`
-     - `application/logs/`
-     - `assets/uploads/`
-     - `assets/uploads/avatars/`
-2. Verify that [`.htaccess`](file:///c:/Users/SRJ%20feb/Downloads/softwares/CRM/2026.10.08-1%20-%20crm.rolextogroup.com/crm.rolextogroup.com/.htaccess) exists in your site root with the CodeIgniter rewrite rules active so URLs like `manager/dashboard` work cleanly without `index.php` in the path.
+### 4.7 Protect private files (recommended, not in the repo yet)
+Because the project root is also the web root, add these lines at the top of `.htaccess` so the database dump, notes and config cannot be downloaded (audit SEC-1):
 
-### Step 7: Turn On SSL & Force HTTPS
-1. In cPanel, navigate to **SSL/TLS Status**.
-2. Select your CRM domain and click **Run AutoSSL** to generate a free Let's Encrypt / Sectigo SSL certificate.
-3. Once the green padlock appears, go to **Domains** > **Domains** and toggle **Force HTTPS Redirect** to **ON**.
+```apache
+<FilesMatch "\.(sql|md|env|log|example|ps1)$">
+    Require all denied
+</FilesMatch>
+<FilesMatch "^(migration_runner\.php|router\.php)$">
+    Require all denied
+</FilesMatch>
+RedirectMatch 403 ^/(application|system|database|knowledge|\.git|\.agent|\.claude)(/|$)
+```
 
-### Step 8: Setup Automated Background Cron Job
-The CRM handles auto-dialer queues, follow-up notifications, and background housekeeping through a cron job:
-1. In cPanel, click **Cron Jobs** under the **Advanced** section.
-2. Under **Add New Cron Job**, select **Once Per Minute** (`* * * * *`).
-3. In the **Command** field, enter the full path to PHP and your CRM index:
+Remove `migration_runner.php` from the second block only when you need to run it from the browser.
+
+### 4.8 HTTPS, cron, go live
+1. cPanel > **SSL/TLS Status** > **Run AutoSSL**. Then **Domains** > turn on **Force HTTPS Redirect**.
+2. Set `cookie_secure = TRUE`, a new `encryption_key` and `db_debug = FALSE` (section 2.4).
+3. cPanel > **Cron Jobs** > every minute (`* * * * *`):
    ```bash
-   /usr/local/bin/php /home/yourcpaneluser/public_html/index.php ci_cron run >/dev/null 2>&1
+   /usr/local/bin/php /home/cpaneluser/public_html/index.php ci_cron run >/dev/null 2>&1
    ```
-   *Tip: You can find your exact home directory path (`/home/yourcpaneluser`) in the right-hand **General Information** sidebar of your cPanel home page.*
+   Daily reminders and recurring tasks have their own methods if you want separate schedules:
+   ```bash
+   /usr/local/bin/php /home/cpaneluser/public_html/index.php ci_cron daily_schedule_reminders >/dev/null 2>&1
+   /usr/local/bin/php /home/cpaneluser/public_html/index.php ci_cron recurrence_runner >/dev/null 2>&1
+   ```
+   Your home path is shown in the cPanel **General Information** sidebar.
+4. Log in, open **System > Integrations**, and enter Groq / 3CX / WhatsApp / SMTP details if you use them.
 
 ---
 
-## Troubleshooting & Gotchas
+## 5. Netlify: Can This CRM Run There?
 
-| Issue | What's actually happening | How to fix it |
+**No, not as it is.** Netlify hosts static files and runs serverless functions in JavaScript/TypeScript or Go. It cannot run PHP, CodeIgniter, Apache `.htaccess` rules, PHP sessions, or a MySQL database. Every CRM page is built by PHP on the server, so there is no separate front end that could be moved to Netlify.
+
+What is possible:
+
+| Option | Works? | Notes |
 |---|---|---|
-| **404 on internal links** | `.htaccess` is missing or Apache mod_rewrite is off | Make sure `.htaccess` was uploaded (enable hidden files in File Manager). Check that `RewriteRule ^(.*)$ index.php?/$1 [L]` is inside. |
-| **Database Connection Error** | Missing cPanel user prefix or wrong password | Check `.env`. In cPanel, database names always include your username prefix (e.g. `user_crm7strokes`, not just `crm7strokes`). |
-| **Pages taking 5+ seconds to load** | Missing database indexes | Run `php migration_runner.php` to apply Migration `007`. Indexes turn table-scans into instant index lookups. |
-| **Instant logout right after login** | Cookie domain mismatch | Make sure `$config['cookie_domain'] = '';` in `config.php` and verify `application/cache/` is writable (`0755`). |
-| **Saving permissions cuts off half the inputs** | PHP POST variable limit reached | In cPanel **MultiPHP INI Editor**, bump `max_input_vars` from `1000` to `5000`. The role permission matrix has hundreds of check fields. |
+| Whole CRM on Netlify | No | PHP is not supported. |
+| Front end on Netlify, PHP back end elsewhere | Not without a rewrite | The views are PHP templates. You would first need to rebuild the UI as a separate JavaScript app that calls a JSON API, and build that API. |
+| Netlify as a proxy in front of a PHP server | Possible but not recommended | A `_redirects` rule like `/* https://crm-backend.example.com/:splat 200` forwards every request to a real PHP server (cPanel or AWS). It adds a hop and gives no real benefit over pointing DNS straight to the PHP server. |
+| A static marketing or status page on Netlify | Yes | Only for pages that do not need the CRM. |
+
+Recommendation: host the CRM on cPanel (section 4) or AWS (section 6).
+
+---
+
+## 6. Deploy on AWS
+
+### 6.1 Recommended setup
+
+| Need | AWS service |
+|---|---|
+| Web server running PHP | **EC2** (Ubuntu 22.04 LTS, `t3.small` or bigger), or **Lightsail** for a simpler fixed-price server |
+| Database | **RDS for MySQL 8.0** (or MariaDB) in a private subnet |
+| Secrets | **Systems Manager Parameter Store** (SecureString) or **Secrets Manager** |
+| Domain | **Route 53** |
+| HTTPS | **Let's Encrypt (certbot)** on the EC2 server, or **ACM** certificate on an **Application Load Balancer** |
+| Backups | RDS automated backups + **EBS snapshots** of the server disk, or sync `assets/uploads/` to **S3** |
+| Logs and alerts | **CloudWatch** agent for Apache and PHP logs |
+
+### 6.2 Create the server (EC2, Ubuntu 22.04)
+
+Security group: allow `22` only from your IP, `80` and `443` from anywhere.
+
+```bash
+sudo apt update
+sudo apt install -y software-properties-common git unzip
+sudo add-apt-repository -y ppa:ondrej/php
+sudo apt update
+sudo apt install -y apache2 php8.2 libapache2-mod-php8.2 php8.2-mysql php8.2-curl php8.2-mbstring php8.2-xml
+sudo a2enmod rewrite headers
+sudo systemctl restart apache2
+```
+
+### 6.3 Put the code on the server
+
+```bash
+cd /var/www
+sudo git clone https://github.com/Reinhart-py/crmV2.git crm
+sudo chown -R www-data:www-data /var/www/crm
+sudo mkdir -p /var/www/crm/assets/uploads/avatars /var/www/crm/assets/uploads/recordings /var/www/crm/assets/uploads/tickets
+sudo chown -R www-data:www-data /var/www/crm/assets/uploads /var/www/crm/application/cache /var/www/crm/application/logs
+```
+
+Apache site file `/etc/apache2/sites-available/crm.conf`:
+
+```apache
+<VirtualHost *:80>
+    ServerName crm.example.com
+    DocumentRoot /var/www/crm
+    <Directory /var/www/crm>
+        AllowOverride All
+        Require all granted
+    </Directory>
+    ErrorLog ${APACHE_LOG_DIR}/crm_error.log
+    CustomLog ${APACHE_LOG_DIR}/crm_access.log combined
+</VirtualHost>
+```
+
+```bash
+sudo a2ensite crm.conf
+sudo a2dissite 000-default.conf
+sudo systemctl reload apache2
+```
+
+Also add the protection rules from section 4.7 to `.htaccess`.
+
+### 6.4 Database (RDS)
+1. RDS > **Create database** > MySQL 8.0 > private subnet > no public access.
+2. Allow port `3306` in the RDS security group **only from the EC2 security group**.
+3. From the EC2 server, create the database and import:
+   ```bash
+   sudo apt install -y mysql-client
+   mysql -h your-rds-endpoint.rds.amazonaws.com -u admin -p -e "CREATE DATABASE crm7strokes CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+   mysql -h your-rds-endpoint.rds.amazonaws.com -u admin -p crm7strokes < /var/www/crm/database/localhost.sql
+   ```
+4. Set `DB_HOST` to the RDS endpoint.
+
+### 6.5 Environment variables and secrets
+Store each secret in Parameter Store, for example `/crm/prod/DB_PASS` as a SecureString. On each deploy, write them into `/var/www/crm/.env`:
+
+```bash
+aws ssm get-parameter --name /crm/prod/DB_PASS --with-decryption --query Parameter.Value --output text
+```
+
+Or set them in the Apache site file (real environment variables win over `.env`):
+
+```apache
+SetEnv DB_HOST your-rds-endpoint.rds.amazonaws.com
+SetEnv DB_NAME crm7strokes
+SetEnv CI_ENV production
+SetEnv BASE_URL https://crm.example.com/
+```
+
+Make `.env` private:
+
+```bash
+sudo chown www-data:www-data /var/www/crm/.env
+sudo chmod 640 /var/www/crm/.env
+```
+
+Then run migrations:
+
+```bash
+cd /var/www/crm
+sudo -u www-data php migration_runner.php
+```
+
+### 6.6 Domain and HTTPS
+1. Route 53 > create an **A record** for `crm.example.com` pointing to the EC2 Elastic IP (or an alias to the load balancer).
+2. HTTPS with certbot:
+   ```bash
+   sudo apt install -y certbot python3-certbot-apache
+   sudo certbot --apache -d crm.example.com
+   ```
+3. Set `cookie_secure = TRUE` in `application/config/config.php`.
+
+### 6.7 Cron
+
+```bash
+sudo crontab -u www-data -e
+```
+
+Add:
+
+```
+* * * * * /usr/bin/php /var/www/crm/index.php ci_cron run >/dev/null 2>&1
+```
+
+### 6.8 Files and backups
+- Avatars, call recordings and ticket attachments are saved on the server disk in `assets/uploads/`. They are not in git. Back them up:
+  ```bash
+  aws s3 sync /var/www/crm/assets/uploads s3://your-backup-bucket/crm-uploads/
+  ```
+- Turn on RDS automated backups (7 to 35 days) and schedule EBS snapshots with **Data Lifecycle Manager**.
+
+### 6.9 Production security checklist
+- New `encryption_key`, `cookie_secure = TRUE`, `db_debug = FALSE`, `CI_ENV=production`.
+- Block private files (section 4.7). Do not deploy `database/localhost.sql` to production servers.
+- SSH only from your IP, database not public.
+- Change the SMTP password that is hardcoded in `application/models/mail_model.php`, then move it out of the code.
+- Work through the P0 list in `audit today's state.md`.
+
+---
+
+## 7. Troubleshooting
+
+| Problem | Likely cause | Fix |
+|---|---|---|
+| `Unable to connect to your database server` | Wrong `DB_*` values, or MySQL is not running | Check `.env`. On cPanel the database and user names include your prefix (`cpaneluser_...`). Test with `mysql -h HOST -u USER -p DBNAME`. |
+| `Unknown column ...` or `Table ... doesn't exist` | Database is older than the code | Run `php migration_runner.php`. Known issue: View Leads needs `ci_pipeline.order_ref_no` (audit BUG-1). |
+| Blank white page | PHP fatal error hidden in production | Set `CI_ENV=development` temporarily and reload, or read the error log (see below). |
+| `404 Page Not Found` on every page except the home page | `mod_rewrite` off, `.htaccess` missing, or `AllowOverride None` | Upload `.htaccess`, run `sudo a2enmod rewrite`, set `AllowOverride All`. Check `RewriteBase`. |
+| CSS and images missing, links go to the wrong domain | Wrong `BASE_URL` | Set `BASE_URL` to the exact site URL with a trailing slash. |
+| `The action you have requested is not allowed.` | CSRF token expired or missing | Reload the page and submit again. Make sure custom forms include the CSRF hidden field. |
+| Logged out every few minutes | 5 minute idle timeout (by design), or a login from another device | Expected behaviour. Change the timeout in `ci_admin_model::check_auth_timeout()` and `elements/footer.php`. |
+| Logged out right after login | Cookie problem | Keep `cookie_domain = ""`. If `cookie_secure = TRUE`, the site must use HTTPS. |
+| Saved permissions are cut off | `max_input_vars` too low | Set `max_input_vars = 5000`. |
+| `Call to undefined function mysqli_init()` / curl errors | PHP extension missing | Enable `mysqli` / `curl` / `mbstring` / `openssl` (cPanel Extensions or `apt install php8.2-mysql php8.2-curl php8.2-mbstring`). |
+| Deprecated warnings or errors on PHP 8.3+ | Untested PHP version | Use PHP 8.2. |
+| Avatar or attachment upload fails | Upload folder missing or not writable | Create `assets/uploads/...` folders and give PHP write access (section 4.6). |
+| Pages are slow | Missing indexes | Run migrations (`007_performance_indexes.php`). |
+| Password reset email never arrives | Mailer uses the hardcoded SMTP server in `mail_model.php` | Update the SMTP values in `application/models/mail_model.php`. |
+| 3CX calls are not logged automatically | Webhooks are behind the login check | Known issue (audit BUG-2). |
+
+Where to find logs:
+
+| Environment | Location |
+|---|---|
+| CodeIgniter log | `application/logs/` (only when `log_threshold` is above `0`) |
+| cPanel | `error_log` file in the CRM folder, and cPanel > **Metrics > Errors** |
+| Apache on Ubuntu / EC2 | `/var/log/apache2/crm_error.log` and `/var/log/apache2/error.log` |
+| PHP built-in server | printed in the terminal where `php -S` runs |
+| XAMPP | `C:\xampp\apache\logs\error.log` and `C:\xampp\php\logs\` |
 
 ---
 

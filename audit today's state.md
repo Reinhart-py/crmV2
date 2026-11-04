@@ -1,7 +1,7 @@
 # CRM Audit - Today's State
 
 Date: 2026-11-04
-Scope: Seven Strokes CRM v2 (CodeIgniter 3, PHP 8.2, MySQL), branch `claude/crm-ui-ux-redesign-1b4c97`, merged into `main`.
+Scope: Seven Strokes CRM v2 (CodeIgniter 2.2.6 with local patches, PHP 8.2, MySQL / MariaDB), branch `claude/crm-ui-ux-redesign-1b4c97`, merged into `main`.
 
 ## How this audit was done
 
@@ -38,7 +38,7 @@ It is **not ready to be sold as a high-end enterprise SaaS product** (target pri
 2. No multi-tenant design. The whole system is built for one company (section 9).
 3. No automated tests, no proper database migrations, no monitoring (section 8).
 4. Several integrations that cannot work as wired today (3CX webhooks) (section 5).
-5. Weak password storage (unsalted SHA-1) and a placeholder encryption key.
+5. Weak password storage (unsalted SHA-1), a placeholder encryption key that also signs the session cookie, and hardcoded SMTP credentials in the code.
 
 Fixing the P0 items in section 3 should come before any other work.
 
@@ -151,6 +151,39 @@ Fixing the P0 items in section 3 should come before any other work.
 - **Priority**: P2
 - **Files**: `controllers/ci_admin.php` (avatar upload)
 
+### SEC-13. Session cookie can likely be forged
+- **State**: sessions are stored in the browser cookie, not on the server (`sess_use_database = FALSE`, `sess_encrypt_cookie = FALSE`). CodeIgniter 2 signs this cookie with the `encryption_key`, which is the public placeholder `abcdef123456`. The only extra check is `current_session_token` in `check_auth_timeout()`, which is skipped when the user's stored token is empty. Found by reading code; not exploited during the audit.
+- **Problem**: someone who knows the key can build a cookie with any `manager_id` and `manager_role`, for example an admin session.
+- **Fix**: set a long random `encryption_key` (SEC-6), set `sess_use_database = TRUE` with a `ci_sessions` table, set `sess_encrypt_cookie = TRUE`, and always require a matching non-empty session token.
+- **Priority**: P0
+- **Files**: `application/config/config.php`, `application/models/ci_admin_model.php` (`check_auth_timeout`)
+
+### SEC-14. SMTP username and password hardcoded in code
+- **State**: `Mail_model::sendmail` sets the SMTP host, username and password directly in the PHP file. The SMTP settings saved in System > Integrations are not used by it.
+- **Problem**: the mail password is in the git history, and changing mail settings in the UI has no effect on password reset emails.
+- **Fix**: change the SMTP password now, read SMTP settings from `ci_integration_settings` (service `email_smtp`) or `.env`, and remove the hardcoded values.
+- **Priority**: P0
+- **Files**: `application/models/mail_model.php`, `application/controllers/ci_admin_integrations.php`
+
+### SEC-15. Migration runner is reachable from the web with a default key
+- **State**: `migration_runner.php` runs from the browser with `?key=`. The default key is `crm7strokes_migrate` if `MIGRATION_KEY` is not set, and a wrong key returns an error message that prints the expected key.
+- **Problem**: anyone can run or roll back database migrations.
+- **Fix**: allow CLI only, or require `MIGRATION_KEY` to be set and never print it. Block the file in `.htaccess`.
+- **Priority**: P0
+- **Files**: `migration_runner.php`, `.htaccess`
+
+### SEC-16. Database errors are shown to users
+- **State**: `$db['default']['db_debug'] = TRUE` in all environments. Tested: View Leads shows the full SQL query in the browser.
+- **Problem**: table and column names and query details are shown to anyone who triggers an error.
+- **Fix**: set `db_debug` to `(ENVIRONMENT !== 'production')` and log errors instead.
+- **Priority**: P1
+- **Files**: `application/config/database.php`
+### SEC-17. 3CX settings file is tracked in git
+- **State**: System > Calling API saves the 3CX PBX host, client ID and client secret into `application/config/3cx_config.json`. This file is tracked in git. Today it holds no secrets.
+- **Problem**: after someone enters real 3CX credentials, a normal `git add -A` commit would publish the client secret.
+- **Fix**: store these values in `ci_integration_settings` (encrypted) or `.env`, ship a `3cx_config.example.json`, then untrack the real file and add it to `.gitignore` (coordinate with servers so their saved file is not deleted on pull).
+- **Priority**: P1
+- **Files**: `application/libraries/Threecx.php`, `application/config/3cx_config.json`
 ---
 
 ## 4. Broken features (task list)
@@ -193,7 +226,7 @@ Fixing the P0 items in section 3 should come before any other work.
 | INT-2 | 3CX CDR and recordings | Broken (BUG-2) | Fix routing and auth. | P1 |
 | INT-3 | Groq transcription and AI summary | Built, not verified | Depends on INT-2. Add retry limits and cost controls. | P2 |
 | INT-4 | WhatsApp send and receive | Built, not verified, unsafe (SEC-3, BUG-3) | Secure and test. | P0 / P1 |
-| INT-5 | SMTP email | Built, not verified | Test reset password email end to end. | P1 |
+| INT-5 | SMTP email | Partly wired: the mailer ignores the Integrations SMTP settings (SEC-14) | Use the saved settings, then test reset password email end to end. | P1 |
 | INT-6 | Cron jobs | Built, public (SEC-4) | Protect, document the cron schedule for cPanel. | P1 |
 
 ---
@@ -274,7 +307,7 @@ No other hardcoded demo data was found in controllers. Random IDs (`mt_rand`) ar
 | ENG-2 | Database migrations | Partial (see BUG-4) | Versioned migrations only. | P1 |
 | ENG-3 | Error logging and monitoring | Logging off (`log_threshold = 0`) | Enable logs, add uptime and error alerts. | P1 |
 | ENG-4 | Backups | Not in code | Daily encrypted backups with restore tests. | P1 |
-| ENG-5 | Framework | CodeIgniter 3 (end of life) | Plan an upgrade path (CodeIgniter 4 or Laravel). Not urgent, but needed for long-term security support. | P2 |
+| ENG-5 | Framework | CodeIgniter 2.2.6 (end of life since 2015, patched locally to run on PHP 8.2) | Plan an upgrade path (CodeIgniter 4 or Laravel). Not urgent, but needed for long-term security support. | P2 |
 | ENG-6 | Audit log | Exists (`ci_admin_logs`) | Make it read-only for non-admins and cover all data changes. | P2 |
 | ENG-7 | Rate limiting | None | Limit login attempts and API calls per IP and user. | P1 |
 | ENG-8 | Two-factor login | None | Add TOTP based 2FA, required for admins. | P1 |
@@ -305,7 +338,7 @@ No other hardcoded demo data was found in controllers. Random IDs (`mt_rand`) ar
 
 ## 10. Recommended order of work
 
-1. SEC-1, SEC-2, SEC-3, SEC-5, SEC-6 key, BUG-1 (P0).
+1. SEC-1, SEC-2, SEC-3, SEC-5, SEC-6 key, SEC-13, SEC-14, SEC-15, BUG-1 (P0).
 2. Base controller with login and permission checks for all manager controllers (SEC-4).
 3. 3CX and WhatsApp webhooks (BUG-2, BUG-3), then test integrations (section 5).
 4. Migrations, logging, backups, tests (BUG-4, ENG-1 to ENG-4).
