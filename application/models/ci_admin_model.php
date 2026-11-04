@@ -384,12 +384,12 @@ class Ci_admin_model extends CI_model {
 				$manager_id = (int)$this->session->userdata('manager_id');
 			}
 			$specs = array(
-				array('label' => 'Busy', 'cond' => "l.status = 45 OR LOWER(l.call_status) LIKE '%busy%' OR LOWER(l.call_status) LIKE '%not responding%'", 'color' => '#1e3a8a'),
-				array('label' => 'DNCR', 'cond' => "l.status = 46 OR LOWER(l.call_status) LIKE '%dncr%' OR LOWER(l.call_status) LIKE '%dnd%' OR l.dnd_status = 'Yes'", 'color' => '#2563eb'),
-				array('label' => 'Following Up', 'cond' => "l.status = 47 OR LOWER(l.call_status) LIKE '%follow%' OR LOWER(l.call_status) LIKE '%callback%'", 'color' => '#60a5fa'),
-				array('label' => 'Future', 'cond' => "l.status = 48 OR LOWER(l.call_status) LIKE '%future%'", 'color' => '#0f172a'),
-				array('label' => 'Not Interested', 'cond' => "l.status = 49 OR LOWER(l.call_status) LIKE '%not interested%'", 'color' => '#475569'),
-				array('label' => 'Not Valid', 'cond' => "l.status = 50 OR LOWER(l.call_status) LIKE '%not valid%' OR LOWER(l.call_status) LIKE '%invalid%'", 'color' => '#94a3b8')
+				array('label' => 'Busy', 'cond' => "l.status = 45 OR LOWER(l.call_status) LIKE '%busy%' OR LOWER(l.call_status) LIKE '%not responding%'", 'color' => '#01509e'),
+				array('label' => 'DNCR', 'cond' => "l.status = 46 OR LOWER(l.call_status) LIKE '%dncr%' OR LOWER(l.call_status) LIKE '%dnd%' OR l.dnd_status = 'Yes'", 'color' => '#00a8f3'),
+				array('label' => 'Following Up', 'cond' => "l.status = 47 OR LOWER(l.call_status) LIKE '%follow%' OR LOWER(l.call_status) LIKE '%callback%'", 'color' => '#5c2bb1'),
+				array('label' => 'Future', 'cond' => "l.status = 48 OR LOWER(l.call_status) LIKE '%future%'", 'color' => '#6c7d93'),
+				array('label' => 'Not Interested', 'cond' => "l.status = 49 OR LOWER(l.call_status) LIKE '%not interested%'", 'color' => '#ff6b6b'),
+				array('label' => 'Not Valid', 'cond' => "l.status = 50 OR LOWER(l.call_status) LIKE '%not valid%' OR LOWER(l.call_status) LIKE '%invalid%'", 'color' => '#00b69c')
 			);
 			$lead_scope = "(l.lead_assign = {$manager_id} OR (l.created_by = {$manager_id} AND (l.lead_assign = 0 OR l.lead_assign IS NULL)) OR (l.agents IS NOT NULL AND l.agents != '' AND FIND_IN_SET({$manager_id}, l.agents) > 0)) AND (l.company_status IS NULL OR LOWER(l.company_status) != 'closed')";
 			
@@ -476,43 +476,47 @@ class Ci_admin_model extends CI_model {
 			if ($manager_id <= 0) {
 				$manager_id = (int)$this->session->userdata('manager_id');
 			}
-			$palette = array('#1e3a8a', '#2563eb', '#60a5fa', '#0f172a', '#475569', '#94a3b8', '#bfdbfe', '#cbd5e1');
-			$merge_map = array(
-				'fulfilled' => 'Completed',
-				'completed' => 'Completed',
-				'canceled' => 'Cancelled',
-				'cancelled' => 'Cancelled',
-				'rejected' => 'Cancelled',
-				'lost' => 'Cancelled'
+			$specs = array(
+				array('label' => 'Submitted', 'keys' => array('submitted'), 'color' => '#01509e'),
+				array('label' => 'Approved', 'keys' => array('approved'), 'color' => '#00a8f3'),
+				array('label' => 'In Progress', 'keys' => array('in progress'), 'color' => '#5c2bb1'),
+				array('label' => 'Onboarding', 'keys' => array('onboarding'), 'color' => '#6c7d93'),
+				array('label' => 'Under Review', 'keys' => array('under review'), 'color' => '#eab308'),
+				array('label' => 'Pending Sales Approval', 'keys' => array('pending sales approval'), 'color' => '#f97316'),
+				array('label' => 'Follow Up', 'keys' => array('follow up'), 'color' => '#0ea5e9'),
+				array('label' => 'Completed', 'keys' => array('completed', 'fulfilled'), 'color' => '#16a34a'),
+				array('label' => 'Canceled', 'keys' => array('cancelled', 'canceled', 'rejected', 'lost'), 'color' => '#ff6b6b')
 			);
-			$sql = "SELECT O.status, COUNT(DISTINCT O.id) AS cnt FROM ci_orders O LEFT JOIN ci_leads A ON O.lead_id = A.id WHERE " . $this->my_orders_scope_sql($manager_id) . " GROUP BY O.status ORDER BY cnt DESC";
+			$sql = "SELECT O.status, COUNT(DISTINCT O.id) AS cnt FROM ci_orders O LEFT JOIN ci_leads A ON O.lead_id = A.id WHERE " . $this->my_orders_scope_sql($manager_id) . " GROUP BY O.status";
 			$query = $this->db->query($sql);
-			$rows = ($query && is_object($query)) ? $query->result_array() : array();
-
-			$grouped = array();
-			foreach ($rows as $r) {
-				$raw = trim((string)$r['status']);
-				$key = strtolower($raw);
-				$label = isset($merge_map[$key]) ? $merge_map[$key] : ($raw !== '' ? $raw : 'Draft');
-				if (!isset($grouped[$label])) {
-					$grouped[$label] = 0;
-				}
-				$grouped[$label] += (int)$r['cnt'];
+			$counts = array();
+			foreach (($query && is_object($query)) ? $query->result_array() : array() as $r) {
+				$key = strtolower(trim((string)$r['status']));
+				$counts[$key] = (isset($counts[$key]) ? $counts[$key] : 0) + (int)$r['cnt'];
 			}
-			arsort($grouped);
 
 			$items = array();
-			$total = array_sum($grouped);
-			$i = 0;
-			foreach ($grouped as $label => $count) {
-				$items[] = array(
-					'label' => $label,
-					'count' => $count,
-					'color' => $palette[$i % count($palette)],
-					'percentage' => $total > 0 ? round(($count / $total) * 100, 2) : 0.0
-				);
-				$i++;
+			$total = 0;
+			foreach ($specs as $sp) {
+				$count = 0;
+				foreach ($sp['keys'] as $k) {
+					if (isset($counts[$k])) {
+						$count += $counts[$k];
+						unset($counts[$k]);
+					}
+				}
+				$total += $count;
+				$items[] = array('label' => $sp['label'], 'count' => $count, 'color' => $sp['color'], 'percentage' => 0.0);
 			}
+			$other = array_sum($counts);
+			if ($other > 0) {
+				$total += $other;
+				$items[] = array('label' => 'Other', 'count' => $other, 'color' => '#94a3b8', 'percentage' => 0.0);
+			}
+			foreach ($items as &$it) {
+				$it['percentage'] = $total > 0 ? round(($it['count'] / $total) * 100, 2) : 0.0;
+			}
+			unset($it);
 			return array(
 				'total' => $total,
 				'items' => $items
