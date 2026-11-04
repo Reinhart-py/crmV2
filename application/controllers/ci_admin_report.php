@@ -918,11 +918,8 @@ class Ci_admin_report extends CI_Controller {
 			$this->db->where('DATE(L.created) <=', date('Y-m-d', strtotime($d2)));
 		}
 		if (!empty($search)) {
-			$this->db->group_start();
-			$this->db->like('L.customer', $search);
-			$this->db->or_like('L.poc', $search);
-			$this->db->or_like('L.category', $search);
-			$this->db->group_end();
+			$_safe = $this->db->escape_like_str($search);
+			$this->db->where("(L.customer LIKE '%$_safe%' OR L.poc LIKE '%$_safe%' OR L.category LIKE '%$_safe%')", null, false);
 		}
 		if ($user_id > 0) {
 			$this->db->where('L.lead_assign', $user_id);

@@ -236,7 +236,7 @@
         <ul>
           <li><a href="<?php echo base_url();?>manager/leads/review_leads"><i class="fa fa-check-square-o"></i>Pending Leads Approval</a></li>
           <li><a href="<?php echo base_url();?>manager/orders/pending_process"><i class="fa fa-hourglass-half"></i>Pending Order Process</a></li>
-          <li><a href="<?php echo base_url();?>manager/orders/pending_sales_approval"><i class="fa fa-clock-o"></i>Pending Sales Approval</a></li>
+          <li><a href="<?php echo base_url();?>manager/orders/view_sales_approvals"><i class="fa fa-eye"></i>View Sales Approvals</a></li>
           <?php if($is_admin || has_section_perm('kam', 'write')){ ?>
           <li><a href="<?php echo base_url();?>manager/kam/onboard"><i class="fa fa-user-plus"></i>Onboard Client</a></li>
           <?php } ?>
@@ -258,6 +258,7 @@
           <?php if($is_admin || has_section_perm('kam', 'write')){ ?>
           <li><a href="<?php echo base_url();?>manager/kam/onboard"><i class="fa fa-user-plus"></i>Onboard Client</a></li>
           <li><a href="<?php echo base_url();?>manager/kam/schedule"><i class="fa fa-calendar"></i>Create Schedule</a></li>
+          <li><a href="<?php echo base_url();?>manager/orders/pending_sales_approval"><i class="fa fa-check-circle"></i>Pending Sales Approval</a></li>
           <?php } ?>
           <li><a href="<?php echo base_url();?>manager/kam/task-followup"><i class="fa fa-tasks"></i>Task Follow-up</a></li>
           <li><a href="<?php echo base_url();?>manager/kam/reminders"><i class="fa fa-bell-o"></i>Reminders</a></li>
@@ -787,7 +788,7 @@ $(function() {
         <ul class="treeview-menu">
           <li><a href="<?php echo base_url();?>manager/leads/review_leads"><i class="fa fa-check-square-o"></i>Pending Leads Approval</a></li>
           <li><a href="<?php echo base_url();?>manager/orders/pending_process"><i class="fa fa-hourglass-half"></i>Pending Order Process</a></li>
-          <li><a href="<?php echo base_url();?>manager/orders/pending_sales_approval"><i class="fa fa-clock-o"></i>Pending Sales Approval</a></li>
+          <li><a href="<?php echo base_url();?>manager/orders/view_sales_approvals"><i class="fa fa-eye"></i>View Sales Approvals</a></li>
           <?php if($is_admin || has_section_perm('kam', 'write')){ ?>
           <li><a href="<?php echo base_url();?>manager/kam/onboard"><i class="fa fa-user-plus"></i>Onboard Client</a></li>
           <?php } ?>
@@ -809,6 +810,7 @@ $(function() {
           <?php if($is_admin || has_section_perm('kam', 'write')){ ?>
           <li><a href="<?php echo base_url();?>manager/kam/onboard"><i class="fa fa-user-plus"></i>Onboard Client</a></li>
           <li><a href="<?php echo base_url();?>manager/kam/schedule"><i class="fa fa-calendar"></i>Create Schedule</a></li>
+          <li><a href="<?php echo base_url();?>manager/orders/pending_sales_approval"><i class="fa fa-check-circle"></i>Pending Sales Approval</a></li>
           <?php } ?>
           <li><a href="<?php echo base_url();?>manager/kam/task-followup"><i class="fa fa-tasks"></i>Task Follow-up</a></li>
           <li><a href="<?php echo base_url();?>manager/kam/reminders"><i class="fa fa-bell-o"></i>Reminders</a></li>

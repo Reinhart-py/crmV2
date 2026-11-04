@@ -278,6 +278,7 @@ $route['manager/kam/view/(:any)'] = 'ci_admin_kam/view/$1';
 $route['manager/kam/(:any)'] = 'ci_admin_kam/$1';
 $route['manager/kam'] = 'ci_admin_kam/index';
 $route['manager/orders/approve_sales_order/(:any)'] = 'ci_admin_orders/approve_sales_order/$1';
+$route['manager/orders/view_sales_approvals'] = "ci_admin_orders/view_sales_approvals";
 $route['manager/orders/pending_sales_approval'] = 'ci_admin_orders/pending_sales_approval';
 $route['manager/orders/pending_sales_approval/(:any)'] = 'ci_admin_orders/pending_sales_approval/$1';
 $route['manager/orders/(:any)'] = 'ci_admin_orders/$1';

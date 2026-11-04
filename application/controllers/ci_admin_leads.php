@@ -2126,13 +2126,8 @@ $data['info2']=$this->if_not_login();
 			$assigned_user_id = 0;
 			if (!empty($username_val)) {
 				$username_clean = trim(ltrim($username_val, "'=@+-"));
-				$u_match = $this->db->group_start()
-					->where('email', $username_clean)
-					->or_where('c_username', $username_clean)
-					->or_where('name', $username_clean)
-					->or_where('emp_id', $username_clean)
-					->group_end()
-					->get('ci_user')->row_array();
+				$this->db->where("(email = '" . $this->db->escape_str($username_clean) . "' OR c_username = '" . $this->db->escape_str($username_clean) . "' OR name = '" . $this->db->escape_str($username_clean) . "' OR emp_id = '" . $this->db->escape_str($username_clean) . "')", null, false);
+				$u_match = $this->db->get('ci_user')->row_array();
 				if (!empty($u_match['id'])) {
 					$assigned_user_id = (int)$u_match['id'];
 				} else {

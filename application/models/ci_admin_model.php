@@ -3069,21 +3069,12 @@ public function dashboard_MyPro($table='ci_leads'){
 				);
 			}
 
-			$pending_sales_count = $this->db->group_start()
-				->where('status', 'Pending Sales Approval')
-				->or_where('status', 'pending_sales_approval')
-				->or_where('approval_status', 'pending_approval')
-				->group_end()
-				->count_all_results('ci_orders');
+			$this->db->where("(status = 'Pending Sales Approval' OR status = 'pending_sales_approval' OR approval_status = 'pending_approval')", null, false);
+			$pending_sales_count = $this->db->count_all_results('ci_orders');
 			if ($pending_sales_count > 0) {
-				$latest_ps = $this->db->select_max('created_at')
-					->group_start()
-					->where('status', 'Pending Sales Approval')
-					->or_where('status', 'pending_sales_approval')
-					->or_where('approval_status', 'pending_approval')
-					->group_end()
-					->get('ci_orders')
-					->row_array();
+				$this->db->select_max('created_at');
+				$this->db->where("(status = 'Pending Sales Approval' OR status = 'pending_sales_approval' OR approval_status = 'pending_approval')", null, false);
+				$latest_ps = $this->db->get('ci_orders')->row_array();
 				$ps_time = !empty($latest_ps['created_at']) ? $latest_ps['created_at'] : date('Y-m-d H:i:s');
 				$notifs[] = array(
 					'id' => 'action_pending_sales',

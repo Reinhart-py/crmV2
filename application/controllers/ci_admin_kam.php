@@ -1087,20 +1087,14 @@ class Ci_admin_kam extends CI_Controller
 		$this->db->join('ci_kam_client_details c', 't.client_id = c.id', 'left');
 
 		if (!$is_admin) {
-			$this->db->group_start();
-			$this->db->where('t.assigned_to', $cur_uid);
-			$this->db->or_where("FIND_IN_SET('{$cur_uid}', t.assigned_users) > 0");
-			$this->db->group_end();
+			$this->db->where("(t.assigned_to = $cur_uid OR FIND_IN_SET('$cur_uid', t.assigned_users) > 0)", null, false);
 		}
 
 		$this->db->where_not_in('t.status', array('Completed', 'Closed'));
 
 		if (!empty($search)) {
-			$this->db->group_start();
-			$this->db->like('t.customer', $search);
-			$this->db->or_like('t.remark', $search);
-			$this->db->or_like('c.client_name', $search);
-			$this->db->group_end();
+			$_safe = $this->db->escape_like_str($search);
+			$this->db->where("(t.customer LIKE '%$_safe%' OR t.remark LIKE '%$_safe%' OR c.client_name LIKE '%$_safe%')", null, false);
 		}
 		if (!empty($d1)) {
 			$this->db->where('t.followup_date >=', date('Y-m-d', strtotime($d1)));
@@ -1163,10 +1157,7 @@ class Ci_admin_kam extends CI_Controller
 		$today = date('Y-m-d');
 		$data['upcoming_tasks'] = $this->db->select('*')
 			->from('ci_kam_schedules')
-			->group_start()
-			->where('client_id', $id)
-			->or_where('client_name', $lead['customer'])
-			->group_end()
+			->where("(client_id = '$id' OR client_name = '" . $this->db->escape_str($lead['customer']) . "')", null, false)
 			->where('start_date >=', $today)
 			->order_by('start_date', 'ASC')
 			->limit(10)

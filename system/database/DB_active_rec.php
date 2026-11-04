@@ -2040,6 +2040,35 @@ class CI_DB_active_record extends CI_DB_driver {
 
 		$this->_reset_run($ar_reset_items);
 	}
+	public function group_start($not = '', $type = 'AND ')
+	{
+		$prefix = (count($this->ar_where) === 0 && count($this->ar_cache_where) === 0) ? '' : $type;
+		$this->ar_where[] = $prefix . $not . '(';
+		return $this;
+	}
+
+	public function not_group_start()
+	{
+		return $this->group_start('NOT ', 'AND ');
+	}
+
+	public function or_group_start()
+	{
+		return $this->group_start('', 'OR ');
+	}
+
+	public function or_not_group_start()
+	{
+		return $this->group_start('NOT ', 'OR ');
+	}
+
+	public function group_end()
+	{
+		$this->ar_where[] = ')';
+		return $this;
+	}
+
+
 }
 
 /* End of file DB_active_rec.php */

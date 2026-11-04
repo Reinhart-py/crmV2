@@ -96,6 +96,12 @@
                 <input type="email" class="form-control" name="email">
               </div>
             </div>
+
+            <div class="col-sm-12" style="margin:6px 0 2px;">
+              <button type="button" id="btnToggleAdditional" onclick="(function(){var w=document.getElementById('addlWrap');var o=w.style.display==='none';w.style.display=o?'':'none';document.getElementById('btnToggleAdditional').innerHTML=o?'&#9650; Hide Additional Details':'&#9660; Additional Details';})();" style="background:none;border:1px solid #d1d5db;padding:4px 12px;border-radius:4px;font-size:12px;color:#555;cursor:pointer;line-height:1.6;">&#9660; Additional Details</button>
+            </div>
+            <div id="addlWrap" style="display:none;width:100%;" class="row">
+
            
            
             <div class="col-lg-3 col-sm-6">
@@ -498,7 +504,9 @@
         </div>
       </div>
 
-       <div class="box box-default">
+       
+            </div><!-- /addlWrap -->
+<div class="box box-default">
       <div class="box-header with-border">
         <h3 class="box-title">More Category Field</h3>
       </div>

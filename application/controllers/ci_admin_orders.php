@@ -774,12 +774,8 @@ class Ci_admin_orders extends CI_Controller {
 
 		$client = trim((string)$this->input->get('client'));
 		if (!empty($client)) {
-			$this->db->group_start();
-			$this->db->like('L.customer', $client);
-			$this->db->or_like('L.poc', $client);
-			$this->db->or_like('P.db_ref_no', $client);
-			$this->db->or_like('P.lead_ref_no', $client);
-			$this->db->group_end();
+			$safe = $this->db->escape_like_str($client);
+			$this->db->where("(L.customer LIKE '%{\}%' OR L.poc LIKE '%{\}%' OR P.db_ref_no LIKE '%{\}%' OR P.lead_ref_no LIKE '%{\}%')", null, false);
 		}
 
 		$d1 = trim((string)$this->input->get('d1'));
@@ -1276,6 +1272,50 @@ class Ci_admin_orders extends CI_Controller {
 		$this->load->view('manager/orders/edit_pending', $data);
 	}
 
+
+	public function view_sales_approvals()
+	{
+		$this->if_not_login();
+		$cur_role = (int)$this->session->userdata('manager_role');
+		$cur_uid  = (int)$this->session->userdata('manager_id');
+		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_uid === 1 || has_section_perm('back_office'));
+		if (!$is_backoffice) {
+			$this->session->set_flashdata('error_message', 'Access denied.');
+			redirect('manager/dashboard');
+			return;
+		}
+
+		$data = array();
+		$data['info'] = array(
+			'title' => 'View Sales Approvals',
+			'page_heading' => 'View Sales Approvals'
+		);
+
+		$search = trim((string)$this->input->get('search'));
+		$d1 = trim((string)$this->input->get('d1'));
+		$d2 = trim((string)$this->input->get('d2'));
+
+		$this->db->select("O.*, U.name as created_by_name, A.name as assigned_to_name, L.customer as company_name, L.poc, L.contact1, L.email");
+		$this->db->from('ci_orders O');
+		$this->db->join('ci_user U', 'O.created_by = U.id', 'left');
+		$this->db->join('ci_user A', 'O.assigned_to = A.id', 'left');
+		$this->db->join('ci_leads L', 'O.lead_id = L.id', 'left');
+		$this->db->where("(O.status = 'Pending Sales Approval' OR O.approval_status = 'pending_approval' OR O.status = 'pending_sales_approval')", null, false);
+
+		if (!empty($search)) {
+			$clean = $this->db->escape_like_str($search);
+			$this->db->where("(O.order_no LIKE '%$clean%' OR O.client_name LIKE '%$clean%' OR L.customer LIKE '%$clean%')", null, false);
+		}
+		if (!empty($d1) && !empty($d2)) {
+			$this->db->where('O.created_at >=', $d1 . ' 00:00:00');
+			$this->db->where('O.created_at <=', $d2 . ' 23:59:59');
+		}
+		$this->db->order_by('O.id', 'DESC');
+		$data['orders'] = $this->db->get()->result_array();
+
+		$this->load->view('manager/orders/pending_sales_approval', $data);
+	}
+
 	public function pending_sales_approval()
 	{
 		$this->if_not_login();
@@ -1303,11 +1343,7 @@ class Ci_admin_orders extends CI_Controller {
 		$this->db->join('ci_user U', 'O.created_by = U.id', 'left');
 		$this->db->join('ci_user A', 'O.assigned_to = A.id', 'left');
 		$this->db->join('ci_leads L', 'O.lead_id = L.id', 'left');
-		$this->db->group_start();
-		$this->db->where('O.status', 'Pending Sales Approval');
-		$this->db->or_where('O.approval_status', 'pending_approval');
-		$this->db->or_where('O.status', 'pending_sales_approval');
-		$this->db->group_end();
+		$this->db->where("(O.status = 'Pending Sales Approval' OR O.approval_status = 'pending_approval' OR O.status = 'pending_sales_approval')", null, false);
 
 		if (!empty($search)) {
 			$clean = $this->db->escape_str($this->db->escape_like_str($search));
