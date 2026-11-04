@@ -393,23 +393,55 @@ class Ci_admin_model extends CI_model {
 			);
 			$lead_scope = "(l.lead_assign = {$manager_id} OR (l.created_by = {$manager_id} AND (l.lead_assign = 0 OR l.lead_assign IS NULL)) OR (l.agents IS NOT NULL AND l.agents != '' AND FIND_IN_SET({$manager_id}, l.agents) > 0)) AND (l.company_status IS NULL OR LOWER(l.company_status) != 'closed')";
 			
+			$bucket_sql = "CASE";
+			foreach ($specs as $idx => $sp) {
+				$bucket_sql .= " WHEN ({$sp['cond']}) THEN {$idx}";
+			}
+			$bucket_sql .= " ELSE -1 END";
+			$sql = "SELECT {$bucket_sql} AS bucket, l.status AS status_id, COALESCE(NULLIF(s.status, ''), 'Other') AS status_name, COUNT(DISTINCT l.id) AS cnt FROM ci_leads l INNER JOIN ci_pipeline p ON p.lead_id = l.id AND p.pipeline_stage = 'lead' LEFT JOIN ci_status s ON s.id = l.status WHERE ({$lead_scope}) GROUP BY bucket, l.status, status_name ORDER BY bucket, cnt DESC";
+			$query = $this->db->query($sql);
+			$rows = ($query && is_object($query)) ? $query->result_array() : array();
+
+			$spec_counts = array_fill(0, count($specs), 0);
+			$extra = array();
+			foreach ($rows as $r) {
+				$bucket = (int)$r['bucket'];
+				if ($bucket >= 0) {
+					$spec_counts[$bucket] += (int)$r['cnt'];
+				} else {
+					$name = $r['status_name'];
+					$extra[$name] = (isset($extra[$name]) ? $extra[$name] : 0) + (int)$r['cnt'];
+				}
+			}
+
+			$extra_colors = array('#0086c5', '#5f3abd', '#f59e0b', '#16a34a', '#0ea5e9', '#94a3b8', '#4a2bb3', '#009680');
 			$items = array();
 			$total = 0;
-			foreach ($specs as $sp) {
-				$sql = "SELECT COUNT(DISTINCT l.id) as cnt FROM ci_leads l INNER JOIN ci_pipeline p ON p.lead_id = l.id AND p.pipeline_stage = 'lead' WHERE ({$sp['cond']}) AND ({$lead_scope})";
-				$row = $this->db->query($sql)->row_array();
-				$count = !empty($row['cnt']) ? (int)$row['cnt'] : 0;
-				$total += $count;
+			foreach ($specs as $idx => $sp) {
+				$total += $spec_counts[$idx];
 				$items[] = array(
 					'label' => $sp['label'],
-					'count' => $count,
+					'count' => $spec_counts[$idx],
 					'color' => $sp['color'],
 					'percentage' => 0.0
 				);
 			}
+			arsort($extra);
+			$e = 0;
+			foreach ($extra as $name => $count) {
+				$total += $count;
+				$items[] = array(
+					'label' => $name,
+					'count' => $count,
+					'color' => $extra_colors[$e % count($extra_colors)],
+					'percentage' => 0.0
+				);
+				$e++;
+			}
 			foreach ($items as &$it) {
 				$it['percentage'] = $total > 0 ? round(($it['count'] / $total) * 100, 2) : 0.0;
 			}
+			unset($it);
 			return array(
 				'total' => $total,
 				'items' => $items
@@ -1098,7 +1130,6 @@ public function dashboard_MyPro($table='ci_leads'){
 				   $this->db->where("P.conversion_status", 'pending');
 			   } elseif ($stage === 'lead') {
 				   $this->db->where("P.pipeline_stage", 'lead');
-				   $this->db->where("(P.order_ref_no IS NULL OR P.order_ref_no = '')");
 				   $this->db->where("(P.order_request_status IS NULL OR P.order_request_status NOT IN ('approved', 'ordered', 'processed', 'pending_sales_approval'))");
 				   $this->db->where("NOT EXISTS (SELECT 1 FROM ci_orders ord WHERE ord.lead_id = A.id)", NULL, FALSE);
 			   } elseif ($stage === 'pending_approval') {

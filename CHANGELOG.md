@@ -1,3 +1,7 @@
+## [2026-11-04] - Fix View Leads Database Error & My Leads Donut
+### Fixed
+- My Zone > View Leads failed with `Error Number: 1054 Unknown column 'P.order_ref_no'`. The column does not exist in `ci_pipeline` and no code writes it. Removed that condition from `ci_admin_model::get_Myleads()` (stage `lead`). Leads that already have an order are still hidden by the existing `NOT EXISTS (SELECT 1 FROM ci_orders ...)` check, and user access rules are unchanged.
+- Dashboard My Leads donut showed nothing when a user's leads had statuses outside the six fixed slices (for example Database, Expected, In Process). `dashboard_mylead_donut_data()` now places each lead in exactly one slice: the six original slices keep their colors, and every other status gets its own slice named after the real status. Same user scope as before. No lead data was changed.
 ## [2026-11-04] - Login Background Image & Full Setup / Deployment Guide
 ### Changed
 - Login, Forgot Password and Reset Password now use `assets/background-auth.jpg`: blurred full-page background with the sharp image in the card's left panel, responsive on desktop and mobile. Only CSS and the visual panel changed; authentication logic is untouched (`assets/dist/css/crm-auth.css`, `application/views/manager/elements/auth_visual.php`).

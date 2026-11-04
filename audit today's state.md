@@ -188,8 +188,9 @@ Fixing the P0 items in section 3 should come before any other work.
 
 ## 4. Broken features (task list)
 
-### BUG-1. My Zone > View Leads page fails with a database error
-- **State**: Broken. `GET /manager/leads/view_leads` returns HTTP 500: `Unknown column 'P.order_ref_no' in 'where clause'`.
+### BUG-1. My Zone > View Leads page fails with a database error (FIXED 2026-11-04)
+- **Resolution**: removed the condition on the non-existent `ci_pipeline.order_ref_no` column. Converted leads are still excluded by the existing `NOT EXISTS (SELECT 1 FROM ci_orders ...)` check, so the list shows the same leads. The page now loads (HTTP 200).
+- **Original state**: Broken. `GET /manager/leads/view_leads` returns HTTP 500: `Unknown column 'P.order_ref_no' in 'where clause'`.
 - **Problem**: the query filters on `ci_pipeline.order_ref_no`, but no code or migration creates this column.
 - **Fix**: either add the column with a migration and fill it when an order is created, or remove the filter and join `ci_orders` on `lead_id` to exclude converted leads.
 - **Priority**: P0
@@ -338,7 +339,7 @@ No other hardcoded demo data was found in controllers. Random IDs (`mt_rand`) ar
 
 ## 10. Recommended order of work
 
-1. SEC-1, SEC-2, SEC-3, SEC-5, SEC-6 key, SEC-13, SEC-14, SEC-15, BUG-1 (P0).
+1. SEC-1, SEC-2, SEC-3, SEC-5, SEC-6 key, SEC-13, SEC-14, SEC-15 (P0). BUG-1 is fixed.
 2. Base controller with login and permission checks for all manager controllers (SEC-4).
 3. 3CX and WhatsApp webhooks (BUG-2, BUG-3), then test integrations (section 5).
 4. Migrations, logging, backups, tests (BUG-4, ENG-1 to ENG-4).

@@ -47,7 +47,7 @@ Read [`audit today's state.md`](audit%20today's%20state.md) before starting new 
 Key points:
 
 - **Security first**: the database dump `database/localhost.sql` is tracked in git and must be removed from the repo and its history; several endpoints need login checks; passwords use unsalted SHA-1. See audit section 3 (P0 items).
-- **Known broken**: My Zone > View Leads (missing `ci_pipeline.order_ref_no` column) and the 3CX CDR / recording webhooks (blocked by the login check).
+- **Known broken**: the 3CX CDR / recording webhooks (blocked by the login check). My Zone > View Leads was fixed on 2026-11-04.
 - **Navigation**: the top navigation bar is kept on purpose. A sidebar is planned for a later phase.
 - **Dashboard**: keeps its approved original colors. The Ocean Blue theme (`assets/dist/css/crm-theme.css`) applies to every other page and skips `.full-screen-dash`.
 
@@ -676,7 +676,7 @@ Add:
 | Problem | Likely cause | Fix |
 |---|---|---|
 | `Unable to connect to your database server` | Wrong `DB_*` values, or MySQL is not running | Check `.env`. On cPanel the database and user names include your prefix (`cpaneluser_...`). Test with `mysql -h HOST -u USER -p DBNAME`. |
-| `Unknown column ...` or `Table ... doesn't exist` | Database is older than the code | Run `php migration_runner.php`. Known issue: View Leads needs `ci_pipeline.order_ref_no` (audit BUG-1). |
+| `Unknown column ...` or `Table ... doesn't exist` | Database is older than the code | Run `php migration_runner.php`. Run migrations after every update. |
 | Blank white page | PHP fatal error hidden in production | Set `CI_ENV=development` temporarily and reload, or read the error log (see below). |
 | `404 Page Not Found` on every page except the home page | `mod_rewrite` off, `.htaccess` missing, or `AllowOverride None` | Upload `.htaccess`, run `sudo a2enmod rewrite`, set `AllowOverride All`. Check `RewriteBase`. |
 | CSS and images missing, links go to the wrong domain | Wrong `BASE_URL` | Set `BASE_URL` to the exact site URL with a trailing slash. |
