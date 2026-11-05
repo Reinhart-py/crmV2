@@ -105,6 +105,13 @@
                 <input type="text" name="name" class="form-control" maxlength="100" placeholder="e.g. Dubai Office TV" value="<?php echo htmlspecialchars((string)$list['name']); ?>">
               </div>
             </div>
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>Password<span>*</span></label>
+                <?php $has_pw = !empty($list['c_password']) && $list['c_password'] !== sha1(''); ?>
+                <input type="password" name="pres_password" class="form-control" autocomplete="new-password" <?php echo $has_pw ? 'placeholder="Leave empty to keep the current password"' : 'required placeholder="Set a password to sign in"'; ?>>
+              </div>
+            </div>
           </div>
           <label>Office Codes<span>*</span> <small class="text-muted" style="font-weight:normal;">(one or more)</small></label>
           <div class="pres-offices">

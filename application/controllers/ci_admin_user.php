@@ -361,6 +361,14 @@ public function view($id='')
 			$data['live_offices'] = !empty($data['list']) ? crm_user_live_offices($data['list']) : array();
 			if (!empty($data['list']) && $this->input->server('REQUEST_METHOD') === 'POST' && crm_is_presentation_user($this->input->post('user_type'))) {
 				$row = $this->_presentation_row(false);
+				// The password is needed to sign in: keep the current one, or set a new one.
+				$new_pw = (string)$this->input->post('pres_password');
+				if ($row !== false && $new_pw !== '') {
+					$row['c_password'] = sha1($new_pw);
+				} elseif ($row !== false && (empty($data['list']['c_password']) || $data['list']['c_password'] === sha1(''))) {
+					$this->session->set_flashdata('error_message', 'Please set a password for this Presentation user.');
+					$row = false;
+				}
 				if ($row !== false) {
 					$this->comman_model->updateData('id', $id, $row, 'ci_user');
 					$this->_save_live_offices($id, $this->pres_offices);

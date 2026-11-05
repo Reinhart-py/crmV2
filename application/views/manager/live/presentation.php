@@ -126,9 +126,26 @@
     .act td.today { color:var(--brand); font-weight:800; }
 
     .tv-banner { display:none; position:fixed; top:14px; left:50%; transform:translateX(-50%); background:var(--bad); color:#fff; font-weight:700; padding:8px 16px; border-radius:8px; z-index:20; }
-    .tv-toast { visibility:hidden; position:fixed; right:24px; bottom:24px; background:var(--good); color:#fff; border-radius:12px; padding:14px 18px; font-weight:800; font-size:17px; box-shadow:0 10px 30px rgba(0,0,0,.25); transform:translateY(140%); transition:transform .4s; z-index:20; max-width:420px; }
-    .tv-toast.show { transform:none; visibility:visible; }
-    .tv-toast span { display:block; font-size:13px; font-weight:600; opacity:.9; }
+    /* New sale celebration: photo + name for 5 seconds */
+    .cele { position:fixed; inset:0; z-index:50; display:none; align-items:center; justify-content:center; background:rgba(2,6,23,.72); overflow:hidden; padding:16px; }
+    .cele.show { display:flex; animation:celeIn .35s ease-out; }
+    .cele.out { animation:celeOut .4s ease-in forwards; }
+    @keyframes celeIn { from { opacity:0; } to { opacity:1; } }
+    @keyframes celeOut { to { opacity:0; } }
+    .cele-card { position:relative; z-index:2; text-align:center; color:#fff; animation:celePop .6s cubic-bezier(.2,1.4,.4,1); max-width:92vw; }
+    @keyframes celePop { from { transform:scale(.4); opacity:0; } to { transform:none; opacity:1; } }
+    .cele-tag { display:inline-flex; align-items:center; gap:10px; background:linear-gradient(90deg, #f59e0b, #fbbf24); color:#1f1300; font-weight:800; font-size:clamp(18px, 2.4vw, 30px); letter-spacing:.06em; text-transform:uppercase; padding:10px 26px; border-radius:999px; box-shadow:0 10px 30px rgba(245,158,11,.45); }
+    .cele-photo { position:relative; width:clamp(150px, 22vw, 260px); height:clamp(150px, 22vw, 260px); margin:28px auto 22px; }
+    .cele-photo::before, .cele-photo::after { content:''; position:absolute; inset:-14px; border-radius:50%; border:4px solid #fbbf24; animation:celeRing 1.6s ease-out infinite; }
+    .cele-photo::after { animation-delay:.8s; }
+    @keyframes celeRing { from { transform:scale(.9); opacity:1; } to { transform:scale(1.35); opacity:0; } }
+    .cele-photo .av { width:100%; height:100%; font-size:clamp(54px, 8vw, 96px); border:6px solid #fff; box-shadow:0 18px 50px rgba(0,0,0,.45); background:var(--brand2); color:#fff; }
+    .cele-name { font-size:clamp(32px, 5vw, 64px); font-weight:800; line-height:1.1; text-shadow:0 4px 20px rgba(0,0,0,.4); }
+    .cele-sub { margin-top:10px; font-size:clamp(16px, 2vw, 24px); font-weight:600; opacity:.9; }
+    .cele-amt { margin-top:14px; font-size:clamp(28px, 4vw, 52px); font-weight:800; color:#4ade80; }
+    .cele-bit { position:absolute; top:-20px; width:12px; height:18px; border-radius:3px; opacity:.95; animation:celeFall linear forwards; z-index:1; }
+    @keyframes celeFall { to { transform:translateY(110vh) rotate(720deg); } }
+    @media (prefers-reduced-motion: reduce) { .cele-card, .cele-photo::before, .cele-photo::after, .cele-bit { animation:none !important; } .cele-bit { display:none; } }
 
     @media (max-width: 1200px) {
       .ov-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); }
@@ -154,7 +171,7 @@
 </head>
 <body>
   <div class="tv-banner" id="tvBanner"><i class="fa fa-exclamation-triangle"></i> Connection lost. Showing the last numbers; retrying...</div>
-  <div class="tv-toast" id="tvToast"></div>
+  <div class="cele" id="tvCele" aria-live="assertive"></div>
 
   <div class="tv">
     <div class="tv-head">
@@ -335,9 +352,10 @@
         '<div class="amt">' + (s.amount > 0 ? money(s.amount) : '&nbsp;') + '<span>' + esc(s.when) + '</span></div></div>';
     });
     $('#feed').html(fh || '<div class="tv-empty">No sales yet.</div>');
-    if (newest && lastSaleId !== null && newest.id > lastSaleId) {
-      $('#tvToast').html('<i class="fa fa-trophy"></i> New sale! ' + esc(newest.rep) + '<span>' + esc(newest.client) + (newest.amount > 0 ? ' &middot; ' + money(newest.amount) : '') + '</span>').addClass('show');
-      setTimeout(function () { $('#tvToast').removeClass('show'); }, 8000);
+    // Every new sale since the last refresh gets its own celebration, oldest first.
+    if (lastSaleId !== null) {
+      (d.latest || []).filter(function (s) { return s.id > lastSaleId; }).reverse().forEach(function (s) { celeQueue.push(s); });
+      playCele();
     }
     if (newest) lastSaleId = Math.max(lastSaleId || 0, newest.id);
 
@@ -375,6 +393,31 @@
     });
     $('#actBody').html(ah);
   }
+
+  /* ---------- New sale celebration (5 seconds each) ---------- */
+  var celeQueue = [], celeBusy = false;
+  function playCele() {
+    if (celeBusy || !celeQueue.length) return;
+    celeBusy = true;
+    var s = celeQueue.shift(), box = $('#tvCele');
+    var bits = '', colors = ['#f59e0b', '#22c55e', '#3b82f6', '#ef4444', '#a855f7', '#fbbf24', '#ffffff'];
+    for (var i = 0; i < 70; i++) {
+      bits += '<i class="cele-bit" style="left:' + (Math.random() * 100).toFixed(1) + '%; background:' + colors[i % colors.length] +
+        '; animation-duration:' + (2.6 + Math.random() * 2.2).toFixed(2) + 's; animation-delay:' + (Math.random() * 1.2).toFixed(2) + 's; transform:rotate(' + Math.round(Math.random() * 360) + 'deg);"></i>';
+    }
+    box.html(bits + '<div class="cele-card"><span class="cele-tag"><i class="fa fa-trophy"></i> New sale!</span>' +
+      '<div class="cele-photo">' + avatar(s.avatar, s.rep) + '</div>' +
+      '<div class="cele-name">' + esc(s.rep) + '</div>' +
+      '<div class="cele-sub">' + esc(s.client) + (s.service ? ' &middot; ' + esc(s.service) : '') + '</div>' +
+      (s.amount > 0 ? '<div class="cele-amt">' + money(s.amount) + '</div>' : '') + '</div>')
+      .removeClass('out').addClass('show');
+    setTimeout(function () {
+      box.addClass('out');
+      setTimeout(function () { box.removeClass('show out').empty(); celeBusy = false; playCele(); }, 400);
+    }, 4600);
+  }
+  // A click hides the current one early.
+  $('#tvCele').on('click', function () { $(this).removeClass('show out').empty(); });
 
   /* ---------- Data ---------- */
   function load() {
