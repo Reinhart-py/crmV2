@@ -14,6 +14,20 @@ class Ci_admin_live extends CI_Controller
 		header("Pragma: no-cache");
 		header('Cache-Control: no-cache');
 		$this->if_not_login();
+
+		$role = (int)$this->session->userdata('manager_role');
+		$uid = (int)$this->session->userdata('manager_id');
+		if ($role !== 1 && $uid !== 1 && !crm_can('live', 'read')) {
+			if (strpos($this->router->fetch_method(), 'ajax_') === 0) {
+				header('HTTP/1.1 403 Forbidden');
+				header('Content-Type: application/json');
+				echo json_encode(array('status' => false, 'message' => 'No access to Live.'));
+				exit;
+			}
+			$this->session->set_flashdata('error_message', 'You do not have access to Live. Ask your administrator if you need it.');
+			redirect(crm_landing_url());
+			exit;
+		}
 	}
 
 	public function if_not_login()
@@ -75,42 +89,7 @@ class Ci_admin_live extends CI_Controller
 	public function presentation()
 	{
 		$data = array();
-		$data['info'] = array(
-			'title' => 'Live Presentation',
-			'page_heading' => 'Live'
-		);
-
-		$manager_id = (int)$this->session->userdata('manager_id');
-		$role = (int)$this->session->userdata('manager_role');
-		$is_admin = ($role === 1 || $manager_id === 1);
-		$data['is_admin'] = $is_admin;
-
-		$user_row = $this->db->select('id, name, office, department')->where('id', $manager_id)->get('ci_user')->row_array();
-		$data['current_user'] = $user_row;
-		$data['user_office'] = !empty($user_row['office']) ? $user_row['office'] : '';
-
-		$data['company_stats'] = $this->get_stats_block(array());
-		$data['company_perf'] = $this->get_performers_block(array());
-
-		$centers_query = $this->db->query("SELECT DISTINCT office FROM ci_user WHERE office IS NOT NULL AND office != '' ORDER BY office ASC");
-		$centers_data = array();
-		if ($centers_query && $centers_query->num_rows() > 0) {
-			foreach ($centers_query->result_array() as $c) {
-				$off = $c['office'];
-				$u_ids = array();
-				$u_rows = $this->db->query("SELECT id FROM ci_user WHERE office = " . $this->db->escape($off))->result_array();
-				foreach ($u_rows as $ur) {
-					$u_ids[] = (int)$ur['id'];
-				}
-				$centers_data[] = array(
-					'name' => $off,
-					'stats' => $this->get_stats_block($u_ids),
-					'perf' => $this->get_performers_block($u_ids)
-				);
-			}
-		}
-		$data['centers_data'] = $centers_data;
-
+		$data['info'] = array('title' => 'Live Presentation', 'page_heading' => 'Live');
 		$this->load->view('manager/live/presentation', $data);
 	}
 
@@ -407,132 +386,156 @@ class Ci_admin_live extends CI_Controller
 		exit;
 	}
 
+	/** Money value of an order, the same way as everywhere on Live. */
+	private function _amount_sql($o = 'o')
+	{
+		return "CAST(COALESCE(NULLIF({$o}.pricing_amount, 0), NULLIF({$o}.mrr, 0), 0) AS DECIMAL(12,2))";
+	}
+
+	private function _is_sale_sql($o = 'o')
+	{
+		return "({$o}.status IN ('Sales', 'Closed / Sold', 'Completed') OR ({$o}.sales_ref_no IS NOT NULL AND {$o}.sales_ref_no != ''))";
+	}
+
+	private function _growth($cur, $prev)
+	{
+		$cur = (float)$cur; $prev = (float)$prev;
+		if ($prev <= 0) return null; // nothing to compare with
+		return round((($cur - $prev) / $prev) * 100, 1);
+	}
+
+	/** TV screen data: company KPIs, monthly target, 7-day sales, top services, centers, leaderboard, latest sales. */
 	public function ajax_presentation_data()
 	{
+		$amt = $this->_amount_sql('o');
+		$sale = $this->_is_sale_sql('o');
 		$today = date('Y-m-d');
-		$m_d1 = date('Y-m-01 00:00:00');
-		$m_d2 = date('Y-m-t 23:59:59');
-		$lm_d1 = date('Y-m-01 00:00:00', strtotime('-1 month'));
-		$lm_d2 = date('Y-m-t 23:59:59', strtotime('-1 month'));
+		$yday = date('Y-m-d', strtotime('-1 day'));
+		$m1 = date('Y-m-01 00:00:00'); $m2 = date('Y-m-t 23:59:59');
+		$lm1 = date('Y-m-01 00:00:00', strtotime('first day of last month')); $lm2 = date('Y-m-t 23:59:59', strtotime('first day of last month'));
+		$t1 = $today . ' 00:00:00'; $t2 = $today . ' 23:59:59';
+		$y1 = $yday . ' 00:00:00'; $y2 = $yday . ' 23:59:59';
+		$month_key = date('Y-m');
+		$md1 = date('Y-m-01'); $md2 = date('Y-m-t');
+		$q = function ($sql) { $r = $this->db->query($sql); return ($r && is_object($r)) ? $r->row_array() : array(); };
+		$qa = function ($sql) { $r = $this->db->query($sql); return ($r && is_object($r)) ? $r->result_array() : array(); };
 
-		$sales_cur = $this->db->query("SELECT COALESCE(SUM(CAST(COALESCE(NULLIF(pricing_amount, 0), NULLIF(mrr, 0), 0) AS DECIMAL(12,2))), 0) as total FROM ci_orders WHERE (status IN ('Sales', 'Closed / Sold', 'Completed') OR (sales_ref_no IS NOT NULL AND sales_ref_no != '')) AND created_at >= '{$m_d1}' AND created_at <= '{$m_d2}'")->row_array();
-		$cur_sales = floatval($sales_cur['total']);
+		// KPIs
+		$s_cur = $q("SELECT COUNT(*) c, COALESCE(SUM({$amt}), 0) v FROM ci_orders o WHERE {$sale} AND o.created_at BETWEEN '{$m1}' AND '{$m2}'");
+		$s_prev = $q("SELECT COUNT(*) c, COALESCE(SUM({$amt}), 0) v FROM ci_orders o WHERE {$sale} AND o.created_at BETWEEN '{$lm1}' AND '{$lm2}'");
+		$s_today = $q("SELECT COUNT(*) c, COALESCE(SUM({$amt}), 0) v FROM ci_orders o WHERE {$sale} AND o.created_at BETWEEN '{$t1}' AND '{$t2}'");
+		$o_cur = $q("SELECT COUNT(*) c FROM ci_orders o WHERE o.created_at BETWEEN '{$m1}' AND '{$m2}'");
+		$o_prev = $q("SELECT COUNT(*) c FROM ci_orders o WHERE o.created_at BETWEEN '{$lm1}' AND '{$lm2}'");
+		$lead_join = "FROM ci_leads a INNER JOIN ci_pipeline p ON p.lead_id = a.id AND p.pipeline_stage = 'lead'";
+		$l_cur = $q("SELECT COUNT(DISTINCT a.id) c {$lead_join} WHERE a.created BETWEEN '{$m1}' AND '{$m2}'");
+		$l_prev = $q("SELECT COUNT(DISTINCT a.id) c {$lead_join} WHERE a.created BETWEEN '{$lm1}' AND '{$lm2}'");
+		$c_today = $q("SELECT COUNT(*) c FROM ci_call_logs WHERE created_at BETWEEN '{$t1}' AND '{$t2}'");
+		$c_yday = $q("SELECT COUNT(*) c FROM ci_call_logs WHERE created_at BETWEEN '{$y1}' AND '{$y2}'");
+		$period = "T.status = 'Active' AND (T.period_month = '{$month_key}' OR ('{$md1}' <= T.end_date AND '{$md2}' >= T.start_date))";
+		$tgt = $q("SELECT COALESCE(SUM(T.target_amount), 0) v FROM ci_hr_targets T WHERE {$period}");
 
-		$sales_prev = $this->db->query("SELECT COALESCE(SUM(CAST(COALESCE(NULLIF(pricing_amount, 0), NULLIF(mrr, 0), 0) AS DECIMAL(12,2))), 0) as total FROM ci_orders WHERE (status IN ('Sales', 'Closed / Sold', 'Completed') OR (sales_ref_no IS NOT NULL AND sales_ref_no != '')) AND created_at >= '{$lm_d1}' AND created_at <= '{$lm_d2}'")->row_array();
-		$prev_sales = floatval($sales_prev['total']);
-		$sales_growth = $prev_sales > 0 ? round((($cur_sales - $prev_sales) / $prev_sales) * 100, 1) : 12.4;
+		$kpi = array(
+			'sales_month' => (float)$s_cur['v'], 'sales_count' => (int)$s_cur['c'],
+			'sales_growth' => $this->_growth($s_cur['v'], $s_prev['v']),
+			'sales_today' => (float)$s_today['v'], 'sales_today_count' => (int)$s_today['c'],
+			'orders_month' => (int)$o_cur['c'], 'orders_growth' => $this->_growth($o_cur['c'], $o_prev['c']),
+			'leads_month' => (int)$l_cur['c'], 'leads_growth' => $this->_growth($l_cur['c'], $l_prev['c']),
+			'calls_today' => (int)$c_today['c'], 'calls_yesterday' => (int)$c_yday['c'],
+			'target_month' => (float)$tgt['v'],
+		);
 
-		if ($cur_sales <= 0) {
-			$cur_sales = 742432;
-		}
-
-		$orders_cur = $this->db->query("SELECT COUNT(*) as cnt FROM ci_orders WHERE created_at >= '{$m_d1}' AND created_at <= '{$m_d2}'")->row_array();
-		$cur_orders = intval($orders_cur['cnt']);
-		$orders_prev = $this->db->query("SELECT COUNT(*) as cnt FROM ci_orders WHERE created_at >= '{$lm_d1}' AND created_at <= '{$lm_d2}'")->row_array();
-		$prev_orders = intval($orders_prev['cnt']);
-		$orders_growth = $prev_orders > 0 ? round((($cur_orders - $prev_orders) / $prev_orders) * 100, 1) : 8.7;
-		if ($cur_orders <= 0) {
-			$cur_orders = 1247;
-		}
-
-		$aov = $cur_orders > 0 ? round($cur_sales / $cur_orders) : 595;
-		$prev_aov = $prev_orders > 0 ? round($prev_sales / $prev_orders) : 577;
-		$aov_growth = $prev_aov > 0 ? round((($aov - $prev_aov) / $prev_aov) * 100, 1) : 3.1;
-
-		$cust_cur = $this->db->query("SELECT COUNT(DISTINCT customer) as cnt FROM ci_leads WHERE created >= '{$m_d1}' AND created <= '{$m_d2}'")->row_array();
-		$cur_cust = intval($cust_cur['cnt']);
-		$cust_prev = $this->db->query("SELECT COUNT(DISTINCT customer) as cnt FROM ci_leads WHERE created >= '{$lm_d1}' AND created <= '{$lm_d2}'")->row_array();
-		$prev_cust = intval($cust_prev['cnt']);
-		$cust_growth = $prev_cust > 0 ? round((($cur_cust - $prev_cust) / $prev_cust) * 100, 1) : 15.2;
-		if ($cur_cust <= 0) {
-			$cur_cust = 312;
-		}
-
-		$time_labels = array();
-		$time_values = array();
+		// Sales of the last 7 days
+		$trend = array();
+		$rows = $qa("SELECT DATE(o.created_at) d, COALESCE(SUM({$amt}), 0) v, COUNT(*) c FROM ci_orders o WHERE {$sale} AND o.created_at >= '" . date('Y-m-d', strtotime('-6 days')) . " 00:00:00' GROUP BY DATE(o.created_at)");
+		$by_day = array();
+		foreach ($rows as $r) $by_day[$r['d']] = $r;
 		for ($i = 6; $i >= 0; $i--) {
 			$d = date('Y-m-d', strtotime("-{$i} days"));
-			$lbl = date('M d', strtotime($d));
-			$time_labels[] = $lbl;
-			$day_val = $this->db->query("SELECT COALESCE(SUM(CAST(COALESCE(NULLIF(pricing_amount, 0), NULLIF(mrr, 0), 0) AS DECIMAL(12,2))), 0) as total FROM ci_orders WHERE (status IN ('Sales', 'Closed / Sold', 'Completed') OR (sales_ref_no IS NOT NULL AND sales_ref_no != '')) AND created_at >= '{$d} 00:00:00' AND created_at <= '{$d} 23:59:59'")->row_array();
-			$tv = floatval($day_val['total']);
-			if ($tv <= 0) {
-				$seed = array(30, 42, 38, 55, 45, 60, 78);
-				$tv = $seed[6 - $i] * 1000;
-			}
-			$time_values[] = round($tv / 1000);
+			$trend[] = array('label' => date('D d', strtotime($d)), 'value' => isset($by_day[$d]) ? (float)$by_day[$d]['v'] : 0, 'count' => isset($by_day[$d]) ? (int)$by_day[$d]['c'] : 0, 'today' => ($i === 0));
 		}
 
-		$top_products = array(
-			array('prod_name' => 'Accounting & VAT', 'total_val' => 98432),
-			array('prod_name' => 'Telecom (Du/Etisalat)', 'total_val' => 72680),
-			array('prod_name' => 'IT Services & Cloud', 'total_val' => 56214),
-			array('prod_name' => 'Corporate Services', 'total_val' => 41987),
-			array('prod_name' => 'Business Setup', 'total_val' => 32456)
-		);
-
-		$channel_data = array(
-			array('ch_name' => 'Online Store', 'total_val' => 46),
-			array('ch_name' => 'Retail Store', 'total_val' => 28),
-			array('ch_name' => 'Marketplace', 'total_val' => 17),
-			array('ch_name' => 'Wholesale', 'total_val' => 9)
-		);
-
-		$top_reps_query = $this->db->query("SELECT u.name, SUM(CAST(COALESCE(NULLIF(o.pricing_amount, 0), NULLIF(o.mrr, 0), 0) AS DECIMAL(12,2))) as total_rev
-			FROM ci_orders o
-			INNER JOIN ci_user u ON u.id = o.created_by
-			WHERE o.created_at >= '{$m_d1}' AND o.created_at <= '{$m_d2}'
-			AND (o.status IN ('Sales', 'Closed / Sold', 'Completed') OR (o.sales_ref_no IS NOT NULL AND o.sales_ref_no != ''))
-			GROUP BY o.created_by
-			ORDER BY total_rev DESC
-			LIMIT 5")->result_array();
-
-		$top_reps = array();
-		if (!empty($top_reps_query)) {
-			foreach ($top_reps_query as $tr) {
-				$top_reps[] = array(
-					'rep_name' => $tr['name'],
-					'rep_sales' => floatval($tr['total_rev']),
-					'vs_last' => '+12.5%'
-				);
-			}
+		// Top services this month
+		$products = array();
+		foreach ($qa("SELECT MIN(o.service_title) n, COALESCE(SUM({$amt}), 0) v, COUNT(*) c FROM ci_orders o WHERE {$sale} AND o.created_at BETWEEN '{$m1}' AND '{$m2}' AND o.service_title != '' GROUP BY LOWER(TRIM(o.service_title)) ORDER BY v DESC, c DESC LIMIT 5") as $r) {
+			$products[] = array('name' => $r['n'], 'value' => (float)$r['v'], 'count' => (int)$r['c']);
 		}
-		if (empty($top_reps)) {
-			$top_reps = array(
-				array('rep_name' => 'Sarah Johnson', 'rep_sales' => 126752, 'vs_last' => '18.2%'),
-				array('rep_name' => 'Michael Chen', 'rep_sales' => 98432, 'vs_last' => '10.5%'),
-				array('rep_name' => 'Emily Davis', 'rep_sales' => 87631, 'vs_last' => '8.7%'),
-				array('rep_name' => 'David Martinez', 'rep_sales' => 78942, 'vs_last' => '-2.1%'),
-				array('rep_name' => 'Jessica Lee', 'rep_sales' => 65123, 'vs_last' => '5.4%')
+
+		// Per person (active users)
+		$users = array();
+		foreach ($qa("SELECT id, name, office, avatar FROM ci_user WHERE status = 1") as $u) {
+			$av = (!empty($u['avatar']) && is_file(FCPATH . $u['avatar'])) ? base_url($u['avatar']) : '';
+			$users[(int)$u['id']] = array('name' => $u['name'], 'office' => trim((string)$u['office']), 'avatar' => $av,
+				'sales_month' => 0.0, 'sales_count' => 0, 'sales_last' => 0.0, 'orders_month' => 0, 'calls_today' => 0, 'leads_month' => 0, 'target' => 0.0);
+		}
+		$add = function ($rows, $key, $float = false) use (&$users) {
+			foreach ($rows as $r) {
+				$id = (int)$r['uid'];
+				if (isset($users[$id])) $users[$id][$key] = $float ? (float)$r['v'] : (int)$r['v'];
+			}
+		};
+		$add($qa("SELECT o.created_by uid, COALESCE(SUM({$amt}), 0) v FROM ci_orders o WHERE {$sale} AND o.created_at BETWEEN '{$m1}' AND '{$m2}' GROUP BY o.created_by"), 'sales_month', true);
+		$add($qa("SELECT o.created_by uid, COUNT(*) v FROM ci_orders o WHERE {$sale} AND o.created_at BETWEEN '{$m1}' AND '{$m2}' GROUP BY o.created_by"), 'sales_count');
+		$add($qa("SELECT o.created_by uid, COALESCE(SUM({$amt}), 0) v FROM ci_orders o WHERE {$sale} AND o.created_at BETWEEN '{$lm1}' AND '{$lm2}' GROUP BY o.created_by"), 'sales_last', true);
+		$add($qa("SELECT o.created_by uid, COUNT(*) v FROM ci_orders o WHERE o.created_at BETWEEN '{$m1}' AND '{$m2}' GROUP BY o.created_by"), 'orders_month');
+		$add($qa("SELECT user_id uid, COUNT(*) v FROM ci_call_logs WHERE created_at BETWEEN '{$t1}' AND '{$t2}' GROUP BY user_id"), 'calls_today');
+		$add($qa("SELECT a.created_by uid, COUNT(DISTINCT a.id) v {$lead_join} WHERE a.created BETWEEN '{$m1}' AND '{$m2}' GROUP BY a.created_by"), 'leads_month');
+		$add($qa("SELECT T.user_id uid, COALESCE(SUM(T.target_amount), 0) v FROM ci_hr_targets T WHERE {$period} GROUP BY T.user_id"), 'target', true);
+
+		// Leaderboard: top 10 by sales this month, then orders, then calls today
+		$board = array_filter($users, function ($u) { return $u['sales_month'] > 0 || $u['sales_count'] > 0 || $u['orders_month'] > 0 || $u['calls_today'] > 0 || $u['leads_month'] > 0; });
+		uasort($board, function ($a, $b) {
+			foreach (array('sales_month', 'sales_count', 'orders_month', 'calls_today', 'leads_month') as $k) {
+				if ($a[$k] != $b[$k]) return ($a[$k] < $b[$k]) ? 1 : -1;
+			}
+			return strcasecmp($a['name'], $b['name']);
+		});
+		$leaderboard = array();
+		foreach (array_slice($board, 0, 10, true) as $u) {
+			$u['growth'] = $this->_growth($u['sales_month'], $u['sales_last']);
+			$u['target_pct'] = $u['target'] > 0 ? round($u['sales_month'] * 100 / $u['target']) : null;
+			$leaderboard[] = $u;
+		}
+
+		// Centers (offices)
+		$centers = array();
+		foreach ($users as $u) {
+			if ($u['office'] === '') continue;
+			$k = $u['office'];
+			if (!isset($centers[$k])) $centers[$k] = array('name' => $k, 'staff' => 0, 'sales_month' => 0.0, 'sales_count' => 0, 'orders_month' => 0, 'calls_today' => 0, 'leads_month' => 0, 'target' => 0.0);
+			$centers[$k]['staff']++;
+			foreach (array('sales_month', 'sales_count', 'orders_month', 'calls_today', 'leads_month', 'target') as $f) $centers[$k][$f] += $u[$f];
+		}
+		$centers = array_values($centers);
+		usort($centers, function ($a, $b) { return $a['sales_month'] == $b['sales_month'] ? strcmp($a['name'], $b['name']) : ($a['sales_month'] < $b['sales_month'] ? 1 : -1); });
+
+		// Latest sales (newest first)
+		$latest = array();
+		foreach ($qa("SELECT o.id, o.client_name, o.company_name, o.service_title, {$amt} v, o.created_at, o.created_by FROM ci_orders o WHERE {$sale} ORDER BY o.id DESC LIMIT 6") as $r) {
+			$uid = (int)$r['created_by'];
+			$latest[] = array(
+				'id' => (int)$r['id'],
+				'rep' => isset($users[$uid]) ? $users[$uid]['name'] : '-',
+				'avatar' => isset($users[$uid]) ? $users[$uid]['avatar'] : '',
+				'client' => (string)($r['company_name'] ?: $r['client_name']),
+				'service' => (string)$r['service_title'],
+				'amount' => (float)$r['v'],
+				'when' => date('d M, h:i A', strtotime($r['created_at'])),
 			);
 		}
 
-		$response = array(
+		header('Content-Type: application/json');
+		echo json_encode(array(
 			'status' => true,
-			'datetime_formatted' => date('F j, Y   g:i A'),
-			'kpis' => array(
-				'total_sales' => $cur_sales,
-				'total_sales_fmt' => '$' . number_format($cur_sales),
-				'sales_growth' => $sales_growth,
-				'orders' => $cur_orders,
-				'orders_fmt' => number_format($cur_orders),
-				'orders_growth' => $orders_growth,
-				'aov' => $aov,
-				'aov_fmt' => '$' . number_format($aov),
-				'aov_growth' => $aov_growth,
-				'customers' => $cur_cust,
-				'customers_fmt' => number_format($cur_cust),
-				'customers_growth' => $cust_growth,
-				'time_labels' => $time_labels,
-				'time_values' => $time_values,
-				'top_products' => $top_products,
-				'channel_data' => $channel_data,
-				'top_reps' => $top_reps
-			),
-			'company_stats' => $this->get_stats_block(array())
-		);
-
-		echo json_encode($response);
+			'updated' => date('h:i:s A'),
+			'month' => date('F Y'),
+			'kpi' => $kpi,
+			'trend' => $trend,
+			'products' => $products,
+			'leaderboard' => $leaderboard,
+			'centers' => $centers,
+			'latest' => $latest,
+			'company_stats' => $this->get_stats_block(array()),
+		));
+		exit;
 	}
-
 }

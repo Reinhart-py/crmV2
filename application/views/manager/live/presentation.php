@@ -3,723 +3,472 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Sales Dashboard - Live Presentation</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Live Presentation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="shortcut icon" href="<?php echo base_url(); ?>assets/logo.png" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/font-awesome.min.css">
   <script src="<?php echo base_url(); ?>assets/plugins/jQuery/jquery-2.2.3.min.js"></script>
-
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    :root {
+      --bg:#e2e8f0; --card:#ffffff; --panel:#f8fafc; --line:#e2e8f0; --text:#0f172a; --muted:#64748b;
+      --brand:#1e3a8a; --brand2:#2563eb; --good:#16a34a; --bad:#dc2626; --track:#e2e8f0; --gold:#d97706;
     }
-    body {
-      background: #e2e8f0;
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      color: #0f172a;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      padding: 16px;
-      overflow-x: hidden;
+    body.tv-dark {
+      --bg:#020617; --card:#0f172a; --panel:#111c33; --line:#1e293b; --text:#f8fafc; --muted:#94a3b8;
+      --brand:#60a5fa; --brand2:#3b82f6; --good:#4ade80; --bad:#f87171; --track:#1e293b; --gold:#fbbf24;
     }
-    .tv-wrapper {
-      max-width: 1720px;
-      width: 100%;
-      margin: 0 auto;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    .tv-card {
-      background: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-      border: 1px solid #cbd5e1;
-      padding: 24px 30px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    .tv-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 22px;
-      border-bottom: 1px solid #f1f5f9;
-      padding-bottom: 16px;
-    }
-    .tv-title-wrap {
-      display: flex;
-      align-items: baseline;
-      gap: 12px;
-    }
-    .tv-main-title {
-      font-size: 26px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      color: #0f172a;
-      text-transform: uppercase;
-    }
-    .tv-subtitle {
-      font-size: 16px;
-      font-weight: 500;
-      color: #64748b;
-      text-transform: uppercase;
-    }
-    .tv-header-right {
-      display: flex;
-      align-items: center;
-      gap: 18px;
-    }
-    .tv-clock {
-      font-size: 15px;
-      font-weight: 600;
-      color: #475569;
-      letter-spacing: -0.2px;
-    }
-    .tv-controls {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .tv-select {
-      background: #f8fafc;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
-      padding: 6px 10px;
-      font-size: 12.5px;
-      font-weight: 600;
-      color: #334155;
-      outline: none;
-      cursor: pointer;
-    }
-    .tv-btn {
-      background: #1e3a8a;
-      border: 1px solid #1e3a8a;
-      border-radius: 6px;
-      padding: 6px 12px;
-      font-size: 12.5px;
-      font-weight: 600;
-      color: #ffffff;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: background 0.15s ease;
-    }
-    .tv-btn:hover {
-      background: #172554;
-    }
-    .tv-btn-sec {
-      background: #f8fafc;
-      border: 1px solid #cbd5e1;
-      color: #334155;
-    }
-    .tv-btn-sec:hover {
-      background: #e2e8f0;
-    }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    html, body { height:100%; }
+    body { background:var(--bg); color:var(--text); font-family:'Plus Jakarta Sans', -apple-system, "Segoe UI", Roboto, sans-serif; padding:14px; overflow-x:hidden; }
+    .tv { max-width:1800px; margin:0 auto; min-height:calc(100vh - 28px); background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 24px; display:flex; flex-direction:column; }
+    .tv-head { display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap; padding-bottom:12px; border-bottom:1px solid var(--line); margin-bottom:14px; }
+    .tv-brand { display:flex; align-items:center; gap:12px; }
+    .tv-brand img { height:38px; }
+    body.tv-dark .tv-brand img { background:#fff; border-radius:6px; padding:3px; }
+    .tv-brand h1 { font-size:24px; font-weight:800; letter-spacing:-.4px; }
+    .tv-brand .tv-live { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:800; color:var(--bad); letter-spacing:.08em; }
+    .tv-brand .tv-live i { width:8px; height:8px; border-radius:50%; background:var(--bad); animation:pulse 1.6s infinite; }
+    @keyframes pulse { 50% { opacity:.25; } }
+    .tv-right { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+    .tv-clock { text-align:right; }
+    .tv-clock b { display:block; font-size:22px; font-weight:800; font-variant-numeric:tabular-nums; }
+    .tv-clock span { font-size:12px; color:var(--muted); font-weight:600; }
+    .tv-tabs { display:flex; gap:4px; background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:4px; }
+    .tv-tabs button { border:0; background:none; color:var(--muted); font:inherit; font-size:13px; font-weight:700; padding:7px 12px; border-radius:7px; cursor:pointer; }
+    .tv-tabs button.active { background:var(--brand); color:#fff; }
+    body.tv-dark .tv-tabs button.active { color:#0f172a; }
+    .tv-controls { display:flex; gap:6px; align-items:center; transition:opacity .3s; }
+    .tv-btn, .tv-select { height:34px; border:1px solid var(--line); background:var(--panel); color:var(--text); border-radius:8px; font:inherit; font-size:13px; font-weight:700; padding:0 10px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+    .tv-btn:hover { border-color:var(--brand); }
+    .tv-updated { font-size:12px; color:var(--muted); font-weight:600; white-space:nowrap; }
+    .tv-progress { height:3px; background:var(--track); border-radius:3px; overflow:hidden; margin:-8px 0 12px; }
+    .tv-progress i { display:block; height:100%; width:0; background:var(--brand); }
+    body.tv-idle .tv-controls, body.tv-idle .tv-tabs { opacity:0; pointer-events:none; }
+    body.tv-idle { cursor:none; }
 
-    /* Grid Layout */
-    .tv-dashboard-grid {
-      display: grid;
-      grid-template-columns: 240px 1fr 340px;
-      gap: 20px;
-      flex: 1;
-    }
-    @media (max-width: 1280px) {
-      .tv-dashboard-grid {
-        grid-template-columns: 220px 1fr 300px;
-        gap: 16px;
-      }
-    }
-    @media (max-width: 992px) {
-      .tv-dashboard-grid {
-        grid-template-columns: 1fr;
-      }
-    }
+    .tv-slide { display:none; flex:1; min-height:0; animation:fade .5s; }
+    .tv-slide.active { display:flex; flex-direction:column; }
+    @keyframes fade { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+    .tv-slide-title { font-size:15px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+    .tv-slide-title i { color:var(--brand); }
 
-    /* Left Stats Column */
-    .tv-kpi-column {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-    .tv-kpi-card {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 16px 18px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      flex: 1;
-    }
-    .tv-kpi-label {
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #64748b;
-      margin-bottom: 6px;
-    }
-    .tv-kpi-value {
-      font-size: 28px;
-      font-weight: 800;
-      color: #0f172a;
-      line-height: 1.1;
-      letter-spacing: -0.5px;
-      margin-bottom: 6px;
-    }
-    .tv-kpi-growth {
-      font-size: 12.5px;
-      font-weight: 600;
-      color: #0f172a;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .tv-kpi-growth.neg {
-      color: #dc2626;
-    }
+    .tv-panel { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:16px 18px; min-width:0; }
+    .tv-panel h3 { font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-bottom:12px; display:flex; justify-content:space-between; gap:8px; }
+    .tv-empty { color:var(--muted); font-size:14px; font-weight:600; padding:18px 0; text-align:center; }
 
-    /* Middle Column */
-    .tv-middle-column {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-    .tv-panel {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 18px 20px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    .tv-panel-title {
-      font-size: 13px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #475569;
-      margin-bottom: 14px;
-    }
+    /* Overview */
+    .ov-grid { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:14px; margin-bottom:14px; }
+    .kpi .kpi-label { font-size:13px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+    .kpi .kpi-value { display:block; font-size:clamp(28px, 2.6vw, 44px); font-weight:800; letter-spacing:-1px; margin:6px 0 4px; font-variant-numeric:tabular-nums; }
+    .kpi .kpi-sub { font-size:13px; font-weight:700; color:var(--muted); }
+    .up { color:var(--good); } .down { color:var(--bad); }
+    .flash { animation:flash 1.4s; }
+    @keyframes flash { 0% { background:rgba(37,99,235,.25); } 100% { background:transparent; } }
+    .ov-main { display:grid; grid-template-columns:minmax(0, 7fr) minmax(0, 5fr); gap:14px; flex:1; }
+    .ov-col { display:flex; flex-direction:column; gap:14px; min-width:0; }
+    .tgt-row { display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:8px; }
+    .tgt-row b { font-size:26px; font-weight:800; }
+    .tgt-row span { font-size:14px; color:var(--muted); font-weight:700; }
+    .bar { height:16px; background:var(--track); border-radius:10px; overflow:hidden; position:relative; }
+    .bar i { display:block; height:100%; background:linear-gradient(90deg, var(--brand2), var(--brand)); border-radius:10px; transition:width 1s ease; }
+    .bar.small { height:8px; }
+    .chart { flex:1; display:flex; flex-direction:column; }
+    .chart #trendChart { flex:1; min-height:140px; position:relative; }
+    .chart svg { position:absolute; inset:0; width:100%; height:100%; display:block; }
+    .prod-row { display:grid; grid-template-columns:minmax(0, 2fr) minmax(0, 3fr) auto; gap:12px; align-items:center; padding:7px 0; font-weight:700; font-size:14px; }
+    .prod-row .n { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .prod-row .v { text-align:right; font-variant-numeric:tabular-nums; }
+    .feed { display:flex; flex-direction:column; gap:8px; }
+    .feed-item { display:flex; align-items:center; gap:12px; padding:10px 12px; background:var(--card); border:1px solid var(--line); border-radius:10px; }
+    .feed-item .who { flex:1; min-width:0; }
+    .feed-item .who b { display:block; font-size:15px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .feed-item .who span { font-size:12.5px; color:var(--muted); font-weight:600; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .feed-item .amt { text-align:right; font-weight:800; font-size:15px; white-space:nowrap; }
+    .feed-item .amt span { display:block; font-size:11.5px; color:var(--muted); font-weight:600; }
+    .feed-item.is-new { border-color:var(--good); box-shadow:0 0 0 2px var(--good); }
+    .av { width:40px; height:40px; border-radius:50%; background:var(--brand); color:#fff; display:inline-flex; align-items:center; justify-content:center; font-weight:800; font-size:15px; flex-shrink:0; overflow:hidden; }
+    body.tv-dark .av { color:#0f172a; }
+    .av img { width:100%; height:100%; object-fit:cover; }
 
-    /* Right Column */
-    .tv-right-column {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
+    /* Leaderboard */
+    .lb { width:100%; border-collapse:separate; border-spacing:0 6px; }
+    .lb th { text-align:left; font-size:12px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; padding:0 14px; }
+    .lb th.r, .lb td.r { text-align:right; }
+    .lb td { background:var(--panel); padding:10px 14px; font-size:17px; font-weight:700; font-variant-numeric:tabular-nums; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+    .lb td:first-child { border-left:1px solid var(--line); border-radius:10px 0 0 10px; width:64px; text-align:center; }
+    .lb td:last-child { border-right:1px solid var(--line); border-radius:0 10px 10px 0; }
+    .lb .rank { font-size:20px; font-weight:800; color:var(--muted); }
+    .lb tr.top1 td { background:rgba(217,119,6,.12); } .lb tr.top1 .rank { color:var(--gold); }
+    .lb .person { display:flex; align-items:center; gap:12px; min-width:0; }
+    .lb .person b { display:block; }
+    .lb .person span { display:block; font-size:12.5px; color:var(--muted); font-weight:600; }
+    .lb .tp { min-width:120px; }
+    .lb .tp small { display:block; font-size:12px; color:var(--muted); margin-top:3px; }
 
-    /* Products Bars */
-    .tv-prod-row {
-      display: flex;
-      align-items: center;
-      margin-bottom: 12px;
-      gap: 12px;
-    }
-    .tv-prod-name {
-      width: 140px;
-      font-size: 13px;
-      font-weight: 600;
-      color: #1e293b;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .tv-prod-bar-wrap {
-      flex: 1;
-      background: #e2e8f0;
-      border-radius: 4px;
-      height: 22px;
-      overflow: hidden;
-      position: relative;
-    }
-    .tv-prod-bar-fill {
-      background: #1e3a8a;
-      height: 100%;
-      border-radius: 4px;
-      transition: width 0.4s ease;
-    }
-    .tv-prod-val {
-      width: 75px;
-      text-align: right;
-      font-size: 13px;
-      font-weight: 700;
-      color: #0f172a;
-    }
+    /* Centers */
+    .ct-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(360px, 1fr)); gap:14px; }
+    .ct-card h4 { font-size:19px; font-weight:800; margin-bottom:4px; }
+    .ct-card .ct-staff { font-size:13px; color:var(--muted); font-weight:600; margin-bottom:12px; }
+    .ct-stats { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:8px; margin-top:12px; }
+    .ct-stats div { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:8px 10px; }
+    .ct-stats span { display:block; font-size:11px; color:var(--muted); font-weight:800; text-transform:uppercase; }
+    .ct-stats b { font-size:20px; font-weight:800; font-variant-numeric:tabular-nums; }
 
-    /* Donut Chart Simulation */
-    .tv-donut-wrap {
-      display: flex;
-      align-items: center;
-      justify-content: space-around;
-      flex: 1;
-      gap: 14px;
-    }
-    .tv-donut-svg {
-      width: 140px;
-      height: 140px;
-      transform: rotate(-90deg);
-    }
-    .tv-donut-legend {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .tv-legend-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12.5px;
-      font-weight: 600;
-      color: #334155;
-    }
-    .tv-legend-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
+    /* Activity */
+    .act { width:100%; border-collapse:collapse; }
+    .act th, .act td { padding:13px 16px; border-bottom:1px solid var(--line); text-align:right; font-variant-numeric:tabular-nums; }
+    .act th { font-size:12px; color:var(--muted); font-weight:800; text-transform:uppercase; letter-spacing:.05em; }
+    .act th:first-child, .act td:first-child { text-align:left; }
+    .act td { font-size:18px; font-weight:700; }
+    .act td.today { color:var(--brand); font-weight:800; }
 
-    /* Rep Table */
-    .tv-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 12.5px;
-    }
-    .tv-table th {
-      text-align: left;
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      color: #64748b;
-      padding: 6px 8px;
-      border-bottom: 1px solid #e2e8f0;
-    }
-    .tv-table td {
-      padding: 9px 8px;
-      border-bottom: 1px solid #f1f5f9;
-      color: #1e293b;
-      font-weight: 500;
-    }
-    .tv-table tr:last-child td {
-      border-bottom: none;
-    }
-    .tv-rep-name {
-      font-weight: 600;
-      color: #0f172a;
-    }
-    .tv-rep-val {
-      font-weight: 700;
-      color: #0f172a;
-    }
-    .tv-rep-growth {
-      font-weight: 600;
-      color: #0f172a;
-      display: inline-flex;
-      align-items: center;
-      gap: 2px;
-    }
-    .tv-rep-growth.neg {
-      color: #dc2626;
-    }
+    .tv-banner { display:none; position:fixed; top:14px; left:50%; transform:translateX(-50%); background:var(--bad); color:#fff; font-weight:700; padding:8px 16px; border-radius:8px; z-index:20; }
+    .tv-toast { visibility:hidden; position:fixed; right:24px; bottom:24px; background:var(--good); color:#fff; border-radius:12px; padding:14px 18px; font-weight:800; font-size:17px; box-shadow:0 10px 30px rgba(0,0,0,.25); transform:translateY(140%); transition:transform .4s; z-index:20; max-width:420px; }
+    .tv-toast.show { transform:none; visibility:visible; }
+    .tv-toast span { display:block; font-size:13px; font-weight:600; opacity:.9; }
 
-    /* Tab switcher for Company Executive Matrix */
-    .tv-tab-toggle {
-      display: flex;
-      align-items: center;
-      background: #f1f5f9;
-      border-radius: 6px;
-      padding: 3px;
-      gap: 4px;
+    @media (max-width: 1200px) {
+      .ov-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+      .ov-main { grid-template-columns:1fr; }
     }
-    .tv-tab-btn {
-      border: none;
-      background: transparent;
-      padding: 5px 12px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #64748b;
-      cursor: pointer;
-    }
-    .tv-tab-btn.active {
-      background: #ffffff;
-      color: #1e3a8a;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    @media (max-width: 700px) {
+      body { padding:8px; }
+      .tv { padding:14px; }
+      .tv-head { flex-direction:column; align-items:flex-start; }
+      .tv-clock { text-align:left; }
+      .tv-right { width:100%; }
+      .tv-tabs { max-width:100%; overflow-x:auto; }
+      .tv-tabs button { padding:7px 9px; white-space:nowrap; }
+      .tv-controls { flex-wrap:wrap; }
+      .ov-grid { grid-template-columns:1fr 1fr; gap:10px; }
+      .ct-grid { grid-template-columns:1fr; }
+      .ct-stats { grid-template-columns:1fr 1fr; }
+      .lb td, .lb th { padding:8px; font-size:14px; }
+      .lb .hide-sm { display:none; }
+      .act th, .act td { padding:9px 8px; font-size:14px; }
     }
   </style>
 </head>
 <body>
-  <div class="tv-wrapper">
-    <div class="tv-card">
-      <div class="tv-header">
-        <div class="tv-title-wrap">
-          <h1 class="tv-main-title">Sales</h1>
-          <span class="tv-subtitle">Dashboard</span>
-        </div>
+  <div class="tv-banner" id="tvBanner"><i class="fa fa-exclamation-triangle"></i> Connection lost. Showing the last numbers; retrying...</div>
+  <div class="tv-toast" id="tvToast"></div>
 
-        <div class="tv-header-right">
-          <div class="tv-tab-toggle">
-            <button type="button" class="tv-tab-btn active" id="tabBtnDashboard" onclick="switchView('dashboard')">TV Dashboard</button>
-            <button type="button" class="tv-tab-btn" id="tabBtnCompany" onclick="switchView('company')">Company Matrix</button>
-          </div>
-
-          <div class="tv-clock" id="liveClock">Loading time...</div>
-
-          <div class="tv-controls">
-            <select class="tv-select" id="refreshRateSelect" onchange="changeRefreshRate()">
-              <option value="10000">10s Refresh</option>
-              <option value="30000" selected>30s Refresh</option>
-              <option value="60000">1m Refresh</option>
-              <option value="300000">5m Refresh</option>
-              <option value="0">Manual</option>
-            </select>
-            <button type="button" class="tv-btn" onclick="fetchLiveData(true)" title="Refresh data now">
-              <i class="fa fa-refresh"></i> Refresh
-            </button>
-            <button type="button" class="tv-btn tv-btn-sec" onclick="toggleFullscreen()" title="Toggle Fullscreen">
-              <i class="fa fa-arrows-alt"></i>
-            </button>
-          </div>
+  <div class="tv">
+    <div class="tv-head">
+      <div class="tv-brand">
+        <img src="<?php echo base_url(); ?>assets/logo.png" alt="">
+        <div>
+          <h1>Live Sales</h1>
+          <span class="tv-live"><i></i> LIVE &middot; <span id="tvMonth"></span></span>
         </div>
       </div>
-
-      <!-- Main TV Dashboard View -->
-      <div id="viewDashboard" class="tv-dashboard-grid">
-        <!-- 1. Left 4 KPI Cards -->
-        <div class="tv-kpi-column">
-          <div class="tv-kpi-card">
-            <span class="tv-kpi-label">Total Sales</span>
-            <span class="tv-kpi-value" id="kpiTotalSales">$742,432</span>
-            <span class="tv-kpi-growth" id="kpiSalesGrowth"><i class="fa fa-caret-up"></i> 12.4% vs last month</span>
-          </div>
-
-          <div class="tv-kpi-card">
-            <span class="tv-kpi-label">Orders</span>
-            <span class="tv-kpi-value" id="kpiOrders">1,247</span>
-            <span class="tv-kpi-growth" id="kpiOrdersGrowth"><i class="fa fa-caret-up"></i> 8.7% vs last month</span>
-          </div>
-
-          <div class="tv-kpi-card">
-            <span class="tv-kpi-label">Average Order Value</span>
-            <span class="tv-kpi-value" id="kpiAov">$595</span>
-            <span class="tv-kpi-growth" id="kpiAovGrowth"><i class="fa fa-caret-up"></i> 3.1% vs last month</span>
-          </div>
-
-          <div class="tv-kpi-card">
-            <span class="tv-kpi-label">New Customers</span>
-            <span class="tv-kpi-value" id="kpiCustomers">312</span>
-            <span class="tv-kpi-growth" id="kpiCustomersGrowth"><i class="fa fa-caret-up"></i> 15.2% vs last month</span>
-          </div>
+      <div class="tv-right">
+        <div class="tv-tabs" id="tvTabs" role="tablist"></div>
+        <div class="tv-controls">
+          <span class="tv-updated" id="tvUpdated">Loading...</span>
+          <select class="tv-select" id="tvRate" title="Refresh every" aria-label="Refresh every">
+            <option value="10000" selected>10s</option>
+            <option value="30000">30s</option>
+            <option value="60000">1m</option>
+            <option value="0">Manual</option>
+          </select>
+          <button type="button" class="tv-btn" id="tvRefresh" title="Refresh now" aria-label="Refresh now"><i class="fa fa-refresh"></i></button>
+          <button type="button" class="tv-btn" id="tvPlay" title="Pause slides"><i class="fa fa-pause"></i></button>
+          <button type="button" class="tv-btn" id="tvTheme" title="Dark / light"><i class="fa fa-moon-o"></i></button>
+          <button type="button" class="tv-btn" id="tvFull" title="Full screen"><i class="fa fa-arrows-alt"></i></button>
         </div>
+        <div class="tv-clock"><b id="tvTime">--:--</b><span id="tvDate"></span></div>
+      </div>
+    </div>
+    <div class="tv-progress"><i id="tvProg"></i></div>
 
-        <!-- 2. Middle Column: Sales Over Time & Top Products -->
-        <div class="tv-middle-column">
+    <!-- 1. Overview -->
+    <section class="tv-slide" data-slide="overview" data-title="Overview">
+      <div class="ov-grid">
+        <div class="tv-panel kpi"><span class="kpi-label">Sales this month</span><b class="kpi-value" id="kSales">-</b><span class="kpi-sub" id="kSalesSub"></span></div>
+        <div class="tv-panel kpi"><span class="kpi-label">Orders this month</span><b class="kpi-value" id="kOrders">-</b><span class="kpi-sub" id="kOrdersSub"></span></div>
+        <div class="tv-panel kpi"><span class="kpi-label">New leads this month</span><b class="kpi-value" id="kLeads">-</b><span class="kpi-sub" id="kLeadsSub"></span></div>
+        <div class="tv-panel kpi"><span class="kpi-label">Calls today</span><b class="kpi-value" id="kCalls">-</b><span class="kpi-sub" id="kCallsSub"></span></div>
+      </div>
+      <div class="ov-main">
+        <div class="ov-col">
           <div class="tv-panel">
-            <div class="tv-panel-title">Sales Over Time</div>
-            <div style="flex:1; min-height:160px; position:relative; width:100%;">
-              <svg id="salesLineSvg" viewBox="0 0 540 180" style="width:100%; height:100%; overflow:visible;">
-                <!-- Grid Lines -->
-                <line x1="40" y1="20" x2="520" y2="20" stroke="#f1f5f9" stroke-width="1" />
-                <line x1="40" y1="60" x2="520" y2="60" stroke="#f1f5f9" stroke-width="1" />
-                <line x1="40" y1="100" x2="520" y2="100" stroke="#f1f5f9" stroke-width="1" />
-                <line x1="40" y1="140" x2="520" y2="140" stroke="#e2e8f0" stroke-width="1" />
-                
-                <!-- Y Labels -->
-                <text x="10" y="24" fill="#94a3b8" font-size="10" font-weight="600">100K</text>
-                <text x="10" y="64" fill="#94a3b8" font-size="10" font-weight="600">60K</text>
-                <text x="10" y="104" fill="#94a3b8" font-size="10" font-weight="600">20K</text>
-                <text x="25" y="144" fill="#94a3b8" font-size="10" font-weight="600">0</text>
-
-                <!-- Chart Path -->
-                <path id="salesLinePath" d="M 60,130 L 130,95 L 205,108 L 280,75 L 355,90 L 430,65 L 505,35" fill="none" stroke="#1e3a8a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                
-                <!-- Data Points -->
-                <g id="salesPoints">
-                  <circle cx="60" cy="130" r="4" fill="#1e3a8a" />
-                  <circle cx="130" cy="95" r="4" fill="#1e3a8a" />
-                  <circle cx="205" cy="108" r="4" fill="#1e3a8a" />
-                  <circle cx="280" cy="75" r="4" fill="#1e3a8a" />
-                  <circle cx="355" cy="90" r="4" fill="#1e3a8a" />
-                  <circle cx="430" cy="65" r="4" fill="#1e3a8a" />
-                  <circle cx="505" cy="35" r="4" fill="#1e3a8a" />
-                </g>
-
-                <!-- X Axis Labels -->
-                <g id="salesXLabels">
-                  <text x="50" y="165" fill="#64748b" font-size="10.5" font-weight="600">Jun 18</text>
-                  <text x="120" y="165" fill="#64748b" font-size="10.5" font-weight="600">Jun 19</text>
-                  <text x="195" y="165" fill="#64748b" font-size="10.5" font-weight="600">Jun 20</text>
-                  <text x="270" y="165" fill="#64748b" font-size="10.5" font-weight="600">Jun 21</text>
-                  <text x="345" y="165" fill="#64748b" font-size="10.5" font-weight="600">Jun 22</text>
-                  <text x="420" y="165" fill="#64748b" font-size="10.5" font-weight="600">Jun 23</text>
-                  <text x="495" y="165" fill="#64748b" font-size="10.5" font-weight="600">Jun 24</text>
-                </g>
-              </svg>
-            </div>
+            <h3><span>Monthly target</span><span id="tgtPct"></span></h3>
+            <div class="tgt-row"><b id="tgtDone">-</b><span id="tgtOf"></span></div>
+            <div class="bar"><i id="tgtBar" style="width:0"></i></div>
           </div>
-
-          <div class="tv-panel">
-            <div class="tv-panel-title">Top Products</div>
-            <div id="topProductsList">
-              <div class="tv-prod-row">
-                <span class="tv-prod-name">Accounting &amp; VAT</span>
-                <div class="tv-prod-bar-wrap"><div class="tv-prod-bar-fill" style="width: 100%;"></div></div>
-                <span class="tv-prod-val">$98,432</span>
-              </div>
-              <div class="tv-prod-row">
-                <span class="tv-prod-name">Telecom (Du/Etisalat)</span>
-                <div class="tv-prod-bar-wrap"><div class="tv-prod-bar-fill" style="width: 74%;"></div></div>
-                <span class="tv-prod-val">$72,680</span>
-              </div>
-              <div class="tv-prod-row">
-                <span class="tv-prod-name">IT Services &amp; Cloud</span>
-                <div class="tv-prod-bar-wrap"><div class="tv-prod-bar-fill" style="width: 57%;"></div></div>
-                <span class="tv-prod-val">$56,214</span>
-              </div>
-              <div class="tv-prod-row">
-                <span class="tv-prod-name">Corporate Services</span>
-                <div class="tv-prod-bar-wrap"><div class="tv-prod-bar-fill" style="width: 43%;"></div></div>
-                <span class="tv-prod-val">$41,987</span>
-              </div>
-              <div class="tv-prod-row">
-                <span class="tv-prod-name">Business Setup</span>
-                <div class="tv-prod-bar-wrap"><div class="tv-prod-bar-fill" style="width: 33%;"></div></div>
-                <span class="tv-prod-val">$32,456</span>
-              </div>
-            </div>
-          </div>
+          <div class="tv-panel chart"><h3><span id="trendTitle">Sales, last 7 days</span></h3><div id="trendChart"></div></div>
         </div>
-
-        <!-- 3. Right Column: Sales by Channel & Top Sales by Rep -->
-        <div class="tv-right-column">
-          <div class="tv-panel">
-            <div class="tv-panel-title">Sales by Channel</div>
-            <div class="tv-donut-wrap">
-              <div style="position:relative; width:130px; height:130px; display:flex; align-items:center; justify-content:center;">
-                <svg class="tv-donut-svg" viewBox="0 0 42 42">
-                  <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#1e3a8a" stroke-width="6" stroke-dasharray="46 54" stroke-dashoffset="0"></circle>
-                  <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#0f172a" stroke-width="6" stroke-dasharray="28 72" stroke-dashoffset="-46"></circle>
-                  <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#475569" stroke-width="6" stroke-dasharray="17 83" stroke-dashoffset="-74"></circle>
-                  <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#1e3a8a" stroke-width="6" stroke-dasharray="9 91" stroke-dashoffset="-91"></circle>
-                </svg>
-                <div style="position:absolute; text-align:center;">
-                  <div style="font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase;">Total</div>
-                  <div id="donutCenterTotal" style="font-size:12.5px; font-weight:800; color:#0f172a;">$742,432</div>
-                </div>
-              </div>
-
-              <div class="tv-donut-legend">
-                <div class="tv-legend-item"><span class="tv-legend-dot" style="background:#1e3a8a;"></span> <span>Direct CRM</span> <span style="margin-left:auto; font-weight:700;">46%</span></div>
-                <div class="tv-legend-item"><span class="tv-legend-dot" style="background:#0f172a;"></span> <span>Field Sales</span> <span style="margin-left:auto; font-weight:700;">28%</span></div>
-                <div class="tv-legend-item"><span class="tv-legend-dot" style="background:#475569;"></span> <span>Referrals</span> <span style="margin-left:auto; font-weight:700;">17%</span></div>
-                <div class="tv-legend-item"><span class="tv-legend-dot" style="background:#1e3a8a;"></span> <span>Corporate</span> <span style="margin-left:auto; font-weight:700;">9%</span></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="tv-panel">
-            <div class="tv-panel-title">Top Sales by Rep</div>
-            <table class="tv-table">
-              <thead>
-                <tr>
-                  <th>Rep</th>
-                  <th>Sales</th>
-                  <th>vs Last Month</th>
-                </tr>
-              </thead>
-              <tbody id="topRepsTbody">
-                <tr>
-                  <td class="tv-rep-name">Sarah Johnson</td>
-                  <td class="tv-rep-val">$126,752</td>
-                  <td><span class="tv-rep-growth"><i class="fa fa-caret-up"></i> 18.2%</span></td>
-                </tr>
-                <tr>
-                  <td class="tv-rep-name">Michael Chen</td>
-                  <td class="tv-rep-val">$98,432</td>
-                  <td><span class="tv-rep-growth"><i class="fa fa-caret-up"></i> 10.5%</span></td>
-                </tr>
-                <tr>
-                  <td class="tv-rep-name">Emily Davis</td>
-                  <td class="tv-rep-val">$87,631</td>
-                  <td><span class="tv-rep-growth"><i class="fa fa-caret-up"></i> 8.7%</span></td>
-                </tr>
-                <tr>
-                  <td class="tv-rep-name">David Martinez</td>
-                  <td class="tv-rep-val">$78,942</td>
-                  <td><span class="tv-rep-growth neg"><i class="fa fa-caret-down"></i> -2.1%</span></td>
-                </tr>
-                <tr>
-                  <td class="tv-rep-name">Jessica Lee</td>
-                  <td class="tv-rep-val">$65,123</td>
-                  <td><span class="tv-rep-growth"><i class="fa fa-caret-up"></i> 5.4%</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <div class="ov-col">
+          <div class="tv-panel" style="flex:1;"><h3><span>Latest sales</span></h3><div class="feed" id="feed"></div></div>
+          <div class="tv-panel"><h3><span>Top services this month</span></h3><div id="prodList"></div></div>
         </div>
       </div>
+    </section>
 
-      <!-- Alternative Company Matrix View -->
-      <div id="viewCompany" style="display:none; flex:1; overflow-y:auto;">
-        <h3 style="font-size:16px; font-weight:700; color:#0f172a; margin-bottom:14px; text-transform:uppercase;">Overall Company Live Statistics</h3>
-        <table class="tv-table" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:6px; overflow:hidden;">
-          <thead style="background:#f8fafc;">
-            <tr>
-              <th style="padding:12px 14px;">Metric</th>
-              <th style="padding:12px 14px;">Today</th>
-              <th style="padding:12px 14px;">Last 7 Days</th>
-              <th style="padding:12px 14px;">This Month</th>
-              <th style="padding:12px 14px;">This Quarter</th>
-            </tr>
-          </thead>
-          <tbody id="companyStatsTbody">
-            <?php if (!empty($company_stats)) {
-              foreach ($company_stats as $st) { ?>
-                <tr>
-                  <td style="padding:12px 14px; font-weight:700; color:#0f172a;"><?php echo htmlspecialchars($st['metric']); ?></td>
-                  <td style="padding:12px 14px; font-weight:600;"><?php echo is_numeric($st['today']) ? number_format($st['today']) : htmlspecialchars($st['today']); ?></td>
-                  <td style="padding:12px 14px; font-weight:600;"><?php echo is_numeric($st['seven_days']) ? number_format($st['seven_days']) : htmlspecialchars($st['seven_days']); ?></td>
-                  <td style="padding:12px 14px; font-weight:700; color:#1e3a8a;"><?php echo is_numeric($st['month']) ? number_format($st['month']) : htmlspecialchars($st['month']); ?></td>
-                  <td style="padding:12px 14px; font-weight:600;"><?php echo is_numeric($st['quarter']) ? number_format($st['quarter']) : htmlspecialchars($st['quarter']); ?></td>
-                </tr>
-            <?php } } ?>
-          </tbody>
+    <!-- 2. Leaderboard -->
+    <section class="tv-slide" data-slide="leaders" data-title="Leaderboard">
+      <div class="tv-slide-title"><i class="fa fa-trophy"></i> Leaderboard &middot; <span class="js-month"></span></div>
+      <table class="lb">
+        <thead><tr><th>#</th><th>Name</th><th class="r">Sales (AED)</th><th class="r hide-sm">vs last month</th><th class="hide-sm">Target</th><th class="r">Orders</th><th class="r hide-sm">Calls today</th></tr></thead>
+        <tbody id="lbBody"></tbody>
+      </table>
+    </section>
+
+    <!-- 3. Centers -->
+    <section class="tv-slide" data-slide="centers" data-title="Centers">
+      <div class="tv-slide-title"><i class="fa fa-building"></i> Centers &middot; <span class="js-month"></span></div>
+      <div class="ct-grid" id="ctGrid"></div>
+    </section>
+
+    <!-- 4. Activity -->
+    <section class="tv-slide" data-slide="activity" data-title="Activity">
+      <div class="tv-slide-title"><i class="fa fa-bar-chart"></i> Company activity</div>
+      <div class="tv-panel" style="padding:4px 8px;">
+        <table class="act">
+          <thead><tr><th>Activity</th><th>Today</th><th>7 days</th><th>This month</th><th>This quarter</th></tr></thead>
+          <tbody id="actBody"></tbody>
         </table>
       </div>
-
-    </div>
+    </section>
   </div>
 
-  <script>
-    var currentRefreshTimer = null;
+<script>
+(function () {
+  var DATA_URL = '<?php echo base_url('manager/live/ajax_presentation_data'); ?>';
+  var SLIDE_MS = 20000;
+  var store = { get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+  var data = null, lastSaleId = null, prevVals = {};
+  var refreshTimer = null, slideTimer = null, slideStart = 0, playing = true, cur = 0;
 
-    function updateLiveClock() {
-      var now = new Date();
-      var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-      var m = months[now.getMonth()];
-      var d = now.getDate();
-      var y = now.getFullYear();
-      var hours = now.getHours();
-      var mins = now.getMinutes();
-      var ampm = hours >= 12 ? 'PM' : 'AM';
-      hours = hours % 12;
-      hours = hours ? hours : 12;
-      mins = mins < 10 ? '0' + mins : mins;
-      var str = m + ' ' + d + ', ' + y + '   ' + hours + ':' + mins + ' ' + ampm;
-      $('#liveClock').text(str);
-    }
-    updateLiveClock();
-    setInterval(updateLiveClock, 1000);
+  function esc(s) { return $('<div>').text(s == null ? '' : String(s)).html(); }
+  function money(v) { return 'AED ' + Math.round(Number(v) || 0).toLocaleString('en-US'); }
+  function num(v) { return (Number(v) || 0).toLocaleString('en-US'); }
+  function compact(v) { v = Number(v) || 0; if (v >= 1e6) return (v / 1e6).toFixed(1).replace(/\.0$/, '') + 'M'; if (v >= 1e3) return (v / 1e3).toFixed(1).replace(/\.0$/, '') + 'K'; return String(Math.round(v)); }
+  function growth(g, label) {
+    if (g === null || g === undefined) return '<span>No ' + label + ' to compare</span>';
+    var up = g >= 0;
+    return '<span class="' + (up ? 'up' : 'down') + '"><i class="fa fa-caret-' + (up ? 'up' : 'down') + '"></i> ' + Math.abs(g) + '%</span> vs ' + label;
+  }
+  function initials(n) { return String(n || '?').replace(/[^A-Za-z ]/g, ' ').trim().split(/\s+/).slice(0, 2).map(function (w) { return w.charAt(0).toUpperCase(); }).join('') || '?'; }
+  function avatar(url, name) { return '<span class="av">' + (url ? '<img src="' + esc(url) + '" alt="">' : esc(initials(name))) + '</span>'; }
+  // Set a value and flash it when it changed since the last refresh.
+  function setVal(id, html) {
+    var el = $('#' + id);
+    if (prevVals[id] !== undefined && prevVals[id] !== html) { el.removeClass('flash'); void el[0].offsetWidth; el.addClass('flash'); }
+    prevVals[id] = html;
+    el.html(html);
+  }
 
-    function switchView(mode) {
-      if (mode === 'company') {
-        $('#viewDashboard').hide();
-        $('#viewCompany').show();
-        $('#tabBtnDashboard').removeClass('active');
-        $('#tabBtnCompany').addClass('active');
-      } else {
-        $('#viewCompany').hide();
-        $('#viewDashboard').show();
-        $('#tabBtnCompany').removeClass('active');
-        $('#tabBtnDashboard').addClass('active');
-      }
-    }
+  /* ---------- Clock ---------- */
+  function clock() {
+    var d = new Date();
+    $('#tvTime').text(d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
+    $('#tvDate').text(d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
+  }
+  clock(); setInterval(clock, 1000);
 
-    function toggleFullscreen() {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(function(err) {});
-      } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        }
-      }
-    }
+  /* ---------- Render ---------- */
+  function render(d) {
+    var k = d.kpi;
+    $('#tvMonth, .js-month').text(d.month);
+    setVal('kSales', money(k.sales_month));
+    setVal('kSalesSub', k.sales_count + ' sale' + (k.sales_count === 1 ? '' : 's') + ' &middot; ' + growth(k.sales_growth, 'last month'));
+    setVal('kOrders', num(k.orders_month));
+    setVal('kOrdersSub', growth(k.orders_growth, 'last month'));
+    setVal('kLeads', num(k.leads_month));
+    setVal('kLeadsSub', growth(k.leads_growth, 'last month'));
+    setVal('kCalls', num(k.calls_today));
+    setVal('kCallsSub', num(k.calls_yesterday) + ' yesterday');
 
-    function fetchLiveData(manual) {
-      $.ajax({
-        url: '<?php echo base_url(); ?>manager/live/ajax_presentation_data',
-        type: 'GET',
-        dataType: 'json',
-        success: function(res) {
-          if (res && res.status && res.kpis) {
-            var k = res.kpis;
-            $('#kpiTotalSales').text(k.total_sales_fmt || '$' + k.total_sales);
-            $('#kpiOrders').text(k.orders_fmt || k.orders);
-            $('#kpiAov').text(k.aov_fmt || '$' + k.aov);
-            $('#kpiCustomers').text(k.customers_fmt || k.customers);
-            $('#donutCenterTotal').text(k.total_sales_fmt || '$' + k.total_sales);
-
-            var sUp = k.sales_growth >= 0;
-            $('#kpiSalesGrowth').html('<i class="fa fa-caret-' + (sUp ? 'up' : 'down') + '"></i> ' + Math.abs(k.sales_growth) + '% vs last month').toggleClass('neg', !sUp);
-
-            var oUp = k.orders_growth >= 0;
-            $('#kpiOrdersGrowth').html('<i class="fa fa-caret-' + (oUp ? 'up' : 'down') + '"></i> ' + Math.abs(k.orders_growth) + '% vs last month').toggleClass('neg', !oUp);
-
-            var aUp = k.aov_growth >= 0;
-            $('#kpiAovGrowth').html('<i class="fa fa-caret-' + (aUp ? 'up' : 'down') + '"></i> ' + Math.abs(k.aov_growth) + '% vs last month').toggleClass('neg', !aUp);
-
-            var cUp = k.customers_growth >= 0;
-            $('#kpiCustomersGrowth').html('<i class="fa fa-caret-' + (cUp ? 'up' : 'down') + '"></i> ' + Math.abs(k.customers_growth) + '% vs last month').toggleClass('neg', !cUp);
-
-            // Update Top Reps
-            if (k.top_reps && k.top_reps.length > 0) {
-              var rHtml = '';
-              $.each(k.top_reps, function(i, r) {
-                var isNeg = (r.vs_last && r.vs_last.indexOf('-') !== -1);
-                rHtml += '<tr>';
-                rHtml += '  <td class="tv-rep-name">' + $('<div>').text(r.rep_name).html() + '</td>';
-                rHtml += '  <td class="tv-rep-val">$' + Number(r.rep_sales).toLocaleString() + '</td>';
-                rHtml += '  <td><span class="tv-rep-growth ' + (isNeg ? 'neg' : '') + '"><i class="fa fa-caret-' + (isNeg ? 'down' : 'up') + '"></i> ' + $('<div>').text(r.vs_last).html() + '</span></td>';
-                rHtml += '</tr>';
-              });
-              $('#topRepsTbody').html(rHtml);
-            }
-
-            // Update Company Matrix table
-            if (res.company_stats && res.company_stats.length > 0) {
-              var cHtml = '';
-              $.each(res.company_stats, function(i, s) {
-                cHtml += '<tr>';
-                cHtml += '  <td style="padding:12px 14px; font-weight:700; color:#0f172a;">' + $('<div>').text(s.metric).html() + '</td>';
-                cHtml += '  <td style="padding:12px 14px; font-weight:600;">' + (isNaN(s.today) ? s.today : Number(s.today).toLocaleString()) + '</td>';
-                cHtml += '  <td style="padding:12px 14px; font-weight:600;">' + (isNaN(s.seven_days) ? s.seven_days : Number(s.seven_days).toLocaleString()) + '</td>';
-                cHtml += '  <td style="padding:12px 14px; font-weight:700; color:#1e3a8a;">' + (isNaN(s.month) ? s.month : Number(s.month).toLocaleString()) + '</td>';
-                cHtml += '  <td style="padding:12px 14px; font-weight:600;">' + (isNaN(s.quarter) ? s.quarter : Number(s.quarter).toLocaleString()) + '</td>';
-                cHtml += '</tr>';
-              });
-              $('#companyStatsTbody').html(cHtml);
-            }
-          }
-        }
-      });
+    if (k.target_month > 0) {
+      var pct = Math.round(k.sales_month * 100 / k.target_month);
+      setVal('tgtDone', money(k.sales_month));
+      $('#tgtOf').text('of ' + money(k.target_month));
+      $('#tgtPct').text(pct + '%');
+      $('#tgtBar').css('width', Math.min(100, pct) + '%');
+    } else {
+      setVal('tgtDone', money(k.sales_month));
+      $('#tgtOf').text('No target set for this month');
+      $('#tgtPct').text('');
+      $('#tgtBar').css('width', '0');
     }
 
-    function changeRefreshRate() {
-      if (currentRefreshTimer) {
-        clearInterval(currentRefreshTimer);
-        currentRefreshTimer = null;
-      }
-      var ms = parseInt($('#refreshRateSelect').val(), 10);
-      if (ms > 0) {
-        currentRefreshTimer = setInterval(function() {
-          fetchLiveData(false);
-        }, ms);
-      }
-    }
+    // 7-day bar chart
+    var t = d.trend || [], max = 0, byCount = false;
+    t.forEach(function (p) { if (p.value > max) max = p.value; });
+    if (max === 0) { byCount = true; t = t.map(function (p) { return $.extend({}, p, { value: p.count }); }); t.forEach(function (p) { if (p.value > max) max = p.value; }); }
+    $('#trendTitle').text(byCount ? 'Sales, last 7 days (number of sales)' : 'Sales, last 7 days (AED)');
+    var W = 700, H = 220, base = 180, top = 26, bw = W / t.length, svg = '';
+    t.forEach(function (p, i) {
+      var h = max > 0 ? Math.max(p.value > 0 ? 4 : 0, (p.value / max) * (base - top)) : 0;
+      var x = i * bw + bw * 0.2, w = bw * 0.6;
+      svg += '<rect x="' + x + '" y="' + (base - 2) + '" width="' + w + '" height="2" fill="var(--track)" />';
+      svg += '<rect x="' + x + '" y="' + (base - h) + '" width="' + w + '" height="' + h + '" rx="6" fill="' + (p.today ? 'var(--brand2)' : 'var(--brand)') + '" opacity="' + (p.today ? 1 : .8) + '" />';
+      svg += '<text x="' + (x + w / 2) + '" y="' + (base - h - 8) + '" text-anchor="middle" font-size="15" font-weight="800" fill="var(--text)">' + (byCount ? p.value : compact(p.value)) + '</text>';
+      svg += '<text x="' + (x + w / 2) + '" y="' + (base + 24) + '" text-anchor="middle" font-size="14" font-weight="700" fill="var(--muted)">' + esc(p.today ? 'Today' : p.label) + '</text>';
+    });
+    $('#trendChart').html('<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Sales of the last 7 days">' + svg + '</svg>');
 
-    // Initialize with 30s polling
-    changeRefreshRate();
-  </script>
+    // Top services
+    var pr = d.products || [], pmax = 0, ph = '';
+    pr.forEach(function (p) { if (p.value > pmax) pmax = p.value; });
+    pr.forEach(function (p) {
+      var w = pmax > 0 ? Math.max(3, p.value * 100 / pmax) : 100;
+      ph += '<div class="prod-row"><span class="n">' + esc(p.name) + '</span><div class="bar small"><i style="width:' + w + '%"></i></div><span class="v">' + (p.value > 0 ? money(p.value) : p.count + ' sale' + (p.count > 1 ? 's' : '')) + '</span></div>';
+    });
+    $('#prodList').html(ph || '<div class="tv-empty">No sales this month yet.</div>');
+
+    // Latest sales (+ "new sale" toast)
+    var fh = '', newest = d.latest && d.latest.length ? d.latest[0] : null;
+    (d.latest || []).slice(0, 4).forEach(function (s) {
+      var isNew = lastSaleId !== null && s.id > lastSaleId;
+      fh += '<div class="feed-item' + (isNew ? ' is-new' : '') + '">' + avatar(s.avatar, s.rep) +
+        '<div class="who"><b>' + esc(s.rep) + '</b><span>' + esc(s.client) + (s.service ? ' &middot; ' + esc(s.service) : '') + '</span></div>' +
+        '<div class="amt">' + (s.amount > 0 ? money(s.amount) : '&nbsp;') + '<span>' + esc(s.when) + '</span></div></div>';
+    });
+    $('#feed').html(fh || '<div class="tv-empty">No sales yet.</div>');
+    if (newest && lastSaleId !== null && newest.id > lastSaleId) {
+      $('#tvToast').html('<i class="fa fa-trophy"></i> New sale! ' + esc(newest.rep) + '<span>' + esc(newest.client) + (newest.amount > 0 ? ' &middot; ' + money(newest.amount) : '') + '</span>').addClass('show');
+      setTimeout(function () { $('#tvToast').removeClass('show'); }, 8000);
+    }
+    if (newest) lastSaleId = Math.max(lastSaleId || 0, newest.id);
+
+    // Leaderboard
+    var lh = '';
+    (d.leaderboard || []).forEach(function (u, i) {
+      var tp = u.target_pct === null ? '<span style="color:var(--muted); font-size:13px;">No target</span>'
+        : '<div class="bar small"><i style="width:' + Math.min(100, u.target_pct) + '%"></i></div><small>' + u.target_pct + '% of ' + money(u.target) + '</small>';
+      var g = u.growth === null ? '<span style="color:var(--muted);">-</span>' : '<span class="' + (u.growth >= 0 ? 'up' : 'down') + '"><i class="fa fa-caret-' + (u.growth >= 0 ? 'up' : 'down') + '"></i> ' + Math.abs(u.growth) + '%</span>';
+      lh += '<tr class="' + (i === 0 ? 'top1' : '') + '"><td><span class="rank">' + (i === 0 ? '<i class="fa fa-trophy"></i>' : (i + 1)) + '</span></td>' +
+        '<td><div class="person">' + avatar(u.avatar, u.name) + '<div><b>' + esc(u.name) + '</b><span>' + esc(u.office || '') + '</span></div></div></td>' +
+        '<td class="r">' + (u.sales_month > 0 ? Math.round(u.sales_month).toLocaleString('en-US') : '0') + '<br><small style="color:var(--muted); font-size:12px;">' + u.sales_count + ' sale' + (u.sales_count === 1 ? '' : 's') + '</small></td>' +
+        '<td class="r hide-sm">' + g + '</td><td class="tp hide-sm">' + tp + '</td>' +
+        '<td class="r">' + num(u.orders_month) + '</td><td class="r hide-sm">' + num(u.calls_today) + '</td></tr>';
+    });
+    $('#lbBody').html(lh || '<tr><td colspan="7"><div class="tv-empty">No activity this month yet.</div></td></tr>');
+
+    // Centers
+    var ch = '';
+    (d.centers || []).forEach(function (c) {
+      var pct = c.target > 0 ? Math.round(c.sales_month * 100 / c.target) : null;
+      ch += '<div class="tv-panel ct-card"><h4>' + esc(c.name) + '</h4><div class="ct-staff">' + c.staff + ' staff</div>' +
+        '<div class="tgt-row"><b>' + money(c.sales_month) + '</b><span>' + (pct === null ? 'No target' : pct + '% of ' + money(c.target)) + '</span></div>' +
+        '<div class="bar"><i style="width:' + (pct === null ? 0 : Math.min(100, pct)) + '%"></i></div>' +
+        '<div class="ct-stats"><div><span>Sales</span><b>' + num(c.sales_count) + '</b></div><div><span>Orders</span><b>' + num(c.orders_month) + '</b></div>' +
+        '<div><span>Leads</span><b>' + num(c.leads_month) + '</b></div><div><span>Calls today</span><b>' + num(c.calls_today) + '</b></div></div></div>';
+    });
+    $('#ctGrid').html(ch || '<div class="tv-empty">No centers are set on the users yet.</div>');
+
+    // Activity
+    var ah = '';
+    (d.company_stats || []).forEach(function (s) {
+      var f = function (v) { return isNaN(v) ? esc(v).replace(/\(AED/, '<br><small style="color:var(--muted); font-size:13px;">(AED') : num(v); };
+      ah += '<tr><td>' + esc(s.metric) + '</td><td class="today">' + f(s.today) + '</td><td>' + f(s.seven_days) + '</td><td>' + f(s.month) + '</td><td>' + f(s.quarter) + '</td></tr>';
+    });
+    $('#actBody').html(ah);
+  }
+
+  /* ---------- Data ---------- */
+  function load() {
+    $('#tvRefresh i').addClass('fa-spin');
+    $.ajax({ url: DATA_URL, dataType: 'json', cache: false, timeout: 15000 })
+      .done(function (d) {
+        if (!d || !d.status) { $('#tvBanner').show(); return; }
+        $('#tvBanner').hide();
+        data = d;
+        render(d);
+        $('#tvUpdated').text('Updated ' + new Date().toLocaleTimeString('en-US'));
+      })
+      .fail(function (x) {
+        if (x.status === 403 || x.status === 401) { location.href = '<?php echo base_url('manager/live'); ?>'; return; }
+        $('#tvBanner').show();
+      })
+      .always(function () { $('#tvRefresh i').removeClass('fa-spin'); });
+  }
+  function setRate() {
+    if (refreshTimer) clearInterval(refreshTimer);
+    var ms = parseInt($('#tvRate').val(), 10);
+    store.set('liveTvRate', String(ms));
+    refreshTimer = ms > 0 ? setInterval(load, ms) : null;
+  }
+  var savedRate = store.get('liveTvRate');
+  if (savedRate && $('#tvRate option[value="' + savedRate + '"]').length) $('#tvRate').val(savedRate);
+  $('#tvRate').on('change', setRate);
+  $('#tvRefresh').on('click', load);
+
+  /* ---------- Slides ---------- */
+  var slides = $('.tv-slide');
+  slides.each(function (i) {
+    $('#tvTabs').append('<button type="button" data-i="' + i + '">' + $(this).data('title') + '</button>');
+  });
+  function show(i) {
+    cur = (i + slides.length) % slides.length;
+    slides.removeClass('active').eq(cur).addClass('active');
+    $('#tvTabs button').removeClass('active').eq(cur).addClass('active');
+    slideStart = Date.now();
+  }
+  function tick() {
+    if (!playing) { $('#tvProg').css('width', '0'); return; }
+    var p = (Date.now() - slideStart) / SLIDE_MS;
+    if (p >= 1) { show(cur + 1); p = 0; }
+    $('#tvProg').css('width', (p * 100) + '%');
+  }
+  $('#tvTabs').on('click', 'button', function () { show(+$(this).data('i')); });
+  $('#tvPlay').on('click', function () {
+    playing = !playing;
+    slideStart = Date.now();
+    $(this).attr('title', playing ? 'Pause slides' : 'Play slides').find('i').attr('class', 'fa ' + (playing ? 'fa-pause' : 'fa-play'));
+  });
+  show(0);
+  slideTimer = setInterval(tick, 200);
+
+  /* ---------- Theme ---------- */
+  function setTheme(dark) {
+    $('body').toggleClass('tv-dark', dark);
+    $('#tvTheme i').attr('class', 'fa ' + (dark ? 'fa-sun-o' : 'fa-moon-o'));
+    store.set('liveTvTheme', dark ? 'dark' : 'light');
+  }
+  setTheme(store.get('liveTvTheme') === 'dark');
+  $('#tvTheme').on('click', function () { setTheme(!$('body').hasClass('tv-dark')); });
+
+  /* ---------- Full screen: keep the screen awake, hide the controls when the mouse rests ---------- */
+  var wakeLock = null, idleTimer = null;
+  function keepAwake() {
+    if ('wakeLock' in navigator && document.visibilityState === 'visible') {
+      navigator.wakeLock.request('screen').then(function (l) { wakeLock = l; }).catch(function () {});
+    }
+  }
+  $('#tvFull').on('click', function () {
+    if (!document.fullscreenElement) { (document.documentElement.requestFullscreen || function () {}).call(document.documentElement); }
+    else if (document.exitFullscreen) { document.exitFullscreen(); }
+  });
+  document.addEventListener('fullscreenchange', function () {
+    var on = !!document.fullscreenElement;
+    $('#tvFull i').attr('class', 'fa ' + (on ? 'fa-compress' : 'fa-arrows-alt'));
+    if (on) { keepAwake(); armIdle(); } else { $('body').removeClass('tv-idle'); if (wakeLock) { wakeLock.release(); wakeLock = null; } }
+  });
+  document.addEventListener('visibilitychange', function () { if (document.fullscreenElement && document.visibilityState === 'visible') keepAwake(); });
+  function armIdle() {
+    $('body').removeClass('tv-idle');
+    clearTimeout(idleTimer);
+    if (document.fullscreenElement) idleTimer = setTimeout(function () { $('body').addClass('tv-idle'); }, 3000);
+  }
+  $(document).on('mousemove keydown touchstart', armIdle);
+  // Keys: arrows change slide, space pauses.
+  $(document).on('keydown', function (e) {
+    if ($(e.target).is('select, input')) return;
+    if (e.key === 'ArrowRight') show(cur + 1);
+    else if (e.key === 'ArrowLeft') show(cur - 1);
+    else if (e.key === ' ') { e.preventDefault(); $('#tvPlay').click(); }
+  });
+
+  load();
+  setRate();
+})();
+</script>
 </body>
 </html>

@@ -243,6 +243,9 @@
         </div>
 
         <div style="display:flex; align-items:center; gap:10px;">
+            <a href="<?php echo base_url('manager/live/presentation'); ?>" target="_blank" rel="noopener" class="live-btn-action" style="text-decoration:none; gap:6px;" title="Open the TV presentation in a new tab">
+                <i class="fa fa-television"></i> Presentation
+            </a>
             <button type="button" class="live-btn-action" onclick="toggleFullScreenSheet()" title="Toggle Full Screen">
                 <i class="fa fa-arrows-alt"></i>
             </button>
