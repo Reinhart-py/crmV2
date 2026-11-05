@@ -9,8 +9,8 @@ $today = strtotime(date('Y-m-d'));
 // Mandatory details (same * fields as the form) and all profile details used for "% filled"
 $mandatory = array('name' => 'Name', 'email' => 'Email', 'dob' => 'Date of Birth', 'mobile' => 'Contact No', 'country' => 'Country', 'state' => 'State / Emirate',
 	'emp_id' => 'Employee ID', 'c_doj' => 'Date of Joining', 'department' => 'Department', 'office' => 'Office / Location',
-	'national' => 'Nationality', 'p_no' => 'Passport No', 'h_contact_name' => 'Emergency Contact Name', 'h_contact_no' => 'Emergency Contact No');
-$profile_keys = array_merge(array_keys($mandatory), array('designation', 'uae_mobile', 'gender', 'blood', 'address', 'city', 'p_exdate', 'eid_no', 'eid_expiry',
+	'national' => 'Nationality', 'p_no' => 'Passport No', 'h_contact_name' => 'Emergency Contact Name', 'h_contact_no' => 'Emergency Contact No', 'designation' => 'Designation');
+$profile_keys = array_merge(array_keys($mandatory), array('uae_mobile', 'gender', 'blood', 'address', 'city', 'p_exdate', 'eid_no', 'eid_expiry',
 	'visa_type', 'visa_no', 'visa_by', 'visa_expiry', 'h_contact_relation', 'h_contact_no2'));
 $docs = array('p_exdate' => 'Passport', 'visa_expiry' => 'Visa', 'eid_expiry' => 'Emirates ID');
 $is_set = function ($li, $k) { $v = isset($li[$k]) ? trim((string)$li[$k]) : ''; return !($v === '' || $v === '0' || $v === '0000-00-00'); };

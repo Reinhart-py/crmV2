@@ -393,8 +393,8 @@
             <div class="ureg-line">
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Designation</label>
-                <input type="text" class="form-control" name="designation" maxlength="150" list="designation_list" autocomplete="off" placeholder="e.g. Sales Executive">
+                <label>Designation<span>*</span></label>
+                <input type="text" class="form-control" name="designation" maxlength="150" required list="designation_list" autocomplete="off" placeholder="e.g. Sales Executive">
               </div>
             </div>
             <div class="col-lg-4 col-sm-6">
