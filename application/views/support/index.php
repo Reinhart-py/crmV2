@@ -27,7 +27,7 @@
         <h1 class="auth-title">Support</h1>
         <p class="auth-sub" id="spIntro">
           <?php if ($online) { ?>
-            Tell us what is wrong and chat live with our support team.
+            Type your message below to chat with our support team.
           <?php } else { ?>
             Our support team is offline. Leave your details and the IT team will get back to you.
           <?php } ?>
@@ -129,14 +129,16 @@
   }
 
   function setOnline(on) {
+    var changed = on !== online;
     online = on;
+    if (changed && !token) showReady();
     var s = $('spStatus');
     s.className = 'sp-status ' + (on ? 'is-online' : 'is-offline');
     s.querySelector('span').textContent = on ? 'Support online' : 'Support offline';
     if (!token) {
       $('spSubmit').textContent = on ? 'Start Live Chat' : 'Send to IT Team';
       $('spIntro').textContent = on
-        ? 'Tell us what is wrong and chat live with our support team.'
+        ? 'Type your message below to chat with our support team.'
         : 'Our support team is offline. Leave your details and the IT team will get back to you.';
     }
   }
@@ -239,8 +241,15 @@
   $('spCompose').addEventListener('submit', function (e) {
     e.preventDefault();
     var input = $('spText'), text = input.value.trim();
-    if (!text || !token) return;
+    if (!text) return;
     input.value = '';
+    if (!token) {
+      post('start', { chat: '1', issue: text }).then(function (res) {
+        if (!res.ok) { input.value = text; if (res.errors) { online = false; showReady(); } else alert(res.error || 'Message not sent.'); return; }
+        openChat(res.token);
+      }).catch(function () { input.value = text; alert('Could not reach the server.'); });
+      return;
+    }
     post('send', { token: token, body: text }).then(function (res) {
       if (!res.ok) { input.value = text; alert(res.error || 'Message not sent.'); return; }
       stopPoll(); poll();
@@ -254,8 +263,23 @@
 
   function resetToForm() {
     stopPoll(); token = null; store(null);
-    $('spChat').hidden = true;
-    $('spForm').hidden = false;
+    showReady();
+  }
+
+  // Online: the chat opens directly. Offline: the details form (sent to IT by email).
+  function showReady() {
+    var on = online && !token;
+    $('spForm').hidden = on;
+    $('spChat').hidden = !on;
+    if (on) {
+      $('spMsgs').innerHTML = '';
+      $('spRef').textContent = '';
+      $('spNotice').hidden = true;
+      $('spCompose').hidden = false;
+      $('spEnd').hidden = true;
+      $('spNew').hidden = true;
+      $('spText').focus();
+    }
     setOnline(online);
   }
   $('spNew').addEventListener('click', resetToForm);
@@ -268,7 +292,7 @@
 
   // Resume an open chat after a page refresh.
   var saved = stored();
-  if (saved && /^[a-f0-9]{48}$/.test(saved)) openChat(saved);
+  if (saved && /^[a-f0-9]{48}$/.test(saved)) openChat(saved); else showReady();
 })();
 </script>
 </body>

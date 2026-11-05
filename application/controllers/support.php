@@ -48,12 +48,22 @@ class Support extends CI_Controller {
 		$email = $this->clean($this->input->post('email'), 190);
 		$issue = trim(strip_tags((string)$this->input->post('issue')));
 
+		// Support online: the chat opens straight away and the first message is the issue.
+		$quick = (string)$this->input->post('chat') === '1' && $this->support_model->agents_online() > 0;
+		if ($quick) {
+			$issue = mb_substr($issue, 0, 2000);
+			if ($issue === '') return $this->json(array('ok' => false, 'error' => 'Please type a message.'), 400);
+			$name = 'Visitor'; $phone = ''; $email = '';
+		}
+
 		$errors = array();
+		if (!$quick) {
 		if (mb_strlen($name) < 2) $errors['name'] = 'Please enter your name.';
 		if (!preg_match('/^\+?[0-9][0-9\s\-()]{5,30}$/', $phone)) $errors['phone'] = 'Please enter a valid phone number.';
 		if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors['email'] = 'Please enter a valid email address.';
 		if (mb_strlen($issue) < 10) $errors['issue'] = 'Please describe the issue (at least 10 characters).';
 		if (mb_strlen($issue) > 3000) $errors['issue'] = 'Please keep the description under 3000 characters.';
+		}
 		if (!empty($errors)) {
 			return $this->json(array('ok' => false, 'errors' => $errors), 400);
 		}
