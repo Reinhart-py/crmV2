@@ -61,6 +61,16 @@ class Ci_admin_hr extends CI_Controller {
 	public $is_admin = false;
 	public $is_hr = false;
 
+	/** Active staff only: login enabled and not marked as left (Users / Staff > Mark as left).
+	 *  ci_user.status is 1 for everyone, so it cannot tell who is still working. */
+	private function _active_sql($alias = '')
+	{
+		$p = $alias !== '' ? $alias . '.' : '';
+		$sql = $p . 'admin_status = 1';
+		if ($this->db->table_exists('ci_user_exit')) $sql .= ' AND ' . $p . 'id NOT IN (SELECT user_id FROM ci_user_exit)';
+		return '(' . $sql . ')';
+	}
+
 	private function _require_hr()
 	{
 		if (!$this->is_hr) {
@@ -118,7 +128,7 @@ class Ci_admin_hr extends CI_Controller {
 		);
 		$data['active_tab'] = 'overview';
 
-		$data['total_employees'] = $this->db->where('status', 1)->count_all_results('ci_user');
+		$data['total_employees'] = $this->db->where($this->_active_sql(), NULL, FALSE)->count_all_results('ci_user');
 		$data['today_attendance'] = $this->db->where('attendance_date', date('Y-m-d'))->count_all_results('ci_attendance');
 		$data['pending_leaves'] = $this->db->where('status', 'Pending')->count_all_results('ci_leaves');
 		$data['active_targets'] = $this->db->where('status', 'Active')->count_all_results('ci_hr_targets');
@@ -249,7 +259,7 @@ class Ci_admin_hr extends CI_Controller {
 
 		$data['targets'] = $targets;
 		$data['employees'] = $this->db->select('id, name, email, user_type')
-			->where('status', 1)
+			->where($this->_active_sql(), NULL, FALSE)
 			->order_by('name', 'ASC')
 			->get('ci_user')
 			->result_array();
@@ -336,6 +346,12 @@ class Ci_admin_hr extends CI_Controller {
 		redirect('manager/hr/targets');
 	}
 
+	/** Lifecycle stages HR can set. "Exited" is not set here: it comes from Users / Staff > Mark as left. */
+	public static function lifecycle_stages()
+	{
+		return array('Onboarding', 'Probation', 'Confirmed', 'Promotion', 'Transfer', 'Notice');
+	}
+
 	public function lifecycle()
 	{
 		$data = array();
@@ -345,36 +361,47 @@ class Ci_admin_hr extends CI_Controller {
 		);
 		$data['active_tab'] = 'lifecycle';
 
-		$filter_stage = trim((string)$this->input->get('stage'));
-		$filter_dept = trim((string)$this->input->get('department'));
-
-		$this->db->select('U.id, U.id as user_id, U.emp_id, U.name, U.email, U.mobile, U.c_mobile, U.user_type, U.created, U.department as user_dept, U.c_salary, U.c_doj, U.c_dol, U.h_contact_name, U.h_contact_no, R.title as role_title, L.stage, L.department as lc_department, L.designation as lc_designation, L.date_of_joining as lc_doj, L.probation_end_date, L.confirmation_date, L.contract_type, L.emergency_contact_name as lc_e_name, L.emergency_contact_phone as lc_e_phone, L.notes as lifecycle_notes')
+		// Name, designation, department, joining date and contacts come from the staff profile (one place to keep them);
+		// the lifecycle record only adds the stage, probation / confirmation dates, contract type and notes.
+		$has_exit = $this->db->table_exists('ci_user_exit');
+		$has_des = $this->db->table_exists('ci_user_designation');
+		$this->db->select('U.id, U.id as user_id, U.emp_id, U.name, U.email, U.mobile, U.country_code, U.created, U.department as user_dept, U.office, U.c_doj, U.h_contact_name, U.h_contact_no, U.admin_status, R.title as role_title, L.stage, L.probation_end_date, L.confirmation_date, L.contract_type, L.notes as lifecycle_notes')
 			->from('ci_user U')
 			->join('ci_roles R', 'R.id = U.user_type', 'left')
-			->join('ci_hr_lifecycle L', 'L.user_id = U.id', 'left')
-			->where('U.status', 1);
-
-		if (!empty($filter_stage)) {
-			$this->db->where('L.stage', $filter_stage);
+			->join('ci_hr_lifecycle L', 'L.user_id = U.id', 'left');
+		if ($has_des) { $this->db->select('G.designation'); $this->db->join('ci_user_designation G', 'G.user_id = U.id', 'left'); }
+		if ($has_exit) {
+			$this->db->select('X.left_on, X.reason as left_reason');
+			$this->db->join('ci_user_exit X', 'X.user_id = U.id', 'left');
+			$this->db->where('(U.admin_status = 1 OR X.user_id IS NOT NULL)', NULL, FALSE); // working staff, plus those who left
+		} else {
+			$this->db->where('U.admin_status', 1);
 		}
-		if (!empty($filter_dept)) {
-			$this->db->where('U.department', $filter_dept);
-		}
-
 		$raw_list = $this->db->order_by('U.name', 'ASC')->get()->result_array();
+
+		$counts = array(); $depts = array();
 		foreach ($raw_list as &$item) {
-			$item['stage'] = !empty($item['stage']) ? $item['stage'] : 'Confirmed';
-			$item['department'] = !empty($item['lc_department']) ? $item['lc_department'] : (!empty($item['user_dept']) ? $item['user_dept'] : 'General');
-			$item['designation'] = !empty($item['lc_designation']) ? $item['lc_designation'] : (!empty($item['role_title']) ? $item['role_title'] : 'Staff');
-			$item['date_of_joining'] = !empty($item['lc_doj']) ? $item['lc_doj'] : (!empty($item['c_doj']) ? $item['c_doj'] : substr($item['created'], 0, 10));
-			$item['join_date'] = $item['date_of_joining'];
-			$item['emergency_contact_name'] = !empty($item['lc_e_name']) ? $item['lc_e_name'] : (!empty($item['h_contact_name']) ? $item['h_contact_name'] : '');
-			$item['emergency_contact_phone'] = !empty($item['lc_e_phone']) ? $item['lc_e_phone'] : (!empty($item['h_contact_no']) ? $item['h_contact_no'] : '');
+			$item['left'] = !empty($item['left_on']);
+			$item['stage'] = $item['left'] ? 'Exited' : (!empty($item['stage']) ? $item['stage'] : 'Confirmed');
+			$item['designation'] = !empty($item['designation']) ? $item['designation'] : '';
+			$item['department'] = trim((string)$item['user_dept']);
+			$item['date_of_joining'] = !empty($item['c_doj']) ? $item['c_doj'] : '';
+			$item['contact'] = trim((string)$item['mobile']) !== '' ? trim(($item['country_code'] !== '' ? '+' . ltrim($item['country_code'], '+') . ' ' : '') . $item['mobile']) : '';
+			$counts[$item['stage']] = isset($counts[$item['stage']]) ? $counts[$item['stage']] + 1 : 1;
+			if ($item['department'] !== '') $depts[$item['department']] = true;
 		}
 		unset($item);
+		ksort($depts);
 
 		$data['lifecycle_list'] = $raw_list;
 		$data['employees'] = $raw_list;
+		$data['lc_stages'] = self::lifecycle_stages();
+		$data['lc_counts'] = $counts;
+		$data['lc_departments'] = array_keys($depts);
+		$data['lc_stage'] = trim((string)$this->input->get('stage'));
+		$data['lc_dept'] = trim((string)$this->input->get('department'));
+		// Link names to the staff profile when the viewer may open it
+		$data['profile_base'] = ($this->is_admin || crm_can('hr_staff', 'read')) ? 'manager/hr/staff/view/' : (crm_can('users', 'read') ? 'manager/users/view/' : '');
 
 		$this->load->view('manager/hr/index', $data);
 	}
@@ -387,38 +414,29 @@ class Ci_admin_hr extends CI_Controller {
 		}
 
 		$user_id = (int)$this->input->post('user_id');
-		if ($user_id <= 0) {
+		if ($user_id <= 0 || !$this->db->where('id', $user_id)->count_all_results('ci_user')) {
 			redirect('manager/hr/lifecycle');
 			return;
 		}
 
-		$stage = trim((string)$this->input->post('stage')) ?: 'Confirmed';
-		$department = trim((string)$this->input->post('department'));
-		$designation = trim((string)$this->input->post('designation'));
-		$date_of_joining = trim((string)$this->input->post('date_of_joining')) ?: NULL;
-		$probation_end_date = trim((string)$this->input->post('probation_end_date')) ?: NULL;
-		$confirmation_date = trim((string)$this->input->post('confirmation_date')) ?: NULL;
-		$contract_type = trim((string)$this->input->post('contract_type')) ?: 'Permanent';
-		$emergency_contact_name = trim((string)$this->input->post('emergency_contact_name'));
-		$emergency_contact_phone = trim((string)$this->input->post('emergency_contact_phone'));
-		$notes = trim((string)$this->input->post('notes'));
+		$stage = trim((string)$this->input->post('stage'));
+		if (!in_array($stage, self::lifecycle_stages(), true)) $stage = 'Confirmed';
+		$ymd = function ($v) { $v = trim((string)$v); return ($v !== '' && ($t = strtotime($v))) ? date('Y-m-d', $t) : NULL; };
+		$contract = trim((string)$this->input->post('contract_type'));
+		if (!in_array($contract, array('Permanent', 'Fixed term', 'Part time', 'Intern', 'Consultant'), true)) $contract = 'Permanent';
 
-		$exist = $this->db->where('user_id', $user_id)->get('ci_hr_lifecycle')->row_array();
+		// Only the lifecycle's own details; designation, department, joining date and contacts stay in the staff profile
 		$save_data = array(
 			'user_id' => $user_id,
 			'stage' => $stage,
-			'department' => $department,
-			'designation' => $designation,
-			'date_of_joining' => !empty($date_of_joining) ? date('Y-m-d', strtotime($date_of_joining)) : NULL,
-			'probation_end_date' => !empty($probation_end_date) ? date('Y-m-d', strtotime($probation_end_date)) : NULL,
-			'confirmation_date' => !empty($confirmation_date) ? date('Y-m-d', strtotime($confirmation_date)) : NULL,
-			'contract_type' => $contract_type,
-			'emergency_contact_name' => $emergency_contact_name,
-			'emergency_contact_phone' => $emergency_contact_phone,
-			'notes' => $notes,
+			'probation_end_date' => $ymd($this->input->post('probation_end_date')),
+			'confirmation_date' => $ymd($this->input->post('confirmation_date')),
+			'contract_type' => $contract,
+			'notes' => mb_substr(trim((string)$this->input->post('notes')), 0, 1000),
 			'updated_at' => date('Y-m-d H:i:s')
 		);
 
+		$exist = $this->db->where('user_id', $user_id)->get('ci_hr_lifecycle')->row_array();
 		if (!empty($exist)) {
 			$this->db->where('user_id', $user_id)->update('ci_hr_lifecycle', $save_data);
 		} else {
@@ -470,7 +488,7 @@ class Ci_admin_hr extends CI_Controller {
 
 		$data['attendance_records'] = $raw_att;
 		$data['filter_date'] = $filter_date;
-		$data['employees'] = $this->db->select('id, name, email')->where('status', 1)->order_by('name', 'ASC')->get('ci_user')->result_array();
+		$data['employees'] = $this->db->select('id, name, email')->where($this->_active_sql(), NULL, FALSE)->order_by('name', 'ASC')->get('ci_user')->result_array();
 
 		$this->load->view('manager/hr/index', $data);
 	}
@@ -582,7 +600,7 @@ class Ci_admin_hr extends CI_Controller {
 			->result_array();
 
 		$data['assignments'] = $assignments;
-		$data['employees'] = $this->db->select('id, name, email')->where('status', 1)->order_by('name', 'ASC')->get('ci_user')->result_array();
+		$data['employees'] = $this->db->select('id, name, email')->where($this->_active_sql(), NULL, FALSE)->order_by('name', 'ASC')->get('ci_user')->result_array();
 
 		$this->load->view('manager/hr/index', $data);
 	}
@@ -679,7 +697,7 @@ class Ci_admin_hr extends CI_Controller {
 
 		$data['leaves'] = $raw_leaves;
 		$data['employees'] = $this->is_hr
-			? $this->db->select('id, name, email')->where('status', 1)->order_by('name', 'ASC')->get('ci_user')->result_array()
+			? $this->db->select('id, name, email')->where($this->_active_sql(), NULL, FALSE)->order_by('name', 'ASC')->get('ci_user')->result_array()
 			: array();
 		$data['my_leave'] = $this->ci_admin_model->hr_leave_summary($this->cur_uid);
 
@@ -842,7 +860,7 @@ class Ci_admin_hr extends CI_Controller {
 		$data['payroll_records'] = $raw_pay;
 		$data['filter_month'] = $filter_month;
 		$data['selected_month'] = $filter_month;
-		$data['employees'] = $this->db->select('id, name, email, c_salary')->where('status', 1)->order_by('name', 'ASC')->get('ci_user')->result_array();
+		$data['employees'] = $this->db->select('id, name, email, c_salary')->where($this->_active_sql(), NULL, FALSE)->order_by('name', 'ASC')->get('ci_user')->result_array();
 
 		$this->load->view('manager/hr/index', $data);
 	}
@@ -860,7 +878,7 @@ class Ci_admin_hr extends CI_Controller {
 		}
 
 		$cur_uid = (int)$this->session->userdata('manager_id');
-		$employees = $this->db->select('id, name, c_salary')->where('status', 1)->get('ci_user')->result_array();
+		$employees = $this->db->select('id, name, c_salary')->where($this->_active_sql(), NULL, FALSE)->get('ci_user')->result_array();
 
 		$gen_count = 0;
 		foreach ($employees as $emp) {
@@ -932,7 +950,7 @@ class Ci_admin_hr extends CI_Controller {
 			'total_net' => floatval($stat_row['total_net'] ?? 0)
 		);
 
-		$data['employees'] = $this->db->select('id, name, email, c_salary')->where('status', 1)->order_by('name', 'ASC')->get('ci_user')->result_array();
+		$data['employees'] = $this->db->select('id, name, email, c_salary')->where($this->_active_sql(), NULL, FALSE)->order_by('name', 'ASC')->get('ci_user')->result_array();
 
 		$this->load->view('manager/hr/index', $data);
 	}
@@ -962,7 +980,7 @@ class Ci_admin_hr extends CI_Controller {
 		unset($ap);
 
 		$data['appraisals'] = $raw_app;
-		$data['employees'] = $this->db->select('id, name, email')->where('status', 1)->order_by('name', 'ASC')->get('ci_user')->result_array();
+		$data['employees'] = $this->db->select('id, name, email')->where($this->_active_sql(), NULL, FALSE)->order_by('name', 'ASC')->get('ci_user')->result_array();
 
 		$this->load->view('manager/hr/index', $data);
 	}
@@ -1032,7 +1050,7 @@ class Ci_admin_hr extends CI_Controller {
 			->result_array();
 
 		$u_docs = $this->db->select('id, name, p_no, p_date, p_exdate, visa_no, visa_type, visa_expiry, eid_no, eid_expiry')
-			->where('status', 1)
+			->where($this->_active_sql(), NULL, FALSE)
 			->get('ci_user')
 			->result_array();
 
@@ -1092,7 +1110,7 @@ class Ci_admin_hr extends CI_Controller {
 		unset($d);
 
 		$data['documents'] = $docs;
-		$data['employees'] = $this->db->select('id, name, email')->where('status', 1)->order_by('name', 'ASC')->get('ci_user')->result_array();
+		$data['employees'] = $this->db->select('id, name, email')->where($this->_active_sql(), NULL, FALSE)->order_by('name', 'ASC')->get('ci_user')->result_array();
 
 		$this->load->view('manager/hr/index', $data);
 	}

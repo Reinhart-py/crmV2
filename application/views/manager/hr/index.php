@@ -80,6 +80,56 @@
         color: #1e293b;
         border-top: 1px solid #f1f5f9 !important;
       }
+      /* HR pages in the same look as View Staff: one font, readable sizes, chips, phone friendly */
+      .hrx, .hrx .form-control, .hrx .btn, .hrx table{font-family:"Plus Jakarta Sans","Inter",-apple-system,"Segoe UI",sans-serif}
+      .hrx-chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+      .hrx-chip{height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--crm-line,#e2e8f0);background:var(--crm-surface,#fff);color:var(--crm-ink,#0f172a);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+      .hrx-chip b{font-weight:700;font-size:12px;padding:1px 7px;border-radius:999px;background:var(--crm-canvas,#f1f5f9);color:var(--crm-muted,#475569)}
+      .hrx-chip.on{border-color:var(--crm-ocean,#1e3a8a);background:var(--crm-ocean,#1e3a8a);color:#fff}
+      .hrx-chip.on b{background:rgba(255,255,255,.2);color:#fff}
+      .hrx-card{background:var(--crm-surface,#fff);border:1px solid var(--crm-line,#e2e8f0);border-radius:10px;margin-bottom:14px}
+      .hrx-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--crm-line-soft,#eef2f7)}
+      .hrx-bar .form-control{height:34px;width:auto !important;flex:0 1 260px;min-width:180px;border-radius:6px;font-size:13.5px}
+      .hrx-count{margin-left:auto;font-size:13px;color:var(--crm-muted,#64748b)}
+      .hrx-note{margin:8px 12px 0;padding:7px 10px;border-radius:8px;background:var(--crm-canvas,#f8fafc);border:1px solid var(--crm-line-soft,#eef2f7);font-size:12.5px;color:var(--crm-muted,#64748b)}
+      .hrx-table{margin:4px 0 0 !important}
+      .hrx-table thead th, .table-hr thead th, .table-hr th{font-size:12px !important;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:9px 10px !important;white-space:nowrap;text-align:left !important}
+      .hrx-table tbody td, .table-hr tbody td, .table-hr td{font-size:14px !important;padding:9px 10px !important;vertical-align:middle !important;line-height:1.35;text-align:left !important}
+      .hrx-table tbody tr:nth-child(even) td{background:var(--crm-canvas,#fafbfd)}
+      .hrx-who{display:flex;flex-direction:column;min-width:0}
+      .hrx-emp{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;font-weight:600;color:var(--crm-ocean,#1e3a8a)}
+      .hrx-nm{font-size:15px;font-weight:700;color:var(--crm-ink,#0f172a);text-transform:capitalize}
+      a.hrx-nm:hover{color:var(--crm-ocean,#1e3a8a)}
+      .hrx-sub{display:block;font-size:12.5px;color:var(--crm-muted,#64748b);margin-top:1px}
+      .hrx-strong{font-weight:600}
+      .hrx-miss{font-size:12.5px;color:#b45309}
+      .hrx-st{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12.5px;font-weight:600;white-space:nowrap}
+      .st-b{color:#1d4ed8}.hrx-st.st-b{background:rgba(37,99,235,.12)}
+      .st-a{color:#b45309}.hrx-st.st-a{background:rgba(245,158,11,.16)}
+      .st-g{color:#15803d}.hrx-st.st-g{background:rgba(22,163,74,.12)}
+      .st-p{color:#7c3aed}.hrx-st.st-p{background:rgba(124,58,237,.12)}
+      .st-t{color:#0f766e}.hrx-st.st-t{background:rgba(13,148,136,.12)}
+      .st-r{color:#b91c1c}.hrx-st.st-r{background:rgba(220,38,38,.12)}
+      .st-s{color:#475569}.hrx-st.st-s{background:rgba(100,116,139,.15)}
+      .hrx-chip.on[class*=st-]{color:#fff}
+      .hrx-act{white-space:nowrap;text-align:right !important}
+      .hrx-act .btn{height:30px;font-weight:600}
+      .content-wrapper .content-header h1{font-family:"Plus Jakarta Sans","Inter",-apple-system,"Segoe UI",sans-serif;font-size:22px;font-weight:700;text-align:left}
+      .content-wrapper .box .box-title{font-family:"Plus Jakarta Sans","Inter",-apple-system,"Segoe UI",sans-serif;font-size:16px;font-weight:700}
+      .content-wrapper .table-hr .label{font-size:12px;padding:3px 9px;border-radius:999px;font-weight:600}
+      @media (max-width:767px){
+        .hrx-bar .form-control{min-width:0;flex:1 1 100%;width:100% !important}
+        .hrx-count{margin-left:0}
+        .hrx-chip{height:30px;font-size:12.5px;padding:0 10px}
+        .hrx-table thead{display:none}
+        .hrx-table, .hrx-table tbody, .hrx-table tr, .hrx-table td{display:block;width:100%}
+        .hrx-table tbody tr{border-bottom:1px solid var(--crm-line,#e2e8f0);padding:8px 4px}
+        .hrx-table tbody tr:nth-child(even) td{background:transparent}
+        .hrx-table tbody td{border:0 !important;padding:3px 8px !important;font-size:13.5px !important}
+        .hrx-table tbody td:empty{display:none}
+        .hrx-act{text-align:left !important}
+        .content-wrapper .table-hr td, .content-wrapper .table-hr th{font-size:13px !important;padding:7px 8px !important}
+      }
     </style>
 
     <?php if (($active_tab ?? '') === 'overview'): ?>
@@ -363,117 +413,83 @@
         </div>
       </div>
 
-    <?php elseif (($active_tab ?? '') === 'lifecycle'): ?>
-      <div class="box box-default">
-        <div class="box-header with-border">
-          <h3 class="box-title">Employee Lifecycle Directory</h3>
+    <?php elseif (($active_tab ?? '') === 'lifecycle'):
+      $lcList = !empty($lifecycle_list) ? $lifecycle_list : array();
+      $lcH = function ($v) { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); };
+      $lcD = function ($v) { return ($v && ($t = strtotime($v))) ? date('d-M-Y', $t) : ''; };
+      $lcCls = array('Onboarding' => 'b', 'Probation' => 'a', 'Confirmed' => 'g', 'Promotion' => 'p', 'Transfer' => 't', 'Notice' => 'r', 'Exited' => 's');
+      $lcAll = array_merge($lc_stages, array('Exited'));
+    ?>
+      <div class="hrx">
+        <div class="hrx-chips">
+          <button type="button" class="hrx-chip js-lc-stage<?php echo $lc_stage === '' ? ' on' : ''; ?>" data-v="">All <b><?php echo count($lcList); ?></b></button>
+          <?php foreach ($lcAll as $st) { ?>
+          <button type="button" class="hrx-chip js-lc-stage st-<?php echo $lcCls[$st]; ?><?php echo $lc_stage === $st ? ' on' : ''; ?>" data-v="<?php echo $lcH($st); ?>"><?php echo $lcH($st); ?> <b><?php echo (int)($lc_counts[$st] ?? 0); ?></b></button>
+          <?php } ?>
         </div>
-        <div class="box-body table-responsive no-padding">
-          <table class="table table-hover table-hr">
-            <thead>
-              <tr>
-                <th>Employee</th>
-                <th>Role / Designation</th>
-                <th>Department</th>
-                <th>Lifecycle Stage</th>
-                <th>Join Date</th>
-                <th>Contact</th>
-                <th>Action</th>
-              </tr>
-            </thead>
+        <div class="hrx-card">
+          <div class="hrx-bar">
+            <select class="form-control js-lc-dept"><option value="">All departments</option><?php foreach ($lc_departments as $dp) { ?><option<?php echo $lc_dept === $dp ? ' selected' : ''; ?>><?php echo $lcH($dp); ?></option><?php } ?></select>
+            <input type="search" class="form-control js-lc-q" placeholder="Search name, Emp No, designation">
+            <span class="hrx-count js-lc-count"></span>
+          </div>
+          <div class="hrx-note"><i class="fa fa-info-circle"></i> Designation, department, joining date and contacts come from each person's staff profile - edit them there. To record someone leaving, use <b>Mark as left</b> on their profile.</div>
+          <div class="table-responsive">
+          <table class="table hrx-table">
+            <thead><tr><th>Employee</th><th>Designation / Department</th><th>Stage</th><th>Joined</th><th>Contract / Probation</th><th></th></tr></thead>
             <tbody>
-              <?php 
-                $lcList = !empty($lifecycle_list) ? $lifecycle_list : (!empty($employees) ? $employees : array());
-              ?>
-              <?php if (!empty($lcList)): ?>
-                <?php foreach ($lcList as $lc): ?>
-                  <?php 
-                    $lcUid = (int)($lc['id'] ?? $lc['user_id'] ?? 0);
-                    $lcName = $lc['name'] ?? '';
-                    $lcEmail = $lc['email'] ?? '';
-                    $lcDesig = ($lc['designation'] ?? $lc['role_title'] ?? '') ?: 'Staff';
-                    $lcDept = ($lc['department'] ?? '') ?: 'General';
-                    $lcStage = ($lc['stage'] ?? '') ?: 'Confirmed';
-                    $lcDate = ($lc['date_of_joining'] ?? $lc['join_date'] ?? '') ?: substr($lc['created'] ?? '', 0, 10);
-                    $lcContact = ($lc['mobile'] ?? $lc['c_mobile'] ?? '') ?: '-';
-                  ?>
-                  <tr>
-                    <td>
-                      <strong><?php echo htmlspecialchars($lcName); ?></strong>
-                      <div class="text-muted" style="font-size:11px;"><?php echo htmlspecialchars($lcEmail); ?></div>
-                    </td>
-                    <td><?php echo htmlspecialchars($lcDesig); ?></td>
-                    <td><?php echo htmlspecialchars($lcDept); ?></td>
-                    <td>
-                      <span class="label label-primary"><?php echo htmlspecialchars($lcStage); ?></span>
-                    </td>
-                    <td><?php echo htmlspecialchars($lcDate); ?></td>
-                    <td><?php echo htmlspecialchars($lcContact); ?></td>
-                    <td>
-                      <button type="button" class="btn btn-default btn-xs btn-update-stage" 
-                        data-user-id="<?php echo $lcUid; ?>"
-                        data-user-name="<?php echo htmlspecialchars($lcName); ?>"
-                        data-stage="<?php echo htmlspecialchars($lcStage); ?>"
-                        data-dept="<?php echo htmlspecialchars($lcDept); ?>"
-                        data-desig="<?php echo htmlspecialchars($lcDesig); ?>">
-                        <i class="fa fa-edit"></i> Edit
-                      </button>
-                    </td>
-                  </tr>
-                <?php endforeach; ?>
-              <?php else: ?>
-                <tr><td colspan="7" class="text-center text-muted">No employees found</td></tr>
-              <?php endif; ?>
+            <?php if (!empty($lcList)): foreach ($lcList as $lc):
+              $uid = (int)$lc['id']; $st = $lc['stage']; $doj = $lcD($lc['date_of_joining']);
+              $ten = ''; if ($lc['date_of_joining'] && ($t = strtotime($lc['date_of_joining']))) { $m = (int)floor((time() - $t) / (86400 * 30.44)); $ten = $m >= 12 ? floor($m / 12) . ' yr' . ($m % 12 ? ' ' . ($m % 12) . ' mo' : '') : max(0, $m) . ' mo'; } ?>
+              <tr data-stage="<?php echo $lcH($st); ?>" data-dept="<?php echo $lcH($lc['department']); ?>" data-q="<?php echo $lcH(strtolower($lc['name'] . ' ' . sprintf('EMP-%05d', $uid) . ' ' . $lc['emp_id'] . ' ' . $lc['designation'])); ?>">
+                <td><div class="hrx-who"><span class="hrx-emp"><?php echo sprintf('EMP-%05d', $uid); ?></span>
+                  <?php if ($profile_base !== '') { ?><a class="hrx-nm" href="<?php echo base_url() . $profile_base . $uid; ?>"><?php echo $lcH($lc['name']); ?></a><?php } else { ?><span class="hrx-nm"><?php echo $lcH($lc['name']); ?></span><?php } ?>
+                  <span class="hrx-sub"><?php echo $lcH($lc['email']); ?><?php echo $lc['contact'] !== '' ? ' &middot; ' . $lcH($lc['contact']) : ''; ?></span></div></td>
+                <td><?php echo $lc['designation'] !== '' ? '<b class="hrx-strong">' . $lcH($lc['designation']) . '</b>' : '<span class="hrx-miss">No designation</span>'; ?><span class="hrx-sub"><?php echo $lc['department'] !== '' ? $lcH($lc['department']) : 'No department'; ?></span></td>
+                <td><span class="hrx-st st-<?php echo $lcCls[$st] ?? 'g'; ?>"><?php echo $lcH($st); ?></span><?php if ($lc['left']) { ?><span class="hrx-sub"><?php echo $lcD($lc['left_on']) . ' &middot; ' . $lcH($lc['left_reason']); ?></span><?php } ?></td>
+                <td data-order="<?php echo $lcH($lc['date_of_joining']); ?>"><?php echo $doj !== '' ? $doj . '<span class="hrx-sub">' . $ten . '</span>' : '<span class="hrx-miss">Not set</span>'; ?></td>
+                <td><?php $pe = $lcD($lc['probation_end_date']); $cd = $lcD($lc['confirmation_date']); echo $lc['contract_type'] ? $lcH($lc['contract_type']) : '<span class="hrx-sub">Not set</span>'; if ($pe !== '') echo '<span class="hrx-sub">Probation till ' . $pe . '</span>'; if ($cd !== '') echo '<span class="hrx-sub">Confirmed ' . $cd . '</span>'; ?></td>
+                <td class="hrx-act"><?php if (!$lc['left']) { ?><button type="button" class="btn btn-default btn-sm btn-update-stage" data-user-id="<?php echo $uid; ?>" data-user-name="<?php echo $lcH($lc['name']); ?>" data-stage="<?php echo $lcH($st); ?>" data-probation="<?php echo $lcH($lc['probation_end_date']); ?>" data-confirmed="<?php echo $lcH($lc['confirmation_date']); ?>" data-contract="<?php echo $lcH($lc['contract_type']); ?>" data-notes="<?php echo $lcH($lc['lifecycle_notes']); ?>" title="Update stage, probation and contract"><i class="fa fa-pencil"></i> Update</button><?php } elseif ($profile_base !== '') { ?><a class="btn btn-default btn-sm" href="<?php echo base_url() . $profile_base . $uid; ?>" title="Open the profile (Rejoin is there)"><i class="fa fa-user"></i> Profile</a><?php } ?></td>
+              </tr>
+            <?php endforeach; else: ?>
+              <tr><td colspan="6" class="text-center text-muted">No employees found</td></tr>
+            <?php endif; ?>
             </tbody>
           </table>
+          </div>
         </div>
       </div>
 
       <div class="modal fade" id="modalLifecycleStage" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
+        <div class="modal-dialog" role="document" style="max-width:520px">
           <div class="modal-content">
             <form action="<?php echo base_url(); ?>manager/hr/update_lifecycle" method="POST">
               <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
               <input type="hidden" name="user_id" id="lc_user_id">
               <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Update Lifecycle: <span id="lc_user_name"></span></h4>
+                <h4 class="modal-title">Lifecycle: <span id="lc_user_name"></span></h4>
               </div>
               <div class="modal-body">
-                <div class="form-group">
-                  <label>Stage <span class="text-danger">*</span></label>
-                  <select name="stage" id="lc_stage" class="form-control" required>
-                    <option value="Onboarding">Onboarding</option>
-                    <option value="Probation">Probation</option>
-                    <option value="Confirmed">Confirmed</option>
-                    <option value="Promotion">Promotion</option>
-                    <option value="Transfer">Transfer</option>
-                    <option value="Notice">Notice</option>
-                    <option value="Relieved">Relieved</option>
-                  </select>
+                <div class="row">
+                  <div class="col-sm-6 form-group"><label>Stage <span class="text-danger">*</span></label>
+                    <select name="stage" id="lc_stage" class="form-control" required><?php foreach ($lc_stages as $st) { ?><option><?php echo $lcH($st); ?></option><?php } ?></select></div>
+                  <div class="col-sm-6 form-group"><label>Contract type</label>
+                    <select name="contract_type" id="lc_contract" class="form-control"><?php foreach (array('Permanent', 'Fixed term', 'Part time', 'Intern', 'Consultant') as $ct) { ?><option><?php echo $ct; ?></option><?php } ?></select></div>
+                  <div class="col-sm-6 form-group"><label>Probation ends</label><input type="date" name="probation_end_date" id="lc_probation" class="form-control"></div>
+                  <div class="col-sm-6 form-group"><label>Confirmed on</label><input type="date" name="confirmation_date" id="lc_confirmed" class="form-control"></div>
                 </div>
-                <div class="form-group">
-                  <label>Department</label>
-                  <input type="text" name="department" id="lc_dept" class="form-control">
-                </div>
-                <div class="form-group">
-                  <label>Designation</label>
-                  <input type="text" name="designation" id="lc_desig" class="form-control">
-                </div>
-                <div class="form-group">
-                  <label>Remarks</label>
-                  <textarea name="remarks" class="form-control" rows="2"></textarea>
-                </div>
+                <div class="form-group"><label>Notes</label><textarea name="notes" id="lc_notes" class="form-control" rows="2" maxlength="1000"></textarea></div>
+                <div class="hrx-note" style="margin:0"><i class="fa fa-info-circle"></i> Leaving is recorded with <b>Mark as left</b> on the staff profile; it shows here as <b>Exited</b>.</div>
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary">Update</button>
+                <button type="submit" class="btn btn-primary">Save</button>
               </div>
             </form>
           </div>
         </div>
       </div>
-
     <?php elseif (($active_tab ?? '') === 'attendance'): ?>
       <div class="hr-geo-box">
         <div>
@@ -1359,18 +1375,35 @@
 
 <script>
 $(function() {
+  // Lifecycle: stage chips, department and search filter the rows in place
+  (function () {
+    var rows = $('.hrx-table tbody tr[data-stage]'); if (!rows.length) return;
+    var stage = $('.js-lc-stage.on').data('v') || '';
+    function run() {
+      var dep = $('.js-lc-dept').val() || '', q = ($('.js-lc-q').val() || '').toLowerCase().trim(), n = 0;
+      rows.each(function () {
+        var r = $(this), ok = (!stage || r.data('stage') === stage) && (!dep || r.data('dept') === dep) && (!q || String(r.data('q')).indexOf(q) !== -1);
+        r.toggle(ok); if (ok) n++;
+      });
+      $('.js-lc-count').text(n + ' of ' + rows.length);
+    }
+    $('.js-lc-stage').on('click', function () { $('.js-lc-stage').removeClass('on'); $(this).addClass('on'); stage = $(this).data('v') || ''; run(); });
+    $('.js-lc-dept').on('change', run); $('.js-lc-q').on('input', run);
+    run();
+  })();
   $('.btn-update-stage').on('click', function() {
     var uid = $(this).data('user-id');
     var uname = $(this).data('user-name');
     var stg = $(this).data('stage');
-    var dept = $(this).data('dept');
-    var dsg = $(this).data('desig');
+    var b = $(this);
 
     $('#lc_user_id').val(uid);
     $('#lc_user_name').text(uname);
-    $('#lc_stage').val(stg);
-    $('#lc_dept').val(dept);
-    $('#lc_desig').val(dsg);
+    $('#lc_stage').val(stg === 'Exited' ? 'Confirmed' : stg);
+    $('#lc_contract').val(b.data('contract') || 'Permanent');
+    $('#lc_probation').val(b.data('probation') || '');
+    $('#lc_confirmed').val(b.data('confirmed') || '');
+    $('#lc_notes').val(b.data('notes') || '');
     $('#modalLifecycleStage').modal('show');
   });
 

@@ -165,7 +165,9 @@ class Hr_selfservice_model extends CI_Model {
 			->order_by('M.id', 'DESC')
 			->get()->result_array();
 		foreach ($mods as &$m) {
-			$aud = $this->db->from('ci_user')->where('status', 1);
+			// active staff only (login enabled, not marked as left)
+			$aud = $this->db->from('ci_user')->where('admin_status', 1);
+			if ($this->db->table_exists('ci_user_exit')) $aud->where('id NOT IN (SELECT user_id FROM ci_user_exit)', NULL, FALSE);
 			if ((int)$m['audience_role_id'] > 0) {
 				$aud->where('user_type', (int)$m['audience_role_id']);
 			}
