@@ -546,7 +546,8 @@ class Admin_reports_model extends CI_Model {
 				$this->db->where('department', $filters['department']);
 			}
 			if (!empty($search)) {
-				$this->db->where("(name LIKE '%$search%' OR email LIKE '%$search%' OR department LIKE '%$search%')");
+				$_s = $this->db->escape_like_str($search);
+				$this->db->where("(name LIKE '%$_s%' OR email LIKE '%$_s%' OR department LIKE '%$_s%')", null, false);
 			}
 			$users = $this->db->get()->result_array();
 

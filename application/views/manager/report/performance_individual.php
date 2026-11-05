@@ -39,7 +39,7 @@
                     </div>
 
                     <?php if(isset($_GET['manager_id'])&&(!empty($_GET['manager_id']))){ ?>
-                    <input type="hidden" name="manager_id" value="<?php if(isset($_GET['manager_id'])&&(!empty($_GET['manager_id']))){ echo $_GET['manager_id'];}?>" />
+                    <input type="hidden" name="manager_id" value="<?php if(isset($_GET['manager_id'])&&(!empty($_GET['manager_id']))){ echo (int)$_GET['manager_id'];}?>" />
                     <?php  }else{ ?>
                       <input type="hidden" name="manager_id" value="<?php  echo $this->session->userdata('manager_id');?>" />
 

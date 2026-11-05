@@ -46,203 +46,99 @@ class Ci_admin_report extends CI_Controller {
 	
 
 	
-   public function users()
+	/** One text filter from the address bar ('' when missing or not plain text). */
+	private function _q($key)
 	{
-		
-        $data=array();
-		$data['info']=array(
-			'title'=>'Users Report',
-			'page_heading'=>'Users Report'
-		);
-		$data['info2']=$this->if_not_login();
-		$data['r_list'] =$this->comman_model->getAll(array('status'=>1),array('id','ASC'),'ci_roles');
-		$data['c_list'] =$this->comman_model->getAll('',array('id','ASC'),'countries');
-		$data['u_list'] =$this->comman_model->getAll('',array('id','ASC'),'ci_user');
-		if(($this->input->server('REQUEST_METHOD')==='GET')&&($this->input->get('search')=='report'))
-		{ 
-					$d1='';
-					$d2='';
-					$role='';
-					$manager='';
-					$status='';
-					$department='';
-					$office='';
-					
-				
-       				extract($_GET);
-					
-				    if(!empty($d1) && !empty($d2))
-					{
-					
-					$d1=date("Y-m-d",strtotime($d1));
-					$d2=date("Y-m-d",strtotime($d2));
-					}
-					
-					$data['list']=$this->report_model->get_user_report($d1,$d2,$role,$manager,$status,$department,$office);
-				}
-		$this->load->view('manager/report/user_report',$data);
-	}
-	
-	  public function leads()
-	{
-        $data=array();
-		$data['info']=array(
-			'title'=>'Leads Report',
-			'page_heading'=>'Leads Report'
-		);
-		$data['info2']=$this->if_not_login();
-		 $data['st_list']= $this->comman_model->getAll(array('active'=>1),'','ci_status');
-			$data['so_list']= $this->comman_model->getAll(array('active'=>1),'','ci_sources'); 
-		$data['c_list'] =$this->comman_model->getAll('',array('id','ASC'),'countries');
-		$data['u_list'] =$this->comman_model->getAll('',array('id','ASC'),'ci_user');
-		if(($this->input->server('REQUEST_METHOD')==='GET')&&($this->input->get('search')=='report'))
-		{ 
-					$d1='';
-					$d2='';
-					$f1='';
-					$f2='';
-					$category='';
-					$created_by='';
-					$status='';
-					$s_cat='';
-						
-				
-       				extract($_GET);
-					
-				    if(!empty($d1) && !empty($d2))
-					{					
-						$d1=date("Y-m-d",strtotime($d1));
-						$d2=date("Y-m-d",strtotime($d2));
-					}
-					
-					$data['list']=$this->report_model->get_lead_report($d1,$d2,$f1, $f2,$category,$created_by,$status,$s_cat);
-				}
-		$this->load->view('manager/report/lead_report',$data);
+		$v = $this->input->get($key);
+		return is_string($v) ? trim($v) : '';
 	}
 
-	
+	/** Users the signed-in person may pick in report filters (admin: everyone; others: self + team). */
+	private function _scope_users()
+	{
+		$scope = $this->report_model->scope_ids();
+		$this->db->order_by('id', 'ASC');
+		if ($scope !== null) $this->db->where_in('id', $scope ? $scope : array(-1));
+		return $this->db->get('ci_user')->result_array();
+	}
 
+	public function users()
+	{
+		$data = array();
+		$data['info'] = array('title' => 'Users Report', 'page_heading' => 'Users Report');
+		$data['info2'] = $this->if_not_login();
+		$data['r_list'] = $this->comman_model->getAll(array('status' => 1), array('id', 'ASC'), 'ci_roles');
+		$data['c_list'] = $this->comman_model->getAll('', array('id', 'ASC'), 'countries');
+		$data['u_list'] = $this->_scope_users();
+		if ($this->input->get('search') == 'report') {
+			$data['list'] = $this->report_model->get_user_report($this->_q('d1'), $this->_q('d2'), $this->_q('role'), $this->_q('manager'), $this->_q('status'), $this->_q('department'), $this->_q('office'));
+		}
+		$this->load->view('manager/report/user_report', $data);
+	}
 
+	/** Lead filters shared by the Leads and Follow-up reports. */
+	private function _lead_filters()
+	{
+		return array($this->_q('d1'), $this->_q('d2'), $this->_q('f1'), $this->_q('f2'), $this->_q('category'), $this->_q('created_by'), $this->_q('status'), $this->_q('s_cat'));
+	}
 
+	public function leads()
+	{
+		$data = array();
+		$data['info'] = array('title' => 'Leads Report', 'page_heading' => 'Leads Report');
+		$data['info2'] = $this->if_not_login();
+		$data['st_list'] = $this->comman_model->getAll(array('active' => 1), '', 'ci_status');
+		$data['so_list'] = $this->comman_model->getAll(array('active' => 1), '', 'ci_sources');
+		$data['c_list'] = $this->comman_model->getAll('', array('id', 'ASC'), 'countries');
+		$data['u_list'] = $this->_scope_users();
+		if ($this->input->get('search') == 'report') {
+			list($d1, $d2, $f1, $f2, $category, $created_by, $status, $s_cat) = $this->_lead_filters();
+			$data['list'] = $this->report_model->get_lead_report($d1, $d2, $f1, $f2, $category, $created_by, $status, $s_cat);
+		}
+		$this->load->view('manager/report/lead_report', $data);
+	}
 
 	public function followup()
 	{
-        $data=array();
-		$data['info']=array(
-			'title'=>'Followup Report',
-			'page_heading'=>'Followup Report'
-		);
-		$data['info2']=$this->if_not_login();
-		
-		if(($this->input->server('REQUEST_METHOD')==='GET')&&($this->input->get('search')=='report'))
-		{ 
-					$d1='';
-					$d2='';
-					$f1='';
-					$f2='';
-					$category='';
-					$created_by='';
-					$status='';
-					$s_cat='';					
-				
-       				extract($_GET);					
-				    if(!empty($d1) && !empty($d2))
-					{					
-						$d1=date("Y-m-d",strtotime($d1));
-						$d2=date("Y-m-d",strtotime($d2));
-					}					
-					$data['list']=$this->report_model->get_followup_report($d1,$d2,$f1, $f2,$category,$created_by,$status,$s_cat);
-				
-				}
-		$this->load->view('manager/report/followup_report',$data);
+		$data = array();
+		$data['info'] = array('title' => 'Followup Report', 'page_heading' => 'Followup Report');
+		$data['info2'] = $this->if_not_login();
+		if ($this->input->get('search') == 'report') {
+			list($d1, $d2, $f1, $f2, $category, $created_by, $status, $s_cat) = $this->_lead_filters();
+			$data['list'] = $this->report_model->get_followup_report($d1, $d2, $f1, $f2, $category, $created_by, $status, $s_cat);
+		}
+		$this->load->view('manager/report/followup_report', $data);
 	}
-
 
 	public function performanceReportDep()
 	{
-		
-        $data=array();
-		$data['info']=array(
-			'title'=>'Performance Report',
-			'page_heading'=>'Performance Report'
-		);
-		$data['info2']=$this->if_not_login();
-		if(($this->input->server('REQUEST_METHOD')==='GET')&&($this->input->get('search')=='report'))
-		{ 
-			$d1='';
-			$d2='';
-			$department='';					
-		
-			extract($_GET);			
-			if(!empty($d1) && !empty($d2))
-			{
-			$d1=date("Y-m-d",strtotime($d1));
-			$d2=date("Y-m-d",strtotime($d2));
-			}
-
-			if($department==1){
-				$department="Board of Director";
-			}
-			if($department==2){
-				$department="Administration";
-			}
-			if($department==3){
-				$department="Operations";
-			}
-			if($department==4){
-				$department="IT";
-			}
-			if($department==5){
-				$department="Human Resource";
-			}
-			if($department==6){
-				$department="Back Office";
-			}
-			if($department==7){
-				$department="Sales";
-			}
-			if($department==8){
-				$department="Business Development";
-			}
-			if($department==9){
-				$department="Field Staff";
-			}
-			if($department==10){
-				$department="Other";
-			}
-		
-			$data['list']=$this->report_model->getPerformanceReportByDepartment($d1,$d2,$department);
-	    }
-
-		$this->load->view('manager/report/performance_report',$data);
+		$data = array();
+		$data['info'] = array('title' => 'Performance Report', 'page_heading' => 'Performance Report');
+		$data['info2'] = $this->if_not_login();
+		if ($this->input->get('search') == 'report') {
+			$names = array(1 => 'Board of Director', 2 => 'Administration', 3 => 'Operations', 4 => 'IT', 5 => 'Human Resource',
+				6 => 'Back Office', 7 => 'Sales', 8 => 'Business Development', 9 => 'Field Staff', 10 => 'Other');
+			$dep = (int)$this->_q('department');
+			$department = isset($names[$dep]) ? $names[$dep] : '';
+			$data['list'] = $this->report_model->getPerformanceReportByDepartment($this->_q('d1'), $this->_q('d2'), $department, $this->report_model->scope_ids());
+		}
+		$this->load->view('manager/report/performance_report', $data);
 	}
 
 	public function performanceReportIndividual()
 	{
-		
-        $data=array();
-		$data['info']=array(
-			'title'=>'Performance Report',
-			'page_heading'=>'Performance Report'
-		);
-		$data['info2']=$this->if_not_login();
-		if(($this->input->server('REQUEST_METHOD')==='GET')&&($this->input->get('search')=='report'))
-		{ 
-			$d1='';
-			$d2='';
-			$manager_id='';
-		
-			extract($_GET);			
-			if(!empty($d1) && !empty($d2))
-			{
-			$d1=date("Y-m-d",strtotime($d1));
-			$d2=date("Y-m-d",strtotime($d2));
-			}
-			
-			$data['list']=$this->report_model->getPerformanceReportByIndividual($d1,$d2,$manager_id);
-	    }
-
-		$this->load->view('manager/report/performance_individual',$data);
+		$data = array();
+		$data['info'] = array('title' => 'Performance Report', 'page_heading' => 'Performance Report');
+		$data['info2'] = $this->if_not_login();
+		if ($this->input->get('search') == 'report') {
+			// Only yourself or someone under you (admin: anyone).
+			$me = (int)$this->session->userdata('manager_id');
+			$who = (int)$this->_q('manager_id');
+			$scope = $this->report_model->scope_ids();
+			if ($who <= 0 || ($scope !== null && !in_array($who, $scope, true))) $who = $me;
+			$data['list'] = $this->report_model->getPerformanceReportByIndividual($this->_q('d1'), $this->_q('d2'), $who);
+		}
+		$this->load->view('manager/report/performance_individual', $data);
 	}
 
 	public function downloadReport($dept = '', $report = '')
@@ -262,6 +158,16 @@ class Ci_admin_report extends CI_Controller {
 		$user_name = isset($user_row['name']) ? $user_row['name'] : '';
 		$user_dept = !empty($user_row['department']) ? strtolower(trim($user_row['department'])) : '';
 
+		// The person's own report department, from their role (falls back to the department name).
+		$role_depts = array(5 => 'operations', 2 => 'support', 4 => 'support', 7 => 'hr', 6 => 'it', 3 => 'sales');
+		$own_dept = isset($role_depts[$m_role]) ? $role_depts[$m_role] : '';
+		if ($own_dept === '') {
+			if (strpos($user_dept, 'operat') !== false) $own_dept = 'operations';
+			else if (strpos($user_dept, 'support') !== false || strpos($user_dept, 'back') !== false) $own_dept = 'support';
+			else if ($user_dept === 'hr' || strpos($user_dept, 'human') !== false) $own_dept = 'hr';
+			else if ($user_dept === 'it') $own_dept = 'it';
+		}
+
 		$dept = strtolower(trim($dept));
 		$report = strtolower(trim($report));
 
@@ -272,17 +178,8 @@ class Ci_admin_report extends CI_Controller {
 			if ($is_admin_or_support) {
 				$visible_dept_slugs = $all_depts;
 			} else {
-				if (strpos($user_dept, 'operat') !== false) {
-					$visible_dept_slugs = array('operations');
-				} else if (strpos($user_dept, 'support') !== false || strpos($user_dept, 'back') !== false) {
-					$visible_dept_slugs = array('support');
-				} else if (strpos($user_dept, 'hr') !== false) {
-					$visible_dept_slugs = array('hr');
-				} else if (strpos($user_dept, 'it') !== false) {
-					$visible_dept_slugs = array('it');
-				} else {
-					$visible_dept_slugs = array('sales');
-				}
+				// Sales is open to everyone; plus the person's own department.
+				$visible_dept_slugs = array_values(array_unique(array_filter(array('sales', $own_dept))));
 			}
 
 			$sections = array();
@@ -313,18 +210,7 @@ class Ci_admin_report extends CI_Controller {
 		}
 
 		if (!$is_admin_or_support) {
-			$allowed = false;
-			if (strpos($user_dept, 'operat') !== false && $dept == 'operations') {
-				$allowed = true;
-			} else if ((strpos($user_dept, 'support') !== false || strpos($user_dept, 'back') !== false) && $dept == 'support') {
-				$allowed = true;
-			} else if (strpos($user_dept, 'hr') !== false && $dept == 'hr') {
-				$allowed = true;
-			} else if (strpos($user_dept, 'it') !== false && $dept == 'it') {
-				$allowed = true;
-			} else if ($dept == 'sales') {
-				$allowed = true;
-			}
+			$allowed = ($dept == 'sales' || $dept === $own_dept);
 			if (!$allowed) {
 				redirect('manager/download-report');
 				return;
@@ -798,6 +684,8 @@ class Ci_admin_report extends CI_Controller {
 		$client = trim($this->input->get('client'));
 		$filter_type = trim($this->input->get('type'));
 		$user_id = (int)$this->input->get('user_id');
+		// Only yourself or someone under you can be picked (admin / support: anyone).
+		if ($user_id > 0 && $manager_role != 1 && $manager_role != 4 && $manager_id != 1 && !in_array($user_id, $this->ci_admin_model->get_accessible_user_ids($manager_id), true)) $user_id = 0;
 
 		$orders_data = array();
 		if ($filter_type !== 'projected') {
@@ -904,6 +792,8 @@ class Ci_admin_report extends CI_Controller {
 		$d2 = trim($this->input->get('d2'));
 		$search = trim($this->input->get('search'));
 		$user_id = (int)$this->input->get('user_id');
+		// Only yourself or someone under you can be picked (admin / support: anyone).
+		if ($user_id > 0 && $manager_role != 1 && $manager_role != 4 && $manager_id != 1 && !in_array($user_id, $this->ci_admin_model->get_accessible_user_ids($manager_id), true)) $user_id = 0;
 
 		$this->db->select('L.*, S.status as status_title, U.name as owner_name, P.pipeline_stage, P.lead_ref_no');
 		$this->db->from('ci_leads as L');

@@ -205,22 +205,8 @@ function __construct()
 		
 		if(($this->input->server('REQUEST_METHOD')==='GET')&&($this->input->get('search')=='report'))
 		{ 
-					$d1='';
-					$d2='';
-					$f1='';
-					$f2='';
-					$category='';
-					$created_by='';
-					$status='';
-					$s_cat='';					
-				
-       				extract($_GET);					
-				    if(!empty($d1) && !empty($d2))
-					{					
-						$d1=date("Y-m-d",strtotime($d1));
-						$d2=date("Y-m-d",strtotime($d2));
-					}					
-					$data['list']=$this->report_model->get_vertical_report($d1,$d2,$f1, $f2,$category,$created_by,$status,$s_cat);
+					$g = function ($k) { $v = $this->input->get($k); return is_string($v) ? trim($v) : ''; };
+					$data['list'] = $this->report_model->get_vertical_report($g('d1'), $g('d2'), $g('f1'), $g('f2'), $g('category'), $g('created_by'), $g('status'), $g('s_cat'));
 				
 				}
 		$this->load->view('manager/report/vertical_report',$data);
