@@ -248,7 +248,7 @@
     </button>
 
     <div class="profile-menu-container">
-      <button type="button" class="profile-avatar-btn" id="profileMenuToggle" title="Open my profile: <?php echo htmlspecialchars($current_user_name); ?>">
+      <button type="button" class="profile-avatar-btn" id="profileMenuToggle" aria-haspopup="true" title="Account menu:<?php echo htmlspecialchars($current_user_name); ?>">
         <img src="<?php echo base_url() . $user_avatar; ?>" alt="<?php echo htmlspecialchars($current_user_name); ?>" class="profile-avatar-img" />
         <span class="my-sup-unread" id="mySupAvatarBadge" style="display:none; position:absolute; top:-4px; right:-4px;"></span>
       </button>
@@ -368,17 +368,13 @@ $(function() {
     applyCrmTheme(nextTheme);
   });
 
-  $(document).on('click', '#profileMenuToggle', function(e) {
-    e.preventDefault();
-    window.location.href = '<?php echo base_url(); ?>manager/profile';
-  });
-
-  $(document).on('click', '#profileMenuCaret', function(e) {
+  // Profile picture and arrow both open the account menu (View Profile is inside it).
+  $(document).on('click', '#profileMenuToggle, #profileMenuCaret', function(e) {
     e.preventDefault();
     e.stopPropagation();
     var open = !$('#googleProfileDropdown').is(':visible');
     $('#googleProfileDropdown').fadeToggle(150);
-    $(this).attr('aria-expanded', open ? 'true' : 'false');
+    $('#profileMenuCaret').attr('aria-expanded', open ? 'true' : 'false');
   });
 
   $(document).on('click', function(e) {

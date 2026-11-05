@@ -33,9 +33,6 @@
       <i class="fa fa-camera"></i> Change Photo
       <input type="file" id="ajaxAvatarInput" accept="image/jpeg,image/png,image/webp" style="display:none;" />
     </label>
-    <a href="<?php echo base_url(); ?>manager/profile?edit=1" class="btn btn-sm btn-primary">
-      <i class="fa fa-pencil"></i> Edit Profile Details
-    </a>
   </div>
 </div>
 <details class="pf-details col-xs-12">

@@ -372,7 +372,8 @@ class Ci_admin extends CI_Controller {
 		$data['info2']=$this->if_not_login();
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$cur_uid = (int)$this->session->userdata('manager_id');
-		$is_editing = ($this->input->get('edit') == 1 || $this->input->server('REQUEST_METHOD') === 'POST');
+		// Own profile is view-only: details cannot be edited here (only the photo, via upload_avatar).
+		$is_editing = false;
 
 		if ($is_editing) {
 			$data['list'] = $this->ci_admin_model->getSingleUser($cur_uid);
