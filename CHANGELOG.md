@@ -6,6 +6,7 @@
 - Protection: 5 requests per hour per IP, hidden anti-bot field, CSRF, and chat access by a random token only.
 ### Changed
 - Sign-in left panel: centered "Welcome to Seven Strokes CRM" heading, short introduction, three feature tiles (Industry Trusted, AI-Driven Insights, Automated Workflow) and a CRM dashboard illustration drawn in SVG over the existing background image.
+- Sign In, Forgot Password, Set New Password and Support pages fit on one screen on desktop (no page scroll): spacing, text and the illustration scale with the window height.
 - The 5 minute idle sign-out is paused while an agent is marked Available in Live Support.
 
 ## [2026-11-05] - Password Reset Email Fix

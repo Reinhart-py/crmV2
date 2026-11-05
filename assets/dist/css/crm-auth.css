@@ -371,3 +371,47 @@ body.auth-page {
 @media (max-width: 860px) {
   .sp-msgs { height: 260px; }
 }
+
+/* ---------- Desktop: always exactly one screen, no page scroll ----------
+   Sizes scale with the window height (vh) so everything fits from ~560px up. */
+@media (min-width: 861px) {
+  html, body.auth-page { height: 100%; overflow: hidden; }
+  .auth-shell { height: 100vh; height: 100dvh; min-height: 0; }
+  .auth-visual { min-height: 0; height: 100%; padding: clamp(16px, 4vh, 48px) clamp(24px, 3vw, 44px); }
+  .av-kicker { font-size: clamp(12px, 1.7vh, 15px); }
+  .av-title { font-size: clamp(26px, 4.4vh, 38px); margin-bottom: clamp(6px, 1.4vh, 14px); }
+  .av-sub { font-size: clamp(13px, 1.75vh, 15.5px); margin-bottom: clamp(12px, 3vh, 30px); }
+  .av-features { gap: clamp(8px, 1.4vh, 14px); margin-bottom: clamp(12px, 3.6vh, 34px); }
+  .av-features li { padding: clamp(8px, 1.7vh, 16px) 8px clamp(8px, 1.5vh, 14px); gap: clamp(6px, 1.1vh, 10px); }
+  .av-ico { width: clamp(34px, 5vh, 46px); height: clamp(34px, 5vh, 46px); }
+  .av-label { font-size: clamp(10.5px, 1.3vh, 12px); }
+  .av-art svg { max-height: clamp(110px, 31vh, 300px); width: auto; max-width: 100%; margin: 0 auto; }
+
+  .auth-panel { height: 100%; padding: clamp(14px, 3vh, 40px) clamp(28px, 4vw, 56px) clamp(10px, 2vh, 28px); overflow-y: auto; }
+  .auth-brand { margin-bottom: clamp(10px, 2.6vh, 28px); }
+  .auth-brand img { height: clamp(40px, 7vh, 64px); }
+  .auth-title { font-size: clamp(24px, 3.4vh, 30px); margin-bottom: clamp(4px, 0.8vh, 8px); }
+  .auth-sub { margin-bottom: clamp(14px, 3vh, 30px); }
+  .auth-field { margin-bottom: clamp(10px, 2vh, 18px); }
+  .auth-label { margin-bottom: clamp(4px, 0.8vh, 7px); }
+  .auth-input { height: clamp(40px, 5.2vh, 46px); }
+  .auth-btn { height: clamp(40px, 5.4vh, 48px); }
+  .auth-row { margin-bottom: clamp(14px, 2.6vh, 24px); }
+  .auth-alt { margin-top: clamp(10px, 2.2vh, 22px); }
+  .auth-foot { margin-top: clamp(8px, 2vh, 24px); }
+  .auth-alert { margin-bottom: clamp(10px, 1.8vh, 18px); padding: clamp(7px, 1.1vh, 10px) 12px; }
+
+  /* Support page */
+  .sp-inner { padding: clamp(4px, 1.6vh, 18px) 0 0; }
+  .sp-inner .auth-brand { margin-bottom: clamp(6px, 1.6vh, 18px); }
+  .sp-inner .auth-brand img { height: clamp(34px, 5.6vh, 64px); }
+  .sp-inner .auth-sub { margin-bottom: clamp(10px, 2vh, 30px); }
+  .sp-inner .auth-field { margin-bottom: clamp(8px, 1.5vh, 18px); }
+  .sp-textarea { min-height: clamp(56px, 10vh, 104px); height: clamp(56px, 10vh, 104px); }
+  .sp-msgs { height: clamp(150px, 34vh, 300px); }
+}
+/* Very short windows: drop the illustration rather than squeeze it */
+@media (min-width: 861px) and (max-height: 600px) {
+  .av-art { display: none; }
+  .sp-inner .auth-brand { display: none; }
+}
