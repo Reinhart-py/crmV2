@@ -1,31 +1,40 @@
     <aside class="auth-visual">
       <div class="av-inner">
-        <p class="av-kicker">Welcome to</p>
-        <h2 class="av-title">Seven Strokes CRM</h2>
-        <p class="av-sub">Run your accounting, tax and advisory business from one place: clients, leads, orders and sales, with every step tracked.</p>
 
-        <ul class="av-features">
+        <!-- 1. Welcome text -->
+        <div class="av-group av-top">
+          <p class="av-kicker">Welcome to</p>
+          <h2 class="av-title">Seven Strokes CRM</h2>
+          <p class="av-sub">One platform for your accounting, auditing and consulting business: from the first call to the final sale.</p>
+        </div>
+
+        <!-- 2. CRM functions -->
+        <ul class="av-group av-features">
           <li>
             <span class="av-ico" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><path d="m7 15 4-4 3 3 6-6"></path><path d="M15 8h5v5"></path></svg>
             </span>
-            <span class="av-label">Industry<br>Trusted</span>
+            <span class="av-label">Sales<br>Management</span>
+            <span class="av-cap">Leads, orders and sales</span>
           </li>
           <li>
             <span class="av-ico" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2"></rect><rect x="9" y="9" width="6" height="6" rx="1"></rect><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"></path></svg>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m11 17 2 2a1 1 0 1 0 3-3"></path><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"></path><path d="m21 3 1 11h-2"></path><path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"></path><path d="M3 4h8"></path></svg>
             </span>
-            <span class="av-label">AI-Driven<br>Insights</span>
+            <span class="av-label">KAM<br>Management</span>
+            <span class="av-cap">Key client accounts</span>
           </li>
           <li>
             <span class="av-ico" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-15.5-6.2L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 15.5 6.2L21 16"></path><path d="M21 21v-5h-5"></path></svg>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><path d="m9 14 2 2 4-4"></path></svg>
             </span>
-            <span class="av-label">Automated<br>Workflow</span>
+            <span class="av-label">Compliance<br>Management</span>
+            <span class="av-cap">Approvals and audit trail</span>
           </li>
         </ul>
 
-        <div class="av-art" aria-hidden="true">
+        <!-- 3. CRM illustration -->
+        <div class="av-group av-art" aria-hidden="true">
           <svg viewBox="0 0 520 300" xmlns="http://www.w3.org/2000/svg" role="presentation">
             <!-- dashboard window -->
             <rect x="40" y="18" width="440" height="262" rx="14" fill="#ffffff"/>

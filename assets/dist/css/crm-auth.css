@@ -457,3 +457,80 @@ body.auth-page {
 @media (max-width: 860px) {
   .auth-brand img { height: 84px; margin: -8px 0; }
 }
+
+/* ---------- Left panel v3: three aligned groups (text / functions / illustration) ---------- */
+.auth-visual { align-items: stretch; isolation: isolate; }
+/* Soft navy shade, strongest at the top where the photo is brightest, so the white text reads clearly. */
+.auth-visual::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg,
+    rgba(8, 24, 64, 0.66) 0%,
+    rgba(8, 24, 64, 0.38) 34%,
+    rgba(8, 24, 64, 0.12) 62%,
+    rgba(8, 24, 64, 0.30) 100%);
+  pointer-events: none;
+}
+.av-inner {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 24px;
+}
+.av-group { width: 100%; margin: 0; }
+.av-kicker { color: #ffffff; opacity: 0.92; }
+.av-title { color: #ffffff; text-shadow: 0 2px 12px rgba(4, 14, 40, 0.55); }
+.av-sub { color: #ffffff; opacity: 0.95; margin-bottom: 0; text-shadow: 0 1px 6px rgba(4, 14, 40, 0.55); }
+.av-features { max-width: none; margin: 0; align-items: stretch; }
+.av-features li {
+  background: rgba(8, 24, 64, 0.34);
+  border: 1px solid rgba(255, 255, 255, 0.30);
+  justify-content: flex-start;
+  text-align: center;
+}
+.av-ico { color: #1e3a8a; }
+.av-features li:nth-child(2) .av-ico { color: #1d4ed8; }
+.av-features li:nth-child(3) .av-ico { color: #0369a1; }
+.av-label { color: #ffffff; }
+.av-cap {
+  font-size: 12px;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.85);
+}
+.av-art { max-width: none; display: flex; justify-content: center; }
+.av-art svg { width: 100%; max-width: 480px; }
+
+@media (min-width: 861px) {
+  .auth-visual { padding: clamp(24px, 6vh, 64px) clamp(24px, 3vw, 44px) clamp(20px, 4vh, 44px); }
+  .av-inner { height: 100%; gap: clamp(14px, 3vh, 32px); }
+  .av-features li { padding: clamp(10px, 2vh, 18px) 10px; }
+  .av-cap { font-size: clamp(10.5px, 1.3vh, 12px); }
+  .av-art { flex: 1 1 auto; min-height: 0; align-items: flex-end; }
+  .av-art svg { height: 100%; max-height: clamp(110px, 34vh, 300px); width: auto; max-width: 100%; }
+}
+@media (min-width: 861px) and (max-height: 700px) {
+  .av-cap { display: none; }
+}
+@media (max-width: 860px) {
+  .av-inner { gap: 18px; }
+  .av-cap { display: none; }
+}
+/* Center the three groups as one block with equal gaps between them. */
+@media (min-width: 861px) {
+  .av-inner { justify-content: center; gap: clamp(22px, 5.5vh, 56px); }
+  .av-art { flex: 0 1 auto; align-items: center; }
+  .av-art svg { height: auto; max-height: clamp(120px, 36vh, 320px); }
+}
+@media (min-width: 861px) {
+  .auth-visual { padding: clamp(20px, 4.5vh, 48px) clamp(24px, 3vw, 44px); }
+}
+@media (max-width: 860px) {
+  .auth-visual .av-art { display: none; }
+}

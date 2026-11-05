@@ -9,6 +9,7 @@
 - Sign In, Forgot Password, Set New Password and Support pages fit on one screen on desktop (no page scroll): spacing, text and the illustration scale with the window height.
 - The right (form) side now has a very light wash of the same brand image instead of flat white; form fields stay white.
 - Larger, clearer logo on the sign-in pages (about twice the size, empty margins of the image trimmed) and more even spacing between title, fields, Remember Me row and Sign In button.
+- Left panel rebuilt as three evenly spaced, centered groups: welcome text, three CRM function tiles (Sales Management, KAM Management, Compliance Management, each with an SVG icon and caption) and the dashboard illustration. A soft navy shade at the top makes the white text clearly readable.
 - The 5 minute idle sign-out is paused while an agent is marked Available in Live Support.
 
 ## [2026-11-05] - Password Reset Email Fix
