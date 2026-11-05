@@ -15,7 +15,11 @@
   .ls-hint { color: #64748b; font-size: 13px; }
   .ls-list-head { padding: 12px 14px; border-bottom: 1px solid #e2e8f0; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
   .ls-list { max-height: 600px; overflow-y: auto; }
-  .ls-item { display: block; width: 100%; text-align: left; border: 0; border-bottom: 1px solid #f1f5f9; background: #fff; padding: 12px 14px; cursor: pointer; font: inherit; }
+  .ls-item { display: block; width: 100%; text-align: left; border: 0; border-bottom: 1px solid #f1f5f9; background: #fff; padding: 9px 14px; cursor: pointer; font: inherit; }
+  .ls-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .ls-row .ls-name { flex: 0 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ls-ref { flex: 0 0 auto; color: #64748b; font-size: 12px; }
+  .ls-row .ls-time { margin-left: auto; }
   .ls-item:hover { background: #f8fafc; }
   .ls-item.is-active { background: #eff6ff; box-shadow: inset 3px 0 0 #1e3a8a; }
   .ls-item-top { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
@@ -134,11 +138,10 @@
     if (!chats.length) { el('lsList').innerHTML = '<div class="ls-empty">' + (tab === 'closed' ? 'No closed chats in the last 7 days.' : 'No open chats.') + '</div>'; }
     else {
       el('lsList').innerHTML = chats.map(function (c) {
-        var last = (c.last_sender === 'agent' ? 'You: ' : '') + (c.last_message || '');
         return '<button type="button" class="ls-item' + (+c.id === current ? ' is-active' : '') + '" data-id="' + c.id + '">' +
-          '<div class="ls-item-top"><span class="ls-name">' + esc(c.name) + '</span><span class="ls-time">' + esc(fmtTime(c.updated_at)) + '</span></div>' +
-          '<div class="ls-item-top" style="margin-top:4px;"><span class="ls-hint">' + esc(c.ref_no) + ' &middot; ' + esc(c.phone) + '</span><span class="ls-badge ls-b-' + esc(c.status) + '">' + esc(c.status) + '</span></div>' +
-          '<div class="ls-last">' + (+c.unread > 0 ? '<span class="cb-unread" style="float:right;margin-left:6px;">' + c.unread + '</span>' : '') + esc(last) + '</div></button>';
+          '<div class="ls-row"><span class="ls-name">' + esc(c.name) + '</span><span class="ls-ref">' + esc(c.ref_no) + '</span>' +
+          '<span class="ls-time">' + esc(fmtTime(c.updated_at)) + '</span>' +
+          (+c.unread > 0 ? '<span class="cb-unread">' + c.unread + '</span>' : '') + '</div></button>';
       }).join('');
     }
     all.forEach(function (c) { if (c.status === 'waiting') waiting++; });
