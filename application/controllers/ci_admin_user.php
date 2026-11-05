@@ -23,6 +23,7 @@ class Ci_admin_user extends CI_Controller {
 		$this->_ensure_designation();
 		$this->_ensure_contact();
 		$this->_ensure_exit();
+		$this->_ensure_docs();
   
 	}
 	
@@ -194,6 +195,8 @@ class Ci_admin_user extends CI_Controller {
 		
 		$this->_page_data($data);
 		$data['exit_reasons'] = self::exit_reasons();
+		$data['doc_counts'] = array();
+		foreach ($this->db->query('SELECT user_id, COUNT(*) n, GROUP_CONCAT(DISTINCT doc_type ORDER BY doc_type SEPARATOR ", ") t FROM ci_user_docs GROUP BY user_id')->result_array() as $dc) $data['doc_counts'][(int)$dc['user_id']] = $dc;
 		$this->load->view('manager/user/userlist',$data);
 	}
 
@@ -231,6 +234,8 @@ public function view($id='')
 	           }
 	           $data['exit_reasons'] = self::exit_reasons();
 	           $data['is_self'] = ((int)$id === (int)$this->session->userdata('manager_id'));
+	           $data['doc_types'] = self::doc_types();
+	           $data['docs'] = !empty($data['can_write']) ? $this->db->query('SELECT D.*, U.name AS uploader FROM ci_user_docs D LEFT JOIN ci_user U ON U.id = D.uploaded_by WHERE D.user_id = ? ORDER BY D.doc_type, D.uploaded_at DESC', array((int)$id))->result_array() : array();
 	           $this->load->view('manager/user/user_view',$data);
 
 }
@@ -843,6 +848,104 @@ public function view($id='')
 		$this->ci_admin_model->log_admin_action('user_rejoined', 'User ID #' . $id . ' rejoined (leaving record removed, login enabled)', 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));
 		$this->session->set_flashdata('message', $u['name'] . ' is back: the leaving record is removed and the login is enabled again.');
 		redirect($this->base . '/view/' . $id);
+	}
+
+	/** Staff documents (passport, visa, Emirates ID scans ...): JPG / PNG / WEBP / PDF, at most 1 MB each.
+	 *  Files sit in application/uploads/staff_docs/<user id>/ under random names (application/ is closed to the web)
+	 *  and are only served through doc_file(), which needs the Full (write) right like salary and bank details. */
+	const DOC_MAX = 1048576;
+	private function _ensure_docs()
+	{
+		$this->db->query("CREATE TABLE IF NOT EXISTS ci_user_docs (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL, doc_type VARCHAR(40) NOT NULL DEFAULT '', file_name VARCHAR(80) NOT NULL, orig_name VARCHAR(200) NOT NULL DEFAULT '', mime VARCHAR(60) NOT NULL DEFAULT '', size INT NOT NULL DEFAULT 0, uploaded_by INT NULL, uploaded_at DATETIME NULL, KEY user_id (user_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		$this->db->data_cache = array();
+	}
+	public static function doc_types()
+	{
+		return array('Passport', 'Visa', 'Emirates ID', 'Labour Card', 'Photo', 'Contract / Offer Letter', 'Certificate', 'Other');
+	}
+	private function _doc_dir($uid = null)
+	{
+		$base = APPPATH . 'uploads/staff_docs/';
+		if (!is_dir($base)) {
+			@mkdir($base, 0755, true);
+			@file_put_contents($base . '.htaccess', "Deny from all\n");
+			@file_put_contents($base . 'index.html', '');
+		}
+		return $uid === null ? $base : $base . (int)$uid . '/';
+	}
+	private function _doc_back($uid, $msg, $ok = true)
+	{
+		$this->session->set_flashdata($ok ? 'message' : 'error_message', $msg);
+		redirect($this->base . '/view/' . (int)$uid . '#docs');
+	}
+
+	public function doc_upload($id = '')
+	{
+		$this->if_not_login();
+		$id = (int)$id;
+		$u = $id ? $this->comman_model->getAll(array('id' => $id), '', 'ci_user', 'first') : array();
+		if (empty($u) || $this->input->server('REQUEST_METHOD') !== 'POST') redirect($this->base);
+		$this->_guard_target($u);
+		$file = isset($_FILES['doc']) ? $_FILES['doc'] : null;
+		if (!$file || $file['error'] === UPLOAD_ERR_NO_FILE) $this->_doc_back($id, 'Choose a file to upload.', false);
+		if ($file['error'] === UPLOAD_ERR_INI_SIZE || $file['error'] === UPLOAD_ERR_FORM_SIZE || $file['size'] > self::DOC_MAX)
+			$this->_doc_back($id, 'The file is larger than 1 MB. Please upload a smaller scan or photo (max 1 MB).', false);
+		if ($file['error'] !== UPLOAD_ERR_OK || !is_uploaded_file($file['tmp_name'])) $this->_doc_back($id, 'The upload did not complete, please try again.', false);
+		// File type from its first bytes (works without the fileinfo extension, and a renamed file cannot pass as an image)
+		$head = (string)@file_get_contents($file['tmp_name'], false, null, 0, 16);
+		$mime = '';
+		if (bin2hex(substr($head, 0, 3)) === 'ffd8ff') $mime = 'image/jpeg';
+		elseif (bin2hex(substr($head, 0, 8)) === '89504e470d0a1a0a') $mime = 'image/png';
+		elseif (substr($head, 0, 4) === 'RIFF' && substr($head, 8, 4) === 'WEBP') $mime = 'image/webp';
+		elseif (strncmp($head, '%PDF-', 5) === 0) $mime = 'application/pdf';
+		$ext = array('image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp', 'application/pdf' => 'pdf');
+		if (!isset($ext[$mime])) $this->_doc_back($id, 'Only JPG, PNG, WEBP images or PDF files can be uploaded.', false);
+		$type = (string)$this->input->post('doc_type');
+		if (!in_array($type, self::doc_types(), true)) $type = 'Other';
+		$dir = $this->_doc_dir($id);
+		if (!is_dir($dir)) { @mkdir($dir, 0755, true); @file_put_contents($dir . 'index.html', ''); }
+		$name = bin2hex(random_bytes(16)) . '.' . $ext[$mime];
+		if (!@move_uploaded_file($file['tmp_name'], $dir . $name)) $this->_doc_back($id, 'The file could not be saved on the server.', false);
+		$orig = preg_replace('/[^\w\s.\-()]+/u', '_', basename((string)$file['name']));
+		$this->db->insert('ci_user_docs', array('user_id' => $id, 'doc_type' => $type, 'file_name' => $name, 'orig_name' => mb_substr($orig, 0, 200),
+			'mime' => $mime, 'size' => (int)$file['size'], 'uploaded_by' => (int)$this->session->userdata('manager_id'), 'uploaded_at' => date('Y-m-d H:i:s')));
+		$this->ci_admin_model->log_admin_action('user_doc_upload', 'Uploaded ' . $type . ' document for user ID #' . $id, 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));
+		$this->_doc_back($id, $type . ' document uploaded.');
+	}
+
+	public function doc_file($doc_id = '')
+	{
+		$this->if_not_login();
+		$d = $this->db->where('id', (int)$doc_id)->get('ci_user_docs')->row_array();
+		if (empty($d)) show_404();
+		$u = $this->comman_model->getAll(array('id' => (int)$d['user_id']), '', 'ci_user', 'first');
+		if (empty($u)) show_404();
+		$this->_guard_target($u);
+		$path = $this->_doc_dir($d['user_id']) . basename($d['file_name']);
+		if (!is_file($path)) show_404();
+		$dl = $this->input->get('dl') ? 'attachment' : 'inline';
+		$nice = preg_replace('/[^\w.\-]+/', '_', $d['doc_type'] . '-' . $u['name']) . '.' . pathinfo($d['file_name'], PATHINFO_EXTENSION);
+		while (ob_get_level()) ob_end_clean();
+		header('Content-Type: ' . $d['mime']);
+		header('Content-Length: ' . filesize($path));
+		header('Content-Disposition: ' . $dl . '; filename="' . $nice . '"');
+		header('X-Content-Type-Options: nosniff');
+		header('Cache-Control: private, no-store');
+		readfile($path);
+		exit;
+	}
+
+	public function doc_delete($doc_id = '')
+	{
+		$this->if_not_login();
+		$d = $this->db->where('id', (int)$doc_id)->get('ci_user_docs')->row_array();
+		if (empty($d) || $this->input->server('REQUEST_METHOD') !== 'POST') redirect($this->base);
+		$u = $this->comman_model->getAll(array('id' => (int)$d['user_id']), '', 'ci_user', 'first');
+		if (!empty($u)) $this->_guard_target($u);
+		@unlink($this->_doc_dir($d['user_id']) . basename($d['file_name']));
+		$this->db->where('id', (int)$d['id'])->delete('ci_user_docs');
+		$this->ci_admin_model->log_admin_action('user_doc_delete', 'Deleted ' . $d['doc_type'] . ' document of user ID #' . (int)$d['user_id'], 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));
+		$this->_doc_back($d['user_id'], $d['doc_type'] . ' document deleted.');
 	}
 
 public function ajax_edit_status()

@@ -23,3 +23,5 @@ database/127_0_0_1.sql
 # Agent Memory & Local Preferences (strictly ignored from Git)
 project_memory.md
 .agents/
+
+application/uploads/staff_docs/

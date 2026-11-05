@@ -163,6 +163,7 @@ $filters = array('mgr' => 'Manager', 'cat' => 'Category', 'des' => 'Designation'
 .ulist .chip{font-size:11.5px;padding:2px 9px}
 .ulist #example_user.dtr-inline.collapsed > tbody > tr > td.dtr-control{padding-left:34px !important;position:relative}
 .ulist .chip.m-st{display:none}
+.ulist .clip{display:inline-block;margin-left:6px;font-size:12.5px;font-weight:600;color:var(--crm-ocean,#1e3a8a);white-space:nowrap}
 /* Readability: key fields (ID, name, manager, status) larger; secondary details stay smaller and muted */
 .ulist #example_user thead th{font-size:12px}
 .ulist #example_user tbody td{font-size:14px;padding:9px 10px !important}
@@ -298,12 +299,12 @@ $filters = array('mgr' => 'Manager', 'cat' => 'Category', 'des' => 'Designation'
               <td data-order="<?php echo $r['pct']; ?>"><div class="pf<?php echo $r['missing'] ? '' : ' full'; ?>"<?php if ($r['missing']) { ?> title="<?php echo $h('Missing: ' . implode(', ', $r['missing'])); ?>"<?php } ?>><div class="bar"><span style="width:<?php echo $r['pct']; ?>%"></span></div><?php echo $r['pct']; ?>%<?php if ($r['missing']) { ?> <span class="miss"><?php echo count($r['missing']); ?> missing</span><?php } ?><?php $ri = array('report_email' => 'fa-envelope', 'report_phone' => 'fa-phone', 'report_whatsapp' => 'fa-whatsapp'); ?><span class="rp"><?php foreach ($r['rpt'] as $rk => $x) { ?><i class="fa <?php echo $ri[$rk]; ?> <?php echo str_replace(' ', '-', $x[2]); ?>" title="<?php echo $h('Reporting ' . $x[0] . ': ' . ($x[1] !== '' ? $x[1] . ' (' . $x[2] . ')' : 'not set')); ?>"></i><?php } ?></span></div></td>
               <?php } ?>
               <?php if ($r['soon'] === null) { ?>
-              <td data-order="999999"><span class="chip na">No dates</span></td>
+              <td data-order="999999"><span class="chip na">No dates</span><?php if ($can_write && !empty($doc_counts[$id])) { ?><span class="clip" title="<?php echo $h('Files: ' . $doc_counts[$id]['t']); ?>"><i class="fa fa-paperclip"></i> <?php echo (int)$doc_counts[$id]['n']; ?></span><?php } ?></td>
               <?php } else {
                 $d = $r['soon']; $cls = ($d[2] < 0) ? 'x' : (($d[2] <= 30) ? 'w' : (($d[2] <= 60) ? 'y' : 'ok'));
                 $txt = ($d[2] < 0) ? $d[0] . ' expired' : (($d[2] <= 60) ? $d[0] . ' in ' . $d[2] . ' day' . ($d[2] == 1 ? '' : 's') : 'Valid');
                 $tip = array(); foreach ($r['docs'] as $x) $tip[] = $x[0] . ': ' . $x[1] . ($x[2] < 0 ? ' (expired)' : ''); ?>
-              <td data-order="<?php echo $d[2] + 100000; ?>"><span class="chip <?php echo $cls; ?>" title="<?php echo $h(implode(' | ', $tip)); ?>"><?php echo $h($txt); ?></span></td>
+              <td data-order="<?php echo $d[2] + 100000; ?>"><span class="chip <?php echo $cls; ?>" title="<?php echo $h(implode(' | ', $tip)); ?>"><?php echo $h($txt); ?></span><?php if ($can_write && !empty($doc_counts[$id])) { ?><span class="clip" title="<?php echo $h('Files: ' . $doc_counts[$id]['t']); ?>"><i class="fa fa-paperclip"></i> <?php echo (int)$doc_counts[$id]['n']; ?></span><?php } ?></td>
               <?php } ?>
               <td data-order="<?php echo date('YmdHis', strtotime($li['created'])); ?>" style="white-space:nowrap"><?php echo simple_date($li['created']); ?></td>
               <td><?php if ($r['left']) { ?><span class="chip lft" title="<?php echo $h('Left on ' . date('d-M-Y', strtotime($li['left_on'])) . ' - ' . $li['left_reason']); ?>">Left</span><span class="lg"><?php echo date('d-M-Y', strtotime($li['left_on'])); ?></span><?php } else { ?><span class="chip <?php echo $r['on'] ? 'on' : 'off'; ?>"><?php echo $r['on'] ? 'Enabled' : 'Disabled'; ?></span><?php } ?></td>

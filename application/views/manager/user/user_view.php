@@ -104,6 +104,27 @@ $enabled = ((int)$p['admin_status'] === 1);
 .uview .uv-chip.soon{background:rgba(234,179,8,.14);color:#854d0e}
 .uview .uv-alert{margin:0 14px 10px;padding:7px 10px;border-radius:8px;background:rgba(220,38,38,.07);border:1px solid rgba(220,38,38,.22);font-size:12.5px;color:var(--crm-ink,#0f172a)}
 .uview .uv-actions{display:flex;gap:8px;flex-wrap:wrap}
+.uview .uv-docs{padding:8px 14px 12px}
+.uview .uv-doclist{list-style:none;margin:0 0 10px;padding:0}
+.uview .uv-doclist li{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--crm-line-soft,#eef2f7)}
+.uview .uv-doclist .ic{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex:0 0 auto}
+.uview .uv-doclist .ic.pdf{background:rgba(220,38,38,.1);color:#b91c1c}
+.uview .uv-doclist .ic.img{background:rgba(30,58,138,.1);color:#1e3a8a}
+.uview .uv-doclist .tx{flex:1;min-width:0}
+.uview .uv-doclist .tx b{display:block;font-size:14px}
+.uview .uv-doclist .tx small{display:block;font-size:12px;color:var(--crm-muted,#64748b);word-break:break-all}
+.uview .uv-doclist .ac{display:flex;gap:4px;flex:0 0 auto}
+.uview .uv-doclist .ac form{margin:0}
+.uview .uv-doclist .ac a,.uview .uv-doclist .ac button{width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid var(--crm-line,#e2e8f0);background:var(--crm-surface,#fff);color:var(--crm-ink-2,#334155);padding:0}
+.uview .uv-doclist .ac button:hover{border-color:#dc2626;color:#dc2626}
+.uview .uv-docnone{font-size:13px;color:var(--crm-muted,#64748b);margin:4px 0 10px}
+.uview .uv-docup{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.uview .uv-docup select{width:200px;height:34px}
+.uview .uv-docup input[type=file]{flex:1;min-width:200px;height:34px;padding:5px 8px}
+.uview .uv-docup .btn{height:34px;font-weight:600}
+.uview .uv-docup .hint{width:100%;font-size:12px;color:var(--crm-muted,#64748b)}
+.uview .uv-alink{margin-left:8px;font-weight:600;white-space:nowrap}
+@media (max-width:767px){.uview .uv-docup select,.uview .uv-docup input[type=file],.uview .uv-docup .btn{width:100%;flex:none}}
 .uview .uv-chip.lft{background:rgba(100,116,139,.14);color:#475569;border-color:rgba(100,116,139,.3)}
 .uview .uv-left{margin:0 14px 10px;padding:9px 12px;border-radius:8px;background:rgba(100,116,139,.08);border:1px solid rgba(100,116,139,.25);font-size:13px;display:flex;gap:12px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}
 .uview .uv-left .nt{margin-top:3px;color:var(--crm-ink-2,#334155)}
@@ -191,7 +212,7 @@ $enabled = ((int)$p['admin_status'] === 1);
         <?php } ?>
       </div>
       <?php } ?>
-      <?php if ($exp_alerts) { ?><div class="uv-alert"><i class="fa fa-exclamation-triangle" style="color:#dc2626"></i> <b>Document expiry:</b> <?php echo htmlspecialchars(implode(' · ', $exp_alerts), ENT_QUOTES, 'UTF-8'); ?></div><?php } ?>
+      <?php if ($exp_alerts) { ?><div class="uv-alert"><i class="fa fa-exclamation-triangle" style="color:#dc2626"></i> <b>Document expiry:</b> <?php echo htmlspecialchars(implode(' · ', $exp_alerts), ENT_QUOTES, 'UTF-8'); ?><?php if ($can_write) { foreach (array('Passport', 'Visa', 'Emirates ID') as $xt) { $hit = false; foreach ($exp_alerts as $ea) if (strpos($ea, $xt . ' ') === 0) $hit = true; if ($hit && !empty($docs)) foreach ($docs as $dd) { if ($dd['doc_type'] === $xt) { ?> <a class="uv-alink" href="<?php echo base_url().$base; ?>/doc_file/<?php echo (int)$dd['id']; ?>" target="_blank" rel="noopener"><i class="fa fa-paperclip"></i> <?php echo $xt; ?> file</a><?php break; } } } } ?></div><?php } ?>
       <div class="uv-fill<?php echo ($filled === $total) ? ' done' : ''; ?>">
         <div class="bar"><span style="width:<?php echo $total ? round($filled * 100 / $total) : 0; ?>%"></span></div>
         <?php echo $filled; ?> of <?php echo $total; ?> details filled
@@ -207,6 +228,77 @@ $enabled = ((int)$p['admin_status'] === 1);
         <?php } ?>
       </dl>
     </div>
+    <?php } ?>
+    <?php if ($can_write) {
+      $doc_by_type = array(); foreach ($docs as $dd) if (!isset($doc_by_type[$dd['doc_type']])) $doc_by_type[$dd['doc_type']] = $dd; ?>
+    <div class="uv-card" id="docs">
+      <div class="uv-sec-h"><span>Documents</span><small><?php echo count($docs); ?> file<?php echo count($docs) == 1 ? '' : 's'; ?></small></div>
+      <div class="uv-docs">
+        <?php if ($docs) { ?>
+        <ul class="uv-doclist">
+          <?php foreach ($docs as $dd) { $isPdf = ($dd['mime'] === 'application/pdf'); ?>
+          <li>
+            <span class="ic <?php echo $isPdf ? 'pdf' : 'img'; ?>"><i class="fa <?php echo $isPdf ? 'fa-file-pdf-o' : 'fa-file-image-o'; ?>"></i></span>
+            <span class="tx"><b><?php echo htmlspecialchars($dd['doc_type'], ENT_QUOTES, 'UTF-8'); ?></b>
+              <small><?php echo htmlspecialchars($dd['orig_name'], ENT_QUOTES, 'UTF-8'); ?> &middot; <?php echo $dd['size'] >= 1024 * 100 ? round($dd['size'] / 1048576, 2) . ' MB' : max(1, round($dd['size'] / 1024)) . ' KB'; ?> &middot; <?php echo date('d-M-Y', strtotime($dd['uploaded_at'])); ?><?php echo !empty($dd['uploader']) ? ' by ' . htmlspecialchars($dd['uploader'], ENT_QUOTES, 'UTF-8') : ''; ?></small></span>
+            <span class="ac">
+              <a href="<?php echo base_url().$base; ?>/doc_file/<?php echo (int)$dd['id']; ?>" target="_blank" rel="noopener" title="Open"><i class="fa fa-eye"></i></a>
+              <a href="<?php echo base_url().$base; ?>/doc_file/<?php echo (int)$dd['id']; ?>?dl=1" title="Download"><i class="fa fa-download"></i></a>
+              <form method="post" action="<?php echo base_url().$base; ?>/doc_delete/<?php echo (int)$dd['id']; ?>" onsubmit="return confirm('Delete this document?');"><input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>"><button type="submit" title="Delete"><i class="fa fa-trash"></i></button></form>
+            </span>
+          </li>
+          <?php } ?>
+        </ul>
+        <?php } else { ?><p class="uv-docnone">No documents yet.</p><?php } ?>
+        <form class="uv-docup" method="post" enctype="multipart/form-data" action="<?php echo base_url().$base; ?>/doc_upload/<?php echo (int)$p['id']; ?>">
+          <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
+          <select name="doc_type" class="form-control" required><option value="">Document type</option><?php foreach ($doc_types as $dt) { ?><option><?php echo htmlspecialchars($dt, ENT_QUOTES, 'UTF-8'); ?></option><?php } ?></select>
+          <input type="file" name="doc" class="form-control" accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf" required>
+          <button type="submit" class="btn btn-primary"><i class="fa fa-upload"></i> Upload</button>
+          <div class="hint">JPG, PNG or PDF, <b>max 1 MB</b> each. Large photos are made smaller automatically; a PDF over 1 MB has to be compressed first.</div>
+        </form>
+      </div>
+    </div>
+    <script>
+    // Keep every upload at or under 1 MB: photos are scaled down in the browser, other files over 1 MB are refused.
+    (function () {
+      var MAX = 1048576, form = document.querySelector('.uv-docup'); if (!form) return;
+      var inp = form.querySelector('[name=doc]'), hint = form.querySelector('.hint'), base = hint.innerHTML, busy = false;
+      function say(t, bad) { hint.innerHTML = t; hint.style.color = bad ? '#b91c1c' : ''; }
+      function shrink(file, cb) {
+        var img = new Image(), url = URL.createObjectURL(file);
+        img.onload = function () {
+          var tries = [[2000, .82], [1600, .78], [1400, .72], [1200, .66], [1000, .6]], i = 0;
+          (function next() {
+            if (i >= tries.length) { URL.revokeObjectURL(url); return cb(null); }
+            var m = tries[i][0], q = tries[i][1], k = Math.min(1, m / Math.max(img.width, img.height)), c = document.createElement('canvas');
+            c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+            var g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
+            c.toBlob(function (b) { i++; if (b && b.size <= MAX) { URL.revokeObjectURL(url); cb(b); } else next(); }, 'image/jpeg', q);
+          })();
+        };
+        img.onerror = function () { URL.revokeObjectURL(url); cb(null); };
+        img.src = url;
+      }
+      inp.addEventListener('change', function () {
+        var f = inp.files[0]; say(base);
+        if (!f || f.size <= MAX) return;
+        if (!/^image\/(jpeg|png|webp)$/.test(f.type)) { inp.value = ''; return say('This file is ' + (f.size / 1048576).toFixed(1) + ' MB. The limit is 1 MB - please compress the PDF and try again.', true); }
+        busy = true; say('Making the photo smaller...');
+        shrink(f, function (b) {
+          busy = false;
+          if (!b) { inp.value = ''; return say('This photo could not be made smaller than 1 MB. Please use a smaller image.', true); }
+          var nf = new File([b], f.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' }), dt = new DataTransfer();
+          dt.items.add(nf); inp.files = dt.files;
+          say('Photo reduced from ' + (f.size / 1048576).toFixed(1) + ' MB to ' + Math.round(b.size / 1024) + ' KB - ready to upload.');
+        });
+      });
+      form.addEventListener('submit', function (e) {
+        var f = inp.files[0];
+        if (busy || (f && f.size > MAX)) { e.preventDefault(); say(busy ? 'Please wait, the photo is still being made smaller.' : 'The file is larger than 1 MB.', !busy); }
+      });
+    })();
+    </script>
     <?php } ?>
   </div>
   </section>
