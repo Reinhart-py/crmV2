@@ -705,6 +705,41 @@ public function dashboard_TeamPro($table='ci_leads'){
 	return $data;			
 }
 
+// Monthly targets (AED) for the 12 projection months (this month onwards), from ci_hr_targets.
+// Same rules as the achievement graph: own target, or the team's / everyone's sum for the team chart.
+public function dashboard_projection_targets($is_team = 0){
+	$manager_id = (int)$this->session->userdata('manager_id');
+	$user_role = (int)$this->session->userdata('user_role');
+	if ($user_role === 0) {
+		$user_role = (int)$this->session->userdata('manager_role');
+	}
+	$scope = "user_id = {$manager_id}";
+	if ($is_team) {
+		if ($user_role === 1 || $user_role === 4) {
+			$scope = '1=1';
+		} else {
+			$team_array = $this->fetchTeamList($manager_id, '');
+			$team_clean = (!empty($team_array) && is_array($team_array)) ? array_filter(array_map('intval', $team_array)) : array();
+			$scope = !empty($team_clean) ? 'user_id IN (' . implode(',', $team_clean) . ')' : '1=0';
+		}
+	}
+	$targets = array();
+	for ($i = 0; $i < 12; $i++) {
+		$d1 = date("Y-m-01", strtotime("+$i month"));
+		$d2 = date("Y-m-t", strtotime("+$i month"));
+		$month_key = date("Y-m", strtotime("+$i month"));
+		$period = "status = 'Active' AND (period_month = '{$month_key}' OR ('{$d1}' <= end_date AND '{$d2}' >= start_date))";
+		if ($is_team) {
+			$row = $this->db->query("SELECT SUM(target_amount) AS s FROM ci_hr_targets WHERE {$scope} AND {$period}")->row_array();
+			$targets[] = !empty($row['s']) ? (float)$row['s'] : 0.0;
+		} else {
+			$row = $this->db->query("SELECT target_amount FROM ci_hr_targets WHERE {$scope} AND {$period} ORDER BY id DESC LIMIT 1")->row_array();
+			$targets[] = !empty($row['target_amount']) ? (float)$row['target_amount'] : 0.0;
+		}
+	}
+	return $targets;
+}
+
 public function dashboard_MyPro($table='ci_leads'){
 	$manager_id = $this->session->userdata('manager_id');
 	$user_id = !empty($manager_id) ? (int)$manager_id : 0;

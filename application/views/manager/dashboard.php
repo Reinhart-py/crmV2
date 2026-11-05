@@ -1492,9 +1492,15 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                         <h4 class="dash-chart-title" style="margin:0 !important; margin-right:20px !important;">
                             <i class="fa fa-line-chart"></i> My Projection
                         </h4>
-                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
-                            <span style="display:inline-block; width:10px; height:10px; background-color:#0072f0; border-radius:2px;"></span>
-                            <span>Projection</span>
+                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:16px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
+                            <span style="display:inline-flex; align-items:center; gap:6px;">
+                                <span style="display:inline-block; width:10px; height:10px; background-color:#00c6f0; border-radius:2px;"></span>
+                                <span>Target</span>
+                            </span>
+                            <span style="display:inline-flex; align-items:center; gap:6px;">
+                                <span style="display:inline-block; width:10px; height:10px; background-color:#0072f0; border-radius:2px;"></span>
+                                <span>Projection</span>
+                            </span>
                         </div>
                     </div>
                     <div class="dash-chart-body">
@@ -1509,9 +1515,15 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                         <h4 class="dash-chart-title" style="margin:0 !important; margin-right:20px !important;">
                             <i class="fa fa-line-chart"></i> Team Projection
                         </h4>
-                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
-                            <span style="display:inline-block; width:10px; height:10px; background-color:#0072f0; border-radius:2px;"></span>
-                            <span>Projection</span>
+                        <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:16px; font-size:12px; font-weight:600; color:#475569; margin-left:auto !important;">
+                            <span style="display:inline-flex; align-items:center; gap:6px;">
+                                <span style="display:inline-block; width:10px; height:10px; background-color:#00c6f0; border-radius:2px;"></span>
+                                <span>Target</span>
+                            </span>
+                            <span style="display:inline-flex; align-items:center; gap:6px;">
+                                <span style="display:inline-block; width:10px; height:10px; background-color:#0072f0; border-radius:2px;"></span>
+                                <span>Projection</span>
+                            </span>
                         </div>
                     </div>
                     <div class="dash-chart-body">
@@ -1672,6 +1684,8 @@ $(function () {
         scaleFontFamily: "'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif"
     };
 
+    var projTargetMy = <?php echo json_encode(!empty($projection_target_my) ? array_values($projection_target_my) : array()); ?>;
+    var projTargetTeam = <?php echo json_encode(!empty($projection_target_team) ? array_values($projection_target_team) : array()); ?>;
     var monthDates = <?php echo json_encode(!empty($dashboard_MyPro['month_dates']) ? $dashboard_MyPro['month_dates'] : array()); ?>;
     var teamMonthDates = <?php echo json_encode(!empty($dashboard_TeamPro['month_dates']) ? $dashboard_TeamPro['month_dates'] : array()); ?>;
 
@@ -1685,6 +1699,12 @@ $(function () {
     var achieveDataTeam = <?php echo json_encode(!empty($dashboard_achievement_team['achievement']) ? $dashboard_achievement_team['achievement'] : array()); ?>;
     var achieveDatesTeam = <?php echo json_encode(!empty($dashboard_achievement_team['month_dates']) ? $dashboard_achievement_team['month_dates'] : array()); ?>;
 
+    // My / Team Projection: target and projection side by side, amounts in AED.
+    var projOptions = $.extend({}, chartOptions, {
+        scaleLabel: isMobileAndroid ? shortScale : "<%= 'AED ' + Number(value).toLocaleString() %>",
+        tooltipTemplate: "<%if (label){%><%=label%>: <%}%><%= 'AED ' + Number(value).toLocaleString() %>",
+        multiTooltipTemplate: "<%= datasetLabel %>: <%= 'AED ' + Number(value).toLocaleString() %>"
+    });
     var canvas2 = document.getElementById('barChart2');
     var chartInstance2 = null;
     if (canvas2) {
@@ -1693,14 +1713,21 @@ $(function () {
         chartInstance2 = new Chart(ctx2).Bar({
             labels: barLabels(months, canvas2),
             datasets: [{
-                label: 'My Projection',
-                fillColor: '#00c6f0',
-                strokeColor: '#0096cc',
-                highlightFill: '#38d9f8',
+                label: 'Target',
+                fillColor: 'rgba(0, 198, 240, 0.85)',
+                strokeColor: '#00c6f0',
+                highlightFill: 'rgba(0, 198, 240, 1)',
                 highlightStroke: '#0096cc',
+                data: projTargetMy.length ? projTargetMy : months.map(function(){ return 0; })
+            }, {
+                label: 'Projection',
+                fillColor: 'rgba(0, 114, 240, 0.85)',
+                strokeColor: '#0072f0',
+                highlightFill: 'rgba(0, 114, 240, 1)',
+                highlightStroke: '#0059c0',
                 data: myProData
             }]
-        }, chartOptions);
+        }, projOptions);
 
         canvas2.onclick = function(evt) {
             if (chartInstance2 && typeof chartInstance2.getBarsAtEvent === 'function') {
@@ -1723,14 +1750,21 @@ $(function () {
         chartInstance4 = new Chart(ctx4).Bar({
             labels: barLabels(months, canvas4),
             datasets: [{
-                label: 'Team Projection',
-                fillColor: '#00c6f0',
-                strokeColor: '#0096cc',
-                highlightFill: '#38d9f8',
+                label: 'Target',
+                fillColor: 'rgba(0, 198, 240, 0.85)',
+                strokeColor: '#00c6f0',
+                highlightFill: 'rgba(0, 198, 240, 1)',
                 highlightStroke: '#0096cc',
+                data: projTargetTeam.length ? projTargetTeam : months.map(function(){ return 0; })
+            }, {
+                label: 'Projection',
+                fillColor: 'rgba(0, 114, 240, 0.85)',
+                strokeColor: '#0072f0',
+                highlightFill: 'rgba(0, 114, 240, 1)',
+                highlightStroke: '#0059c0',
                 data: teamProData
             }]
-        }, chartOptions);
+        }, projOptions);
 
         canvas4.onclick = function(evt) {
             if (chartInstance4 && typeof chartInstance4.getBarsAtEvent === 'function') {

@@ -166,6 +166,8 @@ class Ci_admin extends CI_Controller {
 		
 		$data['dashboard_TeamPro']=$this->ci_admin_model->dashboard_TeamPro();
 		$data['dashboard_MyPro']=$this->ci_admin_model->dashboard_MyPro();
+		$data['projection_target_my']=$this->ci_admin_model->dashboard_projection_targets(0);
+		$data['projection_target_team']=$this->ci_admin_model->dashboard_projection_targets(1);
 		$data['dashboard_pipeline'] = $this->ci_admin_model->dashboard_pipeline_summary();
 		$data['mylead_donut'] = $this->ci_admin_model->dashboard_mylead_donut_data();
 		$data['myorder_donut'] = $this->ci_admin_model->dashboard_myorder_donut_data();
