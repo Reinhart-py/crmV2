@@ -1592,6 +1592,12 @@ $(function () {
         });
     }
 
+    // Phones only: short month labels so they do not run together (desktop keeps the full labels).
+    function barLabels(list, canvasEl) { return isMobileAndroid ? formatChartLabels(list, canvasEl) : list; }
+    // Bar index from the clicked bar (labels may be shortened on phones).
+    function barIndex(chart, bars) { return (chart && chart.datasets && chart.datasets[0] && bars && bars.length) ? chart.datasets[0].bars.indexOf(bars[0]) : -1; }
+    var shortScale = "<%= Number(value) >= 1000000 ? (Number(value) / 1000000).toLocaleString() + 'M' : (Number(value) >= 1000 ? (Number(value) / 1000).toLocaleString() + 'K' : Number(value).toLocaleString()) %>";
+
     var chartOptions = {
         scaleBeginAtZero: true,
         scaleShowGridLines: true,
@@ -1630,7 +1636,7 @@ $(function () {
         canvas2.style.cursor = 'pointer';
         var ctx2 = canvas2.getContext('2d');
         chartInstance2 = new Chart(ctx2).Bar({
-            labels: months,
+            labels: barLabels(months, canvas2),
             datasets: [{
                 label: 'My Projection',
                 fillColor: '#00c6f0',
@@ -1645,8 +1651,7 @@ $(function () {
             if (chartInstance2 && typeof chartInstance2.getBarsAtEvent === 'function') {
                 var activeBars = chartInstance2.getBarsAtEvent(evt);
                 if (activeBars && activeBars.length > 0) {
-                    var barLabel = activeBars[0].label;
-                    var idx = months.indexOf(barLabel);
+                    var idx = barIndex(chartInstance2, activeBars);
                     if (idx !== -1 && monthDates[idx]) {
                         window.location.href = '<?php echo base_url(); ?>manager/leads?exp_d1=' + encodeURIComponent(monthDates[idx].d1) + '&exp_d2=' + encodeURIComponent(monthDates[idx].d2);
                     }
@@ -1661,7 +1666,7 @@ $(function () {
         canvas4.style.cursor = 'pointer';
         var ctx4 = canvas4.getContext('2d');
         chartInstance4 = new Chart(ctx4).Bar({
-            labels: months,
+            labels: barLabels(months, canvas4),
             datasets: [{
                 label: 'Team Projection',
                 fillColor: '#00c6f0',
@@ -1676,8 +1681,7 @@ $(function () {
             if (chartInstance4 && typeof chartInstance4.getBarsAtEvent === 'function') {
                 var activeBars = chartInstance4.getBarsAtEvent(evt);
                 if (activeBars && activeBars.length > 0) {
-                    var barLabel = activeBars[0].label;
-                    var idx = months.indexOf(barLabel);
+                    var idx = barIndex(chartInstance4, activeBars);
                     if (idx !== -1 && teamMonthDates[idx]) {
                         window.location.href = '<?php echo base_url(); ?>manager/team/leads?exp_d1=' + encodeURIComponent(teamMonthDates[idx].d1) + '&exp_d2=' + encodeURIComponent(teamMonthDates[idx].d2);
                     }
@@ -1692,12 +1696,12 @@ $(function () {
         canvas.style.cursor = 'pointer';
         var ctx = canvas.getContext('2d');
         var achieveOptions = $.extend({}, chartOptions, {
-            scaleLabel: "<%= 'AED ' + Number(value).toLocaleString() %>",
+            scaleLabel: isMobileAndroid ? shortScale : "<%= 'AED ' + Number(value).toLocaleString() %>",
             tooltipTemplate: "<%if (label){%><%=label%>: <%}%><%= 'AED ' + Number(value).toLocaleString() %>",
             multiTooltipTemplate: "<%= datasetLabel %>: <%= 'AED ' + Number(value).toLocaleString() %>"
         });
         var inst = new Chart(ctx).Bar({
-            labels: labels,
+            labels: barLabels(labels, canvas),
             datasets: [
                 {
                     label: 'Target',
@@ -1722,8 +1726,7 @@ $(function () {
             if (inst && typeof inst.getBarsAtEvent === 'function') {
                 var activeBars = inst.getBarsAtEvent(evt);
                 if (activeBars && activeBars.length > 0) {
-                    var barLabel = activeBars[0].label;
-                    var idx = labels.indexOf(barLabel);
+                    var idx = barIndex(inst, activeBars);
                     if (idx !== -1 && dates && dates[idx]) {
                         window.location.href = baseUrl + '?exp_d1=' + encodeURIComponent(dates[idx].d1) + '&exp_d2=' + encodeURIComponent(dates[idx].d2);
                     }

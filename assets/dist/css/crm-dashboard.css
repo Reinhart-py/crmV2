@@ -2775,3 +2775,10 @@ ul.munk_menu > li.active > a .crm-svg-ico,
   stroke: #ffffff !important;
   color: #ffffff !important;
 }
+
+/* Phones: chart title and legend wrap instead of running off the card. */
+@media (max-width: 767px) {
+  .dash-chart-header { flex-wrap: wrap !important; row-gap: 6px; }
+  .dash-chart-header .dash-chart-title { margin-right: 8px !important; }
+  .dash-chart-legend { font-size: 11px !important; gap: 10px !important; }
+}
