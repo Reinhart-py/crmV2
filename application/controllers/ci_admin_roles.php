@@ -293,7 +293,9 @@ class Ci_admin_roles extends CI_Controller {
 			),
 			'mode' => $mode,
 			'custom_permissions' => $custom_perms,
-			'role_permissions' => $role_perms
+			'role_permissions' => $role_perms,
+			// Chatbot rights are user-wise only and independent of the mode above.
+			'chatbot_permissions' => (object)chatbot_user_rights($user_id)
 		));
 		exit;
 	}
@@ -331,7 +333,28 @@ class Ci_admin_roles extends CI_Controller {
 			));
 		}
 
-		$this->ci_admin_model->log_admin_action('user_perm_update', 'Updated permissions for user ID #'.$user_id.' (mode: '.$mode.')', 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));
+		// Chatbot rights (user-wise only). Every right needs "access"; without it all are cleared.
+		$chat_in = $this->input->post('chatbot');
+		$chat_clean = array();
+		if (is_array($chat_in) && !empty($chat_in['access']) && (string)$chat_in['access'] === '1') {
+			foreach (array_keys(chatbot_rights()) as $k) {
+				if (!empty($chat_in[$k]) && (string)$chat_in[$k] === '1') {
+					$chat_clean[$k] = 1;
+				}
+			}
+		}
+		chatbot_ensure_column();
+		$this->db->where('user_id', $user_id)->update('ci_user_permissions', array(
+			'chatbot_permissions' => empty($chat_clean) ? null : json_encode($chat_clean)
+		));
+		if (empty($chat_clean)) {
+			// Access removed: take the user off live chat duty straight away.
+			if ($this->db->table_exists('ci_support_agents')) {
+				$this->db->where('user_id', $user_id)->update('ci_support_agents', array('available' => 0));
+			}
+		}
+
+		$this->ci_admin_model->log_admin_action('user_perm_update', 'Updated permissions for user ID #'.$user_id.' (mode: '.$mode.', chatbot: '.(empty($chat_clean) ? 'none' : implode(',', array_keys($chat_clean))).')', 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));
 
 		header('Content-Type: application/json');
 		echo json_encode(array('status' => 'success', 'message' => 'Permissions successfully saved for user.'));

@@ -3516,3 +3516,59 @@ if (!function_exists('has_perm')) {
 		return has_section_perm($section, $required);
 	}
 }
+/*
+ * Chatbot (public Support chat) rights. Granted per user only, in
+ * System > Roles > User-wise > Chatbot. Not part of role permissions and not
+ * implied by Admin or "Full Admin Rights": nobody has them until granted.
+ * Stored as JSON in ci_user_permissions.chatbot_permissions, e.g. {"access":1,"reply":1}.
+ */
+if (!function_exists('chatbot_rights')) {
+	function chatbot_rights() {
+		return array(
+			'access'   => array('Open Chatbot', 'See the Chatbot menu and live conversations'),
+			'status'   => array('Go Active / Inactive', 'Receive new chats from the Support page'),
+			'reply'    => array('Reply to visitors', 'Send messages in a conversation'),
+			'close'    => array('Close conversations', 'End a chat for the visitor'),
+			'history'  => array('Chat history', 'Search past conversations and read transcripts'),
+			'settings' => array('Chatbot settings', 'Turn the chatbot on/off, IT email, timing and messages'),
+		);
+	}
+}
+if (!function_exists('chatbot_ensure_column')) {
+	function chatbot_ensure_column() {
+		static $done = false;
+		if ($done) return;
+		$ci =& get_instance();
+		if (!$ci->db->field_exists('chatbot_permissions', 'ci_user_permissions')) {
+			$ci->db->query("ALTER TABLE ci_user_permissions ADD COLUMN chatbot_permissions TEXT NULL");
+		}
+		$done = true;
+	}
+}
+if (!function_exists('chatbot_user_rights')) {
+	/** Returns array right => true for the given user (default: signed-in user). */
+	function chatbot_user_rights($user_id = null) {
+		static $cache = array();
+		$ci =& get_instance();
+		$user_id = ($user_id === null) ? (int)$ci->session->userdata('manager_id') : (int)$user_id;
+		if ($user_id <= 0) return array();
+		if (isset($cache[$user_id])) return $cache[$user_id];
+		chatbot_ensure_column();
+		$row = $ci->db->select('chatbot_permissions')->where('user_id', $user_id)->get('ci_user_permissions')->row_array();
+		$raw = !empty($row['chatbot_permissions']) ? json_decode($row['chatbot_permissions'], true) : array();
+		$out = array();
+		if (is_array($raw) && !empty($raw['access'])) {
+			foreach (array_keys(chatbot_rights()) as $k) {
+				if (!empty($raw[$k])) $out[$k] = true;
+			}
+		}
+		return $cache[$user_id] = $out;
+	}
+}
+if (!function_exists('chatbot_can')) {
+	/** True when the user has Chatbot access and the given right. */
+	function chatbot_can($right = 'access', $user_id = null) {
+		$r = chatbot_user_rights($user_id);
+		return !empty($r['access']) && !empty($r[$right]);
+	}
+}

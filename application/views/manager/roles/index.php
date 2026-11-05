@@ -337,6 +337,23 @@
     background: #0f172a;
     color: #ffffff;
 }
+.chat-seg-ctrl {
+    display: inline-flex;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 5px;
+    overflow: hidden;
+}
+.chat-perm-wrap { padding: 0 22px 4px; }
+.chat-perm-card { border-color: #c7d2fe; }
+.chat-perm-card .mod-card-head { background: #eef2ff; }
+.chat-perm-note { font-size: 12px; color: #475569; padding: 10px 14px; border-bottom: 1px solid #f1f5f9; background: #fafbff; }
+.chat-perm-badge { font-size: 10.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; background: #1e3a8a; color: #fff; border-radius: 4px; padding: 2px 7px; }
+.chat-perm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+.chat-perm-grid .mod-item-row { border-right: 1px solid #f1f5f9; }
+.mod-item-desc { display: block; font-size: 11.5px; color: #64748b; font-weight: 400; margin-top: 2px; }
+.mod-item-row.is-locked { opacity: .45; }
+.mod-item-row.is-locked .perm-seg-btn { cursor: not-allowed; }
 .user-sticky-save {
     position: sticky;
     bottom: 16px;
@@ -660,6 +677,29 @@
           <?php } ?>
         </div>
 
+        <div class="chat-perm-wrap" id="userChatbotPerms" style="display:none;">
+          <div class="mod-card chat-perm-card">
+            <div class="mod-card-head">
+              <span class="mod-card-title"><i class="fa fa-comments"></i> Chatbot (Live Support) <span class="chat-perm-badge">User-wise only</span></span>
+              <div style="display:flex; gap:4px;">
+                <button type="button" class="btn-action-sm" style="padding:2px 6px; font-size:10.5px;" onclick="setAllChatRights(0)">None</button>
+                <button type="button" class="btn-action-sm" style="padding:2px 6px; font-size:10.5px;" onclick="setAllChatRights(1)">All</button>
+              </div>
+            </div>
+            <div class="chat-perm-note">Answers visitors from the Support page on the sign-in screen. These rights are given to one person at a time and are not included in roles, presets or Full Admin Rights. Every right needs <strong>Open Chatbot</strong>.</div>
+            <div class="chat-perm-grid">
+              <?php foreach (chatbot_rights() as $ck => $cl) { ?>
+                <div class="mod-item-row" data-chat-key="<?php echo $ck; ?>">
+                  <span class="mod-item-name"><?php echo htmlspecialchars($cl[0]); ?><span class="mod-item-desc"><?php echo htmlspecialchars($cl[1]); ?></span></span>
+                  <div class="chat-seg-ctrl" data-chat-key="<?php echo $ck; ?>">
+                    <button type="button" class="perm-seg-btn val-no_access active" onclick="setChatRight('<?php echo $ck; ?>', 0)">No</button>
+                    <button type="button" class="perm-seg-btn val-write" onclick="setChatRight('<?php echo $ck; ?>', 1)">Yes</button>
+                  </div>
+                </div>
+              <?php } ?>
+            </div>
+          </div>
+        </div>
         <div class="user-sticky-save" id="userStickySave" style="display:none;">
           <div>
             <span style="font-weight:700; font-size:13.5px;" id="stickyUserSummary">Saving permissions for User</span>
@@ -681,6 +721,36 @@ var currentUserId = 0;
 var currentMode = 'role';
 var userRolePerms = {};
 var userCustomPerms = {};
+var userChatRights = {};
+
+function renderChatRights() {
+  var hasAccess = !!userChatRights.access;
+  $('.chat-seg-ctrl').each(function() {
+    var key = $(this).data('chat-key');
+    var on = !!userChatRights[key] && (key === 'access' || hasAccess);
+    $(this).find('.perm-seg-btn').removeClass('active');
+    $(this).find(on ? '.val-write' : '.val-no_access').addClass('active');
+    $(this).closest('.mod-item-row').toggleClass('is-locked', key !== 'access' && !hasAccess);
+  });
+}
+
+function setChatRight(key, on) {
+  if (key !== 'access' && !userChatRights.access) {
+    alert('Turn on "Open Chatbot" first.');
+    return;
+  }
+  if (on) { userChatRights[key] = 1; } else { delete userChatRights[key]; }
+  if (key === 'access' && !on) { userChatRights = {}; }
+  renderChatRights();
+}
+
+function setAllChatRights(on) {
+  userChatRights = {};
+  if (on) {
+    $('.chat-seg-ctrl').each(function() { userChatRights[$(this).data('chat-key')] = 1; });
+  }
+  renderChatRights();
+}
 
 function do_confirm(){    
   var job = confirm("Are you sure to delete this role?");    
@@ -711,7 +781,7 @@ function loadSelectedUser(userId) {
   userId = parseInt(userId, 10);
   if (!userId || userId <= 0) {
     currentUserId = 0;
-    $('#userMetaBar, #userCustomActions, #userPermMatrix, #userStickySave').hide();
+    $('#userMetaBar, #userCustomActions, #userPermMatrix, #userStickySave, #userChatbotPerms').hide();
     $('#userPermPlaceholder').show();
     return;
   }
@@ -733,7 +803,9 @@ function loadSelectedUser(userId) {
         currentMode = res.mode || 'role';
 
         $('#userPermPlaceholder').hide();
-        $('#userMetaBar, #userPermMatrix, #userStickySave').show();
+        $('#userMetaBar, #userPermMatrix, #userStickySave, #userChatbotPerms').show();
+        userChatRights = res.chatbot_permissions || {};
+        renderChatRights();
 
         updateModeUI(currentMode);
         renderPermissionsMatrix();
@@ -867,8 +939,11 @@ function saveUserPermissions() {
   var payload = {
     user_id: currentUserId,
     permission_mode: currentMode,
-    permissions: {}
+    permissions: {},
+    chatbot: {}
   };
+  Object.keys(userChatRights).forEach(function(k) { if (userChatRights[k]) payload.chatbot[k] = 1; });
+  if (!payload.chatbot.access) payload.chatbot = { access: 0 };
 
   $('.perm-seg-ctrl').each(function() {
     var key = $(this).data('key');

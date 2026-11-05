@@ -350,6 +350,16 @@
       </li>
       <?php } ?>
 
+      <?php if (function_exists('chatbot_can') && chatbot_can('access')) { ?>
+      <li class="<?php echo ($route1 == 'chatbot' || $route1 == 'live-support') ? 'active' : ''; ?>"> <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:4px;"><path d="M12 8V4H8"></path><rect x="4" y="8" width="16" height="12" rx="2"></rect><path d="M2 14h2"></path><path d="M20 14h2"></path><path d="M9 13v2"></path><path d="M15 13v2"></path></svg> <span>Chatbot</span> </a>
+        <ul>
+          <li><a href="<?php echo base_url();?>manager/chatbot"><i class="fa fa-comments"></i>Inbox</a></li>
+          <?php if (chatbot_can('history')) { ?><li><a href="<?php echo base_url();?>manager/chatbot/history"><i class="fa fa-history"></i>Chat History</a></li><?php } ?>
+          <?php if (chatbot_can('settings')) { ?><li><a href="<?php echo base_url();?>manager/chatbot/settings"><i class="fa fa-sliders"></i>Settings</a></li><?php } ?>
+        </ul>
+      </li>
+      <?php } ?>
+
     </ul>
   </nav>
 
@@ -425,14 +435,6 @@
               <span>Change Password</span>
             </a>
           </li>
-          <?php $crm_r = (int)$this->session->userdata('manager_role'); if ($crm_r === 1 || $crm_r === 4 || (function_exists('has_perm') && has_perm('live_support', 'write'))) { ?>
-          <li>
-            <a href="<?php echo base_url(); ?>manager/live-support" class="google-profile-item">
-              <i class="fa fa-headphones"></i>
-              <span>Live Support</span>
-            </a>
-          </li>
-          <?php } ?>
           <li class="gp-group">
             <button type="button" class="google-profile-item gp-group-toggle" id="gpHrToggle" aria-expanded="false" aria-controls="gpHrMenu">
               <i class="fa fa-graduation-cap"></i>
@@ -951,6 +953,17 @@ $(function() {
           <?php if($is_admin || has_section_perm('leads_import')){ ?>
           <li><a href="<?php echo base_url();?>manager/leads/import"><i class="fa fa-upload"></i>Import Database</a></li>
           <?php } ?>
+        </ul>
+      </li>
+      <?php } ?>
+
+      <?php if (function_exists('chatbot_can') && chatbot_can('access')) { $cb_on = ($route1 == 'chatbot' || $route1 == 'live-support'); ?>
+      <li class="<?php echo $cb_on ? 'active menu-open' : ''; ?> treeview">
+        <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:6px;"><path d="M12 8V4H8"></path><rect x="4" y="8" width="16" height="12" rx="2"></rect><path d="M2 14h2"></path><path d="M20 14h2"></path><path d="M9 13v2"></path><path d="M15 13v2"></path></svg> <span>Chatbot</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
+        <ul class="treeview-menu" style="<?php echo $cb_on ? 'display: block;' : ''; ?>">
+          <li><a href="<?php echo base_url();?>manager/chatbot"><i class="fa fa-comments"></i>Inbox</a></li>
+          <?php if (chatbot_can('history')) { ?><li><a href="<?php echo base_url();?>manager/chatbot/history"><i class="fa fa-history"></i>Chat History</a></li><?php } ?>
+          <?php if (chatbot_can('settings')) { ?><li><a href="<?php echo base_url();?>manager/chatbot/settings"><i class="fa fa-sliders"></i>Settings</a></li><?php } ?>
         </ul>
       </li>
       <?php } ?>

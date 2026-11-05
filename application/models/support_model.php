@@ -65,9 +65,77 @@ class Support_model extends CI_Model {
 
 	/* ---------- settings ---------- */
 
-	/** IT mailbox: System > Integrations > Helpdesk "support email", else it@7strokes.ae. */
+	/**
+	 * Chatbot settings (Chatbot > Settings), stored in ci_integration_settings as service "chatbot".
+	 */
+	public function settings()
+	{
+		static $cache = null;
+		if ($cache !== null) return $cache;
+		$defaults = array(
+			'enabled' => 1,
+			'it_email' => '',
+			'no_reply_minutes' => 3,
+			'welcome_message' => 'Thanks {name}. You are connected to live support. An agent will reply shortly.',
+			'offline_message' => 'Support is not available right now. Your request has been sent to our IT team, who will contact you on {phone}.',
+		);
+		$row = $this->db->where('service_name', 'chatbot')->get('ci_integration_settings')->row_array();
+		$cfg = !empty($row['config_json']) ? json_decode($row['config_json'], true) : array();
+		$cfg = is_array($cfg) ? array_merge($defaults, array_intersect_key($cfg, $defaults)) : $defaults;
+		$cfg['enabled'] = (int)$cfg['enabled'] === 1 ? 1 : 0;
+		$cfg['no_reply_minutes'] = max(1, min(30, (int)$cfg['no_reply_minutes']));
+		return $cache = $cfg;
+	}
+
+	public function save_settings($in)
+	{
+		$cfg = array(
+			'enabled' => !empty($in['enabled']) ? 1 : 0,
+			'it_email' => (isset($in['it_email']) && filter_var(trim($in['it_email']), FILTER_VALIDATE_EMAIL)) ? trim($in['it_email']) : '',
+			'no_reply_minutes' => max(1, min(30, (int)(isset($in['no_reply_minutes']) ? $in['no_reply_minutes'] : 3))),
+			'welcome_message' => mb_substr(trim(strip_tags((string)(isset($in['welcome_message']) ? $in['welcome_message'] : ''))), 0, 300),
+			'offline_message' => mb_substr(trim(strip_tags((string)(isset($in['offline_message']) ? $in['offline_message'] : ''))), 0, 300),
+		);
+		$now = date('Y-m-d H:i:s');
+		$exists = $this->db->where('service_name', 'chatbot')->count_all_results('ci_integration_settings') > 0;
+		if ($exists) {
+			$this->db->where('service_name', 'chatbot')->update('ci_integration_settings', array('config_json' => json_encode($cfg), 'status' => $cfg['enabled'], 'updated_at' => $now));
+		} else {
+			$this->db->insert('ci_integration_settings', array('service_name' => 'chatbot', 'config_json' => json_encode($cfg), 'status' => $cfg['enabled'], 'created_at' => $now, 'updated_at' => $now));
+		}
+		return $cfg;
+	}
+
+	private function fill($text, $chat)
+	{
+		return strtr($text, array('{name}' => $chat['name'], '{phone}' => $chat['phone'], '{ref}' => $chat['ref_no']));
+	}
+
+	public function welcome_text($chat)
+	{
+		$s = $this->settings();
+		return $this->fill($s['welcome_message'] !== '' ? $s['welcome_message'] : 'Thanks {name}. You are connected to live support. An agent will reply shortly.', $chat);
+	}
+
+	public function offline_text($chat)
+	{
+		$s = $this->settings();
+		return $this->fill($s['offline_message'] !== '' ? $s['offline_message'] : 'Support is not available right now. Your request has been sent to our IT team, who will contact you on {phone}.', $chat);
+	}
+
+	public function no_reply_seconds()
+	{
+		$s = $this->settings();
+		return 60 * $s['no_reply_minutes'];
+	}
+
+	/** IT mailbox: Chatbot settings, else Integrations > Helpdesk "support email", else it@7strokes.ae. */
 	public function it_email()
 	{
+		$s = $this->settings();
+		if (!empty($s['it_email'])) {
+			return $s['it_email'];
+		}
 		$row = $this->db->where('service_name', 'helpdesk')->get('ci_integration_settings')->row_array();
 		$cfg = !empty($row['config_json']) ? json_decode($row['config_json'], true) : array();
 		if (!empty($cfg['support_email']) && filter_var($cfg['support_email'], FILTER_VALIDATE_EMAIL)) {
@@ -78,10 +146,25 @@ class Support_model extends CI_Model {
 
 	/* ---------- agents ---------- */
 
+	/** Agents marked Active, seen recently, and still holding the Chatbot "Go Active" right. 0 when the chatbot is off. */
 	public function agents_online()
 	{
+		$s = $this->settings();
+		if (!$s['enabled']) {
+			return 0;
+		}
+		if (!function_exists('chatbot_can')) {
+			$this->load->model('ci_admin_model'); // defines chatbot_can() (the public Support page does not load it)
+		}
 		$since = date('Y-m-d H:i:s', time() - self::AGENT_TIMEOUT_SECONDS);
-		return (int)$this->db->where('available', 1)->where('last_seen >=', $since)->count_all_results('ci_support_agents');
+		$rows = $this->db->select('user_id')->where('available', 1)->where('last_seen >=', $since)->get('ci_support_agents')->result_array();
+		$n = 0;
+		foreach ($rows as $r) {
+			if (chatbot_can('status', (int)$r['user_id'])) {
+				$n++;
+			}
+		}
+		return $n;
 	}
 
 	public function agent_state($user_id)
@@ -195,10 +278,10 @@ class Support_model extends CI_Model {
 		if (empty($chat) || $chat['status'] !== 'waiting') {
 			return false;
 		}
-		if (time() - strtotime($chat['created_at']) < self::NO_REPLY_SECONDS) {
+		if (time() - strtotime($chat['created_at']) < $this->no_reply_seconds()) {
 			return false;
 		}
-		$this->email_it($chat, 'No support agent answered the live chat within ' . round(self::NO_REPLY_SECONDS / 60) . ' minutes.');
+		$this->email_it($chat, 'No support agent answered the live chat within ' . round($this->no_reply_seconds() / 60) . ' minutes.');
 		return true;
 	}
 
@@ -237,7 +320,7 @@ class Support_model extends CI_Model {
 			'email_error' => $ok ? null : substr($this->mail_model->last_error, 0, 255),
 		));
 		$this->add_message($chat['id'], 'system', $ok
-			? 'Support is not available right now. Your request has been sent to our IT team, who will contact you on ' . $chat['phone'] . '.'
+			? $this->offline_text($chat)
 			: 'Support is not available right now and we could not send your request automatically. Please email ' . $to . ' with your details.');
 		return $ok;
 	}
@@ -258,5 +341,46 @@ class Support_model extends CI_Model {
 			->order_by('c.updated_at', 'desc')
 			->limit(100)
 			->get()->result_array();
+	}
+
+	/* ---------- history ---------- */
+
+	/** Filtered chat list for the History page. Returns array(rows, total). */
+	public function history($f, $limit = 25, $offset = 0)
+	{
+		$apply = function ($db) use ($f) {
+			$db->from('ci_support_chats c')->join('ci_user u', 'u.id = c.agent_id', 'left');
+			if (!empty($f['q'])) {
+				$q = $db->escape_like_str($f['q']);
+				$db->where("(c.ref_no LIKE '%{$q}%' OR c.name LIKE '%{$q}%' OR c.phone LIKE '%{$q}%' OR c.email LIKE '%{$q}%' OR c.issue LIKE '%{$q}%')", null, false);
+			}
+			if (!empty($f['status']) && in_array($f['status'], array('waiting', 'active', 'emailed', 'closed'), true)) {
+				$db->where('c.status', $f['status']);
+			}
+			if (!empty($f['from'])) $db->where('c.created_at >=', $f['from'] . ' 00:00:00');
+			if (!empty($f['to'])) $db->where('c.created_at <=', $f['to'] . ' 23:59:59');
+			if (!empty($f['agent'])) $db->where('c.agent_id', (int)$f['agent']);
+		};
+		$apply($this->db);
+		$total = (int)$this->db->count_all_results();
+		$this->db->select('c.id, c.ref_no, c.name, c.phone, c.email, c.status, c.created_at, c.updated_at, c.closed_at, c.emailed_at, u.name AS agent_name, (SELECT COUNT(*) FROM ci_support_messages m WHERE m.chat_id = c.id) AS msg_count', false);
+		$apply($this->db);
+		$rows = $this->db->order_by('c.id', 'desc')->limit($limit, $offset)->get()->result_array();
+		return array($rows, $total);
+	}
+
+	public function history_agents()
+	{
+		return $this->db->query("SELECT DISTINCT u.id, u.name FROM ci_support_chats c JOIN ci_user u ON u.id = c.agent_id ORDER BY u.name")->result_array();
+	}
+
+	public function status_counts()
+	{
+		$out = array('waiting' => 0, 'active' => 0, 'emailed' => 0, 'closed' => 0, 'today' => 0);
+		foreach ($this->db->query("SELECT status, COUNT(*) n FROM ci_support_chats GROUP BY status")->result_array() as $r) {
+			$out[$r['status']] = (int)$r['n'];
+		}
+		$out['today'] = (int)$this->db->where('created_at >=', date('Y-m-d') . ' 00:00:00')->count_all_results('ci_support_chats');
+		return $out;
 	}
 }

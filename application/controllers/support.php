@@ -66,7 +66,7 @@ class Support extends CI_Controller {
 		$chat = $this->support_model->create_chat($name, $phone, $email, $issue, $ip, $this->input->user_agent());
 		$online = $this->support_model->agents_online() > 0;
 		if ($online) {
-			$this->support_model->add_message($chat['id'], 'system', 'Thanks ' . $name . '. You are connected to live support. An agent will reply shortly.');
+			$this->support_model->add_message($chat['id'], 'system', $this->support_model->welcome_text($chat));
 		} else {
 			$this->support_model->email_it($chat, 'Live support was offline when this request was sent.');
 		}

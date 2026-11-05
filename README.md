@@ -439,24 +439,40 @@ The CRM cannot deliver email by itself. It needs a mailbox on your mail server (
 3. The old built-in mailbox `no-reply@storeyourcode.com` from the previous vendor. It only exists so mail does not stop completely. Do not rely on it: mail from it is often filtered as spam.
 
 **Logs:** every send is written to `application/logs/mail-YYYY-MM-DD.log` (`SENT` or `FAILED` with the server error), and each request appears in the admin activity log as `password_reset_request` / `password_reset`. Those log files are not committed to git.
-### 2.7 Support page and Live Support chat
+### 2.7 Support page and Chatbot (live chat)
 
 **For people who cannot sign in:** the **Support** button on the Sign In, Forgot Password and Set New Password pages opens `/support` (no login needed). The visitor enters name, phone number, email (optional) and the issue.
 
-- **A support agent is available:** a live chat starts on the same page. Messages update every few seconds.
-- **No agent is available:** the visitor sees "Support is not available right now" and the request is **emailed automatically to the IT team** (`it@7strokes.ae`), sent from the SMTP mailbox in section 2.6 (`noreply@7strokes.ae`). The email has the reference number (`SUP-00012`), name, phone, email, issue and the conversation, and Reply goes straight to the visitor when they gave an email.
-- **An agent is available but nobody replies within 3 minutes:** the same email is sent to IT and the visitor is told.
+- **Someone is Active in the Chatbot:** a live chat starts on the same page. Messages update every few seconds.
+- **Nobody is Active (or the chatbot is switched off):** the visitor sees the offline message and the request is **emailed automatically to the IT team** (`it@7strokes.ae` by default), sent from the SMTP mailbox in section 2.6 (`noreply@7strokes.ae`). The email has the reference number (`SUP-00012`), name, phone, email, issue and the conversation, and Reply goes straight to the visitor when they gave an email.
+- **Someone is Active but nobody replies in time (3 minutes by default):** the same email is sent to IT and the visitor is told.
 
-**For the support team:** open the profile menu (top right) > **Live Support** (`/manager/live-support`). It is available to Admin and the Support role, and to anyone given the `live_support` permission.
+**Who can answer chats: user-wise permission only.** Nobody has Chatbot access by default, not even Admin. It is not part of any role, preset or Full Admin Rights. To give it to a person:
 
-1. Switch **Available for chats** on and keep the page open. Agents count as online only while this page is open (it checks in every 3 seconds; after 90 seconds without it they are offline). While Available, the 5 minute idle sign-out is paused.
+1. System > **Roles & Permissions** > **User-Wise Permissions**, choose the user.
+2. In the **Chatbot (Live Support)** card set **Open Chatbot** to Yes, then the rights they need, and click **Save Changes**.
+
+| Right | What it allows |
+|---|---|
+| Open Chatbot | See the **Chatbot** menu and the Inbox (required for every other right) |
+| Go Active / Inactive | Switch Active to receive new chats |
+| Reply to visitors | Send messages in a conversation |
+| Close conversations | End a chat for the visitor |
+| Chat history | History page with search and filters, and full transcripts |
+| Chatbot settings | Turn the chatbot on or off, IT email, wait time, welcome and offline messages |
+
+Removing Open Chatbot also sets the person Inactive straight away. Changes are written to the admin log.
+
+**For the person with access:** the **Chatbot** menu (top bar, after Reports, and the side menu) has Inbox, Chat History and Settings, each shown only with its right.
+
+1. **Inbox** (`/manager/chatbot`): switch **Active** on and keep the page open. People count as active only while this page is open (it checks in every 3 seconds; after 90 seconds without it they are inactive). While Active, the 5 minute idle sign-out is paused.
 2. New chats appear at the top with a sound and a browser notification (allow notifications when asked).
 3. Click a chat, reply (Enter to send), and click **Close chat** when done. Chats already emailed to IT can still be picked up and answered here.
-4. Switch to **Away** when you leave.
+4. Switch to **Inactive** when you leave.
+5. **Chat History** (`/manager/chatbot/history`): search by reference, name, phone, email or issue; filter by status, who answered and dates; open any conversation to read the full transcript.
+6. **Settings** (`/manager/chatbot/settings`): turn live chat on or off, set the IT email (empty means Helpdesk support email in Integrations, then `it@7strokes.ae`), the minutes to wait before emailing IT (1 to 30), and the welcome and offline messages (`{name}`, `{phone}`, `{ref}` are filled in).
 
-**Change the IT email address:** System > Integrations > Helpdesk, field **Support email**. If it is empty, `it@7strokes.ae` is used.
-
-**Limits and data:** 5 requests per hour per IP address, a hidden anti-bot field, CSRF protection. Chats are stored in `ci_support_chats` and `ci_support_messages`, and agent status in `ci_support_agents`. The tables are created automatically the first time the page is opened. Timing values are constants at the top of `application/models/support_model.php`.
+**Limits and data:** 5 requests per hour per IP address, a hidden anti-bot field, CSRF protection. Chats are stored in `ci_support_chats` and `ci_support_messages`, agent status in `ci_support_agents`, settings in `ci_integration_settings` (service `chatbot`), and the user rights in `ci_user_permissions.chatbot_permissions`. Tables and the column are created automatically on first use. The old `/manager/live-support` link opens the Chatbot.
 ---
 
 ## 3. Database Migrations

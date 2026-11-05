@@ -1,3 +1,13 @@
+## [2026-11-05] - Chatbot Page and User-Wise Chatbot Rights
+### Added
+- Chatbot card in System > Roles & Permissions > User-Wise Permissions with six rights: Open Chatbot, Go Active / Inactive, Reply to visitors, Close conversations, Chat history, Chatbot settings. User-wise only: not part of roles, presets or Full Admin Rights, and nobody has it by default.
+- **Chatbot** menu (top bar and side menu), shown only to people with Open Chatbot: Inbox, Chat History and Settings, each shown with its right.
+- Chat History page: search, filters (status, answered by, dates), counts and paging, and a transcript page for every conversation.
+- Chatbot Settings page: turn live chat on/off, IT email, minutes before emailing IT, welcome and offline messages.
+### Changed
+- Live Support is now the Chatbot (`/manager/chatbot`; the old link redirects). Available/Away is now Active/Inactive. The profile-menu link was removed.
+- Every Chatbot action is checked on the server against the person's rights; removing access sets the person Inactive.
+- Only people who are Active and still hold the Go Active right count as online for the Support page.
 ## [2026-11-05] - Support Page, Live Chat and New Sign In Panel
 ### Added
 - Public Support page (`/support`) with a Support button on the Sign In, Forgot Password and Set New Password pages. Visitors leave name, phone, optional email and the issue, then chat live with an available agent.

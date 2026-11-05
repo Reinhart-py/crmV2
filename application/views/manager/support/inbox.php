@@ -48,23 +48,29 @@
   @media (max-width: 991px) { .ls-wrap { grid-template-columns: 1fr; } .ls-list { max-height: 320px; } }
 </style>
 
+<?php $cb_tab = 'inbox'; $can_status = !empty($rights['status']); $wait_min = (int)$settings['no_reply_minutes']; ?>
 <div class="content-wrapper">
   <section class="content-header crm-list-head">
-    <h1>Live Support</h1>
+    <h1>Chatbot</h1>
     <div class="ls-avail">
+      <?php if ($can_status) { ?>
       <label class="ls-switch" for="lsAvailable">
         <input type="checkbox" id="lsAvailable" <?php echo $available ? 'checked' : ''; ?>>
         <span class="ls-track" aria-hidden="true"></span>
-        <span id="lsAvailText"><?php echo $available ? 'Available for chats' : 'Away'; ?></span>
+        <span id="lsAvailText"><?php echo $available ? 'Active' : 'Inactive'; ?></span>
       </label>
+      <?php } ?>
       <span class="ls-hint" id="lsOnline"></span>
     </div>
   </section>
 
   <section class="content">
+    <?php echo get_message($this->session->flashdata('error_message'), 'error_message'); ?>
+    <?php echo get_message($this->session->flashdata('message'), 'message'); ?>
+    <?php require(APPPATH . "views/manager/support/_tabs.php"); ?>
     <p class="ls-hint" style="margin:0 0 12px;">
-      Chats come from the Support button on the sign-in page. Keep this page open while you are Available.
-      If no agent is available, or nobody replies within 3 minutes, the request is emailed to <strong><?php echo htmlspecialchars($it_email); ?></strong>.
+      Chats come from the Support button on the sign-in page.<?php if ($can_status) { ?> Switch to <strong>Active</strong> to receive new chats, and keep this page open.<?php } ?>
+      If nobody is Active, or nobody replies within <?php echo $wait_min; ?> minute<?php echo $wait_min === 1 ? '' : 's'; ?>, the request is emailed to <strong><?php echo htmlspecialchars($it_email); ?></strong>.
     </p>
     <div class="ls-wrap">
       <div class="ls-card">
@@ -80,7 +86,9 @@
 
 <script>
 (function () {
-  var BASE = '<?php echo base_url(); ?>manager/live-support/';
+  var BASE = '<?php echo base_url(); ?>manager/chatbot/';
+  var CAN = <?php echo json_encode(array('status' => !empty($rights['status']), 'reply' => !empty($rights['reply']), 'close' => !empty($rights['close']), 'history' => !empty($rights['history']))); ?>;
+  var OPEN_CHAT = <?php echo (int)$open_chat; ?>;
   var CSRF_NAME = '<?php echo $this->security->get_csrf_token_name(); ?>';
   var CSRF_FALLBACK = '<?php echo $this->security->get_csrf_hash(); ?>';
   var current = 0, lastId = 0, timer = null, knownWaiting = {}, firstLoad = true;
@@ -94,19 +102,21 @@
   }
 
   function setAvailableUi(on) {
-    el('lsAvailable').checked = !!on;
-    el('lsAvailText').textContent = on ? 'Available for chats' : 'Away';
     window.crmIdleExempt = !!on; // stay signed in while on duty
+    if (!el('lsAvailable')) return;
+    el('lsAvailable').checked = !!on;
+    el('lsAvailText').textContent = on ? 'Active' : 'Inactive';
   }
-  setAvailableUi(el('lsAvailable').checked);
+  setAvailableUi(el('lsAvailable') && el('lsAvailable').checked);
+  function onlineText(n) { return n + (n === 1 ? ' person' : ' people') + ' active'; }
 
-  el('lsAvailable').addEventListener('change', function () {
+  if (el('lsAvailable')) el('lsAvailable').addEventListener('change', function () {
     var on = this.checked ? 1 : 0;
     if (on && 'Notification' in window && Notification.permission === 'default') { Notification.requestPermission(); }
     post('availability', { available: on }).then(function (r) {
-      if (!r.ok) { alert(r.error || 'Could not change availability.'); setAvailableUi(!on); return; }
+      if (!r.ok) { alert(r.error || 'Could not change your status.'); setAvailableUi(!on); return; }
       setAvailableUi(r.available);
-      el('lsOnline').textContent = r.online_agents + ' agent(s) available';
+      el('lsOnline').textContent = onlineText(r.online_agents);
     });
   });
 
@@ -130,7 +140,7 @@
       }).join('');
     }
     el('lsCount').textContent = waiting ? waiting + ' waiting' : '';
-    document.title = (waiting ? '(' + waiting + ') ' : '') + 'Live Support';
+    document.title = (waiting ? '(' + waiting + ') ' : '') + 'Chatbot Inbox';
 
     // Alert on new waiting chats.
     chats.forEach(function (c) {
@@ -164,13 +174,19 @@
     current = id; lastId = 0;
     el('lsChat').innerHTML =
       '<div class="ls-chat-head"><div><strong id="lsTitle"></strong> <span class="ls-badge" id="lsBadge"></span><div class="ls-contact" id="lsContact"></div></div>' +
-      '<div><button type="button" class="btn btn-sm btn-default" id="lsClose"><i class="fa fa-check"></i> Close chat</button></div></div>' +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
+      (CAN.history ? '<a class="btn btn-sm btn-default" href="' + BASE + 'history/' + id + '"><i class="fa fa-file-text-o"></i> Transcript</a>' : '') +
+      (CAN.close ? '<button type="button" class="btn btn-sm btn-default" id="lsClose"><i class="fa fa-check"></i> Close chat</button>' : '') + '</div></div>' +
       '<div class="ls-msgs" id="lsMsgs"></div>' +
-      '<form class="ls-compose" id="lsCompose"><textarea class="form-control" id="lsText" maxlength="2000" placeholder="Type a reply. Enter to send, Shift+Enter for a new line"></textarea>' +
-      '<button type="submit" class="btn btn-primary"><i class="fa fa-paper-plane"></i> Send</button></form>';
-    el('lsCompose').addEventListener('submit', sendReply);
-    el('lsText').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(e); } });
-    el('lsClose').addEventListener('click', function () {
+      (CAN.reply
+        ? '<form class="ls-compose" id="lsCompose"><textarea class="form-control" id="lsText" maxlength="2000" placeholder="Type a reply. Enter to send, Shift+Enter for a new line"></textarea>' +
+          '<button type="submit" class="btn btn-primary"><i class="fa fa-paper-plane"></i> Send</button></form>'
+        : '<div class="ls-compose ls-hint">You can read chats but you do not have the right to reply.</div>');
+    if (CAN.reply) {
+      el('lsCompose').addEventListener('submit', sendReply);
+      el('lsText').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(e); } });
+    }
+    if (CAN.close) el('lsClose').addEventListener('click', function () {
       if (!confirm('Close this chat? The visitor will see that the chat has ended.')) return;
       post('close', { chat_id: current }).then(function () { tick(); });
     });
@@ -195,8 +211,8 @@
       (chat.email ? ' &nbsp; <i class="fa fa-envelope-o"></i> <a href="mailto:' + esc(chat.email) + '">' + esc(chat.email) + '</a>' : '') +
       (chat.emailed_at ? ' &nbsp; <span class="ls-hint">Emailed to IT at ' + esc(chat.emailed_at.substr(11, 5)) + '</span>' : '');
     var closed = chat.status === 'closed';
-    el('lsCompose').style.display = closed ? 'none' : '';
-    el('lsClose').style.display = closed ? 'none' : '';
+    if (el('lsCompose')) el('lsCompose').style.display = closed ? 'none' : '';
+    if (el('lsClose')) el('lsClose').style.display = closed ? 'none' : '';
     msgs.forEach(function (m) {
       lastId = Math.max(lastId, m.id);
       var w = document.createElement('div'); w.className = 'ls-msg ls-' + m.sender;
@@ -215,14 +231,14 @@
       .then(function (r) {
         if (!r.ok) { if (r.error) el('lsOnline').textContent = r.error; return; }
         setAvailableUi(r.available);
-        el('lsOnline').textContent = r.online_agents + ' agent(s) available';
+        el('lsOnline').textContent = r.enabled ? onlineText(r.online_agents) : 'Chatbot is off';
         renderList(r.chats);
         if (r.chat) renderChat(r.chat, r.messages || []);
         timer = setTimeout(tick, 3000);
       })
       .catch(function () { timer = setTimeout(tick, 5000); });
   }
-  tick();
+  if (OPEN_CHAT) openChat(OPEN_CHAT); else tick();
 })();
 </script>
 
