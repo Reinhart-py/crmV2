@@ -247,6 +247,7 @@ if (!function_exists('render_donut_chart_svg')) {
         $current_angle = -M_PI / 2;
         $paths = '';
         $callouts = '';
+        $callout_list = array();
         $min_x = $cx - $r_out - 4;
         $max_x = $cx + $r_out + 4;
         $min_y = $cy - $r_out - 4;
@@ -280,21 +281,65 @@ if (!function_exists('render_donut_chart_svg')) {
             $p1_y = $cy + ($r_out + 2) * sin($mid);
             $p2_x = $cx + ($r_out + 9) * cos($mid);
             $p2_y = $cy + ($r_out + 9) * sin($mid);
-            $is_right = cos($mid) >= 0;
-            $p3_x = $p2_x + ($is_right ? 8 : -8);
-            $p3_y = $p2_y;
-            $anchor = $is_right ? 'start' : 'end';
-            $tx = $p3_x + ($is_right ? 4 : -4);
-            $ty = $p3_y + 3.5;
-            $lbl = htmlspecialchars($it['label']) . ': ' . (int)$it['count'];
-            $lbl_w = strlen($it['label'] . ': ' . (int)$it['count']) * 7.2;
-            $min_x = min($min_x, $is_right ? $tx : $tx - $lbl_w);
-            $max_x = max($max_x, $is_right ? $tx + $lbl_w : $tx);
-            $min_y = min($min_y, $ty - 13, $p2_y - 2);
-            $max_y = max($max_y, $ty + 5, $p2_y + 2);
-            $callouts .= sprintf('<polyline points="%.1f,%.1f %.1f,%.1f %.1f,%.1f" fill="none" stroke="#94a3b8" stroke-width="1.3" />', $p1_x, $p1_y, $p2_x, $p2_y, $p3_x, $p3_y);
-            $callouts .= sprintf('<text x="%.1f" y="%.1f" font-size="12" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="700" fill="#0f172a" class="donut-callout-text" text-anchor="%s">%s</text>', $tx, $ty, $anchor, $lbl);
+            // Side labels wrap onto short lines (max ~11 characters) so they need little width and the donut can be larger;
+            // labels at the top and bottom have room and stay on one line (saves height).
+            $sin = sin($mid);
+            $wrap_at = abs($sin) > 0.6 ? 40 : 11;
+            $lines = array();
+            $cur = '';
+            foreach (preg_split('/\s+/', trim($it['label'])) as $word) {
+                if ($cur !== '' && strlen($cur . ' ' . $word) > $wrap_at) { $lines[] = $cur; $cur = $word; }
+                else { $cur = ($cur === '' ? $word : $cur . ' ' . $word); }
+            }
+            $tail = ': ' . (int)$it['count'];
+            if (strlen($cur . $tail) <= $wrap_at + 2) { $lines[] = $cur . $tail; } else { $lines[] = $cur . ':'; $lines[] = (string)(int)$it['count']; }
+            $lbl_w = 0;
+            foreach ($lines as $ln) { $lbl_w = max($lbl_w, strlen($ln) * 7.2); }
+            $callout_list[] = array(
+                'p1' => array($p1_x, $p1_y), 'p2' => array($p2_x, $p2_y),
+                'right' => cos($mid) >= 0, 'lines' => $lines, 'w' => $lbl_w,
+                // upper labels grow upwards from the line, lower ones downwards, side ones are centred on it
+                'align' => $sin < -0.5 ? 'up' : ($sin > 0.5 ? 'down' : 'mid'),
+            );
             $current_angle = $next_angle;
+        }
+
+        // Place the label blocks; on each side, push blocks apart so they never overlap.
+        $line_h = 13;
+        foreach (array(true, false) as $side) {
+            $group = array();
+            foreach ($callout_list as $k => $c) {
+                if ($c['right'] !== $side) continue;
+                $h = count($c['lines']) * $line_h;
+                $anchor_y = $c['p2'][1];
+                $top = $c['align'] === 'up' ? $anchor_y - $h + 4 : ($c['align'] === 'down' ? $anchor_y - 6 : $anchor_y - $h / 2);
+                $group[$k] = array('top' => $top, 'h' => $h);
+            }
+            uasort($group, function ($a, $b) { return $a['top'] < $b['top'] ? -1 : 1; });
+            $prev_bottom = null;
+            foreach ($group as $k => $g) {
+                $top = ($prev_bottom !== null && $g['top'] < $prev_bottom + 4) ? $prev_bottom + 4 : $g['top'];
+                $callout_list[$k]['top'] = $top;
+                $prev_bottom = $top + $g['h'];
+            }
+        }
+        foreach ($callout_list as $c) {
+            $is_right = $c['right'];
+            $h = count($c['lines']) * $line_h;
+            $p3_x = $c['p2'][0] + ($is_right ? 8 : -8);
+            $p3_y = min(max($c['p2'][1], $c['top'] + 5), $c['top'] + $h - 5);
+            $tx = $p3_x + ($is_right ? 4 : -4);
+            $first_y = $c['top'] + 10;
+            $min_x = min($min_x, $is_right ? $tx : $tx - $c['w']);
+            $max_x = max($max_x, $is_right ? $tx + $c['w'] : $tx);
+            $min_y = min($min_y, $c['top'] - 1, $c['p2'][1] - 2);
+            $max_y = max($max_y, $c['top'] + $h + 1, $c['p2'][1] + 2);
+            $callouts .= sprintf('<polyline points="%.1f,%.1f %.1f,%.1f %.1f,%.1f" fill="none" stroke="#94a3b8" stroke-width="1.3" />', $c['p1'][0], $c['p1'][1], $c['p2'][0], $c['p2'][1], $p3_x, $p3_y);
+            $spans = '';
+            foreach ($c['lines'] as $i => $ln) {
+                $spans .= sprintf('<tspan x="%.1f" dy="%s">%s</tspan>', $tx, $i === 0 ? '0' : $line_h, htmlspecialchars($ln));
+            }
+            $callouts .= sprintf('<text x="%.1f" y="%.1f" font-size="12" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="700" fill="#0f172a" class="donut-callout-text" text-anchor="%s">%s</text>', $tx, $first_y, $is_right ? 'start' : 'end', $spans);
         }
         // Same space on both sides of the donut so it sits in the centre of the box; labels stay inside.
         $half_w = ceil(max($cx - $min_x, $max_x - $cx) + 4);
