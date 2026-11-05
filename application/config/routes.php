@@ -346,6 +346,8 @@ $route['support'] = 'support/index';
 $route['support/(status|start|poll|send|end)'] = 'support/$1';
 // Chatbot pages: access is user-wise only (Roles > User-wise > Chatbot)
 $route['manager/chatbot'] = 'ci_admin_support/index';
+$route['manager/my-support'] = 'ci_admin_support/my_support';
+$route['manager/my-support/(poll|send|unread)'] = 'ci_admin_support/my_support_$1';
 $route['manager/chatbot/(poll|unread|closed|availability|reply|close|settings)'] = 'ci_admin_support/$1';
 $route['manager/chatbot/history'] = 'ci_admin_support/history';
 $route['manager/chatbot/history/(:num)'] = 'ci_admin_support/transcript/$1';

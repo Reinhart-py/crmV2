@@ -61,6 +61,9 @@ class Support_model extends CI_Model {
 			last_seen DATETIME DEFAULT NULL,
 			PRIMARY KEY (user_id)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+		if (!$this->db->field_exists('user_id', 'ci_support_chats')) {
+			$this->db->query("ALTER TABLE ci_support_chats ADD user_id INT(11) NOT NULL DEFAULT 0, ADD user_last_read INT(11) NOT NULL DEFAULT 0, ADD KEY user_id (user_id)");
+		}
 		if (!$this->db->field_exists('reopened_at', 'ci_support_chats')) {
 			$this->db->query("ALTER TABLE ci_support_chats ADD reopened_at DATETIME DEFAULT NULL");
 		}
@@ -70,6 +73,29 @@ class Support_model extends CI_Model {
 			last_id INT(11) NOT NULL DEFAULT 0,
 			PRIMARY KEY (user_id, chat_id)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+	}
+
+	/* ---------- signed-in user's own support chat (profile menu > Support) ---------- */
+
+	/** The user's latest support chat (any status), or null. */
+	public function user_chat($user_id)
+	{
+		$c = $this->db->where('user_id', (int)$user_id)->order_by('id', 'DESC')->limit(1)->get('ci_support_chats')->row_array();
+		return empty($c) ? null : $c;
+	}
+
+	/** Support replies the user has not seen yet. */
+	public function user_unread($user_id)
+	{
+		$c = $this->user_chat($user_id);
+		if (!$c) return 0;
+		return (int)$this->db->where('chat_id', (int)$c['id'])->where('sender', 'agent')->where('id >', (int)$c['user_last_read'])->count_all_results('ci_support_messages');
+	}
+
+	public function user_mark_read($chat_id)
+	{
+		$cid = (int)$chat_id;
+		$this->db->query("UPDATE ci_support_chats SET user_last_read = (SELECT COALESCE(MAX(id), 0) FROM ci_support_messages WHERE chat_id = $cid) WHERE id = $cid");
 	}
 
 	/* ---------- unread (per agent) ---------- */
@@ -336,8 +362,8 @@ class Support_model extends CI_Model {
 	/** Waiting chat with no agent reply for NO_REPLY_SECONDS -> email IT. Returns true if it was handed over now. */
 	public function handover_if_unanswered($chat)
 	{
-		if (empty($chat) || $chat['status'] !== 'waiting') {
-			return false;
+		if (empty($chat) || $chat['status'] !== 'waiting' || !empty($chat['user_id'])) {
+			return false; // signed-in users' chats are never handed over by email
 		}
 		$since = !empty($chat['reopened_at']) ? $chat['reopened_at'] : $chat['created_at'];
 		if (time() - strtotime($since) < $this->no_reply_seconds()) {

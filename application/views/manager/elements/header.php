@@ -250,6 +250,7 @@
     <div class="profile-menu-container">
       <button type="button" class="profile-avatar-btn" id="profileMenuToggle" title="Open my profile: <?php echo htmlspecialchars($current_user_name); ?>">
         <img src="<?php echo base_url() . $user_avatar; ?>" alt="<?php echo htmlspecialchars($current_user_name); ?>" class="profile-avatar-img" />
+        <span class="my-sup-unread" id="mySupAvatarBadge" style="display:none; position:absolute; top:-4px; right:-4px;"></span>
       </button>
       <button type="button" class="profile-caret-btn" id="profileMenuCaret" aria-haspopup="true" aria-expanded="false" title="Account menu"><span class="crm-collapse-caret" aria-hidden="true"></span></button>
 
@@ -280,6 +281,13 @@
             <a href="<?php echo base_url(); ?>manager/events" class="google-profile-item">
               <i class="fa fa-calendar-check-o"></i>
               <span>Event and Awards</span>
+            </a>
+          </li>
+          <li>
+            <a href="<?php echo base_url(); ?>manager/my-support" class="google-profile-item">
+              <i class="fa fa-life-ring"></i>
+              <span>Support</span>
+              <span class="my-sup-unread" style="display:none; margin-left:auto;"></span>
             </a>
           </li>
           <li>
@@ -597,6 +605,22 @@ $(function() {
     }
   });
 });
+</script>
+<style>.my-sup-unread{background:#dc2626;color:#fff;font-size:10px;font-weight:700;border-radius:10px;min-width:16px;height:16px;line-height:16px;text-align:center;padding:0 4px;}#profileMenuToggle{position:relative;}</style>
+<script>
+(function () {
+  window.crmMySupBadge = function (n) {
+    n = parseInt(n, 10) || 0;
+    $('.my-sup-unread').text(n > 99 ? '99+' : n).css('display', n > 0 ? 'inline-block' : 'none');
+  };
+  if (/\/manager\/my-support\/?$/.test(location.pathname)) return; // the chat page marks replies read itself
+  function load() {
+    $.ajax({ url: '<?php echo base_url(); ?>manager/my-support/unread', dataType: 'json', cache: false,
+      success: function (r) { if (r && r.ok) window.crmMySupBadge(r.unread); } });
+  }
+  $(load);
+  setInterval(load, 20000);
+})();
 </script>
 <?php if (function_exists('chatbot_can') && chatbot_can('access')) { ?>
 <style>.cb-unread{display:inline-block;background:#dc2626;color:#fff;font-size:10px;font-weight:700;border-radius:10px;min-width:16px;height:16px;line-height:16px;text-align:center;padding:0 4px;margin-left:4px;vertical-align:1px;}</style>

@@ -140,6 +140,72 @@ class Ci_admin_support extends CI_Controller {
 		$this->json(array('ok' => true, 'unread' => array_sum($this->support_model->unread_counts($this->uid))));
 	}
 
+	/* ---------------- My Support (any signed-in user, profile menu) ---------------- */
+
+	private function me()
+	{
+		$this->uid = (int)$this->session->userdata('manager_id');
+		return $this->uid > 0;
+	}
+
+	public function my_support()
+	{
+		if (!$this->me()) redirect('manager/login');
+		$this->ci_admin_model->check_auth_timeout();
+		$data = array('info' => array('title' => 'Support', 'page_heading' => 'Support'));
+		$this->load->view('manager/support/my_support', $data);
+	}
+
+	/** GET: after -> new messages of the user's chat (marks them read). */
+	public function my_support_poll()
+	{
+		if (!$this->me()) return $this->json(array('ok' => false, 'error' => 'Session expired. Please sign in again.'), 401);
+		$this->session->set_userdata('last_activity_time', time());
+		$chat = $this->support_model->user_chat($this->uid);
+		if (!$chat) return $this->json(array('ok' => true, 'status' => '', 'messages' => array()));
+		$msgs = $this->format_messages($chat, $this->support_model->messages($chat['id'], (int)$this->input->get('after')));
+		$this->support_model->user_mark_read($chat['id']);
+		$this->json(array('ok' => true, 'status' => $chat['status'], 'ref_no' => $chat['ref_no'], 'messages' => $msgs));
+	}
+
+	/** POST: body -> message to support; starts or reopens the user's chat. */
+	public function my_support_send()
+	{
+		if (!$this->me()) return $this->json(array('ok' => false, 'error' => 'Session expired. Please sign in again.'), 401);
+		if ($this->input->server('REQUEST_METHOD') !== 'POST') return $this->json(array('ok' => false, 'error' => 'Invalid request.'), 405);
+		$body = trim(strip_tags((string)$this->input->post('body')));
+		if ($body === '' || mb_strlen($body) > 2000) return $this->json(array('ok' => false, 'error' => 'Message must be 1 to 2000 characters.'), 400);
+
+		$chat = $this->support_model->user_chat($this->uid);
+		if ($chat && in_array($chat['status'], array('waiting', 'active'), true)) {
+			$this->support_model->add_message($chat['id'], 'visitor', $body);
+		} else {
+			$u = $this->db->select('name, mobile, email, c_email')->where('id', $this->uid)->get('ci_user')->row_array();
+			$details = array(
+				'name' => !empty($u['name']) ? $u['name'] : 'CRM user',
+				'phone' => !empty($u['mobile']) ? $u['mobile'] : '',
+				'email' => !empty($u['c_email']) ? $u['c_email'] : (!empty($u['email']) ? $u['email'] : ''),
+			);
+			if ($chat) {
+				$chat = $this->support_model->reopen_chat($chat, $body, $details);
+			} else {
+				$chat = $this->support_model->create_chat($details['name'], $details['phone'], $details['email'], $body, $this->input->ip_address(), $this->input->user_agent());
+				$this->db->where('id', (int)$chat['id'])->update('ci_support_chats', array('user_id' => $this->uid));
+			}
+			$this->support_model->add_message($chat['id'], 'system', $this->support_model->agents_online() > 0
+				? 'You are connected to support. Someone will reply here shortly.'
+				: 'Support is not online right now. Your message is saved and support will reply here.');
+		}
+		$this->json(array('ok' => true));
+	}
+
+	/** GET: number of support replies the user has not seen (profile badge). */
+	public function my_support_unread()
+	{
+		if (!$this->me()) return $this->json(array('ok' => false), 401);
+		$this->json(array('ok' => true, 'unread' => $this->support_model->user_unread($this->uid)));
+	}
+
 	/** POST: available = 1|0 (Active / Inactive) */
 	public function availability()
 	{
