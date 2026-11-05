@@ -658,7 +658,10 @@ class CI_DB_active_record extends CI_DB_driver {
 		{
 			$k = $this->_protect_identifiers($k);
 
-			$prefix = (count($this->ar_like) == 0) ? '' : $type;
+			// Inside group_start() ... group_end() the LIKE belongs to that group (in the WHERE list),
+			// otherwise it would be written after the group and the brackets would be empty.
+			$in_group = $this->_group_open();
+			$prefix = $in_group ? $this->_group_prefix($type) : ((count($this->ar_like) == 0) ? '' : $type);
 
 			$v = $this->escape_like_str($v);
 			
@@ -683,6 +686,12 @@ class CI_DB_active_record extends CI_DB_driver {
 			if ($this->_like_escape_str != '')
 			{
 				$like_statement = $like_statement.sprintf($this->_like_escape_str, $this->_like_escape_chr);
+			}
+
+			if ($in_group)
+			{
+				$this->ar_where[] = $like_statement;
+				continue;
 			}
 
 			$this->ar_like[] = $like_statement;
@@ -2049,6 +2058,19 @@ class CI_DB_active_record extends CI_DB_driver {
 		if (count($this->ar_where) == 0) return $cache_empty ? '' : $type;
 		$last = rtrim((string)end($this->ar_where));
 		return (substr($last, -1) === '(') ? '' : $type;
+	}
+
+	/** TRUE while a group_start() has no matching group_end() yet. */
+	protected function _group_open()
+	{
+		$depth = 0;
+		foreach ($this->ar_where as $w)
+		{
+			$w = trim((string)$w);
+			if ($w === ')') $depth--;
+			elseif (substr($w, -1) === '(') $depth++;
+		}
+		return $depth > 0;
 	}
 
 	public function group_start($not = '', $type = 'AND ')

@@ -28,7 +28,7 @@ $foot = function ($srv, $test_label) use ($can_edit) {
   return '<div class="sx-card-f"><button type="button" class="btn btn-default btn-test-connection" data-service="' . $srv . '"><i class="fa fa-refresh"></i> ' . $test_label . '</button><button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Save settings</button></div>';
 };
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_6">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
 <style>
   .in-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 16px; align-items: start; }
   .in-layout > * { min-width: 0; }
@@ -58,6 +58,7 @@ $foot = function ($srv, $test_label) use ($can_edit) {
   @media (max-width: 767px) { .in-grid { grid-template-columns: 1fr; } .in-sub { padding: 12px; } .in-sub .in-copy { flex-wrap: wrap; } .in-sub .in-copy .btn { flex: 1; } }
 </style>
 <div class="content-wrapper sx">
+  <?php echo crm_tabbar('integrations', 'system/integrations'); ?>
   <section class="sx-head">
     <h1>Third-Party API<small>Keys and settings for the outside services the CRM talks to</small></h1>
   </section>

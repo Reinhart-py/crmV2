@@ -10,7 +10,7 @@ foreach ($clients as $c) {
 }
 $base = base_url('manager/system/assignee');
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_6">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
 <style>
   .as-collab { display: flex; flex-wrap: wrap; gap: 4px; }
   .sx .sx-bar .input-daterange { width: auto; flex: 0 1 280px; }
@@ -20,6 +20,7 @@ $base = base_url('manager/system/assignee');
   #assignModal label { font-weight: 600; font-size: 13px; }
 </style>
 <div class="content-wrapper sx">
+  <?php echo crm_tabbar('clients', 'system/assignee'); ?>
     <section class="sx-head">
         <h1>Assignee Management<small>Who looks after each onboarded client, and who helps</small></h1>
         <?php if ($can_edit) { ?>
@@ -220,7 +221,8 @@ $(document).ready(function() {
         ]
     });
 
-    if ($.fn.select2) {
+    // after the shared footer script, which sets up every ".select2" element (these boxes included)
+    if ($.fn.select2) setTimeout(function () {
         $('#modal_primary_assignee').select2({
             dropdownParent: $('#assignModal'),
             width: '100%'
@@ -255,7 +257,7 @@ $(document).ready(function() {
                 $('#modal_owner_name').val(data.owner);
             }
         });
-    }
+    }, 0);
 
     $(document).on('click', '#btnAssignNewCompany', function(e) {
         e.preventDefault();

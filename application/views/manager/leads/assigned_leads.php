@@ -12,7 +12,7 @@ foreach (array('d1', 'd2', 'mrr1', 'mrr2', 'user_name') as $k) if ($g($k) !== ''
 foreach (array('category', 'lCat', 'status', 'country', 'state') as $k) if (array_filter($ga($k))) $n_filters++;
 $sub = $alloc_filter === 'non_allotted' ? 'Records nobody is working on yet' : ($alloc_filter === 'allotted' ? 'Records given to a salesperson' : 'Every database record and who it is given to');
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_6">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
 <style>
   .al-filters { padding: 12px 14px; border-bottom: 1px solid var(--crm-line-soft, #eef2f7); }
   .al-filters .sx-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
@@ -29,6 +29,7 @@ $sub = $alloc_filter === 'non_allotted' ? 'Records nobody is working on yet' : (
   @media (max-width: 767px) { .al-filters .al-btns .btn { flex: 1; } .al-sel { margin: 10px 10px 0; } .al-sel .btn { flex: 1; } }
 </style>
 <div class="content-wrapper sx">
+  <?php echo crm_tabbar('database', $alloc_filter === 'non_allotted' ? 'assigned-leads?alloc_filter=non_allotted' : 'assigned-leads'); ?>
   <section class="sx-head">
     <h1><?php echo $h(isset($info['page_heading']) ? $info['page_heading'] : 'Allotted Database'); ?><small><?php echo $h($sub); ?></small></h1>
   </section>

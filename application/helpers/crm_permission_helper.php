@@ -178,16 +178,16 @@ if (!function_exists('crm_perm_catalog')) {
 					'users' => array('label' => 'Users', 'desc' => 'User list; Full can add and edit users', 'nav' => array(array('users/add', 'Add Staff', 'fa-user-plus', 'write'), array('users', 'View Staff', 'fa-id-card-o', 'read')), 'pages' => array('users'), 'write' => array('users/add', 'user/add')),
 					'roles' => array('label' => 'Roles & Permissions', 'desc' => 'This page. Full lets the person change roles and user rights', 'nav' => array(array('roles', 'Roles & Permissions', 'fa-shield')), 'pages' => array('roles'), 'write' => array('roles/add')),
 					'terms' => array('label' => 'Lists', 'desc' => 'Choices offered in forms: Industry, Products, Lead Temperature, Business Category...; Full can add, rename and disable', 'nav' => array(array('terms', 'Lists', 'fa-list')), 'pages' => array('terms', 'categories', 'category-tree'), 'write' => array('terms/add')),
-					'leads_import' => array('label' => 'Import Database', 'desc' => 'Upload records from a file', 'nav' => array(array('leads/import', 'Import Database', 'fa-upload')), 'pages' => array('leads/import'), 'levels' => 'r'),
-					'leads_export' => array('label' => 'Export Leads', 'desc' => 'Download records to a file', 'nav' => array(array('leads/export', 'Export Leads', 'fa-download')), 'pages' => array('leads/export'), 'levels' => 'r'),
-					'assigned_leads' => array('label' => 'Allotted Database', 'desc' => 'Allotted and non-allotted records', 'nav' => array(array('assigned-leads', 'Allotted Database', 'fa-tasks'), array('assigned-leads?alloc_filter=non_allotted', 'Non-Allotted Database', 'fa-folder-open-o')), 'pages' => array('assigned-leads')),
-					'admin_logs' => array('label' => 'Admin Logs', 'desc' => 'Audit log of changes', 'nav' => array(array('admin-logs', 'Admin Logs', 'fa-history')), 'pages' => array('admin-logs', 'system/admin-logs', 'system/admin_logs'), 'levels' => 'r'),
-					'live_location' => array('label' => 'Live Location', 'desc' => 'Where staff signed in from', 'fallback' => 'admin_logs', 'nav' => array(array('admin-logs/live-location', 'Live Location', 'fa-map-marker')), 'pages' => array('admin-logs/live-location', 'admin-logs/live_location', 'system/live-location', 'system/live_location'), 'levels' => 'r'),
-					'system_assignee' => array('label' => 'Assignee Management', 'desc' => 'Move clients between owners', 'nav' => array(array('system/assign', 'Assignee Management', 'fa-random')), 'pages' => array('system/assign', 'system/assignee')),
-					'system_kam_clients' => array('label' => 'KAM Clients (all)', 'desc' => 'Every KAM client in the company', 'fallback' => 'kam_clients', 'nav' => array(array('system/kam_clients', 'KAM Clients', 'fa-briefcase')), 'pages' => array('system/kam_clients', 'system/kam-clients')),
-					'calling_api' => array('label' => 'Calling API', 'desc' => 'Phone provider settings', 'nav' => array(array('system/calling-api', 'Calling API', 'fa-phone-square')), 'pages' => array('system/calling-api', 'system/calling_api')),
-					'integrations' => array('label' => 'Third-Party API', 'desc' => 'Email SMTP, helpdesk and other integrations', 'nav' => array(array('system/integrations', 'Third-Party API', 'fa-plug')), 'pages' => array('system/integrations', 'integrations')),
-					'qc_panel' => array('label' => 'QC Panel', 'desc' => 'Quality check of the CRM pages', 'fallback' => 'system', 'nav' => array(array('system/qc', 'QC Panel', 'fa-check-square-o')), 'pages' => array('system/qc', 'system/qoc')),
+					'leads_import' => array('label' => 'Import Database', 'tab' => 'database', 'desc' => 'Upload records from a file', 'nav' => array(array('leads/import', 'Import Database', 'fa-upload')), 'pages' => array('leads/import'), 'levels' => 'r'),
+					'leads_export' => array('label' => 'Export Database', 'tab' => 'database', 'desc' => 'Download records to a file, filtered by staff, status, category and more', 'nav' => array(array('leads/export', 'Export Database', 'fa-download')), 'pages' => array('leads/export'), 'levels' => 'r'),
+					'assigned_leads' => array('label' => 'Allotted Database', 'tab' => 'database', 'desc' => 'Allotted and non-allotted records', 'nav' => array(array('assigned-leads', 'Allotted Database', 'fa-tasks'), array('assigned-leads?alloc_filter=non_allotted', 'Non-Allotted Database', 'fa-folder-open-o')), 'pages' => array('assigned-leads')),
+					'admin_logs' => array('label' => 'Admin Logs', 'tab' => 'activity', 'desc' => 'Audit log of changes', 'nav' => array(array('admin-logs', 'Admin Logs', 'fa-history')), 'pages' => array('admin-logs', 'system/admin-logs', 'system/admin_logs'), 'levels' => 'r'),
+					'live_location' => array('label' => 'Live Location', 'tab' => 'activity', 'desc' => 'Where staff signed in from', 'fallback' => 'admin_logs', 'nav' => array(array('admin-logs/live-location', 'Live Location', 'fa-map-marker')), 'pages' => array('admin-logs/live-location', 'admin-logs/live_location', 'system/live-location', 'system/live_location'), 'levels' => 'r'),
+					'system_assignee' => array('label' => 'Assignee Management', 'tab' => 'clients', 'desc' => 'Move clients between owners', 'nav' => array(array('system/assign', 'Assignee Management', 'fa-random')), 'pages' => array('system/assign', 'system/assignee')),
+					'system_kam_clients' => array('label' => 'KAM Clients (all)', 'tab' => 'clients', 'desc' => 'Every KAM client in the company', 'fallback' => 'kam_clients', 'nav' => array(array('system/kam_clients', 'KAM Clients', 'fa-briefcase')), 'pages' => array('system/kam_clients', 'system/kam-clients')),
+					'calling_api' => array('label' => 'Calling API', 'tab' => 'integrations', 'desc' => 'Phone provider settings', 'nav' => array(array('system/calling-api', 'Calling API', 'fa-phone-square')), 'pages' => array('system/calling-api', 'system/calling_api')),
+					'integrations' => array('label' => 'Third-Party API', 'tab' => 'integrations', 'desc' => 'Email SMTP, helpdesk and other integrations', 'nav' => array(array('system/integrations', 'Third-Party API', 'fa-plug')), 'pages' => array('system/integrations', 'integrations')),
+					'qc_panel' => array('label' => 'QC Panel', 'desc' => 'Quality check of the CRM pages', 'nav' => array(array('system/qc', 'QC Panel', 'fa-check-square-o')), 'pages' => array('system/qc', 'system/qoc')),
 				),
 			),
 		);
@@ -358,8 +358,18 @@ if (!function_exists('crm_nav_menu')) {
 		foreach (crm_perm_catalog() as $gk => $g) {
 			if (isset($g['menu']) && $g['menu'] === false) continue;
 			$links = array();
+			$tabs_done = array();
 			foreach ($g['items'] as $k => $it) {
 				if (empty($it['nav'])) continue;
+				// Pages merged into one tabbed page get a single menu link (to the first tab this person may open).
+				if (!empty($it['tab'])) {
+					if (isset($tabs_done[$it['tab']])) continue;
+					$tabs_done[$it['tab']] = true;
+					$tg = crm_tab_groups();
+					$first = crm_tab_list($it['tab']);
+					if ($first) $links[] = array('url' => $first[0]['url'], 'label' => $tg[$it['tab']]['label'], 'icon' => $tg[$it['tab']]['icon'], 'external' => false);
+					continue;
+				}
 				foreach ($it['nav'] as $n) {
 					$need = isset($n[3]) ? $n[3] : 'read';
 					if (crm_can($k, $need)) {
@@ -372,6 +382,65 @@ if (!function_exists('crm_nav_menu')) {
 			}
 		}
 		return $menu;
+	}
+}
+
+/** Pages shown as tabs of one page. Each tab: right key, page (under manager/), label, icon. */
+if (!function_exists('crm_tab_groups')) {
+	function crm_tab_groups()
+	{
+		return array(
+			'database' => array('label' => 'Database', 'icon' => 'fa-database', 'tabs' => array(
+				array('leads_import', 'leads/import', 'Import', 'fa-upload'),
+				array('leads_export', 'leads/export', 'Export', 'fa-download'),
+				array('assigned_leads', 'assigned-leads', 'Allotted', 'fa-tasks'),
+				array('assigned_leads', 'assigned-leads?alloc_filter=non_allotted', 'Non-allotted', 'fa-folder-open-o'),
+			)),
+			'activity' => array('label' => 'Activity', 'icon' => 'fa-history', 'tabs' => array(
+				array('admin_logs', 'admin-logs', 'Admin Logs', 'fa-history'),
+				array('live_location', 'system/live-location', 'Live Location', 'fa-map-marker'),
+			)),
+			'clients' => array('label' => 'Clients & Owners', 'icon' => 'fa-briefcase', 'tabs' => array(
+				array('system_kam_clients', 'system/kam_clients', 'KAM Clients', 'fa-briefcase'),
+				array('system_assignee', 'system/assignee', 'Assignee Management', 'fa-random'),
+			)),
+			'integrations' => array('label' => 'Integrations', 'icon' => 'fa-plug', 'tabs' => array(
+				array('calling_api', 'system/calling-api', 'Calling API', 'fa-phone-square'),
+				array('integrations', 'system/integrations', 'Third-Party API', 'fa-plug'),
+			)),
+		);
+	}
+}
+
+/** Tabs of a group this person may open: list of array(url, label, icon). */
+if (!function_exists('crm_tab_list')) {
+	function crm_tab_list($group)
+	{
+		$all = crm_tab_groups();
+		if (!isset($all[$group])) return array();
+		$out = array();
+		foreach ($all[$group]['tabs'] as $t) {
+			if (crm_can($t[0])) $out[] = array('url' => $t[1], 'label' => $t[2], 'icon' => $t[3]);
+		}
+		return $out;
+	}
+}
+
+/** Tab bar for a merged page. $active is the tab's page as written in crm_tab_groups(). */
+if (!function_exists('crm_tabbar')) {
+	function crm_tabbar($group, $active)
+	{
+		$all = crm_tab_groups();
+		$tabs = crm_tab_list($group);
+		if (count($tabs) < 2) return '';
+		$h = '<nav class="sx-tabs" aria-label="' . htmlspecialchars($all[$group]['label']) . '">';
+		foreach ($tabs as $t) {
+			$on = ($t['url'] === $active);
+			$h .= '<a href="' . base_url() . 'manager/' . $t['url'] . '"' . ($on ? ' class="is-on" aria-current="page"' : '') . '><i class="fa ' . $t['icon'] . '"></i> ' . htmlspecialchars($t['label']) . '</a>';
+		}
+		// on a narrow screen, scroll the tab row so the open tab is visible
+		$h .= '</nav><script>(function(n){var a=n&&n.querySelector(".is-on");if(a&&n.scrollWidth>n.clientWidth){n.scrollLeft=a.getBoundingClientRect().left-n.getBoundingClientRect().left-16;}})(document.currentScript.previousElementSibling);</script>';
+		return $h;
 	}
 }
 

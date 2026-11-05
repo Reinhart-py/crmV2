@@ -10,15 +10,11 @@ foreach ($locations as $l) {
 }
 $base = base_url() . 'manager/system/live-location';
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_6">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
 <div class="content-wrapper sx">
+  <?php echo crm_tabbar('activity', 'system/live-location'); ?>
   <section class="sx-head">
     <h1>Staff Live Location<small>Last known position of each person and today's clock in / out</small></h1>
-    <?php if (crm_can('admin_logs')) { ?>
-    <div class="sx-btns">
-      <a href="<?php echo base_url(); ?>manager/admin-logs" class="btn btn-default"><i class="fa fa-history"></i> Admin Logs</a>
-    </div>
-    <?php } ?>
   </section>
 
   <section class="content">

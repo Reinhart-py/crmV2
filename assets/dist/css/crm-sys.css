@@ -66,6 +66,13 @@
 .sx .sx-bar .btn { height: 34px; font-weight: 600; }
 .sx .sx-bar .sx-count { margin-left: auto; font-size: 13px; color: var(--crm-muted, #64748b); }
 
+/* Tabs of a merged page (Database, Activity, Clients & Owners, Integrations) */
+.sx .sx-tabs { display: flex; gap: 4px; padding: 12px 15px 0; border-bottom: 1px solid var(--crm-line, #e2e8f0); margin: 0 0 2px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.sx .sx-tabs::-webkit-scrollbar { display: none; }
+.sx .sx-tabs a { flex: none; display: inline-flex; align-items: center; gap: 7px; padding: 9px 14px; margin-bottom: -1px; border: 1px solid transparent; border-radius: 10px 10px 0 0; color: var(--crm-muted, #64748b); font-weight: 600; font-size: 13.5px; text-decoration: none; white-space: nowrap; }
+.sx .sx-tabs a:hover { color: var(--crm-ink, #0f172a); background: var(--crm-bg-soft, #f1f5f9); }
+.sx .sx-tabs a.is-on { color: var(--crm-ocean, #1e3a8a); background: var(--crm-surface, #fff); border-color: var(--crm-line, #e2e8f0); border-bottom-color: var(--crm-surface, #fff); }
+
 /* Chips */
 .sx .sx-chips { display: flex; gap: 6px; flex-wrap: wrap; }
 .sx .sx-chips a, .sx .sx-chips button { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--crm-line, #e2e8f0); background: var(--crm-surface, #fff); color: var(--crm-ink-2, #334155); font-size: 13px; font-weight: 600; text-decoration: none; cursor: pointer; white-space: nowrap; }

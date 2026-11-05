@@ -7,7 +7,7 @@ $can_edit = !empty($can_edit);
 $has_secret = !empty($has_secret);
 $configured = $v('pbx_fqdn') !== '' && $v('client_id') !== '' && $has_secret;
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_6">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
 <style>
   .ca-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px; }
   .ca-grid .wide { grid-column: 1 / -1; }
@@ -21,6 +21,7 @@ $configured = $v('pbx_fqdn') !== '' && $v('client_id') !== '' && $has_secret;
   @media (max-width: 767px) { .ca-grid { grid-template-columns: 1fr; } #testConnectionStatus { margin: 0 12px 12px; } }
 </style>
 <div class="content-wrapper sx">
+  <?php echo crm_tabbar('integrations', 'system/calling-api'); ?>
   <section class="sx-head">
     <h1>Calling API<small>Connect the CRM to your 3CX phone system for click-to-call and the auto-dialer</small></h1>
   </section>

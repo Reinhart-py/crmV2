@@ -11,15 +11,11 @@ foreach ($clients as $c) {
     if ($pid === (int)$cur_uid || in_array((int)$cur_uid, $cids, true)) $k_mine++;
 }
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_6">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
 <div class="content-wrapper sx">
+  <?php echo crm_tabbar('clients', 'system/kam_clients'); ?>
     <section class="sx-head">
         <h1>KAM Clients<small>Every onboarded client in the company and who looks after it</small></h1>
-        <?php if (crm_can('system_assignee')) { ?>
-        <div class="sx-btns">
-            <a href="<?php echo base_url('manager/system/assignee'); ?>" class="btn btn-default"><i class="fa fa-random"></i> Assignee Management</a>
-        </div>
-        <?php } ?>
     </section>
 
     <section class="content">

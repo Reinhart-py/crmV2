@@ -766,7 +766,7 @@ class Ci_admin_system extends CI_Controller {
 					array('title' => 'Lists', 'key' => 'sys_terms', 'url' => 'manager/terms'),
 					array('title' => 'Add to a list', 'key' => 'sys_terms_add', 'url' => 'manager/terms/add'),
 					array('title' => 'Import Leads', 'key' => 'sys_import', 'url' => 'manager/leads/import'),
-					array('title' => 'Export Leads', 'key' => 'sys_export', 'url' => 'manager/leads/export'),
+					array('title' => 'Export Database', 'key' => 'sys_export', 'url' => 'manager/leads/export'),
 					array('title' => 'Allotted Database', 'key' => 'sys_allotted', 'url' => 'manager/assigned-leads'),
 					array('title' => 'Non-Allotted Database', 'key' => 'sys_non_allotted', 'url' => 'manager/assigned-leads?alloc_filter=non_allotted'),
 					array('title' => 'Admin Logs Audit', 'key' => 'sys_admin_logs', 'url' => 'manager/admin-logs'),

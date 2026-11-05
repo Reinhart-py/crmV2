@@ -1,6 +1,7 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_6">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
 <div class="content-wrapper sx">
+  <?php echo crm_tabbar('database', 'leads/import'); ?>
   <section class="sx-head">
     <h1>Import Database<small>Add many database records at once from a CSV spreadsheet</small></h1>
     <div class="sx-btns">

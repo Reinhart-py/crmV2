@@ -13,7 +13,7 @@ foreach (array('d1', 'd2', 'user_id', 'activity', 'status') as $k) if ($g($k) !=
 $base = base_url() . 'manager/admin-logs';
 $chip = array('SUCCESS' => 'ok', 'FAILED' => 'x', 'TIMEOUT' => 'w', 'TERMINATED' => 'na');
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_6">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
 <style>
   .lg-filters { padding: 12px 14px; }
   .lg-filters .sx-grid { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
@@ -24,13 +24,9 @@ $chip = array('SUCCESS' => 'ok', 'FAILED' => 'x', 'TIMEOUT' => 'w', 'TERMINATED'
   @media (max-width: 767px) { .lg-filters .lg-btns .btn { flex: 1; } .lg-det { max-width: none; } }
 </style>
 <div class="content-wrapper sx">
+  <?php echo crm_tabbar('activity', 'admin-logs'); ?>
   <section class="sx-head">
     <h1>Admin Logs<small>Sign-ins, sign-outs and important changes, newest first (up to 2,000 entries)</small></h1>
-    <?php if (crm_can('live_location')) { ?>
-    <div class="sx-btns">
-      <a href="<?php echo base_url(); ?>manager/system/live-location" class="btn btn-default"><i class="fa fa-map-marker"></i> Staff Live Location</a>
-    </div>
-    <?php } ?>
   </section>
 
   <section class="content">

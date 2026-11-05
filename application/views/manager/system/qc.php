@@ -1,6 +1,6 @@
 <?php require_once(APPPATH . "views/manager/elements/header.php"); ?>
 <?php $qc_ro = empty($can_edit); ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_6">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
 <style>
 .sx .sx-kpi b span, .sx .sx-kpi #qcStatsText span { display: inline; font: inherit; color: inherit; margin: 0; }
 .qc-kpi-bar { width: 100%; height: 6px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-top: 6px; }

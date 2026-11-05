@@ -1865,12 +1865,20 @@ $data['info2']=$this->if_not_login();
 		$role = (int)$this->session->userdata('manager_role');
 		$mgr_id = (int)$this->session->userdata('manager_id');
 		if (!crm_can('leads_export')) {
-			$this->session->set_flashdata('error_message', 'You do not have access to Export Leads.');
+			$this->session->set_flashdata('error_message', 'You do not have access to Export Database.');
 			redirect('manager/dashboard');
 			return;
 		}
 
 		
+		if ($this->input->get('count') == 1) {
+			$this->_export_filters();
+			$n = $this->db->count_all_results('ci_leads');
+			header('Content-Type: application/json');
+			echo json_encode(array('count' => (int)$n));
+			exit();
+		}
+
 		if ($this->input->get('download') == 1) {
 			$user_id = $this->input->get('user_id');
 
@@ -1915,19 +1923,11 @@ $data['info2']=$this->if_not_login();
 				}
 			}
 
-			$file_prefix = 'leads_export_';
-			if ($user_id === 'unassigned') {
-				$this->db->where('(lead_assign = 0 OR lead_assign IS NULL)');
-				$file_prefix .= 'unassigned_';
-			} else if (is_numeric($user_id) && (int)$user_id > 0) {
-				$this->db->where('lead_assign', (int)$user_id);
-				$uname = isset($users_map[(int)$user_id]) ? preg_replace('/[^a-zA-Z0-9_-]/', '_', $users_map[(int)$user_id]) : 'user_'.$user_id;
-				$file_prefix .= strtolower($uname).'_';
-			} else {
-				$file_prefix .= 'all_users_';
-			}
-
+			$desc = $this->_export_filters($users_map);
+			$contact_only = ($this->input->get('columns') === 'contact');
 			$leads = $this->db->order_by('id', 'DESC')->get('ci_leads')->result_array();
+			$file_prefix = 'database_export_' . $desc['slug'] . '_';
+			$this->ci_admin_model->log_admin_action('lead_export', 'Exported ' . count($leads) . ' records' . ($contact_only ? ' (contact columns)' : '') . ': ' . ($desc['parts'] ? implode('; ', $desc['parts']) : 'all records'), 'SUCCESS');
 
 			$filename = $file_prefix . date('Y-m-d_His') . '.csv';
 			header('Content-Type: text/csv; charset=utf-8');
@@ -1992,7 +1992,17 @@ $data['info2']=$this->if_not_login();
 				'Next Meeting Time',
 				'Created Date'
 			);
-			fputcsv($output, $headers);
+			$keep = null;
+			if ($contact_only) {
+				$keep = array_keys(array_intersect($headers, array('Lead ID', 'Customer Name', 'POC Name', 'POC Contact Number', 'Email', 'Alternate POC Name', 'Alternate POC Contact Number', 'Status', 'Lead Category', 'Lead Assigned To', 'City', 'State', 'Country', 'Created Date')));
+			}
+			$pick = function ($r) use ($keep) {
+				if ($keep === null) return $r;
+				$o = array();
+				foreach ($keep as $i) $o[] = $r[$i];
+				return $o;
+			};
+			fputcsv($output, $pick($headers));
 
 			if (!empty($leads)) {
 				foreach ($leads as $l) {
@@ -2061,7 +2071,7 @@ $data['info2']=$this->if_not_login();
 						$l['m_time'],
 						$l['created']
 					);
-					fputcsv($output, $row);
+					fputcsv($output, $pick($row));
 				}
 			}
 
@@ -2072,34 +2082,154 @@ $data['info2']=$this->if_not_login();
 		
 		$data = array();
 		$data['info'] = array(
-			'title' => 'Manager - Export Leads',
-			'page_heading' => 'Export Leads Data'
+			'title' => 'Export Database',
+			'page_heading' => 'Export Database'
 		);
 		$data['info2'] = $this->if_not_login();
 
 		$data['total_count'] = $this->db->count_all_results('ci_leads');
-		
-		$this->db->where('(lead_assign = 0 OR lead_assign IS NULL)');
+		$this->db->where('(lead_assign = 0 OR lead_assign IS NULL)', null, false);
 		$data['unassigned_count'] = $this->db->count_all_results('ci_leads');
 
-		$data['users'] = $this->db->select('id, name, email')->get_where('ci_user', array('status' => 1))->result_array();
+		// Everyone who owns or added records (people who left included), active staff first.
+		$data['users'] = $this->db->query("SELECT id, name, status FROM ci_user WHERE status = 1 OR id IN (SELECT DISTINCT lead_assign FROM ci_leads) OR id IN (SELECT DISTINCT created_by FROM ci_leads) ORDER BY (status = 1) DESC, name ASC")->result_array();
+		$cnt = array();
+		foreach ($this->db->query("SELECT lead_assign, COUNT(*) AS n FROM ci_leads GROUP BY lead_assign")->result_array() as $r) $cnt[(int)$r['lead_assign']] = (int)$r['n'];
+		$data['user_counts'] = $cnt;
 
-		
-		$user_counts_raw = $this->db->select('lead_assign, COUNT(*) as cnt')->group_by('lead_assign')->get('ci_leads')->result_array();
-		$user_counts = array();
-		foreach ($user_counts_raw as $uc) {
-			if (!empty($uc['lead_assign'])) {
-				$user_counts[$uc['lead_assign']] = $uc['cnt'];
-			}
-		}
-		$data['user_counts'] = $user_counts;
-
+		$data['statuses'] = $this->db->query("SELECT S.id, S.status, COUNT(L.id) AS n FROM ci_status S LEFT JOIN ci_leads L ON L.status = S.id GROUP BY S.id ORDER BY S.id")->result_array();
+		$data['temps'] = $this->db->query("SELECT id, title FROM ci_terms WHERE cat_type = 'lead_cat' AND parent_id = 0 ORDER BY title")->result_array();
+		$data['services'] = $this->db->query("SELECT id, title FROM ci_terms WHERE cat_type = 'p_cat' AND parent_id = 0 ORDER BY title")->result_array();
+		$data['products'] = $this->db->query("SELECT C.id, C.title, P.title AS parent FROM ci_terms C LEFT JOIN ci_terms P ON P.id = C.parent_id WHERE C.cat_type = 'p_cat' AND C.parent_id <> 0 ORDER BY P.title, C.title")->result_array();
+		$vals = function ($col) {
+			$out = array();
+			foreach ($this->db->query("SELECT $col AS v, COUNT(*) AS n FROM ci_leads WHERE $col IS NOT NULL AND $col <> '' GROUP BY $col ORDER BY $col")->result_array() as $r) $out[] = $r;
+			return $out;
+		};
+		$data['db_cats'] = $vals('database_category');
+		$data['sources'] = $vals('data_source');
+		$data['biz_cats'] = $vals('business_category');
+		$data['countries'] = $this->db->query("SELECT C.id, C.name, COUNT(*) AS n FROM ci_leads L JOIN countries C ON C.id = L.country GROUP BY C.id ORDER BY C.name")->result_array();
 		$this->load->view('manager/leads/export', $data);
 	}
 
 	
 
 
+
+	/**
+	 * Applies the Export Database filters (from the query string) to the next ci_leads query.
+	 * Returns array('parts' => readable list for the admin log, 'slug' => file name part).
+	 */
+	private function _export_filters($users_map = array())
+	{
+		$arr = function ($k) {
+			$v = $this->input->get($k);
+			if ($v === null || $v === false || $v === '') return array();
+			if (!is_array($v)) $v = array($v);
+			$out = array();
+			foreach ($v as $x) { if (is_string($x) && trim($x) !== '') $out[] = trim($x); }
+			return array_values(array_unique($out));
+		};
+		$ints = function ($list) { return array_values(array_filter(array_map('intval', $list), function ($x) { return $x > 0; })); };
+		$date = function ($k) {
+			$v = trim((string)$this->input->get($k));
+			if ($v === '') return '';
+			$d = DateTime::createFromFormat('d-m-Y', $v);
+			if (!$d) $d = DateTime::createFromFormat('Y-m-d', $v);
+			return $d ? $d->format('Y-m-d') : '';
+		};
+		$parts = array();
+		$slug = array();
+
+		// Look-ups first: any query run below would use up the conditions already queued.
+		$svc = $ints($arr('service'));
+		$st = $ints($arr('status'));
+		$tmp = $ints($arr('temp'));
+		$prd = $ints($arr('product'));
+		$cty = $ints($arr('country'));
+		$term_ids = array_merge($svc, $tmp, $prd);
+		$term = array();
+		if ($term_ids) foreach ($this->db->select('id, title')->where_in('id', $term_ids)->get('ci_terms')->result_array() as $t) $term[(int)$t['id']] = $t['title'];
+		$st_name = array();
+		if ($st) foreach ($this->db->select('id, status')->where_in('id', $st)->get('ci_status')->result_array() as $t) $st_name[(int)$t['id']] = $t['status'];
+		$cty_name = array();
+		if ($cty) foreach ($this->db->select('id, name')->where_in('id', $cty)->get('countries')->result_array() as $t) $cty_name[(int)$t['id']] = $t['name'];
+		$names = function ($ids, $map) { $o = array(); foreach ($ids as $i) $o[] = isset($map[$i]) ? $map[$i] : '#' . $i; return implode(', ', $o); };
+		$svc_keys = array_map('strval', $svc);
+		foreach ($svc as $i) if (isset($term[$i])) $svc_keys[] = $term[$i];
+
+		$q = trim((string)$this->input->get('q'));
+		if ($q !== '') {
+			$this->db->group_start();
+			foreach (array('customer', 'poc', 'contact1', 'contact2', 'email', 'lead_id') as $i => $col) {
+				if ($i === 0) $this->db->like($col, $q); else $this->db->or_like($col, $q);
+			}
+			$this->db->group_end();
+			$parts[] = 'search "' . $q . '"';
+		}
+
+		$d1 = $date('d1');
+		$d2 = $date('d2');
+		if ($d1 !== '') { $this->db->where('DATE(created) >= ' . $this->db->escape($d1), null, false); }
+		if ($d2 !== '') { $this->db->where('DATE(created) <= ' . $this->db->escape($d2), null, false); }
+		if ($d1 !== '' || $d2 !== '') $parts[] = 'added ' . ($d1 ?: 'start') . ' to ' . ($d2 ?: 'today');
+
+		$assign = $arr('assign');
+		$none = in_array('none', $assign, true);
+		$aids = $ints($assign);
+		if ($none || $aids) {
+			$c = array();
+			if ($aids) $c[] = 'lead_assign IN (' . implode(',', $aids) . ')';
+			if ($none) $c[] = 'lead_assign = 0 OR lead_assign IS NULL';
+			$this->db->where('(' . implode(' OR ', $c) . ')', null, false);
+			$names = array();
+			foreach ($aids as $id) $names[] = isset($users_map[$id]) ? $users_map[$id] : '#' . $id;
+			if ($none) $names[] = 'not assigned';
+			$parts[] = 'assigned to ' . implode(', ', $names);
+			if (count($names) === 1) $slug[] = $none && !$aids ? 'unassigned' : $names[0];
+		}
+
+		$by = $ints($arr('added_by'));
+		if ($by) { $this->db->where_in('created_by', $by); $parts[] = 'added by ' . $names($by, $users_map); }
+
+		if ($st) { $this->db->where_in('status', $st); $parts[] = 'status ' . $names($st, $st_name); $slug[] = count($st) === 1 ? $names($st, $st_name) : 'status'; }
+
+		if ($tmp) { $this->db->where_in('lead_cat', array_map('strval', $tmp)); $parts[] = 'temperature ' . $names($tmp, $term); }
+
+		if ($svc) {
+			// stored as the term id, or (older records) as its name
+			$this->db->where_in('s_cat', $svc_keys);
+			$parts[] = 'service ' . $names($svc, $term);
+			$slug[] = count($svc) === 1 ? $names($svc, $term) : 'service';
+		}
+		if ($prd) { $this->db->where_in('p_cat', array_map('strval', $prd)); $parts[] = 'product ' . $names($prd, $term); }
+
+		foreach (array('db_cat' => 'database_category', 'source' => 'data_source') as $k => $col) {
+			$v = $arr($k);
+			if ($v) { $this->db->where_in($col, $v); $parts[] = str_replace('_', ' ', $col) . ' ' . implode(', ', $v); }
+		}
+		$biz = $arr('biz');
+		if ($biz) {
+			$this->db->group_start();
+			$this->db->where_in('business_category', $biz);
+			$this->db->or_where_in('industry_category', $biz);
+			$this->db->group_end();
+			$parts[] = 'business category ' . implode(', ', $biz);
+		}
+
+		if ($cty) { $this->db->where_in('country', $cty); $parts[] = 'country ' . $names($cty, $cty_name); }
+
+		$m1 = trim((string)$this->input->get('mrr1'));
+		$m2 = trim((string)$this->input->get('mrr2'));
+		if ($m1 !== '' && is_numeric($m1)) $this->db->where('CAST(mrr AS DECIMAL(15,2)) >=', (float)$m1, false);
+		if ($m2 !== '' && is_numeric($m2)) $this->db->where('CAST(mrr AS DECIMAL(15,2)) <=', (float)$m2, false);
+		if (($m1 !== '' && is_numeric($m1)) || ($m2 !== '' && is_numeric($m2))) $parts[] = 'MRR ' . ($m1 ?: '0') . ' to ' . ($m2 ?: 'any');
+
+		$s = $slug ? implode('_', $slug) : ($parts ? 'filtered' : 'all');
+		$s = strtolower(trim(preg_replace('/[^a-zA-Z0-9]+/', '_', $s), '_'));
+		return array('parts' => $parts, 'slug' => $s !== '' ? substr($s, 0, 40) : 'all');
+	}
 
 	public function import()
 	{
