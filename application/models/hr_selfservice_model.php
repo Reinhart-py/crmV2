@@ -42,6 +42,16 @@ class Hr_selfservice_model extends CI_Model {
 			KEY idx_audience (audience_role_id)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 
+		// Self Training: material type, text (pitch script / steps) and an uploaded file.
+		// The text is kept as plain text so an AI assistant can use it later.
+		if (!$this->db->field_exists('content_type', 'ci_training_modules')) {
+			$this->db->query("ALTER TABLE ci_training_modules
+				ADD COLUMN content_type VARCHAR(30) NOT NULL DEFAULT 'guide' AFTER category,
+				ADD COLUMN body MEDIUMTEXT NULL AFTER description,
+				ADD COLUMN file_path VARCHAR(500) NULL AFTER content_url,
+				ADD COLUMN file_name VARCHAR(255) NULL AFTER file_path");
+		}
+
 		$this->db->query("CREATE TABLE IF NOT EXISTS ci_training_progress (
 			id INT(11) NOT NULL AUTO_INCREMENT,
 			module_id INT(11) NOT NULL,
@@ -193,6 +203,44 @@ class Hr_selfservice_model extends CI_Model {
 		$upd = array('status' => $status);
 		$upd['completed_at'] = ($status === 'Completed') ? $now : null;
 		$this->db->where('id', (int)$row['id'])->update('ci_training_progress', $upd);
+	}
+
+	/** Everyone a module is meant for, with their progress on it. */
+	public function module_people($module)
+	{
+		$this->db->select('U.id, U.name, U.email, R.title AS role_title, P.status, P.started_at, P.completed_at', false)
+			->from('ci_user U')
+			->join('ci_roles R', 'R.id = U.user_type', 'left')
+			->join('ci_training_progress P', 'P.user_id = U.id AND P.module_id = ' . (int)$module['id'], 'left')
+			->where('U.status', 1);
+		if ((int)$module['audience_role_id'] > 0) {
+			$this->db->where('U.user_type', (int)$module['audience_role_id']);
+		}
+		return $this->db->order_by("(P.status = 'Completed') DESC, (P.status IS NULL) ASC, U.name ASC", "", false)->get()->result_array();
+	}
+
+	/** Each active user with how many of their active modules they have finished. */
+	public function people_progress()
+	{
+		$mods = $this->db->select('id, audience_role_id, is_mandatory')->where('status', 'active')->get('ci_training_modules')->result_array();
+		$done = array();
+		foreach ($this->db->select('user_id, module_id')->where('status', 'Completed')->get('ci_training_progress')->result_array() as $p) {
+			$done[(int)$p['user_id']][(int)$p['module_id']] = true;
+		}
+		$users = $this->db->select('U.id, U.name, U.user_type, R.title AS role_title')
+			->from('ci_user U')->join('ci_roles R', 'R.id = U.user_type', 'left')
+			->where('U.status', 1)->order_by('U.name', 'ASC')->get()->result_array();
+		foreach ($users as &$u) {
+			$u['assigned'] = 0; $u['completed'] = 0; $u['mandatory_open'] = 0;
+			foreach ($mods as $m) {
+				if ((int)$m['audience_role_id'] > 0 && (int)$m['audience_role_id'] !== (int)$u['user_type']) continue;
+				$u['assigned']++;
+				if (isset($done[(int)$u['id']][(int)$m['id']])) $u['completed']++;
+				elseif ((int)$m['is_mandatory'] === 1) $u['mandatory_open']++;
+			}
+		}
+		unset($u);
+		return $users;
 	}
 
 	/* ---------- Search Topics ---------- */

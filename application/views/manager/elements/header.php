@@ -298,31 +298,21 @@
             </a>
           </li>
           <?php } ?>
-          <li class="gp-group">
-            <button type="button" class="google-profile-item gp-group-toggle" id="gpHrToggle" aria-expanded="false" aria-controls="gpHrMenu">
+          <?php if (crm_can('self_training', 'read') || crm_can('hr_training', 'write') || in_array((int)$this->session->userdata('manager_role'), array(1, 7), true)) { ?>
+          <li>
+            <a href="<?php echo base_url(); ?>manager/self-training" class="google-profile-item">
               <i class="fa fa-graduation-cap"></i>
-              <span>HR &amp; Training</span>
-              <span class="crm-collapse-caret" aria-hidden="true"></span>
-            </button>
-            <ul class="gp-sub" id="gpHrMenu" hidden>
-              <li><a href="<?php echo base_url(); ?>manager/hr/leaves" class="google-profile-item"><i class="fa fa-calendar-check-o"></i><span>Holiday Request</span></a></li>
-              <li><a href="<?php echo base_url(); ?>manager/hr/training" class="google-profile-item"><i class="fa fa-book"></i><span>Training</span></a></li>
-            </ul>
+              <span>Self Training</span>
+            </a>
+          </li>
+          <?php } ?>
+          <li>
+            <a href="<?php echo base_url(); ?>manager/hr/leaves" class="google-profile-item">
+              <i class="fa fa-calendar-check-o"></i>
+              <span>Holiday Request</span>
+            </a>
           </li>
         </ul>
-        <script>
-        (function () {
-          var btn = document.getElementById('gpHrToggle'), menu = document.getElementById('gpHrMenu');
-          if (!btn || !menu) { return; }
-          btn.addEventListener('click', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            var open = btn.getAttribute('aria-expanded') === 'true';
-            btn.setAttribute('aria-expanded', open ? 'false' : 'true');
-            menu.hidden = open;
-          });
-        })();
-        </script>
 
         <div class="google-menu-divider"></div>
 

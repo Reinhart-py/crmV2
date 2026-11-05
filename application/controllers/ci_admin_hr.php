@@ -25,7 +25,7 @@ class Ci_admin_hr extends CI_Controller {
 		$self_service = array(
 			'leaves' => 'hr_leaves', 'apply_leave' => 'hr_leaves', 'cancel_leave' => 'hr_leaves',
 			'events_plans' => 'events_view',
-			'training' => 'hr_training', 'training_progress' => 'hr_training',
+			'training' => 'self_training',
 			'search_topics' => 'hr_topics'
 		);
 		if (isset($self_service[$method])) {
@@ -44,11 +44,10 @@ class Ci_admin_hr extends CI_Controller {
 			'taxation' => 'hr_taxation',
 			'appraisals' => 'hr_appraisals', 'add_appraisal' => 'hr_appraisals',
 			'documents' => 'hr_documents', 'add_document' => 'hr_documents',
-			'training_save' => 'hr_training', 'training_status' => 'hr_training',
 			'topic_save' => 'hr_topics', 'topic_status' => 'hr_topics',
 		);
 		$key = isset($page_keys[$method]) ? $page_keys[$method] : 'hr';
-		$changes = ($this->input->server('REQUEST_METHOD') === 'POST') || preg_match('/^(add_|delete_|update_|generate_|assign_|leave_action|payroll_status|training_s|topic_)/', $method);
+		$changes = ($this->input->server('REQUEST_METHOD') === 'POST') || preg_match('/^(add_|delete_|update_|generate_|assign_|leave_action|payroll_status|topic_)/', $method);
 		$this->is_hr = ($this->is_admin || $role === 7 || crm_can($key, $changes ? 'write' : 'read'));
 		if ($method !== 'ajax_clock' && !$this->is_hr) {
 			$this->session->set_flashdata('error_message', 'You do not have ' . ($changes ? 'Full' : 'View') . ' access to this HR page. Ask your administrator if you need it.');
@@ -1143,114 +1142,10 @@ class Ci_admin_hr extends CI_Controller {
 		redirect('manager/events');
 	}
 
-	/* ------------------------------------------------------------------
-	 * Training: HR publishes modules (for everyone or one role); each
-	 * employee starts and completes them; HR sees completion counts.
-	 * ------------------------------------------------------------------ */
+	// Training moved to Self Training (profile menu).
 	public function training()
 	{
-		$this->load->model('hr_selfservice_model');
-		$data = array();
-		$data['info'] = array(
-			'title' => 'Training - HR & Training',
-			'page_heading' => 'Training'
-		);
-		$data['is_admin'] = $this->is_admin;
-		$data['is_hr'] = $this->is_hr;
-		$data['modules'] = $this->hr_selfservice_model->my_training($this->cur_uid, $this->cur_role);
-		$data['summary'] = $this->hr_selfservice_model->training_summary($this->cur_uid, $this->cur_role);
-		if ($this->is_hr) {
-			$data['all_modules'] = $this->hr_selfservice_model->all_training();
-			$data['roles'] = $this->db->select('id, title')->where('status', 1)->order_by('title', 'ASC')->get('ci_roles')->result_array();
-			$edit_id = (int)$this->input->get('edit');
-			$data['edit_module'] = $edit_id > 0 ? $this->db->where('id', $edit_id)->get('ci_training_modules')->row_array() : array();
-		}
-		$this->load->view('manager/hr/training', $data);
-	}
-
-	public function training_progress($id = 0, $state = '')
-	{
-		$this->load->model('hr_selfservice_model');
-		$id = (int)$id;
-		if ($this->input->server('REQUEST_METHOD') !== 'POST' || $id <= 0) {
-			redirect('manager/hr/training');
-			return;
-		}
-		$mod = $this->hr_selfservice_model->module_visible_to($id, $this->cur_role);
-		if (empty($mod)) {
-			$this->session->set_flashdata('error_message', 'This training module is not available to you.');
-			$this->_back('manager/hr/training');
-		}
-		$status = ($state === 'complete') ? 'Completed' : 'In Progress';
-		$this->hr_selfservice_model->set_progress($id, $this->cur_uid, $status);
-		$this->session->set_flashdata('message', ($status === 'Completed' ? 'Marked as completed: ' : 'Started: ') . $mod['title']);
-		$this->_back('manager/hr/training');
-	}
-
-	public function training_save()
-	{
-		$this->load->model('hr_selfservice_model');
-		if ($this->input->server('REQUEST_METHOD') !== 'POST') {
-			redirect('manager/hr/training');
-			return;
-		}
-		$id = (int)$this->input->post('id');
-		$title = trim((string)$this->input->post('title'));
-		if ($title === '') {
-			$this->session->set_flashdata('error_message', 'Please enter a module title.');
-			redirect('manager/hr/training' . ($id ? '?edit=' . $id : ''));
-			return;
-		}
-		$url = trim((string)$this->input->post('content_url'));
-		if ($url !== '' && !preg_match('#^https?://#i', $url)) {
-			$url = 'https://' . $url;
-		}
-		$due = $this->_ymd($this->input->post('due_date'));
-		$row = array(
-			'title' => $title,
-			'category' => trim((string)$this->input->post('category')) ?: 'General',
-			'description' => trim((string)$this->input->post('description')),
-			'content_url' => $url,
-			'duration_minutes' => max(0, (int)$this->input->post('duration_minutes')),
-			'is_mandatory' => $this->input->post('is_mandatory') ? 1 : 0,
-			'audience_role_id' => max(0, (int)$this->input->post('audience_role_id')),
-			'due_date' => ($due !== '') ? $due : null,
-			'updated_at' => date('Y-m-d H:i:s')
-		);
-		if ($id > 0) {
-			$this->db->where('id', $id)->update('ci_training_modules', $row);
-			$this->session->set_flashdata('message', 'Training module updated.');
-		} else {
-			$row['status'] = 'active';
-			$row['created_by'] = $this->cur_uid;
-			$row['created_at'] = date('Y-m-d H:i:s');
-			$this->db->insert('ci_training_modules', $row);
-			$roles = ($row['audience_role_id'] > 0)
-				? array($row['audience_role_id'])
-				: array_map(function ($r) { return (int)$r['id']; }, $this->db->select('id')->get('ci_roles')->result_array());
-			$this->ci_admin_model->notify_role(
-				$roles,
-				'training_assigned',
-				'New training module',
-				($row['is_mandatory'] ? 'Mandatory training: ' : 'New training: ') . $title,
-				base_url('manager/hr/training'),
-				'fa fa-graduation-cap',
-				'#1e3a8a'
-			);
-			$this->session->set_flashdata('message', 'Training module published.');
-		}
-		redirect('manager/hr/training');
-	}
-
-	public function training_status($id = 0, $status = '')
-	{
-		$this->load->model('hr_selfservice_model');
-		$id = (int)$id;
-		if ($this->input->server('REQUEST_METHOD') === 'POST' && $id > 0 && in_array($status, array('active', 'archived'), true)) {
-			$this->db->where('id', $id)->update('ci_training_modules', array('status' => $status, 'updated_at' => date('Y-m-d H:i:s')));
-			$this->session->set_flashdata('message', $status === 'archived' ? 'Module archived. Employee progress is kept.' : 'Module restored.');
-		}
-		redirect('manager/hr/training');
+		redirect('manager/self-training');
 	}
 
 	/* ------------------------------------------------------------------

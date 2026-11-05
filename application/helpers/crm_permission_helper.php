@@ -40,6 +40,7 @@ if (!function_exists('crm_perm_catalog')) {
 					'calls' => array('label' => 'Phone Dialer & Calls', 'desc' => 'Dialer, softphone and call logs (phone button in the top bar)', 'pages' => array('calls')),
 					'live' => array('label' => 'Live Operations Report', 'desc' => 'LIVE button in the top bar and the TV presentation screen', 'pages' => array('live'), 'levels' => 'r'),
 					'help_support' => array('label' => 'Help & Support', 'desc' => 'Help topics and chat with support (profile menu)', 'fallback' => 'dashboard', 'pages' => array('help'), 'levels' => 'r'),
+					'self_training' => array('label' => 'Self Training', 'desc' => 'Company training library: pitch scripts, step-by-step guides, documents and videos (profile menu); view only', 'fallback' => 'dashboard', 'pages' => array('self-training'), 'levels' => 'r'),
 					'events_view' => array('label' => 'Events & Festivals', 'desc' => 'View company holidays, festivals, events and awards (profile menu); view only', 'fallback' => 'dashboard', 'pages' => array('events'), 'levels' => 'r'),
 				),
 			),
@@ -129,13 +130,13 @@ if (!function_exists('crm_perm_catalog')) {
 			'hr' => array(
 				'title' => 'HR & Training', 'key' => 'hr', 'match' => array('hr'),
 				'icon' => '<rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><line x1="15" y1="8" x2="17" y2="8"></line><line x1="15" y1="12" x2="17" y2="12"></line><line x1="7" y1="16" x2="17" y2="16"></line>',
-				'note' => 'Holiday requests and Training stay open to every user from the profile menu for their own data; Search Topics are read in Help & Support. The rights here add the HR menu and managing everyone.',
+				'note' => 'Holiday requests stay open to every user from the profile menu for their own data; Self Training and Search Topics (Help & Support) are rights in Core Modules. The rights here add the HR menu and managing everyone.',
 				'items' => array(
 					'hr' => array('label' => 'HR Overview', 'desc' => 'HR dashboard', 'nav' => array(array('hr', 'Overview', 'fa-th-large')), 'pages' => array('hr')),
 					'hr_attendance' => array('label' => 'Attendance & GPS', 'desc' => 'Attendance with location', 'fallback' => 'hr', 'nav' => array(array('hr/attendance', 'Attendance & GPS', 'fa-map-marker')), 'pages' => array('hr/attendance')),
 					'hr_shifts' => array('label' => 'Shifts', 'desc' => 'Create and assign shifts', 'fallback' => 'hr', 'nav' => array(array('hr/shifts', 'Shifts', 'fa-clock-o')), 'pages' => array('hr/shifts'), 'write' => array('hr/shifts/add', 'hr/shifts/assign')),
 					'hr_leaves' => array('label' => 'Holiday Requests (all staff)', 'desc' => 'See and approve everyone\'s leave', 'fallback' => 'hr', 'nav' => array(array('hr/leaves', 'Holiday Request', 'fa-calendar-check-o'))),
-					'hr_training' => array('label' => 'Training', 'desc' => 'Training courses; Full can add courses', 'fallback' => 'hr', 'nav' => array(array('hr/training', 'Training', 'fa-graduation-cap'))),
+					'hr_training' => array('label' => 'Manage Self Training', 'desc' => 'Upload training material and see everyone\'s progress', 'fallback' => 'hr', 'nav' => array(array('self-training/manage', 'Self Training', 'fa-graduation-cap', 'write')), 'write' => array('self-training/manage')),
 					'hr_topics' => array('label' => 'Search Topics', 'desc' => 'HR help topics; Full can edit topics', 'fallback' => 'hr', 'nav' => array(array('hr/search_topics', 'Search Topics', 'fa-search'))),
 					'hr_targets' => array('label' => 'Targets', 'desc' => 'Sales targets per person', 'fallback' => 'hr', 'nav' => array(array('hr/targets', 'Targets', 'fa-crosshairs')), 'pages' => array('hr/targets'), 'write' => array('hr/targets/add')),
 					'hr_lifecycle' => array('label' => 'Employee Lifecycle', 'desc' => 'Joining, probation and exit', 'fallback' => 'hr', 'nav' => array(array('hr/lifecycle', 'Employee Lifecycle', 'fa-users')), 'pages' => array('hr/lifecycle')),
