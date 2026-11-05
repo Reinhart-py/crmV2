@@ -296,10 +296,13 @@ if (!function_exists('render_donut_chart_svg')) {
             $callouts .= sprintf('<text x="%.1f" y="%.1f" font-size="12" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="700" fill="#0f172a" class="donut-callout-text" text-anchor="%s">%s</text>', $tx, $ty, $anchor, $lbl);
             $current_angle = $next_angle;
         }
-        $vb_x = floor($min_x - 4);
-        $vb_w = ceil($max_x + 4) - $vb_x;
-        $vb_y = floor($min_y - 2);
-        $vb_h = ceil($max_y + 2) - $vb_y;
+        // Same space on both sides of the donut so it sits in the centre of the box; labels stay inside.
+        $half_w = ceil(max($cx - $min_x, $max_x - $cx) + 4);
+        $half_h = ceil(max($cy - $min_y, $max_y - $cy) + 2);
+        $vb_x = $cx - $half_w;
+        $vb_w = 2 * $half_w;
+        $vb_y = $cy - $half_h;
+        $vb_h = 2 * $half_h;
         // Fills the space left in the card (the wrapper is position:relative), as large as fits without cutting labels.
         return '<svg viewBox="' . $vb_x . ' ' . $vb_y . ' ' . $vb_w . ' ' . $vb_h . '" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="position:absolute; left:0; top:0; width:100%; height:100%; display:block; overflow:hidden;"><g>' . $paths . $callouts . '</g></svg>';
     }
