@@ -161,7 +161,7 @@ class Ci_admin_live extends CI_Controller
 			COALESCE(SUM(CASE WHEN a.created >= '{$m_d1}' AND a.created <= '{$m_d2}' THEN 1 ELSE 0 END), 0) as month,
 			COALESCE(SUM(CASE WHEN a.created >= '{$q_d1}' AND a.created <= '{$q_d2}' THEN 1 ELSE 0 END), 0) as quarter
 		FROM ci_leads a
-		INNER JOIN ci_pipeline p ON p.lead_id = a.id AND p.pipeline_stage = 'lead' {$where_leads}")->row_array();
+		INNER JOIN ci_pipeline p ON p.lead_id = a.id AND " . crm_stage_lead_sql('a', 'p') . " {$where_leads}")->row_array();
 
 		$where_orders = $has_filter ? "WHERE created_by IN ({$u_str})" : "";
 		$orders_row = $this->db->query("SELECT 

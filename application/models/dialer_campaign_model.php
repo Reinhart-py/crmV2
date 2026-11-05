@@ -131,7 +131,7 @@ class Dialer_campaign_model extends CI_Model
 			$this->db->where_in('A.status', $status_ids);
 		}
 		if ($campaign['pipeline_type'] === 'lead') {
-			$this->db->where('P.pipeline_stage', 'lead');
+			$this->db->where(crm_stage_lead_sql('A', 'P'), NULL, FALSE);
 		} elseif ($campaign['pipeline_type'] === 'database') {
 			$this->db->where('(P.pipeline_stage = "database" OR P.pipeline_stage IS NULL)', null, false);
 		}

@@ -8,9 +8,17 @@ class Admin_reports_model extends CI_Model {
 		$this->load->database();
 	}
 
+	/** Current-stage counts, same rule as the dashboard and lists (no double counting). */
+	private function stage_counts()
+	{
+		$row = $this->db->query("SELECT SUM(" . crm_stage_lead_sql('A', 'P') . ") AS leads, SUM(P.pipeline_stage = 'database' OR P.pipeline_stage IS NULL) AS db_records FROM ci_leads A LEFT JOIN ci_pipeline P ON P.lead_id = A.id")->row_array();
+		return array('leads' => (int)$row['leads'], 'db_records' => (int)$row['db_records']);
+	}
+
 	public function getAdminReportsOverview()
 	{
-		$sales_leads = (int)$this->db->count_all('ci_leads');
+		$stage_counts = $this->stage_counts();
+		$sales_leads = $stage_counts['leads'];
 		$sales_quotes = (int)$this->db->where('quote_status IS NOT NULL AND quote_status != ""')->count_all_results('ci_leads');
 		$sales_mrr_row = $this->db->select_sum('mrr')->get('ci_leads')->row_array();
 		$sales_mrr = isset($sales_mrr_row['mrr']) ? (float)$sales_mrr_row['mrr'] : 0.0;
@@ -99,6 +107,7 @@ class Admin_reports_model extends CI_Model {
 
 	public function getDepartmentReportsMeta($dept)
 	{
+		$stage_counts = $this->stage_counts();
 		$dept = strtolower(trim($dept));
 		$meta = array();
 
@@ -119,14 +128,14 @@ class Admin_reports_model extends CI_Model {
 						'slug' => 'database',
 						'icon' => 'fa-database',
 						'desc' => 'Sourced database entries, referral batches, and verified database categories.',
-						'badge' => $this->db->where('database_category != "" OR data_source != ""')->count_all_results('ci_leads') . ' Records'
+						'badge' => number_format($stage_counts['db_records']) . ' Records'
 					),
 					'lead' => array(
 						'title' => 'Lead Report',
 						'slug' => 'lead',
 						'icon' => 'fa-filter',
 						'desc' => 'Comprehensive lead breakdown by status, industry vertical, and assigned representatives.',
-						'badge' => $this->db->count_all('ci_leads') . ' Leads'
+						'badge' => number_format($stage_counts['leads']) . ' Leads'
 					),
 					'quote' => array(
 						'title' => 'Quote Report',
@@ -672,6 +681,8 @@ class Admin_reports_model extends CI_Model {
 		if ($report == 'database') {
 			$this->db->select('A.*, B.name as assigned_name, C.status as status_name');
 			$this->db->from('ci_leads as A');
+			$this->db->join('ci_pipeline as P', 'P.lead_id = A.id', 'LEFT');
+			$this->db->where("(P.pipeline_stage = 'database' OR P.pipeline_stage IS NULL)", NULL, FALSE); // current Database records only
 			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'INNER');
 			$this->db->join('ci_status as C', 'A.status = C.id', 'LEFT');
 			$this->db->where('A.lead_assign >', 0);
@@ -1023,6 +1034,8 @@ class Admin_reports_model extends CI_Model {
 		if ($report == 'lead') {
 			$this->db->select('A.*, B.name as assigned_name, C.status as status_name, T.title as service_name');
 			$this->db->from('ci_leads as A');
+			$this->db->join('ci_pipeline as P', 'P.lead_id = A.id', 'LEFT');
+			$this->db->where(crm_stage_lead_sql('A', 'P'), NULL, FALSE); // current Leads only (not yet an Order)
 			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'LEFT');
 			$this->db->join('ci_status as C', 'A.status = C.id', 'LEFT');
 			$this->db->join('ci_terms as T', 'A.s_cat = T.id', 'LEFT');
@@ -4009,6 +4022,8 @@ class Admin_reports_model extends CI_Model {
 		if ($report == 'database') {
 			$this->db->select('A.*, B.name as assigned_name, C.status as status_name');
 			$this->db->from('ci_leads as A');
+			$this->db->join('ci_pipeline as P', 'P.lead_id = A.id', 'LEFT');
+			$this->db->where("(P.pipeline_stage = 'database' OR P.pipeline_stage IS NULL)", NULL, FALSE); // current Database records only
 			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'INNER');
 			$this->db->join('ci_status as C', 'A.status = C.id', 'LEFT');
 			$this->db->where('A.lead_assign >', 0);
@@ -4277,6 +4292,8 @@ class Admin_reports_model extends CI_Model {
 		if ($report == 'lead') {
 			$this->db->select('A.*, B.name as assigned_name, C.status as status_name');
 			$this->db->from('ci_leads as A');
+			$this->db->join('ci_pipeline as P', 'P.lead_id = A.id', 'LEFT');
+			$this->db->where(crm_stage_lead_sql('A', 'P'), NULL, FALSE); // current Leads only (not yet an Order)
 			$this->db->join('ci_user as B', 'A.lead_assign = B.id', 'LEFT');
 			$this->db->join('ci_status as C', 'A.status = C.id', 'LEFT');
 			$this->_applyDate($this->db, 'A.created', $d1, $d2);

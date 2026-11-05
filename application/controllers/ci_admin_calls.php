@@ -308,7 +308,7 @@ class Ci_admin_calls extends CI_Controller
 				}
 			}
 		} elseif ($type === 'lead') {
-			$this->db->where('P.pipeline_stage', 'lead');
+			$this->db->where(crm_stage_lead_sql('A', 'P'), NULL, FALSE);
 			if (!empty($status_param) && $status_param !== 'all') {
 				if (strpos($status_param, ',') !== false) {
 					$st_ids = array_map('intval', explode(',', $status_param));

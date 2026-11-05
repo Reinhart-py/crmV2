@@ -54,7 +54,7 @@ class Ci_admin_orders extends CI_Controller {
 				'page_heading' => 'My Orders'
 			);
 			$this->db->where("(O.created_by = {$cur_uid} OR O.assigned_to = {$cur_uid} OR A.created_by = {$cur_uid} OR A.lead_assign = {$cur_uid} OR FIND_IN_SET({$cur_uid}, A.agents) > 0 OR O.lead_id IN (SELECT lead_id FROM ci_lead_transfers WHERE from_user_id = {$cur_uid} OR to_user_id = {$cur_uid}) OR O.lead_id IN (SELECT lead_id FROM ci_pipeline WHERE conversion_requested_by = {$cur_uid} OR order_requested_by = {$cur_uid}) OR O.lead_id IN (SELECT lead_id FROM ci_pipeline_logs WHERE action_by = {$cur_uid}))");
-			$this->db->where("(O.sales_ref_no IS NULL OR O.sales_ref_no = '') AND O.status != 'Sales'");
+			$this->db->where(crm_order_open_sql('O'), NULL, FALSE);
 			$can_edit_orders = false;
 			$reset_url = base_url('manager/orders/my');
 		} elseif ($scope === 'team') {
@@ -72,7 +72,7 @@ class Ci_admin_orders extends CI_Controller {
 			if (!empty($team_members)) {
 				$team_str = implode(',', $team_members);
 				$this->db->where("(FIND_IN_SET(O.created_by, '{$team_str}') > 0 OR FIND_IN_SET(O.assigned_to, '{$team_str}') > 0)");
-				$this->db->where("(O.sales_ref_no IS NULL OR O.sales_ref_no = '') AND O.status != 'Sales'");
+				$this->db->where(crm_order_open_sql('O'), NULL, FALSE);
 			} else {
 				$this->db->where('1 = 0', NULL, FALSE);
 			}
@@ -81,7 +81,7 @@ class Ci_admin_orders extends CI_Controller {
 				'title' => 'View Sales - Seven Strokes CRM',
 				'page_heading' => 'View Sales'
 			);
-			$this->db->where("(O.status = 'Sales' OR (O.sales_ref_no IS NOT NULL AND O.sales_ref_no != ''))");
+			$this->db->where(crm_order_is_sale_sql('O'), NULL, FALSE);
 			if (!$is_backoffice) {
 				$this->db->where("(O.created_by = {$cur_uid} OR O.assigned_to = {$cur_uid} OR A.created_by = {$cur_uid} OR A.lead_assign = {$cur_uid} OR FIND_IN_SET({$cur_uid}, A.agents) > 0 OR O.lead_id IN (SELECT lead_id FROM ci_lead_transfers WHERE from_user_id = {$cur_uid} OR to_user_id = {$cur_uid}) OR O.lead_id IN (SELECT lead_id FROM ci_pipeline WHERE conversion_requested_by = {$cur_uid} OR order_requested_by = {$cur_uid}) OR O.lead_id IN (SELECT lead_id FROM ci_pipeline_logs WHERE action_by = {$cur_uid}))");
 				$can_edit_orders = false;
@@ -95,6 +95,7 @@ class Ci_admin_orders extends CI_Controller {
 				'page_heading' => 'Ongoing Orders'
 			);
 			$this->db->where_not_in('O.status', array('Completed', 'Fulfilled', 'Sales', 'Rejected', 'Lost', 'Cancelled'));
+			$this->db->where(crm_order_open_sql('O'), NULL, FALSE);
 			$can_edit_orders = $is_backoffice;
 			$reset_url = base_url('manager/orders/ongoing');
 		} elseif ($status_filter === 'completed') {
@@ -142,7 +143,7 @@ class Ci_admin_orders extends CI_Controller {
 				'title' => 'View All Orders - Back Office',
 				'page_heading' => 'View All Orders'
 			);
-			$this->db->where("(O.sales_ref_no IS NULL OR O.sales_ref_no = '') AND O.status != 'Sales'");
+			$this->db->where(crm_order_open_sql('O'), NULL, FALSE);
 			$can_edit_orders = true;
 			$reset_url = base_url('manager/orders');
 		}

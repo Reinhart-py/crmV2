@@ -1,3 +1,17 @@
+## [2026-11-05] - One Stage Per Record: Database, Leads, Orders, Sales
+### Fixed
+- A record converted to an Order kept `ci_pipeline.pipeline_stage = 'lead'`, so the Dashboard My Leads / Team Leads KPI, Lead status cards, Lead follow-up counters, My Leads donut, projection charts, the dialer lead queue, Live presentation stats and the Lead / Database reports still counted it as a Lead. The View Leads list already hid it, so numbers and lists disagreed. Example from local data: user 78 had 2 real Leads but the Dashboard showed 5.
+- Team Orders KPI, the Orders status cards and the Sales amount KPI counted Sales (and `Completed` orders) as Orders, or Orders as Sales. "Ongoing Orders" only checked the status text, not the sales reference number.
+### Changed
+- One shared rule decides the stage everywhere (`crm_stage_lead_sql()`, `crm_order_is_sale_sql()`, `crm_order_open_sql()` at the end of `ci_admin_model.php`):
+  - Database: `pipeline_stage = 'database'` (unchanged).
+  - Lead: `pipeline_stage = 'lead'` and no order exists for it yet.
+  - Order: an order that is not a Sale.
+  - Sale: order status `Sales` or a sales reference number.
+- Applied to dashboard KPIs (my and team), Database / Lead / Order status cards, donuts, follow-up counters, projection charts, pipeline summary, View Leads / Team Leads lists, all Orders lists, View Sales, dialer and call lead queues, Live stats and the Database / Lead reports.
+- Orders status cards no longer include a Sales chip, use the same scope as the My Orders page, and now include Pending Sales Approval and Follow Up so they add up to the Orders total.
+- Status cards that list a fixed status range add an "Other statuses" chip (only when above 0) so the card total equals the stage count.
+- No data was changed or deleted. Approval actions were already moving records forward; only lists, counts and reports changed.
 ## [2026-11-05] - Full-Width Pages, HR & Training Self-Service, Profile Menu
 ### Changed
 - Back Office > Pending Sales Approval uses the full page width: roomier filter bar (wide search, From / To, Search / Reset), 14px table text with more row spacing, a Status tag column, and an "N orders waiting" count. Same data, same actions.

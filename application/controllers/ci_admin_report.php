@@ -833,7 +833,7 @@ class Ci_admin_report extends CI_Controller {
 			$this->db->join('ci_pipeline as P', 'P.lead_id = L.id', 'left');
 			$this->db->join('ci_status as S', 'S.id = L.status', 'left');
 			$this->db->join('ci_user as U', 'U.id = L.lead_assign', 'left');
-			$this->db->where('P.pipeline_stage', 'lead');
+			$this->db->where(crm_stage_lead_sql('L', 'P'), NULL, FALSE);
 			if (!empty($d1) && !empty($d2)) {
 				$this->db->where('DATE(L.created) >=', date('Y-m-d', strtotime($d1)));
 				$this->db->where('DATE(L.created) <=', date('Y-m-d', strtotime($d2)));
@@ -910,7 +910,7 @@ class Ci_admin_report extends CI_Controller {
 		$this->db->join('ci_pipeline as P', 'P.lead_id = L.id', 'left');
 		$this->db->join('ci_status as S', 'S.id = L.status', 'left');
 		$this->db->join('ci_user as U', 'U.id = L.lead_assign', 'left');
-		$this->db->where('P.pipeline_stage', 'lead');
+		$this->db->where(crm_stage_lead_sql('L', 'P'), NULL, FALSE);
 		$this->db->where('L.customer IS NOT NULL AND L.customer != ""');
 
 		if (!empty($d1) && !empty($d2)) {

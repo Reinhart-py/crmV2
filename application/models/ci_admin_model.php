@@ -38,12 +38,12 @@ class Ci_admin_model extends CI_model {
 
 			(SELECT count(A.id) FROM ci_leads as A 
 			 LEFT JOIN ci_pipeline as P ON A.id = P.lead_id 
-			 WHERE P.pipeline_stage = 'lead' 
+			 WHERE " . crm_stage_lead_sql('A', 'P') . " 
 			 AND (A.lead_assign = " . $manager_id . " OR (A.created_by = " . $manager_id . " AND (A.lead_assign = 0 OR A.lead_assign IS NULL)) OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET(" . $manager_id . ", A.agents) > 0)) 
 			 AND (A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)) as count_leads,
 
 			(SELECT COUNT(DISTINCT O.id) FROM ci_orders O LEFT JOIN ci_leads A ON O.lead_id = A.id WHERE " . $this->my_orders_scope_sql($manager_id) . ") as count_orders,
-			(SELECT COALESCE(SUM(CAST(COALESCE(NULLIF(pricing_amount, 0), NULLIF(mrr, 0), 0) AS DECIMAL(12,2))), 0) FROM ci_orders WHERE created_by = " . $manager_id . " AND (status = 'Sales' OR status = 'Closed / Sold' OR status = 'Completed' OR (sales_ref_no IS NOT NULL AND sales_ref_no != ''))) as sales_amount,
+			(SELECT COALESCE(SUM(CAST(COALESCE(NULLIF(pricing_amount, 0), NULLIF(mrr, 0), 0) AS DECIMAL(12,2))), 0) FROM ci_orders O WHERE O.created_by = " . $manager_id . " AND " . crm_order_is_sale_sql('O') . ") as sales_amount,
 			(SELECT COALESCE(SUM(amount), 0) FROM ci_payments WHERE recorded_by = " . $manager_id . ") as cash_received";
 
 		$rows = $this->db->query($sql);
@@ -101,12 +101,12 @@ class Ci_admin_model extends CI_model {
 				(SELECT count(id) FROM ci_user WHERE FIND_IN_SET(id, '" . $team_str . "') > 0 AND dob = '" . $today . "') as count_today_birth,
 				(SELECT count(A.id) FROM ci_leads as A 
 				 LEFT JOIN ci_pipeline as P ON A.id = P.lead_id 
-				 WHERE P.pipeline_stage = 'lead' 
+				 WHERE " . crm_stage_lead_sql('A', 'P') . " 
 				 AND ((A.lead_assign > 0 AND FIND_IN_SET(A.lead_assign, '" . $team_str . "') > 0) OR ((A.lead_assign = 0 OR A.lead_assign IS NULL) AND FIND_IN_SET(A.created_by, '" . $team_str . "') > 0)) 
 				 AND (A.company_status IS NULL OR LOWER(A.company_status) != 'closed')) as count_leads,
 				" . $vert_team_sql . " as count_verticals,
-				(SELECT count(id) FROM ci_orders WHERE FIND_IN_SET(created_by, '" . $team_str . "') > 0) as count_orders,
-				(SELECT COALESCE(SUM(CAST(COALESCE(NULLIF(pricing_amount, 0), NULLIF(mrr, 0), 0) AS DECIMAL(12,2))), 0) FROM ci_orders WHERE FIND_IN_SET(created_by, '" . $team_str . "') > 0 AND (status = 'Sales' OR status = 'Closed / Sold' OR status = 'Completed' OR (sales_ref_no IS NOT NULL AND sales_ref_no != ''))) as sales_amount,
+				(SELECT count(O.id) FROM ci_orders O WHERE FIND_IN_SET(O.created_by, '" . $team_str . "') > 0 AND " . crm_order_open_sql('O') . ") as count_orders,
+				(SELECT COALESCE(SUM(CAST(COALESCE(NULLIF(pricing_amount, 0), NULLIF(mrr, 0), 0) AS DECIMAL(12,2))), 0) FROM ci_orders O WHERE FIND_IN_SET(O.created_by, '" . $team_str . "') > 0 AND " . crm_order_is_sale_sql('O') . ") as sales_amount,
 				(SELECT COALESCE(SUM(amount), 0) FROM ci_payments WHERE FIND_IN_SET(recorded_by, '" . $team_str . "') > 0) as cash_received";
 
 			$rows = $this->db->query($sql);
@@ -162,6 +162,24 @@ class Ci_admin_model extends CI_model {
 			return $data; 
 		}
 
+		/**
+		 * Status cards list a fixed status range. Records in the stage whose status is
+		 * outside that range are added as one "Other statuses" row so the card total
+		 * always equals the stage count used everywhere else.
+		 */
+		private function _append_other_status($sql, $min, $max, $data){
+			if (!preg_match('/\((SELECT COUNT\(DISTINCT l\.id\).*)\) as lead_count FROM ci_status/s', $sql, $m)) {
+				return $data;
+			}
+			$other_sql = str_replace('l.status = A.id', '(l.status IS NULL OR l.status NOT BETWEEN ' . (int)$min . ' AND ' . (int)$max . ')', $m[1]);
+			$row = $this->db->query($other_sql)->row_array();
+			$cnt = !empty($row) ? (int)reset($row) : 0;
+			if ($cnt > 0) {
+				$data[] = array('status_id' => '', 'status' => 'Other statuses', 'lead_count' => $cnt);
+			}
+			return $data;
+		}
+
 		public function dashboard_db_state($is_team = 0){
 			$manager_id = (int)$this->session->userdata('manager_id');
 			$user_role = (int)$this->session->userdata('user_role');
@@ -187,7 +205,7 @@ class Ci_admin_model extends CI_model {
 					$data[] = $row;
 				}
 			}
-			return $data;
+			return $this->_append_other_status($sql, 37, 44, $data);
 		}
 
 		public function dashboard_lead_state($is_team = 0){
@@ -197,15 +215,15 @@ class Ci_admin_model extends CI_model {
 				$user_role = (int)$this->session->userdata('manager_role');
 			}
 			if ($is_team == 0) {
-				$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(DISTINCT l.id) FROM ci_leads l INNER JOIN ci_pipeline p ON p.lead_id = l.id AND p.pipeline_stage = 'lead' WHERE l.status = A.id AND (l.lead_assign = ".$manager_id." OR (l.created_by = ".$manager_id." AND (l.lead_assign = 0 OR l.lead_assign IS NULL)) OR (l.agents IS NOT NULL AND l.agents != '' AND FIND_IN_SET(".$manager_id.", l.agents) > 0)) AND (l.company_status IS NULL OR LOWER(l.company_status) != 'closed')) as lead_count FROM ci_status as A WHERE A.id BETWEEN 45 AND 50 ORDER BY A.id ASC";
+				$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(DISTINCT l.id) FROM ci_leads l INNER JOIN ci_pipeline p ON p.lead_id = l.id AND " . crm_stage_lead_sql('l', 'p') . " WHERE l.status = A.id AND (l.lead_assign = ".$manager_id." OR (l.created_by = ".$manager_id." AND (l.lead_assign = 0 OR l.lead_assign IS NULL)) OR (l.agents IS NOT NULL AND l.agents != '' AND FIND_IN_SET(".$manager_id.", l.agents) > 0)) AND (l.company_status IS NULL OR LOWER(l.company_status) != 'closed')) as lead_count FROM ci_status as A WHERE A.id BETWEEN 45 AND 50 ORDER BY A.id ASC";
 			} else {
 				if ($user_role === 1 || $user_role === 4) {
-					$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(DISTINCT l.id) FROM ci_leads l INNER JOIN ci_pipeline p ON p.lead_id = l.id AND p.pipeline_stage = 'lead' WHERE l.status = A.id AND (l.company_status IS NULL OR LOWER(l.company_status) != 'closed')) as lead_count FROM ci_status as A WHERE A.id BETWEEN 45 AND 50 ORDER BY A.id ASC";
+					$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(DISTINCT l.id) FROM ci_leads l INNER JOIN ci_pipeline p ON p.lead_id = l.id AND " . crm_stage_lead_sql('l', 'p') . " WHERE l.status = A.id AND (l.company_status IS NULL OR LOWER(l.company_status) != 'closed')) as lead_count FROM ci_status as A WHERE A.id BETWEEN 45 AND 50 ORDER BY A.id ASC";
 				} else {
 					$team_array = $this->fetchTeamList($manager_id, '');
 					$team_clean = !empty($team_array) && is_array($team_array) ? array_filter(array_map('intval', $team_array)) : array(0);
 					$team_str = implode(',', $team_clean);
-					$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(DISTINCT l.id) FROM ci_leads l INNER JOIN ci_pipeline p ON p.lead_id = l.id AND p.pipeline_stage = 'lead' WHERE (FIND_IN_SET(l.created_by,'".$team_str."')>0 OR (l.lead_assign > 0 AND FIND_IN_SET(l.lead_assign,'".$team_str."')>0)) AND l.status = A.id AND (l.company_status IS NULL OR LOWER(l.company_status) != 'closed')) as lead_count FROM ci_status as A WHERE A.id BETWEEN 45 AND 50 ORDER BY A.id ASC";
+					$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(DISTINCT l.id) FROM ci_leads l INNER JOIN ci_pipeline p ON p.lead_id = l.id AND " . crm_stage_lead_sql('l', 'p') . " WHERE (FIND_IN_SET(l.created_by,'".$team_str."')>0 OR (l.lead_assign > 0 AND FIND_IN_SET(l.lead_assign,'".$team_str."')>0)) AND l.status = A.id AND (l.company_status IS NULL OR LOWER(l.company_status) != 'closed')) as lead_count FROM ci_status as A WHERE A.id BETWEEN 45 AND 50 ORDER BY A.id ASC";
 				}
 			}
 			$data = array();
@@ -215,7 +233,7 @@ class Ci_admin_model extends CI_model {
 					$data[] = $row;
 				}
 			}
-			return $data;
+			return $this->_append_other_status($sql, 45, 50, $data);
 		}
 
 		public function dashboard_order_state($is_team = 0){
@@ -225,7 +243,8 @@ class Ci_admin_model extends CI_model {
 				$user_role = (int)$this->session->userdata('manager_role');
 			}
 			if ($is_team == 0) {
-				$scope = "(O.created_by = ".$manager_id." OR O.assigned_to = ".$manager_id.")";
+				// Same scope as the My Orders page and the My Orders KPI.
+				$scope = $this->my_orders_scope_sql($manager_id);
 			} else {
 				if ($user_role === 1 || $user_role === 4) {
 					$scope = "1=1";
@@ -236,19 +255,22 @@ class Ci_admin_model extends CI_model {
 					$scope = "(FIND_IN_SET(O.created_by, '".$team_str."') > 0 OR FIND_IN_SET(O.assigned_to, '".$team_str."') > 0)";
 				}
 			}
+			// Orders only: an order that became a Sale is counted under Sales, not here.
+			$scope .= " AND " . crm_order_open_sql('O');
 			$process_statuses = array(
 				array('key' => 'Submitted', 'label' => 'Submitted', 'cond' => "O.status = 'Submitted'"),
 				array('key' => 'Approved', 'label' => 'Approved', 'cond' => "O.status = 'Approved'"),
+				array('key' => 'Pending Sales Approval', 'label' => 'Pending Sales Approval', 'cond' => "O.status IN ('Pending Sales Approval', 'pending_sales_approval')"),
 				array('key' => 'In Progress', 'label' => 'In Progress', 'cond' => "O.status = 'In Progress'"),
 				array('key' => 'Onboarding', 'label' => 'Onboarding', 'cond' => "O.status = 'Onboarding'"),
+				array('key' => 'Follow Up', 'label' => 'Follow Up', 'cond' => "O.status = 'Follow Up'"),
 				array('key' => 'Under Review', 'label' => 'Under Review', 'cond' => "O.status = 'Under Review'"),
-				array('key' => 'completed', 'label' => 'Completed', 'cond' => "O.status IN ('Completed', 'Fulfilled') AND (O.sales_ref_no IS NULL OR O.sales_ref_no = '') AND O.status != 'Sales'"),
-				array('key' => 'sales', 'label' => 'Sales', 'cond' => "(O.status = 'Sales' OR (O.sales_ref_no IS NOT NULL AND O.sales_ref_no != ''))"),
+				array('key' => 'completed', 'label' => 'Completed', 'cond' => "O.status IN ('Completed', 'Fulfilled')"),
 				array('key' => 'rejected_lost', 'label' => 'Cancelled', 'cond' => "O.status IN ('Cancelled', 'Rejected', 'Lost')")
 			);
 			$data = array();
 			foreach ($process_statuses as $st) {
-				$sql = "SELECT COUNT(O.id) as order_count FROM ci_orders O WHERE ".$st['cond']." AND ".$scope;
+				$sql = "SELECT COUNT(O.id) as order_count FROM ci_orders O LEFT JOIN ci_leads A ON O.lead_id = A.id WHERE ".$st['cond']." AND ".$scope;
 				$row = $this->db->query($sql)->row_array();
 				$cnt = !empty($row['order_count']) ? (int)$row['order_count'] : 0;
 				$data[] = array(
@@ -270,7 +292,7 @@ class Ci_admin_model extends CI_model {
 			$last_date = date('Y-m-d', strtotime("-7 day"));
 			$next_date = date('Y-m-d', strtotime("+7 day"));
 
-			$stage_cond = ($stage === 'lead') ? "p.pipeline_stage = 'lead'" : "(p.pipeline_stage = 'database' OR p.pipeline_stage IS NULL)";
+			$stage_cond = ($stage === 'lead') ? crm_stage_lead_sql('a', 'p') : "(p.pipeline_stage = 'database' OR p.pipeline_stage IS NULL)";
 
 			if ($is_team == 0) {
 				$scope = "(a.lead_assign = ".$manager_id." OR (a.created_by = ".$manager_id." AND (a.lead_assign = 0 OR a.lead_assign IS NULL)) OR (a.agents IS NOT NULL AND a.agents != '' AND FIND_IN_SET(".$manager_id.", a.agents) > 0))";
@@ -398,7 +420,7 @@ class Ci_admin_model extends CI_model {
 				$bucket_sql .= " WHEN ({$sp['cond']}) THEN {$idx}";
 			}
 			$bucket_sql .= " ELSE -1 END";
-			$sql = "SELECT {$bucket_sql} AS bucket, l.status AS status_id, COALESCE(NULLIF(s.status, ''), 'Other') AS status_name, COUNT(DISTINCT l.id) AS cnt FROM ci_leads l INNER JOIN ci_pipeline p ON p.lead_id = l.id AND p.pipeline_stage = 'lead' LEFT JOIN ci_status s ON s.id = l.status WHERE ({$lead_scope}) GROUP BY bucket, l.status, status_name ORDER BY bucket, cnt DESC";
+			$sql = "SELECT {$bucket_sql} AS bucket, l.status AS status_id, COALESCE(NULLIF(s.status, ''), 'Other') AS status_name, COUNT(DISTINCT l.id) AS cnt FROM ci_leads l INNER JOIN ci_pipeline p ON p.lead_id = l.id AND " . crm_stage_lead_sql('l', 'p') . " LEFT JOIN ci_status s ON s.id = l.status WHERE ({$lead_scope}) GROUP BY bucket, l.status, status_name ORDER BY bucket, cnt DESC";
 			$query = $this->db->query($sql);
 			$rows = ($query && is_object($query)) ? $query->result_array() : array();
 
@@ -450,7 +472,7 @@ class Ci_admin_model extends CI_model {
 
 		public function my_orders_scope_sql($manager_id){
 			$uid = (int)$manager_id;
-			return "(O.created_by = {$uid} OR O.assigned_to = {$uid} OR A.created_by = {$uid} OR A.lead_assign = {$uid} OR FIND_IN_SET({$uid}, A.agents) > 0 OR O.lead_id IN (SELECT lead_id FROM ci_lead_transfers WHERE from_user_id = {$uid} OR to_user_id = {$uid}) OR O.lead_id IN (SELECT lead_id FROM ci_pipeline WHERE conversion_requested_by = {$uid} OR order_requested_by = {$uid}) OR O.lead_id IN (SELECT lead_id FROM ci_pipeline_logs WHERE action_by = {$uid})) AND (O.sales_ref_no IS NULL OR O.sales_ref_no = '') AND O.status != 'Sales'";
+			return "(O.created_by = {$uid} OR O.assigned_to = {$uid} OR A.created_by = {$uid} OR A.lead_assign = {$uid} OR FIND_IN_SET({$uid}, A.agents) > 0 OR O.lead_id IN (SELECT lead_id FROM ci_lead_transfers WHERE from_user_id = {$uid} OR to_user_id = {$uid}) OR O.lead_id IN (SELECT lead_id FROM ci_pipeline WHERE conversion_requested_by = {$uid} OR order_requested_by = {$uid}) OR O.lead_id IN (SELECT lead_id FROM ci_pipeline_logs WHERE action_by = {$uid})) AND " . crm_order_open_sql('O');
 		}
 
 		public function hr_attendance_summary($uid){
@@ -658,16 +680,16 @@ public function dashboard_TeamPro($table='ci_leads'){
 		$d2 = date("Y-m-t", strtotime("+$i month"));
 		$month_dates[] = array('d1' => $d1, 'd2' => $d2);
 		if ($user_role === 1 || $user_role === 4) {
-			$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ci_leads a INNER JOIN ci_pipeline P ON P.lead_id = a.id AND P.pipeline_stage = 'lead' WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND a.status NOT IN (42,43,44) AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS pt_".$i;
+			$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ci_leads a INNER JOIN ci_pipeline P ON P.lead_id = a.id AND " . crm_stage_lead_sql('a', 'P') . " WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND a.status NOT IN (42,43,44) AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS pt_".$i;
 		} else {
-			$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ci_leads a INNER JOIN ci_pipeline P ON P.lead_id = a.id AND P.pipeline_stage = 'lead' WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND a.status NOT IN (42,43,44) AND (FIND_IN_SET(a.created_by,'".$team_str."')>0 OR (a.lead_assign > 0 AND FIND_IN_SET(a.lead_assign,'".$team_str."')>0)) AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS pt_".$i;
+			$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ci_leads a INNER JOIN ci_pipeline P ON P.lead_id = a.id AND " . crm_stage_lead_sql('a', 'P') . " WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND a.status NOT IN (42,43,44) AND (FIND_IN_SET(a.created_by,'".$team_str."')>0 OR (a.lead_assign > 0 AND FIND_IN_SET(a.lead_assign,'".$team_str."')>0)) AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS pt_".$i;
 		}
 	}
 
 	if ($user_role === 1 || $user_role === 4) {
-		$sql = "SELECT " . implode(", ", $select_parts) . " FROM ci_leads a INNER JOIN ci_pipeline P ON P.lead_id = a.id AND P.pipeline_stage = 'lead' WHERE a.status NOT IN (42,43,44) AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')"; 
+		$sql = "SELECT " . implode(", ", $select_parts) . " FROM ci_leads a INNER JOIN ci_pipeline P ON P.lead_id = a.id AND " . crm_stage_lead_sql('a', 'P') . " WHERE a.status NOT IN (42,43,44) AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')"; 
 	} else {
-		$sql = "SELECT " . implode(", ", $select_parts) . " FROM ci_leads a INNER JOIN ci_pipeline P ON P.lead_id = a.id AND P.pipeline_stage = 'lead' WHERE a.status NOT IN (42,43,44) AND (FIND_IN_SET(a.created_by,'".$team_str."')>0 OR (a.lead_assign > 0 AND FIND_IN_SET(a.lead_assign,'".$team_str."')>0)) AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')"; 
+		$sql = "SELECT " . implode(", ", $select_parts) . " FROM ci_leads a INNER JOIN ci_pipeline P ON P.lead_id = a.id AND " . crm_stage_lead_sql('a', 'P') . " WHERE a.status NOT IN (42,43,44) AND (FIND_IN_SET(a.created_by,'".$team_str."')>0 OR (a.lead_assign > 0 AND FIND_IN_SET(a.lead_assign,'".$team_str."')>0)) AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')"; 
 	}
 	$data = array();
 	$rows = $this->db->query($sql);
@@ -701,10 +723,10 @@ public function dashboard_MyPro($table='ci_leads'){
 		$d1 = date("Y-m-01", strtotime("+$i month"));
 		$d2 = date("Y-m-t", strtotime("+$i month"));
 		$month_dates[] = array('d1' => $d1, 'd2' => $d2);
-		$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ci_leads a INNER JOIN ci_pipeline P ON P.lead_id = a.id AND P.pipeline_stage = 'lead' WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND a.status NOT IN (42,43,44) AND (a.created_by = ".$user_id." OR a.lead_assign = ".$user_id.") AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS pt_".$i;
+		$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ci_leads a INNER JOIN ci_pipeline P ON P.lead_id = a.id AND " . crm_stage_lead_sql('a', 'P') . " WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND a.status NOT IN (42,43,44) AND (a.created_by = ".$user_id." OR a.lead_assign = ".$user_id.") AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS pt_".$i;
 	}
 
-	$sql = "SELECT " . implode(", ", $select_parts) . " FROM ci_leads a INNER JOIN ci_pipeline P ON P.lead_id = a.id AND P.pipeline_stage = 'lead' WHERE a.status NOT IN (42,43,44) AND (a.created_by = ".$user_id." OR a.lead_assign = ".$user_id.") AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')"; 
+	$sql = "SELECT " . implode(", ", $select_parts) . " FROM ci_leads a INNER JOIN ci_pipeline P ON P.lead_id = a.id AND " . crm_stage_lead_sql('a', 'P') . " WHERE a.status NOT IN (42,43,44) AND (a.created_by = ".$user_id." OR a.lead_assign = ".$user_id.") AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')"; 
 	$data = array();
 	$rows = $this->db->query($sql);
 	if($rows && is_object($rows) && $rows->num_rows()>=1){				
@@ -1129,9 +1151,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			   } elseif ($stage === 'review_leads') {
 				   $this->db->where("P.conversion_status", 'pending');
 			   } elseif ($stage === 'lead') {
-				   $this->db->where("P.pipeline_stage", 'lead');
-				   $this->db->where("(P.order_request_status IS NULL OR P.order_request_status NOT IN ('approved', 'ordered', 'processed', 'pending_sales_approval'))");
-				   $this->db->where("NOT EXISTS (SELECT 1 FROM ci_orders ord WHERE ord.lead_id = A.id)", NULL, FALSE);
+				   $this->db->where(crm_stage_lead_sql('A', 'P'), NULL, FALSE);
 			   } elseif ($stage === 'pending_approval') {
 				   $this->db->where("P.conversion_status", 'pending');
 			   } elseif ($stage === 'back_office') {
@@ -1579,7 +1599,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			   if ($stage === 'database') {
 				   $this->db->where("(P.pipeline_stage = 'database' OR P.pipeline_stage IS NULL)");
 			   } elseif ($stage === 'lead') {
-				   $this->db->where("P.pipeline_stage", 'lead');
+				   $this->db->where(crm_stage_lead_sql('A', 'P'), NULL, FALSE);
 			   }
 			  
 			   if(!empty($closure)){
@@ -1759,7 +1779,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			   }	
 
 			   if ($stage === 'lead') {
-				   $this->db->where("P.pipeline_stage", 'lead');
+				   $this->db->where(crm_stage_lead_sql('A', 'P'), NULL, FALSE);
 			   } elseif ($stage === 'database') {
 				   $this->db->where("(P.pipeline_stage = 'database' OR (P.pipeline_stage IS NULL AND (A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)))");
 			   } elseif ($stage === 'review_leads' || $stage === 'pending_approval') {
@@ -3023,9 +3043,9 @@ public function dashboard_MyPro($table='ci_leads'){
 		}
 
 		$db_q = $this->db->query("SELECT COUNT(L.id) as cnt, COALESCE(SUM(CAST(L.mrr AS DECIMAL(10,2))), 0) as val FROM ci_leads L INNER JOIN ci_pipeline P ON P.lead_id = L.id WHERE P.pipeline_stage = 'database' AND (L.company_status IS NULL OR LOWER(L.company_status) != 'closed') {$db_scope}")->row_array();
-		$lead_q = $this->db->query("SELECT COUNT(L.id) as cnt, COALESCE(SUM(CAST(L.mrr AS DECIMAL(10,2))), 0) as val FROM ci_leads L INNER JOIN ci_pipeline P ON P.lead_id = L.id WHERE P.pipeline_stage = 'lead' AND (L.company_status IS NULL OR LOWER(L.company_status) != 'closed') {$lead_scope}")->row_array();
-		$order_q = $this->db->query("SELECT COUNT(O.id) as cnt, COALESCE(SUM(CAST(O.pricing_amount AS DECIMAL(10,2))), 0) as val FROM ci_orders O WHERE O.status != 'Sales' AND O.status != 'Cancelled' {$order_scope}")->row_array();
-		$sales_q = $this->db->query("SELECT COUNT(O.id) as cnt, COALESCE(SUM(CAST(O.pricing_amount AS DECIMAL(10,2))), 0) as val FROM ci_orders O WHERE O.status = 'Sales' {$order_scope}")->row_array();
+		$lead_q = $this->db->query("SELECT COUNT(L.id) as cnt, COALESCE(SUM(CAST(L.mrr AS DECIMAL(10,2))), 0) as val FROM ci_leads L INNER JOIN ci_pipeline P ON P.lead_id = L.id WHERE " . crm_stage_lead_sql('L', 'P') . " AND (L.company_status IS NULL OR LOWER(L.company_status) != 'closed') {$lead_scope}")->row_array();
+		$order_q = $this->db->query("SELECT COUNT(O.id) as cnt, COALESCE(SUM(CAST(O.pricing_amount AS DECIMAL(10,2))), 0) as val FROM ci_orders O WHERE " . crm_order_open_sql('O') . " AND O.status != 'Cancelled' {$order_scope}")->row_array();
+		$sales_q = $this->db->query("SELECT COUNT(O.id) as cnt, COALESCE(SUM(CAST(O.pricing_amount AS DECIMAL(10,2))), 0) as val FROM ci_orders O WHERE " . crm_order_is_sale_sql('O') . " {$order_scope}")->row_array();
 
 		return array(
 			'database' => array('count' => (int)$db_q['cnt'], 'value' => (float)$db_q['val']),
@@ -3454,6 +3474,40 @@ if (!function_exists('has_section_perm')) {
 			$ci->load->model('ci_admin_model');
 		}
 		return $ci->ci_admin_model->check_permission($section, $required);
+	}
+}
+
+/*
+ * Pipeline stage rules, shared by every list, count, chart and report so a
+ * record is only ever counted in the stage it is in now:
+ *   Database -> Lead   : ci_pipeline.pipeline_stage changes to 'lead' on approval.
+ *   Lead     -> Order  : an order row exists in ci_orders for the lead
+ *                        (pipeline_stage stays 'lead', so it must be excluded here).
+ *   Order    -> Sale   : the order has status 'Sales' or a sales reference number.
+ * History is never deleted; these only decide where a record is shown/counted.
+ */
+if (!function_exists('crm_lead_converted_sql')) {
+	function crm_lead_converted_sql($lead = 'A', $pipe = 'P') {
+		return "(EXISTS (SELECT 1 FROM ci_orders stg_o WHERE stg_o.lead_id = {$lead}.id)"
+			. " OR {$pipe}.order_request_status IN ('approved', 'ordered', 'processed', 'pending_sales_approval'))";
+	}
+}
+if (!function_exists('crm_stage_lead_sql')) {
+	/** Records that are currently Leads (approved from Database, not yet an Order). */
+	function crm_stage_lead_sql($lead = 'A', $pipe = 'P') {
+		return "({$pipe}.pipeline_stage = 'lead' AND NOT " . crm_lead_converted_sql($lead, $pipe) . ")";
+	}
+}
+if (!function_exists('crm_order_is_sale_sql')) {
+	/** Orders that have become Sales. */
+	function crm_order_is_sale_sql($o = 'O') {
+		return "({$o}.status = 'Sales' OR ({$o}.sales_ref_no IS NOT NULL AND {$o}.sales_ref_no != ''))";
+	}
+}
+if (!function_exists('crm_order_open_sql')) {
+	/** Orders that are still Orders (not yet Sales). */
+	function crm_order_open_sql($o = 'O') {
+		return "NOT " . crm_order_is_sale_sql($o);
 	}
 }
 
