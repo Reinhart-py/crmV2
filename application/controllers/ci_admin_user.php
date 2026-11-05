@@ -21,6 +21,7 @@ class Ci_admin_user extends CI_Controller {
 		if ($this->uri->segment(2) === 'hr') { $this->base = 'manager/hr/staff'; $this->perm_key = 'hr_staff'; }
 		$this->load->helper('crm_permission');
 		$this->_ensure_designation();
+		$this->_ensure_contact();
   
 	}
 	
@@ -226,6 +227,71 @@ public function view($id='')
 	
 
 	/** Presentation users keep their centers in ci_user_live_offices (JSON list per user). */
+	/** WhatsApp number and the "Details for Reporting" (own table: ci_user is full).
+	 *  Reporting email / number / WhatsApp are picked from the person's own details, each with a "verified" tick. */
+	private function _ensure_contact()
+	{
+		$this->db->query("CREATE TABLE IF NOT EXISTS ci_user_contact (
+			user_id INT NOT NULL PRIMARY KEY,
+			whatsapp_code VARCHAR(10) NOT NULL DEFAULT '', whatsapp VARCHAR(30) NOT NULL DEFAULT '',
+			report_email VARCHAR(190) NOT NULL DEFAULT '', report_email_verified TINYINT(1) NOT NULL DEFAULT 0, report_email_verified_at DATETIME NULL, report_email_verified_by INT NULL,
+			report_phone VARCHAR(40) NOT NULL DEFAULT '', report_phone_verified TINYINT(1) NOT NULL DEFAULT 0, report_phone_verified_at DATETIME NULL, report_phone_verified_by INT NULL,
+			report_whatsapp VARCHAR(40) NOT NULL DEFAULT '', report_whatsapp_verified TINYINT(1) NOT NULL DEFAULT 0, report_whatsapp_verified_at DATETIME NULL, report_whatsapp_verified_by INT NULL
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		// Verified ticks on the contact fields themselves (added later: create the columns when missing)
+		foreach (array('email', 'mobile', 'wa', 'alt') as $k) {
+			if (!$this->db->field_exists($k . '_verified', 'ci_user_contact')) {
+				$this->db->query("ALTER TABLE ci_user_contact ADD {$k}_verified TINYINT(1) NOT NULL DEFAULT 0, ADD {$k}_verified_at DATETIME NULL, ADD {$k}_verified_by INT NULL");
+				$this->db->data_cache = array();
+			}
+		}
+	}
+	/** "+971 501234567" from a code and a number ('' when there is no number). Same format as the form. */
+	private function _phone_text($code, $num)
+	{
+		$code = preg_replace('/\D+/', '', (string)$code); $num = preg_replace('/[^\d]+/', '', (string)$num);
+		return $num === '' ? '' : ($code !== '' ? '+' . $code . ' ' : '') . $num;
+	}
+	/** Save WhatsApp and the reporting details. $old = the user (with these columns) before saving, empty when new.
+	 *  Only the person's own email / numbers are accepted; a tick keeps its date while the choice stays the same. */
+	private function _save_contact($user_id, $old = array())
+	{
+		if (!(int)$user_id || $this->input->post('whatsapp') === null) return;
+		$me = (int)$this->session->userdata('manager_id');
+		$p = function ($k) { return trim((string)$this->input->post($k)); };
+		$row = array('user_id' => (int)$user_id,
+			'whatsapp_code' => substr(preg_replace('/\D+/', '', $p('whatsapp_code')), 0, 10),
+			'whatsapp' => substr(preg_replace('/\D+/', '', $p('whatsapp')), 0, 30));
+		$emails = array_filter(array($p('email'), $p('c_username'), isset($old['c_username']) ? trim($old['c_username']) : ''));
+		$phones = array_filter(array($this->_phone_text($p('country_code'), $p('mobile')), $this->_phone_text($p('country_code2'), $p('uae_mobile')), $this->_phone_text($row['whatsapp_code'], $row['whatsapp'])));
+		$own = array('report_email' => $emails, 'report_phone' => $phones, 'report_whatsapp' => $phones);
+		foreach ($own as $k => $choices) {
+			$v = $p($k);
+			if (!in_array($v, $choices, true)) $v = '';
+			$row[$k] = $v;
+			$ticked = ($v !== '' && $p($k . '_verified') === '1');
+			$kept = $ticked && !empty($old[$k . '_verified']) && isset($old[$k]) && $old[$k] === $v;
+			$row[$k . '_verified'] = $ticked ? 1 : 0;
+			$row[$k . '_verified_at'] = $ticked ? ($kept ? $old[$k . '_verified_at'] : date('Y-m-d H:i:s')) : null;
+			$row[$k . '_verified_by'] = $ticked ? ($kept ? $old[$k . '_verified_by'] : $me) : null;
+		}
+		// Verified ticks on Email, Contact No, WhatsApp No and Alternate No
+		$fields = array(
+			'email' => array($p('email'), isset($old['email']) ? trim((string)$old['email']) : ''),
+			'mobile' => array($this->_phone_text($p('country_code'), $p('mobile')), $this->_phone_text(isset($old['country_code']) ? $old['country_code'] : '', isset($old['mobile']) ? $old['mobile'] : '')),
+			'wa' => array($this->_phone_text($row['whatsapp_code'], $row['whatsapp']), $this->_phone_text(isset($old['whatsapp_code']) ? $old['whatsapp_code'] : '', isset($old['whatsapp']) ? $old['whatsapp'] : '')),
+			'alt' => array($this->_phone_text($p('country_code2'), $p('uae_mobile')), $this->_phone_text(isset($old['country_code2']) ? $old['country_code2'] : '', isset($old['uae_mobile']) ? $old['uae_mobile'] : '')),
+		);
+		foreach ($fields as $k => $vals) {
+			$ticked = ($vals[0] !== '' && $p($k . '_verified') === '1');
+			$kept = $ticked && !empty($old[$k . '_verified']) && $vals[0] === $vals[1];
+			$row[$k . '_verified'] = $ticked ? 1 : 0;
+			$row[$k . '_verified_at'] = $ticked ? ($kept ? $old[$k . '_verified_at'] : date('Y-m-d H:i:s')) : null;
+			$row[$k . '_verified_by'] = $ticked ? ($kept ? $old[$k . '_verified_by'] : $me) : null;
+		}
+		$this->db->replace('ci_user_contact', $row);
+	}
+
 	/** Designation (job title) lives in its own small table: ci_user is too wide to take more columns. */
 	private function _ensure_designation()
 	{
@@ -416,6 +482,7 @@ public function view($id='')
 
 			 	$new_id = $this->comman_model->saveData('ci_user',$list);
 			 	$this->_save_designation($new_id);
+			 	$this->_save_contact($new_id);
 			 	$this->session->set_flashdata('message', 'User has been added successfully!');
 				redirect($this->base);
 			 }
@@ -453,6 +520,10 @@ public function view($id='')
 			if (!empty($data['list'])) {
 				$dg = $this->db->select('designation')->where('user_id', (int)$id)->get('ci_user_designation')->row_array();
 				$data['list']['designation'] = !empty($dg['designation']) ? $dg['designation'] : '';
+				$ct = $this->db->where('user_id', (int)$id)->get('ci_user_contact')->row_array();
+				foreach (array('whatsapp_code', 'whatsapp', 'report_email', 'report_email_verified', 'report_email_verified_at', 'report_email_verified_by', 'report_phone', 'report_phone_verified', 'report_phone_verified_at', 'report_phone_verified_by', 'report_whatsapp', 'report_whatsapp_verified', 'report_whatsapp_verified_at', 'report_whatsapp_verified_by', 'email_verified', 'email_verified_at', 'email_verified_by', 'mobile_verified', 'mobile_verified_at', 'mobile_verified_by', 'wa_verified', 'wa_verified_at', 'wa_verified_by', 'alt_verified', 'alt_verified_at', 'alt_verified_by') as $ck) {
+					$data['list'][$ck] = isset($ct[$ck]) ? $ct[$ck] : '';
+				}
 			}
 			$data['designations'] = $this->_designation_list();
 			$this->_ensure_live_offices();
@@ -553,6 +624,7 @@ public function view($id='')
 
 				$response= $this->comman_model->updateData('id',$id,$save,'ci_user');
 				$this->_save_designation($id);
+				$this->_save_contact($id, $data['list']);
 				if($response)
 					{
 						$this->ci_admin_model->log_admin_action('user_edit', 'Updated user ID #'.$id, 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));

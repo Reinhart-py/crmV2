@@ -1053,6 +1053,10 @@ public function dashboard_MyPro($table='ci_leads'){
 			  	$this->db->select('G.designation');
 			  	$this->db->join('ci_user_designation as G','G.user_id=A.id','LEFT');
 			  }
+			  if ($this->db->table_exists('ci_user_contact')) {
+			  	$this->db->select('K.whatsapp_code, K.whatsapp, K.report_email, K.report_email_verified, K.report_email_verified_at, K.report_phone, K.report_phone_verified, K.report_phone_verified_at, K.report_whatsapp, K.report_whatsapp_verified, K.report_whatsapp_verified_at, K.email_verified, K.email_verified_at, K.mobile_verified, K.mobile_verified_at, K.wa_verified, K.wa_verified_at, K.alt_verified, K.alt_verified_at');
+			  	$this->db->join('ci_user_contact as K','K.user_id=A.id','LEFT');
+			  }
 			   if(!empty($search))
 			  {
 			    $q = $this->db->escape_like_str($search);
@@ -2313,6 +2317,10 @@ public function dashboard_MyPro($table='ci_leads'){
 			  if ($this->db->table_exists('ci_user_designation')) {
 			  	$this->db->select('G.designation');
 			  	$this->db->join('ci_user_designation as G','G.user_id=A.id','LEFT');
+			  }
+			  if ($this->db->table_exists('ci_user_contact')) {
+			  	$this->db->select('K.whatsapp_code, K.whatsapp, K.report_email, K.report_email_verified, K.report_email_verified_at, K.report_phone, K.report_phone_verified, K.report_phone_verified_at, K.report_whatsapp, K.report_whatsapp_verified, K.report_whatsapp_verified_at, K.email_verified, K.email_verified_at, K.mobile_verified, K.mobile_verified_at, K.wa_verified, K.wa_verified_at, K.alt_verified, K.alt_verified_at');
+			  	$this->db->join('ci_user_contact as K','K.user_id=A.id','LEFT');
 			  }
 			 $this->db->where('A.id',$id);
 			

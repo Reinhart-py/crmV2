@@ -63,6 +63,15 @@
 .ureg .form-control::placeholder{color:var(--crm-muted,#94a3b8);opacity:1}
 .ureg .ureg-sub{font-size:11.5px;letter-spacing:.07em}
 .ureg-progress{font-size:12.5px}
+/* Details for Reporting: dropdown of the person's own details + verified tick */
+.ureg .ureg-vw{display:flex;align-items:center;width:100%}
+.ureg .ureg-vw > .form-control{flex:1 1 auto;min-width:0}
+.ureg .form-group label.ureg-vf{flex:0 0 auto;display:flex !important;align-items:center;justify-content:center;width:30px;height:30px;margin:0 0 0 4px !important;border:1px solid var(--crm-line,#cbd5e1);border-radius:5px;cursor:pointer;color:var(--crm-muted,#94a3b8) !important;background:var(--crm-surface,#fff);font-size:15px !important}
+.ureg .form-group label.ureg-vf input{position:absolute;opacity:0;width:0;height:0}
+.ureg .form-group label.ureg-vf:hover{border-color:#16a34a}
+.ureg .form-group label.ureg-vf.on{color:#fff !important;background:#16a34a;border-color:#16a34a}
+.ureg .form-group label.ureg-vf.off{opacity:.45;cursor:not-allowed}
+.ureg .ureg-code-err select{border-color:#dc2626 !important;color:#dc2626}
 </style>
   <div class="content-wrapper ureg">
 
@@ -102,7 +111,7 @@
         <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Login Email<span>*</span></label>
-                <input  class="form-control" value="<?php echo $list['c_username']; ?>" readonly>
+                <input id="login_email" class="form-control" value="<?php echo $list['c_username']; ?>" readonly>
               </div>
             </div>
         
@@ -210,58 +219,9 @@
             </div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Email<span>*</span></label>
-                <input type="email" class="form-control"  name="email"  value="<?php echo $list['email']; ?>"  required>
-              </div>
-            </div>
-            <div class="col-lg-4 col-sm-6">
-              <div class="form-group">
-                 <label>Contact No<span>*</span></label>
-                  <div class="input-group">
-                        <span class="input-group-addon country-code">
-                         <select name="country_code">                          
-
-                            <?php if(isset($c_list) && !empty($c_list)){
-                              foreach($c_list as $cli){
-                            ?>
-                            <option <?php if($list['country_code']==$cli['phonecode']){ echo "selected"; } ?> value="<?php echo $cli['phonecode']; ?>" ><?php echo $cli['name']; ?>[+<?php echo $cli['phonecode']; ?>]</option>
-                        <?php } }  ?>
-                      </select>
-                        </span>
-                    <input type="text" class="form-control only_number" name="mobile"  value="<?php echo $list['mobile']; ?>" required>
-                  </div> 
-                  </div>                
-                </div>
-                <div class="col-lg-4 col-sm-6">
-              <div class="form-group">
-                 <label>Alternate No</label>
-                  <div class="input-group">
-                        <span class="input-group-addon country-code">
-                         <select name="country_code2">                          
-
-                            <?php if(isset($c_list) && !empty($c_list)){
-                              foreach($c_list as $cli){
-                            ?>
-                            <option  <?php if($list['country_code2']==$cli['phonecode']){ echo "selected"; } ?> value="<?php echo $cli['phonecode']; ?>" ><?php echo $cli['name']; ?>[+<?php echo $cli['phonecode']; ?>]</option>
-                        <?php } }  ?>
-                      </select>
-                        </span>
-                    <input type="text" class="form-control only_number" name="uae_mobile"  value="<?php echo $list['uae_mobile']; ?>">
-                  </div> 
-                  </div>                
-                </div>
-            </div>
-            <div class="ureg-line">
-            <div class="col-lg-4 col-sm-6">
-              <div class="form-group">
-                <label>Date of Birth<span>*</span></label>
-                <input type="text" class="form-control" name="dob" value="<?php echo $list['dob']; ?>"   required>
-              </div>
-            </div>
-            <div class="col-lg-4 col-sm-6">
-              <div class="form-group">
                 <label>Gender</label>
                 <select class="form-control" style="width: 100%;" name="gender">
+                  <option value="">Select</option>
                   <option <?php if($list['gender']=='Male'){ echo "selected"; } ?> value="Male">Male</option>
                   <option <?php if($list['gender']=='Female'){ echo "selected"; } ?> value="Female">Female</option>
                   <option <?php if($list['gender']=='Other'){ echo "selected"; } ?> value="Other">Other</option>
@@ -270,15 +230,8 @@
             </div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Nationality<span>*</span></label>
-                 <select class="form-control" name="national" required>                          
-                 <option value="">Select</option>
-                            <?php if(isset($c_list) && !empty($c_list)){
-                              foreach($c_list as $cli){
-                            ?>
-                            <option <?php if($list['national']==$cli['name']){ echo "selected"; } ?> value="<?php echo $cli['name']; ?>" ><?php echo $cli['name']; ?></option>
-                        <?php } }  ?>
-                      </select>
+                <label>Date of Birth<span>*</span></label>
+                <input type="text" class="form-control" name="dob" value="<?php echo $list['dob']; ?>"   required>
               </div>
             </div>
              <div class="col-lg-4 col-sm-6">
@@ -297,6 +250,62 @@
                 </select>
               </div>
             </div>
+            </div>
+            <div class="ureg-line">
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>Email<span>*</span></label>
+                <div class="ureg-vw"><input type="email" class="form-control"  name="email"  value="<?php echo $list['email']; ?>"  required><label class="ureg-vf js-fvf" data-for="email" title="Verified: tick after confirming it with the person"><input type="checkbox" name="email_verified" value="1"<?php echo !empty($list['email_verified']) ? ' checked' : ''; ?>><i class="fa fa-check-circle"></i></label></div>
+              </div>
+            </div>
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                 <label>Contact No<span>*</span></label>
+                  <div class="input-group">
+                        <span class="input-group-addon country-code">
+                         <select name="country_code">
+                            <option value="">Code</option>
+                            <?php if(isset($c_list) && !empty($c_list)){ foreach($c_list as $cli){ ?>
+                            <option <?php if(!empty($list['mobile']) && $list['country_code']==$cli['phonecode']){ echo "selected"; } ?> value="<?php echo $cli['phonecode']; ?>"><?php echo $cli['name']; ?>[+<?php echo $cli['phonecode']; ?>]</option>
+                            <?php } } ?>
+                          </select>
+                        </span>
+                    <input type="text" class="form-control only_number" name="mobile"  value="<?php echo $list['mobile']; ?>" required><label class="ureg-vf js-fvf" data-for="mobile" title="Verified: tick after confirming it with the person"><input type="checkbox" name="mobile_verified" value="1"<?php echo !empty($list['mobile_verified']) ? ' checked' : ''; ?>><i class="fa fa-check-circle"></i></label>
+                  </div> 
+                  </div>                
+                </div>
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>WhatsApp No</label>
+                <div class="input-group">
+                  <span class="input-group-addon country-code">
+                          <select name="whatsapp_code">
+                            <option value="">Code</option>
+                            <?php if(isset($c_list) && !empty($c_list)){ foreach($c_list as $cli){ ?>
+                            <option <?php if(!empty($list['whatsapp']) && $list['whatsapp_code']==$cli['phonecode']){ echo "selected"; } ?> value="<?php echo $cli['phonecode']; ?>"><?php echo $cli['name']; ?>[+<?php echo $cli['phonecode']; ?>]</option>
+                            <?php } } ?>
+                          </select>
+                  </span>
+                  <input type="text" class="form-control only_number" name="whatsapp" maxlength="20" value="<?php echo htmlspecialchars($list['whatsapp'], ENT_QUOTES, 'UTF-8'); ?>"><label class="ureg-vf js-fvf" data-for="wa" title="Verified: tick after confirming it with the person"><input type="checkbox" name="wa_verified" value="1"<?php echo !empty($list['wa_verified']) ? ' checked' : ''; ?>><i class="fa fa-check-circle"></i></label>
+                </div>
+              </div>
+            </div>
+                <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                 <label>Alternate No</label>
+                  <div class="input-group">
+                        <span class="input-group-addon country-code">
+                         <select name="country_code2">
+                            <option value="">Code</option>
+                            <?php if(isset($c_list) && !empty($c_list)){ foreach($c_list as $cli){ ?>
+                            <option <?php if(!empty($list['uae_mobile']) && $list['country_code2']==$cli['phonecode']){ echo "selected"; } ?> value="<?php echo $cli['phonecode']; ?>"><?php echo $cli['name']; ?>[+<?php echo $cli['phonecode']; ?>]</option>
+                            <?php } } ?>
+                          </select>
+                        </span>
+                    <input type="text" class="form-control only_number" name="uae_mobile"  value="<?php echo $list['uae_mobile']; ?>"><label class="ureg-vf js-fvf" data-for="alt" title="Verified: tick after confirming it with the person"><input type="checkbox" name="alt_verified" value="1"<?php echo !empty($list['alt_verified']) ? ' checked' : ''; ?>><i class="fa fa-check-circle"></i></label>
+                  </div> 
+                  </div>                
+                </div>
             </div>
             <div class="ureg-line">
             <div class="col-lg-4 col-sm-6">
@@ -336,6 +345,36 @@
                         <?php } }  ?>
                  </select>
                 
+              </div>
+            </div>
+            </div>
+            <div class="ureg-sub">Details for Reporting</div>
+            <div class="ureg-line">
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>Email</label>
+                <div class="ureg-vw">
+                  <select class="form-control js-rep" name="report_email" data-kind="email" data-cur="<?php echo htmlspecialchars($list['report_email'], ENT_QUOTES, 'UTF-8'); ?>"><option value="">Select</option></select>
+                  <label class="ureg-vf" title="Verified: tick after confirming it with the person"><input type="checkbox" name="report_email_verified" value="1"<?php echo !empty($list['report_email_verified']) ? ' checked' : ''; ?>><i class="fa fa-check-circle"></i></label>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>Phone No</label>
+                <div class="ureg-vw">
+                  <select class="form-control js-rep" name="report_phone" data-kind="phone" data-cur="<?php echo htmlspecialchars($list['report_phone'], ENT_QUOTES, 'UTF-8'); ?>"><option value="">Select</option></select>
+                  <label class="ureg-vf" title="Verified: tick after confirming it with the person"><input type="checkbox" name="report_phone_verified" value="1"<?php echo !empty($list['report_phone_verified']) ? ' checked' : ''; ?>><i class="fa fa-check-circle"></i></label>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>WhatsApp</label>
+                <div class="ureg-vw">
+                  <select class="form-control js-rep" name="report_whatsapp" data-kind="phone" data-cur="<?php echo htmlspecialchars($list['report_whatsapp'], ENT_QUOTES, 'UTF-8'); ?>"><option value="">Select</option></select>
+                  <label class="ureg-vf" title="Verified: tick after confirming it with the person"><input type="checkbox" name="report_whatsapp_verified" value="1"<?php echo !empty($list['report_whatsapp_verified']) ? ' checked' : ''; ?>><i class="fa fa-check-circle"></i></label>
+                </div>
               </div>
             </div>
             </div>
@@ -438,6 +477,19 @@
             <div class="ureg-line">
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
+                <label>Nationality<span>*</span></label>
+                 <select class="form-control" name="national" required>                          
+                 <option value="">Select</option>
+                            <?php if(isset($c_list) && !empty($c_list)){
+                              foreach($c_list as $cli){
+                            ?>
+                            <option <?php if($list['national']==$cli['name']){ echo "selected"; } ?> value="<?php echo $cli['name']; ?>" ><?php echo $cli['name']; ?></option>
+                        <?php } }  ?>
+                      </select>
+              </div>
+            </div>
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
                 <label>Passport No<span>*</span></label>
                 <input type="text" class="form-control" name="p_no" value="<?php echo $list['p_no']; ?>"  required>
               </div>
@@ -448,6 +500,8 @@
                 <input type="text" class="form-control datepicker" name="p_exdate" value="<?php echo $list['p_exdate']; ?>"  >
               </div>
             </div>
+            </div>
+            <div class="ureg-line">
              <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Emirates ID</label>
@@ -660,6 +714,7 @@
       if (!/^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName)) return false;
       if (el.type === "hidden" || el.type === "submit" || el.type === "button" || el.type === "checkbox" || el.type === "radio") return false;
       if (el.disabled || el.readOnly || el.closest(".input-group-addon")) return false;
+      if (el.tagName === "SELECT" && !el.multiple && !Array.prototype.some.call(el.options, function (o) { return o.value === ""; })) return false;
       var g = el.closest(".form-group"); return !!(g && g.offsetParent);
     });
   }
@@ -722,6 +777,109 @@
 })();
 </script>
 <datalist id="designation_list"><?php if (!empty($designations)) foreach ($designations as $dg) { ?><option value="<?php echo htmlspecialchars($dg, ENT_QUOTES, 'UTF-8'); ?>"><?php } ?></datalist>
+<script>
+// Details for Reporting: each dropdown lists only this person's own email / numbers, filled from the form as it is typed.
+// The tick can only be set once something is chosen, and choosing something else takes the tick off.
+// A phone number also needs its country code before saving.
+(function () {
+  var form = document.forms.add_form || document.forms.edit_form; if (!form) return;
+  function val(n) { var el = form.querySelector('[name="' + n + '"]'); return el ? el.value.trim() : ''; }
+  function phone(code, num) { var c = val(code).replace(/\D+/g, ''), n = val(num).replace(/\D+/g, ''); return n ? (c ? '+' + c + ' ' : '') + n : ''; }
+  function choices(kind) {
+    var out = [];
+    function add(label, v) { if (v && !out.some(function (o) { return o[1] === v; })) out.push([label, v]); }
+    if (kind === 'email') { add('Email', val('email')); var lg = form.querySelector('[name="c_username"]') || document.getElementById('login_email'); add('Login Email', lg ? lg.value.trim() : ''); }
+    else { add('Contact No', phone('country_code', 'mobile')); add('WhatsApp No', phone('whatsapp_code', 'whatsapp')); add('Alternate No', phone('country_code2', 'uae_mobile')); }
+    return out;
+  }
+  var reps = Array.prototype.slice.call(form.querySelectorAll('select.js-rep'));
+  function tickOf(sel) { return sel.parentNode.querySelector('input[type=checkbox]'); }
+  function paint(sel) {
+    var cb = tickOf(sel), lab = cb.closest('label');
+    if (!sel.value) cb.checked = false;
+    cb.disabled = !sel.value;
+    lab.classList.toggle('on', cb.checked); lab.classList.toggle('off', !sel.value);
+    lab.title = !sel.value ? 'Choose the ' + (sel.getAttribute('data-kind') === 'email' ? 'email' : 'number') + ' first' : (cb.checked ? 'Verified - untick if it is no longer right' : 'Not verified - tick after confirming it with the person');
+  }
+  function fill(sel, first) {
+    var keep = first ? sel.getAttribute('data-cur') : sel.value, list = choices(sel.getAttribute('data-kind'));
+    sel.innerHTML = '<option value="">Select</option>';
+    list.forEach(function (o) { var op = document.createElement('option'); op.value = o[1]; op.textContent = o[1] + '  (' + o[0] + ')'; sel.appendChild(op); });
+    var found = list.some(function (o) { return o[1] === keep; });
+    sel.value = found ? keep : '';
+    if (!found && keep) { var cb = tickOf(sel); cb.checked = false; }
+    paint(sel);
+  }
+  reps.forEach(function (sel) {
+    fill(sel, true);
+    sel.addEventListener('change', function () { tickOf(sel).checked = false; paint(sel); });
+    tickOf(sel).addEventListener('change', function () { paint(sel); });
+  });
+  var sources = ['email', 'c_username', 'country_code', 'mobile', 'country_code2', 'uae_mobile', 'whatsapp_code', 'whatsapp'];
+  function refresh() { reps.forEach(function (sel) { fill(sel, false); }); }
+  sources.forEach(function (n) {
+    var el = form.querySelector('[name="' + n + '"]'); if (!el) return;
+    el.addEventListener('input', refresh); el.addEventListener('change', refresh);
+  });
+  if (window.jQuery) jQuery(form).on('change', 'select[name^=country_code], select[name=whatsapp_code]', refresh);
+
+  var phones = [['mobile', 'country_code'], ['uae_mobile', 'country_code2'], ['whatsapp', 'whatsapp_code']];
+  document.addEventListener('submit', function (e) {
+    if (e.target !== form) return;
+    var bad = null;
+    phones.forEach(function (p) {
+      var num = form.querySelector('[name="' + p[0] + '"]'), code = form.querySelector('[name="' + p[1] + '"]');
+      if (!num || !code || num.disabled) return;
+      var miss = num.value.trim() !== '' && !code.value;
+      code.closest('.input-group').classList.toggle('ureg-code-err', miss);
+      if (miss && !bad) bad = code;
+    });
+    if (bad) { e.preventDefault(); e.stopImmediatePropagation(); bad.scrollIntoView({ block: 'center' }); bad.focus(); alert('Please choose the country code for the phone number.'); }
+  }, true);
+})();
+</script>
+<script>
+// Verified ticks on Email, Contact No, WhatsApp No and Alternate No: green when ticked, only possible when filled,
+// and changing the email / number (or its code) takes the tick off. Picking a verified one for reporting ticks that too.
+(function () {
+  var form = document.forms.add_form || document.forms.edit_form; if (!form) return;
+  var src = { email: ['email'], mobile: ['mobile', 'country_code'], wa: ['whatsapp', 'whatsapp_code'], alt: ['uae_mobile', 'country_code2'] };
+  function el(n) { return form.querySelector('[name="' + n + '"]'); }
+  Object.keys(src).forEach(function (k) {
+    var cb = el(k + '_verified'); if (!cb) return;
+    var lab = cb.closest('label'), main = el(src[k][0]);
+    var start = src[k].map(function (n) { var e = el(n); return e ? e.value : ''; }).join('|');
+    function paint() {
+      var has = main && main.value.trim() !== '';
+      if (!has) cb.checked = false;
+      cb.disabled = !has;
+      lab.classList.toggle('on', cb.checked); lab.classList.toggle('off', !has);
+      lab.title = !has ? 'Fill it in first' : (cb.checked ? 'Verified - untick if it is no longer right' : 'Not verified - tick after confirming it with the person');
+    }
+    function changed() {
+      var now = src[k].map(function (n) { var e = el(n); return e ? e.value : ''; }).join('|');
+      if (now !== start && cb.checked) cb.checked = false;
+      start = now; paint();
+    }
+    src[k].forEach(function (n) { var e = el(n); if (!e) return; e.addEventListener('input', changed); e.addEventListener('change', changed); if (window.jQuery) jQuery(e).on('change', changed); });
+    cb.addEventListener('change', paint);
+    paint();
+  });
+  // reporting choice -> copy the tick of the field it came from
+  var phoneOf = { mobile: ['country_code', 'mobile'], wa: ['whatsapp_code', 'whatsapp'], alt: ['country_code2', 'uae_mobile'] };
+  function phoneText(code, num) { var c = (el(code) ? el(code).value : '').replace(/\D+/g, ''), n = (el(num) ? el(num).value : '').replace(/\D+/g, ''); return n ? (c ? '+' + c + ' ' : '') + n : ''; }
+  Array.prototype.forEach.call(form.querySelectorAll('select.js-rep'), function (sel) {
+    sel.addEventListener('change', function () {
+      var v = sel.value, from = null;
+      if (!v) return;
+      if (sel.getAttribute('data-kind') === 'email') { if (el('email') && el('email').value.trim() === v) from = 'email'; }
+      else Object.keys(phoneOf).forEach(function (k) { if (!from && phoneText(phoneOf[k][0], phoneOf[k][1]) === v) from = k; });
+      var fcb = from ? el(from + '_verified') : null, rcb = sel.parentNode.querySelector('input[type=checkbox]');
+      if (fcb && fcb.checked && rcb) { rcb.checked = true; rcb.dispatchEvent(new Event('change')); }
+    });
+  });
+})();
+</script>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>
 
  

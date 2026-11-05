@@ -23,6 +23,23 @@ $expv = function ($k, $label) use ($val, &$exp_alerts) {
 	if ($days <= 60) { $exp_alerts[] = $label . ' expires in ' . $days . ' day' . ($days == 1 ? '' : 's'); return $v . ' <span class="uv-chip ' . ($days <= 30 ? 'warn' : 'soon') . '">' . $days . ' days left</span>'; }
 	return $v;
 };
+// Contact fields: green "Verified" or amber "Not verified" next to a filled value
+$vmark = function ($v, $k) use ($p) {
+	if ($v === '') return '';
+	if (empty($p[$k . '_verified'])) return $v . ' <span class="uv-chip warn">Not verified</span>';
+	$tip = 'Verified' . (!empty($p[$k . '_verified_at']) ? ' on ' . date('d-M-Y', strtotime($p[$k . '_verified_at'])) : '');
+	return $v . ' <span class="uv-chip on" title="' . htmlspecialchars($tip, ENT_QUOTES, 'UTF-8') . '"><i class="fa fa-check-circle"></i> Verified</span>';
+};
+// Reporting details: the chosen email / number with a green "Verified" mark (who and when on hover)
+$who_cache = array();
+$repv = function ($k) use ($val, $p, &$who_cache) {
+	$v = $val($k);
+	if ($v === '') return '';
+	if (empty($p[$k . '_verified'])) return $v . ' <span class="uv-chip warn">Not verified</span>';
+	$tip = 'Verified';
+	if (!empty($p[$k . '_verified_at'])) $tip .= ' on ' . date('d-M-Y', strtotime($p[$k . '_verified_at']));
+	return $v . ' <span class="uv-chip on" title="' . htmlspecialchars($tip, ENT_QUOTES, 'UTF-8') . '"><i class="fa fa-check-circle"></i> Verified</span>';
+};
 $manager_name = '';
 if (!empty($p['manager'])) {
 	$m = $this->db->select('name')->where('id', (int)$p['manager'])->get('ci_user')->row_array();
@@ -36,16 +53,19 @@ $sections = array(
 		'Added On' => (!empty($p['created']) ? simple_date($p['created']) : ''),
 	),
 	'Personal Details' => array(
-		'Name' => $val('name'), 'Email' => $val('email'), 'Contact No' => $phone('country_code', 'mobile'), 'Alternate No' => $phone('country_code2', 'uae_mobile'),
-		'Date of Birth' => $val('dob'), 'Gender' => $val('gender'), 'Nationality' => $val('national'), 'Blood Group' => $val('blood'),
+		'Name' => $val('name'), 'Gender' => $val('gender'), 'Date of Birth' => $val('dob'), 'Blood Group' => $val('blood'),
+		'Email' => $vmark($val('email'), 'email'), 'Contact No' => $vmark($phone('country_code', 'mobile'), 'mobile'), 'WhatsApp No' => $vmark($phone('whatsapp_code', 'whatsapp'), 'wa'), 'Alternate No' => $vmark($phone('country_code2', 'uae_mobile'), 'alt'),
 		'Address' => $val('address'), 'City' => $val('city'), 'Country' => $val('country_name'), 'State / Emirate' => $val('state_name'),
+	),
+	'Details for Reporting' => array(
+		'Email' => $repv('report_email'), 'Phone No' => $repv('report_phone'), 'WhatsApp' => $repv('report_whatsapp'),
 	),
 	'Company Details' => array(
 		'Employee ID' => $val('emp_id'), 'Designation' => $val('designation'), 'Department' => $val('department'), 'Office / Location' => $val('office'),
 		'Date of Joining' => $val('c_doj'), 'Date of Leaving' => $val('c_dol'),
 	),
 	'Identity & Visa' => array(
-		'Passport No' => $val('p_no'), 'Passport Expiry' => $expv('p_exdate', 'Passport'), 'Emirates ID' => $val('eid_no'), 'ID Expiry' => $expv('eid_expiry', 'Emirates ID'),
+		'Nationality' => $val('national'), 'Passport No' => $val('p_no'), 'Passport Expiry' => $expv('p_exdate', 'Passport'), 'Emirates ID' => $val('eid_no'), 'ID Expiry' => $expv('eid_expiry', 'Emirates ID'),
 		'Visa Type' => $val('visa_type'), 'Visa Ref. No' => $val('visa_no'), 'Visa Issued By' => $val('visa_by'), 'Visa Expiry' => $expv('visa_expiry', 'Visa'),
 	),
 	'Emergency Contact' => array(

@@ -10,7 +10,7 @@ $today = strtotime(date('Y-m-d'));
 $mandatory = array('name' => 'Name', 'email' => 'Email', 'dob' => 'Date of Birth', 'mobile' => 'Contact No', 'country' => 'Country', 'state' => 'State / Emirate',
 	'emp_id' => 'Employee ID', 'c_doj' => 'Date of Joining', 'department' => 'Department', 'office' => 'Office / Location',
 	'national' => 'Nationality', 'p_no' => 'Passport No', 'h_contact_name' => 'Emergency Contact Name', 'h_contact_no' => 'Emergency Contact No', 'designation' => 'Designation');
-$profile_keys = array_merge(array_keys($mandatory), array('uae_mobile', 'gender', 'blood', 'address', 'city', 'p_exdate', 'eid_no', 'eid_expiry',
+$profile_keys = array_merge(array_keys($mandatory), array('whatsapp', 'uae_mobile', 'gender', 'blood', 'address', 'city', 'p_exdate', 'eid_no', 'eid_expiry',
 	'visa_type', 'visa_no', 'visa_by', 'visa_expiry', 'h_contact_relation', 'h_contact_no2'));
 $docs = array('p_exdate' => 'Passport', 'visa_expiry' => 'Visa', 'eid_expiry' => 'Emirates ID');
 $is_set = function ($li, $k) { $v = isset($li[$k]) ? trim((string)$li[$k]) : ''; return !($v === '' || $v === '0' || $v === '0000-00-00'); };
@@ -18,7 +18,10 @@ $is_set = function ($li, $k) { $v = isset($li[$k]) ? trim((string)$li[$k]) : '';
 $list = array(); $alert = array('Expired' => 0, 'Within 30 days' => 0, 'Within 60 days' => 0);
 $f = array('mgr' => array(), 'cat' => array(), 'des' => array(), 'dep' => array(), 'off' => array(), 'st' => array('Enabled' => 0, 'Disabled' => 0),
 	'exp' => array('Expired' => 0, 'Within 30 days' => 0, 'Within 60 days' => 0, 'Valid' => 0, 'No dates' => 0),
-	'prof' => array('Missing mandatory details' => 0, 'Mandatory details complete' => 0));
+	'prof' => array('Missing mandatory details' => 0, 'Mandatory details complete' => 0),
+	'rpt' => array('Email verified' => 0, 'Email not verified' => 0, 'Email not set' => 0, 'Phone verified' => 0, 'Phone not verified' => 0, 'Phone not set' => 0, 'WhatsApp verified' => 0, 'WhatsApp not verified' => 0, 'WhatsApp not set' => 0));
+// Details for Reporting: each person has a state for email, phone and WhatsApp
+$rep_keys = array('report_email' => 'Email', 'report_phone' => 'Phone', 'report_whatsapp' => 'WhatsApp');
 $bump = function (&$arr, $k) { $arr[$k] = isset($arr[$k]) ? $arr[$k] + 1 : 1; };
 foreach ($rows as $li) {
 	$r = array('li' => $li);
@@ -51,10 +54,17 @@ foreach ($rows as $li) {
 	$r['prof'] = $r['pres'] ? 'Mandatory details complete' : ($r['missing'] ? 'Missing mandatory details' : 'Mandatory details complete');
 	$bump($f['mgr'], $r['mgr']); $bump($f['cat'], $r['cat']); $bump($f['des'], $r['des']); $bump($f['dep'], $r['dep']); $bump($f['off'], $r['off']);
 	$f['st'][$r['on'] ? 'Enabled' : 'Disabled']++; $f['exp'][$r['exp']]++; $f['prof'][$r['prof']]++;
+	$r['rpt'] = array();
+	foreach ($rep_keys as $rk => $rl) {
+		$set = isset($li[$rk]) && trim((string)$li[$rk]) !== '';
+		$state = !$set ? 'not set' : (!empty($li[$rk . '_verified']) ? 'verified' : 'not verified');
+		$r['rpt'][$rk] = array($rl, $set ? $li[$rk] : '', $state);
+		$f['rpt'][$rl . ' ' . $state]++;
+	}
 	$list[] = $r;
 }
 foreach (array('mgr', 'cat', 'des', 'dep', 'off') as $k) ksort($f[$k], SORT_NATURAL | SORT_FLAG_CASE);
-$filters = array('mgr' => 'Manager', 'cat' => 'Category', 'des' => 'Designation', 'st' => 'Status', 'dep' => 'Department', 'off' => 'Office', 'exp' => 'Expiry', 'prof' => 'Profile');
+$filters = array('mgr' => 'Manager', 'cat' => 'Category', 'des' => 'Designation', 'st' => 'Status', 'dep' => 'Department', 'off' => 'Office', 'exp' => 'Expiry', 'prof' => 'Profile', 'rpt' => 'Reporting');
 ?>
 <style>
 /* View Users: compact list, sortable columns, tick-box filters, expiry alerts */
@@ -111,6 +121,10 @@ $filters = array('mgr' => 'Manager', 'cat' => 'Category', 'des' => 'Designation'
 .ulist .pf .bar span{display:block;height:100%;background:#f59e0b}
 .ulist .pf.full .bar span{background:#16a34a}
 .ulist .pf .miss{color:#b91c1c;font-weight:600}
+.ulist .pf .rp{display:inline-flex;gap:5px;margin-left:4px;font-size:12.5px}
+.ulist .pf .rp .not-set{color:var(--crm-line,#cbd5e1)}
+.ulist .pf .rp .not-verified{color:#d97706}
+.ulist .pf .rp .verified{color:#16a34a}
 .ulist .acts{display:flex;gap:4px;white-space:nowrap}
 .ulist .acts a{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid var(--crm-line,#e2e8f0);color:var(--crm-ink-2,#334155);background:var(--crm-surface,#fff)}
 .ulist .acts a:hover{border-color:var(--crm-ocean,#1e3a8a);color:var(--crm-ocean,#1e3a8a)}
@@ -215,8 +229,11 @@ $filters = array('mgr' => 'Manager', 'cat' => 'Category', 'des' => 'Designation'
               $export = array('emp' => sprintf('EMP-%05d', $id), 'name' => $li['name'], 'login' => $li['c_username'], 'emp_id' => $li['emp_id'], 'mgr' => $li['manager_name'], 'cat' => $li['role'], 'des' => ($r['des'] === '(Not set)' ? '' : $r['des']),
                 'dep' => $li['department'], 'off' => $li['office'], 'status' => $r['on'] ? 'Enabled' : 'Disabled', 'pct' => $r['pres'] ? '' : $r['pct'] . '%',
                 'missing' => $r['pres'] ? '' : implode(', ', $r['missing']), 'pp' => isset($exp_csv['Passport']) ? $exp_csv['Passport'] : '',
-                'visa' => isset($exp_csv['Visa']) ? $exp_csv['Visa'] : '', 'eid' => isset($exp_csv['Emirates ID']) ? $exp_csv['Emirates ID'] : '', 'added' => simple_date($li['created'])); ?>
-            <tr data-mgr="<?php echo $h($r['mgr']); ?>" data-cat="<?php echo $h($r['cat']); ?>" data-des="<?php echo $h($r['des']); ?>" data-st="<?php echo $r['on'] ? 'Enabled' : 'Disabled'; ?>" data-dep="<?php echo $h($r['dep']); ?>" data-off="<?php echo $h($r['off']); ?>" data-exp="<?php echo $h($r['exp']); ?>" data-prof="<?php echo $h($r['prof']); ?>" data-row="<?php echo $h(json_encode($export)); ?>">
+                'visa' => isset($exp_csv['Visa']) ? $exp_csv['Visa'] : '', 'eid' => isset($exp_csv['Emirates ID']) ? $exp_csv['Emirates ID'] : '', 'added' => simple_date($li['created']),
+                'wa' => (isset($li['whatsapp']) && $li['whatsapp'] !== '' ? (($li['whatsapp_code'] !== '' ? '+' . $li['whatsapp_code'] . ' ' : '') . $li['whatsapp']) : ''),
+                're' => $r['rpt']['report_email'][1], 'rev' => $r['rpt']['report_email'][2], 'rp' => $r['rpt']['report_phone'][1], 'rpv' => $r['rpt']['report_phone'][2], 'rw' => $r['rpt']['report_whatsapp'][1], 'rwv' => $r['rpt']['report_whatsapp'][2]);
+              $rpt_attr = array(); foreach ($r['rpt'] as $x) $rpt_attr[] = $x[0] . ' ' . $x[2]; ?>
+            <tr data-mgr="<?php echo $h($r['mgr']); ?>" data-cat="<?php echo $h($r['cat']); ?>" data-des="<?php echo $h($r['des']); ?>" data-st="<?php echo $r['on'] ? 'Enabled' : 'Disabled'; ?>" data-dep="<?php echo $h($r['dep']); ?>" data-off="<?php echo $h($r['off']); ?>" data-exp="<?php echo $h($r['exp']); ?>" data-prof="<?php echo $h($r['prof']); ?>" data-rpt="<?php echo $h(implode('|', $rpt_attr)); ?>" data-row="<?php echo $h(json_encode($export)); ?>">
               <td><span class="emp"><?php echo sprintf('EMP-%05d', $id); ?></span></td>
               <td data-order="<?php echo $h(strtolower($li['name'])); ?>"><?php $ini = ''; foreach (preg_split('/\s+/', trim((string)$li['name'])) as $w) { if ($w !== '' && strlen($ini) < 2) $ini .= strtoupper($w[0]); } $avc = array('#1e3a8a','#0f766e','#7c3aed','#b45309','#be185d','#0369a1','#4d7c0f','#9f1239'); ?><div class="who"><span class="av" style="background:<?php echo $avc[abs(crc32((string)$li['name'])) % count($avc)]; ?>"><?php echo $h($ini !== '' ? $ini : '?'); ?></span><div><a class="nm" href="<?php echo base_url().$base; ?>/view/<?php echo $id; ?>"><?php echo $h($li['name']); ?></a><span class="lg"><?php echo $h($li['c_username']); ?></span></div></div></td>
               <td><?php echo $h($li['manager_name']); ?></td>
@@ -224,7 +241,7 @@ $filters = array('mgr' => 'Manager', 'cat' => 'Category', 'des' => 'Designation'
               <?php if ($r['pres']) { ?>
               <td data-order="101"><span class="chip na">Not needed</span></td>
               <?php } else { ?>
-              <td data-order="<?php echo $r['pct']; ?>"><div class="pf<?php echo $r['missing'] ? '' : ' full'; ?>"<?php if ($r['missing']) { ?> title="<?php echo $h('Missing: ' . implode(', ', $r['missing'])); ?>"<?php } ?>><div class="bar"><span style="width:<?php echo $r['pct']; ?>%"></span></div><?php echo $r['pct']; ?>%<?php if ($r['missing']) { ?> <span class="miss"><?php echo count($r['missing']); ?> missing</span><?php } ?></div></td>
+              <td data-order="<?php echo $r['pct']; ?>"><div class="pf<?php echo $r['missing'] ? '' : ' full'; ?>"<?php if ($r['missing']) { ?> title="<?php echo $h('Missing: ' . implode(', ', $r['missing'])); ?>"<?php } ?>><div class="bar"><span style="width:<?php echo $r['pct']; ?>%"></span></div><?php echo $r['pct']; ?>%<?php if ($r['missing']) { ?> <span class="miss"><?php echo count($r['missing']); ?> missing</span><?php } ?><?php $ri = array('report_email' => 'fa-envelope', 'report_phone' => 'fa-phone', 'report_whatsapp' => 'fa-whatsapp'); ?><span class="rp"><?php foreach ($r['rpt'] as $rk => $x) { ?><i class="fa <?php echo $ri[$rk]; ?> <?php echo str_replace(' ', '-', $x[2]); ?>" title="<?php echo $h('Reporting ' . $x[0] . ': ' . ($x[1] !== '' ? $x[1] . ' (' . $x[2] . ')' : 'not set')); ?>"></i><?php } ?></span></div></td>
               <?php } ?>
               <?php if ($r['soon'] === null) { ?>
               <td data-order="999999"><span class="chip na">No dates</span></td>
@@ -266,12 +283,14 @@ $(document).ready(function(){
   if (!$("#example_user").length) return;
   // Tick-box filters: a row shows when it matches every filter that has something ticked
   var picked = {};
+  // A row may carry several values (e.g. Reporting: "Email verified|Phone not set"); any ticked one matches
+  function hit(list, attr){ return (attr || '').split('|').some(function(v){ return list.indexOf(v) !== -1; }); }
   $('.ul-f').each(function(){ picked[$(this).data('f')] = []; });
   $.fn.dataTable.ext.search.push(function(settings, data, idx){
     if (settings.nTable.id !== 'example_user') return true;
     var tr = settings.aoData[idx].nTr;
     for (var k in picked) {
-      if (picked[k].length && picked[k].indexOf(tr.getAttribute('data-' + k)) === -1) return false;
+      if (picked[k].length && !hit(picked[k], tr.getAttribute('data-' + k))) return false;
     }
     return true;
   });
@@ -297,10 +316,9 @@ $(document).ready(function(){
       var k = $(this).data('f'), counts = {};
       nodes.forEach(function(tr){
         for (var j in picked) {
-          if (j !== k && picked[j].length && picked[j].indexOf(tr.getAttribute('data-' + j)) === -1) return;
+          if (j !== k && picked[j].length && !hit(picked[j], tr.getAttribute('data-' + j))) return;
         }
-        var v = tr.getAttribute('data-' + k);
-        counts[v] = (counts[v] || 0) + 1;
+        (tr.getAttribute('data-' + k) || '').split('|').forEach(function(v){ counts[v] = (counts[v] || 0) + 1; });
       });
       $(this).find('.opts label').each(function(){
         var inp = $(this).find('input')[0], n = counts[inp.value] || 0;
@@ -370,7 +388,8 @@ $(document).ready(function(){
   // Export what is shown now (filters and search applied) as a CSV file that opens in Excel
   $('.js-export').on('click', function(){
     var cols = [['emp','Emp. No'],['name','Name'],['login','Login'],['emp_id','Employee ID'],['mgr','Manager'],['cat','Category'],['des','Designation'],['dep','Department'],['off','Office / Location'],
-      ['status','Status'],['pct','Profile filled'],['missing','Missing mandatory details'],['pp','Passport Expiry'],['visa','Visa Expiry'],['eid','Emirates ID Expiry'],['added','Added']];
+      ['status','Status'],['pct','Profile filled'],['missing','Missing mandatory details'],['pp','Passport Expiry'],['visa','Visa Expiry'],['eid','Emirates ID Expiry'],['added','Added'],['wa','WhatsApp No'],
+      ['re','Reporting Email'],['rev','Email check'],['rp','Reporting Phone'],['rpv','Phone check'],['rw','Reporting WhatsApp'],['rwv','WhatsApp check']];
     var esc = function(v){ v = (v == null ? '' : String(v)); if (/^[=+\-@]/.test(v)) v = "'" + v; return '"' + v.replace(/"/g, '""') + '"'; };
     var lines = [cols.map(function(c){ return esc(c[1]); }).join(',')];
     table.rows({search: 'applied', order: 'applied'}).nodes().each(function(tr){
