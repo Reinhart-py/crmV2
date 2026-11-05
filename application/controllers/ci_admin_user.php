@@ -24,6 +24,7 @@ class Ci_admin_user extends CI_Controller {
 		$this->_ensure_contact();
 		$this->_ensure_exit();
 		$this->_ensure_docs();
+		$this->_ensure_history();
   
 	}
 	
@@ -235,6 +236,7 @@ public function view($id='')
 	           $data['exit_reasons'] = self::exit_reasons();
 	           $data['is_self'] = ((int)$id === (int)$this->session->userdata('manager_id'));
 	           $data['doc_types'] = self::doc_types();
+	           $data['history'] = !empty($data['can_write']) ? $this->db->query('SELECT H.*, U.name AS by_name FROM ci_user_history H LEFT JOIN ci_user U ON U.id = H.changed_by WHERE H.user_id = ? ORDER BY H.changed_at DESC, H.id DESC LIMIT 500', array((int)$id))->result_array() : array();
 	           $data['docs'] = !empty($data['can_write']) ? $this->db->query('SELECT D.*, U.name AS uploader FROM ci_user_docs D LEFT JOIN ci_user U ON U.id = D.uploaded_by WHERE D.user_id = ? ORDER BY D.doc_type, D.uploaded_at DESC', array((int)$id))->result_array() : array();
 	           $this->load->view('manager/user/user_view',$data);
 
@@ -499,6 +501,7 @@ public function view($id='')
 			 	$new_id = $this->comman_model->saveData('ci_user',$list);
 			 	$this->_save_designation($new_id);
 			 	$this->_save_contact($new_id);
+			 	if ($new_id) $this->_history($new_id, 'Profile', '', 'Added');
 			 	$this->session->set_flashdata('message', 'User has been added successfully!');
 				redirect($this->base);
 			 }
@@ -558,8 +561,11 @@ public function view($id='')
 					$row = false;
 				}
 				if ($row !== false) {
+					$before = $this->_snapshot($id);
 					$this->comman_model->updateData('id', $id, $row, 'ci_user');
 					$this->_save_live_offices($id, $this->pres_offices);
+					$this->_history_diff($id, $before, $this->_snapshot($id));
+					if (!empty($row['c_password']) && $row['c_password'] !== $data['list']['c_password']) $this->_history($id, 'Password', '', 'Changed');
 					$this->ci_admin_model->log_admin_action('user_edit', 'Updated presentation user ID #'.$id, 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));
 					$this->session->set_flashdata('message', 'User has been updated successfully!');
 					redirect($this->base);
@@ -639,9 +645,11 @@ public function view($id='')
 			
 				);			
 
+				$before = $this->_snapshot($id);
 				$response= $this->comman_model->updateData('id',$id,$save,'ci_user');
 				$this->_save_designation($id);
 				$this->_save_contact($id, $data['list']);
+				$this->_history_diff($id, $before, $this->_snapshot($id));
 				if($response)
 					{
 						$this->ci_admin_model->log_admin_action('user_edit', 'Updated user ID #'.$id, 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));
@@ -685,7 +693,9 @@ public function view($id='')
 						'c_username'=>$c_username,							
 						'modified'=>date('Y-m-d')
 					);
+					$old_login = $this->db->select('c_username')->where('id', (int)$id)->get('ci_user')->row_array();
 					$response= $this->comman_model->updateData('id',$id,$save,'ci_user');
+					if (!empty($old_login) && $old_login['c_username'] !== $c_username) $this->_history($id, 'Login Email', $old_login['c_username'], $c_username);
 
 					$this->session->set_flashdata('message', 'User settings has been updated successfully!');
 					redirect($this->base);
@@ -705,6 +715,7 @@ public function view($id='')
 				);
 
 				$response= $this->comman_model->updateData('id',$id,$save,'ci_user');
+				$this->_history($id, 'Password', '', 'Changed');
 				$this->session->set_flashdata('message', 'User settings has been updated successfully!');
 				redirect($this->base.'/cedit/'.$id);
 
@@ -828,6 +839,8 @@ public function view($id='')
 		$this->db->replace('ci_user_exit', array('user_id' => $id, 'left_on' => $on, 'reason' => $reason, 'note' => $note,
 			'marked_by' => (int)$this->session->userdata('manager_id'), 'marked_at' => date('Y-m-d H:i:s')));
 		$this->comman_model->updateData('id', $id, array('admin_status' => 0, 'c_dol' => $on), 'ci_user');
+		$this->_history($id, 'Status', (int)$u['admin_status'] === 1 ? 'Enabled' : 'Disabled', 'Left on ' . date('d-M-Y', strtotime($on)) . ' (' . $reason . ')' . ($note !== '' ? ' - ' . $note : ''));
+		if ((string)$u['c_dol'] !== $on) $this->_history($id, 'Date of Leaving', (string)$u['c_dol'], $on);
 		$this->ci_admin_model->log_admin_action('user_left', 'Marked user ID #' . $id . ' as left on ' . $on . ' (' . $reason . ')', 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));
 		$owned = $this->ci_admin_model->get_user_owned_records_count($id);
 		$msg = $u['name'] . ' is marked as left on ' . date('d-M-Y', strtotime($on)) . ' and can no longer sign in.';
@@ -845,6 +858,8 @@ public function view($id='')
 		$this->_guard_target($u);
 		$this->db->where('user_id', $id)->delete('ci_user_exit');
 		$this->comman_model->updateData('id', $id, array('admin_status' => 1, 'c_dol' => ''), 'ci_user');
+		$this->_history($id, 'Status', 'Left', 'Rejoined (Enabled)');
+		if ((string)$u['c_dol'] !== '') $this->_history($id, 'Date of Leaving', (string)$u['c_dol'], '');
 		$this->ci_admin_model->log_admin_action('user_rejoined', 'User ID #' . $id . ' rejoined (leaving record removed, login enabled)', 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));
 		$this->session->set_flashdata('message', $u['name'] . ' is back: the leaving record is removed and the login is enabled again.');
 		redirect($this->base . '/view/' . $id);
@@ -909,6 +924,7 @@ public function view($id='')
 		$orig = preg_replace('/[^\w\s.\-()]+/u', '_', basename((string)$file['name']));
 		$this->db->insert('ci_user_docs', array('user_id' => $id, 'doc_type' => $type, 'file_name' => $name, 'orig_name' => mb_substr($orig, 0, 200),
 			'mime' => $mime, 'size' => (int)$file['size'], 'uploaded_by' => (int)$this->session->userdata('manager_id'), 'uploaded_at' => date('Y-m-d H:i:s')));
+		$this->_history($id, 'Document', '', $type . ' added (' . $orig . ')');
 		$this->ci_admin_model->log_admin_action('user_doc_upload', 'Uploaded ' . $type . ' document for user ID #' . $id, 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));
 		$this->_doc_back($id, $type . ' document uploaded.');
 	}
@@ -944,8 +960,56 @@ public function view($id='')
 		if (!empty($u)) $this->_guard_target($u);
 		@unlink($this->_doc_dir($d['user_id']) . basename($d['file_name']));
 		$this->db->where('id', (int)$d['id'])->delete('ci_user_docs');
+		$this->_history($d['user_id'], 'Document', $d['doc_type'] . ' (' . $d['orig_name'] . ')', 'Deleted');
 		$this->ci_admin_model->log_admin_action('user_doc_delete', 'Deleted ' . $d['doc_type'] . ' document of user ID #' . (int)$d['user_id'], 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));
 		$this->_doc_back($d['user_id'], $d['doc_type'] . ' document deleted.');
+	}
+
+	/** Change history: who changed which detail, old -> new, and when. One row per changed field or event. */
+	private function _ensure_history()
+	{
+		$this->db->query("CREATE TABLE IF NOT EXISTS ci_user_history (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL, field VARCHAR(60) NOT NULL, old_value VARCHAR(500) NOT NULL DEFAULT '', new_value VARCHAR(500) NOT NULL DEFAULT '', changed_by INT NULL, changed_at DATETIME NOT NULL, KEY user_when (user_id, changed_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		$this->db->data_cache = array();
+	}
+	/** Everything shown on the profile, as label => text, to compare before and after a save. */
+	private function _snapshot($id)
+	{
+		$u = $this->ci_admin_model->getSingleUser((int)$id);
+		if (empty($u)) return array();
+		$g = function ($k) use ($u) { return isset($u[$k]) ? trim((string)$u[$k]) : ''; };
+		$ph = function ($c, $n) use ($g) { return $this->_phone_text($g($c), $g($n)); };
+		$vf = function ($k, $has) use ($u) { return $has === '' ? '' : (!empty($u[$k]) ? 'Verified' : 'Not verified'); };
+		$mgr = '';
+		if ($g('manager') !== '') { $m = $this->db->select('name')->where('id', (int)$u['manager'])->get('ci_user')->row_array(); $mgr = !empty($m['name']) ? $m['name'] : ''; }
+		$email = $g('email'); $mob = $ph('country_code', 'mobile'); $wa = $ph('whatsapp_code', 'whatsapp'); $alt = $ph('country_code2', 'uae_mobile');
+		return array(
+			'Login Email' => $g('c_username'), 'User Type' => $g('role_title'), 'Upline / Manager' => $mgr, 'Status' => ((int)$g('admin_status') === 1 ? 'Enabled' : 'Disabled'),
+			'Name' => $g('name'), 'Gender' => $g('gender'), 'Date of Birth' => $g('dob'), 'Blood Group' => $g('blood'),
+			'Email' => $email, 'Email verified' => $vf('email_verified', $email), 'Contact No' => $mob, 'Contact No verified' => $vf('mobile_verified', $mob),
+			'WhatsApp No' => $wa, 'WhatsApp No verified' => $vf('wa_verified', $wa), 'Alternate No' => $alt, 'Alternate No verified' => $vf('alt_verified', $alt),
+			'Address' => $g('address'), 'City' => $g('city'), 'Country' => $g('country_name'), 'State / Emirate' => $g('state_name'),
+			'Reporting Email' => $g('report_email'), 'Reporting Email verified' => $vf('report_email_verified', $g('report_email')),
+			'Reporting Phone' => $g('report_phone'), 'Reporting Phone verified' => $vf('report_phone_verified', $g('report_phone')),
+			'Reporting WhatsApp' => $g('report_whatsapp'), 'Reporting WhatsApp verified' => $vf('report_whatsapp_verified', $g('report_whatsapp')),
+			'Employee ID' => $g('emp_id'), 'Designation' => $g('designation'), 'Department' => $g('department'), 'Office / Location' => $g('office'),
+			'Salary' => $g('c_salary'), 'Date of Joining' => $g('c_doj'), 'Date of Leaving' => $g('c_dol'),
+			'Nationality' => $g('national'), 'Passport No' => $g('p_no'), 'Passport Issue Date' => $g('p_date'), 'Passport Expiry' => $g('p_exdate'),
+			'Emirates ID' => $g('eid_no'), 'ID Expiry' => $g('eid_expiry'), 'Visa Type' => $g('visa_type'), 'Visa Ref. No' => $g('visa_no'), 'Visa Issued By' => $g('visa_by'), 'Visa Expiry' => $g('visa_expiry'),
+			'Emergency Contact Name' => $g('h_contact_name'), 'Emergency Relation' => $g('h_contact_relation'), 'Emergency Contact No' => $g('h_contact_no'), 'Emergency Alternate No' => $g('h_contact_no2'),
+			'Bank Name' => $g('bank'), 'Account No' => $g('bank_no'), 'IBAN' => $g('iban'), 'SWIFT' => $g('swift'), 'IFSC / Branch' => $g('ifsc'), 'Bank Country' => $g('bank_country'),
+		);
+	}
+	private function _history($id, $field, $old, $new)
+	{
+		$this->db->insert('ci_user_history', array('user_id' => (int)$id, 'field' => mb_substr($field, 0, 60), 'old_value' => mb_substr((string)$old, 0, 500), 'new_value' => mb_substr((string)$new, 0, 500),
+			'changed_by' => (int)$this->session->userdata('manager_id'), 'changed_at' => date('Y-m-d H:i:s')));
+	}
+	private function _history_diff($id, $before, $after)
+	{
+		foreach ($after as $k => $v) {
+			$o = isset($before[$k]) ? (string)$before[$k] : '';
+			if ($o !== (string)$v) $this->_history($id, $k, $o, $v);
+		}
 	}
 
 public function ajax_edit_status()
@@ -965,6 +1029,7 @@ public function ajax_edit_status()
 			
 				$status = ($this->input->post('admin_status')==1) ? 0 : 1;
 				$response= $this->comman_model->updateData('id',$uid,array('admin_status'=>$status),'ci_user');
+				if ((int)$target['admin_status'] !== $status) $this->_history($uid, 'Status', (int)$target['admin_status'] === 1 ? 'Enabled' : 'Disabled', $status === 1 ? 'Enabled' : 'Disabled');
 				$this->ci_admin_model->log_admin_action('user_status_toggle', 'Toggled user status for ID #'.$uid.' to '.$status, 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));
 				echo "ok";
 			}

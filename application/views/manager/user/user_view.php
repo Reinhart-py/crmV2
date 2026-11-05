@@ -123,6 +123,19 @@ $enabled = ((int)$p['admin_status'] === 1);
 .uview .uv-docup input[type=file]{flex:1;min-width:200px;height:34px;padding:5px 8px}
 .uview .uv-docup .btn{height:34px;font-weight:600}
 .uview .uv-docup .hint{width:100%;font-size:12px;color:var(--crm-muted,#64748b)}
+.uview .uv-hist{padding:8px 14px 12px}
+.uview .uv-hbar{margin-bottom:8px}
+.uview .uv-hbar .form-control{width:auto;max-width:100%;min-width:220px;height:34px;font-size:13.5px;display:inline-block}
+.uview .uv-tl{list-style:none;margin:0 0 8px;padding:0 0 0 14px;border-left:2px solid var(--crm-line,#e2e8f0)}
+.uview .uv-tl > li{position:relative;padding:4px 0 10px 10px}
+.uview .uv-tl > li:before{content:'';position:absolute;left:-21px;top:9px;width:12px;height:12px;border-radius:50%;background:var(--crm-surface,#fff);border:2px solid var(--crm-ocean,#1e3a8a)}
+.uview .uv-tl .when{font-size:12.5px;color:var(--crm-muted,#64748b);margin-bottom:3px}
+.uview .uv-tl .when b{color:var(--crm-ink,#0f172a);font-weight:700}
+.uview .uv-tl .chg{font-size:13.5px;line-height:1.5;word-break:break-word}
+.uview .uv-tl .chg .fl{font-weight:600;margin-right:6px}
+.uview .uv-tl .chg .old{color:#b91c1c;text-decoration:line-through;text-decoration-color:rgba(185,28,28,.45)}
+.uview .uv-tl .chg .new{color:#15803d;font-weight:600}
+.uview .uv-tl .chg i{color:var(--crm-muted,#94a3b8);margin:0 3px}
 .uview .uv-alink{margin-left:8px;font-weight:600;white-space:nowrap}
 @media (max-width:767px){.uview .uv-docup select,.uview .uv-docup input[type=file],.uview .uv-docup .btn{width:100%;flex:none}}
 .uview .uv-chip.lft{background:rgba(100,116,139,.14);color:#475569;border-color:rgba(100,116,139,.3)}
@@ -297,6 +310,53 @@ $enabled = ((int)$p['admin_status'] === 1);
         var f = inp.files[0];
         if (busy || (f && f.size > MAX)) { e.preventDefault(); say(busy ? 'Please wait, the photo is still being made smaller.' : 'The file is larger than 1 MB.', !busy); }
       });
+    })();
+    </script>
+    <?php } ?>
+    <?php if ($can_write) {
+      // group the changes made in one save (same person, same minute) into one entry
+      $hgroups = array();
+      foreach ($history as $hh) { $key = substr($hh['changed_at'], 0, 19) . '|' . (int)$hh['changed_by']; $hgroups[$key][] = $hh; }
+      foreach ($hgroups as &$hgi) $hgi = array_reverse($hgi); unset($hgi);
+      $hx = function ($v) { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); };
+      $hfields = array(); foreach ($history as $hh) $hfields[$hh['field']] = true; ksort($hfields); ?>
+    <div class="uv-card" id="history">
+      <div class="uv-sec-h"><span>Change History</span><small><?php echo count($history); ?> change<?php echo count($history) == 1 ? '' : 's'; ?></small></div>
+      <div class="uv-hist">
+        <?php if (!$history) { ?><p class="uv-docnone">No changes recorded yet. From now on every change to this profile is listed here.</p><?php } else { ?>
+        <div class="uv-hbar"><select class="form-control js-hf"><option value="">All details</option><?php foreach (array_keys($hfields) as $fl) { ?><option><?php echo $hx($fl); ?></option><?php } ?></select></div>
+        <ol class="uv-tl">
+          <?php $gi = 0; foreach ($hgroups as $items) { $first = $items[0]; $gi++; ?>
+          <li class="js-hg<?php echo $gi > 8 ? ' more' : ''; ?>">
+            <div class="when"><b><?php echo date('d-M-Y', strtotime($first['changed_at'])); ?></b> <?php echo date('H:i', strtotime($first['changed_at'])); ?> &middot; <?php echo $first['by_name'] !== null && $first['by_name'] !== '' ? $hx($first['by_name']) : 'System'; ?></div>
+            <?php foreach ($items as $hh) { ?>
+            <div class="chg" data-f="<?php echo $hx($hh['field']); ?>"><span class="fl"><?php echo $hx($hh['field']); ?></span>
+              <?php if ($hh['old_value'] !== '') { ?><span class="old"><?php echo $hx($hh['old_value']); ?></span> <i class="fa fa-long-arrow-right"></i> <?php } ?>
+              <span class="new"><?php echo $hh['new_value'] !== '' ? $hx($hh['new_value']) : '<em>removed</em>'; ?></span></div>
+            <?php } ?>
+          </li>
+          <?php } ?>
+        </ol>
+        <?php if ($gi > 8) { ?><button type="button" class="btn btn-default btn-sm js-hmore">Show all <?php echo $gi; ?> entries</button><?php } ?>
+        <?php } ?>
+      </div>
+    </div>
+    <script>
+    (function () {
+      var box = document.getElementById('history'); if (!box) return;
+      var sel = box.querySelector('.js-hf'), more = box.querySelector('.js-hmore');
+      function run() {
+        var f = sel ? sel.value : '';
+        box.querySelectorAll('.js-hg').forEach(function (g) {
+          var any = false;
+          g.querySelectorAll('.chg').forEach(function (c) { var ok = !f || c.getAttribute('data-f') === f; c.style.display = ok ? '' : 'none'; if (ok) any = true; });
+          g.style.display = any && (f || !g.classList.contains('more') || box.classList.contains('all')) ? '' : 'none';
+        });
+        if (more) more.style.display = (f || box.classList.contains('all')) ? 'none' : '';
+      }
+      if (sel) sel.addEventListener('change', run);
+      if (more) more.addEventListener('click', function () { box.classList.add('all'); run(); });
+      run();
     })();
     </script>
     <?php } ?>
