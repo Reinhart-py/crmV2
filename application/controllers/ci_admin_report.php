@@ -287,6 +287,12 @@ class Ci_admin_report extends CI_Controller {
 		if (isset($aliases[$report])) {
 			$report = $aliases[$report];
 		}
+		// Only reports listed for this department can be opened.
+		$dept_meta = $this->admin_reports_model->getDepartmentReportsMeta($dept);
+		if (empty($dept_meta['reports'][$report])) {
+			redirect('manager/download-report/' . $dept);
+			return;
+		}
 
 		$period = $this->input->get('period');
 		$d1 = '';

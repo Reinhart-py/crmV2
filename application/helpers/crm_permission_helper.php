@@ -158,7 +158,6 @@ if (!function_exists('crm_perm_catalog')) {
 					'reports_users' => array('label' => 'Users Report', 'desc' => 'Activity per user', 'fallback' => 'reports_leads', 'nav' => array(array('users/report', 'Users Report', 'fa-user')), 'pages' => array('users/report'), 'levels' => 'r'),
 					'reports_perf_dep' => array('label' => 'Department Performance', 'desc' => 'Performance by department', 'fallback' => 'reports', 'nav' => array(array('performance-report', 'Department Performance', 'fa-building-o')), 'pages' => array('performance-report'), 'levels' => 'r'),
 					'reports_perf_ind' => array('label' => 'Individual Performance', 'desc' => 'Performance per person', 'fallback' => 'reports', 'nav' => array(array('performance-report/individual', 'Individual Performance', 'fa-user-circle-o')), 'pages' => array('performance-report/individual'), 'levels' => 'r'),
-					'reports_generate' => array('label' => 'Generate Data', 'desc' => 'External data generator tool', 'fallback' => 'reports', 'nav' => array(array('https://7strokes.maxvendor47.workers.dev/', 'Generate Data', 'fa-database')), 'levels' => 'r'),
 				),
 			),
 			'system' => array(

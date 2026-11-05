@@ -95,7 +95,7 @@ $route['manager/leads/bulk-transfer'] = "ci_admin_leads/bulk_transfer";
 $route['manager/team/verticals'] = "ci_admin_verticals/teams";
 $route['manager/team/verticals/(:any)'] = 'ci_admin_verticals/teams/$1';
 
-$route['manager/verticals/report'] = "ci_admin_verticals/report";
+$route['manager/verticals/report'] = "ci_admin_verticals/verticals";
 $route['manager/verticals/report/fixed/(:any)'] = "ci_admin_verticals/report_fixed/$1";
 
 $route['manager/users'] = "ci_admin_user/index";
@@ -273,7 +273,7 @@ $route['manager/orders/open'] = 'ci_admin_orders/open';
 $route['manager/orders/followups'] = 'ci_admin_orders/followups';
 $route['manager/kam/task-followup'] = 'ci_admin_kam/task_followup';
 $route['manager/kam/reminders'] = 'ci_admin_kam/reminders';
-$route['manager/kam/report'] = 'ci_admin_kam/report';
+
 $route['manager/kam/view/(:any)'] = 'ci_admin_kam/view/$1';
 $route['manager/kam/(:any)'] = 'ci_admin_kam/$1';
 $route['manager/kam'] = 'ci_admin_kam/index';

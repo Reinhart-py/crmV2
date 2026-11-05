@@ -235,13 +235,6 @@ class Admin_reports_model extends CI_Model {
 						'desc' => 'Revenue recognized, recurring MRR contracts, billed totals, and collection rates.',
 						'badge' => 'Summary'
 					),
-					'custom' => array(
-						'title' => 'Custom Report',
-						'slug' => 'custom',
-						'icon' => 'fa-sliders',
-						'desc' => 'Dynamic custom report builder with selectable columns, filters, and export.',
-						'badge' => 'Builder'
-					)
 				)
 			);
 		} elseif ($dept == 'support') {
@@ -291,13 +284,6 @@ class Admin_reports_model extends CI_Model {
 						'desc' => 'Critical unresolved requests, escalated cases, and tickets pending client replies.',
 						'badge' => $this->db->where_not_in('status', array('Resolved', 'Closed'))->count_all_results('ci_tickets') . ' Pending'
 					),
-					'custom' => array(
-						'title' => 'Custom Report',
-						'slug' => 'custom',
-						'icon' => 'fa-sliders',
-						'desc' => 'Dynamic custom report builder with selectable columns, filters, and export.',
-						'badge' => 'Builder'
-					)
 				)
 			);
 		} elseif ($dept == 'hr') {
@@ -340,13 +326,6 @@ class Admin_reports_model extends CI_Model {
 						'desc' => 'Staff operational logs, system actions performed, and workflow tracking.',
 						'badge' => $this->db->count_all('ci_admin_logs') . ' Logs'
 					),
-					'custom' => array(
-						'title' => 'Custom Report',
-						'slug' => 'custom',
-						'icon' => 'fa-sliders',
-						'desc' => 'Dynamic custom report builder with selectable columns, filters, and export.',
-						'badge' => 'Builder'
-					)
 				)
 			);
 		} elseif ($dept == 'it') {
@@ -389,13 +368,6 @@ class Admin_reports_model extends CI_Model {
 						'desc' => 'Scheduled server maintenance, database backups, security patches, and uptime.',
 						'badge' => $this->db->count_all('ci_system_maintenance') . ' Tasks'
 					),
-					'custom' => array(
-						'title' => 'Custom Report',
-						'slug' => 'custom',
-						'icon' => 'fa-sliders',
-						'desc' => 'Dynamic custom report builder with selectable columns, filters, and export.',
-						'badge' => 'Builder'
-					)
 				)
 			);
 		}
@@ -699,7 +671,7 @@ class Admin_reports_model extends CI_Model {
 			$this->_applyEmployee($this->db, 'A.lead_assign', $emp);
 			$this->_applyDate($this->db, 'A.created', $d1, $d2);
 			if (!empty($search)) {
-				$this->db->where("(A.customer LIKE '%$search%' OR A.poc LIKE '%$search%' OR A.contact1 LIKE '%$search%' OR A.data_batch_referral_no LIKE '%$search%')");
+				$this->db->where("(A.customer LIKE '%{$this->db->escape_like_str($search)}%' OR A.poc LIKE '%{$this->db->escape_like_str($search)}%' OR A.contact1 LIKE '%{$this->db->escape_like_str($search)}%' OR A.data_batch_referral_no LIKE '%{$this->db->escape_like_str($search)}%')");
 			}
 			$this->db->order_by('A.id', 'DESC');
 			$leads = $this->db->get()->result_array();
@@ -980,7 +952,7 @@ class Admin_reports_model extends CI_Model {
 			$this->_applyEmployee($this->db, 'A.lead_assign', $emp);
 			$this->_applyDate($this->db, 'A.created', $d1, $d2);
 			if (!empty($search)) {
-				$this->db->where("(A.customer LIKE '%$search%' OR A.poc LIKE '%$search%' OR A.contact1 LIKE '%$search%' OR A.email LIKE '%$search%')");
+				$this->db->where("(A.customer LIKE '%{$this->db->escape_like_str($search)}%' OR A.poc LIKE '%{$this->db->escape_like_str($search)}%' OR A.contact1 LIKE '%{$this->db->escape_like_str($search)}%' OR A.email LIKE '%{$this->db->escape_like_str($search)}%')");
 			}
 			$this->db->order_by('A.id', 'DESC');
 			$this->db->limit(1000);
@@ -1049,7 +1021,7 @@ class Admin_reports_model extends CI_Model {
 			$this->_applyEmployee($this->db, 'A.lead_assign', $emp);
 			$this->_applyDate($this->db, 'A.created', $d1, $d2);
 			if (!empty($search)) {
-				$this->db->where("(A.customer LIKE '%$search%' OR A.poc LIKE '%$search%' OR A.contact1 LIKE '%$search%' OR A.email LIKE '%$search%')");
+				$this->db->where("(A.customer LIKE '%{$this->db->escape_like_str($search)}%' OR A.poc LIKE '%{$this->db->escape_like_str($search)}%' OR A.contact1 LIKE '%{$this->db->escape_like_str($search)}%' OR A.email LIKE '%{$this->db->escape_like_str($search)}%')");
 			}
 			$this->db->order_by('A.id', 'DESC');
 			$this->db->limit(1000);
@@ -1121,7 +1093,7 @@ class Admin_reports_model extends CI_Model {
 			$this->_applyEmployee($this->db, 'A.lead_assign', $emp);
 			$this->_applyDate($this->db, 'A.created', $d1, $d2);
 			if (!empty($search)) {
-				$this->db->where("(A.customer LIKE '%$search%' OR A.poc LIKE '%$search%' OR A.contact1 LIKE '%$search%')");
+				$this->db->where("(A.customer LIKE '%{$this->db->escape_like_str($search)}%' OR A.poc LIKE '%{$this->db->escape_like_str($search)}%' OR A.contact1 LIKE '%{$this->db->escape_like_str($search)}%')");
 			}
 			$this->db->order_by('A.id', 'DESC');
 			$leads = $this->db->get()->result_array();
@@ -1255,7 +1227,7 @@ class Admin_reports_model extends CI_Model {
 			$this->_applyEmployee($this->db, 'A.lead_assign', $emp);
 			$this->_applyDate($this->db, 'A.created', $d1, $d2);
 			if (!empty($search)) {
-				$this->db->where("(A.customer LIKE '%$search%' OR A.tl_number LIKE '%$search%' OR A.poc LIKE '%$search%')");
+				$this->db->where("(A.customer LIKE '%{$this->db->escape_like_str($search)}%' OR A.tl_number LIKE '%{$this->db->escape_like_str($search)}%' OR A.poc LIKE '%{$this->db->escape_like_str($search)}%')");
 			}
 			$this->db->order_by('A.id', 'DESC');
 			$leads = $this->db->get()->result_array();
@@ -1317,7 +1289,7 @@ class Admin_reports_model extends CI_Model {
 			$this->_applyEmployee($this->db, 'A.lead_assign', $emp);
 			$this->_applyDate($this->db, 'A.created', $d1, $d2);
 			if (!empty($search)) {
-				$this->db->where("(A.customer LIKE '%$search%' OR A.status_category LIKE '%$search%' OR A.status_remarks LIKE '%$search%')");
+				$this->db->where("(A.customer LIKE '%{$this->db->escape_like_str($search)}%' OR A.status_category LIKE '%{$this->db->escape_like_str($search)}%' OR A.status_remarks LIKE '%{$this->db->escape_like_str($search)}%')");
 			}
 			$this->db->order_by('A.id', 'DESC');
 			$leads = $this->db->get()->result_array();
@@ -1376,7 +1348,7 @@ class Admin_reports_model extends CI_Model {
 			$this->db->where('(A.company_status IS NULL OR LOWER(A.company_status) != "closed")');
 			$this->db->where('(A.tl_number != "" OR A.tl_authority != "" OR (A.tl_expire_date != "" AND A.tl_expire_date != "0000-00-00"))');
 			if (!empty($filters['tl_emirate'])) {
-				$em = $filters['tl_emirate'];
+				$em = $this->db->escape_str($filters['tl_emirate']);
 				$this->db->where("(A.tl_emirate = '$em' OR ((A.tl_emirate = '' OR A.tl_emirate IS NULL) AND A.city = '$em'))");
 			}
 			if (!empty($filters['tl_zone'])) {
@@ -1390,13 +1362,13 @@ class Admin_reports_model extends CI_Model {
 				}
 			}
 			if (!empty($filters['tl_authority'])) {
-				$auth_flt = $filters['tl_authority'];
+				$auth_flt = $this->db->escape_like_str($filters['tl_authority']);
 				$this->db->where("(A.tl_authority = '$auth_flt' OR A.tl_authority LIKE '%$auth_flt%')");
 			}
 			$this->_applyEmployee($this->db, 'A.lead_assign', $emp);
 			$this->_applyDate($this->db, 'A.created', $d1, $d2);
 			if (!empty($search)) {
-				$this->db->where("(A.customer LIKE '%$search%' OR A.tl_number LIKE '%$search%' OR A.tl_authority LIKE '%$search%' OR A.tl_emirate LIKE '%$search%')");
+				$this->db->where("(A.customer LIKE '%{$this->db->escape_like_str($search)}%' OR A.tl_number LIKE '%{$this->db->escape_like_str($search)}%' OR A.tl_authority LIKE '%{$this->db->escape_like_str($search)}%' OR A.tl_emirate LIKE '%{$this->db->escape_like_str($search)}%')");
 			}
 			$this->db->order_by('A.id', 'DESC');
 			$leads = $this->db->get()->result_array();
@@ -1588,7 +1560,7 @@ class Admin_reports_model extends CI_Model {
 			$this->_applyEmployee($this->db, 'A.assigned_to', $emp);
 			$this->_applyDate($this->db, 'A.created', $d1, $d2);
 			if (!empty($search)) {
-				$this->db->where("(A.customer LIKE '%$search%' OR A.task_id LIKE '%$search%' OR A.category LIKE '%$search%')");
+				$this->db->where("(A.customer LIKE '%{$this->db->escape_like_str($search)}%' OR A.task_id LIKE '%{$this->db->escape_like_str($search)}%' OR A.category LIKE '%{$this->db->escape_like_str($search)}%')");
 			}
 			$this->db->order_by('A.id', 'DESC');
 			$tasks = $this->db->get()->result_array();
@@ -1643,7 +1615,7 @@ class Admin_reports_model extends CI_Model {
 			$this->_applyEmployee($this->db, 'A.technician_id', $emp);
 			$this->_applyDate($this->db, 'A.order_date', $d1, $d2);
 			if (!empty($search)) {
-				$this->db->where("(A.customer_name LIKE '%$search%' OR A.delivery_id LIKE '%$search%' OR A.service_title LIKE '%$search%')");
+				$this->db->where("(A.customer_name LIKE '%{$this->db->escape_like_str($search)}%' OR A.delivery_id LIKE '%{$this->db->escape_like_str($search)}%' OR A.service_title LIKE '%{$this->db->escape_like_str($search)}%')");
 			}
 			$this->db->order_by('A.id', 'DESC');
 			$deliveries = $this->db->get()->result_array();
@@ -1758,7 +1730,7 @@ class Admin_reports_model extends CI_Model {
 			if (!empty($status)) $this->db->where('status', $status);
 			$this->_applyDate($this->db, 'invoice_date', $d1, $d2);
 			if (!empty($search)) {
-				$this->db->where("(invoice_no LIKE '%$search%' OR customer_name LIKE '%$search%' OR service_desc LIKE '%$search%')");
+				$this->db->where("(invoice_no LIKE '%{$this->db->escape_like_str($search)}%' OR customer_name LIKE '%{$this->db->escape_like_str($search)}%' OR service_desc LIKE '%{$this->db->escape_like_str($search)}%')");
 			}
 			$this->db->order_by('id', 'DESC');
 			$invs = $this->db->get()->result_array();
@@ -1816,7 +1788,7 @@ class Admin_reports_model extends CI_Model {
 			if (!empty($filters['payment_mode'])) $this->db->where('A.payment_mode', $filters['payment_mode']);
 			$this->_applyDate($this->db, 'A.payment_date', $d1, $d2);
 			if (!empty($search)) {
-				$this->db->where("(A.receipt_no LIKE '%$search%' OR A.customer_name LIKE '%$search%' OR A.reference_no LIKE '%$search%')");
+				$this->db->where("(A.receipt_no LIKE '%{$this->db->escape_like_str($search)}%' OR A.customer_name LIKE '%{$this->db->escape_like_str($search)}%' OR A.reference_no LIKE '%{$this->db->escape_like_str($search)}%')");
 			}
 			$this->db->order_by('A.id', 'DESC');
 			$payments = $this->db->get()->result_array();
@@ -1865,7 +1837,7 @@ class Admin_reports_model extends CI_Model {
 			if (!empty($filters['category'])) $this->db->where('A.category', $filters['category']);
 			$this->_applyDate($this->db, 'A.expense_date', $d1, $d2);
 			if (!empty($search)) {
-				$this->db->where("(A.voucher_no LIKE '%$search%' OR A.paid_to LIKE '%$search%' OR A.description LIKE '%$search%')");
+				$this->db->where("(A.voucher_no LIKE '%{$this->db->escape_like_str($search)}%' OR A.paid_to LIKE '%{$this->db->escape_like_str($search)}%' OR A.description LIKE '%{$this->db->escape_like_str($search)}%')");
 			}
 			$this->db->order_by('A.id', 'DESC');
 			$expenses = $this->db->get()->result_array();
@@ -1913,7 +1885,7 @@ class Admin_reports_model extends CI_Model {
 			$this->db->select('*');
 			$this->db->from('ci_invoices');
 			$this->_applyDate($this->db, 'invoice_date', $d1, $d2);
-			if (!empty($search)) $this->db->where("(customer_name LIKE '%$search%' OR invoice_no LIKE '%$search%')");
+			if (!empty($search)) $this->db->where("(customer_name LIKE '%{$this->db->escape_like_str($search)}%' OR invoice_no LIKE '%{$this->db->escape_like_str($search)}%')");
 			$this->db->order_by('id', 'DESC');
 			$invs = $this->db->get()->result_array();
 
@@ -1979,7 +1951,7 @@ class Admin_reports_model extends CI_Model {
 			$this->_applyEmployee($this->db, 'T.assigned_to', $emp);
 			$this->_applyDate($this->db, 'T.created_at', $d1, $d2);
 			if (!empty($search)) {
-				$this->db->where("(T.ticket_number LIKE '%$search%' OR T.customer LIKE '%$search%' OR T.subject LIKE '%$search%')");
+				$this->db->where("(T.ticket_number LIKE '%{$this->db->escape_like_str($search)}%' OR T.customer LIKE '%{$this->db->escape_like_str($search)}%' OR T.subject LIKE '%{$this->db->escape_like_str($search)}%')");
 			}
 			$this->db->order_by('T.id', 'DESC');
 			$tickets = $this->db->get()->result_array();
@@ -2041,7 +2013,7 @@ class Admin_reports_model extends CI_Model {
 			$this->db->where('(T.status IN ("Resolved", "Closed") OR T.resolved_at IS NOT NULL)');
 			if (!empty($filters['resolved_by'])) $this->db->where('T.resolved_by', $filters['resolved_by']);
 			$this->_applyDate($this->db, 'T.created_at', $d1, $d2);
-			if (!empty($search)) $this->db->where("(T.ticket_number LIKE '%$search%' OR T.customer LIKE '%$search%' OR T.subject LIKE '%$search%')");
+			if (!empty($search)) $this->db->where("(T.ticket_number LIKE '%{$this->db->escape_like_str($search)}%' OR T.customer LIKE '%{$this->db->escape_like_str($search)}%' OR T.subject LIKE '%{$this->db->escape_like_str($search)}%')");
 			$this->db->order_by('T.id', 'DESC');
 			$tickets = $this->db->get()->result_array();
 
@@ -2096,7 +2068,7 @@ class Admin_reports_model extends CI_Model {
 			$this->db->join('ci_user as U', 'F.user_id = U.id', 'LEFT');
 			$this->_applyEmployee($this->db, 'F.user_id', $emp);
 			$this->_applyDate($this->db, 'F.followup_date', $d1, $d2);
-			if (!empty($search)) $this->db->where("(L.customer LIKE '%$search%' OR F.followup_remark LIKE '%$search%')");
+			if (!empty($search)) $this->db->where("(L.customer LIKE '%{$this->db->escape_like_str($search)}%' OR F.followup_remark LIKE '%{$this->db->escape_like_str($search)}%')");
 			$this->db->order_by('F.id', 'DESC');
 			$this->db->limit(500);
 			$followups = $this->db->get()->result_array();
@@ -2144,7 +2116,7 @@ class Admin_reports_model extends CI_Model {
 			if (!empty($status)) $this->db->where('T.status', $status);
 			$this->_applyEmployee($this->db, 'T.assigned_to', $emp);
 			$this->_applyDate($this->db, 'T.created_at', $d1, $d2);
-			if (!empty($search)) $this->db->where("(T.customer LIKE '%$search%' OR T.subject LIKE '%$search%' OR T.poc LIKE '%$search%')");
+			if (!empty($search)) $this->db->where("(T.customer LIKE '%{$this->db->escape_like_str($search)}%' OR T.subject LIKE '%{$this->db->escape_like_str($search)}%' OR T.poc LIKE '%{$this->db->escape_like_str($search)}%')");
 			$this->db->order_by('T.id', 'DESC');
 			$queries = $this->db->get()->result_array();
 
@@ -2187,7 +2159,7 @@ class Admin_reports_model extends CI_Model {
 			$this->db->where_not_in('T.status', array('Resolved', 'Closed'));
 			if (!empty($filters['department'])) $this->db->where('T.department', $filters['department']);
 			$this->_applyEmployee($this->db, 'T.assigned_to', $emp);
-			if (!empty($search)) $this->db->where("(T.customer LIKE '%$search%' OR T.ticket_number LIKE '%$search%' OR T.subject LIKE '%$search%')");
+			if (!empty($search)) $this->db->where("(T.customer LIKE '%{$this->db->escape_like_str($search)}%' OR T.ticket_number LIKE '%{$this->db->escape_like_str($search)}%' OR T.subject LIKE '%{$this->db->escape_like_str($search)}%')");
 			$this->db->order_by('T.id', 'DESC');
 			$tickets = $this->db->get()->result_array();
 
@@ -2249,7 +2221,7 @@ class Admin_reports_model extends CI_Model {
 			if (!empty($filters['department'])) $this->db->where('U.department', $filters['department']);
 			$this->_applyEmployee($this->db, 'A.user_id', $emp);
 			$this->_applyDate($this->db, 'A.attendance_date', $d1, $d2);
-			if (!empty($search)) $this->db->where("U.name LIKE '%$search%'");
+			if (!empty($search)) $this->db->where("U.name LIKE '%{$this->db->escape_like_str($search)}%'");
 			$this->db->order_by('A.attendance_date', 'DESC');
 			$records = $this->db->get()->result_array();
 
@@ -2373,7 +2345,7 @@ class Admin_reports_model extends CI_Model {
 			if (!empty($filters['leave_type'])) $this->db->where('L.leave_type', $filters['leave_type']);
 			$this->_applyEmployee($this->db, 'L.user_id', $emp);
 			$this->_applyDate($this->db, 'L.from_date', $d1, $d2);
-			if (!empty($search)) $this->db->where("U.name LIKE '%$search%'");
+			if (!empty($search)) $this->db->where("U.name LIKE '%{$this->db->escape_like_str($search)}%'");
 			$this->db->order_by('L.id', 'DESC');
 			$leaves = $this->db->get()->result_array();
 
@@ -2420,7 +2392,7 @@ class Admin_reports_model extends CI_Model {
 			if (!empty($status)) $this->db->where('A.status', $status);
 			$this->_applyEmployee($this->db, 'A.assigned_to', $emp);
 			$this->_applyDate($this->db, 'A.created', $d1, $d2);
-			if (!empty($search)) $this->db->where("(A.customer LIKE '%$search%' OR B.name LIKE '%$search%')");
+			if (!empty($search)) $this->db->where("(A.customer LIKE '%{$this->db->escape_like_str($search)}%' OR B.name LIKE '%{$this->db->escape_like_str($search)}%')");
 			$this->db->order_by('A.id', 'DESC');
 			$tasks = $this->db->get()->result_array();
 
@@ -2461,7 +2433,7 @@ class Admin_reports_model extends CI_Model {
 			$this->db->join('ci_user as U', 'L.user_id = U.id', 'LEFT');
 			$this->_applyEmployee($this->db, 'L.user_id', $emp);
 			$this->_applyDate($this->db, 'L.created_at', $d1, $d2);
-			if (!empty($search)) $this->db->where("(L.username LIKE '%$search%' OR L.activity LIKE '%$search%' OR L.details LIKE '%$search%')");
+			if (!empty($search)) $this->db->where("(L.username LIKE '%{$this->db->escape_like_str($search)}%' OR L.activity LIKE '%{$this->db->escape_like_str($search)}%' OR L.details LIKE '%{$this->db->escape_like_str($search)}%')");
 			$this->db->order_by('L.id', 'DESC');
 			$this->db->limit(500);
 			$logs = $this->db->get()->result_array();
@@ -2509,7 +2481,7 @@ class Admin_reports_model extends CI_Model {
 			if (!empty($filters['activity'])) $this->db->where('L.activity', $filters['activity']);
 			$this->_applyEmployee($this->db, 'L.user_id', $emp);
 			$this->_applyDate($this->db, 'L.created_at', $d1, $d2);
-			if (!empty($search)) $this->db->where("(L.username LIKE '%$search%' OR L.activity LIKE '%$search%' OR L.details LIKE '%$search%')");
+			if (!empty($search)) $this->db->where("(L.username LIKE '%{$this->db->escape_like_str($search)}%' OR L.activity LIKE '%{$this->db->escape_like_str($search)}%' OR L.details LIKE '%{$this->db->escape_like_str($search)}%')");
 			$this->db->order_by('L.id', 'DESC');
 			$this->db->limit(500);
 			$logs = $this->db->get()->result_array();
@@ -2549,7 +2521,7 @@ class Admin_reports_model extends CI_Model {
 			if (!empty($filters['status'])) $this->db->where('L.status', $filters['status']);
 			$this->_applyEmployee($this->db, 'L.user_id', $emp);
 			$this->_applyDate($this->db, 'L.created_at', $d1, $d2);
-			if (!empty($search)) $this->db->where("(L.username LIKE '%$search%' OR L.ip_address LIKE '%$search%')");
+			if (!empty($search)) $this->db->where("(L.username LIKE '%{$this->db->escape_like_str($search)}%' OR L.ip_address LIKE '%{$this->db->escape_like_str($search)}%')");
 			$this->db->order_by('L.id', 'DESC');
 			$this->db->limit(500);
 			$logs = $this->db->get()->result_array();
@@ -2602,7 +2574,7 @@ class Admin_reports_model extends CI_Model {
 			if (!empty($status)) $this->db->where('T.status', $status);
 			$this->_applyEmployee($this->db, 'T.assigned_to', $emp);
 			$this->_applyDate($this->db, 'T.created_at', $d1, $d2);
-			if (!empty($search)) $this->db->where("(T.ticket_number LIKE '%$search%' OR T.subject LIKE '%$search%')");
+			if (!empty($search)) $this->db->where("(T.ticket_number LIKE '%{$this->db->escape_like_str($search)}%' OR T.subject LIKE '%{$this->db->escape_like_str($search)}%')");
 			$this->db->order_by('T.id', 'DESC');
 			$issues = $this->db->get()->result_array();
 
@@ -2649,7 +2621,7 @@ class Admin_reports_model extends CI_Model {
 			if (!empty($filters['category'])) $this->db->where('M.category', $filters['category']);
 			if (!empty($status)) $this->db->where('M.status', $status);
 			$this->_applyDate($this->db, 'M.scheduled_date', $d1, $d2);
-			if (!empty($search)) $this->db->where("(M.title LIKE '%$search%' OR M.notes LIKE '%$search%')");
+			if (!empty($search)) $this->db->where("(M.title LIKE '%{$this->db->escape_like_str($search)}%' OR M.notes LIKE '%{$this->db->escape_like_str($search)}%')");
 			$this->db->order_by('M.id', 'DESC');
 			$tasks = $this->db->get()->result_array();
 

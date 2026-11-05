@@ -730,12 +730,10 @@ class Ci_admin_system extends CI_Controller {
 					array('title' => 'Revenue List', 'key' => 'rep_revenue', 'url' => 'manager/reports/revenue-list'),
 					array('title' => 'Company Projections', 'key' => 'rep_projections', 'url' => 'manager/reports/company-projections'),
 					array('title' => 'Download Reports Center', 'key' => 'rep_download', 'url' => 'manager/download-report'),
-					array('title' => 'Admin Reports', 'key' => 'rep_admin', 'url' => 'manager/admin-reports'),
 					array('title' => 'Leads Report', 'key' => 'rep_leads', 'url' => 'manager/leads/report'),
 					array('title' => 'Department Performance Report', 'key' => 'rep_perf_dep', 'url' => 'manager/performance-report'),
 					array('title' => 'Individual Performance Report', 'key' => 'rep_perf_ind', 'url' => 'manager/performance-report/individual'),
 					array('title' => 'User Activity Report', 'key' => 'rep_user_activity', 'url' => 'manager/users/report'),
-					array('title' => 'Data Generator Tool', 'key' => 'rep_gen_data', 'url' => 'https://7strokes.maxvendor47.workers.dev/')
 				)
 			),
 			array(
