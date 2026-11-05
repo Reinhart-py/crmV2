@@ -415,3 +415,11 @@ body.auth-page {
   .av-art { display: none; }
   .sp-inner .auth-brand { display: none; }
 }
+
+/* Right panel: very light version of the brand image (white wash over the same picture). */
+.auth-panel {
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.90), rgba(255, 255, 255, 0.90)),
+    #ffffff url("../../background-auth.jpg") center / cover no-repeat;
+}
+.auth-input, .sp-chat, .auth-support-btn { background-color: #ffffff; }
