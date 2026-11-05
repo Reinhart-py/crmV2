@@ -8,6 +8,7 @@
 - Sign-in left panel: centered "Welcome to Seven Strokes CRM" heading, short introduction, three feature tiles (Industry Trusted, AI-Driven Insights, Automated Workflow) and a CRM dashboard illustration drawn in SVG over the existing background image.
 - Sign In, Forgot Password, Set New Password and Support pages fit on one screen on desktop (no page scroll): spacing, text and the illustration scale with the window height.
 - The right (form) side now has a very light wash of the same brand image instead of flat white; form fields stay white.
+- Larger, clearer logo on the sign-in pages (about twice the size, empty margins of the image trimmed) and more even spacing between title, fields, Remember Me row and Sign In button.
 - The 5 minute idle sign-out is paused while an agent is marked Available in Live Support.
 
 ## [2026-11-05] - Password Reset Email Fix

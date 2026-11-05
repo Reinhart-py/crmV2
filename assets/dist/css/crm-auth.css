@@ -423,3 +423,37 @@ body.auth-page {
     #ffffff url("../../background-auth.jpg") center / cover no-repeat;
 }
 .auth-input, .sp-chat, .auth-support-btn { background-color: #ffffff; }
+
+/* Logo: larger and crisp. The PNG has ~10% empty space top and bottom, trimmed with negative margins. */
+.auth-brand img {
+  height: 92px;
+  margin: -9px 0;
+  image-rendering: -webkit-optimize-contrast;
+}
+/* Form rhythm: clearer gaps between title, fields, options row and button. */
+.auth-sub { margin-bottom: 28px; }
+.auth-field { margin-bottom: 20px; }
+.auth-label { margin-bottom: 8px; line-height: 1.2; }
+.auth-row { margin: 2px 0 26px; }
+.auth-check, .auth-link { line-height: 1.4; }
+
+@media (min-width: 861px) {
+  .auth-brand { margin-bottom: clamp(14px, 2.8vh, 28px); }
+  .auth-brand img { height: clamp(80px, 13vh, 124px); margin: calc(clamp(80px, 13vh, 124px) * -0.1) 0; }
+  .auth-title { margin-bottom: clamp(6px, 1vh, 10px); }
+  .auth-sub { margin-bottom: clamp(20px, 3.6vh, 34px); }
+  .auth-field { margin-bottom: clamp(14px, 2.6vh, 22px); }
+  .auth-label { margin-bottom: clamp(6px, 1vh, 9px); }
+  .auth-input { height: clamp(42px, 5.6vh, 48px); }
+  .auth-row { margin: 2px 0 clamp(18px, 3.4vh, 30px); }
+  .auth-btn { height: clamp(44px, 5.8vh, 50px); }
+
+  /* Support page has a longer form: keep its logo a little smaller. */
+  .sp-inner .auth-brand { margin-bottom: clamp(8px, 1.6vh, 18px); }
+  .sp-inner .auth-brand img { height: clamp(56px, 9vh, 96px); margin: calc(clamp(56px, 9vh, 96px) * -0.1) 0; }
+  .sp-inner .auth-sub { margin-bottom: clamp(12px, 2.2vh, 28px); }
+  .sp-inner .auth-field { margin-bottom: clamp(8px, 1.6vh, 18px); }
+}
+@media (max-width: 860px) {
+  .auth-brand img { height: 84px; margin: -8px 0; }
+}
