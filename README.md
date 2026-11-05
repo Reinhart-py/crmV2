@@ -37,7 +37,8 @@ Old CRMs usually feel like using software from 2004—bulky boxes, neon rainbow 
 - [6. Deploy on AWS](#6-deploy-on-aws)
 - [7. Troubleshooting](#7-troubleshooting)
 - [Password reset email setup](#26-password-reset-emails-smtp-setup)
-- [Support page and Live Support](#27-support-page-and-live-support-chat)
+- [Support page and Chatbot](#27-support-page-and-chatbot-live-chat)
+- [Roles & Permissions: how access works](#28-roles--permissions)
 - [Copyright: Can You Claim This CRM?](#copyright--can-you-claim-this-crm)
 
 ---
@@ -449,8 +450,8 @@ The CRM cannot deliver email by itself. It needs a mailbox on your mail server (
 
 **Who can answer chats: user-wise permission only.** Nobody has Chatbot access by default, not even Admin. It is not part of any role, preset or Full Admin Rights. To give it to a person:
 
-1. System > **Roles & Permissions** > **User-Wise Permissions**, choose the user.
-2. In the **Chatbot (Live Support)** card set **Open Chatbot** to Yes, then the rights they need, and click **Save Changes**.
+1. System > **Roles & Permissions** > **User permissions** tab, click the person in the list.
+2. In the **Chatbot (Live Support)** card at the bottom set **Open Chatbot** to Yes, then the rights they need, and click **Save changes**. The list shows a chat icon next to everyone who has Chatbot access (filter: **Has Chatbot**).
 
 | Right | What it allows |
 |---|---|
@@ -473,6 +474,80 @@ Removing Open Chatbot also sets the person Inactive straight away. Changes are w
 6. **Settings** (`/manager/chatbot/settings`): turn live chat on or off, set the IT email (empty means Helpdesk support email in Integrations, then `it@7strokes.ae`), the minutes to wait before emailing IT (1 to 30), and the welcome and offline messages (`{name}`, `{phone}`, `{ref}` are filled in).
 
 **Limits and data:** 5 requests per hour per IP address, a hidden anti-bot field, CSRF protection. Chats are stored in `ci_support_chats` and `ci_support_messages`, agent status in `ci_support_agents`, settings in `ci_integration_settings` (service `chatbot`), and the user rights in `ci_user_permissions.chatbot_permissions`. Tables and the column are created automatically on first use. The old `/manager/live-support` link opens the Chatbot.
+### 2.8 Roles & Permissions
+
+**Where:** System > **Roles & Permissions** (`/manager/roles`). Opening it needs View on *Roles & Permissions*; changing anything needs Full.
+
+#### How access works
+
+1. **Every person has a role** (Sales, Back Office, HR...). The role decides what they can open. Change a role once and it applies to everyone in it from their next page.
+2. **One person can be different.** In the *User permissions* tab a person is set to one of:
+   - **Follow role** (default): exactly the role's access.
+   - **Custom**: starts as a copy of the role; you change single areas for this person only. Areas that differ from the role are marked *Changed*.
+   - **Full admin**: everything, like the Admin role.
+3. **Three levels for each area:**
+
+   | Level | Meaning |
+   |---|---|
+   | **None** | The menu link is hidden and the page is refused. |
+   | **View** | The person can open the page and see the records they are allowed to see. |
+   | **Full** | View plus add, edit and delete (e.g. *Add Database*, *Add Role*, *Generate Payroll*). |
+
+   Pages that are only for looking or downloading (reports, logs, import/export) offer **None / Allow**.
+4. **People only see what they may use.** Menus (top bar and side menu) show only allowed links; a menu group with no allowed links is hidden. A page opened by link or typed address without the right shows *"You do not have View access to ..."* and goes to the first page they may open.
+5. **Always open to everyone:** Profile, Change Password, notifications, own attendance clock-in, and the self-service pages in the profile menu (Holiday Request, Events & Plans, Training, Search Topics) for their **own** data. The HR rights for those pages decide who manages **everyone's** data.
+6. **Admins:** the Admin role, user #1 and people set to Full admin always have everything. The Admin role cannot be limited or deleted.
+7. **Chatbot** rights are separate and user-wise only (section 2.7).
+
+#### Workflow: create a role
+
+1. Roles & Permissions > **Add Role** (or **Copy** on an existing role to start from it).
+2. Enter the role name and *Reports to* (used for team structure).
+3. Optional: *Start from another role* to copy its access.
+4. Set each area to None, View or Full. Use the search box ("payroll", "orders"), the group buttons (None / View / Full for a whole group) or *Set all*.
+5. Click **Create role**. Then give people the role in System > Users.
+
+#### Workflow: change what a role can do
+
+1. Roles tab > **Edit permissions** on the role. The *Access* bar on the list shows how many areas are Full / View / None.
+2. Change the areas and click **Save role**. People set to *Custom* or *Full admin* are not affected by role changes.
+
+#### Workflow: give one person more or less
+
+1. **User permissions** tab. Find the person with the search box or the filters (role, Follows role / Custom / Full admin / Has Chatbot). Clicking *N people* on the Roles tab shows the people of that role.
+2. Click the person. With *Follow role* you see the role's access (read-only).
+3. Click **Custom** (or *Customise for this person*), change the areas, and click **Save changes**. *Reset to role* copies the role's access back.
+4. To undo, choose **Follow role** and save. The custom choices are kept, so choosing Custom again brings them back.
+
+#### Safety rules
+
+- Only a full administrator can give Full admin, change an administrator, or change the Admin role.
+- Nobody except a full administrator can change their own access or their own role.
+- A role with people in it cannot be deleted or made inactive; move the people first.
+- Every change is written to System > Admin Logs.
+
+#### Areas you can grant
+
+| Group | Areas |
+|---|---|
+| Dashboard, Calls & Live | Dashboard, Phone Dialer & Calls, Live Operations Report |
+| My Zone | Database, Leads, My Orders, My Sales, My Follow-Up, My Meetings, Verticals, Vertical Follow-up, Internal Tasks, External Tasks, Task Follow-up, Tickets, Database Transfer |
+| Team | Members, Team Chart, Team Database, Team Leads, Team Orders, Team Verticals, Team Follow-up, Team Meetings, Assigned Meetings, Assign Database, Team Tasks, Team Tickets |
+| Back Office | Pending Leads Approval, Pending Order Process, View Sales Approvals, Onboard Client, Open Orders, Orders Follow-up, Completed / Closed / Rejected Orders, All Orders, Invoices, Payments |
+| KAM | My Client, Create Schedule, Pending Sales Approval, Task Follow-up, Reminders, KAM Report |
+| HR & Training | HR Overview, Attendance & GPS, Shifts, Holiday Requests (all staff), Events & Plans, Training, Search Topics, Targets, Employee Lifecycle, Payroll, Taxation & Gratuity, Appraisals, Document Vault, Events & Awards |
+| Reports | Revenue List, Company Projections, Report Downloads, Leads Report, Users Report, Department Performance, Individual Performance, Generate Data |
+| System | Users, Roles & Permissions, Category, Import Database, Export Leads, Allotted Database, Admin Logs, Live Location, Assignee Management, KAM Clients (all), Calling API, Third-Party API, QC Panel |
+
+#### For developers: adding a page
+
+All of the above comes from one list: `application/helpers/crm_permission_helper.php` (`crm_perm_catalog()`). To add a page, add an item (or a `pages` / `nav` entry to an existing item) there. The role editor, user editor, both menus and the page guard pick it up automatically.
+
+- `pages`: URLs (after `manager/`) that need View; `orders?status=closed` also checks the query value. `write`: add/create pages that need Full.
+- `fallback`: an older key to use for roles saved before the item existed, so existing roles keep their access.
+- In code use `crm_can('key')` or `crm_can('key', 'write')`; the older `has_section_perm('key')` works the same way. Group keys (`back_office`, `kam`, `team`, `my_zone`, `reports`, `system`, `tasks`, `events`) mean "any item in that group".
+- The page guard is `application/hooks/crm_permission_guard.php` (CodeIgniter hook, `enable_hooks = TRUE`). AJAX calls are not guarded there; controllers check them.
+- Stored in `ci_roles.permissions` (role) and `ci_user_permissions.permission_mode` / `permissions` (person), as JSON key => `no_access` | `read` | `write`.
 ---
 
 ## 3. Database Migrations
@@ -509,7 +584,7 @@ Some tables and columns are also created by the app at runtime the first time a 
 2. cPanel > **Select PHP Version > Extensions** (name depends on the host): make sure `mysqli`, `curl`, `mbstring` and `openssl` are ticked.
 3. cPanel > **MultiPHP INI Editor** for the CRM domain:
    - `memory_limit = 256M`
-   - `max_input_vars = 5000` (the role permission matrix has hundreds of checkboxes; the default 1000 cuts saved permissions)
+   - `max_input_vars = 5000` (the role permission editor sends about 100 fields; keep headroom for other large forms)
    - `upload_max_filesize = 64M`
    - `post_max_size = 64M`
    - `max_execution_time = 300`

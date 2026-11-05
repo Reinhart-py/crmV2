@@ -1,4 +1,5 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+require_once APPPATH . 'helpers/crm_permission_helper.php';
 class Ci_admin_model extends CI_model {
 	 function __construct() {
     parent::__construct();
@@ -2967,7 +2968,8 @@ public function dashboard_MyPro($table='ci_leads'){
 		} else {
 			$perms = $this->get_role_permissions($role);
 		}
-		$user_perm = isset($perms[$section]) ? $perms[$section] : 'no_access';
+		// Stored value, else the item's fallback key, else the best of a group's items.
+		$user_perm = crm_perm_resolve($perms, $section);
 
 		$allowed = false;
 		if ($required === 'read') {

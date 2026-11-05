@@ -179,172 +179,24 @@
       <li class="<?php if($route1=='profile'){ echo 'active';}?>"><a href="<?php echo base_url();?>manager/profile"><i class="fa fa-user" style="margin-right:6px;"></i> <span>Profile</span></a></li>
       <li class="<?php if($route1=='live'){ echo 'active';}?>"><a href="<?php echo base_url();?>manager/live"><i class="fa fa-television" style="margin-right:6px;"></i> <span>Live</span></a></li>
       <?php } ?>
-      <?php if(!$is_presentation && ($is_admin || has_section_perm('dashboard'))){ ?>
+      <?php if(!$is_presentation && crm_can('dashboard')){ ?>
       <li class="<?php if($route1=="dashboard"){ echo "active";}else{ echo "";}?>"> <a href="<?php echo base_url();?>manager/dashboard"> <svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:4px;"><rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect></svg> <span>Dashboard</span>  </a> </li>
       <?php } ?>
 
-      <?php if(!$is_presentation && ($is_admin || has_section_perm('my_zone') || has_section_perm('database') || has_section_perm('leads') || has_section_perm('tasks') || has_section_perm('internal_tasks') || has_section_perm('external_tasks'))){ ?>
-      <li class="<?php if(($route1=="leads" && $route2!="review_leads") || $route1=="verticals" || $route1=="database-transfer" || in_array($route1, array('tasks')) || ($route1=="orders" && ($route2=="my" || (isset($_GET['scope']) && $_GET['scope']=="my"))) || $route1=="sales"){ echo "active";}else{ echo "";}?>"> 
-        <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:4px;"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg> <span>My Zone</span> </a>
+      <?php
+        // Menu built from the permission catalogue (application/helpers/crm_permission_helper.php):
+        // a link shows only when the person has the right that opens its page.
+        if (!isset($crm_menu)) {
+          $crm_menu = $is_presentation ? array() : crm_nav_menu();
+          $crm_path = implode('/', array_slice($this->uri->segment_array(), 1));
+          $crm_active = crm_nav_active_group($crm_menu, $crm_path, $_GET);
+        }
+      ?>
+      <?php foreach ($crm_menu as $crm_gk => $crm_g) { ?>
+      <li class="<?php echo $crm_gk === $crm_active ? 'active' : ''; ?>"> <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:4px;"><?php echo $crm_g['icon']; ?></svg> <span><?php echo htmlspecialchars($crm_g['title']); ?></span> </a>
         <ul>
-          <?php if($is_admin || has_section_perm('database', 'write')){ ?>
-          <li><a href="<?php echo base_url();?>manager/leads/add"><i class="fa fa-plus"></i>Add Database</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('database')){ ?>
-          <li><a href="<?php echo base_url();?>manager/leads"><i class="fa fa-database"></i>View Database</a></li>
-          <li><a href="<?php echo base_url();?>manager/leads/view_leads"><i class="fa fa-bullseye"></i>View Leads</a></li>
-          <li><a href="<?php echo base_url();?>manager/orders/my"><i class="fa fa-shopping-cart"></i>View Orders</a></li>
-          <li><a href="<?php echo base_url();?>manager/sales"><i class="fa fa-line-chart"></i>View Sales</a></li>
-          <li><a href="<?php echo base_url();?>manager/leads/followups"><i class="fa fa-clock-o"></i>My Follow-Up</a></li>
-          <li><a href="<?php echo base_url();?>manager/leads/meetings"><i class="fa fa-calendar"></i>My Meetings</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('database', 'write')){ ?>
-          <li><a href="<?php echo base_url();?>manager/verticals/add"><i class="fa fa-plus"></i>Add Vertical</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('database')){ ?>
-          <li><a href="<?php echo base_url();?>manager/verticals"><i class="fa fa-list"></i>View Vertical</a></li>
-          <li><a href="<?php echo base_url();?>manager/verticals/followups"><i class="fa fa-clock-o"></i>Vertical Follow-up</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('internal_tasks') || has_section_perm('tasks')){ ?>
-          <li><a href="<?php echo base_url();?>manager/tasks/internal"><i class="fa fa-building-o"></i>View Internal Task</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('external_tasks') || has_section_perm('tasks')){ ?>
-          <li><a href="<?php echo base_url();?>manager/tasks/external"><i class="fa fa-briefcase"></i>View External Task</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('database')){ ?>
-          <li><a href="<?php echo base_url();?>manager/database-transfer"><i class="fa fa-exchange"></i>Database Transfer</a></li>
-          <?php } ?>
-        </ul>
-      </li>
-      <?php } ?>
-
-      <?php if(!$is_presentation && ($is_admin || has_section_perm('team'))){ ?>
-      <li class="<?php if(in_array($route1, array('team')) || ($route1=="orders" && ($route2=="team" || (isset($_GET['scope']) && $_GET['scope']=="team")))){ echo "active";}else{ echo "";}?>"> <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:4px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> <span>Team</span> </a>
-        <ul>
-          <li><a href="<?php echo base_url();?>manager/team/chart"><i class="fa fa-sitemap"></i>Chart</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/database"><i class="fa fa-database"></i>Database</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/leads"><i class="fa fa-list"></i>Leads</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/orders"><i class="fa fa-shopping-cart"></i>Orders</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/verticals"><i class="fa fa-list"></i>Verticals</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/followups"><i class="fa fa-clock-o"></i>Follow up</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/meetings"><i class="fa fa-calendar"></i>Meetings</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/assignmeetings"><i class="fa fa-calendar-check-o"></i>Assigned Meetings</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/assignleads"><i class="fa fa-tasks"></i>Assign Database</a></li>
-          <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-tasks"></i>Task</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/tickets"><i class="fa fa-ticket"></i>Tickets</a></li>
-        </ul>
-      </li>
-      <?php } ?>
-
-      <?php if(!$is_presentation && $can_see_review){ ?>
-      <li class="<?php if(($route1=="leads" && $route2=="review_leads") || $route1=="back-office" || ($route1=="orders" && $route2!="my" && $route2!="team" && (!isset($_GET['scope']) || !in_array($_GET['scope'], array('my', 'team'))))){ echo "active";}else{ echo "";}?>"> 
-        <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:4px;"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg> <span>Back Office</span> </a>
-        <ul>
-          <li><a href="<?php echo base_url();?>manager/leads/review_leads"><i class="fa fa-check-square-o"></i>Pending Leads Approval</a></li>
-          <li><a href="<?php echo base_url();?>manager/orders/pending_process"><i class="fa fa-hourglass-half"></i>Pending Order Process</a></li>
-          <li><a href="<?php echo base_url();?>manager/orders/view_sales_approvals"><i class="fa fa-eye"></i>View Sales Approvals</a></li>
-          <?php if($is_admin || has_section_perm('kam', 'write')){ ?>
-          <li><a href="<?php echo base_url();?>manager/kam/onboard"><i class="fa fa-user-plus"></i>Onboard Client</a></li>
-          <?php } ?>
-          <li><a href="<?php echo base_url();?>manager/orders/open"><i class="fa fa-folder-open-o"></i>Open Orders</a></li>
-          <li><a href="<?php echo base_url();?>manager/orders/followups"><i class="fa fa-calendar-check-o"></i>Orders Follow-up</a></li>
-          <li><a href="<?php echo base_url();?>manager/orders?status=completed"><i class="fa fa-check-circle"></i>Completed Orders</a></li>
-          <li><a href="<?php echo base_url();?>manager/orders?status=closed"><i class="fa fa-flag-checkered"></i>Closed Orders</a></li>
-          <li><a href="<?php echo base_url();?>manager/orders?status=rejected_lost"><i class="fa fa-times-circle"></i>Rejected / Lost Orders</a></li>
-          <li><a href="<?php echo base_url();?>manager/orders"><i class="fa fa-list"></i>View All Orders</a></li>
-        </ul>
-      </li>
-      <?php } ?>
-
-      <?php if(!$is_presentation && ($is_admin || has_section_perm('kam'))){ ?>
-      <li class="<?php if($route1=="kam"){ echo "active";}else{ echo "";}?>"> 
-        <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:4px;"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> <span>KAM</span> </a>
-        <ul>
-          <li><a href="<?php echo base_url();?>manager/kam/my-client"><i class="fa fa-user"></i>My Client</a></li>
-          <?php if($is_admin || has_section_perm('kam', 'write')){ ?>
-          <li><a href="<?php echo base_url();?>manager/kam/onboard"><i class="fa fa-user-plus"></i>Onboard Client</a></li>
-          <li><a href="<?php echo base_url();?>manager/kam/schedule"><i class="fa fa-calendar"></i>Create Schedule</a></li>
-          <li><a href="<?php echo base_url();?>manager/orders/pending_sales_approval"><i class="fa fa-check-circle"></i>Pending Sales Approval</a></li>
-          <?php } ?>
-          <li><a href="<?php echo base_url();?>manager/kam/task-followup"><i class="fa fa-tasks"></i>Task Follow-up</a></li>
-          <li><a href="<?php echo base_url();?>manager/kam/reminders"><i class="fa fa-bell-o"></i>Reminders</a></li>
-        </ul>
-      </li>
-      <?php } ?>
-
-      <?php if(!$is_presentation && $is_hr){ ?>
-      <li class="<?php if($route1=="hr"){ echo "active";}else{ echo "";}?>"> 
-        <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:4px;"><rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><line x1="15" y1="8" x2="17" y2="8"></line><line x1="15" y1="12" x2="17" y2="12"></line><line x1="7" y1="16" x2="17" y2="16"></line></svg> <span>HR & Training</span> </a>
-        <ul>
-          <li><a href="<?php echo base_url();?>manager/hr"><i class="fa fa-th-large"></i>Overview</a></li>
-          <li><a href="<?php echo base_url();?>manager/hr/attendance"><i class="fa fa-map-marker"></i>Attendance & GPS</a></li>
-          <li><a href="<?php echo base_url();?>manager/hr/shifts"><i class="fa fa-clock-o"></i>Shifts</a></li>
-          <li><a href="<?php echo base_url();?>manager/hr/leaves"><i class="fa fa-calendar-check-o"></i>Holiday Request</a></li>
-          <li><a href="<?php echo base_url();?>manager/hr/events_plans"><i class="fa fa-calendar"></i>Events & Plans</a></li>
-          <li><a href="<?php echo base_url();?>manager/hr/training"><i class="fa fa-graduation-cap"></i>Training</a></li>
-          <li><a href="<?php echo base_url();?>manager/hr/search_topics"><i class="fa fa-search"></i>Search Topics</a></li>
-          <li><a href="<?php echo base_url();?>manager/hr/targets"><i class="fa fa-crosshairs"></i>Targets</a></li>
-          <li><a href="<?php echo base_url();?>manager/hr/lifecycle"><i class="fa fa-users"></i>Employee Lifecycle</a></li>
-          <li><a href="<?php echo base_url();?>manager/hr/payroll"><i class="fa fa-money"></i>Payroll</a></li>
-          <li><a href="<?php echo base_url();?>manager/hr/taxation"><i class="fa fa-calculator"></i>Taxation & Gratuity</a></li>
-          <li><a href="<?php echo base_url();?>manager/hr/appraisals"><i class="fa fa-star-o"></i>Appraisals</a></li>
-          <li><a href="<?php echo base_url();?>manager/hr/documents"><i class="fa fa-folder-open-o"></i>Document Vault</a></li>
-        </ul>
-      </li>
-      <?php } ?>
-
-      <?php if(!$is_presentation && ($is_admin || has_section_perm('system'))){ ?>
-      <li class="<?php if($route1=="roles" || $route1=="terms" || $route1=="users" || $route1=="assigned-leads" || $route1=="admin-logs" || ($route1=="system" && ($route2=="calling-api" || $route2=="calling_api" || $route2=="integrations" || $route2=="assignee" || $route2=="kam_clients")) || $route1=="integrations" || ($route1=="leads" && in_array($route2, array("import", "export")))){ echo "active";}else{ echo "";}?>"> 
-        <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:4px;"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> <span>System</span> </a>
-        <ul>        
-          <?php if($is_admin || has_section_perm('users')){ ?>
-          <li><a href="<?php echo base_url();?>manager/users/add"><i class="fa fa-plus"></i>User Add</a></li>
-          <li><a href="<?php echo base_url();?>manager/users"><i class="fa fa-list"></i>User View</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('roles')){ ?>
-          <li><a href="<?php echo base_url();?>manager/roles"><i class="fa fa-list"></i>Roles</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('terms')){ ?>
-          <li><a href="<?php echo base_url();?>manager/terms"><i class="fa fa-list"></i>Category</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('leads_import')){ ?>
-          <li><a href="<?php echo base_url();?>manager/leads/import"><i class="fa fa-upload"></i>Import Database</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('leads_export')){ ?>
-          <li><a href="<?php echo base_url();?>manager/leads/export"><i class="fa fa-download"></i>Export Leads</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('assigned_leads')){ ?>
-          <li><a href="<?php echo base_url();?>manager/assigned-leads"><i class="fa fa-tasks"></i>Allotted Database</a></li>
-          <li><a href="<?php echo base_url();?>manager/assigned-leads?alloc_filter=non_allotted"><i class="fa fa-folder-open-o"></i>Non-Allotted Database</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('admin_logs')){ ?>
-          <li><a href="<?php echo base_url();?>manager/admin-logs"><i class="fa fa-history"></i>Admin Logs</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('kam_clients') || has_section_perm('system')){ ?>
-          <li><a href="<?php echo base_url();?>manager/system/kam_clients"><i class="fa fa-briefcase"></i>KAM Clients</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('calling_api')){ ?>
-          <li><a href="<?php echo base_url();?>manager/system/calling-api"><i class="fa fa-phone-square"></i>Calling API</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('integrations')){ ?>
-          <li><a href="<?php echo base_url();?>manager/system/integrations"><i class="fa fa-plug"></i>Third-Party API</a></li>
-          <?php } ?>
-          <?php if(!$is_presentation && ($is_admin || has_section_perm('system'))){ ?>
-          <li><a href="<?php echo base_url();?>manager/system/qc"><i class="fa fa-check-square-o"></i>QC Panel</a></li>
-          <?php } ?>
-        </ul>
-      </li>
-      <?php } ?>
-
-      <?php if(!$is_presentation && ($is_admin || has_section_perm('reports'))){ ?>
-      <li class="<?php if($route1=="reports" || $route1=="download-report" || $route1=="admin-reports" || $route1=="revenue-list" || $route1=="company-projections"){ echo "active";}else{ echo "";}?>"> <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:4px;"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg> <span>Reports</span> </a>
-        <ul>
-          <li><a href="<?php echo base_url();?>manager/reports/revenue-list"><i class="fa fa-money"></i>Revenue List</a></li>
-          <li><a href="<?php echo base_url();?>manager/reports/company-projections"><i class="fa fa-line-chart"></i>Company Projections</a></li>
-          <li><a href="https://7strokes.maxvendor47.workers.dev/" target="_blank"><i class="fa fa-database"></i>Generate Data</a></li>
-          <li><a href="<?php echo base_url();?>manager/download-report"><i class="fa fa-file-pdf-o"></i>Report</a></li>
-          <?php if($is_admin || has_section_perm('leads_import')){ ?>
-          <li><a href="<?php echo base_url();?>manager/leads/import"><i class="fa fa-upload"></i>Import Database</a></li>
+          <?php foreach ($crm_g['links'] as $crm_l) { ?>
+          <li><a href="<?php echo $crm_l['external'] ? $crm_l['url'] : base_url() . 'manager/' . $crm_l['url']; ?>"<?php echo $crm_l['external'] ? ' target="_blank" rel="noopener"' : ''; ?>><i class="fa <?php echo $crm_l['icon']; ?>"></i><?php echo htmlspecialchars($crm_l['label']); ?></a></li>
           <?php } ?>
         </ul>
       </li>
@@ -776,7 +628,7 @@ $(function() {
       <li class="<?php if($route1=='profile'){ echo 'active';}?>"><a href="<?php echo base_url();?>manager/profile"><i class="fa fa-user" style="margin-right:6px;"></i> <span>Profile</span></a></li>
       <li class="<?php if($route1=='live'){ echo 'active';}?>"><a href="<?php echo base_url();?>manager/live"><i class="fa fa-television" style="margin-right:6px;"></i> <span>Live</span></a></li>
       <?php } ?>
-      <?php if(!$is_presentation && ($is_admin || has_section_perm('dashboard'))){ ?>
+      <?php if(!$is_presentation && crm_can('dashboard')){ ?>
       <li class="<?php if($route1=="dashboard"){ echo "active";}else{ echo "";}?>"> 
         <a href="<?php echo base_url();?>manager/dashboard"> <svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:6px;"><rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect></svg> <span>Dashboard</span> </a> 
       </li>
@@ -788,170 +640,21 @@ $(function() {
       </li>
       <?php } ?>
 
-      <?php if(!$is_presentation && ($is_admin || has_section_perm('my_zone') || has_section_perm('database') || has_section_perm('leads') || has_section_perm('tasks') || has_section_perm('internal_tasks') || has_section_perm('external_tasks'))){ ?>
-      <li class="<?php if(($route1=="leads" && $route2!="review_leads") || $route1=="verticals" || $route1=="database-transfer" || in_array($route1, array('tasks')) || ($route1=="orders" && ($route2=="my" || (isset($_GET['scope']) && $_GET['scope']=="my"))) || $route1=="sales"){ echo "active";}else{ echo "";}?> treeview"> 
-        <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:6px;"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg> <span>My Zone</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
-        <ul class="treeview-menu">
-          <?php if($is_admin || has_section_perm('database', 'write')){ ?>
-          <li><a href="<?php echo base_url();?>manager/leads/add"><i class="fa fa-plus"></i>Add Database</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('database')){ ?>
-          <li><a href="<?php echo base_url();?>manager/leads"><i class="fa fa-database"></i>View Database</a></li>
-          <li><a href="<?php echo base_url();?>manager/leads/view_leads"><i class="fa fa-bullseye"></i>View Leads</a></li>
-          <li><a href="<?php echo base_url();?>manager/orders/my"><i class="fa fa-shopping-cart"></i>View Orders</a></li>
-          <li><a href="<?php echo base_url();?>manager/sales"><i class="fa fa-line-chart"></i>View Sales</a></li>
-          <li><a href="<?php echo base_url();?>manager/leads/followups"><i class="fa fa-clock-o"></i>My Follow-Up</a></li>
-          <li><a href="<?php echo base_url();?>manager/leads/meetings"><i class="fa fa-calendar"></i>My Meetings</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('database', 'write')){ ?>
-          <li><a href="<?php echo base_url();?>manager/verticals/add"><i class="fa fa-plus"></i>Add Vertical</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('database')){ ?>
-          <li><a href="<?php echo base_url();?>manager/verticals"><i class="fa fa-list"></i>View Vertical</a></li>
-          <li><a href="<?php echo base_url();?>manager/verticals/followups"><i class="fa fa-clock-o"></i>Vertical Follow-up</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('internal_tasks') || has_section_perm('tasks')){ ?>
-          <li><a href="<?php echo base_url();?>manager/tasks/internal"><i class="fa fa-building-o"></i>View Internal Task</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('external_tasks') || has_section_perm('tasks')){ ?>
-          <li><a href="<?php echo base_url();?>manager/tasks/external"><i class="fa fa-briefcase"></i>View External Task</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('database')){ ?>
-          <li><a href="<?php echo base_url();?>manager/database-transfer"><i class="fa fa-exchange"></i>Database Transfer</a></li>
-          <?php } ?>
-        </ul>
-      </li>
-      <?php } ?>
-
-      <?php if(!$is_presentation && ($is_admin || has_section_perm('team'))){ ?>
-      <li class="<?php if(in_array($route1, array('team')) || ($route1=="orders" && ($route2=="team" || (isset($_GET['scope']) && $_GET['scope']=="team")))){ echo "active";}else{ echo "";}?> treeview"> 
-        <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:6px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> <span>Team</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
-        <ul class="treeview-menu">
-          <li><a href="<?php echo base_url();?>manager/team/chart"><i class="fa fa-sitemap"></i>Chart</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/database"><i class="fa fa-database"></i>Database</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/leads"><i class="fa fa-list"></i>Leads</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/orders"><i class="fa fa-shopping-cart"></i>Orders</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/verticals"><i class="fa fa-list"></i>Verticals</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/followups"><i class="fa fa-clock-o"></i>Follow up</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/meetings"><i class="fa fa-calendar"></i>Meetings</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/assignmeetings"><i class="fa fa-calendar-check-o"></i>Assigned Meetings</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/assignleads"><i class="fa fa-tasks"></i>Assign Database</a></li>
-          <li><a href="<?php echo base_url();?>manager/tasks"><i class="fa fa-tasks"></i>Task</a></li>
-          <li><a href="<?php echo base_url();?>manager/team/tickets"><i class="fa fa-ticket"></i>Tickets</a></li>
-        </ul>
-      </li>
-      <?php } ?>
-
-      <?php if(!$is_presentation && $can_see_review){ ?>
-      <li class="<?php if(($route1=="leads" && $route2=="review_leads") || ($route1=="tasks" && $route2=="external" && isset($_GET['review'])) || $route1=="back-office" || ($route1=="orders" && $route2!="my" && $route2!="team" && (!isset($_GET['scope']) || !in_array($_GET['scope'], array('my', 'team'))))){ echo "active";}else{ echo "";}?> treeview"> 
-        <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:6px;"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg> <span>Back Office</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
-        <ul class="treeview-menu">
-          <li><a href="<?php echo base_url();?>manager/leads/review_leads"><i class="fa fa-check-square-o"></i>Pending Leads Approval</a></li>
-          <li><a href="<?php echo base_url();?>manager/orders/pending_process"><i class="fa fa-hourglass-half"></i>Pending Order Process</a></li>
-          <li><a href="<?php echo base_url();?>manager/orders/view_sales_approvals"><i class="fa fa-eye"></i>View Sales Approvals</a></li>
-          <?php if($is_admin || has_section_perm('kam', 'write')){ ?>
-          <li><a href="<?php echo base_url();?>manager/kam/onboard"><i class="fa fa-user-plus"></i>Onboard Client</a></li>
-          <?php } ?>
-          <li><a href="<?php echo base_url();?>manager/orders/open"><i class="fa fa-folder-open-o"></i>Open Orders</a></li>
-          <li><a href="<?php echo base_url();?>manager/orders/followups"><i class="fa fa-calendar-check-o"></i>Orders Follow-up</a></li>
-          <li><a href="<?php echo base_url();?>manager/orders?status=completed"><i class="fa fa-check-circle"></i>Completed Orders</a></li>
-          <li><a href="<?php echo base_url();?>manager/orders?status=closed"><i class="fa fa-flag-checkered"></i>Closed Orders</a></li>
-          <li><a href="<?php echo base_url();?>manager/orders?status=rejected_lost"><i class="fa fa-times-circle"></i>Rejected / Lost Orders</a></li>
-          <li><a href="<?php echo base_url();?>manager/orders"><i class="fa fa-list"></i>View All Orders</a></li>
-        </ul>
-      </li>
-      <?php } ?>
-
-      <?php if(!$is_presentation && ($is_admin || has_section_perm('kam'))){ ?>
-      <li class="<?php if($route1=="kam"){ echo "active";}else{ echo "";}?> treeview"> 
-        <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:6px;"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> <span>KAM</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
-        <ul class="treeview-menu">
-          <li><a href="<?php echo base_url();?>manager/kam/my-client"><i class="fa fa-user"></i>My Client</a></li>
-          <?php if($is_admin || has_section_perm('kam', 'write')){ ?>
-          <li><a href="<?php echo base_url();?>manager/kam/onboard"><i class="fa fa-user-plus"></i>Onboard Client</a></li>
-          <li><a href="<?php echo base_url();?>manager/kam/schedule"><i class="fa fa-calendar"></i>Create Schedule</a></li>
-          <li><a href="<?php echo base_url();?>manager/orders/pending_sales_approval"><i class="fa fa-check-circle"></i>Pending Sales Approval</a></li>
-          <?php } ?>
-          <li><a href="<?php echo base_url();?>manager/kam/task-followup"><i class="fa fa-tasks"></i>Task Follow-up</a></li>
-          <li><a href="<?php echo base_url();?>manager/kam/reminders"><i class="fa fa-bell-o"></i>Reminders</a></li>
-        </ul>
-      </li>
-      <?php } ?>
-
-      <?php if(!$is_presentation && $is_hr){ ?>
-      <li class="<?php if($route1=="hr"){ echo "active menu-open";}else{ echo "";}?> treeview"> 
-        <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:6px;"><rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><line x1="15" y1="8" x2="17" y2="8"></line><line x1="15" y1="12" x2="17" y2="12"></line><line x1="7" y1="16" x2="17" y2="16"></line></svg> <span>HR</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
-        <ul class="treeview-menu" style="<?php if($route1=="hr"){ echo "display: block;"; } ?>">
-          <li><a href="<?php echo base_url();?>manager/hr"><i class="fa fa-th-large"></i>Overview</a></li>
-          <li><a href="<?php echo base_url();?>manager/hr/targets"><i class="fa fa-crosshairs"></i>Targets</a></li>
-          <li><a href="<?php echo base_url();?>manager/hr/lifecycle"><svg class="crm-svg-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:6px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>Employee Lifecycle</a></li>
-          <li><a href="<?php echo base_url();?>manager/hr/attendance"><i class="fa fa-map-marker"></i>Attendance & GPS</a></li>
-          <li><a href="<?php echo base_url();?>manager/hr/shifts"><i class="fa fa-clock-o"></i>Shifts</a></li>
-          <li><a href="<?php echo base_url();?>manager/hr/leaves"><i class="fa fa-calendar-check-o"></i>Leaves</a></li>
-          <li><a href="<?php echo base_url();?>manager/hr/payroll"><i class="fa fa-money"></i>Payroll</a></li>
-          <li><a href="<?php echo base_url();?>manager/hr/taxation"><i class="fa fa-calculator"></i>Taxation & Gratuity</a></li>
-          <li><a href="<?php echo base_url();?>manager/hr/appraisals"><i class="fa fa-star-o"></i>Appraisals</a></li>
-          <li><a href="<?php echo base_url();?>manager/hr/documents"><i class="fa fa-folder-open-o"></i>Document Vault</a></li>
-        </ul>
-      </li>
-      <?php } ?>
-
-      <?php if(!$is_presentation && ($is_admin || has_section_perm('system'))){ ?>
-      <li class="<?php if($route1=="roles" || $route1=="terms" || $route1=="users" || $route1=="assigned-leads" || $route1=="admin-logs" || ($route1=="system" && ($route2=="calling-api" || $route2=="calling_api" || $route2=="integrations")) || $route1=="integrations" || ($route1=="leads" && in_array($route2, array("import", "export")))){ echo "active";}else{ echo "";}?> treeview"> 
-        <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:6px;"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> <span>System</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
-        <ul class="treeview-menu">        
-          <?php if($is_admin || has_section_perm('users')){ ?>
-          <li><a href="<?php echo base_url();?>manager/users/add"><i class="fa fa-plus"></i>User Add</a></li>
-          <li><a href="<?php echo base_url();?>manager/users"><i class="fa fa-list"></i>User View</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('roles')){ ?>
-          <li><a href="<?php echo base_url();?>manager/roles"><i class="fa fa-list"></i>Roles</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('terms')){ ?>
-          <li><a href="<?php echo base_url();?>manager/terms"><i class="fa fa-list"></i>Category</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('leads_import')){ ?>
-          <li><a href="<?php echo base_url();?>manager/leads/import"><i class="fa fa-upload"></i>Import Database</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('leads_export')){ ?>
-          <li><a href="<?php echo base_url();?>manager/leads/export"><i class="fa fa-download"></i>Export Leads</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('assigned_leads')){ ?>
-          <li><a href="<?php echo base_url();?>manager/assigned-leads"><i class="fa fa-tasks"></i>Allotted Database</a></li>
-          <li><a href="<?php echo base_url();?>manager/assigned-leads?alloc_filter=non_allotted"><i class="fa fa-folder-open-o"></i>Non-Allotted Database</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('admin_logs')){ ?>
-          <li><a href="<?php echo base_url();?>manager/admin-logs"><i class="fa fa-history"></i>Admin Logs</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('system_assignee') || has_section_perm('system')){ ?>
-          <li><a href="<?php echo base_url();?>manager/system/assign"><i class="fa fa-user-plus"></i>Assign</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('kam_clients') || has_section_perm('system')){ ?>
-          <li><a href="<?php echo base_url();?>manager/system/kam_clients"><i class="fa fa-briefcase"></i>KAM Client</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('calling_api')){ ?>
-          <li><a href="<?php echo base_url();?>manager/system/calling-api"><i class="fa fa-phone-square"></i>Calling API</a></li>
-          <?php } ?>
-          <?php if($is_admin || has_section_perm('integrations')){ ?>
-          <li><a href="<?php echo base_url();?>manager/system/integrations"><i class="fa fa-plug"></i>Third-Party API</a></li>
-          <?php } ?>
-          <?php if(!$is_presentation && ($is_admin || has_section_perm('system'))){ ?>
-          <li><a href="<?php echo base_url();?>manager/system/qc"><i class="fa fa-check-square-o"></i>QC Panel</a></li>
-          <?php } ?>
-        </ul>
-      </li>
-      <?php } ?>
-
-      <?php if(!$is_presentation && ($is_admin || has_section_perm('reports'))){ ?>
-      <li class="<?php if($route1=="reports" || $route1=="download-report" || $route1=="admin-reports" || $route1=="revenue-list" || $route1=="company-projections"){ echo "active menu-open";}else{ echo "";}?> treeview"> 
-        <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:6px;"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg> <span>Reports</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
-        <ul class="treeview-menu" style="<?php if($route1=="reports" || $route1=="download-report" || $route1=="admin-reports" || $route1=="revenue-list" || $route1=="company-projections"){ echo "display: block;"; } ?>">
-          <li><a href="<?php echo base_url();?>manager/reports/revenue-list"><i class="fa fa-money"></i>Revenue List</a></li>
-          <li><a href="<?php echo base_url();?>manager/reports/company-projections"><i class="fa fa-line-chart"></i>Company Projections</a></li>
-          <li><a href="https://7strokes.maxvendor47.workers.dev/" target="_blank"><i class="fa fa-database"></i>Generate Data</a></li>
-          <li><a href="<?php echo base_url();?>manager/download-report"><i class="fa fa-file-pdf-o"></i>Report</a></li>
-          <?php if($is_admin || has_section_perm('leads_import')){ ?>
-          <li><a href="<?php echo base_url();?>manager/leads/import"><i class="fa fa-upload"></i>Import Database</a></li>
+      <?php
+        // Menu built from the permission catalogue (application/helpers/crm_permission_helper.php):
+        // a link shows only when the person has the right that opens its page.
+        if (!isset($crm_menu)) {
+          $crm_menu = $is_presentation ? array() : crm_nav_menu();
+          $crm_path = implode('/', array_slice($this->uri->segment_array(), 1));
+          $crm_active = crm_nav_active_group($crm_menu, $crm_path, $_GET);
+        }
+      ?>
+      <?php foreach ($crm_menu as $crm_gk => $crm_g) { $crm_on = ($crm_gk === $crm_active); ?>
+      <li class="<?php echo $crm_on ? 'active menu-open' : ''; ?> treeview">
+        <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:6px;"><?php echo $crm_g['icon']; ?></svg> <span><?php echo htmlspecialchars($crm_g['title']); ?></span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
+        <ul class="treeview-menu" style="<?php echo $crm_on ? 'display: block;' : ''; ?>">
+          <?php foreach ($crm_g['links'] as $crm_l) { ?>
+          <li><a href="<?php echo $crm_l['external'] ? $crm_l['url'] : base_url() . 'manager/' . $crm_l['url']; ?>"<?php echo $crm_l['external'] ? ' target="_blank" rel="noopener"' : ''; ?>><i class="fa <?php echo $crm_l['icon']; ?>"></i><?php echo htmlspecialchars($crm_l['label']); ?></a></li>
           <?php } ?>
         </ul>
       </li>

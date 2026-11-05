@@ -17,18 +17,43 @@ class Ci_admin_hr extends CI_Controller {
 		$this->cur_uid = $uid;
 		$this->cur_role = $role;
 		$this->is_admin = ($role === 1 || $uid === 1);
-		$this->is_hr = ($this->is_admin || $role === 7 || has_section_perm('hr'));
 
 		// Employee self-service pages (opened from the profile menu) are open to
 		// every signed-in user; each method limits non-HR users to their own data.
+		// "Managing" them (everyone's data) needs Full on that area's permission.
+		$method = $this->router->fetch_method();
 		$self_service = array(
-			'leaves', 'apply_leave', 'cancel_leave',
-			'events_plans', 'save_plan', 'delete_plan',
-			'training', 'training_progress',
-			'search_topics'
+			'leaves' => 'hr_leaves', 'apply_leave' => 'hr_leaves', 'cancel_leave' => 'hr_leaves',
+			'events_plans' => 'hr_events', 'save_plan' => 'hr_events', 'delete_plan' => 'hr_events',
+			'training' => 'hr_training', 'training_progress' => 'hr_training',
+			'search_topics' => 'hr_topics'
 		);
-		if (!in_array($this->router->fetch_method(), $self_service, true)) {
-			$this->_check_hr_access();
+		if (isset($self_service[$method])) {
+			$this->is_hr = ($this->is_admin || $role === 7 || crm_can($self_service[$method], 'write'));
+			return;
+		}
+		// HR pages: each needs its own permission (View to open, Full to change).
+		$page_keys = array(
+			'index' => 'hr',
+			'targets' => 'hr_targets', 'add_target' => 'hr_targets', 'delete_target' => 'hr_targets',
+			'lifecycle' => 'hr_lifecycle', 'update_lifecycle' => 'hr_lifecycle',
+			'attendance' => 'hr_attendance', 'ajax_clock' => 'hr_attendance',
+			'shifts' => 'hr_shifts', 'add_shift' => 'hr_shifts', 'assign_shift' => 'hr_shifts',
+			'leave_action' => 'hr_leaves',
+			'payroll' => 'hr_payroll', 'generate_payroll' => 'hr_payroll', 'payroll_status' => 'hr_payroll',
+			'taxation' => 'hr_taxation',
+			'appraisals' => 'hr_appraisals', 'add_appraisal' => 'hr_appraisals',
+			'documents' => 'hr_documents', 'add_document' => 'hr_documents',
+			'training_save' => 'hr_training', 'training_status' => 'hr_training',
+			'topic_save' => 'hr_topics', 'topic_status' => 'hr_topics',
+		);
+		$key = isset($page_keys[$method]) ? $page_keys[$method] : 'hr';
+		$changes = ($this->input->server('REQUEST_METHOD') === 'POST') || preg_match('/^(add_|delete_|update_|generate_|assign_|leave_action|payroll_status|training_s|topic_)/', $method);
+		$this->is_hr = ($this->is_admin || $role === 7 || crm_can($key, $changes ? 'write' : 'read'));
+		if ($method !== 'ajax_clock' && !$this->is_hr) {
+			$this->session->set_flashdata('error_message', 'You do not have ' . ($changes ? 'Full' : 'View') . ' access to this HR page. Ask your administrator if you need it.');
+			redirect(crm_landing_url());
+			exit;
 		}
 	}
 

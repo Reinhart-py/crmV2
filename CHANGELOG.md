@@ -1,180 +1,284 @@
-## [2026-11-05] - Chatbot Page and User-Wise Chatbot Rights
-### Added
-- Chatbot card in System > Roles & Permissions > User-Wise Permissions with six rights: Open Chatbot, Go Active / Inactive, Reply to visitors, Close conversations, Chat history, Chatbot settings. User-wise only: not part of roles, presets or Full Admin Rights, and nobody has it by default.
-- **Chatbot** menu (top bar and side menu), shown only to people with Open Chatbot: Inbox, Chat History and Settings, each shown with its right.
-- Chat History page: search, filters (status, answered by, dates), counts and paging, and a transcript page for every conversation.
-- Chatbot Settings page: turn live chat on/off, IT email, minutes before emailing IT, welcome and offline messages.
-### Changed
-- Live Support is now the Chatbot (`/manager/chatbot`; the old link redirects). Available/Away is now Active/Inactive. The profile-menu link was removed.
-- Every Chatbot action is checked on the server against the person's rights; removing access sets the person Inactive.
-- Only people who are Active and still hold the Go Active right count as online for the Support page.
-## [2026-11-05] - Support Page, Live Chat and New Sign In Panel
-### Added
-- Public Support page (`/support`) with a Support button on the Sign In, Forgot Password and Set New Password pages. Visitors leave name, phone, optional email and the issue, then chat live with an available agent.
-- When no agent is available, or nobody replies within 3 minutes, the request and conversation are emailed to the IT team (it@7strokes.ae, or the Helpdesk support email in Integrations) from the noreply SMTP mailbox, with Reply-To set to the visitor.
-- Live Support inbox for agents (`/manager/live-support`, profile menu): Available/Away switch, conversation list, replies, close chat, sound and browser notifications. Admin, Support role or the `live_support` permission.
-- Protection: 5 requests per hour per IP, hidden anti-bot field, CSRF, and chat access by a random token only.
-### Changed
-- Sign-in left panel: centered "Welcome to Seven Strokes CRM" heading, short introduction, three feature tiles (Industry Trusted, AI-Driven Insights, Automated Workflow) and a CRM dashboard illustration drawn in SVG over the existing background image.
-- Sign In, Forgot Password, Set New Password and Support pages fit on one screen on desktop (no page scroll): spacing, text and the illustration scale with the window height.
-- The right (form) side now has a very light wash of the same brand image instead of flat white; form fields stay white.
-- Larger, clearer logo on the sign-in pages (about twice the size, empty margins of the image trimmed) and more even spacing between title, fields, Remember Me row and Sign In button.
-- Left panel rebuilt as three evenly spaced, centered groups: welcome text, three CRM function tiles (Sales Management, KAM Management, Compliance Management, each with an SVG icon and caption) and the dashboard illustration. A soft navy shade at the top makes the white text clearly readable.
-- The 5 minute idle sign-out is paused while an agent is marked Available in Live Support.
-
-## [2026-11-05] - Password Reset Email Fix
-### Fixed
-- Password reset emails were sent through a hard-coded mail server of the previous vendor (sender "SRJ CRM", SRJ contact footer), so they were likely filtered as spam, and the result of sending was ignored: the screen always said the link was sent. Now the mailer uses System > Integrations > Email SMTP (or `SMTP_*` in `.env`), reports failures, and logs every send to `application/logs/mail-YYYY-MM-DD.log`.
-- Security: the Set New Password form accepted an empty token and could change the password of every user without a pending reset. The token is now validated and only its owner is updated.
-- The reset email goes to the email on the user profile (or the username if it is an email). The account can be found by username or profile email.
-- Saving Integrations > Email SMTP with the password field left empty no longer erases the saved password.
-### Added
-- Send Test Email button in System > Integrations > Email SMTP.
-- One reset email per minute per user, minimum password length 6, wrong-password-repeat returns to the same reset link, and the user is signed out of other sessions after a reset.
-- README section 2.6: step-by-step SMTP setup for password reset emails.
-
-## [2026-11-05] - Sign In and Forgot Password Redesign
-### Changed
-- Sign in, Forgot Password and Set New Password pages now use a full-screen split layout: the existing brand image on the left with a short Seven Strokes introduction, and a plain white form panel on the right. The floating card, blurred background and input icons were removed.
-- Login title is now "Sign In" with the new subtitle. Remember Me and Forgot Password? sit on one row under the password field.
-- Logo, title and subtitle are centered; login subtitle is "Get access to your account". Field labels are in capitals and every input has a matching SVG icon (user, lock, envelope).
-- Shorter, plainer messages and footer text. Form fields, actions, CSRF, location capture and all login and reset logic are unchanged.
-
-## [2026-11-05] - One Stage Per Record: Database, Leads, Orders, Sales
-### Fixed
-- A record converted to an Order kept `ci_pipeline.pipeline_stage = 'lead'`, so the Dashboard My Leads / Team Leads KPI, Lead status cards, Lead follow-up counters, My Leads donut, projection charts, the dialer lead queue, Live presentation stats and the Lead / Database reports still counted it as a Lead. The View Leads list already hid it, so numbers and lists disagreed. Example from local data: user 78 had 2 real Leads but the Dashboard showed 5.
-- Team Orders KPI, the Orders status cards and the Sales amount KPI counted Sales (and `Completed` orders) as Orders, or Orders as Sales. "Ongoing Orders" only checked the status text, not the sales reference number.
-### Changed
-- One shared rule decides the stage everywhere (`crm_stage_lead_sql()`, `crm_order_is_sale_sql()`, `crm_order_open_sql()` at the end of `ci_admin_model.php`):
-  - Database: `pipeline_stage = 'database'` (unchanged).
-  - Lead: `pipeline_stage = 'lead'` and no order exists for it yet.
-  - Order: an order that is not a Sale.
-  - Sale: order status `Sales` or a sales reference number.
-- Applied to dashboard KPIs (my and team), Database / Lead / Order status cards, donuts, follow-up counters, projection charts, pipeline summary, View Leads / Team Leads lists, all Orders lists, View Sales, dialer and call lead queues, Live stats and the Database / Lead reports.
-- Orders status cards no longer include a Sales chip, use the same scope as the My Orders page, and now include Pending Sales Approval and Follow Up so they add up to the Orders total.
-- Status cards that list a fixed status range add an "Other statuses" chip (only when above 0) so the card total equals the stage count.
-- No data was changed or deleted. Approval actions were already moving records forward; only lists, counts and reports changed.
-## [2026-11-05] - Full-Width Pages, HR & Training Self-Service, Profile Menu
-### Changed
-- Back Office > Pending Sales Approval uses the full page width: roomier filter bar (wide search, From / To, Search / Reset), 14px table text with more row spacing, a Status tag column, and an "N orders waiting" count. Same data, same actions.
-- Ten pages that were boxed into Bootstrap's fixed 1170px `.container` (Add Database, View Database edit and limited edit, Pending Sales Approval, Edit Pending Order, KAM Onboard, Meetings add/edit, Ticket edit, Vertical edit) plus My Profile now use the available width (`crm-theme.css`).
-- Table text outside the Dashboard is 13px everywhere (was forced to 12.5px by `crm-dashboard.css`); the Dashboard itself is unchanged.
-- Profile menu (avatar caret): new collapsible "HR & Training" group under View Profile / Event and Awards / Change Password with Holiday Request, Events & Planning, Search Topics and Training. Closed by default; click to open, click again to close.
-### Added
-- Holiday Request is now self-service: every employee can open it, sees only their own requests, can submit and cancel pending ones. HR / Admin still see everyone, filter by status or "Only mine", and approve or reject. Requests are checked for valid dates and for overlap with an existing pending or approved request; employees cannot file for someone else; HR cannot approve their own request (Admin can); a decision can be made only once.
-- Events & Planning: upcoming and past-90-days views; any employee can add a private plan (date, time range, location, notes) and remove their own; HR / Admin can also publish company-wide events. Stored in the existing `ci_events` table (soft delete).
-- Training is now real: HR publishes modules (category, link, duration, due date, mandatory, for everyone or one role), edits and archives them, and sees completion per module. Employees start a module (opens the material), mark it completed, and see overdue items. New tables `ci_training_modules` and `ci_training_progress`, created on first use by `hr_selfservice_model`. New modules notify the target employees.
-- Search Topics now reads a knowledge base table `ci_hr_topics` (created on first use, seeded with the five topics that were hard-coded) with keyword and category search and expandable full details. HR can add, edit and hide topics.
-- My Profile > Training tab shows the employee's real training counts and open modules.
-### Fixed
-- Pending Sales Approval / View Sales Approvals date filter never matched because the DD-MM-YYYY input was compared directly to the database date. Dates are now parsed, and From or To can be used alone.
-## [2026-11-05] - Multiple Follow-Ups & Client View Redesign
-### Added
-- Add Database and View Database edit: multiple follow-ups per record. A "+ Add follow-up" button adds as many rows as needed (date, time, status, remark), each row has its own remove button, no popup. Every row is saved as its own `ci_followup` record linked to the database record; status is stored in `followup_result`. When editing, all saved follow-ups are listed and new ones can be added; saved rows keep their date and time read-only, while status and remark stay editable (`followup_rows.php`, `crm-lead-form.js`, `ci_admin_leads::add()` / `edit()`).
-- Removing a saved follow-up deletes only that row, only when it belongs to the record being edited, and is written to the admin log. Updates to saved follow-ups are also checked against the record.
-- The lead's own next follow-up date follows the existing rule: it changes only when new follow-ups are added (earliest upcoming new date, otherwise the latest new date). The Exp. Close Date check now uses the latest follow-up date in both forms.
-### Changed
-- KAM Client View (`manager/kam/view/{id}`) redesigned to fit on one screen: slim header with client ID, status, MRR and actions; one card with Contact, Account and Trade License & Compliance columns; compact upcoming tasks table. All fields, links and data logic are unchanged; columns stack on tablets and phones.
-## [2026-11-05] - Approve & Onboard Fix, Dashboard Responsiveness, Table and Form Fixes
-### Fixed
-- Back Office "Approve & Onboard" failed with `Unknown column 'sales_ref_no'` on `ci_pipeline`. Added migration `008_pipeline_sales_ref_no.php` (new column next to `db_ref_no` / `lead_ref_no`, filled from existing Sales orders) and wrapped `approve_sales_order()` in a database transaction so an order can no longer be half-approved. A second click on an already approved order now goes straight to onboarding. Two orders (O0000000007, O0000000008) that were left half-approved by the old error now have consistent pipeline rows.
-- Dashboard: My Leads / My Orders donut now draws a full ring when all records share one status, and callout labels (for example "Pending Sales Approval") stay inside the card at every width.
-- Dashboard: Target vs Achievement and Target vs Projection pick their month label format from the real chart width (Mon 'YY, Mon, or every other month) and redraw on resize / rotation, so labels never overlap or get cut.
-- Table headers on list pages are navy with white text again; Action buttons are orange and prominent again on every list page.
-- Open Orders: both Action buttons match View Database; "Make Changes" renamed to "Edit".
-- On screens under 992px every DataTable shows the "+" row expand. List tables that were plain HTML (Pending Sales Approval, Invoices, Payments, KAM Reminders, KAM Report, KAM Task Follow-up) now use the same DataTable setup as View Database. Desktop tables are unchanged.
-- Add Database / View Database edit: Follow-Up date and time stay in the Follow-Up section (open by default); the copies at the top are kept in sync and each value is submitted once.
-- DataTables "Show entries" and search controls wrap on phones instead of being cut off.
-## [2026-11-04] - Fix View Leads Database Error & My Leads Donut
-### Fixed
-- My Zone > View Leads failed with `Error Number: 1054 Unknown column 'P.order_ref_no'`. The column does not exist in `ci_pipeline` and no code writes it. Removed that condition from `ci_admin_model::get_Myleads()` (stage `lead`). Leads that already have an order are still hidden by the existing `NOT EXISTS (SELECT 1 FROM ci_orders ...)` check, and user access rules are unchanged.
-- Dashboard My Leads donut showed nothing when a user's leads had statuses outside the six fixed slices (for example Database, Expected, In Process). `dashboard_mylead_donut_data()` now places each lead in exactly one slice: the six original slices keep their colors, and every other status gets its own slice named after the real status. Same user scope as before. No lead data was changed.
-## [2026-11-04] - Login Background Image & Full Setup / Deployment Guide
-### Changed
-- Login, Forgot Password and Reset Password now use `assets/background-auth.jpg`: blurred full-page background with the sharp image in the card's left panel, responsive on desktop and mobile. Only CSS and the visual panel changed; authentication logic is untouched (`assets/dist/css/crm-auth.css`, `application/views/manager/elements/auth_visual.php`).
-- README rewritten as a complete setup guide: real tech stack (CodeIgniter 2.2.6 patched for PHP 8.2), local setup, every environment variable the code reads, settings stored in the database and hardcoded in files, migrations, cPanel, Netlify limits, AWS (EC2 + RDS) deployment, troubleshooting and log locations.
-### Audit additions
-- SEC-13 session cookie can likely be forged (cookie sessions signed with the placeholder key), SEC-14 SMTP credentials hardcoded in `mail_model.php`, SEC-15 migration runner web key default and leaked in error, SEC-16 `db_debug` on in production, SEC-17 `3cx_config.json` tracked in git.
-- Corrected framework version in the audit: CodeIgniter 2.2.6, not 3.
-## [2026-11-04] - Full CRM Audit, Ocean Blue UI Redesign, Dialer Campaigns & Dashboard Restore
-### Added
-- `audit today's state.md`: full audit of the CRM with a prioritized task list (working features, placeholders, broken features, security, integrations, UI, enterprise SaaS readiness).
-- Dialer campaigns: Campaign menu in the dialer (below Leads, above Logs) with Create Campaign and View Campaign; filters by country, state, city, industry, database category, data source, stages and participants; 20-digit numeric reference field; progress and per-user call stats; calls tagged with `campaign_id` (`dialer_campaign_model.php`, `ci_admin_calls.php`, `calls/dashboard.php`, `crm-dialer.css`).
-- Dialer range: custom start and end record, skip records already called (today, last 7 days, ever) and resume from the last dialed position (`ci_dialer_progress`).
-- Shared lead form script `crm-lead-form.js` and theme layer `crm-theme.css`.
-### Changed
-- Login, Forgot Password and Reset Password redesigned with one shared layout (`crm-auth.css`, `elements/auth_visual.php`).
-- Add Database and View Database edit: Manual Dialer fields shown first, all other fields in a contained Additional Details panel, secondary sections collapsible, breadcrumbs and duplicate titles removed.
-- Manual Dialer rebuilt as one compact card with a single action bar (Keep, Save, Next, Call Now, Break).
-- Back Office: Open Orders table matches View Database styling; Add Follow-Up opens a full page instead of a popup, with meeting fields and history logging.
-- Profile: avatar opens the profile page; attendance, shifts, leave and events read real data; HR Events and Training no longer show hardcoded items.
-- Ocean Blue palette applied across manager views (dashboard excluded).
-### Fixed
-- My Orders donut and KPI now use the same scope as the My Orders page and include Pending Sales Approval and Follow Up orders.
-- LIVE badge overlapping the Reports menu at laptop widths.
-- Dashboard chart labels: larger text, no rotated or clipped month labels on Android.
-### Restored
-- Dashboard original colors, KPI cards, Operational Activity cards and My Leads / My Orders donut style (approved design). Only layout fixes kept.
-### Known issues (see audit)
-- `database/localhost.sql` is tracked in git and web-accessible (P0).
-- `ci_admin_user::ajax_edit_status` and `ci_api::send_whatsapp` have no login check (P0).
-- My Zone > View Leads fails: unknown column `ci_pipeline.order_ref_no` (P0).
-- 3CX webhooks redirect to login (P1).
-## [2026-11-02] - Role Permissions & Visibility Enforcement, Database Allotment Scoping, Order Approval Workflow & Security Add-ons
-### Changed & Fixed
-- **Role Permissions & Visibility Enforcement (`ci_admin_model.php`, `header.php`, `ci_admin_report.php`, `ci_admin_events.php`, `ci_roles`)**:
-  - Eliminated hardcoded bypass for Role 2 (Back Office) in `ci_admin_model::get_role_permissions` and `ci_admin_model::check_permission`. Permissions are now dynamically retrieved from `ci_roles.permissions` and `ci_user_permissions`. Defaulted undefined sections to `'no_access'` rather than `'read'`.
-  - Configured Role 2 (Back Office) permissions to strictly have `'write'` on `dashboard`, `my_zone`, `team`, and `back_office` (and `calls`), while setting `kam`, `hr`, `reports`, `system`, `events`, and `live` to `'no_access'`.
-  - Updated `header.php` so topbar and mobile drawer navigation strictly hide sections without granted permissions.
-  - Added controller guards in `ci_admin_report.php` and `ci_admin_events.php` redirecting unauthorized access to `manager/dashboard`.
-- **Database Allotment & Import Workflow (`ci_admin_leads.php`, `ci_admin_model.php`, `add-database.php`, `editleads.php`)**:
-  - Refactored `ci_admin_model::get_Myleads`: Removed creator-based inclusion of unallotted leads (`lead_assign = 0`). Personal My Database views now strictly show only leads explicitly allotted to the logged-in user (`A.lead_assign = $uid`) or where they are a collaborator (`FIND_IN_SET($uid, A.agents)`). Unallotted leads never appear in anyone's personal My Database.
-  - Refactored `ci_admin_leads::import_action`: When importing CSV leads, if the username column is empty, records are automatically designated to the non-allotted space (`lead_assign = 0`, `database_category = 'Non-Allotted Database'`). If a username is provided, it is validated against `ci_user` (`c_username`, `email`, `name`, `emp_id`); valid matches are allotted to that user ID, while invalid usernames flag clear row errors and are skipped. Importer/Admin does not receive imported leads unless their username is explicitly listed in that row.
-  - Refactored `ci_admin_model::getAllocationLeads`: Non-allotted filter isolates `(A.lead_assign = 0 OR A.lead_assign IS NULL OR A.database_category = 'Non-Allotted Database')`, and allotted filter isolates `A.lead_assign > 0`.
-  - Enabled `primary_owner` assignment on manual database add/edit forms for any authorized user with write permissions.
-- **"Send for Approval" Back Office Order Processing Fix (`ci_admin_orders.php`)**:
-  - Fixed `ci_admin_orders::edit_pending()` action type check to accept `'send_for_approval'` in addition to `'approve_order'` and `'process_order'`.
-  - Orders are created with `approval_status = 'pending_sales_approval'`, pipeline status updated, order history logged, and instant notification dispatched to the salesperson.
-- **Phone Dialer Scoping & Queue Count Fix (`ci_admin_calls.php`, `calls/dashboard.php`)**:
-  - Scoped `_apply_lead_filters`, `ajax_get_queue`, and `ajax_get_lead_details` in `ci_admin_calls.php` to strictly filter by allotted ownership: `(A.lead_assign = {$manager_id} OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET({$manager_id}, A.agents) > 0))`.
-  - Defaulted auto-dialer stage checkboxes (`.cbx-auto-stage`) to `checked` so all active stages are selected on initial open, immediately displaying the exact ready count (e.g. 77 records) rather than "0 records ready".
-- **Inactivity Timeout (5 Minutes) & Password Visibility Toggle (`loginpage.php`, `footer.php`, `ci_admin_model.php`)**:
-  - Updated session inactivity timeout to 5 minutes (300 seconds) on both server (`check_auth_timeout()`) and client-side idle tracking (`footer.php`).
-  - Updated session expiration message on `loginpage.php` to "5 minutes".
-  - Added eye icon password toggle button on `#login_password` in `loginpage.php` and universal password toggle helper `initUniversalPasswordToggles()` in `footer.php`.
-- **Sitemap & Security Headers (`ci_admin.php`, `routes.php`, `sitemap.php`, `.htaccess`)**:
-  - Implemented dynamic XML sitemap (`/sitemap.xml`) conforming to sitemap protocol.
-  - Implemented HTML application directory sitemap (`/manager/sitemap`) with View Database dual-box styling and Royal Blue accents.
-  - Configured HTTP security headers: `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `X-XSS-Protection: 1; mode=block`, `Referrer-Policy: strict-origin-when-cross-origin`, and `Permissions-Policy: geolocation=(self), microphone=(self)`.
-- **Database Performance Optimization**:
-  - Added 11 B-Tree database indexes across `ci_leads`, `ci_user`, `ci_followup`, `ci_pipeline`, and `ci_orders`, eliminating table scans across lead records.
-- **Zero Comments Integrity**:
-  - Verified 0 comments across all modified and created PHP files with clean `php -l` and custom checker verification.
-
-## [2026-11-02] - Database Production Synchronization, Schema Decoupling & Dashboard Chart Calibration
-### Changed & Fixed
-- **Database Error 1054 (Unknown column 'latitude' in 'ci_admin_logs')**: Resolved by adding geolocation columns (`latitude`, `longitude`, `accuracy`, `location_status`) to `001_core_crm_schema.php` and implementing dynamic column existence verification in `ci_admin_model::log_admin_action()` so missing columns are created on-the-fly and safely bypassed if absent.
-- **Database Error 1146 (Table 'crm7strokes.ci_user' doesn't exist)**: Synchronized all 51 core tables and complete data from `database/127_0_0_1.sql` into `crm7strokes`, restoring all user accounts, leads, pipelines, and configuration.
-- **Modernized `database/localhost.sql`**: Updated SQL dump to 3.4 MB containing full 51 tables, updated naming to `crm7strokes` and domain to `crm.7strokes.com`, enabled UTF-8 encoding, and included `FOREIGN_KEY_CHECKS = 0` to prevent foreign key errors during cPanel import.
-- **Larger Donut Charts in My Leads & My Orders**: Scaled up outer donut radius to `110px` (inner `68px`, diameter `220px`) and enlarged callout typography to `12px bold 700` (`#0f172a`) to fully utilize box dimensions with crisp margins.
-- **cPanel Production Guide Overhaul**: Expanded [`README.md`](file:///c:/Users/SRJ%20feb/Downloads/softwares/CRM/2026.10.08-1%20-%20crm.rolextogroup.com/crm.rolextogroup.com/README.md) with an 8-step production setup guide covering MultiPHP limits, Git and File Manager deployments, `.env` config, phpMyAdmin import, browser/CLI migrations, directory permissions, SSL redirect, and background cron automation.
-- **Import Database in Reports Navigation**: Confirmed and wired `Import Database` option into the Reports dropdown in both the desktop navbar and mobile sidebar drawer.
-- **Zero PHP Comments & Lint Verification**: Preserved 0 comments across all PHP files with clean `php -l` verification.
-
-## [2026-10-31] - Dashboard UI & Layout Calibration (First-Frame Fit & Baseline Alignment)
-### Changed
-- **Upper Dashboard Sizing & 100% Zoom Fit**: Calibrated heights across top KPI cards (52px), Target vs Achievement / Projection cards (180px, 145px canvas), and My Leads / My Orders cards (238px) so the entire upper section fits within the initial desktop frame without scrolling.
-- **Exact Pixel Baseline Alignment**: Aligned the bottom border of Target vs Projection with My Orders on the exact horizontal baseline (482px total height on both left and right sides).
-- **Larger Donut Charts in My Leads & My Orders**: Expanded SVG donut outer radius to 64px (128px diameter) with inner radius of 38px, utilizing card width without overflowing.
-- **Outside Donut Labels**: Streamlined outside labels to display Status and actual count (e.g. Busy: 0, DNCR: 0), omitting percentage from outside callouts.
-- **Hover-Only Percentage Display**: Positioned percentages exclusively inside the dark floating tooltip on hover, displaying status, count, and percentage (e.g. 12 (15.20%)).
-- **Clean Meta Headers in Side Cards**: Removed solid blue pill background from top-right corner of My Leads and My Orders; replaced with sleek, transparent typography showing total count, sales value, and cash received.
-- **Top 4 Cards Display**: Removed the word 'Sales:' from My Leads, My Orders, Team Leads, and Team Orders; directly displays the user's currency and formatted value (e.g. AED 0.00).
-- **Dynamic User Currency & Cash Received Integration**: Added currency schema support to ci_user with automatic database migration, passed user currency to the view, and integrated real cash received aggregation from ci_payments.
-
 # Changelog
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
+
+### [v1.82.0] - 2026-11-05
+- **Timestamp**: `2026-11-05 15:40:00 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Rebuilt System > Roles & Permissions. One permission catalogue now drives the role editor, the user-wise editor, both menus and a page guard, so every right that can be granted really controls what a person sees and opens. New CRM-styled screens for roles and for single users, 81 permissions covering every page (13 working pages had no menu link before, most of them no permission either), safe defaults for existing roles, and protection against people raising their own access.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Permission catalogue (`application/helpers/crm_permission_helper.php`, new)**:
+    - One list of 8 groups and 81 items (Dashboard/Calls/Live, My Zone, Team, Back Office, KAM, HR & Training, Reports, System). Each item has a label, a one-line description, its menu links, the pages it opens (View) and the add/create pages that need Full.
+    - Levels: `no_access` (None), `read` (View: open the page), `write` (Full: also add, edit, delete). Items that are pages only (reports, logs, import/export) offer None/Allow.
+    - `crm_perm_resolve()`: stored value, else the item's `fallback` key (so roles saved before an item existed keep the access they had), else the best of a group's items for older combined keys such as `back_office`, `kam`, `team`, `tasks`.
+    - `crm_perm_normalize()` cleans a submitted map to catalogue keys and re-derives the group keys that older controller checks still use (`has_section_perm('back_office')` etc.). Fixed: `hr` is both the HR Overview item and the HR group key and was being overwritten.
+    - Helpers: `crm_can($key, $level)`, `crm_is_full_admin()`, `crm_nav_menu()`, `crm_nav_active_group()`, `crm_page_rule()`, `crm_landing_url()`.
+    - Newly covered pages (working pages that had no menu link, most also no permission): Team Members, Task Follow-up, Tickets / Open Tickets, Invoices, Payments, KAM Report, Leads Report, Users Report, Department Performance, Individual Performance, Events & Awards, Live Location, Assignee Management, plus separate rights for Holiday Requests, Events & Plans, Training and Search Topics.
+    - Removed toggles that controlled nothing (`calls_autodialer`, `calls_manualdialer`, `calls_logs`, `live_presentation`, `kam_assignee_mgmt`, `reports_admin`). The user-wise screen and the role screen had different lists (60 vs 77 keys); both now use the same catalogue.
+  - **2. Enforcement**:
+    - `Ci_admin_model::check_permission()` resolves keys through the catalogue (fallbacks and group keys). Admin role, user #1 and "Full admin" users still pass everything.
+    - Page guard (`application/hooks/crm_permission_guard.php`, `post_controller_constructor`, hooks enabled in `config.php`): every catalogue page needs View, add/create pages need Full. Typing the address of a refused page shows "You do not have View/Full access to ..." and goes to the first page the person may open (Dashboard, else their first menu link, else Profile). AJAX calls keep their controllers' own checks.
+    - HR controller: each HR page checks its own right (Payroll, Shifts, Targets...), and changes need Full. Before, any HR right (even View on one page) gave full HR manager powers. Holiday Requests, Events & Plans, Training and Search Topics stay open to everyone for their own data; managing everyone's needs Full on that item. Own attendance clock-in stays open to all.
+    - Payments page (now in the Back Office menu): fixed the "Undefined array key recorded_by_name" warning; the list now joins `ci_user` to show who recorded each payment.
+  - **3. Navigation (`views/manager/elements/header.php`)**:
+    - Top bar and side menu are built from the catalogue (about 300 duplicated lines removed): a link shows only when the person may open its page, a group shows only when it has links, and the current page highlights one group (Back Office pages no longer also light up My Zone).
+    - New menu links for the newly covered pages. Removed the duplicate Import Database link under Reports (it stays under System).
+  - **4. Roles & Permissions screens (`views/manager/roles/index.php`, `edit.php`, `_perm_editor.php`, `assets/dist/css/crm-perms.css`, `assets/dist/js/crm-perms.js`)**:
+    - Roles tab: CRM list table with Role, Reports to, People (click to see them), an Access bar (Full / View / None counts) and actions Edit permissions, Copy (new role starting from this one) and Delete. A short three-step explanation of how access works.
+    - Role editor (Add and Edit share one page; `add.php` removed): role name, reports to, status, "Start from another role", then the permission editor. Sticky save bar with unsaved-changes warning.
+    - Permission editor: search box, Full/View/None totals, Set all, group list with "allowed" counts that follows scrolling, per-group None/View/Full, and accessible radio-button None/View/Full controls with a description under every permission. Works in light and dark theme and on phones.
+    - User permissions tab: people list with search and filters (role, Follows role / Custom / Full admin / Has Chatbot) and badges; selected person shows three access types: Follow role (read-only view of the role), Custom (starts from the role, items that differ are marked "Changed", Reset to role) and Full admin; Chatbot card kept (user-wise only); sticky Save / Discard bar.
+  - **5. Safety rules (`controllers/ci_admin_roles.php`)**:
+    - Opening Roles & Permissions needs View; any change needs Full.
+    - Only a full administrator can give Full admin, change an administrator, or edit the Admin role (always full access, shown read-only). Nobody but a full administrator can change their own access or their own role.
+    - Roles are deleted only with the Delete button (POST + CSRF), never while people are still in them; a role cannot be set inactive while it has people.
+    - Saving "Follow role" or "Full admin" keeps the person's last custom map, so switching back to Custom restores it. All changes are written to the admin log.
+  - **6. Tests (local)**:
+    - Admin: every menu group and page opens, no PHP errors.
+    - Sales role: only My Zone, Team, HR (View, as stored), Reports; Back Office, KAM and System links hidden and their pages redirect.
+    - Custom user (Database, View Leads, Pending Leads Approval, Payroll Full, Leads Report, Roles View): menu shows exactly those links; HR Overview, Taxation, Team Leads, Pending Order Process and Add Role redirect; Roles opens read-only and saving is refused.
+    - Escalation: changing an administrator, giving Full admin, changing own permissions and editing own role are all refused. Deleting a role with 124 people is refused; add role, copy from role and delete were checked through the screens. Test role and test permission changes removed afterwards.
+  - **7. Documentation**:
+    - README section 2.8 "Roles & Permissions": how access works, step-by-step workflows for roles and single users, the permission list, and notes for developers adding a page.
+    - CHANGELOG entries since 2026-10-31 rewritten in this versioned format (v1.81.6 to v1.81.19) with their commit timestamps.
+
+### [v1.81.19] - 2026-11-05
+- **Timestamp**: `2026-11-05 15:11:12 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Chatbot Page and User-Wise Chatbot Rights.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Added**:
+    - Chatbot card in System > Roles & Permissions > User-Wise Permissions with six rights: Open Chatbot, Go Active / Inactive, Reply to visitors, Close conversations, Chat history, Chatbot settings. User-wise only: not part of roles, presets or Full Admin Rights, and nobody has it by default.
+    - **Chatbot** menu (top bar and side menu), shown only to people with Open Chatbot: Inbox, Chat History and Settings, each shown with its right.
+    - Chat History page: search, filters (status, answered by, dates), counts and paging, and a transcript page for every conversation.
+    - Chatbot Settings page: turn live chat on/off, IT email, minutes before emailing IT, welcome and offline messages.
+  - **2. Changed**:
+    - Live Support is now the Chatbot (`/manager/chatbot`; the old link redirects). Available/Away is now Active/Inactive. The profile-menu link was removed.
+    - Every Chatbot action is checked on the server against the person's rights; removing access sets the person Inactive.
+    - Only people who are Active and still hold the Go Active right count as online for the Support page.
+
+### [v1.81.18] - 2026-11-05
+- **Timestamp**: `2026-11-05 13:48:52 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Support Page, Live Chat and New Sign In Panel.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Added**:
+    - Public Support page (`/support`) with a Support button on the Sign In, Forgot Password and Set New Password pages. Visitors leave name, phone, optional email and the issue, then chat live with an available agent.
+    - When no agent is available, or nobody replies within 3 minutes, the request and conversation are emailed to the IT team (it@7strokes.ae, or the Helpdesk support email in Integrations) from the noreply SMTP mailbox, with Reply-To set to the visitor.
+    - Live Support inbox for agents (`/manager/live-support`, profile menu): Available/Away switch, conversation list, replies, close chat, sound and browser notifications. Admin, Support role or the `live_support` permission.
+    - Protection: 5 requests per hour per IP, hidden anti-bot field, CSRF, and chat access by a random token only.
+  - **2. Changed**:
+    - Sign-in left panel: centered "Welcome to Seven Strokes CRM" heading, short introduction, three feature tiles (Industry Trusted, AI-Driven Insights, Automated Workflow) and a CRM dashboard illustration drawn in SVG over the existing background image.
+    - Sign In, Forgot Password, Set New Password and Support pages fit on one screen on desktop (no page scroll): spacing, text and the illustration scale with the window height.
+    - The right (form) side now has a very light wash of the same brand image instead of flat white; form fields stay white.
+    - Larger, clearer logo on the sign-in pages (about twice the size, empty margins of the image trimmed) and more even spacing between title, fields, Remember Me row and Sign In button.
+    - Left panel rebuilt as three evenly spaced, centered groups: welcome text, three CRM function tiles (Sales Management, KAM Management, Compliance Management, each with an SVG icon and caption) and the dashboard illustration. A soft navy shade at the top makes the white text clearly readable.
+    - The 5 minute idle sign-out is paused while an agent is marked Available in Live Support.
+
+### [v1.81.17] - 2026-11-05
+- **Timestamp**: `2026-11-05 12:58:05 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Password Reset Email Fix.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Fixed**:
+    - Password reset emails were sent through a hard-coded mail server of the previous vendor (sender "SRJ CRM", SRJ contact footer), so they were likely filtered as spam, and the result of sending was ignored: the screen always said the link was sent. Now the mailer uses System > Integrations > Email SMTP (or `SMTP_*` in `.env`), reports failures, and logs every send to `application/logs/mail-YYYY-MM-DD.log`.
+    - Security: the Set New Password form accepted an empty token and could change the password of every user without a pending reset. The token is now validated and only its owner is updated.
+    - The reset email goes to the email on the user profile (or the username if it is an email). The account can be found by username or profile email.
+    - Saving Integrations > Email SMTP with the password field left empty no longer erases the saved password.
+  - **2. Added**:
+    - Send Test Email button in System > Integrations > Email SMTP.
+    - One reset email per minute per user, minimum password length 6, wrong-password-repeat returns to the same reset link, and the user is signed out of other sessions after a reset.
+    - README section 2.6: step-by-step SMTP setup for password reset emails.
+
+### [v1.81.16] - 2026-11-05
+- **Timestamp**: `2026-11-05 12:36:26 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Sign In and Forgot Password Redesign.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Changed**:
+    - Sign in, Forgot Password and Set New Password pages now use a full-screen split layout: the existing brand image on the left with a short Seven Strokes introduction, and a plain white form panel on the right. The floating card, blurred background and input icons were removed.
+    - Login title is now "Sign In" with the new subtitle. Remember Me and Forgot Password? sit on one row under the password field.
+    - Logo, title and subtitle are centered; login subtitle is "Get access to your account". Field labels are in capitals and every input has a matching SVG icon (user, lock, envelope).
+    - Shorter, plainer messages and footer text. Form fields, actions, CSRF, location capture and all login and reset logic are unchanged.
+
+### [v1.81.15] - 2026-11-05
+- **Timestamp**: `2026-11-05 11:24:47 +0530`
+- **Author**: Reinhart-py
+- **Summary**: One Stage Per Record: Database, Leads, Orders, Sales.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Fixed**:
+    - A record converted to an Order kept `ci_pipeline.pipeline_stage = 'lead'`, so the Dashboard My Leads / Team Leads KPI, Lead status cards, Lead follow-up counters, My Leads donut, projection charts, the dialer lead queue, Live presentation stats and the Lead / Database reports still counted it as a Lead. The View Leads list already hid it, so numbers and lists disagreed. Example from local data: user 78 had 2 real Leads but the Dashboard showed 5.
+    - Team Orders KPI, the Orders status cards and the Sales amount KPI counted Sales (and `Completed` orders) as Orders, or Orders as Sales. "Ongoing Orders" only checked the status text, not the sales reference number.
+  - **2. Changed**:
+    - One shared rule decides the stage everywhere (`crm_stage_lead_sql()`, `crm_order_is_sale_sql()`, `crm_order_open_sql()` at the end of `ci_admin_model.php`):
+      - Database: `pipeline_stage = 'database'` (unchanged).
+      - Lead: `pipeline_stage = 'lead'` and no order exists for it yet.
+      - Order: an order that is not a Sale.
+      - Sale: order status `Sales` or a sales reference number.
+    - Applied to dashboard KPIs (my and team), Database / Lead / Order status cards, donuts, follow-up counters, projection charts, pipeline summary, View Leads / Team Leads lists, all Orders lists, View Sales, dialer and call lead queues, Live stats and the Database / Lead reports.
+    - Orders status cards no longer include a Sales chip, use the same scope as the My Orders page, and now include Pending Sales Approval and Follow Up so they add up to the Orders total.
+    - Status cards that list a fixed status range add an "Other statuses" chip (only when above 0) so the card total equals the stage count.
+    - No data was changed or deleted. Approval actions were already moving records forward; only lists, counts and reports changed.
+
+### [v1.81.14] - 2026-11-05
+- **Timestamp**: `2026-11-05 11:06:39 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Full-Width Pages, HR & Training Self-Service, Profile Menu.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Changed**:
+    - Back Office > Pending Sales Approval uses the full page width: roomier filter bar (wide search, From / To, Search / Reset), 14px table text with more row spacing, a Status tag column, and an "N orders waiting" count. Same data, same actions.
+    - Ten pages that were boxed into Bootstrap's fixed 1170px `.container` (Add Database, View Database edit and limited edit, Pending Sales Approval, Edit Pending Order, KAM Onboard, Meetings add/edit, Ticket edit, Vertical edit) plus My Profile now use the available width (`crm-theme.css`).
+    - Table text outside the Dashboard is 13px everywhere (was forced to 12.5px by `crm-dashboard.css`); the Dashboard itself is unchanged.
+    - Profile menu (avatar caret): new collapsible "HR & Training" group under View Profile / Event and Awards / Change Password with Holiday Request, Events & Planning, Search Topics and Training. Closed by default; click to open, click again to close.
+  - **2. Added**:
+    - Holiday Request is now self-service: every employee can open it, sees only their own requests, can submit and cancel pending ones. HR / Admin still see everyone, filter by status or "Only mine", and approve or reject. Requests are checked for valid dates and for overlap with an existing pending or approved request; employees cannot file for someone else; HR cannot approve their own request (Admin can); a decision can be made only once.
+    - Events & Planning: upcoming and past-90-days views; any employee can add a private plan (date, time range, location, notes) and remove their own; HR / Admin can also publish company-wide events. Stored in the existing `ci_events` table (soft delete).
+    - Training is now real: HR publishes modules (category, link, duration, due date, mandatory, for everyone or one role), edits and archives them, and sees completion per module. Employees start a module (opens the material), mark it completed, and see overdue items. New tables `ci_training_modules` and `ci_training_progress`, created on first use by `hr_selfservice_model`. New modules notify the target employees.
+    - Search Topics now reads a knowledge base table `ci_hr_topics` (created on first use, seeded with the five topics that were hard-coded) with keyword and category search and expandable full details. HR can add, edit and hide topics.
+    - My Profile > Training tab shows the employee's real training counts and open modules.
+  - **3. Fixed**:
+    - Pending Sales Approval / View Sales Approvals date filter never matched because the DD-MM-YYYY input was compared directly to the database date. Dates are now parsed, and From or To can be used alone.
+
+### [v1.81.13] - 2026-11-05
+- **Timestamp**: `2026-11-05 10:43:04 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Multiple Follow-Ups & Client View Redesign.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Added**:
+    - Add Database and View Database edit: multiple follow-ups per record. A "+ Add follow-up" button adds as many rows as needed (date, time, status, remark), each row has its own remove button, no popup. Every row is saved as its own `ci_followup` record linked to the database record; status is stored in `followup_result`. When editing, all saved follow-ups are listed and new ones can be added; saved rows keep their date and time read-only, while status and remark stay editable (`followup_rows.php`, `crm-lead-form.js`, `ci_admin_leads::add()` / `edit()`).
+    - Removing a saved follow-up deletes only that row, only when it belongs to the record being edited, and is written to the admin log. Updates to saved follow-ups are also checked against the record.
+    - The lead's own next follow-up date follows the existing rule: it changes only when new follow-ups are added (earliest upcoming new date, otherwise the latest new date). The Exp. Close Date check now uses the latest follow-up date in both forms.
+  - **2. Changed**:
+    - KAM Client View (`manager/kam/view/{id}`) redesigned to fit on one screen: slim header with client ID, status, MRR and actions; one card with Contact, Account and Trade License & Compliance columns; compact upcoming tasks table. All fields, links and data logic are unchanged; columns stack on tablets and phones.
+
+### [v1.81.12] - 2026-11-05
+- **Timestamp**: `2026-11-05 10:10:11 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Approve & Onboard Fix, Dashboard Responsiveness, Table and Form Fixes.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Fixed**:
+    - Back Office "Approve & Onboard" failed with `Unknown column 'sales_ref_no'` on `ci_pipeline`. Added migration `008_pipeline_sales_ref_no.php` (new column next to `db_ref_no` / `lead_ref_no`, filled from existing Sales orders) and wrapped `approve_sales_order()` in a database transaction so an order can no longer be half-approved. A second click on an already approved order now goes straight to onboarding. Two orders (O0000000007, O0000000008) that were left half-approved by the old error now have consistent pipeline rows.
+    - Dashboard: My Leads / My Orders donut now draws a full ring when all records share one status, and callout labels (for example "Pending Sales Approval") stay inside the card at every width.
+    - Dashboard: Target vs Achievement and Target vs Projection pick their month label format from the real chart width (Mon 'YY, Mon, or every other month) and redraw on resize / rotation, so labels never overlap or get cut.
+    - Table headers on list pages are navy with white text again; Action buttons are orange and prominent again on every list page.
+    - Open Orders: both Action buttons match View Database; "Make Changes" renamed to "Edit".
+    - On screens under 992px every DataTable shows the "+" row expand. List tables that were plain HTML (Pending Sales Approval, Invoices, Payments, KAM Reminders, KAM Report, KAM Task Follow-up) now use the same DataTable setup as View Database. Desktop tables are unchanged.
+    - Add Database / View Database edit: Follow-Up date and time stay in the Follow-Up section (open by default); the copies at the top are kept in sync and each value is submitted once.
+    - DataTables "Show entries" and search controls wrap on phones instead of being cut off.
+
+### [v1.81.11] - 2026-11-04
+- **Timestamp**: `2026-11-04 19:06:14 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Fix View Leads Database Error & My Leads Donut.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Fixed**:
+    - My Zone > View Leads failed with `Error Number: 1054 Unknown column 'P.order_ref_no'`. The column does not exist in `ci_pipeline` and no code writes it. Removed that condition from `ci_admin_model::get_Myleads()` (stage `lead`). Leads that already have an order are still hidden by the existing `NOT EXISTS (SELECT 1 FROM ci_orders ...)` check, and user access rules are unchanged.
+    - Dashboard My Leads donut showed nothing when a user's leads had statuses outside the six fixed slices (for example Database, Expected, In Process). `dashboard_mylead_donut_data()` now places each lead in exactly one slice: the six original slices keep their colors, and every other status gets its own slice named after the real status. Same user scope as before. No lead data was changed.
+
+### [v1.81.10] - 2026-11-04
+- **Timestamp**: `2026-11-04 18:53:28 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Login Background Image & Full Setup / Deployment Guide.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Changed**:
+    - Login, Forgot Password and Reset Password now use `assets/background-auth.jpg`: blurred full-page background with the sharp image in the card's left panel, responsive on desktop and mobile. Only CSS and the visual panel changed; authentication logic is untouched (`assets/dist/css/crm-auth.css`, `application/views/manager/elements/auth_visual.php`).
+    - README rewritten as a complete setup guide: real tech stack (CodeIgniter 2.2.6 patched for PHP 8.2), local setup, every environment variable the code reads, settings stored in the database and hardcoded in files, migrations, cPanel, Netlify limits, AWS (EC2 + RDS) deployment, troubleshooting and log locations.
+  - **2. Audit additions**:
+    - SEC-13 session cookie can likely be forged (cookie sessions signed with the placeholder key), SEC-14 SMTP credentials hardcoded in `mail_model.php`, SEC-15 migration runner web key default and leaked in error, SEC-16 `db_debug` on in production, SEC-17 `3cx_config.json` tracked in git.
+    - Corrected framework version in the audit: CodeIgniter 2.2.6, not 3.
+
+### [v1.81.9] - 2026-11-04
+- **Timestamp**: `2026-11-04 18:26:24 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Full CRM Audit, Ocean Blue UI Redesign, Dialer Campaigns & Dashboard Restore.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Added**:
+    - `audit today's state.md`: full audit of the CRM with a prioritized task list (working features, placeholders, broken features, security, integrations, UI, enterprise SaaS readiness).
+    - Dialer campaigns: Campaign menu in the dialer (below Leads, above Logs) with Create Campaign and View Campaign; filters by country, state, city, industry, database category, data source, stages and participants; 20-digit numeric reference field; progress and per-user call stats; calls tagged with `campaign_id` (`dialer_campaign_model.php`, `ci_admin_calls.php`, `calls/dashboard.php`, `crm-dialer.css`).
+    - Dialer range: custom start and end record, skip records already called (today, last 7 days, ever) and resume from the last dialed position (`ci_dialer_progress`).
+    - Shared lead form script `crm-lead-form.js` and theme layer `crm-theme.css`.
+  - **2. Changed**:
+    - Login, Forgot Password and Reset Password redesigned with one shared layout (`crm-auth.css`, `elements/auth_visual.php`).
+    - Add Database and View Database edit: Manual Dialer fields shown first, all other fields in a contained Additional Details panel, secondary sections collapsible, breadcrumbs and duplicate titles removed.
+    - Manual Dialer rebuilt as one compact card with a single action bar (Keep, Save, Next, Call Now, Break).
+    - Back Office: Open Orders table matches View Database styling; Add Follow-Up opens a full page instead of a popup, with meeting fields and history logging.
+    - Profile: avatar opens the profile page; attendance, shifts, leave and events read real data; HR Events and Training no longer show hardcoded items.
+    - Ocean Blue palette applied across manager views (dashboard excluded).
+  - **3. Fixed**:
+    - My Orders donut and KPI now use the same scope as the My Orders page and include Pending Sales Approval and Follow Up orders.
+    - LIVE badge overlapping the Reports menu at laptop widths.
+    - Dashboard chart labels: larger text, no rotated or clipped month labels on Android.
+  - **4. Restored**:
+    - Dashboard original colors, KPI cards, Operational Activity cards and My Leads / My Orders donut style (approved design). Only layout fixes kept.
+  - **5. Known issues (see audit)**:
+    - `database/localhost.sql` is tracked in git and web-accessible (P0).
+    - `ci_admin_user::ajax_edit_status` and `ci_api::send_whatsapp` have no login check (P0).
+    - My Zone > View Leads fails: unknown column `ci_pipeline.order_ref_no` (P0).
+    - 3CX webhooks redirect to login (P1).
+
+### [v1.81.8] - 2026-11-02
+- **Timestamp**: `2026-11-02 18:30:04 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Role Permissions & Visibility Enforcement, Database Allotment Scoping, Order Approval Workflow & Security Add-ons.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Changed & Fixed**:
+    - **Role Permissions & Visibility Enforcement (`ci_admin_model.php`, `header.php`, `ci_admin_report.php`, `ci_admin_events.php`, `ci_roles`)**:
+      - Eliminated hardcoded bypass for Role 2 (Back Office) in `ci_admin_model::get_role_permissions` and `ci_admin_model::check_permission`. Permissions are now dynamically retrieved from `ci_roles.permissions` and `ci_user_permissions`. Defaulted undefined sections to `'no_access'` rather than `'read'`.
+      - Configured Role 2 (Back Office) permissions to strictly have `'write'` on `dashboard`, `my_zone`, `team`, and `back_office` (and `calls`), while setting `kam`, `hr`, `reports`, `system`, `events`, and `live` to `'no_access'`.
+      - Updated `header.php` so topbar and mobile drawer navigation strictly hide sections without granted permissions.
+      - Added controller guards in `ci_admin_report.php` and `ci_admin_events.php` redirecting unauthorized access to `manager/dashboard`.
+    - **Database Allotment & Import Workflow (`ci_admin_leads.php`, `ci_admin_model.php`, `add-database.php`, `editleads.php`)**:
+      - Refactored `ci_admin_model::get_Myleads`: Removed creator-based inclusion of unallotted leads (`lead_assign = 0`). Personal My Database views now strictly show only leads explicitly allotted to the logged-in user (`A.lead_assign = $uid`) or where they are a collaborator (`FIND_IN_SET($uid, A.agents)`). Unallotted leads never appear in anyone's personal My Database.
+      - Refactored `ci_admin_leads::import_action`: When importing CSV leads, if the username column is empty, records are automatically designated to the non-allotted space (`lead_assign = 0`, `database_category = 'Non-Allotted Database'`). If a username is provided, it is validated against `ci_user` (`c_username`, `email`, `name`, `emp_id`); valid matches are allotted to that user ID, while invalid usernames flag clear row errors and are skipped. Importer/Admin does not receive imported leads unless their username is explicitly listed in that row.
+      - Refactored `ci_admin_model::getAllocationLeads`: Non-allotted filter isolates `(A.lead_assign = 0 OR A.lead_assign IS NULL OR A.database_category = 'Non-Allotted Database')`, and allotted filter isolates `A.lead_assign > 0`.
+      - Enabled `primary_owner` assignment on manual database add/edit forms for any authorized user with write permissions.
+    - **"Send for Approval" Back Office Order Processing Fix (`ci_admin_orders.php`)**:
+      - Fixed `ci_admin_orders::edit_pending()` action type check to accept `'send_for_approval'` in addition to `'approve_order'` and `'process_order'`.
+      - Orders are created with `approval_status = 'pending_sales_approval'`, pipeline status updated, order history logged, and instant notification dispatched to the salesperson.
+    - **Phone Dialer Scoping & Queue Count Fix (`ci_admin_calls.php`, `calls/dashboard.php`)**:
+      - Scoped `_apply_lead_filters`, `ajax_get_queue`, and `ajax_get_lead_details` in `ci_admin_calls.php` to strictly filter by allotted ownership: `(A.lead_assign = {$manager_id} OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET({$manager_id}, A.agents) > 0))`.
+      - Defaulted auto-dialer stage checkboxes (`.cbx-auto-stage`) to `checked` so all active stages are selected on initial open, immediately displaying the exact ready count (e.g. 77 records) rather than "0 records ready".
+    - **Inactivity Timeout (5 Minutes) & Password Visibility Toggle (`loginpage.php`, `footer.php`, `ci_admin_model.php`)**:
+      - Updated session inactivity timeout to 5 minutes (300 seconds) on both server (`check_auth_timeout()`) and client-side idle tracking (`footer.php`).
+      - Updated session expiration message on `loginpage.php` to "5 minutes".
+      - Added eye icon password toggle button on `#login_password` in `loginpage.php` and universal password toggle helper `initUniversalPasswordToggles()` in `footer.php`.
+    - **Sitemap & Security Headers (`ci_admin.php`, `routes.php`, `sitemap.php`, `.htaccess`)**:
+      - Implemented dynamic XML sitemap (`/sitemap.xml`) conforming to sitemap protocol.
+      - Implemented HTML application directory sitemap (`/manager/sitemap`) with View Database dual-box styling and Royal Blue accents.
+      - Configured HTTP security headers: `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `X-XSS-Protection: 1; mode=block`, `Referrer-Policy: strict-origin-when-cross-origin`, and `Permissions-Policy: geolocation=(self), microphone=(self)`.
+    - **Database Performance Optimization**:
+      - Added 11 B-Tree database indexes across `ci_leads`, `ci_user`, `ci_followup`, `ci_pipeline`, and `ci_orders`, eliminating table scans across lead records.
+    - **Zero Comments Integrity**:
+      - Verified 0 comments across all modified and created PHP files with clean `php -l` and custom checker verification.
+
+### [v1.81.7] - 2026-11-02
+- **Timestamp**: `2026-11-02 14:01:56 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Database Production Synchronization, Schema Decoupling & Dashboard Chart Calibration.
+- **Detailed Changes & Technical Implementation**:
+  - **1. Changed & Fixed**:
+    - **Database Error 1054 (Unknown column 'latitude' in 'ci_admin_logs')**: Resolved by adding geolocation columns (`latitude`, `longitude`, `accuracy`, `location_status`) to `001_core_crm_schema.php` and implementing dynamic column existence verification in `ci_admin_model::log_admin_action()` so missing columns are created on-the-fly and safely bypassed if absent.
+    - **Database Error 1146 (Table 'crm7strokes.ci_user' doesn't exist)**: Synchronized all 51 core tables and complete data from `database/127_0_0_1.sql` into `crm7strokes`, restoring all user accounts, leads, pipelines, and configuration.
+    - **Modernized `database/localhost.sql`**: Updated SQL dump to 3.4 MB containing full 51 tables, updated naming to `crm7strokes` and domain to `crm.7strokes.com`, enabled UTF-8 encoding, and included `FOREIGN_KEY_CHECKS = 0` to prevent foreign key errors during cPanel import.
+    - **Larger Donut Charts in My Leads & My Orders**: Scaled up outer donut radius to `110px` (inner `68px`, diameter `220px`) and enlarged callout typography to `12px bold 700` (`#0f172a`) to fully utilize box dimensions with crisp margins.
+    - **cPanel Production Guide Overhaul**: Expanded [`README.md`](file:///c:/Users/SRJ%20feb/Downloads/softwares/CRM/2026.10.08-1%20-%20crm.rolextogroup.com/crm.rolextogroup.com/README.md) with an 8-step production setup guide covering MultiPHP limits, Git and File Manager deployments, `.env` config, phpMyAdmin import, browser/CLI migrations, directory permissions, SSL redirect, and background cron automation.
+    - **Import Database in Reports Navigation**: Confirmed and wired `Import Database` option into the Reports dropdown in both the desktop navbar and mobile sidebar drawer.
+    - **Zero PHP Comments & Lint Verification**: Preserved 0 comments across all PHP files with clean `php -l` verification.
+
+### [v1.81.6] - 2026-10-31
+- **Timestamp**: `2026-10-31 19:27:03 +0530`
+- **Author**: Reinhart-py
+- **Summary**: Dashboard UI & Layout Calibration (First-Frame Fit & Baseline Alignment).
+- **Detailed Changes & Technical Implementation**:
+  - **1. Changed**:
+    - **Upper Dashboard Sizing & 100% Zoom Fit**: Calibrated heights across top KPI cards (52px), Target vs Achievement / Projection cards (180px, 145px canvas), and My Leads / My Orders cards (238px) so the entire upper section fits within the initial desktop frame without scrolling.
+    - **Exact Pixel Baseline Alignment**: Aligned the bottom border of Target vs Projection with My Orders on the exact horizontal baseline (482px total height on both left and right sides).
+    - **Larger Donut Charts in My Leads & My Orders**: Expanded SVG donut outer radius to 64px (128px diameter) with inner radius of 38px, utilizing card width without overflowing.
+    - **Outside Donut Labels**: Streamlined outside labels to display Status and actual count (e.g. Busy: 0, DNCR: 0), omitting percentage from outside callouts.
+    - **Hover-Only Percentage Display**: Positioned percentages exclusively inside the dark floating tooltip on hover, displaying status, count, and percentage (e.g. 12 (15.20%)).
+    - **Clean Meta Headers in Side Cards**: Removed solid blue pill background from top-right corner of My Leads and My Orders; replaced with sleek, transparent typography showing total count, sales value, and cash received.
+    - **Top 4 Cards Display**: Removed the word 'Sales:' from My Leads, My Orders, Team Leads, and Team Orders; directly displays the user's currency and formatted value (e.g. AED 0.00).
+    - **Dynamic User Currency & Cash Received Integration**: Added currency schema support to ci_user with automatic database migration, passed user currency to the view, and integrated real cash received aggregation from ci_payments.
 
 ### [v1.81.5] - 2026-10-31
 - **Timestamp**: `2026-10-31 18:47:00 +0530`

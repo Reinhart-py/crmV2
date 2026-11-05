@@ -1557,7 +1557,7 @@ class Ci_admin_orders extends CI_Controller {
 		$d1 = trim($this->input->get('d1'));
 		$d2 = trim($this->input->get('d2'));
 
-		$this->db->select('*')->from('ci_payments');
+		$this->db->select('ci_payments.*, ru.name AS recorded_by_name', false)->from('ci_payments')->join('ci_user ru', 'ru.id = ci_payments.recorded_by', 'left');
 		if (!empty($mode)) {
 			$this->db->where('payment_mode', $mode);
 		}
@@ -1569,7 +1569,7 @@ class Ci_admin_orders extends CI_Controller {
 			$this->db->where('payment_date >=', $d1);
 			$this->db->where('payment_date <=', $d2);
 		}
-		$this->db->order_by('id', 'DESC');
+		$this->db->order_by('ci_payments.id', 'DESC');
 		$data['payments'] = $this->db->get()->result_array();
 
 		$this->load->view('manager/orders/payments', $data);

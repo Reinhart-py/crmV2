@@ -1,336 +1,283 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
-class Ci_admin_roles extends CI_Controller {
- function __construct() 
-	{
-    parent::__construct();
-	$this->load->library(array('Session'));
-	$this->load->helper(array('form','url','text'));
-	$this->load->model(array('ci_admin_model','comman_model'));
- 	header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT"); 
- 	header("Cache-Control: no-store, no-cache, must-revalidate"); 
- 	header("Cache-Control: post-check=0, pre-check=0", false);
- 	header("Pragma: no-cache");
- 	header('Cache-Control: no-cache');
 
-	$mgr_id = (int)$this->session->userdata('manager_id');
-	$mgr_role = (int)$this->session->userdata('manager_role');
-	if (empty($mgr_id)) {
-		redirect('manager/login');
-		exit;
+/**
+ * System > Roles & Permissions.
+ *
+ * Role-wise: every role has a permission map (catalogue in
+ * application/helpers/crm_permission_helper.php). Users get their role's map.
+ * User-wise: a user can follow the role, have a custom map, or be a full admin.
+ * Chatbot rights are user-wise only (see chatbot_rights()).
+ *
+ * Opening this page needs View on "Roles & Permissions"; saving needs Full.
+ * Only full admins can edit the Admin role, give "Full admin", or change an admin.
+ */
+class Ci_admin_roles extends CI_Controller {
+
+	function __construct()
+	{
+		parent::__construct();
+		$this->load->library(array('Session'));
+		$this->load->helper(array('form', 'url', 'text'));
+		$this->load->model(array('ci_admin_model', 'comman_model'));
+		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+		header("Cache-Control: no-store, no-cache, must-revalidate");
+		header("Cache-Control: post-check=0, pre-check=0", false);
+		header("Pragma: no-cache");
+
+		if ((int)$this->session->userdata('manager_id') <= 0) {
+			redirect('manager/login');
+			exit;
+		}
+		if (!crm_can('roles')) {
+			$this->session->set_flashdata('error_message', 'You do not have access to Roles & Permissions.');
+			redirect(crm_landing_url());
+			exit;
+		}
 	}
-	if ($mgr_role !== 1 && $mgr_id !== 1 && !has_section_perm('roles')) {
-		$this->session->set_flashdata('error_message', 'Access denied. Only Administrators can manage roles and permissions.');
-		redirect('manager/dashboard');
-		exit;
-	}
-	}
-	
+
 	public function if_not_login($url = '')
-    {
-        $mgr_id = (int)$this->session->userdata('manager_id');
-        $mgr_role = (int)$this->session->userdata('manager_role');
-        if (empty($mgr_id)) {
-            if ($url != '') {
-                redirect($url);
-            } else {
-                redirect('/manager/login');
-            }
-        } elseif ($mgr_role !== 1 && $mgr_id !== 1 && !has_section_perm('roles')) {
-        	$this->session->set_flashdata('error_message', 'Access denied. Only Administrators can manage roles and permissions.');
-        	redirect('/manager/dashboard');
-        } else {
-            $data = array();
-            return $data;
-        }
-    } 
-	
-    public function is_user_login($url = '')
-    {
-        if ($this->session->userdata('manager_id') != '') {
-            if ($url != '') {
-                redirect($url);
-            } else {
-               redirect('manager/dashboard');
-            }
-        }
-    }	
-	
+	{
+		return array();
+	}
+
+	public function is_user_login($url = '')
+	{
+		if ($this->session->userdata('manager_id') != '') {
+			redirect($url != '' ? $url : 'manager/dashboard');
+		}
+	}
+
+	private function can_write()
+	{
+		return crm_can('roles', 'write');
+	}
+
+	private function deny($msg, $to = 'manager/roles')
+	{
+		$this->session->set_flashdata('error_message', $msg);
+		redirect($to);
+		exit;
+	}
+
+	private function json($payload)
+	{
+		header('Content-Type: application/json');
+		echo json_encode($payload);
+		exit;
+	}
+
+	/** Roles with user counts, parent name and access summary. */
+	private function roles_overview()
+	{
+		$roles = $this->db->order_by('id', 'ASC')->get_where('ci_roles', array('status' => 1))->result_array();
+		$counts = array();
+		foreach ($this->db->query("SELECT user_type, COUNT(*) n FROM ci_user WHERE status = 1 GROUP BY user_type")->result_array() as $r) {
+			$counts[(int)$r['user_type']] = (int)$r['n'];
+		}
+		$names = array();
+		foreach ($roles as $r) $names[(int)$r['id']] = $r['title'];
+		$total = count(crm_perm_items());
+		foreach ($roles as &$r) {
+			$map = json_decode((string)$r['permissions'], true);
+			$exp = ((int)$r['id'] === 1) ? array_fill_keys(array_keys(crm_perm_items()), 'write') : crm_perm_expand(is_array($map) ? $map : array());
+			$w = 0; $rd = 0;
+			foreach ($exp as $v) { if ($v === 'write') $w++; elseif ($v === 'read') $rd++; }
+			$r['expanded'] = $exp;
+			$r['n_write'] = $w;
+			$r['n_read'] = $rd;
+			$r['n_total'] = $total;
+			$r['users'] = isset($counts[(int)$r['id']]) ? $counts[(int)$r['id']] : 0;
+			$r['parent_title'] = isset($names[(int)$r['parent_id']]) ? $names[(int)$r['parent_id']] : '';
+		}
+		unset($r);
+		return $roles;
+	}
+
 	public function index()
 	{
-		$data = array();
-		$data['info'] = array(
-			'title' => 'Manager- Roles',
-			'page_heading' => 'All Roles'
-		);
-		$data['info2'] = $this->if_not_login();
 		$chk_pres = $this->db->get_where('ci_roles', array('title' => 'Presentation'))->row_array();
 		if (empty($chk_pres)) {
 			$this->db->insert('ci_roles', array(
-				'title' => 'Presentation',
-				'parent_id' => 0,
-				'level' => 5,
-				'status' => 1,
-				'permissions' => json_encode(array('live' => 'read', 'live_presentation' => 'read')),
+				'title' => 'Presentation', 'parent_id' => 0, 'level' => 5, 'status' => 1,
+				'permissions' => json_encode(array('live' => 'read')),
 				'created' => date('Y-m-d')
 			));
 		}
-		$data['user_list'] = $this->comman_model->getAll(array("status" => 1), array('id', 'ASC'), 'ci_roles');
-		$data['active_users'] = $this->db->query("SELECT u.id as user_id, u.name, u.email, u.user_type, u.department, r.title as role_title, up.permission_mode, up.permissions as custom_perms FROM ci_user u LEFT JOIN ci_roles r ON u.user_type = r.id LEFT JOIN ci_user_permissions up ON u.id = up.user_id WHERE u.status = 1 ORDER BY u.name ASC")->result_array();
-		$data['roles_list'] = $data['user_list'];
+		chatbot_ensure_column();
+		$data = array();
+		$data['info'] = array('title' => 'Roles & Permissions', 'page_heading' => 'Roles & Permissions');
+		$data['roles'] = $this->roles_overview();
+		$data['users'] = $this->db->query("SELECT u.id, u.name, u.email, u.user_type, r.title AS role_title, up.permission_mode, up.chatbot_permissions
+			FROM ci_user u LEFT JOIN ci_roles r ON r.id = u.user_type LEFT JOIN ci_user_permissions up ON up.user_id = u.id
+			WHERE u.status = 1 ORDER BY u.name ASC")->result_array();
+		$data['can_write'] = $this->can_write();
+		$data['is_full_admin'] = crm_is_full_admin();
 		$this->load->view('manager/roles/index', $data);
 	}
-    public function add()
-		    {
-				
-	  $data=array();
-		$data['info']=array(
-			'title'=>'Manager- Roles',
-			'page_heading'=>'Add Role'
-			);
-		$data['info2']=$this->if_not_login();
-		$data['r_list'] =$this->comman_model->getAll(array('status'=>1),array('id','ASC'),'ci_roles');
-		
-		if($this->input->server('REQUEST_METHOD')==='POST')
-		            {
-		                extract($_POST);
-					 $resp=$this->ci_admin_model->checkDuplicate($title,'title','ci_roles');
-					 if($resp)
-					 {
-						  $this->session->set_flashdata('error_message', 'Role Name Already Exist...');
-						   redirect("manager/roles/add");
-					 }
-					else
-					 { 
-						 	if($parent_id!=0){
-						 	$data['role'] =$this->comman_model->getAll(array('id'=>$parent_id),'','ci_roles','first');
-						 	$level= $data['role']['level']+1;
-						 }else{
-						 	$level=1;
-						 }
 
-						 $clean_perms = $this->_normalize_permissions($this->input->post('permissions'));
-					 
-		                 $save= array(	                 		
-							'title'=>$title,
-							'parent_id'=>$parent_id,
-							'level'=> $level,
-							'status'=>1,
-							'permissions' => json_encode($clean_perms),
-							'created' =>date('Y-m-d')							
-							);
-						  
-			              $response= $this->comman_model->saveData('ci_roles',$save);
-							if($response)
-							{
-							 $this->session->set_flashdata('message', 'New Role added successfully!');
-						    	redirect('manager/roles');
-							}
-						}
-					}
-	                $this->load->view('manager/roles/add',$data);
-				
-			}
-			
-			 public function edit($id='')
-		    {
-	 	$data=array();
-		$data['info']=array(
-			'title'=>'Manager - Roles',
-			'page_heading'=>'Edit Role'
-			);
-		$data['info2']=$this->if_not_login();
-		$data['r_list'] =$this->comman_model->getAll(array('status'=>1),array('id','ASC'),'ci_roles');
-		$data['role'] =$this->comman_model->getAll(array('id'=>$id),array('id','ASC'),'ci_roles','first');
-		if(empty($data['role'])){
-			$this->session->set_flashdata('error_message', 'Not allowed');
-			redirect("manager/roles/");
-		}		
-			
-		if($this->input->server('REQUEST_METHOD')==='POST')
-		            {
-		                extract($_POST);
-						$chk=$this->ci_admin_model->checkDuplicate_other_row(array('id !='=>$id,'title'=>$title),'ci_roles');
-		   if($chk)
-			 {
-				  $this->session->set_flashdata('error_message', 'Role Name Already Exist...');
-				  redirect("manager/roles/edit/".$id);
-			 }
-			else
-			 {
-			 			if($parent_id!=0){
-						 	$data['role'] =$this->comman_model->getAll(array('id'=>$parent_id),'','ci_roles','first');
-						 	$level= $data['role']['level']+1;
-						 }else{
-						 	$level=1;
-						 }
-
-						 $clean_perms = $this->_normalize_permissions($this->input->post('permissions'));
-
-		                 $save= array(	                 		
-							'title'=>$title,
-							'parent_id'=>$parent_id,
-							'level'=> $level,							
-							'status'=>$status,
-							'permissions' => json_encode($clean_perms)
-							);
-						  
-			              $response= $this->comman_model->updateData('id', $id,$save, 'ci_roles');
-							if($response)
-							{
-							 $this->session->set_flashdata('message', 'Role updated successfully!');
-						    	redirect('manager/roles');
-							}
-	                 }
-					}
-	                $this->load->view('manager/roles/edit',$data);
-				
-			}
-			
-			 public function delete($id='')
-		    {
-				
-				$data=array();
-				$data['info']=array(
-					'title'=>'Manager- Roles',
-					'page_heading'=>''
-					);
-				$data['info2']=$this->if_not_login();				
-		                 $save= array(	                 		
-							'status'=>0,
-							);
-			              $response= $this->comman_model->updateData('id', $id,$save, 'ci_roles');
-							if($response)
-							{
-							 $this->ci_admin_model->log_admin_action('role_delete', 'Deleted role ID #'.$id, 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));
-							 $this->session->set_flashdata('message', 'Role Removed successfully!');
-						    	redirect('manager/roles');
-							}
-			}
-								
-		
-   
-	private function _normalize_permissions($raw_perms)
+	public function add()
 	{
-		$clean = array();
-		if (is_array($raw_perms)) {
-			foreach ($raw_perms as $sec => $val) {
-				$clean[$sec] = in_array($val, array('no_access', 'read', 'write')) ? $val : 'no_access';
+		if (!$this->can_write()) $this->deny('You can view roles but not add them (needs Full on Roles & Permissions).');
+		$data = array();
+		$data['info'] = array('title' => 'Add Role', 'page_heading' => 'Add Role');
+		$data['roles'] = $this->roles_overview();
+
+		if ($this->input->server('REQUEST_METHOD') === 'POST') {
+			$title = trim((string)$this->input->post('title', true));
+			$parent_id = (int)$this->input->post('parent_id');
+			if ($title === '' || mb_strlen($title) > 60) $this->deny('Role name is required (up to 60 characters).', 'manager/roles/add');
+			if ($this->db->where('title', $title)->where('status', 1)->count_all_results('ci_roles') > 0) {
+				$this->deny('A role with this name already exists.', 'manager/roles/add');
 			}
+			$level = 1;
+			if ($parent_id > 0) {
+				$p = $this->db->get_where('ci_roles', array('id' => $parent_id))->row_array();
+				$level = !empty($p) ? (int)$p['level'] + 1 : 1;
+			}
+			$this->db->insert('ci_roles', array(
+				'title' => $title, 'parent_id' => $parent_id, 'level' => $level, 'status' => 1,
+				'permissions' => json_encode(crm_perm_normalize($this->input->post('permissions'))),
+				'created' => date('Y-m-d')
+			));
+			$this->ci_admin_model->log_admin_action('role_add', 'Added role "' . $title . '"');
+			$this->session->set_flashdata('message', 'Role "' . $title . '" added.');
+			redirect('manager/roles');
+		}
+		$from = (int)$this->input->get('copy');
+		$data['role'] = array('id' => 0, 'title' => '', 'parent_id' => 0, 'status' => 1);
+		$data['values'] = array();
+		foreach ($data['roles'] as $r) {
+			if ((int)$r['id'] === $from) $data['values'] = $r['expanded'];
+		}
+		$data['readonly'] = false;
+		$data['users_in_role'] = 0;
+		$this->load->view('manager/roles/edit', $data);
+	}
+
+	public function edit($id = '')
+	{
+		$id = (int)$id;
+		$role = $this->db->get_where('ci_roles', array('id' => $id, 'status' => 1))->row_array();
+		if (empty($role)) $this->deny('Role not found.');
+
+		if ($this->input->server('REQUEST_METHOD') === 'POST') {
+			if (!$this->can_write()) $this->deny('You can view roles but not change them (needs Full on Roles & Permissions).');
+			if ($id === 1) $this->deny('The Admin role always has full access and cannot be changed.');
+			if (!crm_is_full_admin() && $id === (int)$this->session->userdata('manager_role')) {
+				$this->deny('You cannot change your own role. Ask a full administrator.');
+			}
+			$title = trim((string)$this->input->post('title', true));
+			$parent_id = (int)$this->input->post('parent_id');
+			$status = (int)$this->input->post('status') === 0 ? 0 : 1;
+			if ($title === '' || mb_strlen($title) > 60) $this->deny('Role name is required (up to 60 characters).', 'manager/roles/edit/' . $id);
+			if ($this->db->where('title', $title)->where('id !=', $id)->where('status', 1)->count_all_results('ci_roles') > 0) {
+				$this->deny('A role with this name already exists.', 'manager/roles/edit/' . $id);
+			}
+			if ($parent_id === $id) $parent_id = 0;
+			if ($status === 0 && $this->db->where('user_type', $id)->where('status', 1)->count_all_results('ci_user') > 0) {
+				$this->deny('Move the people in this role to another role before making it inactive.', 'manager/roles/edit/' . $id);
+			}
+			$level = 1;
+			if ($parent_id > 0) {
+				$p = $this->db->get_where('ci_roles', array('id' => $parent_id))->row_array();
+				$level = !empty($p) ? (int)$p['level'] + 1 : 1;
+			}
+			$this->db->where('id', $id)->update('ci_roles', array(
+				'title' => $title, 'parent_id' => $parent_id, 'level' => $level, 'status' => $status,
+				'permissions' => json_encode(crm_perm_normalize($this->input->post('permissions')))
+			));
+			$this->ci_admin_model->log_admin_action('role_edit', 'Updated role #' . $id . ' "' . $title . '"');
+			$this->session->set_flashdata('message', 'Role "' . $title . '" saved. People in this role get the new access on their next page.');
+			redirect('manager/roles');
 		}
 
-		$derive = function($keys, $map) {
-			$has_write = false;
-			$has_read = false;
-			foreach ($keys as $k) {
-				if (isset($map[$k])) {
-					if ($map[$k] === 'write') {
-						$has_write = true;
-					} elseif ($map[$k] === 'read') {
-						$has_read = true;
-					}
-				}
-			}
-			if ($has_write) return 'write';
-			if ($has_read) return 'read';
-			return 'no_access';
-		};
+		$data = array();
+		$data['info'] = array('title' => 'Edit Role', 'page_heading' => 'Edit Role');
+		$data['roles'] = $this->roles_overview();
+		$data['role'] = $role;
+		$data['values'] = array();
+		foreach ($data['roles'] as $r) {
+			if ((int)$r['id'] === $id) $data['values'] = $r['expanded'];
+		}
+		$data['readonly'] = ($id === 1) || !$this->can_write();
+		$data['users_in_role'] = $this->db->where('user_type', $id)->where('status', 1)->count_all_results('ci_user');
+		$this->load->view('manager/roles/edit', $data);
+	}
 
-		$clean['my_zone'] = $derive(array('database', 'leads', 'orders', 'sales', 'followups', 'meetings', 'verticals', 'vertical_followups', 'internal_tasks', 'external_tasks', 'database_transfer'), $clean);
-		$clean['team'] = $derive(array('team_members', 'team_chart', 'team_database', 'team_leads', 'team_orders', 'team_verticals', 'team_followups', 'team_meetings', 'team_assignmeetings', 'team_assignleads', 'team_tasks', 'team_tickets'), $clean);
-		$clean['back_office'] = $derive(array('lead_review', 'orders_pending', 'orders_pending_sales', 'kam_onboard', 'orders_open', 'orders_followups', 'orders_completed', 'orders_closed', 'orders_rejected', 'orders_management'), $clean);
-		$clean['kam'] = $derive(array('kam_clients', 'kam_schedule', 'kam_task_followup', 'kam_reminders', 'kam_report', 'kam_assignee_mgmt'), $clean);
-		$clean['hr'] = $derive(array('hr', 'hr_targets', 'hr_lifecycle', 'hr_attendance', 'hr_shifts', 'hr_leaves', 'hr_payroll', 'hr_taxation', 'hr_appraisals', 'hr_documents'), $clean);
-		$clean['reports'] = $derive(array('reports_revenue', 'reports_projections', 'reports_download', 'reports_admin', 'reports_leads', 'reports_perf_dep', 'reports_perf_ind'), $clean);
-		$clean['live'] = $derive(array('live', 'live_presentation'), $clean);
-		$clean['events'] = $derive(array('events_list', 'awards_list'), $clean);
-		$clean['system'] = $derive(array('users', 'roles', 'terms', 'leads_import', 'leads_export', 'assigned_leads', 'admin_logs', 'system_assignee', 'kam_clients', 'calling_api', 'integrations', 'live_location', 'qc_panel'), $clean);
-
-		return $clean;
+	public function delete($id = '')
+	{
+		$id = (int)$id;
+		if ($this->input->server('REQUEST_METHOD') !== 'POST') $this->deny('Use the Delete button to remove a role.');
+		if (!$this->can_write()) $this->deny('You can view roles but not delete them.');
+		if ($id <= 1) $this->deny('The Admin role cannot be deleted.');
+		$n = $this->db->where('user_type', $id)->where('status', 1)->count_all_results('ci_user');
+		if ($n > 0) $this->deny('This role still has ' . $n . ' ' . ($n === 1 ? 'person' : 'people') . '. Move them to another role first.');
+		$this->db->where('id', $id)->update('ci_roles', array('status' => 0));
+		$this->ci_admin_model->log_admin_action('role_delete', 'Deleted role ID #' . $id, 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));
+		$this->session->set_flashdata('message', 'Role removed.');
+		redirect('manager/roles');
 	}
 
 	public function ajax_get_user_permissions($user_id = 0)
 	{
 		$user_id = (int)$user_id;
-		if ($user_id <= 0) {
-			header('Content-Type: application/json');
-			echo json_encode(array('status' => 'error', 'message' => 'Invalid user ID'));
-			exit;
-		}
-		$user = $this->db->query("SELECT u.id, u.name, u.email, u.user_type, u.department, r.title as role_title, r.permissions as role_perms FROM ci_user u LEFT JOIN ci_roles r ON u.user_type = r.id WHERE u.id = " . $user_id . " LIMIT 1")->row_array();
-		if (empty($user)) {
-			header('Content-Type: application/json');
-			echo json_encode(array('status' => 'error', 'message' => 'User not found'));
-			exit;
-		}
+		$user = $this->db->query("SELECT u.id, u.name, u.email, u.user_type, u.department, r.title AS role_title, r.permissions AS role_perms
+			FROM ci_user u LEFT JOIN ci_roles r ON u.user_type = r.id WHERE u.id = " . $user_id . " LIMIT 1")->row_array();
+		if (empty($user)) $this->json(array('status' => 'error', 'message' => 'User not found.'));
 
-		$perm_row = $this->db->query("SELECT permission_mode, permissions FROM ci_user_permissions WHERE user_id = " . $user_id . " LIMIT 1")->row_array();
-		$mode = !empty($perm_row['permission_mode']) ? $perm_row['permission_mode'] : 'role';
-		$custom_perms = array();
-		if (!empty($perm_row['permissions'])) {
-			$custom_perms = json_decode($perm_row['permissions'], true);
-			if (!is_array($custom_perms)) {
-				$custom_perms = array();
-			}
-		}
-		$role_perms = array();
-		if (!empty($user['role_perms'])) {
-			$role_perms = json_decode($user['role_perms'], true);
-			if (!is_array($role_perms)) {
-				$role_perms = array();
-			}
-		}
+		$row = $this->db->query("SELECT permission_mode, permissions FROM ci_user_permissions WHERE user_id = " . $user_id . " LIMIT 1")->row_array();
+		$mode = !empty($row['permission_mode']) && in_array($row['permission_mode'], array('role', 'admin', 'custom'), true) ? $row['permission_mode'] : 'role';
+		$role_map = json_decode((string)$user['role_perms'], true);
+		$role_exp = ((int)$user['user_type'] === 1) ? array_fill_keys(array_keys(crm_perm_items()), 'write') : crm_perm_expand(is_array($role_map) ? $role_map : array());
+		$custom = json_decode((string)(isset($row['permissions']) ? $row['permissions'] : ''), true);
+		$custom_exp = (is_array($custom) && !empty($custom)) ? crm_perm_expand($custom) : $role_exp;
 
-		header('Content-Type: application/json');
-		echo json_encode(array(
+		$this->json(array(
 			'status' => 'success',
 			'user' => array(
 				'id' => (int)$user['id'],
 				'name' => $user['name'],
 				'email' => $user['email'],
 				'role_id' => (int)$user['user_type'],
-				'role_title' => $user['role_title'] ? $user['role_title'] : 'Unassigned',
-				'department' => $user['department'] ? $user['department'] : 'General'
+				'role_title' => $user['role_title'] ? $user['role_title'] : 'No role',
+				'department' => $user['department'] ? $user['department'] : '',
+				'is_role_admin' => ((int)$user['user_type'] === 1 || (int)$user['id'] === 1),
 			),
 			'mode' => $mode,
-			'custom_permissions' => $custom_perms,
-			'role_permissions' => $role_perms,
-			// Chatbot rights are user-wise only and independent of the mode above.
-			'chatbot_permissions' => (object)chatbot_user_rights($user_id)
+			'role_permissions' => $role_exp,
+			'custom_permissions' => $custom_exp,
+			'chatbot_permissions' => (object)chatbot_user_rights($user_id),
 		));
-		exit;
 	}
 
 	public function ajax_save_user_permissions()
 	{
+		if (!$this->can_write()) $this->json(array('status' => 'error', 'message' => 'You can view permissions but not change them (needs Full on Roles & Permissions).'));
 		$user_id = (int)$this->input->post('user_id');
-		if ($user_id <= 0) {
-			header('Content-Type: application/json');
-			echo json_encode(array('status' => 'error', 'message' => 'Invalid user ID.'));
-			exit;
-		}
+		$user = $this->db->select('id, user_type')->where('id', $user_id)->get('ci_user')->row_array();
+		if (empty($user)) $this->json(array('status' => 'error', 'message' => 'User not found.'));
+
 		$mode = $this->input->post('permission_mode');
-		if (!in_array($mode, array('role', 'admin', 'custom'))) {
-			$mode = 'role';
+		if (!in_array($mode, array('role', 'admin', 'custom'), true)) $mode = 'role';
+		$me_admin = crm_is_full_admin();
+		if (!$me_admin) {
+			if ($mode === 'admin') $this->json(array('status' => 'error', 'message' => 'Only a full administrator can give Full admin access.'));
+			if (crm_is_full_admin($user_id)) $this->json(array('status' => 'error', 'message' => 'Only a full administrator can change an administrator.'));
+			if ($user_id === (int)$this->session->userdata('manager_id')) $this->json(array('status' => 'error', 'message' => 'You cannot change your own permissions.'));
 		}
 
-		$raw_perms = $this->input->post('permissions');
-		$clean_perms = $this->_normalize_permissions($raw_perms);
-
-		$existing = $this->db->query("SELECT id FROM ci_user_permissions WHERE user_id = " . $user_id . " LIMIT 1")->row_array();
-		if ($existing) {
-			$this->db->update('ci_user_permissions', array(
-				'permission_mode' => $mode,
-				'permissions' => json_encode($clean_perms),
-				'updated_at' => date('Y-m-d H:i:s')
-			), array('user_id' => $user_id));
+		$row = $this->db->query("SELECT id FROM ci_user_permissions WHERE user_id = " . $user_id . " LIMIT 1")->row_array();
+		$save = array('permission_mode' => $mode, 'updated_at' => date('Y-m-d H:i:s'));
+		if ($mode === 'custom') {
+			$save['permissions'] = json_encode(crm_perm_normalize($this->input->post('permissions')));
+		}
+		if ($row) {
+			$this->db->update('ci_user_permissions', $save, array('user_id' => $user_id));
 		} else {
-			$this->db->insert('ci_user_permissions', array(
-				'user_id' => $user_id,
-				'permission_mode' => $mode,
-				'permissions' => json_encode($clean_perms),
-				'created_at' => date('Y-m-d H:i:s'),
-				'updated_at' => date('Y-m-d H:i:s')
-			));
+			$save['user_id'] = $user_id;
+			$save['created_at'] = date('Y-m-d H:i:s');
+			if (!isset($save['permissions'])) $save['permissions'] = null;
+			$this->db->insert('ci_user_permissions', $save);
 		}
 
 		// Chatbot rights (user-wise only). Every right needs "access"; without it all are cleared.
@@ -338,26 +285,16 @@ class Ci_admin_roles extends CI_Controller {
 		$chat_clean = array();
 		if (is_array($chat_in) && !empty($chat_in['access']) && (string)$chat_in['access'] === '1') {
 			foreach (array_keys(chatbot_rights()) as $k) {
-				if (!empty($chat_in[$k]) && (string)$chat_in[$k] === '1') {
-					$chat_clean[$k] = 1;
-				}
+				if (!empty($chat_in[$k]) && (string)$chat_in[$k] === '1') $chat_clean[$k] = 1;
 			}
 		}
 		chatbot_ensure_column();
-		$this->db->where('user_id', $user_id)->update('ci_user_permissions', array(
-			'chatbot_permissions' => empty($chat_clean) ? null : json_encode($chat_clean)
-		));
-		if (empty($chat_clean)) {
-			// Access removed: take the user off live chat duty straight away.
-			if ($this->db->table_exists('ci_support_agents')) {
-				$this->db->where('user_id', $user_id)->update('ci_support_agents', array('available' => 0));
-			}
+		$this->db->where('user_id', $user_id)->update('ci_user_permissions', array('chatbot_permissions' => empty($chat_clean) ? null : json_encode($chat_clean)));
+		if (empty($chat_clean) && $this->db->table_exists('ci_support_agents')) {
+			$this->db->where('user_id', $user_id)->update('ci_support_agents', array('available' => 0));
 		}
 
-		$this->ci_admin_model->log_admin_action('user_perm_update', 'Updated permissions for user ID #'.$user_id.' (mode: '.$mode.', chatbot: '.(empty($chat_clean) ? 'none' : implode(',', array_keys($chat_clean))).')', 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));
-
-		header('Content-Type: application/json');
-		echo json_encode(array('status' => 'success', 'message' => 'Permissions successfully saved for user.'));
-		exit;
+		$this->ci_admin_model->log_admin_action('user_perm_update', 'Updated permissions for user ID #' . $user_id . ' (mode: ' . $mode . ', chatbot: ' . (empty($chat_clean) ? 'none' : implode(',', array_keys($chat_clean))) . ')', 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));
+		$this->json(array('status' => 'success', 'message' => 'Permissions saved. They apply on the person\'s next page.', 'mode' => $mode, 'chatbot' => !empty($chat_clean)));
 	}
 }

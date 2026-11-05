@@ -14,3 +14,10 @@
 
 /* End of file hooks.php */
 /* Location: ./application/config/hooks.php */
+// Permission page guard: see application/hooks/crm_permission_guard.php
+$hook['post_controller_constructor'][] = array(
+	'class'    => '',
+	'function' => 'crm_permission_guard',
+	'filename' => 'crm_permission_guard.php',
+	'filepath' => 'hooks',
+);

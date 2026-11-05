@@ -1,978 +1,393 @@
-<?php require_once(APPPATH."views/manager/elements/header.php"); ?>
-<style>
-.roles-page-container {
-    padding: 0 16px 40px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    color: #000000;
-}
-.perm-tab-switcher {
-    display: inline-flex;
-    background: #f1f5f9;
-    padding: 3px;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    margin-bottom: 20px;
-}
-.perm-tab-btn {
-    border: none;
-    background: transparent;
-    padding: 8px 20px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #64748b;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
-.perm-tab-btn.active {
-    background: #ffffff;
-    color: #000000;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-}
-.role-list-card, .user-perm-card {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-    overflow: hidden;
-}
-.role-list-header, .user-perm-header {
-    padding: 16px 22px;
-    border-bottom: 1px solid #e2e8f0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #ffffff;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-.role-list-title, .user-perm-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: #000000;
-    margin: 0;
-}
-.btn-add-role {
-    background: #000000;
-    color: #ffffff !important;
-    border: 1px solid #000000;
-    border-radius: 6px;
-    padding: 8px 18px;
-    font-size: 13px;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    text-decoration: none !important;
-    transition: all 0.15s ease;
-}
-.btn-add-role:hover {
-    background: #262626;
-    border-color: #262626;
-}
-.role-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-}
-.role-table th {
-    background: #f8fafc;
-    color: #000000;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    padding: 12px 20px;
-    border-bottom: 1px solid #e2e8f0;
-}
-.role-table td {
-    padding: 14px 20px;
-    border-bottom: 1px solid #f1f5f9;
-    font-size: 13.5px;
-    color: #000000;
-    vertical-align: middle;
-}
-.role-table tr:last-child td {
-    border-bottom: none;
-}
-.role-table tr:hover td {
-    background: #f8fafc;
-}
-.role-status-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 3px 10px;
-    border-radius: 4px;
-    font-size: 11.5px;
-    font-weight: 600;
-}
-.status-active {
-    background: #000000;
-    color: #ffffff;
-}
-.status-disabled {
-    background: #ffffff;
-    color: #64748b;
-    border: 1px solid #cbd5e1;
-}
-.role-action-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    border: 1px solid #cbd5e1;
-    background: #ffffff;
-    color: #000000;
-    transition: all 0.15s ease;
-    margin-left: 6px;
-    text-decoration: none !important;
-}
-.role-action-btn:hover {
-    background: #000000;
-    border-color: #000000;
-    color: #ffffff;
-}
-.user-toolbar {
-    padding: 16px 22px;
-    background: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 16px;
-}
-.user-select-control {
-    min-width: 280px;
-    max-width: 380px;
-    height: 38px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 13.5px;
-    background: #ffffff;
-    color: #000000;
-    font-weight: 500;
-    outline: none;
-}
-.user-select-control:focus {
-    border-color: #000000;
-}
-.mode-toggle-group {
-    display: inline-flex;
-    background: #e2e8f0;
-    padding: 3px;
-    border-radius: 6px;
-}
-.mode-toggle-btn {
-    border: none;
-    background: transparent;
-    padding: 6px 14px;
-    font-size: 12.5px;
-    font-weight: 600;
-    color: #475569;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-.mode-toggle-btn.active {
-    background: #000000;
-    color: #ffffff;
-}
-.mode-toggle-btn.active-admin {
-    background: #0f172a;
-    color: #ffffff;
-}
-.mode-toggle-btn.active-custom {
-    background: #1e3a8a;
-    color: #ffffff;
-}
-.user-meta-bar {
-    padding: 12px 22px;
-    background: #ffffff;
-    border-bottom: 1px solid #f1f5f9;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 13px;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-.user-meta-tags {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-.user-meta-item {
-    color: #64748b;
-}
-.user-meta-item strong {
-    color: #000000;
-    font-weight: 600;
-}
-.user-custom-actions {
-    padding: 12px 22px;
-    background: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-.btn-action-sm {
-    background: #ffffff;
-    color: #000000;
-    border: 1px solid #cbd5e1;
-    padding: 6px 12px;
-    font-size: 12px;
-    font-weight: 600;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-.btn-action-sm:hover {
-    background: #000000;
-    border-color: #000000;
-    color: #ffffff;
-}
-.btn-action-primary {
-    background: #1e3a8a;
-    color: #ffffff;
-    border: 1px solid #1e3a8a;
-    padding: 7px 18px;
-    font-size: 13px;
-    font-weight: 600;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-}
-.btn-action-primary:hover {
-    background: #005ec4;
-    border-color: #005ec4;
-}
-.mod-grid {
-    padding: 20px 22px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-    gap: 16px;
-}
-.mod-card {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 7px;
-    overflow: hidden;
-}
-.mod-card-head {
-    background: #f8fafc;
-    padding: 10px 14px;
-    border-bottom: 1px solid #e2e8f0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.mod-card-title {
-    font-size: 13.5px;
-    font-weight: 700;
-    color: #000000;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.mod-card-title i {
-    color: #64748b;
-    font-size: 13px;
-}
-.mod-item-row {
-    padding: 10px 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #f1f5f9;
-}
-.mod-item-row:last-child {
-    border-bottom: none;
-}
-.mod-item-name {
-    font-size: 13px;
-    font-weight: 500;
-    color: #000000;
-}
-.perm-seg-ctrl {
-    display: inline-flex;
-    background: #f1f5f9;
-    border: 1px solid #e2e8f0;
-    border-radius: 5px;
-    overflow: hidden;
-}
-.perm-seg-btn {
-    border: none;
-    background: transparent;
-    padding: 4px 10px;
-    font-size: 11px;
-    font-weight: 600;
-    color: #64748b;
-    cursor: pointer;
-    transition: all 0.12s ease;
-}
-.perm-seg-btn.val-no_access.active {
-    background: #64748b;
-    color: #ffffff;
-}
-.perm-seg-btn.val-read.active {
-    background: #1e3a8a;
-    color: #ffffff;
-}
-.perm-seg-btn.val-write.active {
-    background: #0f172a;
-    color: #ffffff;
-}
-.chat-seg-ctrl {
-    display: inline-flex;
-    background: #f1f5f9;
-    border: 1px solid #e2e8f0;
-    border-radius: 5px;
-    overflow: hidden;
-}
-.chat-perm-wrap { padding: 0 22px 4px; }
-.chat-perm-card { border-color: #c7d2fe; }
-.chat-perm-card .mod-card-head { background: #eef2ff; }
-.chat-perm-note { font-size: 12px; color: #475569; padding: 10px 14px; border-bottom: 1px solid #f1f5f9; background: #fafbff; }
-.chat-perm-badge { font-size: 10.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; background: #1e3a8a; color: #fff; border-radius: 4px; padding: 2px 7px; }
-.chat-perm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
-.chat-perm-grid .mod-item-row { border-right: 1px solid #f1f5f9; }
-.mod-item-desc { display: block; font-size: 11.5px; color: #64748b; font-weight: 400; margin-top: 2px; }
-.mod-item-row.is-locked { opacity: .45; }
-.mod-item-row.is-locked .perm-seg-btn { cursor: not-allowed; }
-.user-sticky-save {
-    position: sticky;
-    bottom: 16px;
-    margin: 16px 22px 0;
-    padding: 12px 20px;
-    background: #000000;
-    color: #ffffff;
-    border-radius: 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
-    z-index: 100;
-}
-</style>
-
-<div class="content-wrapper px-4"> 
-  <section class="content-header" style="padding: 20px 0 16px 0;">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <div>
-        <h1 style="font-size: 22px; font-weight: 700; color: #000000; margin:0; letter-spacing: -0.02em;">
-          Roles &amp; Permissions
-        </h1>
-      </div>
-      <div>
-        <a href="<?php echo base_url(); ?>manager/roles/add" class="btn-add-role" id="topBtnAddRole">
-          <i class="fa fa-plus"></i> Add Role
-        </a>
-      </div>
-    </div>
+<?php require_once(APPPATH . "views/manager/elements/header.php"); ?>
+<?php
+  $csrf_name = $this->security->get_csrf_token_name();
+  $csrf_hash = $this->security->get_csrf_hash();
+  $role_map = array();
+  foreach ($roles as $r) { $role_map[(int)$r['id']] = array('title' => $r['title'], 'perms' => $r['expanded']); }
+  $mode_label = array('role' => 'Role', 'custom' => 'Custom', 'admin' => 'Full admin');
+  $initials = function ($n) {
+    $p = preg_split('/\s+/', trim((string)$n));
+    $s = strtoupper(substr($p[0], 0, 1) . (isset($p[1]) ? substr($p[1], 0, 1) : ''));
+    return $s !== '' ? $s : '?';
+  };
+?>
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-perms.css?v=20261106_1">
+<div class="content-wrapper">
+  <section class="content-header crm-list-head">
+    <h1>Roles &amp; Permissions</h1>
+    <?php if ($can_write) { ?>
+      <a href="<?php echo base_url('manager/roles/add'); ?>" class="btn btn-sm btn-primary"><i class="fa fa-plus"></i> Add Role</a>
+    <?php } ?>
   </section>
 
-  <section class="content roles-page-container" style="padding-left:0; padding-right:0;"> 
-    <div class="perm-tab-switcher">
-      <button type="button" class="perm-tab-btn active" id="tabRoleWise" onclick="switchPermissionsView('role-wise')">
-        <i class="fa fa-shield"></i> Role-Wise Permissions
-      </button>
-      <button type="button" class="perm-tab-btn" id="tabUserWise" onclick="switchPermissionsView('user-wise')">
-        <i class="fa fa-user"></i> User-Wise Permissions
-      </button>
+  <section class="content">
+    <?php echo get_message($this->session->flashdata('error_message'), 'error_message'); ?>
+    <?php echo get_message($this->session->flashdata('message'), 'message'); ?>
+
+    <div class="rp-tabs" role="tablist">
+      <button type="button" role="tab" id="tabRoles" aria-controls="paneRoles" class="is-on" data-tab="roles"><i class="fa fa-sitemap"></i> Roles <span class="rp-tab-count"><?php echo count($roles); ?></span></button>
+      <button type="button" role="tab" id="tabUsers" aria-controls="paneUsers" data-tab="users"><i class="fa fa-user"></i> User permissions <span class="rp-tab-count"><?php echo count($users); ?></span></button>
     </div>
 
-    <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?> 
-    <?php echo get_message($this->session->flashdata('message'),'message'); ?>
+    <!-- ===== Roles ===== -->
+    <div id="paneRoles" role="tabpanel" aria-labelledby="tabRoles">
+      <div class="rp-help">
+        <div class="rp-help-item"><span class="rp-help-ico"><i class="fa fa-sitemap"></i></span><div><b>1. Roles set the default</b><span>Everyone gets the access of their role. Change a role once and it applies to all its people.</span></div></div>
+        <div class="rp-help-item"><span class="rp-help-ico"><i class="fa fa-user"></i></span><div><b>2. Adjust one person</b><span>In User permissions, set someone to Custom to give or take away single areas, or to Full admin.</span></div></div>
+        <div class="rp-help-item"><span class="rp-help-ico"><i class="fa fa-eye"></i></span><div><b>3. Only what they may use</b><span>Menus show only allowed pages, and a page opened without the right is refused. View opens it, Full also adds, edits and deletes.</span></div></div>
+      </div>
 
-    <div id="sectionRoleWise">
-      <div class="role-list-card">
-        <div class="role-list-header">
-          <div>
-            <h2 class="role-list-title">All Roles</h2>
-          </div>
-          <div style="font-size: 13px; color: #64748b;">
-            Total Roles: <strong style="color:#000000; font-weight:700;"><?php echo !empty($user_list) ? count($user_list) : 0; ?></strong>
-          </div>
-        </div>
-
-        <?php if((isset($user_list)) && (!empty($user_list))) { ?>
-        <div class="table-responsive" style="margin-bottom:0;">
-          <table class="role-table">
-            <thead>
-              <tr>
-                <th style="width: 50px;">#</th>                  
-                <th>Role Name</th> 
-                <th style="width: 140px;">Hierarchy Level</th>                 
-                <th style="width: 130px;">Status</th>                 
-                <th style="width: 140px;">Created Date</th>
-                <th style="width: 110px; text-align:right;">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <?php foreach($user_list as $k=>$li) { ?>
-              <tr>
-                <td style="color:#64748b; font-weight:500;"><?php echo $k+1; ?></td>
-                <td>
-                  <strong style="font-weight:600; font-size:14px; color:#000000;"><?php echo htmlspecialchars($li['title']); ?></strong>
-                  <?php if ((int)$li['id'] === 1) { ?>
-                    <span style="font-size:11px; background:#000000; color:#ffffff; padding:2px 8px; border-radius:4px; margin-left:8px; font-weight:600;">
-                      Administrator
-                    </span>
-                  <?php } elseif ((int)$li['id'] === 2) { ?>
-                    <span style="font-size:11px; background:#f1f5f9; color:#000000; border:1px solid #cbd5e1; padding:2px 8px; border-radius:4px; margin-left:8px; font-weight:600;">
-                      Back Office
-                    </span>
-                  <?php } ?>
-                </td>      
-                <td>
-                  <span style="background:#f1f5f9; color:#000000; border:1px solid #e2e8f0; padding:3px 8px; border-radius:4px; font-size:12px; font-weight:600;">
-                    Level <?php echo (int)$li['level']; ?>
-                  </span>
-                </td> 
-                <td>
-                  <?php if($li['status']==0) { ?>
-                    <span class="role-status-badge status-disabled">Disabled</span>
-                  <?php } else { ?>
-                    <span class="role-status-badge status-active">Active</span>
-                  <?php } ?>
-                </td>
-                <td style="color:#64748b;"><?php echo date('d-M-Y',strtotime($li['created'])); ?></td>
-                <td style="text-align:right;">
-                  <a href="<?php echo base_url();?>manager/roles/edit/<?php echo $li['id']; ?>" class="role-action-btn" title="Edit Role &amp; Permissions">
-                    <i class="fa fa-pencil"></i>
-                  </a>
-                  <?php if($li['deletable']==1){ ?> 
-                    <a href="<?php echo base_url();?>manager/roles/delete/<?php echo $li['id']; ?>" onclick="return do_confirm();" class="role-action-btn btn-delete" title="Remove Role">
-                      <i class="fa fa-trash-o"></i>
-                    </a>
-                  <?php } ?>
-                </td>
-              </tr>
+      <div class="box crm-list-box">
+        <div class="box-body">
+          <div class="table-responsive">
+            <table class="table table-hover crm-list-table">
+              <thead><tr><th>Role</th><th>Reports to</th><th>People</th><th>Access</th><th class="text-right">Actions</th></tr></thead>
+              <tbody>
+              <?php foreach ($roles as $r) { $rid = (int)$r['id']; $pct = function ($n) use ($r) { return $r['n_total'] ? round(100 * $n / $r['n_total'], 1) : 0; }; ?>
+                <tr>
+                  <td><span class="rp-role-name"><?php echo htmlspecialchars($r['title']); ?></span><?php if ($rid === 1) { ?> <span class="rp-chip rp-chip-ink">Administrator</span><?php } ?></td>
+                  <td><?php echo $r['parent_title'] !== '' ? htmlspecialchars($r['parent_title']) : '<span class="crm-sub">Top level</span>'; ?></td>
+                  <td><a href="#" class="js-role-people" data-role="<?php echo $rid; ?>"><?php echo (int)$r['users']; ?> <?php echo (int)$r['users'] === 1 ? 'person' : 'people'; ?></a></td>
+                  <td class="rp-access">
+                    <?php if ($rid === 1) { ?>
+                      <div class="rp-bar"><i class="w" style="width:100%"></i></div><small>Full access to everything</small>
+                    <?php } elseif ($r['n_write'] + $r['n_read'] === 0) { ?>
+                      <div class="rp-bar"></div><small>No access yet</small>
+                    <?php } else { ?>
+                      <div class="rp-bar"><i class="w" style="width:<?php echo $pct($r['n_write']); ?>%"></i><i class="r" style="width:<?php echo $pct($r['n_read']); ?>%"></i></div>
+                      <small><?php echo (int)$r['n_write']; ?> Full &middot; <?php echo (int)$r['n_read']; ?> View &middot; <?php echo (int)($r['n_total'] - $r['n_write'] - $r['n_read']); ?> None</small>
+                    <?php } ?>
+                  </td>
+                  <td>
+                    <div class="rp-actions">
+                      <a href="<?php echo base_url('manager/roles/edit/' . $rid); ?>" class="btn btn-default btn-xs"><i class="fa <?php echo ($can_write && $rid !== 1) ? 'fa-pencil' : 'fa-eye'; ?>"></i> <?php echo ($can_write && $rid !== 1) ? 'Edit permissions' : 'View'; ?></a>
+                      <?php if ($can_write) { ?>
+                        <a href="<?php echo base_url('manager/roles/add?copy=' . $rid); ?>" class="btn btn-default btn-xs" title="New role starting from <?php echo htmlspecialchars($r['title']); ?>"><i class="fa fa-clone"></i> Copy</a>
+                        <?php if ($rid !== 1) { ?>
+                        <form method="post" action="<?php echo base_url('manager/roles/delete/' . $rid); ?>" style="display:inline" onsubmit="return <?php echo (int)$r['users'] > 0 ? "alert('Move the " . (int)$r['users'] . " people in this role to another role first.'), false" : "confirm('Delete the role " . htmlspecialchars(addslashes($r['title']), ENT_QUOTES) . "?')"; ?>;">
+                          <input type="hidden" name="<?php echo $csrf_name; ?>" value="<?php echo $csrf_hash; ?>">
+                          <button type="submit" class="btn btn-default btn-xs" title="Delete role"><i class="fa fa-trash-o"></i></button>
+                        </form>
+                        <?php } ?>
+                      <?php } ?>
+                    </div>
+                  </td>
+                </tr>
               <?php } ?>
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          </div>
         </div>
-        <?php } else { ?>
-        <div class="alert alert-info" style="margin:20px;">No Data Found</div>
-        <?php } ?> 
       </div>
     </div>
 
-    <div id="sectionUserWise" style="display:none;">
-      <div class="user-perm-card">
-        <div class="user-toolbar">
-          <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-            <label style="font-size:13px; font-weight:700; margin:0; color:#000000;">Select User:</label>
-            <select id="userSelector" class="user-select-control" onchange="loadSelectedUser(this.value)">
-              <option value="">-- Choose User --</option>
-              <?php if(!empty($active_users)) {
-                foreach($active_users as $u) {
-                  $mode_tag = (!empty($u['permission_mode']) && $u['permission_mode'] !== 'role') ? ' ['.strtoupper($u['permission_mode']).']' : '';
+    <!-- ===== User permissions ===== -->
+    <div id="paneUsers" role="tabpanel" aria-labelledby="tabUsers" hidden>
+      <div class="up-wrap">
+        <div class="box crm-list-box up-people">
+          <div class="box-body">
+            <div class="up-filter">
+              <input type="search" id="upSearch" class="form-control" placeholder="Search name or email" aria-label="Search people">
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                <select id="upRole" class="form-control" aria-label="Filter by role">
+                  <option value="">All roles</option>
+                  <?php foreach ($roles as $r) { ?><option value="<?php echo (int)$r['id']; ?>"><?php echo htmlspecialchars($r['title']); ?></option><?php } ?>
+                </select>
+                <select id="upMode" class="form-control" aria-label="Filter by access type">
+                  <option value="">Any access</option>
+                  <option value="role">Follows role</option>
+                  <option value="custom">Custom</option>
+                  <option value="admin">Full admin</option>
+                  <option value="chatbot">Has Chatbot</option>
+                </select>
+              </div>
+            </div>
+            <div class="up-count" id="upCount"></div>
+            <div class="up-list" id="upList">
+              <?php foreach ($users as $u) {
+                $mode = in_array($u['permission_mode'], array('custom', 'admin'), true) ? $u['permission_mode'] : 'role';
+                $chat = !empty($u['chatbot_permissions']) && strpos($u['chatbot_permissions'], '"access"') !== false;
               ?>
-                <option value="<?php echo (int)$u['user_id']; ?>">
-                  <?php echo htmlspecialchars($u['name']); ?> (<?php echo htmlspecialchars($u['role_title'] ? $u['role_title'] : 'User'); ?><?php echo $mode_tag; ?>)
-                </option>
-              <?php } } ?>
-            </select>
-          </div>
-
-          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-            <label style="font-size:13px; font-weight:700; margin:0; color:#000000;">Permission Mode:</label>
-            <div class="mode-toggle-group">
-              <button type="button" class="mode-toggle-btn active" id="btnModeRole" onclick="setPermissionMode('role')">Role Default</button>
-              <button type="button" class="mode-toggle-btn" id="btnModeAdmin" onclick="setPermissionMode('admin')">Full Admin Rights</button>
-              <button type="button" class="mode-toggle-btn" id="btnModeCustom" onclick="setPermissionMode('custom')">Custom</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="user-meta-bar" id="userMetaBar" style="display:none;">
-          <div class="user-meta-tags">
-            <span class="user-meta-item">User: <strong id="metaUserName">-</strong></span>
-            <span class="user-meta-item">Role: <strong id="metaUserRole">-</strong></span>
-            <span class="user-meta-item">Department: <strong id="metaUserDept">-</strong></span>
-            <span class="user-meta-item">Status: <span id="metaModeBadge" style="padding:2px 8px; border-radius:4px; font-size:11.5px; font-weight:600;">-</span></span>
-          </div>
-          <div>
-            <button type="button" class="btn-action-primary" onclick="saveUserPermissions()">
-              <i class="fa fa-check"></i> Save Permissions
-            </button>
-          </div>
-        </div>
-
-        <div class="user-custom-actions" id="userCustomActions" style="display:none;">
-          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            <label style="font-size:12.5px; font-weight:600; margin:0;">Copy Preset:</label>
-            <select id="rolePresetSelect" class="user-select-control" style="min-width:200px; height:32px; font-size:12.5px;">
-              <option value="">-- Choose Role Preset --</option>
-              <?php if(!empty($user_list)) {
-                foreach($user_list as $r) { ?>
-                  <option value="<?php echo (int)$r['id']; ?>" data-perms='<?php echo htmlspecialchars($r['permissions'] ? $r['permissions'] : "{}"); ?>'>
-                    <?php echo htmlspecialchars($r['title']); ?>
-                  </option>
-              <?php } } ?>
-            </select>
-            <button type="button" class="btn-action-sm" onclick="applyRolePreset()">Apply Preset</button>
-          </div>
-
-          <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-            <button type="button" class="btn-action-sm" onclick="bulkSetPermissions('no_access')">Set All: No Access</button>
-            <button type="button" class="btn-action-sm" onclick="bulkSetPermissions('read')">Set All: View Only</button>
-            <button type="button" class="btn-action-sm" onclick="bulkSetPermissions('write')">Set All: Full Access</button>
-          </div>
-        </div>
-
-        <div id="userPermPlaceholder" style="padding:48px 20px; text-align:center; color:#64748b;">
-          <i class="fa fa-user-circle-o" style="font-size:42px; margin-bottom:12px; color:#cbd5e1; display:block;"></i>
-          <span style="font-size:14px; font-weight:600; color:#000000;">Select a user from the dropdown above to view or customize their permissions</span>
-        </div>
-
-        <?php
-          $all_modules_matrix = array(
-            'core' => array(
-              'title' => 'Core Systems',
-              'icon' => 'fa fa-cube',
-              'items' => array(
-                'dashboard' => 'Dashboard',
-                'calls' => 'Dialer & Softphone'
-              )
-            ),
-            'hr' => array(
-              'title' => 'HR & People Management',
-              'icon' => 'fa fa-user-circle-o',
-              'items' => array(
-                'hr' => 'HR Management',
-                'hr_targets' => 'Assign Targets',
-                'hr_attendance' => 'Attendance & Geolocation',
-                'hr_shifts' => 'Shift Management',
-                'hr_leaves' => 'Leave & Holidays',
-                'hr_payroll' => 'Payroll & Compensation',
-                'hr_appraisals' => 'Performance & Appraisals',
-                'hr_lifecycle' => 'Employee Lifecycle'
-              )
-            ),
-            'my_zone' => array(
-              'title' => 'My Zone',
-              'icon' => 'fa fa-th-large',
-              'items' => array(
-                'database' => 'Database',
-                'leads' => 'Leads',
-                'orders' => 'Orders',
-                'sales' => 'Sales',
-                'followups' => 'My Follow-Up',
-                'meetings' => 'My Meetings',
-                'verticals' => 'Verticals',
-                'vertical_followups' => 'Vertical Follow-up',
-                'internal_tasks' => 'Internal Tasks',
-                'external_tasks' => 'External Tasks',
-                'database_transfer' => 'Database Transfer'
-              )
-            ),
-            'team' => array(
-              'title' => 'Team Operations',
-              'icon' => 'fa fa-users',
-              'items' => array(
-                'team_members' => 'Members',
-                'team_chart' => 'Chart',
-                'team_database' => 'Database',
-                'team_leads' => 'Leads',
-                'team_orders' => 'Orders',
-                'team_verticals' => 'Verticals',
-                'team_followups' => 'Follow up',
-                'team_meetings' => 'Meetings',
-                'team_assignmeetings' => 'Assigned Meetings',
-                'team_assignleads' => 'Assign Database',
-                'team_tasks' => 'Tasks',
-                'team_tickets' => 'Tickets'
-              )
-            ),
-            'back_office' => array(
-              'title' => 'Back Office',
-              'icon' => 'fa fa-briefcase',
-              'items' => array(
-                'lead_review' => 'Pending Leads Approval',
-                'orders_pending' => 'Pending Order Process',
-                'kam_onboard' => 'Onboard Client',
-                'orders_management' => 'All Orders'
-              )
-            ),
-            'kam' => array(
-              'title' => 'KAM (Key Account Management)',
-              'icon' => 'fa fa-handshake-o',
-              'items' => array(
-                'kam_clients' => 'My Client',
-                'kam_schedule' => 'Create Schedule',
-                'kam_task_followup' => 'Task Follow-up',
-                'kam_reminders' => 'Reminders'
-              )
-            ),
-            'reports' => array(
-              'title' => 'Reports & Analytics',
-              'icon' => 'fa fa-bar-chart',
-              'items' => array(
-                'reports_revenue' => 'Revenue List',
-                'reports_projections' => 'Company Projections',
-                'reports_download' => 'Reports'
-              )
-            ),
-            'system' => array(
-              'title' => 'Administration & System',
-              'icon' => 'fa fa-cog',
-              'items' => array(
-                'users' => 'Users',
-                'roles' => 'Roles',
-                'terms' => 'Category',
-                'leads_import' => 'Import Leads',
-                'leads_export' => 'Export Leads',
-                'assigned_leads' => 'Allotted Database',
-                'admin_logs' => 'Admin Logs',
-                'system_assignee' => 'Assignee Management',
-                'kam_clients' => 'KAM Client',
-                'calling_api' => 'Calling API',
-                'integrations' => 'Third-Party API'
-              )
-            )
-          );
-        ?>
-
-        <div id="userPermMatrix" class="mod-grid" style="display:none;">
-          <?php foreach($all_modules_matrix as $group_key => $group_data) { ?>
-            <div class="mod-card">
-              <div class="mod-card-head">
-                <span class="mod-card-title"><i class="<?php echo $group_data['icon']; ?>"></i> <?php echo $group_data['title']; ?></span>
-                <div style="display:flex; gap:4px;">
-                  <button type="button" class="btn-action-sm" style="padding:2px 6px; font-size:10.5px;" onclick="setGroupPerm('<?php echo $group_key; ?>', 'no_access')">None</button>
-                  <button type="button" class="btn-action-sm" style="padding:2px 6px; font-size:10.5px;" onclick="setGroupPerm('<?php echo $group_key; ?>', 'read')">View</button>
-                  <button type="button" class="btn-action-sm" style="padding:2px 6px; font-size:10.5px;" onclick="setGroupPerm('<?php echo $group_key; ?>', 'write')">Full</button>
-                </div>
-              </div>
-              <div data-group="<?php echo $group_key; ?>">
-                <?php foreach($group_data['items'] as $item_key => $item_label) { ?>
-                  <div class="mod-item-row" data-perm-key="<?php echo $item_key; ?>">
-                    <span class="mod-item-name"><?php echo $item_label; ?></span>
-                    <div class="perm-seg-ctrl" data-key="<?php echo $item_key; ?>">
-                      <button type="button" class="perm-seg-btn val-no_access active" onclick="setUserPermValue('<?php echo $item_key; ?>', 'no_access')">None</button>
-                      <button type="button" class="perm-seg-btn val-read" onclick="setUserPermValue('<?php echo $item_key; ?>', 'read')">View</button>
-                      <button type="button" class="perm-seg-btn val-write" onclick="setUserPermValue('<?php echo $item_key; ?>', 'write')">Full</button>
-                    </div>
-                  </div>
-                <?php } ?>
-              </div>
-            </div>
-          <?php } ?>
-        </div>
-
-        <div class="chat-perm-wrap" id="userChatbotPerms" style="display:none;">
-          <div class="mod-card chat-perm-card">
-            <div class="mod-card-head">
-              <span class="mod-card-title"><i class="fa fa-comments"></i> Chatbot (Live Support) <span class="chat-perm-badge">User-wise only</span></span>
-              <div style="display:flex; gap:4px;">
-                <button type="button" class="btn-action-sm" style="padding:2px 6px; font-size:10.5px;" onclick="setAllChatRights(0)">None</button>
-                <button type="button" class="btn-action-sm" style="padding:2px 6px; font-size:10.5px;" onclick="setAllChatRights(1)">All</button>
-              </div>
-            </div>
-            <div class="chat-perm-note">Answers visitors from the Support page on the sign-in screen. These rights are given to one person at a time and are not included in roles, presets or Full Admin Rights. Every right needs <strong>Open Chatbot</strong>.</div>
-            <div class="chat-perm-grid">
-              <?php foreach (chatbot_rights() as $ck => $cl) { ?>
-                <div class="mod-item-row" data-chat-key="<?php echo $ck; ?>">
-                  <span class="mod-item-name"><?php echo htmlspecialchars($cl[0]); ?><span class="mod-item-desc"><?php echo htmlspecialchars($cl[1]); ?></span></span>
-                  <div class="chat-seg-ctrl" data-chat-key="<?php echo $ck; ?>">
-                    <button type="button" class="perm-seg-btn val-no_access active" onclick="setChatRight('<?php echo $ck; ?>', 0)">No</button>
-                    <button type="button" class="perm-seg-btn val-write" onclick="setChatRight('<?php echo $ck; ?>', 1)">Yes</button>
-                  </div>
-                </div>
+              <button type="button" class="up-person" data-id="<?php echo (int)$u['id']; ?>" data-role="<?php echo (int)$u['user_type']; ?>" data-mode="<?php echo $mode; ?>" data-chat="<?php echo $chat ? 1 : 0; ?>" data-text="<?php echo htmlspecialchars(strtolower($u['name'] . ' ' . $u['email'])); ?>">
+                <span class="up-avatar"><?php echo htmlspecialchars($initials($u['name'])); ?></span>
+                <span class="up-person-text">
+                  <span class="up-person-name"><?php echo htmlspecialchars($u['name']); ?></span>
+                  <span class="up-person-sub"><?php echo htmlspecialchars($u['role_title'] ? $u['role_title'] : 'No role'); ?><?php echo $u['email'] ? ' &middot; ' . htmlspecialchars($u['email']) : ''; ?></span>
+                </span>
+                <span class="up-person-tags">
+                  <?php if ($mode === 'custom') { ?><span class="rp-chip rp-chip-amber">Custom</span><?php } elseif ($mode === 'admin') { ?><span class="rp-chip rp-chip-ink">Full admin</span><?php } ?>
+                  <?php if ($chat) { ?><span class="rp-chip rp-chip-ocean" title="Has Chatbot access"><i class="fa fa-comments"></i></span><?php } ?>
+                </span>
+              </button>
               <?php } ?>
             </div>
           </div>
         </div>
-        <div class="user-sticky-save" id="userStickySave" style="display:none;">
-          <div>
-            <span style="font-weight:700; font-size:13.5px;" id="stickyUserSummary">Saving permissions for User</span>
+
+        <div>
+          <div class="box crm-list-box" id="upEmpty">
+            <div class="box-body"><div class="crm-empty-state"><i class="fa fa-hand-o-left"></i> Choose a person on the left to see and change what they can open.</div></div>
           </div>
-          <div style="display:flex; gap:10px;">
-            <button type="button" class="btn-action-primary" onclick="saveUserPermissions()">
-              <i class="fa fa-check"></i> Save Changes
-            </button>
+
+          <div id="upDetail" hidden>
+            <div class="box crm-list-box">
+              <div class="up-head">
+                <span class="up-avatar" id="upAvatar"></span>
+                <div style="flex:1; min-width:180px;">
+                  <h2 id="upName"></h2>
+                  <p id="upMeta"></p>
+                </div>
+              </div>
+              <div class="up-modes" role="radiogroup" aria-label="Access type">
+                <label class="up-mode"><input type="radio" name="upModeChoice" value="role"><span class="up-mode-card"><b>Follow role</b><span id="upModeRoleText">Same access as their role. Changes to the role apply automatically.</span></span></label>
+                <label class="up-mode"><input type="radio" name="upModeChoice" value="custom"><span class="up-mode-card"><b>Custom</b><span>Start from the role and change single areas for this person only.</span></span></label>
+                <label class="up-mode" id="upModeAdminWrap"><input type="radio" name="upModeChoice" value="admin"><span class="up-mode-card"><b>Full admin</b><span>Everything, like the Admin role. Use only for administrators.</span></span></label>
+              </div>
+            </div>
+
+            <div class="up-banner" id="upBanner"></div>
+            <?php $pe_id = 'userPerms'; $pe_values = array(); $pe_readonly = true; $pe_name = 'up'; require(APPPATH . 'views/manager/roles/_perm_editor.php'); ?>
+
+            <div class="box crm-list-box cb-card" id="upChat">
+              <div class="box-header with-border">
+                <h3 class="box-title"><i class="fa fa-comments"></i> Chatbot (Live Support) <span class="rp-chip rp-chip-ocean">User-wise only</span></h3>
+                <div class="pe-seg pe-seg-sm"><button type="button" data-chat-all="0">None</button><button type="button" data-chat-all="1">All</button></div>
+              </div>
+              <div class="box-body">
+                <p class="crm-sub" style="margin:0 0 6px;">Answers visitors from the Support page on the sign-in screen. Given to chosen people only: not part of roles or Full admin. Every right needs <b>Open Chatbot</b>.</p>
+                <div class="pe-rows">
+                  <?php foreach (chatbot_rights() as $ck => $cl) { ?>
+                  <div class="pe-row" data-chat-key="<?php echo $ck; ?>">
+                    <div class="pe-row-text"><span class="pe-label" id="cbl-<?php echo $ck; ?>"><?php echo htmlspecialchars($cl[0]); ?></span><span class="pe-desc"><?php echo htmlspecialchars($cl[1]); ?></span></div>
+                    <div class="pe-seg" role="radiogroup" aria-labelledby="cbl-<?php echo $ck; ?>">
+                      <label><input type="radio" name="cb[<?php echo $ck; ?>]" value="0" checked><span>No</span></label>
+                      <label><input type="radio" name="cb[<?php echo $ck; ?>]" value="1"><span>Yes</span></label>
+                    </div>
+                  </div>
+                  <?php } ?>
+                </div>
+              </div>
+            </div>
+
+            <?php if ($can_write) { ?>
+            <div class="rp-savebar" id="upSavebar">
+              <span class="rp-savebar-text" id="upSaveText">No changes.</span>
+              <div class="rp-savebar-actions">
+                <button type="button" class="btn btn-default" id="upDiscard">Discard</button>
+                <button type="button" class="btn btn-primary" id="upSave"><i class="fa fa-save"></i> Save changes</button>
+              </div>
+            </div>
+            <?php } ?>
           </div>
         </div>
-
       </div>
     </div>
   </section>
 </div>
 
+<script src="<?php echo base_url(); ?>assets/dist/js/crm-perms.js?v=20261106_1"></script>
 <script>
-var currentUserId = 0;
-var currentMode = 'role';
-var userRolePerms = {};
-var userCustomPerms = {};
-var userChatRights = {};
+(function () {
+  var BASE = '<?php echo base_url(); ?>manager/roles/';
+  var CSRF_NAME = '<?php echo $csrf_name; ?>';
+  var CSRF_FALLBACK = '<?php echo $csrf_hash; ?>';
+  var CAN_WRITE = <?php echo $can_write ? 'true' : 'false'; ?>;
+  var IS_FULL_ADMIN = <?php echo $is_full_admin ? 'true' : 'false'; ?>;
+  var ME = <?php echo (int)$this->session->userdata('manager_id'); ?>;
+  var ROLES = <?php echo json_encode((object)$role_map); ?>;
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+  function csrf() { var m = document.cookie.match(/(?:^|;\s*)csrf_cookie_name=([^;]+)/); return m ? decodeURIComponent(m[1]) : CSRF_FALLBACK; }
+  function initials(n) { var p = String(n || '').trim().split(/\s+/); return ((p[0] || '').charAt(0) + (p[1] || '').charAt(0)).toUpperCase() || '?'; }
 
-function renderChatRights() {
-  var hasAccess = !!userChatRights.access;
-  $('.chat-seg-ctrl').each(function() {
-    var key = $(this).data('chat-key');
-    var on = !!userChatRights[key] && (key === 'access' || hasAccess);
-    $(this).find('.perm-seg-btn').removeClass('active');
-    $(this).find(on ? '.val-write' : '.val-no_access').addClass('active');
-    $(this).closest('.mod-item-row').toggleClass('is-locked', key !== 'access' && !hasAccess);
+  /* ---- tabs ---- */
+  function showTab(name) {
+    document.querySelectorAll('[data-tab]').forEach(function (b) {
+      var on = b.getAttribute('data-tab') === name;
+      b.classList.toggle('is-on', on); b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    $('paneRoles').hidden = name !== 'roles';
+    $('paneUsers').hidden = name !== 'users';
+    if (history.replaceState) history.replaceState(null, '', name === 'users' ? '#user-wise' : location.pathname + location.search);
+  }
+  document.querySelectorAll('[data-tab]').forEach(function (b) { b.addEventListener('click', function () { showTab(b.getAttribute('data-tab')); }); });
+  if (/user/.test(location.hash)) showTab('users');
+
+  /* ---- people list ---- */
+  function filterPeople() {
+    var q = $('upSearch').value.trim().toLowerCase(), role = $('upRole').value, mode = $('upMode').value, n = 0;
+    document.querySelectorAll('.up-person').forEach(function (p) {
+      var ok = (!q || p.getAttribute('data-text').indexOf(q) !== -1) &&
+        (!role || p.getAttribute('data-role') === role) &&
+        (!mode || (mode === 'chatbot' ? p.getAttribute('data-chat') === '1' : p.getAttribute('data-mode') === mode));
+      p.style.display = ok ? '' : 'none';
+      if (ok) n++;
+    });
+    $('upCount').textContent = n + (n === 1 ? ' person' : ' people');
+  }
+  ['upSearch', 'upRole', 'upMode'].forEach(function (id) { $(id).addEventListener('input', filterPeople); $(id).addEventListener('change', filterPeople); });
+  filterPeople();
+  document.querySelectorAll('.js-role-people').forEach(function (a) {
+    a.addEventListener('click', function (e) { e.preventDefault(); $('upRole').value = a.getAttribute('data-role'); $('upMode').value = ''; $('upSearch').value = ''; filterPeople(); showTab('users'); });
   });
-}
 
-function setChatRight(key, on) {
-  if (key !== 'access' && !userChatRights.access) {
-    alert('Turn on "Open Chatbot" first.');
-    return;
+  /* ---- one person ---- */
+  var ed = CrmPerms.get('userPerms');
+  var cur = null; // loaded data
+  var state = null; // { mode, custom, chat }
+  var dirty = false;
+
+  function chatGet() {
+    var out = {};
+    document.querySelectorAll('[data-chat-key]').forEach(function (r) {
+      var c = r.querySelector('input:checked');
+      if (c && c.value === '1') out[r.getAttribute('data-chat-key')] = 1;
+    });
+    if (!out.access) out = {};
+    return out;
   }
-  if (on) { userChatRights[key] = 1; } else { delete userChatRights[key]; }
-  if (key === 'access' && !on) { userChatRights = {}; }
-  renderChatRights();
-}
-
-function setAllChatRights(on) {
-  userChatRights = {};
-  if (on) {
-    $('.chat-seg-ctrl').each(function() { userChatRights[$(this).data('chat-key')] = 1; });
+  function chatSet(map) {
+    var has = !!map.access;
+    document.querySelectorAll('[data-chat-key]').forEach(function (r) {
+      var k = r.getAttribute('data-chat-key');
+      var on = !!map[k] && (k === 'access' || has);
+      r.querySelector('input[value="' + (on ? 1 : 0) + '"]').checked = true;
+      var lock = k !== 'access' && !has;
+      r.style.opacity = lock ? '.5' : '';
+      r.querySelectorAll('input').forEach(function (i) { i.disabled = lock || !CAN_WRITE; });
+    });
   }
-  renderChatRights();
-}
-
-function do_confirm(){    
-  var job = confirm("Are you sure to delete this role?");    
-  if(!job) {        
-    return false;    
-  }
-}
-
-function switchPermissionsView(view) {
-  if (view === 'user-wise') {
-    $('#tabRoleWise').removeClass('active');
-    $('#tabUserWise').addClass('active');
-    $('#sectionRoleWise').hide();
-    $('#sectionUserWise').show();
-    $('#topBtnAddRole').hide();
-    window.location.hash = 'user-wise';
-  } else {
-    $('#tabUserWise').removeClass('active');
-    $('#tabRoleWise').addClass('active');
-    $('#sectionUserWise').hide();
-    $('#sectionRoleWise').show();
-    $('#topBtnAddRole').show();
-    window.location.hash = 'role-wise';
-  }
-}
-
-function loadSelectedUser(userId) {
-  userId = parseInt(userId, 10);
-  if (!userId || userId <= 0) {
-    currentUserId = 0;
-    $('#userMetaBar, #userCustomActions, #userPermMatrix, #userStickySave, #userChatbotPerms').hide();
-    $('#userPermPlaceholder').show();
-    return;
-  }
-  currentUserId = userId;
-
-  $.ajax({
-    url: '<?php echo base_url(); ?>manager/roles/ajax_get_user_permissions/' + userId,
-    type: 'GET',
-    dataType: 'json',
-    success: function(res) {
-      if (res && res.status === 'success') {
-        $('#metaUserName').text(res.user.name);
-        $('#metaUserRole').text(res.user.role_title);
-        $('#metaUserDept').text(res.user.department);
-        $('#stickyUserSummary').text('Permissions for ' + res.user.name + ' (' + res.user.role_title + ')');
-
-        userRolePerms = res.role_permissions || {};
-        userCustomPerms = res.custom_permissions || {};
-        currentMode = res.mode || 'role';
-
-        $('#userPermPlaceholder').hide();
-        $('#userMetaBar, #userPermMatrix, #userStickySave, #userChatbotPerms').show();
-        userChatRights = res.chatbot_permissions || {};
-        renderChatRights();
-
-        updateModeUI(currentMode);
-        renderPermissionsMatrix();
-      } else {
-        alert(res.message || 'Failed to load user permissions');
-      }
-    },
-    error: function() {
-      alert('Network error loading user permissions');
-    }
+  document.querySelectorAll('[data-chat-key] input').forEach(function (i) {
+    i.addEventListener('change', function () {
+      var m = chatGet();
+      if (this.name === 'cb[access]' && this.value === '0') m = {};
+      if (this.name === 'cb[access]' && this.value === '1') m.access = 1;
+      chatSet(m); markDirty();
+    });
   });
-}
+  document.querySelectorAll('[data-chat-all]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      if (!CAN_WRITE) return;
+      var m = {};
+      if (b.getAttribute('data-chat-all') === '1') document.querySelectorAll('[data-chat-key]').forEach(function (r) { m[r.getAttribute('data-chat-key')] = 1; });
+      chatSet(m); markDirty();
+    });
+  });
 
-function updateModeUI(mode) {
-  currentMode = mode;
-  $('#btnModeRole, #btnModeAdmin, #btnModeCustom').removeClass('active active-admin active-custom');
-
-  if (mode === 'admin') {
-    $('#btnModeAdmin').addClass('active-admin');
-    $('#metaModeBadge').text('Full Admin Rights').css({ 'background': '#0f172a', 'color': '#ffffff' });
-    $('#userCustomActions').hide();
-  } else if (mode === 'custom') {
-    $('#btnModeCustom').addClass('active-custom');
-    $('#metaModeBadge').text('Custom Permissions').css({ 'background': '#1e3a8a', 'color': '#ffffff' });
-    $('#userCustomActions').show();
-  } else {
-    $('#btnModeRole').addClass('active');
-    $('#metaModeBadge').text('Role Default (' + $('#metaUserRole').text() + ')').css({ 'background': '#f1f5f9', 'color': '#000000', 'border': '1px solid #cbd5e1' });
-    $('#userCustomActions').hide();
-  }
-}
-
-function setPermissionMode(mode) {
-  if (!currentUserId) {
-    alert('Please select a user first.');
-    return;
-  }
-  updateModeUI(mode);
-  renderPermissionsMatrix();
-}
-
-function renderPermissionsMatrix() {
-  $('.perm-seg-ctrl').each(function() {
-    var key = $(this).data('key');
-    var val = 'no_access';
-
-    if (currentMode === 'admin') {
-      val = 'write';
-    } else if (currentMode === 'custom') {
-      if (userCustomPerms.hasOwnProperty(key)) {
-        val = userCustomPerms[key];
-      } else if (userRolePerms.hasOwnProperty(key)) {
-        val = userRolePerms[key];
-      }
+  function setMode(mode, fromUser) {
+    state.mode = mode;
+    document.querySelectorAll('input[name="upModeChoice"]').forEach(function (i) { i.checked = i.value === mode; });
+    var banner = $('upBanner'), role = cur.user.role_title;
+    $('userPerms').style.display = mode === 'admin' ? 'none' : '';
+    banner.className = 'up-banner' + (mode === 'admin' ? ' is-admin' : '');
+    if (mode === 'role') {
+      ed.set(cur.role_permissions); ed.setBaseline(null); ed.setReadonly(true);
+      banner.innerHTML = '<span><i class="fa fa-link"></i> Showing the <b>' + esc(role) + '</b> role. To change only this person, choose <b>Custom</b>.</span>' +
+        (CAN_WRITE && !locked() ? '<button type="button" class="btn btn-xs btn-primary" id="upToCustom">Customise for this person</button>' : '');
+      var b = $('upToCustom'); if (b) b.addEventListener('click', function () { setMode('custom', true); markDirty(); });
+    } else if (mode === 'custom') {
+      if (fromUser && !state.customTouched) state.custom = JSON.parse(JSON.stringify(cur.mode === 'custom' ? cur.custom_permissions : cur.role_permissions));
+      ed.set(state.custom); ed.setBaseline(cur.role_permissions); ed.setReadonly(!CAN_WRITE || locked());
+      banner.innerHTML = '<span><i class="fa fa-sliders"></i> Custom access for this person. Areas marked <b>Changed</b> differ from the <b>' + esc(role) + '</b> role.</span>' +
+        (CAN_WRITE && !locked() ? '<button type="button" class="btn btn-xs btn-default" id="upResetRole">Reset to role</button>' : '');
+      var r = $('upResetRole'); if (r) r.addEventListener('click', function () { state.custom = JSON.parse(JSON.stringify(cur.role_permissions)); ed.set(state.custom); markDirty(); });
     } else {
-      if (userRolePerms.hasOwnProperty(key)) {
-        val = userRolePerms[key];
-      }
+      banner.innerHTML = '<span><i class="fa fa-shield"></i> <b>Full admin</b>: this person can open and change everything, including Roles &amp; Permissions.</span>';
     }
-
-    $(this).find('.perm-seg-btn').removeClass('active');
-    $(this).find('.perm-seg-btn.val-' + val).addClass('active');
+  }
+  function locked() {
+    // Only full admins can change administrators; nobody but a full admin can change their own access.
+    if (!cur) return true;
+    if (IS_FULL_ADMIN) return false;
+    return cur.user.is_role_admin || cur.mode === 'admin' || cur.user.id === ME;
+  }
+  document.querySelectorAll('input[name="upModeChoice"]').forEach(function (i) {
+    i.addEventListener('change', function () { if (this.checked) { setMode(this.value, true); markDirty(); } });
   });
-}
+  ed.onChange(function (m) { if (state && state.mode === 'custom') { state.custom = m; state.customTouched = true; markDirty(); } });
 
-function setUserPermValue(key, val) {
-  if (currentMode !== 'custom') {
-    updateModeUI('custom');
+  function markDirty() {
+    dirty = true;
+    var bar = $('upSavebar'); if (!bar) return;
+    bar.classList.add('is-dirty');
+    $('upSaveText').innerHTML = '<b>Unsaved changes</b> for ' + esc(cur.user.name) + '.';
   }
-  userCustomPerms[key] = val;
-  var $ctrl = $('.perm-seg-ctrl[data-key="' + key + '"]');
-  $ctrl.find('.perm-seg-btn').removeClass('active');
-  $ctrl.find('.perm-seg-btn.val-' + val).addClass('active');
-}
+  function clean(msg) {
+    dirty = false;
+    var bar = $('upSavebar'); if (!bar) return;
+    bar.classList.remove('is-dirty');
+    $('upSaveText').innerHTML = msg || 'No changes.';
+  }
 
-function setGroupPerm(groupKey, val) {
-  if (currentMode !== 'custom') {
-    updateModeUI('custom');
+  function openPerson(id) {
+    if (dirty && !confirm('Discard the unsaved changes for ' + cur.user.name + '?')) return;
+    document.querySelectorAll('.up-person').forEach(function (p) { p.classList.toggle('is-on', +p.getAttribute('data-id') === id); });
+    $('upEmpty').hidden = true; $('upDetail').hidden = false;
+    $('upName').textContent = 'Loading...'; $('upMeta').textContent = '';
+    fetch(BASE + 'ajax_get_user_permissions/' + id, { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        if (r.status !== 'success') { alert(r.message || 'Could not load this person.'); return; }
+        cur = r; state = { mode: r.mode, custom: JSON.parse(JSON.stringify(r.custom_permissions)), customTouched: false };
+        $('upAvatar').textContent = initials(r.user.name);
+        $('upName').textContent = r.user.name;
+        $('upMeta').innerHTML = '<b>' + esc(r.user.role_title) + '</b> role' + (r.user.email ? ' &middot; ' + esc(r.user.email) : '') + (r.user.department ? ' &middot; ' + esc(r.user.department) : '');
+        $('upModeRoleText').textContent = 'Same access as the ' + r.user.role_title + ' role. Changes to the role apply automatically.';
+        var lk = locked() || !CAN_WRITE;
+        document.querySelectorAll('input[name="upModeChoice"]').forEach(function (i) {
+          i.disabled = lk || (i.value === 'admin' && !IS_FULL_ADMIN);
+          i.closest('.up-mode').classList.toggle('is-disabled', i.disabled);
+        });
+        if (r.user.is_role_admin) {
+          // Admin role users always have everything.
+          document.querySelectorAll('input[name="upModeChoice"]').forEach(function (i) { i.disabled = true; i.closest('.up-mode').classList.add('is-disabled'); });
+        }
+        setMode(r.user.is_role_admin ? 'admin' : r.mode, false);
+        if (r.user.is_role_admin) $('upBanner').innerHTML = '<span><i class="fa fa-shield"></i> In the <b>Admin</b> role: always full access. Change their role in Users to limit it.</span>';
+        chatSet(r.chatbot_permissions || {});
+        $('upChat').querySelectorAll('[data-chat-all]').forEach(function (b) { b.disabled = !CAN_WRITE; });
+        clean(lk && CAN_WRITE ? 'Only a full administrator can change this person.' : 'No changes.');
+        var save = $('upSave'); if (save) save.disabled = lk && !IS_FULL_ADMIN && cur.user.is_role_admin;
+      })
+      .catch(function () { alert('Could not load this person. Check your connection.'); });
   }
-  $('div[data-group="' + groupKey + '"] .perm-seg-ctrl').each(function() {
-    var key = $(this).data('key');
-    userCustomPerms[key] = val;
-    $(this).find('.perm-seg-btn').removeClass('active');
-    $(this).find('.perm-seg-btn.val-' + val).addClass('active');
+  document.querySelectorAll('.up-person').forEach(function (p) { p.addEventListener('click', function () { openPerson(+p.getAttribute('data-id')); }); });
+
+  var discard = $('upDiscard');
+  if (discard) discard.addEventListener('click', function () { if (cur) { dirty = false; openPerson(cur.user.id); } });
+
+  var saveBtn = $('upSave');
+  if (saveBtn) saveBtn.addEventListener('click', function () {
+    if (!cur) return;
+    var b = new URLSearchParams();
+    b.append('user_id', cur.user.id);
+    b.append('permission_mode', state.mode);
+    if (state.mode === 'custom') { var m = ed.get(); Object.keys(m).forEach(function (k) { b.append('permissions[' + k + ']', m[k]); }); }
+    var c = chatGet();
+    if (c.access) Object.keys(c).forEach(function (k) { b.append('chatbot[' + k + ']', 1); }); else b.append('chatbot[access]', 0);
+    b.append(CSRF_NAME, csrf());
+    saveBtn.disabled = true;
+    fetch(BASE + 'ajax_save_user_permissions', { method: 'POST', credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: b })
+      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        saveBtn.disabled = false;
+        if (r.status !== 'success') { alert(r.message || 'Not saved.'); return; }
+        cur.mode = r.mode;
+        if (r.mode === 'custom') cur.custom_permissions = ed.get();
+        cur.chatbot_permissions = c;
+        var row = document.querySelector('.up-person[data-id="' + cur.user.id + '"]');
+        if (row) {
+          row.setAttribute('data-mode', r.mode); row.setAttribute('data-chat', r.chatbot ? 1 : 0);
+          var tags = row.querySelector('.up-person-tags');
+          tags.innerHTML = (r.mode === 'custom' ? '<span class="rp-chip rp-chip-amber">Custom</span>' : r.mode === 'admin' ? '<span class="rp-chip rp-chip-ink">Full admin</span>' : '') +
+            (r.chatbot ? '<span class="rp-chip rp-chip-ocean" title="Has Chatbot access"><i class="fa fa-comments"></i></span>' : '');
+        }
+        clean('<i class="fa fa-check" style="color:#16a34a"></i> ' + esc(r.message));
+      })
+      .catch(function () { saveBtn.disabled = false; alert('Not saved. Check your connection and try again.'); });
   });
-}
 
-function bulkSetPermissions(val) {
-  if (currentMode !== 'custom') {
-    updateModeUI('custom');
-  }
-  $('.perm-seg-ctrl').each(function() {
-    var key = $(this).data('key');
-    userCustomPerms[key] = val;
-    $(this).find('.perm-seg-btn').removeClass('active');
-    $(this).find('.perm-seg-btn.val-' + val).addClass('active');
-  });
-}
-
-function applyRolePreset() {
-  var $sel = $('#rolePresetSelect option:selected');
-  var roleId = $sel.val();
-  if (!roleId) {
-    alert('Please choose a role preset first.');
-    return;
-  }
-  var permsJson = $sel.attr('data-perms');
-  var perms = {};
-  try {
-    perms = JSON.parse(permsJson || '{}');
-  } catch(e) {
-    perms = {};
-  }
-
-  updateModeUI('custom');
-  $('.perm-seg-ctrl').each(function() {
-    var key = $(this).data('key');
-    var val = perms.hasOwnProperty(key) ? perms[key] : 'no_access';
-    userCustomPerms[key] = val;
-    $(this).find('.perm-seg-btn').removeClass('active');
-    $(this).find('.perm-seg-btn.val-' + val).addClass('active');
-  });
-}
-
-function saveUserPermissions() {
-  if (!currentUserId) {
-    alert('Please select a user first.');
-    return;
-  }
-
-  var payload = {
-    user_id: currentUserId,
-    permission_mode: currentMode,
-    permissions: {},
-    chatbot: {}
-  };
-  Object.keys(userChatRights).forEach(function(k) { if (userChatRights[k]) payload.chatbot[k] = 1; });
-  if (!payload.chatbot.access) payload.chatbot = { access: 0 };
-
-  $('.perm-seg-ctrl').each(function() {
-    var key = $(this).data('key');
-    var activeVal = $(this).find('.perm-seg-btn.active').hasClass('val-write') ? 'write' : ($(this).find('.perm-seg-btn.active').hasClass('val-read') ? 'read' : 'no_access');
-    payload.permissions[key] = activeVal;
-  });
-
-  $.ajax({
-    url: '<?php echo base_url(); ?>manager/roles/ajax_save_user_permissions',
-    type: 'POST',
-    data: payload,
-    dataType: 'json',
-    success: function(res) {
-      if (res && res.status === 'success') {
-        alert(res.message || 'User permissions saved successfully!');
-      } else {
-        alert(res.message || 'Error saving user permissions.');
-      }
-    },
-    error: function() {
-      alert('Network error saving permissions.');
-    }
-  });
-}
-
-$(document).ready(function() {
-  if (window.location.hash === '#user-wise') {
-    switchPermissionsView('user-wise');
-  }
-});
+  window.addEventListener('beforeunload', function (e) { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+})();
 </script>
-<?php require_once(APPPATH."views/manager/elements/footer.php"); ?>
+<?php require_once(APPPATH . "views/manager/elements/footer.php"); ?>
