@@ -13,7 +13,8 @@
 .ureg .box-header .box-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--crm-ink, #0f172a)}
 .ureg .box-body{padding:8px 6px 2px !important;display:flex;flex-wrap:wrap}
 .ureg .box-body > .row{display:flex;flex-wrap:wrap;margin:0;flex-basis:100%;width:100%}
-.ureg .box-body > [class*="col-"],.ureg .box-body > .row > *{padding:0 6px}
+.ureg .ureg-line{display:flex;flex-wrap:wrap;flex-basis:100%;width:100%}
+.ureg .ureg-line > [class*="col-"],.ureg .box-body > [class*="col-"],.ureg .box-body > .row > *{padding:0 6px}
 .ureg .box-body > :not(.row):not([class*="col-"]),.ureg .box-body > .row > :not([class*="col-"]){flex-basis:100%}
 .ureg .form-group{margin-bottom:6px !important}
 .ureg .form-group label{font-size:12px !important;margin-bottom:2px !important;color:var(--crm-ink-2, #334155);font-weight:600}
@@ -188,40 +189,19 @@
         <div class="row">
          
           
+            <div class="ureg-line">
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Name<span>*</span></label>
                 <input type="text" name="name" class="form-control" style="text-transform: capitalize;" required="" >
               </div>
             </div>
-
-
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Email<span>*</span></label>
                 <input type="email" name="email" class="form-control"  required>
               </div>
             </div>
-            <div class="col-lg-4 col-sm-6">
-              <div class="form-group">
-                <label>Date of Birth<span>*</span></label>
-                <input type="text" class="form-control datepicker" name="dob"   required>
-              </div>
-            </div>
-            <div class="col-lg-4 col-sm-6">
-              <div class="form-group">
-                <label>Gender</label>
-                <select class="form-control" style="width: 100%;" name="gender">
-                  <option value="Male" selected="selected">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-            </div>
-        
-
-      
-
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                  <label>Contact No<span>*</span></label>
@@ -240,10 +220,9 @@
                   </div> 
                   </div>                
                 </div>
-
                 <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                 <label>UAE Alternate No</label>
+                 <label>Alternate No</label>
                   <div class="input-group">
                         <span class="input-group-addon country-code">
                          <select name="country_code2">                          
@@ -259,23 +238,68 @@
                   </div> 
                   </div>                
                 </div>
-            
+            </div>
+            <div class="ureg-line">
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>Date of Birth<span>*</span></label>
+                <input type="text" class="form-control datepicker" name="dob"   required>
+              </div>
+            </div>
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>Gender</label>
+                <select class="form-control" style="width: 100%;" name="gender">
+                  <option value="Male" selected="selected">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>Nationality<span>*</span></label>
+                 <select class="form-control" name="national" required>  
+                 <option value="">Select</option>                        
 
+                            <?php if(isset($c_list) && !empty($c_list)){
+                              foreach($c_list as $cli){
+                            ?>
+                            <option value="<?php echo $cli['name']; ?>" ><?php echo $cli['name']; ?></option>
+                        <?php } }  ?>
+                      </select>
+              </div>
+            </div>
+             <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>Blood Group</label>
+               <select class="form-control" style="width: 100%;" name="blood">
+               <option value="">Select</option>
+                  <option value="O+">O+</option>
+                 <option value="O-">O-</option>
+                 <option value="A+">A+</option>
+                 <option value="A-">A-</option>
+                 <option value="B+">B+</option>
+                 <option value="B-">B-</option>
+                 <option value="AB+">AB+</option>
+                 <option value="AB-">AB-</option>
+                </select>
+              </div>
+            </div>
+            </div>
+            <div class="ureg-line">
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Address</label>
                 <input type="text" name="address" class="form-control" />
               </div>
             </div>
-
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>City</label>
                 <input type="text" class="form-control" name="city"  >
               </div>
             </div>
-           
-
            <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Country<span>*</span></label>
@@ -289,8 +313,6 @@
                       </select>
               </div>
             </div>
-
-
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>State / Emirate<span>*</span></label>
@@ -299,6 +321,7 @@
                  </select>
                 
               </div>
+            </div>
             </div>
             
             
@@ -317,32 +340,13 @@
       
         <div class="row">
          
+            <div class="ureg-line">
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Employee ID<span>*</span></label>
                 <input type="text" class="form-control" name="emp_id"   required>
               </div>
             </div>
-              <div class="col-lg-4 col-sm-6">
-              <div class="form-group">
-                <label>Salary</label>
-                <input type="text" class="form-control" name="c_salary"  >
-              </div>
-            </div>
-            <div class="col-lg-4 col-sm-6">
-              <div class="form-group">
-                <label>Date of Joining<span>*</span></label>
-                <input type="text" class="form-control datepicker" name="c_doj"   required>
-              </div>
-            </div>            
-            
-            <div class="col-lg-4 col-sm-6">
-              <div class="form-group">
-                <label>Date of Leaving</label>
-                <input type="text" class="form-control datepicker" name="c_dol"  >
-              </div>
-            </div>
-
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Department<span>*</span></label>
@@ -379,6 +383,27 @@
                 </select>
               </div>
             </div>
+              <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>Salary</label>
+                <input type="text" class="form-control" name="c_salary"  >
+              </div>
+            </div>
+            </div>
+            <div class="ureg-line">
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>Date of Joining<span>*</span></label>
+                <input type="text" class="form-control datepicker" name="c_doj"   required>
+              </div>
+            </div>            
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>Date of Leaving</label>
+                <input type="text" class="form-control datepicker" name="c_dol"  >
+              </div>
+            </div>
+            </div>
             
             </div>
              </div>
@@ -391,49 +416,33 @@
       </div>
       <div class="box-body" >
             <div class="ureg-sub">Identity &amp; Visa</div>
-            <div class="col-lg-4 col-sm-6">
-              <div class="form-group">
-                <label>Nationality<span>*</span></label>
-                 <select class="form-control" name="national" required>  
-                 <option value="">Select</option>                        
-
-                            <?php if(isset($c_list) && !empty($c_list)){
-                              foreach($c_list as $cli){
-                            ?>
-                            <option value="<?php echo $cli['name']; ?>" ><?php echo $cli['name']; ?></option>
-                        <?php } }  ?>
-                      </select>
-              </div>
-            </div>
-             <div class="col-lg-4 col-sm-6">
-              <div class="form-group">
-                <label>Blood Group</label>
-               <select class="form-control" style="width: 100%;" name="blood">
-               <option value="">Select</option>
-                  <option value="O+">O+</option>
-                 <option value="O-">O-</option>
-                 <option value="A+">A+</option>
-                 <option value="A-">A-</option>
-                 <option value="B+">B+</option>
-                 <option value="B-">B-</option>
-                 <option value="AB+">AB+</option>
-                 <option value="AB-">AB-</option>
-                </select>
-              </div>
-            </div>
+            <div class="ureg-line">
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Passport No<span>*</span></label>
                 <input type="text" class="form-control" name="p_no"   required>
               </div>
             </div>
-            
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Passport Expiry</label>
                 <input type="text" class="form-control datepicker" name="p_exdate"  >
               </div>
             </div>
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>Emirates ID</label>
+                <input type="text" class="form-control" name="eid_no"  >
+              </div>
+            </div>
+             <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>ID Expiry</label>
+                <input type="text" class="form-control datepicker" name="eid_expiry"  >
+              </div>
+            </div>
+            </div>
+            <div class="ureg-line">
              <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Visa Type</label>
@@ -458,19 +467,9 @@
                 <input type="text" class="form-control datepicker" name="visa_expiry"  >
               </div>
             </div>
-            <div class="col-lg-4 col-sm-6">
-              <div class="form-group">
-                <label>Emirates ID</label>
-                <input type="text" class="form-control" name="eid_no"  >
-              </div>
-            </div>
-             <div class="col-lg-4 col-sm-6">
-              <div class="form-group">
-                <label>ID Expiry</label>
-                <input type="text" class="form-control datepicker" name="eid_expiry"  >
-              </div>
             </div>
             <div class="ureg-sub">Emergency Contact</div>
+            <div class="ureg-line">
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Contact Name<span>*</span></label>
@@ -489,46 +488,25 @@
                 <input type="text" class="form-control only_digit" name="h_contact_no"   required>
               </div>
             </div>
-
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Alternate No</label>
                 <input type="text" class="form-control only_digit" name="h_contact_no2"  >
               </div>
             </div>
-           
+            </div>
             <div class="ureg-sub">Bank Details</div>
+            <div class="ureg-line">
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Bank Name</label>
                 <input type="text" class="form-control" name="bank"  >
               </div>
             </div>
-          <div class="col-lg-4 col-sm-6">
-              <div class="form-group">
-                <label>Bank Country</label>
-                <select class="form-control" name="bank_country">                          
-                <option value="">Select</option>
-                            <?php if(isset($c_list) && !empty($c_list)){
-                              foreach($c_list as $cli){
-                            ?>
-                            <option value="<?php echo $cli['name']; ?>" ><?php echo $cli['name']; ?></option>
-                        <?php } }  ?>
-                      </select>
-              </div>
-            </div>
-             
-             
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Account No</label>
                 <input type="text" class="form-control" name="bank_no"  >
-              </div>
-            </div>
-            <div class="col-lg-4 col-sm-6">
-              <div class="form-group">
-                <label>IFSC / Branch</label>
-                <input type="text" class="form-control" name="ifsc"  >
               </div>
             </div>
             <div class="col-lg-4 col-sm-6">
@@ -542,6 +520,28 @@
                 <label>SWIFT</label>
                 <input type="text" class="form-control" name="swift"  >
               </div>
+            </div>
+            </div>
+            <div class="ureg-line">
+          <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>Bank Country</label>
+                <select class="form-control" name="bank_country">                          
+                <option value="">Select</option>
+                            <?php if(isset($c_list) && !empty($c_list)){
+                              foreach($c_list as $cli){
+                            ?>
+                            <option value="<?php echo $cli['name']; ?>" ><?php echo $cli['name']; ?></option>
+                        <?php } }  ?>
+                      </select>
+              </div>
+            </div>
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>IFSC / Branch</label>
+                <input type="text" class="form-control" name="ifsc"  >
+              </div>
+            </div>
             </div>
             
             </div>
