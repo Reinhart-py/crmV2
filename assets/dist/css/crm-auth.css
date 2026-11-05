@@ -537,5 +537,10 @@ body.auth-page {
 
 /* Support chat: wider panel and a taller message area that follows the screen height. */
 .sp-inner:has(.sp-chat:not([hidden])) { max-width: min(720px, 100%); }
-.sp-chat .sp-msgs { height: clamp(260px, 58vh, 720px); }
-@media (max-width: 860px) { .sp-chat .sp-msgs { height: clamp(240px, 55vh, 600px); } }
+.sp-inner:has(.sp-chat:not([hidden])) { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; width: 100%; }
+.sp-inner:has(.sp-chat:not([hidden])) .sp-chat { flex: 1 1 auto; min-height: 0; }
+.sp-chat .sp-msgs { height: auto; flex: 1 1 auto; min-height: 120px; }
+@media (max-width: 860px) {
+  body:has(.sp-chat:not([hidden])) .auth-visual { display: none; }
+  body:has(.sp-chat:not([hidden])) .auth-panel { height: 100vh; height: 100dvh; min-height: 0; }
+}
