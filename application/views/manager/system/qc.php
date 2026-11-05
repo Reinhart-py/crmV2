@@ -1,6 +1,21 @@
 <?php require_once(APPPATH . "views/manager/elements/header.php"); ?>
-
+<?php $qc_ro = empty($can_edit); ?>
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_6">
 <style>
+.sx .sx-kpi b span, .sx .sx-kpi #qcStatsText span { display: inline; font: inherit; color: inherit; margin: 0; }
+.qc-kpi-bar { width: 100%; height: 6px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-top: 6px; }
+.qc-kpi-bar .qc-progress-bar-fill { height: 100%; }
+.sx .qc-section-card { border-color: var(--crm-line, #e2e8f0); border-radius: 12px; }
+.qc-table th.th-page, .qc-table td.td-page { position: sticky; left: 0; z-index: 1; background: #fff; }
+.qc-table tr:hover td.td-page, .qc-table tr.row-all-checked td.td-page { background: #f8fafc; }
+.qc-chk-box:disabled { cursor: not-allowed; opacity: .7; }
+@media (max-width: 767px) {
+  .qc-section-header { padding: 10px 12px; }
+  .qc-table th.th-page, .qc-table td.td-page { min-width: 150px; max-width: 170px; white-space: normal; }
+  .qc-table th, .qc-table td { padding: 8px 6px; }
+  .qc-route-sub { display: none; }
+  .btn-remarks-trigger span { display: none; }
+}
 .qc-page-wrapper {
   background: #f8fafc;
   min-height: calc(100vh - 80px);
@@ -229,11 +244,10 @@
 }
 </style>
 
-<div class="content-wrapper qc-page-wrapper">
-  <div class="qc-top-header">
-    <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
-      <h1 class="qc-page-title">Quality Check</h1>
-      <div style="display:inline-flex; align-items:center; gap:8px;">
+<div class="content-wrapper sx">
+  <section class="sx-head">
+      <h1>QC Panel<small>Tick each check once a page has been tested. Click a page name to open it.</small></h1>
+      <div class="sx-btns">
         <button type="button" class="btn btn-sm" id="btnExpandAll" onclick="expandAllSections()" title="Expand all sections" style="background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; font-weight:600; color:#334155; padding:5px 12px; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
           <i class="fa fa-expand" style="color:#1e3a8a;"></i> <span>Expand All</span>
         </button>
@@ -241,18 +255,14 @@
           <i class="fa fa-compress" style="color:#1e3a8a;"></i> <span>Collapse All</span>
         </button>
       </div>
-    </div>
+  </section>
 
-    <div class="qc-progress-card">
-      <div style="font-size:12.5px; font-weight:700; color:#0f172a;" id="qcStatsText">
-        <span id="qcPassedChecks"><?php echo $passed_checks; ?></span> / <span id="qcTotalChecks"><?php echo $total_checks; ?></span> Checks Passed (<span id="qcPct"><?php echo $pct; ?></span>%)
-      </div>
-      <div class="qc-progress-bar-wrap">
-        <div class="qc-progress-bar-fill" id="qcProgressFill" style="width:<?php echo $pct; ?>%;"></div>
-      </div>
-    </div>
+  <section class="content">
+  <div class="sx-kpis">
+    <div class="sx-kpi g"><span class="ic"><i class="fa fa-check-square-o"></i></span><div style="flex:1; min-width:0;"><b><span id="qcPct"><?php echo $pct; ?></span>%</b><span id="qcStatsText"><span id="qcPassedChecks"><?php echo $passed_checks; ?></span> of <span id="qcTotalChecks"><?php echo $total_checks; ?></span> checks passed</span><div class="qc-kpi-bar"><div class="qc-progress-bar-fill" id="qcProgressFill" style="width:<?php echo $pct; ?>%;"></div></div></div></div>
+    <div class="sx-kpi"><span class="ic"><i class="fa fa-file-o"></i></span><div><b><?php echo (int)$checked_items; ?> / <?php echo (int)$total_items; ?></b><span>Pages fully checked</span></div></div>
+    <?php if ($qc_ro) { ?><div class="sx-kpi s"><span class="ic"><i class="fa fa-lock"></i></span><div><b>View only</b><span>Ask for Full access to tick</span></div></div><?php } ?>
   </div>
-
   <div>
     <?php 
     $section_svgs = array(
@@ -381,6 +391,7 @@
       </div>
     <?php } } ?>
   </div>
+  </section>
 </div>
 
 <div class="qc-modal-overlay" id="qcRemarksModal" onclick="closeRemarksModal(event)">
@@ -469,7 +480,9 @@ function onSingleCheckChange(el) {
     url: '<?php echo base_url("manager/system/ajax_save_qc"); ?>',
     type: 'POST',
     dataType: 'json',
-    data: postData
+    data: postData,
+    success: qcSaved,
+    error: qcFailed
   });
 }
 
@@ -500,7 +513,9 @@ function toggleRowSelectAll(el) {
     url: '<?php echo base_url("manager/system/ajax_save_qc"); ?>',
     type: 'POST',
     dataType: 'json',
-    data: postData
+    data: postData,
+    success: qcSaved,
+    error: qcFailed
   });
 }
 
@@ -533,9 +548,14 @@ function toggleSectionSelectAll(el) {
     url: '<?php echo base_url("manager/system/ajax_save_qc"); ?>',
     type: 'POST',
     dataType: 'json',
-    data: postData
+    data: postData,
+    success: qcSaved,
+    error: qcFailed
   });
 }
+
+function qcSaved(res) { if (res && res.success === false) { alert(res.message || 'Not saved.'); location.reload(); } }
+function qcFailed() { alert('The tick was not saved. Check your connection and try again.'); location.reload(); }
 
 var currentActiveRemarksBtn = null;
 
@@ -578,6 +598,7 @@ function saveCurrentRemarks() {
     data: postData,
     success: function(res) {
       $('#btnSaveRemarks').prop('disabled', false).text('Save Remarks');
+      if (res && res.success === false) { alert(res.message || 'Not saved.'); return; }
       if (currentActiveRemarksBtn) {
         currentActiveRemarksBtn.data('remarks', remarks);
         if (remarks.length > 0) {
@@ -594,6 +615,17 @@ function saveCurrentRemarks() {
     }
   });
 }
+<?php if ($qc_ro) { ?>
+$(function () {
+  $('.qc-chk-box').prop('disabled', true);
+  $('#btnSaveRemarks').hide();
+  $('#modalRemarkText').prop('readonly', true);
+});
+<?php } ?>
+$(function () {
+  // tick the section box when every page in it is fully checked
+  $('.qc-sec-select-all').each(function () { var $c = $('#section_card_' + $(this).data('sec')); var all = $c.find('.qc-chk-single'); this.checked = all.length > 0 && all.length === all.filter(':checked').length; });
+});
 </script>
 
 <?php require_once(APPPATH . "views/manager/elements/footer.php"); ?>

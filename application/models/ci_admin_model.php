@@ -1576,42 +1576,47 @@ public function dashboard_MyPro($table='ci_leads'){
 		if (!empty($d1) && !empty($d2)) {
 			$date1 = date("Y-m-d", strtotime($d1));
 			$date2 = date("Y-m-d", strtotime($d2));
-			$this->db->where('(A.created BETWEEN "'.$date1.'" AND "'.$date2.'")');
+			$this->db->where("(DATE(A.created) BETWEEN '".$date1."' AND '".$date2."')");
 		}
 
 		if ((!empty($mrr1) || ($mrr1 == '0')) && !empty($mrr2)) {
-			$this->db->where('(A.mrr BETWEEN '.$mrr1.' AND '.$mrr2.')');
+			$this->db->where('(A.mrr BETWEEN '.(float)$mrr1.' AND '.(float)$mrr2.')');
 		}
 
 		if (!empty($category)) {
-			$this->db->where('FIND_IN_SET(A.s_cat, "'.$category.'")>0');
+			$this->db->where("FIND_IN_SET(A.s_cat, '" . implode(',', array_filter(array_map('intval', explode(',', (string)$category)))) . "')>0");
 		}
 
 		if (!empty($lCat)) {
-			$this->db->where('FIND_IN_SET(A.lead_cat, "'.$lCat.'")>0');
+			$this->db->where("FIND_IN_SET(A.lead_cat, '" . implode(',', array_filter(array_map('intval', explode(',', (string)$lCat)))) . "')>0");
 		}
 
 		if (!empty($user_name)) {
-			$this->db->where('(B.name LIKE "%'.$user_name.'%" OR U2.name LIKE "%'.$user_name.'%")');
+			$un = $this->db->escape_like_str($user_name);
+			$this->db->where("(B.name LIKE '%".$un."%' OR U2.name LIKE '%".$un."%')");
 		}
 
 		if (!empty($country)) {
-			$this->db->where('FIND_IN_SET(A.country, "'.$country.'")>0');
+			$this->db->where("FIND_IN_SET(A.country, '" . implode(',', array_filter(array_map('intval', explode(',', (string)$country)))) . "')>0");
 		}
 
 		if (!empty($state)) {
-			$this->db->where('FIND_IN_SET(A.state, "'.$state.'")>0');
+			$this->db->where("FIND_IN_SET(A.state, '" . implode(',', array_filter(array_map('intval', explode(',', (string)$state)))) . "')>0");
 		}
 
 		if (!empty($status)) {
-			$this->db->where('FIND_IN_SET(A.status, "'.$status.'")>0');
+			$this->db->where("FIND_IN_SET(A.status, '" . implode(',', array_filter(array_map('intval', explode(',', (string)$status)))) . "')>0");
 		}
 
 		if (!empty($search)) {
-			$where = '(A.lead_id LIKE "%'.$search.'%" OR A.customer LIKE "%'.$search.'%" OR A.mrr LIKE "%'.$search.'%" OR A.contact1 LIKE "%'.$search.'%" OR A.id LIKE "%'.$search.'%")';
+			$q = $this->db->escape_like_str($search);
+			$where = "(A.lead_id LIKE '%$q%' OR A.customer LIKE '%$q%' OR A.mrr LIKE '%$q%' OR A.contact1 LIKE '%$q%' OR A.id LIKE '%$q%')";
 			$this->db->where($where);
 		}
 
+		// only known columns and directions (these come from the address bar)
+		if (!in_array($order_by, array('A.id', 'A.created', 'A.customer', 'A.mrr', 'A.lead_id'), true)) $order_by = 'A.id';
+		$sort_by = strtoupper((string)$sort_by) === 'ASC' ? 'ASC' : 'DESC';
 		if (!empty($order_by) && !empty($sort_by)) {
 			$this->db->order_by($order_by, $sort_by);
 		} else {

@@ -3,11 +3,14 @@
 class Threecx
 {
 	private $config_file;
+	/** Saved settings live here (git-ignored, so the client secret never reaches the repository). */
+	private $local_file;
 	private $config = array();
 
 	public function __construct()
 	{
 		$this->config_file = APPPATH . 'config/3cx_config.json';
+		$this->local_file = APPPATH . 'config/3cx_config.local.json';
 		$this->load_config();
 	}
 
@@ -23,8 +26,9 @@ class Threecx
 			'autodialer_seconds' => 60
 		);
 
-		if (file_exists($this->config_file)) {
-			$raw = @file_get_contents($this->config_file);
+		foreach (array($this->config_file, $this->local_file) as $file) {
+			if (!file_exists($file)) continue;
+			$raw = @file_get_contents($file);
 			if (!empty($raw)) {
 				$decoded = json_decode($raw, true);
 				if (is_array($decoded)) {
@@ -63,7 +67,7 @@ class Threecx
 			'updated_at' => date('Y-m-d H:i:s')
 		);
 
-		$written = @file_put_contents($this->config_file, json_encode($new_config, JSON_PRETTY_PRINT));
+		$written = @file_put_contents($this->local_file, json_encode($new_config, JSON_PRETTY_PRINT));
 		if ($written !== false) {
 			$this->config = $new_config;
 			return array('status' => true, 'message' => '3CX configuration saved successfully');

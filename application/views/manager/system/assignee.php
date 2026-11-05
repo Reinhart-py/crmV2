@@ -1,150 +1,137 @@
 <?php require_once(APPPATH . "views/manager/elements/header.php"); ?>
-
-<div class="content-wrapper px-4">
-    <section class="content-header" style="display:flex; justify-content:space-between; align-items:center;">
-        <h1><?php echo htmlspecialchars($info['page_heading'] ?? 'Onboarded Client Assignees'); ?></h1>
+<?php
+$h = function ($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); };
+$g = function ($k) { return isset($_GET[$k]) && is_string($_GET[$k]) ? $_GET[$k] : ''; };
+$clients = isset($clients) && is_array($clients) ? $clients : array();
+$k_none = 0; $k_team = 0;
+foreach ($clients as $c) {
+    if ((int)($c['executive_id'] ?? 0) <= 0) $k_none++;
+    if (trim((string)($c['collaborators'] ?? ''), ', ') !== '') $k_team++;
+}
+$base = base_url('manager/system/assignee');
+?>
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_6">
+<style>
+  .as-collab { display: flex; flex-wrap: wrap; gap: 4px; }
+  .sx .sx-bar .input-daterange { width: auto; flex: 0 1 280px; }
+  .sx .sx-bar .input-daterange .form-control { min-width: 0; width: 100%; }
+  @media (max-width: 767px) { .sx .sx-bar .input-daterange { flex: 1 1 100%; width: 100%; } }
+  #assignModal .modal-content { border-radius: 12px; }
+  #assignModal label { font-weight: 600; font-size: 13px; }
+</style>
+<div class="content-wrapper sx">
+    <section class="sx-head">
+        <h1>Assignee Management<small>Who looks after each onboarded client, and who helps</small></h1>
         <?php if ($can_edit) { ?>
-        <div>
-            <button type="button" class="btn btn-primary" id="btnAssignNewCompany" style="background:#1e3a8a; border-color:#1e3a8a; font-weight:600; border-radius:4px;">
-                <i class="fa fa-user-plus"></i> Assign Company
-            </button>
+        <div class="sx-btns">
+            <button type="button" class="btn btn-primary" id="btnAssignNewCompany"><i class="fa fa-user-plus"></i> Assign company</button>
         </div>
         <?php } ?>
     </section>
 
     <section class="content">
-        <div class="row">
-            <div class="col-xs-12">
-                <div class="box p-4">
-                    <div class="x_row">
-                        <div class="x_col">
-                            <form class="form-inline head_filter form-inline-mob" method="get" action="<?php echo base_url('manager/system/assignee'); ?>">
-                                <div class="form-group">
-                                    <input type="text" class="input-md form-control" name="search" placeholder="Search Company / Owner / POC" value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>" autocomplete="off" style="min-width: 260px;" />
-                                </div>
+        <?php echo get_message($this->session->flashdata('error_message'), 'error_message'); ?>
+        <?php echo get_message($this->session->flashdata('message'), 'message'); ?>
 
-                                <div class="form-group">
-                                    <div class="input-daterange input-group" id="datepicker">
-                                        <input type="text" class="input-md form-control datepicker" name="d1" placeholder="Onboarded From" value="<?php echo htmlspecialchars($_GET['d1'] ?? ''); ?>" autocomplete="off" />
-                                        <span class="input-group-addon">To</span>
-                                        <input type="text" class="input-md form-control datepicker" name="d2" placeholder="Onboarded To" value="<?php echo htmlspecialchars($_GET['d2'] ?? ''); ?>" autocomplete="off" />
-                                    </div>
-                                </div>
+        <div class="sx-kpis">
+            <a class="sx-kpi <?php echo $g('owner') === '' ? 'is-on' : ''; ?>" href="<?php echo $base; ?>"><span class="ic"><i class="fa fa-building"></i></span><div><b><?php echo number_format(count($clients)); ?></b><span><?php echo $g('owner') === '' && $g('search') === '' && $g('d1') === '' ? 'Onboarded clients' : 'Clients shown'; ?></span></div></a>
+            <a class="sx-kpi a <?php echo $g('owner') === 'none' ? 'is-on' : ''; ?>" href="<?php echo $base; ?>?owner=none"><span class="ic"><i class="fa fa-user-times"></i></span><div><b><?php echo number_format($k_none); ?></b><span>No owner yet</span></div></a>
+            <div class="sx-kpi g"><span class="ic"><i class="fa fa-users"></i></span><div><b><?php echo number_format($k_team); ?></b><span>With collaborators</span></div></div>
+        </div>
 
-                                <div class="form-group">
-                                    <button type="submit" class="btn btn-success"><i class="fa fa-search"></i> Search</button>
-                                    <a href="<?php echo htmlspecialchars($reset_url); ?>" class="btn btn-danger"><i class="fa fa-refresh"></i> Reset</a>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+        <div class="sx-card">
+            <form class="sx-bar" method="get" action="<?php echo $base; ?>">
+                <input type="text" class="form-control sx-q" name="search" placeholder="Company, owner, contact or phone" value="<?php echo $h($g('search')); ?>" autocomplete="off" />
+                <div class="input-daterange input-group" id="datepicker">
+                    <input type="text" class="form-control datepicker" name="d1" placeholder="Onboarded from" value="<?php echo $h($g('d1')); ?>" autocomplete="off" />
+                    <span class="input-group-addon">to</span>
+                    <input type="text" class="form-control datepicker" name="d2" placeholder="To" value="<?php echo $h($g('d2')); ?>" autocomplete="off" />
                 </div>
+                <select name="owner" class="form-control">
+                    <option value="">Any owner</option>
+                    <option value="none" <?php echo $g('owner') === 'none' ? 'selected' : ''; ?>>No owner yet</option>
+                    <?php foreach ((array)$users_list as $u) { ?>
+                        <option value="<?php echo (int)$u['id']; ?>" <?php echo $g('owner') === (string)$u['id'] ? 'selected' : ''; ?>><?php echo $h($u['name']); ?></option>
+                    <?php } ?>
+                </select>
+                <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Search</button>
+                <a href="<?php echo $h($reset_url); ?>" class="btn btn-default">Reset</a>
+            </form>
 
-                <div class="box">
-                    <div class="box-body table-responsive">
-                        <?php echo get_message($this->session->flashdata('message'), 'message'); ?>
-                        <?php if (!empty($clients)) { ?>
-                            <table id="example_assignee" class="table table-hover table-bordered table-striped" style="width:100%;">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 50px;">#</th>
-                                        <th>Company / Client</th>
-                                        <th>Owner Name</th>
-                                        <th>Primary Assignee</th>
-                                        <th>Collaborators</th>
-                                        <th>Status</th>
-                                        <th>Onboarded Date</th>
-                                        <th style="width: 110px; text-align: center;">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php 
-                                    $idx = 1;
-                                    foreach ($clients as $c) { 
-                                        $kam_id = (int)$c['id'];
-                                        $primary_id = (int)($c['executive_id'] ?? 0);
-                                        $primary_name = !empty($c['primary_assignee_name']) ? $c['primary_assignee_name'] : (!empty($c['executive_name']) ? $c['executive_name'] : 'Unassigned');
-                                        
-                                        $collab_ids = array();
-                                        $collab_names = array();
-                                        if (!empty($c['collaborators'])) {
-                                            $parts = explode(',', (string)$c['collaborators']);
-                                            foreach ($parts as $p) {
-                                                $pid = (int)trim($p);
-                                                if ($pid > 0) {
-                                                    $collab_ids[] = $pid;
-                                                    if (isset($user_map[$pid])) {
-                                                        $collab_names[] = $user_map[$pid];
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        $collab_str = !empty($collab_names) ? implode(', ', $collab_names) : 'None';
-                                        $collab_json = htmlspecialchars(json_encode($collab_ids), ENT_QUOTES, 'UTF-8');
-                                        $client_name = !empty($c['client_name']) ? $c['client_name'] : 'Unknown Company';
-                                        $owner_name = !empty($c['owner_name']) ? $c['owner_name'] : (!empty($c['lead_poc']) ? $c['lead_poc'] : '-');
-                                    ?>
-                                        <tr>
-                                            <td><?php echo $idx++; ?></td>
-                                            <td>
-                                                <strong style="color: #0f172a; font-weight: 600;"><?php echo htmlspecialchars($client_name); ?></strong>
-                                                <?php if (!empty($c['lead_id'])) { ?>
-                                                    <br><small class="text-muted">Lead #<?php echo (int)$c['lead_id']; ?></small>
-                                                <?php } ?>
-                                            </td>
-                                            <td><?php echo htmlspecialchars($owner_name); ?></td>
-                                            <td>
-                                                <?php if ($primary_id > 0) { ?>
-                                                    <span style="display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: #1e293b;">
-                                                        <i class="fa fa-user-circle" style="color: #1e3a8a; font-size: 15px;"></i>
-                                                        <?php echo htmlspecialchars($primary_name); ?>
-                                                    </span>
-                                                <?php } else { ?>
-                                                    <span class="text-muted" style="font-style: italic;">Unassigned</span>
-                                                <?php } ?>
-                                            </td>
-                                            <td>
-                                                <?php if (!empty($collab_names)) { ?>
-                                                    <div style="display: flex; flex-wrap: wrap; gap: 4px;">
-                                                        <?php foreach ($collab_names as $cn) { ?>
-                                                            <span style="display: inline-block; padding: 2px 8px; font-size: 11px; font-weight: 500; color: #334155; background: #f1f5f9; border-radius: 4px; border: 1px solid #e2e8f0;"><?php echo htmlspecialchars($cn); ?></span>
-                                                        <?php } ?>
-                                                    </div>
-                                                <?php } else { ?>
-                                                    <span class="text-muted" style="font-size: 12px;">None</span>
-                                                <?php } ?>
-                                            </td>
-                                            <td>
-                                                <span class="label label-success" style="background:#0f172a; font-weight: 500; font-size: 11px; padding: 3px 7px;">Active</span>
-                                            </td>
-                                            <td>
-                                                <?php echo !empty($c['created_at']) ? date('d-m-Y', strtotime($c['created_at'])) : '-'; ?>
-                                            </td>
-                                            <td style="text-align: center;">
-                                                <?php if ($can_edit) { ?>
-                                                    <button type="button" class="btn btn-xs btn-primary btn-open-assign" 
-                                                            style="background:#1e3a8a; border-color:#1e3a8a; padding: 4px 10px; font-size: 12px; font-weight: 500; border-radius: 4px;"
-                                                            data-kam-id="<?php echo $kam_id; ?>"
-                                                            data-client-name="<?php echo htmlspecialchars($client_name, ENT_QUOTES, 'UTF-8'); ?>"
-                                                            data-owner-name="<?php echo htmlspecialchars($owner_name, ENT_QUOTES, 'UTF-8'); ?>"
-                                                            data-primary-id="<?php echo $primary_id; ?>"
-                                                            data-collabs='<?php echo $collab_json; ?>'>
-                                                        <i class="fa fa-pencil"></i> Assign
-                                                    </button>
-                                                <?php } else { ?>
-                                                    <span class="text-muted" style="font-size: 11px;"><i class="fa fa-lock"></i> View Only</span>
-                                                <?php } ?>
-                                            </td>
-                                        </tr>
-                                    <?php } ?>
-                                </tbody>
-                            </table>
-                        <?php } else { ?>
-                            <div class="alert alert-info" style="margin: 15px 0;"> No Data Found </div>
+            <?php if (!empty($clients)) { ?>
+            <div class="sx-table-wrap">
+                <table id="example_assignee" class="sx-table sx-cards" style="width:100%;">
+                    <thead>
+                        <tr>
+                            <th>Company / client</th>
+                            <th>Business owner</th>
+                            <th>Primary assignee</th>
+                            <th>Collaborators</th>
+                            <th>Onboarded</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($clients as $c) {
+                            $kam_id = (int)$c['id'];
+                            $primary_id = (int)($c['executive_id'] ?? 0);
+                            $primary_name = !empty($c['primary_assignee_name']) ? $c['primary_assignee_name'] : (!empty($c['executive_name']) ? $c['executive_name'] : '');
+                            $collab_ids = array();
+                            $collab_names = array();
+                            foreach (explode(',', (string)($c['collaborators'] ?? '')) as $p) {
+                                $pid = (int)trim($p);
+                                if ($pid > 0) {
+                                    $collab_ids[] = $pid;
+                                    if (isset($user_map[$pid])) $collab_names[] = $user_map[$pid];
+                                }
+                            }
+                            $collab_json = htmlspecialchars(json_encode($collab_ids), ENT_QUOTES, 'UTF-8');
+                            $client_name = !empty($c['client_name']) ? $c['client_name'] : 'Unknown company';
+                            $owner_name = !empty($c['owner_name']) ? $c['owner_name'] : (!empty($c['lead_poc']) ? $c['lead_poc'] : '-');
+                        ?>
+                        <tr>
+                            <td data-l="Company" class="full">
+                                <span class="nm"><?php echo $h($client_name); ?></span>
+                                <?php if (!empty($c['lead_id'])) { ?><div class="sub">Lead #<?php echo (int)$c['lead_id']; ?><?php echo !empty($c['lead_contact']) ? ' · ' . $h($c['lead_contact']) : ''; ?></div><?php } ?>
+                            </td>
+                            <td data-l="Owner"><?php echo $h($owner_name); ?></td>
+                            <td data-l="Assignee">
+                                <?php if ($primary_id > 0 && $primary_name !== '') { ?>
+                                    <span class="who"><span class="av"><?php echo $h(strtoupper(substr($primary_name, 0, 1))); ?></span><span><?php echo $h($primary_name); ?></span></span>
+                                <?php } else { ?>
+                                    <span class="chip w">No owner yet</span>
+                                <?php } ?>
+                            </td>
+                            <td data-l="Collaborators">
+                                <?php if (!empty($collab_names)) { ?>
+                                    <div class="as-collab"><?php foreach ($collab_names as $cn) { ?><span class="chip na"><?php echo $h($cn); ?></span><?php } ?></div>
+                                <?php } else { ?>
+                                    <span class="sub">None</span>
+                                <?php } ?>
+                            </td>
+                            <td data-l="Onboarded" class="nw" data-order="<?php echo !empty($c['created_at']) ? date('YmdHis', strtotime($c['created_at'])) : 0; ?>"><?php echo !empty($c['created_at']) ? date('d M Y', strtotime($c['created_at'])) : '-'; ?></td>
+                            <td data-l="" class="full">
+                                <?php if ($can_edit) { ?>
+                                    <button type="button" class="btn btn-default btn-sm btn-open-assign"
+                                            data-kam-id="<?php echo $kam_id; ?>"
+                                            data-client-name="<?php echo $h($client_name); ?>"
+                                            data-owner-name="<?php echo $h($owner_name); ?>"
+                                            data-primary-id="<?php echo $primary_id; ?>"
+                                            data-collabs='<?php echo $collab_json; ?>'>
+                                        <i class="fa fa-pencil"></i> Change
+                                    </button>
+                                <?php } else { ?>
+                                    <span class="sub"><i class="fa fa-lock"></i> View only</span>
+                                <?php } ?>
+                            </td>
+                        </tr>
                         <?php } ?>
-                    </div>
-                </div>
+                    </tbody>
+                </table>
             </div>
+            <?php } else { ?>
+                <div class="sx-card-b"><div class="sx-empty"><i class="fa fa-building"></i> No clients match these filters.</div></div>
+            <?php } ?>
         </div>
     </section>
 </div>
@@ -225,10 +212,11 @@ $(document).ready(function() {
     }
     $('#example_assignee').DataTable({
         "pageLength": 25,
-        "responsive": true,
-        "order": [[0, "asc"]],
+        "autoWidth": false,
+        "order": [[4, "desc"]],
+        "language": { "search": "", "searchPlaceholder": "Search this list" },
         "columnDefs": [
-            { "orderable": false, "targets": [7] }
+            { "orderable": false, "targets": [5] }
         ]
     });
 

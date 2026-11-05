@@ -26,3 +26,5 @@ project_memory.md
 
 application/uploads/staff_docs/
 application/config/crm_secret.php
+
+application/config/3cx_config.local.json

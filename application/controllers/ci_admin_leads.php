@@ -1864,8 +1864,8 @@ $data['info2']=$this->if_not_login();
 		$this->if_not_login();
 		$role = (int)$this->session->userdata('manager_role');
 		$mgr_id = (int)$this->session->userdata('manager_id');
-		if ($role !== 1 && $mgr_id !== 1) {
-			$this->session->set_flashdata('error_message', 'Access denied. Only Administrators have permission to export Leads data.');
+		if (!crm_can('leads_export')) {
+			$this->session->set_flashdata('error_message', 'You do not have access to Export Leads.');
 			redirect('manager/dashboard');
 			return;
 		}
@@ -2118,6 +2118,7 @@ $data['info2']=$this->if_not_login();
 		$data['info2'] = $this->if_not_login();
 		$data['is_admin'] = ($role == 1);
 		$data['is_support'] = crm_can('all_data');
+		$data['can_import'] = true; // checked above (Import Database right)
 
 		$this->load->view('manager/leads/import', $data);
 	}
@@ -2130,8 +2131,8 @@ $data['info2']=$this->if_not_login();
 	{
 		$this->if_not_login();
 		$role = $this->session->userdata('manager_role');
-		if ($role != 1 && !crm_can('all_data')) {
-			$this->session->set_flashdata('error_message', 'Permission Denied: Only Admin and Support are permitted to import Leads data.');
+		if (!crm_can('leads_import')) {
+			$this->session->set_flashdata('error_message', 'You do not have access to Import Database.');
 			redirect('manager/leads/import');
 			return;
 		}
@@ -2409,7 +2410,7 @@ $data['info2']=$this->if_not_login();
 	{
 		$this->if_not_login();
 		$role = $this->session->userdata('manager_role');
-		if ($role != 1 && !crm_can('all_data')) {
+		if (!crm_can('leads_import')) {
 			show_error('Access Denied', 403);
 			return;
 		}
@@ -2551,7 +2552,7 @@ $data['info2']=$this->if_not_login();
 		$data['info2'] = $this->if_not_login();
 
 		$role = $this->session->userdata('manager_role');
-		if ($role != 1 && !crm_can('all_data')) {
+		if (!crm_can('assigned_leads')) {
 			$this->session->set_flashdata('error_message', 'Access denied.');
 			redirect('manager/dashboard');
 			return;
@@ -2609,6 +2610,15 @@ $data['info2']=$this->if_not_login();
 		$data['lc_list'] = $this->comman_model->getAll(array('cat_type' => 'lead_cat', 'parent_id' => 0), '', 'ci_terms');
 		$data['users_list'] = $this->db->select('id, name, email')->get('ci_user')->result_array();
 
+		$cnt = $this->db->query("SELECT COUNT(*) AS total,
+			SUM(lead_assign > 0 AND (database_category != 'Non-Allotted Database' OR database_category IS NULL)) AS allotted,
+			SUM(lead_assign = 0 OR lead_assign IS NULL OR database_category = 'Non-Allotted Database') AS non_allotted
+			FROM ci_leads")->row_array();
+		$data['alloc_counts'] = array('' => (int)$cnt['total'], 'allotted' => (int)$cnt['allotted'], 'non_allotted' => (int)$cnt['non_allotted']);
+		$data['can_allocate'] = crm_can('assigned_leads', 'write');
+		$this->db->select('id, name, email')->where('admin_status', 1)->order_by('name', 'ASC');
+		if ($this->db->table_exists('ci_user_exit')) $this->db->where('id NOT IN (SELECT user_id FROM ci_user_exit)', NULL, FALSE);
+		$data['users_list'] = $this->db->get('ci_user')->result_array(); // only people still working here
 		$data['product_list'] = $this->ci_admin_model->getAllocationLeads($d1, $d2, $mrr1, $mrr2, '', '', $order_by, $sort_by, $search, $status, $category, $lCat, $user_name, $country, $state, $alloc_filter);
 
 		$this->load->view('manager/leads/assigned_leads', $data);
@@ -2618,7 +2628,7 @@ $data['info2']=$this->if_not_login();
 	{
 		$this->if_not_login();
 		$role = $this->session->userdata('manager_role');
-		if ($role != 1 && !crm_can('all_data')) {
+		if (!crm_can('assigned_leads', 'write')) {
 			$this->session->set_flashdata('error_message', 'Access denied.');
 			redirect('manager/dashboard');
 			return;

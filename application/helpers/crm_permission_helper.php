@@ -187,7 +187,7 @@ if (!function_exists('crm_perm_catalog')) {
 					'system_kam_clients' => array('label' => 'KAM Clients (all)', 'desc' => 'Every KAM client in the company', 'fallback' => 'kam_clients', 'nav' => array(array('system/kam_clients', 'KAM Clients', 'fa-briefcase')), 'pages' => array('system/kam_clients', 'system/kam-clients')),
 					'calling_api' => array('label' => 'Calling API', 'desc' => 'Phone provider settings', 'nav' => array(array('system/calling-api', 'Calling API', 'fa-phone-square')), 'pages' => array('system/calling-api', 'system/calling_api')),
 					'integrations' => array('label' => 'Third-Party API', 'desc' => 'Email SMTP, helpdesk and other integrations', 'nav' => array(array('system/integrations', 'Third-Party API', 'fa-plug')), 'pages' => array('system/integrations', 'integrations')),
-					'qc_panel' => array('label' => 'QC Panel', 'desc' => 'Quality check of the CRM pages', 'fallback' => 'system', 'nav' => array(array('system/qc', 'QC Panel', 'fa-check-square-o')), 'pages' => array('system/qc', 'system/qoc'), 'levels' => 'r'),
+					'qc_panel' => array('label' => 'QC Panel', 'desc' => 'Quality check of the CRM pages', 'fallback' => 'system', 'nav' => array(array('system/qc', 'QC Panel', 'fa-check-square-o')), 'pages' => array('system/qc', 'system/qoc')),
 				),
 			),
 		);

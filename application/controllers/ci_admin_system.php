@@ -61,8 +61,8 @@ class Ci_admin_system extends CI_Controller {
 		
 		$role = (int)$this->session->userdata('manager_role');
 		$cur_uid = (int)$this->session->userdata('manager_id');
-		if ($role !== 1 && $cur_uid !== 1) {
-			$this->session->set_flashdata('error_message', 'Access denied. Admin logs are restricted to administrators.');
+		if (!crm_can('admin_logs')) {
+			$this->session->set_flashdata('error_message', 'Access denied. You do not have access to Admin Logs.');
 			redirect('manager/dashboard');
 			return;
 		}
@@ -106,7 +106,7 @@ class Ci_admin_system extends CI_Controller {
 		$this->if_not_login();
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$cur_uid = (int)$this->session->userdata('manager_id');
-		if ($cur_role !== 1 && !crm_can('all_data') && $cur_uid !== 1) {
+		if (!crm_can('live_location')) {
 			redirect('manager/dashboard');
 			return;
 		}
@@ -193,7 +193,7 @@ class Ci_admin_system extends CI_Controller {
 		$this->if_not_login();
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$cur_uid = (int)$this->session->userdata('manager_id');
-		if ($cur_role !== 1 && !crm_can('all_data') && $cur_uid !== 1) {
+		if (!crm_can('live_location')) {
 			header('Content-Type: application/json');
 			echo json_encode(array('success' => false, 'message' => 'Unauthorized'));
 			exit();
@@ -258,14 +258,14 @@ class Ci_admin_system extends CI_Controller {
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$cur_uid = (int)$this->session->userdata('manager_id');
 
-		$has_access = ($cur_role === 1 || $cur_uid === 1 || has_section_perm('system_assignee', 'read') || has_section_perm('system', 'read'));
+		$has_access = crm_can('system_assignee');
 		if (!$has_access) {
 			$this->session->set_flashdata('error_message', 'Permission denied. You do not have access to Assignee management.');
 			redirect('manager/dashboard');
 			return;
 		}
 
-		$can_edit = ($cur_role === 1 || $cur_uid === 1 || has_section_perm('system_assignee', 'write'));
+		$can_edit = crm_can('system_assignee', 'write');
 
 		$data = array();
 		$data['info'] = array(
@@ -298,6 +298,13 @@ class Ci_admin_system extends CI_Controller {
 			$this->db->where('K.created_at >=', date('Y-m-d 00:00:00', strtotime($d1)));
 		}
 
+		$owner = trim((string)$this->input->get('owner'));
+		if ($owner === 'none') {
+			$this->db->where('(K.executive_id IS NULL OR K.executive_id = 0)', null, false);
+		} elseif ((int)$owner > 0) {
+			$this->db->where('K.executive_id', (int)$owner);
+		}
+
 		$this->db->order_by('K.id', 'DESC');
 		$data['clients'] = $this->db->get()->result_array();
 
@@ -316,6 +323,7 @@ class Ci_admin_system extends CI_Controller {
 	public function ajax_search_all_companies()
 	{
 		$this->if_not_login();
+		if (!crm_can('system_assignee', 'write')) { header('Content-Type: application/json'); echo json_encode(array('results' => array())); exit(); }
 		$term = trim((string)$this->input->get('term', true));
 		if (empty($term)) {
 			$term = trim((string)$this->input->get('q', true));
@@ -343,10 +351,10 @@ class Ci_admin_system extends CI_Controller {
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$cur_uid = (int)$this->session->userdata('manager_id');
 
-		$can_edit = ($cur_role === 1 || $cur_uid === 1 || has_section_perm('system_assignee', 'write'));
+		$can_edit = crm_can('system_assignee', 'write');
 		if (!$can_edit) {
 			header('Content-Type: application/json');
-			echo json_encode(array('success' => false, 'message' => 'Permission denied. Normal KAM and Back Office users cannot change these assignments without permission.'));
+			echo json_encode(array('success' => false, 'message' => 'Permission denied. You need Full access to Assignee Management to change owners.'));
 			exit();
 		}
 
@@ -462,7 +470,7 @@ class Ci_admin_system extends CI_Controller {
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$cur_uid = (int)$this->session->userdata('manager_id');
 
-		$has_access = ($cur_role === 1 || $cur_uid === 1 || has_section_perm('kam_clients', 'read') || has_section_perm('system', 'read'));
+		$has_access = crm_can('system_kam_clients');
 		if (!$has_access) {
 			$this->session->set_flashdata('error_message', 'Permission denied. You do not have access to KAM Client.');
 			redirect('manager/dashboard');
@@ -500,7 +508,7 @@ class Ci_admin_system extends CI_Controller {
 		$data['search_term'] = $search;
 		$data['cur_uid'] = $cur_uid;
 		$data['cur_role'] = $cur_role;
-		$data['is_admin'] = ($cur_role === 1 || $cur_uid === 1);
+		$data['is_admin'] = crm_can('system_kam_clients', 'write');
 		$data['reset_url'] = base_url('manager/system/kam_clients');
 
 		$this->load->view('manager/system/kam_clients', $data);
@@ -509,6 +517,7 @@ class Ci_admin_system extends CI_Controller {
 	public function ajax_search_kam_companies()
 	{
 		$this->if_not_login();
+		if (!crm_can('system_kam_clients')) { header('Content-Type: application/json'); echo json_encode(array('results' => array())); exit(); }
 		$term = trim((string)$this->input->get('term', true));
 		if (empty($term)) {
 			$term = trim((string)$this->input->get('q', true));
@@ -541,7 +550,7 @@ class Ci_admin_system extends CI_Controller {
 		$this->if_not_login();
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$cur_uid = (int)$this->session->userdata('manager_id');
-		$has_access = ($cur_role === 1 || $cur_uid === 1 || has_section_perm('system', 'read'));
+		$has_access = crm_can('qc_panel');
 		if (!$has_access) {
 			$this->session->set_flashdata('error_message', 'Permission denied. Access restricted.');
 			redirect('manager/dashboard');
@@ -811,12 +820,14 @@ class Ci_admin_system extends CI_Controller {
 		$data['checked_items'] = $checked_items;
 		$data['pct'] = ($total_checks > 0) ? round(($passed_checks / $total_checks) * 100) : 0;
 
+		$data['can_edit'] = crm_can('qc_panel', 'write');
 		$this->load->view('manager/system/qc', $data);
 	}
 
 	public function ajax_save_qc()
 	{
 		$this->if_not_login();
+		if (!crm_can('qc_panel', 'write')) { header('Content-Type: application/json'); echo json_encode(array('success' => false, 'status' => false, 'message' => 'You need Full access to QC Panel to tick items.')); exit(); }
 		$node_key = trim((string)$this->input->post('node_key', true));
 		$chk_field = trim((string)$this->input->post('chk_field', true));
 		$is_checked = (int)$this->input->post('is_checked') ? 1 : 0;
@@ -917,6 +928,7 @@ class Ci_admin_system extends CI_Controller {
 	public function ajax_save_qc_remarks()
 	{
 		$this->if_not_login();
+		if (!crm_can('qc_panel', 'write')) { header('Content-Type: application/json'); echo json_encode(array('success' => false, 'status' => false, 'message' => 'You need Full access to QC Panel to add remarks.')); exit(); }
 		$node_key = trim((string)$this->input->post('node_key', true));
 		$remarks = trim((string)$this->input->post('remarks', true));
 		$uid = (int)$this->session->userdata('manager_id');
@@ -944,4 +956,4 @@ class Ci_admin_system extends CI_Controller {
 		echo json_encode(array('success' => true, 'remarks' => $remarks));
 		exit();
 	}
-}
+}

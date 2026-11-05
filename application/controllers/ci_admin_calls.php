@@ -1262,9 +1262,17 @@ class Ci_admin_calls extends CI_Controller
 
 	public function ajax_test_3cx()
 	{
-		$fqdn = trim($this->input->post('pbx_fqdn'));
-		$client_id = trim($this->input->post('client_id'));
-		$client_secret = trim($this->input->post('client_secret'));
+		if (!crm_can('calling_api', 'write')) {
+			echo json_encode(array('status' => false, 'message' => 'You need Full access to Calling API.'));
+			return;
+		}
+		$fqdn = trim((string)$this->input->post('pbx_fqdn'));
+		$client_id = trim((string)$this->input->post('client_id'));
+		$client_secret = trim((string)$this->input->post('client_secret'));
+		if ($client_secret === '') {
+			$saved = $this->threecx->get_config();
+			$client_secret = (string)$saved['client_secret'];
+		}
 
 		$result = $this->threecx->test_connection($fqdn, $client_id, $client_secret);
 		echo json_encode($result);
@@ -1272,13 +1280,21 @@ class Ci_admin_calls extends CI_Controller
 
 	public function ajax_save_3cx_config()
 	{
+		if (!crm_can('calling_api', 'write')) {
+			echo json_encode(array('status' => false, 'message' => 'You need Full access to Calling API.'));
+			return;
+		}
+		$saved = $this->threecx->get_config();
+		$secret = trim((string)$this->input->post('client_secret'));
 		$data = array(
-			'pbx_fqdn' => trim($this->input->post('pbx_fqdn')),
-			'client_id' => trim($this->input->post('client_id')),
-			'client_secret' => trim($this->input->post('client_secret')),
-			'default_extension' => trim($this->input->post('default_extension')),
-			'multiple_lines' => trim($this->input->post('multiple_lines')),
-			'auto_open_webclient' => $this->input->post('auto_open_webclient') ? 1 : 0
+			'pbx_fqdn' => trim((string)$this->input->post('pbx_fqdn')),
+			'client_id' => trim((string)$this->input->post('client_id')),
+			// blank = keep the secret that is already saved (it is never sent to the browser)
+			'client_secret' => $secret !== '' ? $secret : (string)$saved['client_secret'],
+			'default_extension' => trim((string)$this->input->post('default_extension')),
+			'multiple_lines' => trim((string)$this->input->post('multiple_lines')),
+			'auto_open_webclient' => $this->input->post('auto_open_webclient') ? 1 : 0,
+			'autodialer_seconds' => max(10, min(300, (int)$this->input->post('autodialer_seconds')))
 		);
 
 		$result = $this->threecx->save_config($data);
@@ -1288,14 +1304,18 @@ class Ci_admin_calls extends CI_Controller
 	public function calling_api()
 	{
 		$role = (int)$this->session->userdata('manager_role');
-		if ($role != 1 && !crm_can('all_data')) {
+		if (!crm_can('calling_api')) {
 			redirect('manager/dashboard');
 			return;
 		}
 
 		$data = array();
 		$data['info'] = array('title' => 'System - Calling API Settings', 'page_heading' => 'Calling API Integration');
-		$data['threecx_config'] = $this->threecx->get_config();
+		$cfg = $this->threecx->get_config();
+		$data['has_secret'] = !empty($cfg['client_secret']);
+		unset($cfg['client_secret']);
+		$data['threecx_config'] = $cfg;
+		$data['can_edit'] = crm_can('calling_api', 'write');
 		$data['manager_role'] = $role;
 		$data['manager_name'] = $this->session->userdata('manager_name');
 

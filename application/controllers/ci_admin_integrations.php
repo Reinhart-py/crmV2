@@ -30,8 +30,7 @@ class Ci_admin_integrations extends CI_Controller {
 	{
 		$this->if_not_login();
 		$manager_role = (int)$this->session->userdata('manager_role');
-		$is_admin = ($manager_role === 1);
-		if (!$is_admin && !has_perm('integrations')) {
+		if (!crm_can('integrations')) {
 			$this->session->set_flashdata('error_message', 'Unauthorized access to Third-Party Integrations.');
 			redirect('manager/dashboard');
 			return;
@@ -69,6 +68,7 @@ class Ci_admin_integrations extends CI_Controller {
 		}
 
 		$data['settings'] = $settings;
+		$data['can_edit'] = crm_can('integrations', 'write');
 		$this->load->view('manager/system/integrations', $data);
 	}
 
@@ -76,9 +76,8 @@ class Ci_admin_integrations extends CI_Controller {
 	{
 		$this->if_not_login();
 		$manager_role = (int)$this->session->userdata('manager_role');
-		$is_admin = ($manager_role === 1);
-		if (!$is_admin && !has_perm('integrations')) {
-			$this->session->set_flashdata('error_message', 'Unauthorized access.');
+		if (!crm_can('integrations', 'write')) {
+			$this->session->set_flashdata('error_message', 'You need Full access to Third-Party API to change these settings.');
 			redirect('manager/dashboard');
 			return;
 		}
@@ -114,7 +113,7 @@ class Ci_admin_integrations extends CI_Controller {
 
 		// Password-type config fields are shown empty; keep the stored value when left blank.
 		$old_cfg = !empty($existing['config_json']) ? json_decode($existing['config_json'], true) : array();
-		foreach (array('smtp_pass') as $secret_key) {
+		foreach (array('smtp_pass', 'bearer_token') as $secret_key) {
 			if (array_key_exists($secret_key, $config) && $config[$secret_key] === '' && !empty($old_cfg[$secret_key])) {
 				$config[$secret_key] = $old_cfg[$secret_key];
 			}
@@ -147,8 +146,8 @@ class Ci_admin_integrations extends CI_Controller {
 		$this->if_not_login();
 		header('Content-Type: application/json');
 		$manager_role = (int)$this->session->userdata('manager_role');
-		if ($manager_role !== 1 && !has_perm('integrations')) {
-			echo json_encode(array('status' => false, 'message' => 'Unauthorized access.'));
+		if (!crm_can('integrations', 'write')) {
+			echo json_encode(array('status' => false, 'message' => 'You need Full access to Third-Party API.'));
 			return;
 		}
 		$to = trim((string)$this->input->post('to_email', true));
@@ -169,6 +168,10 @@ class Ci_admin_integrations extends CI_Controller {
 	public function ajax_test_connection()
 	{
 		$this->if_not_login();
+		if (!crm_can('integrations', 'write')) {
+			echo json_encode(array('status' => false, 'message' => 'You need Full access to Third-Party API.'));
+			return;
+		}
 		$service = trim($this->input->post('service_name', true));
 
 		if (empty($service)) {
