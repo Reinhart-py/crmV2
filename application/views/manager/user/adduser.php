@@ -8,14 +8,14 @@
 .ureg .content-header h1{font-size:20px}
 .ureg .content{padding-top:0}
 .ureg .container{width:100%;max-width:1500px;padding:0 6px}
-.ureg .box{margin-bottom:10px !important;border-radius:8px;box-shadow:none;border:1px solid var(--crm-line, #e2e8f0);background:var(--crm-surface, #fff);overflow:visible}
+.ureg .box{margin-bottom:8px !important;border-radius:8px;box-shadow:none;border:1px solid var(--crm-line, #e2e8f0);background:var(--crm-surface, #fff);overflow:visible}
 .ureg .box-header.with-border{padding:7px 12px !important;border-bottom:1px solid var(--crm-line-soft, #eef2f7);text-align:left;border-left:3px solid var(--crm-ocean, #1e3a8a);border-radius:8px 8px 0 0}
 .ureg .box-header .box-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--crm-ink, #0f172a)}
-.ureg .box-body{padding:10px 8px 2px !important;display:flex;flex-wrap:wrap}
+.ureg .box-body{padding:8px 6px 2px !important;display:flex;flex-wrap:wrap}
 .ureg .box-body > .row{display:flex;flex-wrap:wrap;margin:0;flex-basis:100%;width:100%}
-.ureg .box-body > [class*="col-"],.ureg .box-body > .row > *{padding:0 8px}
+.ureg .box-body > [class*="col-"],.ureg .box-body > .row > *{padding:0 6px}
 .ureg .box-body > :not(.row):not([class*="col-"]),.ureg .box-body > .row > :not([class*="col-"]){flex-basis:100%}
-.ureg .form-group{margin-bottom:8px !important}
+.ureg .form-group{margin-bottom:6px !important}
 .ureg .form-group label{font-size:12px !important;margin-bottom:2px !important;color:var(--crm-ink-2, #334155);font-weight:600}
 .ureg .form-group label span{color:#dc2626}
 .ureg .form-control{height:30px !important;min-height:30px !important;padding:3px 8px !important;font-size:13px !important;border-radius:5px}
@@ -28,21 +28,28 @@
 .ureg .input-group > .form-control{flex:1 1 auto;min-width:0;width:auto !important;border-radius:0 5px 5px 0 !important}
 .ureg .select2-container .select2-selection--single{height:30px !important}
 /* Sub-groups inside a section */
-.ureg .ureg-sub{margin:6px 8px 8px;padding-bottom:4px;border-bottom:1px dashed var(--crm-line, #e2e8f0);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--crm-ocean, #1e3a8a)}
+.ureg .ureg-sub{margin:4px 6px 6px;padding-bottom:3px;border-bottom:1px dashed var(--crm-line, #e2e8f0);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--crm-ocean, #1e3a8a)}
 .ureg .ureg-sub:first-child{margin-top:0}
 /* Buttons always in view at the bottom */
 .ureg-footer.box-footer{position:sticky;bottom:0;z-index:20;display:flex;justify-content:center;gap:10px;padding:10px 12px !important;margin:6px 0 12px;border:1px solid var(--crm-line, #e2e8f0);border-radius:8px;background:var(--crm-surface, #fff);box-shadow:0 -6px 16px rgba(15,23,42,.08)}
 .ureg-footer.box-footer .btn{min-width:110px;height:34px;font-weight:600}
 /* Label on the left, field on the right */
-.ureg .form-group{display:grid;grid-template-columns:128px minmax(0,1fr);column-gap:10px;align-items:center;position:relative}
+.ureg .form-group{display:grid;grid-template-columns:112px minmax(0,1fr);column-gap:8px;align-items:center;position:relative}
 .ureg .form-group > label{margin:0 !important;line-height:1.2;text-align:right;word-break:break-word}
 .ureg .form-group > :not(label){grid-column:2}
 .ureg .form-group .btn-pwd-eye{top:50% !important;transform:translateY(-50%);bottom:auto !important}
 .ureg .form-group .select2-container{width:100% !important}
 @media (max-width:767px){.ureg .box-body [class*="col-"]{flex:0 0 100%;width:100%}}
-@media (min-width:1200px){.ureg .col-lg-4{width:33.333%}}
-@media (min-width:1700px){.ureg .col-lg-4{width:25%}}
+@media (min-width:1200px){.ureg .col-lg-4{width:25%}}
+@media (min-width:1200px) and (max-width:1399px){.ureg .form-group{grid-template-columns:96px minmax(0,1fr)}}
 @media (max-width:575px){.ureg .form-group{grid-template-columns:1fr}.ureg .form-group > label{text-align:left;margin-bottom:2px !important}.ureg .form-group > :not(label){grid-column:1}}
+.ureg-progress{display:flex;align-items:center;gap:10px;margin-right:auto;font-size:12px;color:var(--crm-ink-2,#334155);min-width:0}
+.ureg-progress .bar{width:160px;height:6px;border-radius:3px;background:var(--crm-line,#e2e8f0);overflow:hidden;flex:0 0 auto}
+.ureg-progress .bar span{display:block;height:100%;width:0;background:#f59e0b;transition:width .25s}
+.ureg-progress.done .bar span{background:#16a34a}
+.ureg-progress .todo{color:var(--crm-muted,#64748b);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ureg-progress .cnt{white-space:nowrap}
+@media (max-width:575px){.ureg-progress .bar,.ureg-progress .todo{display:none}.ureg-footer.box-footer .btn{min-width:84px}}
 </style>
 <div class="content-wrapper ureg"> 
   
@@ -453,7 +460,7 @@
             </div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Emirates / National ID</label>
+                <label>Emirates ID</label>
                 <input type="text" class="form-control" name="eid_no"  >
               </div>
             </div>
@@ -520,7 +527,7 @@
             </div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>IFSC / Sort / Branch</label>
+                <label>IFSC / Branch</label>
                 <input type="text" class="form-control" name="ifsc"  >
               </div>
             </div>
@@ -689,6 +696,42 @@ function check_cname()
   fields.forEach(function (el) { if (el) ["keydown", "paste"].forEach(function (ev) { el.addEventListener(ev, function () { touched = true; }); }); });
   function clear() { if (touched) return; fields.forEach(function (el) { if (el && el.value) el.value = ""; }); }
   [0, 300, 1000, 2500].forEach(function (ms) { setTimeout(clear, ms); });
+})();
+</script>
+<script>
+// Bottom bar: how many fields are filled, and which sections still have empty fields. Display only.
+(function () {
+  var form = document.forms.add_form || document.forms.edit_form; var foot = document.querySelector(".ureg-footer");
+  if (!form || !foot) return;
+  var box = document.createElement("div"); box.className = "ureg-progress";
+  box.innerHTML = '<div class="bar"><span></span></div><strong class="cnt"></strong><span class="todo"></span>';
+  foot.insertBefore(box, foot.firstChild);
+  function fields() {
+    return Array.prototype.filter.call(form.elements, function (el) {
+      if (!/^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName)) return false;
+      if (el.type === "hidden" || el.type === "submit" || el.type === "button" || el.type === "checkbox" || el.type === "radio") return false;
+      if (el.disabled || el.readOnly || el.closest(".input-group-addon")) return false;
+      var g = el.closest(".form-group"); return !!(g && g.offsetParent);
+    });
+  }
+  function update() {
+    var all = fields(), filled = 0, empty = {};
+    all.forEach(function (el) {
+      var v = (el.value || "").trim();
+      if (v !== "") { filled++; return; }
+      var b = el.closest(".box"); var t = b && b.querySelector(".box-title");
+      var name = t ? t.textContent.trim() : "Other"; empty[name] = (empty[name] || 0) + 1;
+    });
+    var pct = all.length ? Math.round(filled * 100 / all.length) : 0;
+    box.querySelector(".bar span").style.width = pct + "%";
+    box.querySelector(".cnt").textContent = filled + " of " + all.length + " filled";
+    var parts = Object.keys(empty).map(function (k) { return k.charAt(0) + k.slice(1).toLowerCase() + ": " + empty[k]; });
+    box.querySelector(".todo").textContent = parts.length ? "Empty \u2013 " + parts.join(", ") : "All fields filled";
+    box.classList.toggle("done", filled === all.length);
+  }
+  form.addEventListener("input", update); form.addEventListener("change", update);
+  if (window.jQuery) jQuery(form).on("change", "select", update);
+  update(); setTimeout(update, 800); setTimeout(update, 2600);
 })();
 </script>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>
