@@ -20,6 +20,7 @@ class Ci_admin_user extends CI_Controller {
 		 header('Cache-Control: no-cache');
 		if ($this->uri->segment(2) === 'hr') { $this->base = 'manager/hr/staff'; $this->perm_key = 'hr_staff'; }
 		$this->load->helper('crm_permission');
+		$this->_ensure_designation();
   
 	}
 	
@@ -225,6 +226,24 @@ public function view($id='')
 	
 
 	/** Presentation users keep their centers in ci_user_live_offices (JSON list per user). */
+	/** Designation (job title) lives in its own small table: ci_user is too wide to take more columns. */
+	private function _ensure_designation()
+	{
+		$this->db->query("CREATE TABLE IF NOT EXISTS ci_user_designation (user_id INT NOT NULL PRIMARY KEY, designation VARCHAR(150) NOT NULL DEFAULT '') ENGINE=InnoDB DEFAULT CHARSET=utf8");
+	}
+	private function _save_designation($user_id)
+	{
+		if (!(int)$user_id || $this->input->post('designation') === null) return;
+		$d = mb_substr(trim(preg_replace('/\s+/', ' ', (string)$this->input->post('designation'))), 0, 150);
+		$this->db->query('REPLACE INTO ci_user_designation (user_id, designation) VALUES (?, ?)', array((int)$user_id, $d));
+	}
+	/** Titles already in use, offered as suggestions so the same title is spelt the same way. */
+	private function _designation_list()
+	{
+		$rows = $this->db->query("SELECT DISTINCT designation FROM ci_user_designation WHERE designation <> '' ORDER BY designation")->result_array();
+		return array_map(function ($r) { return $r['designation']; }, $rows);
+	}
+
 	private function _ensure_live_offices()
 	{
 		$this->db->query("CREATE TABLE IF NOT EXISTS ci_user_live_offices (user_id INT NOT NULL PRIMARY KEY, offices TEXT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8");
@@ -300,6 +319,7 @@ public function view($id='')
 		$data['c_list'] =$this->comman_model->getAll('',array('id','ASC'),'countries');
 		$data['u_list'] =$this->comman_model->getAll('',array('id','ASC'),'ci_user');
 		$this->_page_data($data);
+		$data['designations'] = $this->_designation_list();
 		$this->_ensure_live_offices();
 		$data['pres_role_id'] = crm_presentation_role_id();
 		$data['office_codes'] = crm_office_codes();
@@ -394,7 +414,8 @@ public function view($id='')
 			  $a1=$this->ci_admin_model->checkDuplicateUsername($c_username);
 		     if($a1==FALSE){			 
 
-			 	$this->comman_model->saveData('ci_user',$list);
+			 	$new_id = $this->comman_model->saveData('ci_user',$list);
+			 	$this->_save_designation($new_id);
 			 	$this->session->set_flashdata('message', 'User has been added successfully!');
 				redirect($this->base);
 			 }
@@ -429,6 +450,11 @@ public function view($id='')
 			}
 			$this->_guard_target($data['list']);
 			$this->_page_data($data);
+			if (!empty($data['list'])) {
+				$dg = $this->db->select('designation')->where('user_id', (int)$id)->get('ci_user_designation')->row_array();
+				$data['list']['designation'] = !empty($dg['designation']) ? $dg['designation'] : '';
+			}
+			$data['designations'] = $this->_designation_list();
 			$this->_ensure_live_offices();
 			$data['pres_role_id'] = crm_presentation_role_id();
 			$data['office_codes'] = crm_office_codes();
@@ -526,6 +552,7 @@ public function view($id='')
 				);			
 
 				$response= $this->comman_model->updateData('id',$id,$save,'ci_user');
+				$this->_save_designation($id);
 				if($response)
 					{
 						$this->ci_admin_model->log_admin_action('user_edit', 'Updated user ID #'.$id, 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));

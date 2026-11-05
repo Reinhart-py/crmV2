@@ -1049,6 +1049,10 @@ public function dashboard_MyPro($table='ci_leads'){
 			  $this->db->join('ci_user as C','A.manager=C.id','LEFT');
 			  $this->db->join('countries as D','A.country=D.id','LEFT');
 			  $this->db->join('states as E','A.state=E.id','LEFT');
+			  if ($this->db->table_exists('ci_user_designation')) {
+			  	$this->db->select('G.designation');
+			  	$this->db->join('ci_user_designation as G','G.user_id=A.id','LEFT');
+			  }
 			   if(!empty($search))
 			  {
 			    $q = $this->db->escape_like_str($search);
@@ -2306,6 +2310,10 @@ public function dashboard_MyPro($table='ci_leads'){
 			  $this->db->join('countries as D','A.country=D.id','LEFT');
 			  $this->db->join('states as E','A.state=E.id','LEFT');
 			  $this->db->join('ci_roles as R','A.user_type=R.id','LEFT');
+			  if ($this->db->table_exists('ci_user_designation')) {
+			  	$this->db->select('G.designation');
+			  	$this->db->join('ci_user_designation as G','G.user_id=A.id','LEFT');
+			  }
 			 $this->db->where('A.id',$id);
 			
 			  $this->db->limit(1);

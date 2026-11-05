@@ -10,13 +10,13 @@ $today = strtotime(date('Y-m-d'));
 $mandatory = array('name' => 'Name', 'email' => 'Email', 'dob' => 'Date of Birth', 'mobile' => 'Contact No', 'country' => 'Country', 'state' => 'State / Emirate',
 	'emp_id' => 'Employee ID', 'c_doj' => 'Date of Joining', 'department' => 'Department', 'office' => 'Office / Location',
 	'national' => 'Nationality', 'p_no' => 'Passport No', 'h_contact_name' => 'Emergency Contact Name', 'h_contact_no' => 'Emergency Contact No');
-$profile_keys = array_merge(array_keys($mandatory), array('uae_mobile', 'gender', 'blood', 'address', 'city', 'p_exdate', 'eid_no', 'eid_expiry',
+$profile_keys = array_merge(array_keys($mandatory), array('designation', 'uae_mobile', 'gender', 'blood', 'address', 'city', 'p_exdate', 'eid_no', 'eid_expiry',
 	'visa_type', 'visa_no', 'visa_by', 'visa_expiry', 'h_contact_relation', 'h_contact_no2'));
 $docs = array('p_exdate' => 'Passport', 'visa_expiry' => 'Visa', 'eid_expiry' => 'Emirates ID');
 $is_set = function ($li, $k) { $v = isset($li[$k]) ? trim((string)$li[$k]) : ''; return !($v === '' || $v === '0' || $v === '0000-00-00'); };
 
 $list = array(); $alert = array('Expired' => 0, 'Within 30 days' => 0, 'Within 60 days' => 0);
-$f = array('mgr' => array(), 'cat' => array(), 'dep' => array(), 'off' => array(), 'st' => array('Enabled' => 0, 'Disabled' => 0),
+$f = array('mgr' => array(), 'cat' => array(), 'des' => array(), 'dep' => array(), 'off' => array(), 'st' => array('Enabled' => 0, 'Disabled' => 0),
 	'exp' => array('Expired' => 0, 'Within 30 days' => 0, 'Within 60 days' => 0, 'Valid' => 0, 'No dates' => 0),
 	'prof' => array('Missing mandatory details' => 0, 'Mandatory details complete' => 0));
 $bump = function (&$arr, $k) { $arr[$k] = isset($arr[$k]) ? $arr[$k] + 1 : 1; };
@@ -25,6 +25,7 @@ foreach ($rows as $li) {
 	$r['on'] = ((int)$li['admin_status'] === 1);
 	$r['mgr'] = trim((string)$li['manager_name']) !== '' ? trim($li['manager_name']) : '(No manager)';
 	$r['cat'] = trim((string)$li['role']) !== '' ? trim($li['role']) : '(No category)';
+	$r['des'] = (isset($li['designation']) && trim((string)$li['designation']) !== '') ? trim($li['designation']) : '(Not set)';
 	$r['dep'] = trim((string)$li['department']) !== '' ? trim($li['department']) : '(Not set)';
 	$r['off'] = trim((string)$li['office']) !== '' ? trim($li['office']) : '(Not set)';
 	$r['pres'] = ($pres_id > 0 && (int)$li['user_type'] === $pres_id);
@@ -48,12 +49,12 @@ foreach ($rows as $li) {
 	$r['pct'] = (int)round($filled * 100 / count($profile_keys));
 	$r['missing'] = array(); foreach ($mandatory as $k => $label) if (!$is_set($li, $k)) $r['missing'][] = $label;
 	$r['prof'] = $r['pres'] ? 'Mandatory details complete' : ($r['missing'] ? 'Missing mandatory details' : 'Mandatory details complete');
-	$bump($f['mgr'], $r['mgr']); $bump($f['cat'], $r['cat']); $bump($f['dep'], $r['dep']); $bump($f['off'], $r['off']);
+	$bump($f['mgr'], $r['mgr']); $bump($f['cat'], $r['cat']); $bump($f['des'], $r['des']); $bump($f['dep'], $r['dep']); $bump($f['off'], $r['off']);
 	$f['st'][$r['on'] ? 'Enabled' : 'Disabled']++; $f['exp'][$r['exp']]++; $f['prof'][$r['prof']]++;
 	$list[] = $r;
 }
-foreach (array('mgr', 'cat', 'dep', 'off') as $k) ksort($f[$k], SORT_NATURAL | SORT_FLAG_CASE);
-$filters = array('mgr' => 'Manager', 'cat' => 'Category', 'st' => 'Status', 'dep' => 'Department', 'off' => 'Office', 'exp' => 'Expiry', 'prof' => 'Profile');
+foreach (array('mgr', 'cat', 'des', 'dep', 'off') as $k) ksort($f[$k], SORT_NATURAL | SORT_FLAG_CASE);
+$filters = array('mgr' => 'Manager', 'cat' => 'Category', 'des' => 'Designation', 'st' => 'Status', 'dep' => 'Department', 'off' => 'Office', 'exp' => 'Expiry', 'prof' => 'Profile');
 ?>
 <style>
 /* View Users: compact list, sortable columns, tick-box filters, expiry alerts */
@@ -165,7 +166,7 @@ $filters = array('mgr' => 'Manager', 'cat' => 'Category', 'st' => 'Status', 'dep
               <th>Emp. No</th>
               <th>Name / Login</th>
               <th>Manager</th>
-              <th>Category</th>
+              <th>Category / Designation</th>
               <th>Profile</th>
               <th>Documents</th>
               <th>Added</th>
@@ -176,15 +177,15 @@ $filters = array('mgr' => 'Manager', 'cat' => 'Category', 'st' => 'Status', 'dep
           <tbody>
             <?php foreach ($list as $r) { $li = $r['li']; $id = (int)$li['id'];
               $exp_csv = array(); foreach ($r['docs'] as $d) $exp_csv[$d[0]] = $d[1];
-              $export = array('emp' => sprintf('EMP-%05d', $id), 'name' => $li['name'], 'login' => $li['c_username'], 'emp_id' => $li['emp_id'], 'mgr' => $li['manager_name'], 'cat' => $li['role'],
+              $export = array('emp' => sprintf('EMP-%05d', $id), 'name' => $li['name'], 'login' => $li['c_username'], 'emp_id' => $li['emp_id'], 'mgr' => $li['manager_name'], 'cat' => $li['role'], 'des' => ($r['des'] === '(Not set)' ? '' : $r['des']),
                 'dep' => $li['department'], 'off' => $li['office'], 'status' => $r['on'] ? 'Enabled' : 'Disabled', 'pct' => $r['pres'] ? '' : $r['pct'] . '%',
                 'missing' => $r['pres'] ? '' : implode(', ', $r['missing']), 'pp' => isset($exp_csv['Passport']) ? $exp_csv['Passport'] : '',
                 'visa' => isset($exp_csv['Visa']) ? $exp_csv['Visa'] : '', 'eid' => isset($exp_csv['Emirates ID']) ? $exp_csv['Emirates ID'] : '', 'added' => simple_date($li['created'])); ?>
-            <tr data-mgr="<?php echo $h($r['mgr']); ?>" data-cat="<?php echo $h($r['cat']); ?>" data-st="<?php echo $r['on'] ? 'Enabled' : 'Disabled'; ?>" data-dep="<?php echo $h($r['dep']); ?>" data-off="<?php echo $h($r['off']); ?>" data-exp="<?php echo $h($r['exp']); ?>" data-prof="<?php echo $h($r['prof']); ?>" data-row="<?php echo $h(json_encode($export)); ?>">
+            <tr data-mgr="<?php echo $h($r['mgr']); ?>" data-cat="<?php echo $h($r['cat']); ?>" data-des="<?php echo $h($r['des']); ?>" data-st="<?php echo $r['on'] ? 'Enabled' : 'Disabled'; ?>" data-dep="<?php echo $h($r['dep']); ?>" data-off="<?php echo $h($r['off']); ?>" data-exp="<?php echo $h($r['exp']); ?>" data-prof="<?php echo $h($r['prof']); ?>" data-row="<?php echo $h(json_encode($export)); ?>">
               <td><span class="emp"><?php echo sprintf('EMP-%05d', $id); ?></span></td>
               <td data-order="<?php echo $h(strtolower($li['name'])); ?>"><a class="nm" href="<?php echo base_url().$base; ?>/view/<?php echo $id; ?>"><?php echo $h($li['name']); ?></a><span class="lg"><?php echo $h($li['c_username']); ?></span></td>
               <td><?php echo $h($li['manager_name']); ?></td>
-              <td><span class="chip"><?php echo $h($li['role']); ?></span></td>
+              <td><span class="chip"><?php echo $h($li['role']); ?></span><?php if ($r['des'] !== '(Not set)') { ?><span class="lg"><?php echo $h($r['des']); ?></span><?php } ?></td>
               <?php if ($r['pres']) { ?>
               <td data-order="101"><span class="chip na">Not needed</span></td>
               <?php } else { ?>
@@ -249,6 +250,33 @@ $(document).ready(function(){
     var shown = table.rows({search: 'applied'}).count(), all = table.rows().count();
     $('.ul-count').text(shown === all ? all + ' users' : shown + ' of ' + all + ' users');
   }
+  // Each filter only offers what is left after the other filters: counts follow the other ticks,
+  // and choices with nothing left are hidden (ticked ones stay so they can be unticked).
+  function refreshOptions(){
+    var nodes = table.rows().nodes().toArray();
+    $('.ul-f').each(function(){
+      var k = $(this).data('f'), counts = {};
+      nodes.forEach(function(tr){
+        for (var j in picked) {
+          if (j !== k && picked[j].length && picked[j].indexOf(tr.getAttribute('data-' + j)) === -1) return;
+        }
+        var v = tr.getAttribute('data-' + k);
+        counts[v] = (counts[v] || 0) + 1;
+      });
+      $(this).find('.opts label').each(function(){
+        var inp = $(this).find('input')[0], n = counts[inp.value] || 0;
+        $(this).find('.c').text(n);
+        $(this).toggleClass('zero', n === 0 && !inp.checked);
+      });
+      showOpts($(this));
+    });
+  }
+  function showOpts(f){
+    var q = (f.find('.q').val() || '').toLowerCase();
+    f.find('.opts label').each(function(){
+      $(this).toggle(!$(this).hasClass('zero') && $(this).text().toLowerCase().indexOf(q) !== -1);
+    });
+  }
   function apply(){
     var any = false;
     $('.ul-f').each(function(){
@@ -259,6 +287,7 @@ $(document).ready(function(){
     });
     $('.ul-clear').toggle(any);
     table.draw();
+    refreshOptions();
     count();
   }
   $('.ul-f > button').on('click', function(e){
@@ -277,7 +306,7 @@ $(document).ready(function(){
   $('.ul-clear').on('click', function(){ $('.ul-pop .opts input').prop('checked', false); apply(); });
   $('.ul-pop .q').on('input', function(){
     var q = this.value.toLowerCase();
-    $(this).siblings('.opts').find('label').each(function(){ $(this).toggle($(this).text().toLowerCase().indexOf(q) !== -1); });
+    showOpts($(this).closest('.ul-f'));
   });
   // Expiry banner: show those people (enabled staff only)
   $('.js-exp').on('click', function(){
@@ -289,10 +318,11 @@ $(document).ready(function(){
   });
   table.on('search.dt', function(){ setTimeout(count, 0); });
   count();
+  refreshOptions();
 
   // Export what is shown now (filters and search applied) as a CSV file that opens in Excel
   $('.js-export').on('click', function(){
-    var cols = [['emp','Emp. No'],['name','Name'],['login','Login'],['emp_id','Employee ID'],['mgr','Manager'],['cat','Category'],['dep','Department'],['off','Office / Location'],
+    var cols = [['emp','Emp. No'],['name','Name'],['login','Login'],['emp_id','Employee ID'],['mgr','Manager'],['cat','Category'],['des','Designation'],['dep','Department'],['off','Office / Location'],
       ['status','Status'],['pct','Profile filled'],['missing','Missing mandatory details'],['pp','Passport Expiry'],['visa','Visa Expiry'],['eid','Emirates ID Expiry'],['added','Added']];
     var esc = function(v){ v = (v == null ? '' : String(v)); if (/^[=+\-@]/.test(v)) v = "'" + v; return '"' + v.replace(/"/g, '""') + '"'; };
     var lines = [cols.map(function(c){ return esc(c[1]); }).join(',')];

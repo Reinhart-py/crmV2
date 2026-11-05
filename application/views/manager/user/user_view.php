@@ -41,7 +41,7 @@ $sections = array(
 		'Address' => $val('address'), 'City' => $val('city'), 'Country' => $val('country_name'), 'State / Emirate' => $val('state_name'),
 	),
 	'Company Details' => array(
-		'Employee ID' => $val('emp_id'), 'Department' => $val('department'), 'Office / Location' => $val('office'),
+		'Employee ID' => $val('emp_id'), 'Designation' => $val('designation'), 'Department' => $val('department'), 'Office / Location' => $val('office'),
 		'Date of Joining' => $val('c_doj'), 'Date of Leaving' => $val('c_dol'),
 	),
 	'Identity & Visa' => array(
@@ -122,6 +122,7 @@ $enabled = ((int)$p['admin_status'] === 1);
             <span class="uv-chip"><?php echo sprintf('EMP-%05d', $p['id']); ?></span>
             <?php if ($val('role_title') !== '') { ?><span class="uv-chip"><?php echo $val('role_title'); ?></span><?php } ?>
             <span class="uv-chip <?php echo $enabled ? 'on' : 'off'; ?>"><?php echo $enabled ? 'Enabled' : 'Disabled'; ?></span>
+            <?php if ($val('designation') !== '') { ?><span><i class="fa fa-briefcase"></i><?php echo $val('designation'); ?></span><?php } ?>
             <?php if ($val('department') !== '') { ?><span><i class="fa fa-building-o"></i><?php echo $val('department'); ?></span><?php } ?>
             <?php if ($val('office') !== '') { ?><span><i class="fa fa-map-marker"></i><?php echo $val('office'); ?></span><?php } ?>
             <?php if ($manager_name !== '') { ?><span><i class="fa fa-level-up"></i>Reports to <?php echo $manager_name; ?></span><?php } ?>
