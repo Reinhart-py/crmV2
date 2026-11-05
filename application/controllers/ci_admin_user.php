@@ -118,8 +118,8 @@ class Ci_admin_user extends CI_Controller {
 		
         $data=array();
 		$data['info']=array(
-			'title'=>'Users',
-			'page_heading'=>'All Users'
+			'title'=>'View Staff',
+			'page_heading'=>'View Staff'
 		);
 		
 		$data['info2']=$this->if_not_login();
@@ -204,8 +204,8 @@ public function view($id='')
 
 			 $data=array();
 				$data['info']=array(
-					'title'=>'Manager - Users',
-					'page_heading'=>'Preview User Information'
+					'title'=>'Staff',
+					'page_heading'=>'View Staff'
 				);
 			$data['info2']=$this->if_not_login();
 			
@@ -387,8 +387,8 @@ public function view($id='')
          $data=array();
 
 				$data['info']=array(
-					'title'=>'Manager- Users',
-					'page_heading'=>'Add User'
+					'title'=>'Add Staff',
+					'page_heading'=>'Add Staff'
 				);
 		$data['info2']=$this->if_not_login();
 		$data['r_list'] =$this->comman_model->getAll(array('status'=>1),array('id','ASC'),'ci_roles');
@@ -515,8 +515,8 @@ public function view($id='')
 
 			 $data=array();
 				$data['info']=array(
-					'title'=>'Manager - Users',
-					'page_heading'=>'Edit User'
+					'title'=>'Staff',
+					'page_heading'=>'Edit Staff'
 				);
 			$data['info2']=$this->if_not_login();
 			$data['r_list'] =$this->comman_model->getAll(array('status'=>1),array('id','ASC'),'ci_roles');
@@ -657,8 +657,8 @@ public function view($id='')
 
 			 $data=array();
 				$data['info']=array(
-					'title'=>'Manager - Users',
-					'page_heading'=>'Edit User'
+					'title'=>'Staff',
+					'page_heading'=>'Edit Staff'
 				);
 			$data['info2']=$this->if_not_login();			
 			$data['list']=$this->comman_model->getAll(array('id'=>$id),'','ci_user','first');

@@ -139,10 +139,10 @@ $enabled = ((int)$p['admin_status'] === 1);
 </style>
 <div class="content-wrapper uview">
   <section class="content-header">
-    <h1>View User</h1>
+    <h1>Staff Profile</h1>
     <ol class="breadcrumb">
       <li><a href="<?php echo base_url(); ?>manager/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
-      <li><a href="<?php echo base_url().$base; ?>"><?php echo ($base === 'manager/hr/staff') ? 'Staff' : 'Users'; ?></a></li>
+      <li><a href="<?php echo base_url().$base; ?>"><?php echo ($base === 'manager/hr/staff') ? 'Staff' : 'Staff'; ?></a></li>
       <li class="active">View</li>
     </ol>
   </section>

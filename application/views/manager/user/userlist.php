@@ -162,13 +162,62 @@ $filters = array('mgr' => 'Manager', 'cat' => 'Category', 'des' => 'Designation'
 .ulist .emp{font-size:12px;letter-spacing:.02em}
 .ulist .chip{font-size:11.5px;padding:2px 9px}
 .ulist #example_user.dtr-inline.collapsed > tbody > tr > td.dtr-control{padding-left:34px !important;position:relative}
+.ulist .chip.m-st{display:none}
+/* Readability: key fields (ID, name, manager, status) larger; secondary details stay smaller and muted */
+.ulist #example_user thead th{font-size:12px}
+.ulist #example_user tbody td{font-size:14px;padding:9px 10px !important}
+.ulist .emp{font-size:13px}
+.ulist .nm{font-size:15px;font-weight:700}
+.ulist .av{width:36px;height:36px;font-size:13px}
+.ulist .lg{font-size:12.5px}
+.ulist .chip{font-size:12.5px;padding:2px 10px}
+.ulist .chip.na{font-size:12.5px}
+.ulist .pf{font-size:13px}
+.ulist .pf .rp{font-size:14px}
+.ulist .acts a{width:30px;height:30px;font-size:14px}
+.ulist .ul-f > button{font-size:13px;height:32px}
+.ulist .ul-pop label{font-size:13.5px}
+.ulist .ul-count,.ulist .ul-clear{font-size:13px}
+.ulist .dataTables_wrapper .dataTables_info,.ulist .dataTables_wrapper .dataTables_paginate,.ulist .dataTables_wrapper .dataTables_length,.ulist .dataTables_wrapper .dataTables_filter{font-size:13px}
+.ulist .ul-kpi span{font-size:13px}
+.ulist .ul-kpi b{font-size:22px}
+@media (max-width:767px){
+  .ulist .content-header{flex-wrap:wrap;padding:12px 12px 8px}
+  .ulist .content-header h1{font-size:19px}
+  .ulist .content-header h1 small{display:block;margin-top:2px}
+  .ulist .content-header .hd-btns{width:100%}
+  .ulist .content-header .hd-btns .btn{flex:1}
+  .ulist .content{padding-left:10px;padding-right:10px}
+  .ulist .ul-kpis{gap:8px}
+  .ulist .ul-kpi{padding:9px 10px;gap:9px}
+  .ulist .ul-kpi .ic{width:32px;height:32px;font-size:14px}
+  .ulist .ul-kpi b{font-size:19px}
+  .ulist .ul-kpi span{font-size:12px}
+  .ulist .ul-bar{padding:8px 10px}
+  .ulist .ul-pop{position:fixed;left:12px !important;right:12px;top:auto;max-width:none;min-width:0}
+  .ulist .ul-body{padding:6px 8px 10px}
+  .ulist .dataTables_wrapper .dataTables_length,.ulist .dataTables_wrapper .dataTables_filter{text-align:left;float:none}
+  .ulist .dataTables_wrapper .dataTables_filter input{width:100%;margin-left:0}
+  .ulist .nm{font-size:14.5px}
+  .ulist .ul-alert{font-size:12.5px}
+  .ulist .ul-kpis .ul-kpi:last-child{grid-column:1 / -1}
+  .ulist .ul-f > button{height:30px;font-size:12.5px;padding:0 8px}
+  .ulist .ul-bar{gap:5px}
+  .ulist .av{width:30px;height:30px;font-size:11.5px}
+  .ulist .who{gap:8px}
+  .ulist .lg{word-break:break-all}
+  .ulist #example_user tbody td{padding:8px 6px !important}
+  .ulist .chip.m-st{display:inline-block;margin-top:3px;font-size:11px;padding:1px 8px}
+  .ulist .acts{display:grid;grid-template-columns:repeat(3,28px);gap:3px}
+  .ulist .acts a{width:28px;height:28px;font-size:13px}
+}
 </style>
 <div class="content-wrapper ulist">
   <section class="content-header">
-    <h1><?php echo $is_hr ? 'Staff' : 'Users'; ?><small><?php echo $is_hr ? 'Everyone working in the company, their details and documents' : 'Everyone who can sign in, their details and documents'; ?></small></h1>
+    <h1>View Staff<small>Everyone working in the company, their details and documents</small></h1>
     <div class="hd-btns">
       <?php if (!empty($list)) { ?><button type="button" class="btn btn-default js-export" title="Download the list as it is filtered now (opens in Excel)"><i class="fa fa-file-excel-o"></i> Export</button><?php } ?>
-      <?php if ($can_write) { ?><a href="<?php echo base_url().$base; ?>/add" class="btn btn-primary"><i class="fa fa-user-plus"></i> Add <?php echo $is_hr ? 'Staff' : 'User'; ?></a><?php } ?>
+      <?php if ($can_write) { ?><a href="<?php echo base_url().$base; ?>/add" class="btn btn-primary"><i class="fa fa-user-plus"></i> Add Staff</a><?php } ?>
     </div>
   </section>
   <section class="content">
@@ -176,7 +225,7 @@ $filters = array('mgr' => 'Manager', 'cat' => 'Category', 'des' => 'Designation'
     <?php echo get_message($this->session->flashdata('message'),'message'); ?>
     <?php if (!empty($list)) { ?>
     <div class="ul-kpis">
-      <button type="button" class="ul-kpi js-kpi" data-f="" title="Show everyone"><div class="ic"><i class="fa fa-users"></i></div><div><b><?php echo count($list); ?></b><span>Total <?php echo $is_hr ? 'staff' : 'users'; ?></span></div></button>
+      <button type="button" class="ul-kpi js-kpi" data-f="" title="Show everyone"><div class="ic"><i class="fa fa-users"></i></div><div><b><?php echo count($list); ?></b><span>Total staff</span></div></button>
       <button type="button" class="ul-kpi g js-kpi" data-f="st" data-v="Enabled" title="Show enabled only"><div class="ic"><i class="fa fa-check-circle"></i></div><div><b><?php echo (int)$f['st']['Enabled']; ?></b><span>Enabled</span></div></button>
       <button type="button" class="ul-kpi r js-kpi" data-f="st" data-v="Disabled" title="Show disabled only"><div class="ic"><i class="fa fa-ban"></i></div><div><b><?php echo (int)$f['st']['Disabled']; ?></b><span>Disabled</span></div></button>
       <button type="button" class="ul-kpi s js-kpi" data-f="st" data-v="Left" title="Show people who have left"><div class="ic"><i class="fa fa-sign-out"></i></div><div><b><?php echo (int)$f['st']['Left']; ?></b><span>Left</span></div></button>
@@ -240,7 +289,7 @@ $filters = array('mgr' => 'Manager', 'cat' => 'Category', 'des' => 'Designation'
               $rpt_attr = array(); foreach ($r['rpt'] as $x) $rpt_attr[] = $x[0] . ' ' . $x[2]; ?>
             <tr data-mgr="<?php echo $h($r['mgr']); ?>" data-cat="<?php echo $h($r['cat']); ?>" data-des="<?php echo $h($r['des']); ?>" data-st="<?php echo $r['stl']; ?>" data-dep="<?php echo $h($r['dep']); ?>" data-off="<?php echo $h($r['off']); ?>" data-exp="<?php echo $h($r['exp']); ?>" data-prof="<?php echo $h($r['prof']); ?>" data-rpt="<?php echo $h(implode('|', $rpt_attr)); ?>" data-row="<?php echo $h(json_encode($export)); ?>">
               <td><span class="emp"><?php echo sprintf('EMP-%05d', $id); ?></span></td>
-              <td data-order="<?php echo $h(strtolower($li['name'])); ?>"><?php $ini = ''; foreach (preg_split('/\s+/', trim((string)$li['name'])) as $w) { if ($w !== '' && strlen($ini) < 2) $ini .= strtoupper($w[0]); } $avc = array('#1e3a8a','#0f766e','#7c3aed','#b45309','#be185d','#0369a1','#4d7c0f','#9f1239'); ?><div class="who"><span class="av" style="background:<?php echo $avc[abs(crc32((string)$li['name'])) % count($avc)]; ?>"><?php echo $h($ini !== '' ? $ini : '?'); ?></span><div><a class="nm" href="<?php echo base_url().$base; ?>/view/<?php echo $id; ?>"><?php echo $h($li['name']); ?></a><span class="lg"><?php echo $h($li['c_username']); ?></span></div></div></td>
+              <td data-order="<?php echo $h(strtolower($li['name'])); ?>"><?php $ini = ''; foreach (preg_split('/\s+/', trim((string)$li['name'])) as $w) { if ($w !== '' && strlen($ini) < 2) $ini .= strtoupper($w[0]); } $avc = array('#1e3a8a','#0f766e','#7c3aed','#b45309','#be185d','#0369a1','#4d7c0f','#9f1239'); ?><div class="who"><span class="av" style="background:<?php echo $avc[abs(crc32((string)$li['name'])) % count($avc)]; ?>"><?php echo $h($ini !== '' ? $ini : '?'); ?></span><div><a class="nm" href="<?php echo base_url().$base; ?>/view/<?php echo $id; ?>"><?php echo $h($li['name']); ?></a><span class="lg"><?php echo $h($li['c_username']); ?></span><span class="chip m-st <?php echo $r['left'] ? 'lft' : ($r['on'] ? 'on' : 'off'); ?>"><?php echo $r['stl']; ?></span></div></div></td>
               <td><?php echo $h($li['manager_name']); ?></td>
               <td><span class="chip"><?php echo $h($li['role']); ?></span><?php if ($r['des'] !== '(Not set)') { ?><span class="lg"><?php echo $h($r['des']); ?></span><?php } ?></td>
               <?php if ($r['pres']) { ?>
@@ -306,10 +355,11 @@ $(document).ready(function(){
     pageLength: 50,
     order: [[0, 'desc']],
     autoWidth: false,
+    responsive: true,
     columnDefs: [
       { targets: [8], orderable: false, searchable: false },
       // On phones the name, status and actions stay visible; the rest opens under the row
-      { targets: [1], responsivePriority: 1 }, { targets: [8], responsivePriority: 2 }, { targets: [7], responsivePriority: 3 }, { targets: [0], responsivePriority: 9 }
+      { targets: [1], responsivePriority: 1 }, { targets: [8], responsivePriority: 2 }, { targets: [7], responsivePriority: 3 }, { targets: [0], responsivePriority: 4 }, { targets: [2], responsivePriority: 5 }, { targets: [3], responsivePriority: 6 }, { targets: [4], responsivePriority: 7 }, { targets: [5], responsivePriority: 8 }, { targets: [6], responsivePriority: 10 }
     ]
   });
   function count(){

@@ -78,10 +78,10 @@
     <!-- Content Header (Page header) -->
 
     <section class="content-header">
-      <h1>Edit User</h1>
+      <h1>Edit Staff</h1>
       <ol class="breadcrumb">
         <li><a href="#"><i class="fa fa-dashboard"></i>Home</a></li>
-        <li class="active">Users</li>
+        <li class="active">Staff</li>
       </ol>
     </section>
 

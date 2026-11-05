@@ -76,10 +76,10 @@
   <!-- Content Header (Page header) -->
   
   <section class="content-header">
-    <h1> User Registration	</h1>
+    <h1>Add Staff</h1>
     <ol class="breadcrumb">
       <li><a href="#"><i class="fa fa-dashboard"></i>Home</a></li>
-      <li class="active">Dashboard</li>
+      <li class="active">Add Staff</li>
     </ol>
   </section>
   

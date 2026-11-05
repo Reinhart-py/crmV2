@@ -12,7 +12,7 @@
       <h1>Login &amp; Password <small><?php echo htmlspecialchars($list["name"], ENT_QUOTES, "UTF-8"); ?> &middot; current login: <?php echo htmlspecialchars($list["c_username"], ENT_QUOTES, "UTF-8"); ?></small></h1>
       <ol class="breadcrumb">
         <li><a href="#"><i class="fa fa-dashboard"></i>Home</a></li>
-        <li><a href="<?php echo base_url().$base; ?>">Users</a></li><li class="active">Login &amp; Password</li>
+        <li><a href="<?php echo base_url().$base; ?>">Staff</a></li><li class="active">Login &amp; Password</li>
       </ol>
     </section>
 
