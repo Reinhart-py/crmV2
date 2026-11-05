@@ -163,6 +163,15 @@ $filters = array('mgr' => 'Manager', 'cat' => 'Category', 'des' => 'Designation'
 .ulist .chip{font-size:11.5px;padding:2px 9px}
 .ulist #example_user.dtr-inline.collapsed > tbody > tr > td.dtr-control{padding-left:34px !important;position:relative}
 .ulist .chip.m-st{display:none}
+.ulist input.pick{width:16px;height:16px;margin:0 2px 0 0;flex:0 0 auto;cursor:pointer;vertical-align:middle;accent-color:var(--crm-ocean,#1e3a8a)}
+.ulist .ul-bulk{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:4px 0 8px;padding:8px 10px;border-radius:8px;background:var(--crm-ocean-soft,rgba(30,58,138,.08));border:1px solid rgba(30,58,138,.25)}
+.ulist .ul-bulk b{font-size:13.5px;margin-right:4px}
+.ulist .ul-bulk .btn{height:30px;font-weight:600}
+.ulist .ul-bulk .grp{display:inline-flex;gap:4px}
+.ulist .ul-bulk select{height:30px;min-width:190px;font-size:13px}
+.ulist .ul-bulk a{cursor:pointer;font-size:13px;margin-left:4px}
+.ulist #example_user tbody tr.picked td{background:var(--crm-ocean-soft,rgba(30,58,138,.07)) !important}
+@media (max-width:767px){.ulist .ul-bulk .grp{width:100%}.ulist .ul-bulk select{flex:1;min-width:0}}
 .ulist .clip{display:inline-block;margin-left:6px;font-size:12.5px;font-weight:600;color:var(--crm-ocean,#1e3a8a);white-space:nowrap}
 /* Readability: key fields (ID, name, manager, status) larger; secondary details stay smaller and muted */
 .ulist #example_user thead th{font-size:12px}
@@ -264,11 +273,24 @@ $filters = array('mgr' => 'Manager', 'cat' => 'Category', 'des' => 'Designation'
         <span class="ul-count"></span>
       </div>
       <div class="ul-body">
+          <?php if ($can_write) { ?>
+          <form class="ul-bulk js-bulk" method="post" action="<?php echo base_url().$base; ?>/bulk" style="display:none">
+            <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
+            <input type="hidden" name="bulk_action" value="">
+            <span class="ids"></span>
+            <b class="js-bulk-n">0 selected</b>
+            <button type="button" class="btn btn-default btn-sm js-bulk-do" data-a="enable"><i class="fa fa-check"></i> Enable</button>
+            <button type="button" class="btn btn-default btn-sm js-bulk-do" data-a="disable"><i class="fa fa-ban"></i> Disable</button>
+            <span class="grp"><select name="manager" class="form-control input-sm"><option value="">Change manager to...</option><?php foreach ($bulk_managers as $bm) { ?><option value="<?php echo (int)$bm['id']; ?>"><?php echo $h($bm['name']); ?></option><?php } ?></select><button type="button" class="btn btn-default btn-sm js-bulk-do" data-a="manager">Apply</button></span>
+            <button type="button" class="btn btn-default btn-sm js-bulk-export"><i class="fa fa-file-excel-o"></i> Export selected</button>
+            <a class="js-bulk-clear">Clear</a>
+          </form>
+          <?php } ?>
         <table id="example_user" class="table table-hover" style="width:100%">
           <thead>
             <tr>
               <th>Emp. No</th>
-              <th>Name / Login</th>
+              <th><?php if ($can_write) { ?><input type="checkbox" class="pick js-pick-all" title="Tick everyone shown by the filters"> <?php } ?>Name / Login</th>
               <th>Manager</th>
               <th>Category / Designation</th>
               <th>Profile</th>
@@ -290,7 +312,7 @@ $filters = array('mgr' => 'Manager', 'cat' => 'Category', 'des' => 'Designation'
               $rpt_attr = array(); foreach ($r['rpt'] as $x) $rpt_attr[] = $x[0] . ' ' . $x[2]; ?>
             <tr data-mgr="<?php echo $h($r['mgr']); ?>" data-cat="<?php echo $h($r['cat']); ?>" data-des="<?php echo $h($r['des']); ?>" data-st="<?php echo $r['stl']; ?>" data-dep="<?php echo $h($r['dep']); ?>" data-off="<?php echo $h($r['off']); ?>" data-exp="<?php echo $h($r['exp']); ?>" data-prof="<?php echo $h($r['prof']); ?>" data-rpt="<?php echo $h(implode('|', $rpt_attr)); ?>" data-row="<?php echo $h(json_encode($export)); ?>">
               <td><span class="emp"><?php echo sprintf('EMP-%05d', $id); ?></span></td>
-              <td data-order="<?php echo $h(strtolower($li['name'])); ?>"><?php $ini = ''; foreach (preg_split('/\s+/', trim((string)$li['name'])) as $w) { if ($w !== '' && strlen($ini) < 2) $ini .= strtoupper($w[0]); } $avc = array('#1e3a8a','#0f766e','#7c3aed','#b45309','#be185d','#0369a1','#4d7c0f','#9f1239'); ?><div class="who"><span class="av" style="background:<?php echo $avc[abs(crc32((string)$li['name'])) % count($avc)]; ?>"><?php echo $h($ini !== '' ? $ini : '?'); ?></span><div><a class="nm" href="<?php echo base_url().$base; ?>/view/<?php echo $id; ?>"><?php echo $h($li['name']); ?></a><span class="lg"><?php echo $h($li['c_username']); ?></span><span class="chip m-st <?php echo $r['left'] ? 'lft' : ($r['on'] ? 'on' : 'off'); ?>"><?php echo $r['stl']; ?></span></div></div></td>
+              <td data-order="<?php echo $h(strtolower($li['name'])); ?>"><?php $ini = ''; foreach (preg_split('/\s+/', trim((string)$li['name'])) as $w) { if ($w !== '' && strlen($ini) < 2) $ini .= strtoupper($w[0]); } $avc = array('#1e3a8a','#0f766e','#7c3aed','#b45309','#be185d','#0369a1','#4d7c0f','#9f1239'); ?><div class="who"><?php if ($can_write) { ?><input type="checkbox" class="pick js-pick" value="<?php echo $id; ?>" aria-label="Tick <?php echo $h($li['name']); ?>"><?php } ?><span class="av" style="background:<?php echo $avc[abs(crc32((string)$li['name'])) % count($avc)]; ?>"><?php echo $h($ini !== '' ? $ini : '?'); ?></span><div><a class="nm" href="<?php echo base_url().$base; ?>/view/<?php echo $id; ?>"><?php echo $h($li['name']); ?></a><span class="lg"><?php echo $h($li['c_username']); ?></span><span class="chip m-st <?php echo $r['left'] ? 'lft' : ($r['on'] ? 'on' : 'off'); ?>"><?php echo $r['stl']; ?></span></div></div></td>
               <td><?php echo $h($li['manager_name']); ?></td>
               <td><span class="chip"><?php echo $h($li['role']); ?></span><?php if ($r['des'] !== '(Not set)') { ?><span class="lg"><?php echo $h($r['des']); ?></span><?php } ?></td>
               <?php if ($r['pres']) { ?>
@@ -445,22 +467,54 @@ $(document).ready(function(){
   refreshOptions();
 
   // Export what is shown now (filters and search applied) as a CSV file that opens in Excel
-  $('.js-export').on('click', function(){
+  function exportRows(nodes, suffix){
     var cols = [['emp','Emp. No'],['name','Name'],['login','Login'],['emp_id','Employee ID'],['mgr','Manager'],['cat','Category'],['des','Designation'],['dep','Department'],['off','Office / Location'],
       ['status','Status'],['pct','Profile filled'],['missing','Missing mandatory details'],['pp','Passport Expiry'],['visa','Visa Expiry'],['eid','Emirates ID Expiry'],['added','Added'],['wa','WhatsApp No'],
       ['re','Reporting Email'],['rev','Email check'],['rp','Reporting Phone'],['rpv','Phone check'],['rw','Reporting WhatsApp'],['rwv','WhatsApp check']];
     var esc = function(v){ v = (v == null ? '' : String(v)); if (/^[=+\-@]/.test(v)) v = "'" + v; return '"' + v.replace(/"/g, '""') + '"'; };
     var lines = [cols.map(function(c){ return esc(c[1]); }).join(',')];
-    table.rows({search: 'applied', order: 'applied'}).nodes().each(function(tr){
+    $.each(nodes, function(i, tr){
       var d = JSON.parse(tr.getAttribute('data-row') || '{}');
       lines.push(cols.map(function(c){ return esc(d[c[0]]); }).join(','));
     });
     var blob = new Blob(['﻿' + lines.join('\r\n')], {type: 'text/csv;charset=utf-8'});
     var a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = '<?php echo $is_hr ? 'staff' : 'users'; ?>-' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.download = '<?php echo $is_hr ? 'staff' : 'users'; ?>' + (suffix || '') + '-' + new Date().toISOString().slice(0, 10) + '.csv';
     document.body.appendChild(a); a.click();
     setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+  $('.js-export').on('click', function(){ exportRows(table.rows({search: 'applied', order: 'applied'}).nodes().toArray()); });
+
+  // Bulk actions: tick people (the header box ticks everyone the filters show, on every page), then act on them together
+  var picked = {};
+  function pickedRows(){ return table.rows({order: 'applied'}).nodes().toArray().filter(function(tr){ var c = tr.querySelector('.js-pick'); return c && picked[c.value]; }); }
+  function paint(){
+    var n = Object.keys(picked).length, f = $('.js-bulk');
+    table.rows().nodes().each(function(tr){ var c = tr.querySelector('.js-pick'); if (c) { c.checked = !!picked[c.value]; tr.classList.toggle('picked', c.checked); } });
+    f.toggle(n > 0); f.find('.js-bulk-n').text(n + ' selected');
+    var vis = table.rows({search: 'applied'}).nodes().toArray(), all = vis.length && vis.every(function(tr){ var c = tr.querySelector('.js-pick'); return !c || picked[c.value]; });
+    $('.js-pick-all').prop('checked', !!(n && all)).prop('indeterminate', !!(n && !all));
+  }
+  $(document).on('click', '.js-pick, .js-pick-all', function(e){ e.stopPropagation(); });
+  $(document).on('change', '.js-pick', function(){ if (this.checked) picked[this.value] = 1; else delete picked[this.value]; paint(); });
+  $('.js-pick-all').on('change', function(){
+    var on = this.checked;
+    table.rows({search: 'applied'}).nodes().each(function(tr){ var c = tr.querySelector('.js-pick'); if (c) { if (on) picked[c.value] = 1; else delete picked[c.value]; } });
+    paint();
+  });
+  table.on('draw', paint);
+  $('.js-bulk-clear').on('click', function(){ picked = {}; paint(); });
+  $('.js-bulk-export').on('click', function(){ exportRows(pickedRows(), '-selected'); });
+  $('.js-bulk-do').on('click', function(){
+    var f = $('.js-bulk'), a = $(this).data('a'), ids = Object.keys(picked), n = ids.length;
+    if (!n) return;
+    if (a === 'manager' && !f.find('[name=manager]').val()) { f.find('[name=manager]').focus(); return; }
+    var what = a === 'enable' ? 'Enable' : (a === 'disable' ? 'Disable' : 'Move to ' + f.find('[name=manager] option:selected').text() + ':');
+    if (!confirm(what + ' ' + n + (n == 1 ? ' person' : ' people') + '?')) return;
+    f.find('[name=bulk_action]').val(a);
+    f.find('.ids').html(ids.map(function(id){ return '<input type="hidden" name="ids[]" value="' + parseInt(id, 10) + '">'; }).join(''));
+    f[0].submit();
   });
 
   $(document).on("click", ".js-status", function(){

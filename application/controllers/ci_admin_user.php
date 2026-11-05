@@ -196,6 +196,7 @@ class Ci_admin_user extends CI_Controller {
 		
 		$this->_page_data($data);
 		$data['exit_reasons'] = self::exit_reasons();
+		$data['bulk_managers'] = $this->db->select('id, name')->where('admin_status', 1)->where('id NOT IN (SELECT user_id FROM ci_user_exit)', NULL, FALSE)->order_by('name', 'ASC')->get('ci_user')->result_array();
 		$data['doc_counts'] = array();
 		foreach ($this->db->query('SELECT user_id, COUNT(*) n, GROUP_CONCAT(DISTINCT doc_type ORDER BY doc_type SEPARATOR ", ") t FROM ci_user_docs GROUP BY user_id')->result_array() as $dc) $data['doc_counts'][(int)$dc['user_id']] = $dc;
 		$this->load->view('manager/user/userlist',$data);
@@ -1010,6 +1011,59 @@ public function view($id='')
 			$o = isset($before[$k]) ? (string)$before[$k] : '';
 			if ($o !== (string)$v) $this->_history($id, $k, $o, $v);
 		}
+	}
+
+	/** Bulk actions from the list: enable, disable or change the manager of the ticked people.
+	 *  Skips yourself, Admin accounts (for non-admins), and enabling people who left (Rejoin is needed). */
+	public function bulk()
+	{
+		$this->if_not_login();
+		if ($this->input->server('REQUEST_METHOD') !== 'POST') redirect($this->base);
+		$me = (int)$this->session->userdata('manager_id');
+		$ids = array_values(array_unique(array_filter(array_map('intval', (array)$this->input->post('ids')))));
+		$action = (string)$this->input->post('bulk_action');
+		if (!$ids || !in_array($action, array('enable', 'disable', 'manager'), true)) {
+			$this->session->set_flashdata('error_message', 'Tick at least one person and choose an action.');
+			redirect($this->base);
+		}
+		$mgr = null;
+		if ($action === 'manager') {
+			$mid = (int)$this->input->post('manager');
+			$mgr = $mid ? $this->comman_model->getAll(array('id' => $mid), '', 'ci_user', 'first') : array();
+			if (empty($mgr) || in_array($mid, $this->_left_ids(), true)) {
+				$this->session->set_flashdata('error_message', 'Choose a manager who is still working here.');
+				redirect($this->base);
+			}
+		}
+		$left = array_flip($this->_left_ids());
+		$done = 0; $skip = array();
+		foreach ($ids as $id) {
+			$u = $this->comman_model->getAll(array('id' => $id), '', 'ci_user', 'first');
+			if (empty($u)) continue;
+			if ($id === $me) { $skip[] = $u['name'] . ' (yourself)'; continue; }
+			if (!$this->is_admin && (int)$u['user_type'] === 1) { $skip[] = $u['name'] . ' (Admin account)'; continue; }
+			if ($action === 'enable' || $action === 'disable') {
+				$to = $action === 'enable' ? 1 : 0;
+				if ($to === 1 && isset($left[$id])) { $skip[] = $u['name'] . ' (has left - use Rejoin)'; continue; }
+				if ((int)$u['admin_status'] === $to) continue;
+				$this->comman_model->updateData('id', $id, array('admin_status' => $to), 'ci_user');
+				$this->_history($id, 'Status', $to ? 'Disabled' : 'Enabled', $to ? 'Enabled' : 'Disabled');
+				$done++;
+			} else {
+				if ((int)$mgr['id'] === $id) { $skip[] = $u['name'] . ' (cannot report to themselves)'; continue; }
+				if ((int)$u['manager'] === (int)$mgr['id']) continue;
+				$old = $u['manager'] ? $this->comman_model->getAll(array('id' => (int)$u['manager']), '', 'ci_user', 'first') : array();
+				$this->comman_model->updateData('id', $id, array('manager' => (int)$mgr['id'], 'user_level' => (int)$mgr['user_level'] + 1, 'modified' => date('Y-m-d')), 'ci_user');
+				$this->_history($id, 'Upline / Manager', !empty($old['name']) ? $old['name'] : '', $mgr['name']);
+				$done++;
+			}
+		}
+		$what = $action === 'enable' ? 'enabled' : ($action === 'disable' ? 'disabled' : 'moved to ' . $mgr['name']);
+		$this->ci_admin_model->log_admin_action('user_bulk_' . $action, 'Bulk ' . $action . ' on ' . $done . ' user(s): #' . implode(', #', $ids), 'SUCCESS', $me, $this->session->userdata('manager_name'));
+		$msg = $done . ' ' . ($done == 1 ? 'person' : 'people') . ' ' . $what . '.';
+		if ($skip) $msg .= ' Skipped: ' . implode(', ', $skip) . '.';
+		$this->session->set_flashdata($done || !$skip ? 'message' : 'error_message', $msg);
+		redirect($this->base);
 	}
 
 public function ajax_edit_status()
