@@ -148,12 +148,27 @@ class Ci_admin_support extends CI_Controller {
 		return $this->uid > 0;
 	}
 
-	public function my_support()
+	/** Help & Support (profile menu): help topics to search plus the user's own chat with support. */
+	public function help()
 	{
 		if (!$this->me()) redirect('manager/login');
 		$this->ci_admin_model->check_auth_timeout();
-		$data = array('info' => array('title' => 'Support', 'page_heading' => 'Support'));
-		$this->load->view('manager/support/my_support', $data);
+		if (!crm_can('help_support', 'read')) {
+			$this->session->set_flashdata('error_message', 'You do not have access to Help & Support. Ask your administrator if you need it.');
+			redirect(crm_landing_url());
+		}
+		$this->load->model('hr_selfservice_model');
+		$role = (int)$this->session->userdata('manager_role');
+		$data = array('info' => array('title' => 'Help & Support', 'page_heading' => 'Help & Support'));
+		$data['topics'] = $this->hr_selfservice_model->topics('', '', false);
+		$data['can_manage_topics'] = ($role === 1 || $this->uid === 1 || $role === 7 || crm_can('hr_topics', 'write'));
+		$this->load->view('manager/support/help', $data);
+	}
+
+	/** Old Support page: now part of Help & Support. */
+	public function my_support()
+	{
+		redirect('manager/help#chat');
 	}
 
 	/** GET: after -> new messages of the user's chat (marks them read). */

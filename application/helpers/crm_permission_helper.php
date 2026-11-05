@@ -39,6 +39,7 @@ if (!function_exists('crm_perm_catalog')) {
 					'dashboard' => array('label' => 'Dashboard', 'desc' => 'Home page with pipeline counts and charts', 'pages' => array('dashboard'), 'levels' => 'r'),
 					'calls' => array('label' => 'Phone Dialer & Calls', 'desc' => 'Dialer, softphone and call logs (phone button in the top bar)', 'pages' => array('calls')),
 					'live' => array('label' => 'Live Operations Report', 'desc' => 'LIVE button in the top bar and the TV presentation screen', 'pages' => array('live'), 'levels' => 'r'),
+					'help_support' => array('label' => 'Help & Support', 'desc' => 'Help topics and chat with support (profile menu)', 'fallback' => 'dashboard', 'pages' => array('help'), 'levels' => 'r'),
 					'events_view' => array('label' => 'Events & Festivals', 'desc' => 'View company holidays, festivals, events and awards (profile menu); view only', 'fallback' => 'dashboard', 'pages' => array('events'), 'levels' => 'r'),
 				),
 			),
@@ -128,7 +129,7 @@ if (!function_exists('crm_perm_catalog')) {
 			'hr' => array(
 				'title' => 'HR & Training', 'key' => 'hr', 'match' => array('hr'),
 				'icon' => '<rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><line x1="15" y1="8" x2="17" y2="8"></line><line x1="15" y1="12" x2="17" y2="12"></line><line x1="7" y1="16" x2="17" y2="16"></line>',
-				'note' => 'Holiday requests, Training and Search Topics stay open to every user from the profile menu for their own data. The rights here add the HR menu and managing everyone.',
+				'note' => 'Holiday requests and Training stay open to every user from the profile menu for their own data; Search Topics are read in Help & Support. The rights here add the HR menu and managing everyone.',
 				'items' => array(
 					'hr' => array('label' => 'HR Overview', 'desc' => 'HR dashboard', 'nav' => array(array('hr', 'Overview', 'fa-th-large')), 'pages' => array('hr')),
 					'hr_attendance' => array('label' => 'Attendance & GPS', 'desc' => 'Attendance with location', 'fallback' => 'hr', 'nav' => array(array('hr/attendance', 'Attendance & GPS', 'fa-map-marker')), 'pages' => array('hr/attendance')),

@@ -289,13 +289,15 @@
               <span>Events &amp; Festivals</span>
             </a>
           </li>
+          <?php if (crm_can('help_support', 'read')) { ?>
           <li>
-            <a href="<?php echo base_url(); ?>manager/my-support" class="google-profile-item">
+            <a href="<?php echo base_url(); ?>manager/help" class="google-profile-item">
               <i class="fa fa-life-ring"></i>
-              <span>Support</span>
+              <span>Help &amp; Support</span>
               <span class="my-sup-unread" style="display:none; margin-left:auto;"></span>
             </a>
           </li>
+          <?php } ?>
           <li class="gp-group">
             <button type="button" class="google-profile-item gp-group-toggle" id="gpHrToggle" aria-expanded="false" aria-controls="gpHrMenu">
               <i class="fa fa-graduation-cap"></i>
@@ -304,7 +306,6 @@
             </button>
             <ul class="gp-sub" id="gpHrMenu" hidden>
               <li><a href="<?php echo base_url(); ?>manager/hr/leaves" class="google-profile-item"><i class="fa fa-calendar-check-o"></i><span>Holiday Request</span></a></li>
-              <li><a href="<?php echo base_url(); ?>manager/hr/search_topics" class="google-profile-item"><i class="fa fa-search"></i><span>Search Topics</span></a></li>
               <li><a href="<?php echo base_url(); ?>manager/hr/training" class="google-profile-item"><i class="fa fa-book"></i><span>Training</span></a></li>
             </ul>
           </li>
@@ -608,7 +609,7 @@ $(function() {
     n = parseInt(n, 10) || 0;
     $('.my-sup-unread').text(n > 99 ? '99+' : n).css('display', n > 0 ? 'inline-block' : 'none');
   };
-  if (/\/manager\/my-support\/?$/.test(location.pathname)) return; // the chat page marks replies read itself
+  if (/\/manager\/(my-support|help)\/?$/.test(location.pathname)) return; // the chat page marks replies read itself
   function load() {
     $.ajax({ url: '<?php echo base_url(); ?>manager/my-support/unread', dataType: 'json', cache: false,
       success: function (r) { if (r && r.ok) window.crmMySupBadge(r.unread); } });
