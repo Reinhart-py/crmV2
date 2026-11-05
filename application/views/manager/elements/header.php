@@ -306,12 +306,6 @@
             </a>
           </li>
           <?php } ?>
-          <li>
-            <a href="<?php echo base_url(); ?>manager/hr/leaves" class="google-profile-item">
-              <i class="fa fa-calendar-check-o"></i>
-              <span>Holiday Request</span>
-            </a>
-          </li>
         </ul>
 
         <div class="google-menu-divider"></div>

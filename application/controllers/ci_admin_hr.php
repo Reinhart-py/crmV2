@@ -73,7 +73,7 @@ class Ci_admin_hr extends CI_Controller {
 	private function _back($default)
 	{
 		$ret = (string)$this->input->post('return');
-		if ($ret !== '' && preg_match('#^manager/[a-z0-9_/\-]+$#i', $ret)) {
+		if ($ret !== '' && preg_match('#^manager/[a-z0-9_/\-]+(\#[a-z0-9_\-]+)?$#i', $ret)) {
 			redirect($ret);
 		}
 		redirect($default);

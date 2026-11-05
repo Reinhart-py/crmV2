@@ -63,8 +63,9 @@ foreach ($my_shifts as $sh) {
 
 // Holidays: leave summary, my requests, company holidays this year
 $my_leave = $this->ci_admin_model->hr_leave_summary($pf_uid);
-$my_leave_list = $this->db->select('leave_type, from_date, to_date, total_days, status, created_at')
-  ->where('user_id', $pf_uid)->order_by('from_date', 'DESC')->limit(10)->get('ci_leaves')->result_array();
+$my_leave_list = $this->db->select('id, leave_type, from_date, to_date, total_days, reason, status, created_at')
+  ->where('user_id', $pf_uid)->order_by('from_date', 'DESC')->limit(50)->get('ci_leaves')->result_array();
+$leave_types = array('Annual Leave', 'Sick Leave', 'Casual Leave', 'Maternity Leave', 'Emergency Leave', 'Unpaid Leave');
 $co_holidays = $this->db->select('title, event_type, start_date, end_date')
   ->from('ci_events')
   ->where("LOWER(event_type) IN ('holiday', 'public_holiday', 'festival')", null, false)
@@ -111,6 +112,18 @@ $pf_time = function ($t) { return !empty($t) && $t !== '00:00:00' ? date('h:i A'
   .my-profile .pf-badge-warn { background:#fef3c7; color:#92400e; }
   .my-profile .pf-badge-neutral { background:#e0e7ff; color:#3730a3; }
   .my-profile .pf-actions { display:flex; gap:8px; flex-wrap:wrap; }
+  .my-profile .pf-hr-grid { display:grid; grid-template-columns:minmax(0, 5fr) minmax(0, 7fr); gap:14px; align-items:start; margin-bottom:16px; }
+  .my-profile .pf-hr-card { border:1px solid #e2e8f0; border-radius:8px; padding:14px; min-width:0; }
+  .my-profile .pf-hr-card h4 { font-size:13px; font-weight:700; color:#0f172a; margin:0 0 10px; display:flex; align-items:center; gap:7px; }
+  .my-profile .pf-hr-card h4 i { color:#1e3a8a; }
+  .my-profile .pf-hr-card label { font-size:12px; font-weight:600; color:#334155; margin-bottom:3px; }
+  .my-profile .pf-hr-card .form-group { margin-bottom:10px; }
+  .my-profile .pf-hr-dates { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:10px; }
+  .my-profile .pf-hr-dates input { min-width:0; width:100%; padding-left:8px; padding-right:4px; }
+  .my-profile .pf-hr-days { font-size:12px; font-weight:700; color:#1e3a8a; background:#eff6ff; border-radius:6px; padding:6px 10px; margin-bottom:10px; }
+  .my-profile .pf-hr-scroll { max-height:320px; overflow-y:auto; }
+  .my-profile .pf-note { display:block; font-size:12px; color:#64748b; margin-top:8px; }
+  @media (max-width: 991px) { .my-profile .pf-hr-grid { grid-template-columns:1fr; } }
   @media (max-width: 767px) {
     /* Phones: four equal tabs, icon above the name, all visible without scrolling. */
     .my-profile .pf-tabs { display:grid; grid-template-columns:repeat(4, 1fr); gap:0; }
@@ -128,6 +141,8 @@ $pf_time = function ($t) { return !empty($t) && $t !== '00:00:00' ? date('h:i A'
   </section>
   <section class="content my-profile">
   <div class="container">
+    <?php echo get_message($this->session->flashdata('error_message'), 'error_message'); ?>
+    <?php echo get_message($this->session->flashdata('message'), 'message'); ?>
 
     <div class="pf-head">
       <div class="pf-who">
@@ -150,7 +165,7 @@ $pf_time = function ($t) { return !empty($t) && $t !== '00:00:00' ? date('h:i A'
       <li class="active"><a href="#overview" data-toggle="tab" role="tab"><i class="fa fa-user"></i> Overview</a></li>
       <li><a href="#attendance" data-toggle="tab" role="tab"><i class="fa fa-clock-o"></i> Attendance</a></li>
       <li><a href="#shifts" data-toggle="tab" role="tab"><i class="fa fa-calendar-o"></i> Work Shifts</a></li>
-      <li><a href="#holidays" data-toggle="tab" role="tab"><i class="fa fa-plane"></i> Holidays</a></li>
+      <li><a href="#holidays" data-toggle="tab" role="tab"><i class="fa fa-plane"></i> Holiday Request</a></li>
     </ul>
 
     <div class="tab-content pf-body">
@@ -251,12 +266,42 @@ $pf_time = function ($t) { return !empty($t) && $t !== '00:00:00' ? date('h:i A'
         </div>
       </div>
 
-      <!-- Holidays -->
+      <!-- Holiday Request: apply, my requests, company holidays -->
       <div class="tab-pane" id="holidays" role="tabpanel">
-        <div class="row">
-          <div class="col-md-7" style="margin-bottom:12px;">
-            <div class="pf-panel">
-              <h4 class="pf-panel-title">Leave taken in <?php echo date('Y'); ?></h4>
+        <div class="pf-hr-grid">
+          <div class="pf-hr-card" id="pfApply">
+            <h4><i class="fa fa-paper-plane"></i> Request a holiday</h4>
+            <form method="post" action="<?php echo base_url('manager/hr/leaves/apply'); ?>">
+              <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
+              <input type="hidden" name="return" value="manager/profile#holidays">
+              <div class="form-group">
+                <label for="pfLeaveType">Type</label>
+                <select name="leave_type" id="pfLeaveType" class="form-control" required>
+                  <?php foreach ($leave_types as $lt) { ?><option value="<?php echo $lt; ?>"><?php echo $lt; ?></option><?php } ?>
+                </select>
+              </div>
+              <div class="pf-hr-dates">
+                <div class="form-group">
+                  <label for="pfLeaveFrom">From</label>
+                  <input type="date" name="from_date" id="pfLeaveFrom" class="form-control" value="<?php echo $today; ?>" required>
+                </div>
+                <div class="form-group">
+                  <label for="pfLeaveTo">To</label>
+                  <input type="date" name="to_date" id="pfLeaveTo" class="form-control" value="<?php echo $today; ?>" required>
+                </div>
+              </div>
+              <div class="pf-hr-days" id="pfLeaveDays">1 day</div>
+              <div class="form-group">
+                <label for="pfLeaveReason">Reason <small class="text-muted">(optional)</small></label>
+                <textarea name="reason" id="pfLeaveReason" class="form-control" rows="2" maxlength="1000"></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary"><i class="fa fa-check"></i> Submit request</button>
+              <span class="pf-note">HR and your administrator are notified and approve it.</span>
+            </form>
+          </div>
+          <div style="min-width:0;">
+            <div class="pf-hr-card" style="margin-bottom:14px;">
+              <h4><i class="fa fa-pie-chart"></i> Leave taken in <?php echo date('Y'); ?></h4>
               <?php if (!empty($my_leave['used_by_type'])) { ?>
               <div class="pf-grid">
                 <?php foreach ($my_leave['used_by_type'] as $lv) { ?>
@@ -266,37 +311,36 @@ $pf_time = function ($t) { return !empty($t) && $t !== '00:00:00' ? date('h:i A'
               <?php } else { ?>
               <div class="pf-empty">No approved leave recorded for <?php echo date('Y'); ?>.</div>
               <?php } ?>
-              <div class="pf-note"><?php echo (int)$my_leave['pending']; ?> request<?php echo ((int)$my_leave['pending'] === 1) ? '' : 's'; ?> awaiting approval</div>
+              <span class="pf-note"><?php echo (int)$my_leave['pending']; ?> request<?php echo ((int)$my_leave['pending'] === 1) ? '' : 's'; ?> awaiting approval</span>
+            </div>
+            <div class="pf-hr-card">
+              <h4><i class="fa fa-list-ul"></i> My requests</h4>
+              <?php if (!empty($my_leave_list)) { ?>
+              <div class="table-responsive pf-hr-scroll"><table class="table pf-table">
+                <tr><th>Type</th><th>Dates</th><th>Days</th><th>Status</th><th></th></tr>
+                <?php foreach ($my_leave_list as $lv) { ?>
+                <tr>
+                  <td><?php echo htmlspecialchars($lv['leave_type']); ?><?php if (trim((string)$lv['reason']) !== '') { ?><br><small class="text-muted"><?php echo htmlspecialchars($lv['reason']); ?></small><?php } ?></td>
+                  <td style="white-space:nowrap;"><?php echo date('d M Y', strtotime($lv['from_date'])); ?><?php echo $lv['to_date'] !== $lv['from_date'] ? '<br>' . date('d M Y', strtotime($lv['to_date'])) : ''; ?></td>
+                  <td><?php echo (int)$lv['total_days']; ?></td>
+                  <td><?php echo $pf_badge($lv['status']); ?></td>
+                  <td>
+                    <?php if ($lv['status'] === 'Pending') { ?>
+                    <form method="post" action="<?php echo base_url('manager/hr/cancel_leave/' . (int)$lv['id']); ?>" style="display:inline;" onsubmit="return confirm('Cancel this holiday request?');">
+                      <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
+                      <input type="hidden" name="return" value="manager/profile#holidays">
+                      <button type="submit" class="btn btn-default btn-xs">Cancel</button>
+                    </form>
+                    <?php } ?>
+                  </td>
+                </tr>
+                <?php } ?>
+              </table></div>
+              <?php } else { ?>
+              <div class="pf-empty">You have not requested any holiday yet.</div>
+              <?php } ?>
             </div>
           </div>
-          <div class="col-md-5" style="margin-bottom:12px;">
-            <div class="pf-panel pf-panel-center">
-              <span class="pf-note" style="margin:0 0 12px;">Request time off for vacation, emergencies or medical rest.</span>
-              <div class="pf-actions" style="justify-content:center;">
-                <a href="<?php echo base_url('manager/hr/leaves#new'); ?>" class="btn btn-primary btn-sm">Request leave</a>
-                <a href="<?php echo base_url('manager/hr/leaves'); ?>" class="btn btn-default btn-sm">All my requests</a>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="pf-sec">
-          <h4><i class="fa fa-list-ul"></i> My recent requests</h4>
-          <?php if (!empty($my_leave_list)) { ?>
-          <div class="table-responsive"><table class="table pf-table">
-            <tr><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Status</th></tr>
-            <?php foreach ($my_leave_list as $lv) { ?>
-            <tr>
-              <td><?php echo htmlspecialchars($lv['leave_type']); ?></td>
-              <td><?php echo date('d M Y', strtotime($lv['from_date'])); ?></td>
-              <td><?php echo date('d M Y', strtotime($lv['to_date'])); ?></td>
-              <td><?php echo (int)$lv['total_days']; ?></td>
-              <td><?php echo $pf_badge($lv['status']); ?></td>
-            </tr>
-            <?php } ?>
-          </table></div>
-          <?php } else { ?>
-          <div class="pf-empty">You have not requested any leave yet.</div>
-          <?php } ?>
         </div>
         <div class="pf-sec">
           <h4><i class="fa fa-star-o"></i> Company holidays <?php echo date('Y'); ?></h4>
@@ -327,6 +371,17 @@ $(document).ready(function() {
   // Open the tab named in the address (#attendance, #shifts, #holidays) and keep it in the address when switching.
   var hash = window.location.hash;
   if (hash && $('#pfTabs a[href="' + hash + '"]').length) { $('#pfTabs a[href="' + hash + '"]').tab('show'); }
+  (function () {
+    var f = document.getElementById('pfLeaveFrom'), t = document.getElementById('pfLeaveTo'), o = document.getElementById('pfLeaveDays');
+    if (!f || !t || !o) return;
+    function upd() {
+      if (t.value && f.value && t.value < f.value) { t.value = f.value; }
+      t.min = f.value;
+      var d = (f.value && t.value) ? Math.round((new Date(t.value) - new Date(f.value)) / 86400000) + 1 : 0;
+      o.textContent = d > 0 ? d + (d === 1 ? ' day' : ' days') : 'Choose the dates';
+    }
+    f.addEventListener('change', upd); t.addEventListener('change', upd); upd();
+  })();
   $('#pfTabs a').on('shown.bs.tab', function (e) {
     if (history.replaceState) { history.replaceState(null, '', $(e.target).attr('href')); }
   });
