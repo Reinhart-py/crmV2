@@ -450,23 +450,85 @@
     return audio;
   }
   $(document).one('click keydown touchstart', function () { audioCtx(); });
+  /*SALE-SOUND-START*/
+  // Celebration for a new sale: brass fanfare with drums and cymbals, then a crowd clapping (about 8 seconds).
+  // Everything is made in the browser; there is no sound file.
+  function playSaleSound(ac, out) {
+    var t0 = ac.currentTime + 0.08;
+    var comp = ac.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 4; comp.connect(out);
+    var master = ac.createGain(); master.gain.value = 0.8; master.connect(comp);
+    // Small room reverb so it sounds full rather than thin.
+    var rev = ac.createConvolver(), irLen = Math.floor(ac.sampleRate * 1.6), ir = ac.createBuffer(2, irLen, ac.sampleRate);
+    for (var ch = 0; ch < 2; ch++) { var d = ir.getChannelData(ch); for (var i = 0; i < irLen; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / irLen, 2.5); }
+    rev.buffer = ir; var revGain = ac.createGain(); revGain.gain.value = 0.22; rev.connect(revGain); revGain.connect(master);
+    var bus = ac.createGain(); bus.connect(master); bus.connect(rev);
+    var nLen = ac.sampleRate * 2, noise = ac.createBuffer(1, nLen, ac.sampleRate), nd = noise.getChannelData(0);
+    for (var j = 0; j < nLen; j++) nd[j] = Math.random() * 2 - 1;
+
+    function env(g, at, peak, attack, len) {
+      g.gain.setValueAtTime(0.0001, at);
+      g.gain.exponentialRampToValueAtTime(peak, at + attack);
+      g.gain.exponentialRampToValueAtTime(0.0001, at + len);
+    }
+    function noiseHit(at, len, type, freq, q, vol, dest) {
+      var s = ac.createBufferSource(); s.buffer = noise; s.playbackRate.value = 0.9 + Math.random() * 0.2;
+      var f = ac.createBiquadFilter(); f.type = type; f.frequency.value = freq; f.Q.value = q;
+      var g = ac.createGain(); env(g, at, vol, 0.003, len);
+      s.connect(f); f.connect(g); g.connect(dest || bus);
+      s.start(at, Math.random() * 1.5); s.stop(at + len + 0.05);
+    }
+    // Brass: two detuned saw waves through a filter that opens.
+    function brass(freq, at, len, vol) {
+      var g = ac.createGain(), f = ac.createBiquadFilter();
+      f.type = 'lowpass'; f.Q.value = 1.5;
+      f.frequency.setValueAtTime(500, at); f.frequency.exponentialRampToValueAtTime(3200, at + 0.08); f.frequency.exponentialRampToValueAtTime(1600, at + len);
+      g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(vol, at + 0.04);
+      g.gain.setValueAtTime(vol * 0.8, at + Math.max(0.05, len - 0.12)); g.gain.exponentialRampToValueAtTime(0.0001, at + len);
+      [-6, 6].forEach(function (cents) {
+        var o = ac.createOscillator(); o.type = 'sawtooth'; o.frequency.value = freq; o.detune.value = cents;
+        o.connect(f); o.start(at); o.stop(at + len + 0.05);
+      });
+      f.connect(g); g.connect(bus);
+    }
+    function kick(at, vol) {
+      var o = ac.createOscillator(), g = ac.createGain();
+      o.frequency.setValueAtTime(150, at); o.frequency.exponentialRampToValueAtTime(45, at + 0.25);
+      env(g, at, vol, 0.004, 0.35); o.connect(g); g.connect(bus); o.start(at); o.stop(at + 0.4);
+    }
+    function snare(at, vol) { noiseHit(at, 0.16, 'highpass', 1500, 0.7, vol); }
+    function crash(at, vol) { noiseHit(at, 2.2, 'highpass', 5500, 0.5, vol); }
+    function chord(notes, at, len, vol) { notes.forEach(function (n) { brass(n, at, len, vol); }); }
+
+    var C4 = 261.63, E4 = 329.63, G4 = 392.0, A4 = 440.0, B4 = 493.88, C5 = 523.25, D5 = 587.33, E5 = 659.25, F5 = 698.46, G5 = 783.99, C6 = 1046.5;
+    var b = 0.15; // one beat-step
+    // Snare roll building up
+    for (var r = 0; r < 10; r++) snare(t0 + r * 0.045, 0.12 + r * 0.035);
+    // "Ta-da" fanfare
+    var t = t0 + 0.45;
+    brass(G4, t, b * 0.9, 0.22); brass(G4, t + b, b * 0.9, 0.22); brass(G4, t + 2 * b, b * 0.9, 0.22);
+    chord([C5, E5, G4], t + 3 * b, b * 2.6, 0.2); kick(t + 3 * b, 0.9); crash(t + 3 * b, 0.35);
+    brass(A4, t + 6 * b, b * 0.9, 0.2); brass(B4, t + 7 * b, b * 0.9, 0.2);
+    chord([D5, F5, B4], t + 8 * b, b * 1.6, 0.18); kick(t + 8 * b, 0.7); snare(t + 9 * b, 0.4);
+    // Big final chord
+    var fin = t + 10 * b;
+    chord([C4, G4, C5, E5, G5, C6], fin, 2.4, 0.16); kick(fin, 1); crash(fin, 0.45); snare(fin, 0.5);
+    kick(fin + 0.6, 0.6); snare(fin + 0.9, 0.35); kick(fin + 1.2, 0.6); snare(fin + 1.5, 0.35);
+
+    // Crowd clapping: many single claps (each a few quick noise bursts), building up then fading out.
+    var clapBus = ac.createGain(); clapBus.gain.value = 0.9; clapBus.connect(master); clapBus.connect(rev);
+    var aStart = t + 3 * b, aLen = 7.0;
+    for (var c = 0; c < 340; c++) {
+      var x = Math.random(), at = aStart + x * aLen;
+      var level = x < 0.12 ? x / 0.12 : (x > 0.65 ? Math.max(0.05, (1 - x) / 0.35) : 1);
+      var v = (0.05 + Math.random() * 0.07) * level, fq = 900 + Math.random() * 1600;
+      for (var k = 0; k < 3; k++) noiseHit(at + k * 0.009, 0.05 + Math.random() * 0.06, 'bandpass', fq, 1.2, v * (k === 2 ? 1 : 0.6), clapBus);
+    }
+    return 9;
+  }
+  /*SALE-SOUND-END*/
   function saleSound() {
     var ac = audioCtx(); if (!ac) return;
-    var t = ac.currentTime + 0.05, master = ac.createGain();
-    master.gain.value = 0.35; master.connect(ac.destination);
-    function note(freq, at, len, type, vol) {
-      var o = ac.createOscillator(), g = ac.createGain();
-      o.type = type; o.frequency.value = freq;
-      g.gain.setValueAtTime(0.0001, at);
-      g.gain.exponentialRampToValueAtTime(vol, at + 0.02);
-      g.gain.exponentialRampToValueAtTime(0.0001, at + len);
-      o.connect(g); g.connect(master); o.start(at); o.stop(at + len + 0.05);
-    }
-    // Rising fanfare, then a bright chord with a bell on top.
-    [523.25, 659.25, 783.99].forEach(function (f, i) { note(f, t + i * 0.11, 0.25, 'triangle', 0.6); });
-    [523.25, 659.25, 783.99, 1046.5].forEach(function (f) { note(f, t + 0.36, 1.1, 'triangle', 0.45); });
-    note(2093, t + 0.36, 1.4, 'sine', 0.25);
-    note(1568, t + 0.5, 1.2, 'sine', 0.18);
+    playSaleSound(ac, ac.destination);
   }
   function playCele() {
     if (celeBusy || !celeQueue.length) return;
