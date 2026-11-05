@@ -71,6 +71,35 @@ class Ci_admin_user extends CI_Controller {
 		}
 	}
 
+	/** Employee ID and Passport No must belong to one person only. Returns the problem, or '' when fine. */
+	private function _duplicate_message($exclude_id = 0)
+	{
+		$fields = array('emp_id' => 'Employee ID', 'p_no' => 'Passport No');
+		foreach ($fields as $k => $label) {
+			$v = trim((string)$this->input->post($k));
+			if ($v === '') continue;
+			$this->db->where($k, $v);
+			if ($exclude_id) $this->db->where('id !=', (int)$exclude_id);
+			if ($this->db->count_all_results('ci_user') > 0) return $label . ' "' . $v . '" is already used by another user.';
+		}
+		return '';
+	}
+
+	/** Form check while typing: is this Employee ID / Passport No already used by someone else? */
+	public function check_unique()
+	{
+		$me = (int)$this->session->userdata('manager_id');
+		$ok = $me && ((int)$this->session->userdata('manager_role') === 1 || crm_can('users') || crm_can('hr_staff'));
+		$field = (string)$this->input->post('field');
+		$value = trim((string)$this->input->post('value'));
+		if (!$ok || !in_array($field, array('emp_id', 'p_no'), true)) { echo 'error'; return; }
+		if ($value === '') { echo 'ok'; return; }
+		$this->db->where($field, $value);
+		$id = (int)$this->input->post('id');
+		if ($id) $this->db->where('id !=', $id);
+		echo ($this->db->count_all_results('ci_user') > 0) ? 'taken' : 'ok';
+	}
+
     public function is_user_login($url = '')
     {
         if ($this->session->userdata('manager_id') != '') {
@@ -296,6 +325,10 @@ public function view($id='')
 		{
 
 			extract($_POST);
+			if (($dup = $this->_duplicate_message()) !== '') {
+				$this->session->set_flashdata('error_message', $dup);
+				redirect($this->base.'/add');
+			}
 			$data['role'] =$this->comman_model->getAll(array('id'=>$user_type),'','ci_roles','first');
 			$data['levels'] =$this->comman_model->getAll(array('id'=>$manager),'','ci_user','first');
 			$list= array(
@@ -429,6 +462,10 @@ public function view($id='')
 			 if($this->input->server('REQUEST_METHOD')==='POST')
 		     {
 			   extract($_POST);
+			   if (($dup = $this->_duplicate_message($id)) !== '') {
+			   	$this->session->set_flashdata('error_message', $dup);
+			   	redirect($this->base.'/edit/'.(int)$id);
+			   }
 			   $data['role'] =$this->comman_model->getAll(array('id'=>$user_type),'','ci_roles','first');
 			   $data['levels'] =$this->comman_model->getAll(array('id'=>$manager),'','ci_user','first');
 				$save= array(		

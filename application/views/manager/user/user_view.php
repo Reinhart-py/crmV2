@@ -13,6 +13,16 @@ $phone = function ($code, $num) use ($val) {
 	$c = $val($code);
 	return ($c !== '' ? '+' . ltrim($c, '+') . ' ' : '') . $n;
 };
+// Expiry dates get a coloured note: expired, or how many days are left when 60 or fewer
+$exp_alerts = array();
+$expv = function ($k, $label) use ($val, &$exp_alerts) {
+	$v = $val($k);
+	if ($v === '' || !($t = strtotime($v))) return $v;
+	$days = (int)floor(($t - strtotime(date('Y-m-d'))) / 86400);
+	if ($days < 0) { $exp_alerts[] = $label . ' expired'; return $v . ' <span class="uv-chip off">Expired</span>'; }
+	if ($days <= 60) { $exp_alerts[] = $label . ' expires in ' . $days . ' day' . ($days == 1 ? '' : 's'); return $v . ' <span class="uv-chip ' . ($days <= 30 ? 'warn' : 'soon') . '">' . $days . ' days left</span>'; }
+	return $v;
+};
 $manager_name = '';
 if (!empty($p['manager'])) {
 	$m = $this->db->select('name')->where('id', (int)$p['manager'])->get('ci_user')->row_array();
@@ -35,8 +45,8 @@ $sections = array(
 		'Date of Joining' => $val('c_doj'), 'Date of Leaving' => $val('c_dol'),
 	),
 	'Identity & Visa' => array(
-		'Passport No' => $val('p_no'), 'Passport Expiry' => $val('p_exdate'), 'Emirates ID' => $val('eid_no'), 'ID Expiry' => $val('eid_expiry'),
-		'Visa Type' => $val('visa_type'), 'Visa Ref. No' => $val('visa_no'), 'Visa Issued By' => $val('visa_by'), 'Visa Expiry' => $val('visa_expiry'),
+		'Passport No' => $val('p_no'), 'Passport Expiry' => $expv('p_exdate', 'Passport'), 'Emirates ID' => $val('eid_no'), 'ID Expiry' => $expv('eid_expiry', 'Emirates ID'),
+		'Visa Type' => $val('visa_type'), 'Visa Ref. No' => $val('visa_no'), 'Visa Issued By' => $val('visa_by'), 'Visa Expiry' => $expv('visa_expiry', 'Visa'),
 	),
 	'Emergency Contact' => array(
 		'Contact Name' => $val('h_contact_name'), 'Relation' => $val('h_contact_relation'), 'Contact No' => $val('h_contact_no'), 'Alternate No' => $val('h_contact_no2'),
@@ -70,6 +80,9 @@ $enabled = ((int)$p['admin_status'] === 1);
 .uview .uv-chip{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:600;background:var(--crm-ocean-soft,rgba(30,58,138,.1));color:var(--crm-ocean,#1e3a8a)}
 .uview .uv-chip.on{background:rgba(22,163,74,.12);color:#15803d}
 .uview .uv-chip.off{background:rgba(220,38,38,.12);color:#b91c1c}
+.uview .uv-chip.warn{background:rgba(245,158,11,.16);color:#b45309}
+.uview .uv-chip.soon{background:rgba(234,179,8,.14);color:#854d0e}
+.uview .uv-alert{margin:0 14px 10px;padding:7px 10px;border-radius:8px;background:rgba(220,38,38,.07);border:1px solid rgba(220,38,38,.22);font-size:12.5px;color:var(--crm-ink,#0f172a)}
 .uview .uv-actions{display:flex;gap:8px;flex-wrap:wrap}
 .uview .uv-actions .btn{height:32px;font-weight:600}
 .uview .uv-fill{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--crm-ink-2,#334155);padding:0 14px 10px}
@@ -122,6 +135,7 @@ $enabled = ((int)$p['admin_status'] === 1);
           <a href="<?php echo base_url().$base; ?>" class="btn btn-default"><i class="fa fa-arrow-left"></i> Back</a>
         </div>
       </div>
+      <?php if ($exp_alerts) { ?><div class="uv-alert"><i class="fa fa-exclamation-triangle" style="color:#dc2626"></i> <b>Document expiry:</b> <?php echo htmlspecialchars(implode(' · ', $exp_alerts), ENT_QUOTES, 'UTF-8'); ?></div><?php } ?>
       <div class="uv-fill<?php echo ($filled === $total) ? ' done' : ''; ?>">
         <div class="bar"><span style="width:<?php echo $total ? round($filled * 100 / $total) : 0; ?>%"></span></div>
         <?php echo $filled; ?> of <?php echo $total; ?> details filled

@@ -667,6 +667,44 @@
   update(); setTimeout(update, 800); setTimeout(update, 2600);
 })();
 </script>
+<script>
+// Employee ID and Passport No must be unique: checked while typing, and saving is stopped while one is taken.
+(function () {
+  var form = document.forms.add_form || document.forms.edit_form; if (!form) return;
+  var selfId = <?php echo isset($list['id']) ? (int)$list['id'] : 0; ?>;
+  var labels = { emp_id: 'Employee ID', p_no: 'Passport No' }, state = {}, pending = {};
+  Object.keys(labels).forEach(function (name) {
+    var el = form.querySelector('[name="' + name + '"]'); if (!el) return;
+    var msg = document.createElement('div');
+    msg.className = 'ureg-dup'; msg.style.cssText = 'grid-column:2;color:#dc2626;font-size:11.5px;margin-top:2px;display:none';
+    el.parentNode.appendChild(msg);
+    function check() {
+      var v = el.value.trim();
+      if (!v) { state[name] = false; msg.style.display = 'none'; return; }
+      pending[name] = $.post('<?php echo base_url(); ?>ci_admin_user/check_unique',
+        { field: name, value: v, id: selfId, <?php echo $this->security->get_csrf_token_name(); ?>: '<?php echo $this->security->get_csrf_hash(); ?>' })
+        .done(function (r) {
+          state[name] = ($.trim(r) === 'taken');
+          msg.textContent = labels[name] + ' "' + v + '" is already used by another user.';
+          msg.style.display = state[name] ? 'block' : 'none';
+          el.style.borderColor = state[name] ? '#dc2626' : '';
+        })
+        .always(function () { pending[name] = null; });
+    }
+    el.addEventListener('change', check);
+    if (el.value.trim()) check();
+  });
+  // Runs before the form's own checks and saving.
+  document.addEventListener('submit', function (e) {
+    if (e.target !== form) return;
+    var bad = Object.keys(state).filter(function (k) { return state[k]; });
+    if (bad.length) {
+      e.preventDefault(); e.stopImmediatePropagation();
+      var el = form.querySelector('[name="' + bad[0] + '"]'); if (el) { el.scrollIntoView({ block: 'center' }); el.focus(); }
+    }
+  }, true);
+})();
+</script>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>
 
  
