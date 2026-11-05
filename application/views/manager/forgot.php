@@ -9,7 +9,7 @@
   <link rel="icon" type="image/png" href="<?php echo base_url(); ?>assets/logo.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-auth.css?v=20261105_1">
+  <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-auth.css?v=20261105_2">
 </head>
 <body class="auth-page">
   <div class="auth-shell">
@@ -40,7 +40,8 @@
         <div class="auth-field">
           <label class="auth-label" for="forgot_email">Email address</label>
           <div class="auth-input-wrap">
-            <input type="email" class="auth-input" id="forgot_email" name="email" placeholder="name@company.com" required autocomplete="email">
+            <svg class="auth-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-10 6L2 7"></path></svg>
+            <input type="email" class="auth-input has-icon" id="forgot_email" name="email" placeholder="name@company.com" required autocomplete="email">
           </div>
         </div>
 

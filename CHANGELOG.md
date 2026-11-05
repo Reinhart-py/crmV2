@@ -2,6 +2,7 @@
 ### Changed
 - Sign in, Forgot Password and Set New Password pages now use a full-screen split layout: the existing brand image on the left with a short Seven Strokes introduction, and a plain white form panel on the right. The floating card, blurred background and input icons were removed.
 - Login title is now "Sign In" with the new subtitle. Remember Me and Forgot Password? sit on one row under the password field.
+- Logo, title and subtitle are centered; login subtitle is "Get access to your account". Field labels are in capitals and every input has a matching SVG icon (user, lock, envelope).
 - Shorter, plainer messages and footer text. Form fields, actions, CSRF, location capture and all login and reset logic are unchanged.
 
 ## [2026-11-05] - One Stage Per Record: Database, Leads, Orders, Sales

@@ -9,7 +9,7 @@
   <link rel="icon" type="image/png" href="<?php echo base_url(); ?>assets/logo.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-auth.css?v=20261105_1">
+  <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-auth.css?v=20261105_2">
 </head>
 <body class="auth-page">
   <div class="auth-shell">
@@ -18,7 +18,7 @@
      <div class="auth-panel-inner">
       <div class="auth-brand"><img src="<?php echo base_url(); ?>assets/logo.png" alt="Seven Strokes"></div>
       <h1 class="auth-title">Sign In</h1>
-      <p class="auth-sub">Sign in with your CRM and username and password to continue.</p>
+      <p class="auth-sub">Get access to your account</p>
 
       <?php if(isset($_GET['conflict'])) { ?>
         <div class="auth-alert auth-alert-danger">
@@ -56,14 +56,16 @@
         <div class="auth-field">
           <label class="auth-label" for="login_email">Username</label>
           <div class="auth-input-wrap">
-            <input type="text" class="auth-input" id="login_email" name="email" placeholder="Enter your username" required autocomplete="username">
+            <svg class="auth-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <input type="text" class="auth-input has-icon" id="login_email" name="email" placeholder="Enter your username" required autocomplete="username">
           </div>
         </div>
 
         <div class="auth-field">
           <label class="auth-label" for="login_password">Password</label>
           <div class="auth-input-wrap">
-            <input type="password" class="auth-input has-toggle" name="password" id="login_password" placeholder="Enter your password" required autocomplete="current-password">
+            <svg class="auth-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            <input type="password" class="auth-input has-icon has-toggle" name="password" id="login_password" placeholder="Enter your password" required autocomplete="current-password">
             <button type="button" class="auth-pwd-toggle" id="btnToggleLoginPwd" title="Show or hide password">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
             </button>

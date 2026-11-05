@@ -16,7 +16,7 @@
   <meta name="twitter:image" content="<?php echo base_url(); ?>assets/logo.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-auth.css?v=20261105_1">
+  <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-auth.css?v=20261105_2">
 </head>
 <body class="auth-page">
   <div class="auth-shell">
@@ -33,13 +33,15 @@
         <div class="auth-field">
           <label class="auth-label" for="reset_password">New password</label>
           <div class="auth-input-wrap">
-            <input type="password" class="auth-input" id="reset_password" name="password" placeholder="Enter new password" required>
+            <svg class="auth-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            <input type="password" class="auth-input has-icon" id="reset_password" name="password" placeholder="Enter new password" required>
           </div>
         </div>
         <div class="auth-field">
           <label class="auth-label" for="reset_password_repeat">Repeat password</label>
           <div class="auth-input-wrap">
-            <input type="password" class="auth-input" id="reset_password_repeat" name="change_password" placeholder="Repeat new password" required>
+            <svg class="auth-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            <input type="password" class="auth-input has-icon" id="reset_password_repeat" name="change_password" placeholder="Repeat new password" required>
           </div>
         </div>
         <button type="submit" class="auth-btn" style="margin-top: 6px;">Save password</button>
