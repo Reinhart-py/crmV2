@@ -199,14 +199,14 @@
 
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Email</label>
+                <label>Email<span>*</span></label>
                 <input type="email" class="form-control"  name="email"  value="<?php echo $list['email']; ?>" >
               </div>
             </div>
 
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Date of Birth</label>
+                <label>Date of Birth<span>*</span></label>
                 <input type="text" class="form-control" name="dob" value="<?php echo $list['dob']; ?>"  >
               </div>
             </div>
@@ -226,7 +226,7 @@
             
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                 <label>Contact No</label>
+                 <label>Contact No<span>*</span></label>
                   <div class="input-group">
                         <span class="input-group-addon country-code">
                          <select name="country_code">                          
@@ -320,7 +320,7 @@
         <div class="row">
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Employee ID</label>
+                <label>Employee ID<span>*</span></label>
                 <input type="text" class="form-control" name="emp_id" value="<?php echo $list['emp_id']; ?>"  >
               </div>
             </div>
@@ -333,7 +333,7 @@
             </div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Date of Joining</label>
+                <label>Date of Joining<span>*</span></label>
                 <input type="text" class="form-control datepicker" name="c_doj"  value="<?php echo $list['c_doj']; ?>" >
               </div>
             </div>
@@ -346,7 +346,7 @@
 
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Department</label>
+                <label>Department<span>*</span></label>
                 <select class="form-control" style="width: 100%;" name="department">
                 <option value="">Select</option>
                   <option  <?php if($list['department']=='Board of Director'){ echo "selected"; } ?> value="Board of Director" selected="selected">Board of Director</option>
@@ -364,7 +364,7 @@
             </div>
   <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Office / Location</label>
+                <label>Office / Location<span>*</span></label>
                 <select class="form-control" style="width: 100%;" name="office">
                 <option value="">Select</option>
                   <option <?php if($list['office']=='01 - UAE-Dubai-SZR'){ echo "selected"; } ?> value="01 - UAE-Dubai-SZR" selected="selected">01 - UAE-Dubai-SZR</option>
@@ -394,7 +394,7 @@
              <div class="ureg-sub">Identity &amp; Visa</div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Nationality</label>
+                <label>Nationality<span>*</span></label>
                  <select class="form-control" name="national">                          
                  <option value="">Select</option>
                             <?php if(isset($c_list) && !empty($c_list)){
@@ -423,7 +423,7 @@
             </div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Passport No</label>
+                <label>Passport No<span>*</span></label>
                 <input type="text" class="form-control" name="p_no" value="<?php echo $list['p_no']; ?>" >
               </div>
             </div>
@@ -473,7 +473,7 @@
             <div class="ureg-sub">Emergency Contact</div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Contact Name</label>
+                <label>Contact Name<span>*</span></label>
                 <input type="text" class="form-control" name="h_contact_name" value="<?php echo $list['h_contact_name']; ?>" >
               </div>
             </div>
@@ -485,7 +485,7 @@
             </div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Contact No</label>
+                <label>Contact No<span>*</span></label>
                 <input type="text" class="form-control only_digit" name="h_contact_no" value="<?php echo $list['h_contact_no']; ?>" >
               </div>
             </div>

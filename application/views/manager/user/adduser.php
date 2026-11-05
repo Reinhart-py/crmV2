@@ -198,14 +198,14 @@
 
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Email</label>
-                <input type="email" name="email" class="form-control" >
+                <label>Email<span>*</span></label>
+                <input type="email" name="email" class="form-control"  required>
               </div>
             </div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Date of Birth</label>
-                <input type="text" class="form-control datepicker" name="dob"  >
+                <label>Date of Birth<span>*</span></label>
+                <input type="text" class="form-control datepicker" name="dob"   required>
               </div>
             </div>
             <div class="col-lg-4 col-sm-6">
@@ -224,7 +224,7 @@
 
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                 <label>Contact No</label>
+                 <label>Contact No<span>*</span></label>
                   <div class="input-group">
                         <span class="input-group-addon country-code">
                          <select name="country_code">                          
@@ -236,7 +236,7 @@
                         <?php } }  ?>
                       </select>
                         </span>
-                    <input type="text" class="form-control only_number" name="mobile">
+                    <input type="text" class="form-control only_number" name="mobile" required>
                   </div> 
                   </div>                
                 </div>
@@ -319,8 +319,8 @@
          
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Employee ID</label>
-                <input type="text" class="form-control" name="emp_id"  >
+                <label>Employee ID<span>*</span></label>
+                <input type="text" class="form-control" name="emp_id"   required>
               </div>
             </div>
               <div class="col-lg-4 col-sm-6">
@@ -331,8 +331,8 @@
             </div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Date of Joining</label>
-                <input type="text" class="form-control datepicker" name="c_doj"  >
+                <label>Date of Joining<span>*</span></label>
+                <input type="text" class="form-control datepicker" name="c_doj"   required>
               </div>
             </div>            
             
@@ -345,8 +345,8 @@
 
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Department</label>
-                <select class="form-control" style="width: 100%;" name="department">
+                <label>Department<span>*</span></label>
+                <select class="form-control" style="width: 100%;" name="department" required>
                 <option value="">Select</option>
                   <option value="Board of Director">Board of Director</option>
                   <option value="Administration">Administration</option>
@@ -363,8 +363,8 @@
             </div>
   <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Office / Location</label>
-                <select class="form-control" style="width: 100%;" name="office">
+                <label>Office / Location<span>*</span></label>
+                <select class="form-control" style="width: 100%;" name="office" required>
                 <option value="">Select</option>
                   <option value="01 - UAE-Dubai-SZR">01 - UAE-Dubai-SZR</option>
                   <option value="07 - UAE-WFH">07 - UAE-WFH</option>
@@ -393,8 +393,8 @@
             <div class="ureg-sub">Identity &amp; Visa</div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Nationality</label>
-                 <select class="form-control" name="national">  
+                <label>Nationality<span>*</span></label>
+                 <select class="form-control" name="national" required>  
                  <option value="">Select</option>                        
 
                             <?php if(isset($c_list) && !empty($c_list)){
@@ -423,8 +423,8 @@
             </div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Passport No</label>
-                <input type="text" class="form-control" name="p_no"  >
+                <label>Passport No<span>*</span></label>
+                <input type="text" class="form-control" name="p_no"   required>
               </div>
             </div>
             
@@ -473,8 +473,8 @@
             <div class="ureg-sub">Emergency Contact</div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Contact Name</label>
-                <input type="text" class="form-control" name="h_contact_name"  >
+                <label>Contact Name<span>*</span></label>
+                <input type="text" class="form-control" name="h_contact_name"   required>
               </div>
             </div>
             <div class="col-lg-4 col-sm-6">
@@ -485,8 +485,8 @@
             </div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Contact No</label>
-                <input type="text" class="form-control only_digit" name="h_contact_no"  >
+                <label>Contact No<span>*</span></label>
+                <input type="text" class="form-control only_digit" name="h_contact_no"   required>
               </div>
             </div>
 
