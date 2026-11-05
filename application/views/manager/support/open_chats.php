@@ -14,11 +14,6 @@
   .ls-switch input:checked ~ #lsAvailText { color: #15803d; }
   .ls-hint { color: #64748b; font-size: 13px; }
   .ls-list-head { padding: 12px 14px; border-bottom: 1px solid #e2e8f0; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
-  .ls-tabs { display: flex; border-bottom: 1px solid #e2e8f0; }
-  .ls-tab { flex: 1; border: 0; background: #fff; padding: 12px 10px; font: inherit; font-weight: 700; color: #64748b; cursor: pointer; border-bottom: 2px solid transparent; }
-  .ls-tab.is-on { color: #1e3a8a; border-bottom-color: #1e3a8a; }
-  .ls-tab-n { display: inline-block; min-width: 20px; padding: 0 6px; border-radius: 10px; background: #f1f5f9; color: #475569; font-size: 11px; line-height: 18px; }
-  .ls-tab.is-on .ls-tab-n { background: #e0e7ff; color: #1e3a8a; }
   .ls-list { max-height: 600px; overflow-y: auto; }
   .ls-item { display: block; width: 100%; text-align: left; border: 0; border-bottom: 1px solid #f1f5f9; background: #fff; padding: 12px 14px; cursor: pointer; font: inherit; }
   .ls-item:hover { background: #f8fafc; }
@@ -50,10 +45,15 @@
   .ls-compose { display: flex; gap: 8px; padding: 12px; border-top: 1px solid #e2e8f0; }
   .ls-compose textarea { resize: none; height: 44px; }
   .ls-placeholder { flex: 1; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 14px; padding: 40px; text-align: center; }
-  @media (max-width: 991px) { .ls-wrap { grid-template-columns: 1fr; } .ls-list { max-height: 320px; } }
+  .ls-wrap { height: calc(100vh - 175px); min-height: 420px; }
+  .ls-card { display: flex; flex-direction: column; min-height: 0; }
+  .ls-list { flex: 1; max-height: none; min-height: 0; }
+  .ls-chat { min-height: 0; }
+  .ls-msgs { flex: 1; max-height: none; min-height: 0; }
+  @media (max-width: 991px) { .ls-wrap { grid-template-columns: 1fr; height: auto; } .ls-list { max-height: 320px; } .ls-chat { height: 70vh; } }
 </style>
 
-<?php $cb_tab = $list_tab; $can_status = !empty($rights['status']); $wait_min = (int)$settings['no_reply_minutes']; ?>
+<?php $cb_tab = 'open'; $can_status = !empty($rights['status']); ?>
 <div class="content-wrapper">
   <section class="content-header crm-list-head">
     <h1>Chatbot</h1>
@@ -73,13 +73,9 @@
     <?php echo get_message($this->session->flashdata('error_message'), 'error_message'); ?>
     <?php echo get_message($this->session->flashdata('message'), 'message'); ?>
     <?php require(APPPATH . "views/manager/support/_tabs.php"); ?>
-    <p class="ls-hint" style="margin:0 0 12px;">
-      Chats come from the Support button on the sign-in page.<?php if ($can_status) { ?> Switch to <strong>Active</strong> to receive new chats, and keep this page open.<?php } ?>
-      If nobody is Active, or nobody replies within <?php echo $wait_min; ?> minute<?php echo $wait_min === 1 ? '' : 's'; ?>, the request is emailed to <strong><?php echo htmlspecialchars($it_email); ?></strong>.
-    </p>
     <div class="ls-wrap">
       <div class="ls-card">
-        <div class="ls-list-head"><span><?php echo $list_tab === 'closed' ? 'Closed chats' : 'Open chats'; ?></span><span class="ls-hint" id="lsCount"></span></div>
+        <div class="ls-list-head"><span>Open chats</span><span class="ls-hint" id="lsCount"></span></div>
         <div class="ls-list" id="lsList"><div class="ls-empty">Loading...</div></div>
       </div>
       <div class="ls-card ls-chat" id="lsChat">
@@ -127,14 +123,7 @@
 
   function fmtTime(dt) { return dt ? dt.substr(11, 5) + (dt.substr(0, 10) !== new Date().toISOString().substr(0, 10) ? ' ' + dt.substr(8, 2) + '/' + dt.substr(5, 2) : '') : ''; }
 
-  var lastListKey = '', tab = <?php echo json_encode($list_tab); ?>, allChats = [];
-  [].forEach.call(document.querySelectorAll('.ls-tab'), function (b) {
-    b.addEventListener('click', function () {
-      tab = b.getAttribute('data-tab');
-      [].forEach.call(document.querySelectorAll('.ls-tab'), function (x) { x.classList.toggle('is-on', x === b); });
-      lastListKey = ''; renderList(allChats);
-    });
-  });
+  var lastListKey = '', tab = 'open', allChats = [];
   function renderList(all) {
     allChats = all;
     var chats = all.filter(function (c) { return tab === 'closed' ? c.status === 'closed' : c.status !== 'closed'; });
@@ -154,7 +143,7 @@
     }
     all.forEach(function (c) { if (c.status === 'waiting') waiting++; });
     el('lsCount').textContent = waiting ? waiting + ' waiting' : '';
-    document.title = (waiting ? '(' + waiting + ') ' : '') + <?php echo json_encode($list_tab === 'closed' ? 'Closed Chats' : 'Open Chats'); ?>;
+    document.title = (waiting ? '(' + waiting + ') ' : '') + 'Open Chats';
 
     // Alert on new waiting chats.
     all.forEach(function (c) {

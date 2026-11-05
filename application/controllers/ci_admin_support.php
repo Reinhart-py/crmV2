@@ -80,7 +80,7 @@ class Ci_admin_support extends CI_Controller {
 		$data['available'] = chatbot_can('status') ? $this->support_model->agent_state($this->uid) : 0;
 		$data['it_email'] = $this->support_model->it_email();
 		$data['open_chat'] = (int)$this->input->get('chat');
-		$this->load->view('manager/support/inbox', $data);
+		$this->load->view($tab === 'closed' ? 'manager/support/closed_chats' : 'manager/support/open_chats', $data);
 	}
 
 	/** Old URL. */
