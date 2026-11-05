@@ -42,24 +42,7 @@ $pf_sections = array(
   )),
 );
 
-// Attendance
-$my_att = $this->ci_admin_model->hr_attendance_summary($pf_uid);
-$my_att_recent = $this->db->select('attendance_date, in_time, out_time, total_hours, status')
-  ->where('user_id', $pf_uid)->order_by('attendance_date', 'DESC')->order_by('id', 'DESC')->limit(10)->get('ci_attendance')->result_array();
-
-// Work shifts: current and upcoming assignments
 $today = date('Y-m-d');
-$my_shifts = $this->db->select('S.shift_name, S.start_time, S.end_time, S.grace_period_mins, S.working_hours, SA.effective_from, SA.effective_to')
-  ->from('ci_hr_shift_assignments SA')
-  ->join('ci_hr_shifts S', 'S.id = SA.shift_id', 'inner')
-  ->where('SA.user_id', $pf_uid)
-  ->where('(SA.effective_to IS NULL OR SA.effective_to >= ' . $this->db->escape($today) . ')', null, false)
-  ->order_by('SA.effective_from', 'ASC')
-  ->get()->result_array();
-$cur_shift = null; $next_shifts = array();
-foreach ($my_shifts as $sh) {
-  if ($sh['effective_from'] <= $today) { $cur_shift = $sh; } else { $next_shifts[] = $sh; }
-}
 
 // Holidays: leave summary, my requests, company holidays this year
 $my_leave = $this->ci_admin_model->hr_leave_summary($pf_uid);
@@ -80,7 +63,6 @@ $pf_badge = function ($status) {
   $cls = strpos($s, 'approv') !== false ? 'ok' : (strpos($s, 'reject') !== false || strpos($s, 'cancel') !== false ? 'bad' : (strpos($s, 'late') !== false ? 'warn' : 'neutral'));
   return '<span class="pf-badge pf-badge-' . $cls . '">' . htmlspecialchars($status ?: '-') . '</span>';
 };
-$pf_time = function ($t) { return !empty($t) && $t !== '00:00:00' ? date('h:i A', strtotime($t)) : '-'; };
 ?>
 <style>
   .my-profile .pf-head { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; padding:16px 18px; background:#fff; border:1px solid #e2e8f0; border-radius:8px; }
@@ -125,8 +107,8 @@ $pf_time = function ($t) { return !empty($t) && $t !== '00:00:00' ? date('h:i A'
   .my-profile .pf-note { display:block; font-size:12px; color:#64748b; margin-top:8px; }
   @media (max-width: 991px) { .my-profile .pf-hr-grid { grid-template-columns:1fr; } }
   @media (max-width: 767px) {
-    /* Phones: four equal tabs, icon above the name, all visible without scrolling. */
-    .my-profile .pf-tabs { display:grid; grid-template-columns:repeat(4, 1fr); gap:0; }
+    /* Phones: two equal tabs, icon above the name. */
+    .my-profile .pf-tabs { display:grid; grid-template-columns:repeat(2, 1fr); gap:0; }
     .my-profile .pf-tabs > li > a { display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px 2px; font-size:12px; white-space:nowrap; text-align:center; }
     .my-profile .pf-tabs > li > a i { font-size:15px; }
     .my-profile .pf-body { padding:12px; }
@@ -163,8 +145,6 @@ $pf_time = function ($t) { return !empty($t) && $t !== '00:00:00' ? date('h:i A'
 
     <ul class="pf-tabs" id="pfTabs" role="tablist">
       <li class="active"><a href="#overview" data-toggle="tab" role="tab"><i class="fa fa-user"></i> Overview</a></li>
-      <li><a href="#attendance" data-toggle="tab" role="tab"><i class="fa fa-clock-o"></i> Attendance</a></li>
-      <li><a href="#shifts" data-toggle="tab" role="tab"><i class="fa fa-calendar-o"></i> Work Shifts</a></li>
       <li><a href="#holidays" data-toggle="tab" role="tab"><i class="fa fa-plane"></i> Holiday Request</a></li>
     </ul>
 
@@ -183,87 +163,6 @@ $pf_time = function ($t) { return !empty($t) && $t !== '00:00:00' ? date('h:i A'
           </div>
         </div>
         <?php } ?>
-      </div>
-
-      <!-- Attendance -->
-      <div class="tab-pane" id="attendance" role="tabpanel">
-        <div class="row">
-          <div class="col-md-4 col-sm-12" style="margin-bottom:12px;">
-            <div class="pf-panel pf-panel-center">
-              <span class="pf-item-type" style="color:var(--crm-muted);">Today</span>
-              <?php if (!empty($my_att['today'])) { ?>
-                <div class="pf-stat"><?php echo !empty($my_att['today']['out_time']) ? 'Clocked out' : 'Clocked in'; ?></div>
-                <span class="pf-note" style="margin-top:0;">In <?php echo $pf_time($my_att['today']['in_time']); ?><?php echo !empty($my_att['today']['out_time']) ? ' &middot; Out ' . $pf_time($my_att['today']['out_time']) : ''; ?></span>
-              <?php } else { ?>
-                <div class="pf-stat">Not clocked in</div>
-              <?php } ?>
-              <a href="<?php echo base_url('manager/hr/attendance'); ?>" class="btn btn-primary btn-sm" style="margin-top:10px;">Open attendance</a>
-            </div>
-          </div>
-          <div class="col-md-8 col-sm-12">
-            <div class="row">
-              <div class="col-xs-4" style="margin-bottom:12px;"><div class="pf-panel pf-panel-center"><span class="pf-item-type" style="color:var(--crm-muted);">Days present</span><div class="pf-stat"><?php echo (int)$my_att['days_present']; ?></div><span class="pf-note" style="margin-top:0;"><?php echo date('F'); ?></span></div></div>
-              <div class="col-xs-4" style="margin-bottom:12px;"><div class="pf-panel pf-panel-center"><span class="pf-item-type" style="color:var(--crm-muted);">Late logins</span><div class="pf-stat"><?php echo (int)$my_att['late_logins']; ?></div><span class="pf-note" style="margin-top:0;"><?php echo date('F'); ?></span></div></div>
-              <div class="col-xs-4" style="margin-bottom:12px;"><div class="pf-panel pf-panel-center"><span class="pf-item-type" style="color:var(--crm-muted);">GPS compliance</span><div class="pf-stat"><?php echo $my_att['gps_compliance'] === null ? '-' : (int)$my_att['gps_compliance'] . '%'; ?></div><span class="pf-note" style="margin-top:0;"><?php echo date('F'); ?></span></div></div>
-            </div>
-          </div>
-        </div>
-        <div class="pf-sec">
-          <h4><i class="fa fa-history"></i> Recent attendance</h4>
-          <?php if (!empty($my_att_recent)) { ?>
-          <div class="table-responsive"><table class="table pf-table">
-            <tr><th>Date</th><th>In</th><th>Out</th><th>Hours</th><th>Status</th></tr>
-            <?php foreach ($my_att_recent as $a) { ?>
-            <tr>
-              <td><?php echo date('d M Y, D', strtotime($a['attendance_date'])); ?></td>
-              <td><?php echo $pf_time($a['in_time']); ?></td>
-              <td><?php echo $pf_time($a['out_time']); ?></td>
-              <td><?php echo $a['total_hours'] !== null && $a['total_hours'] !== '' ? number_format((float)$a['total_hours'], 2) : '-'; ?></td>
-              <td><?php echo $pf_badge($a['status']); ?></td>
-            </tr>
-            <?php } ?>
-          </table></div>
-          <?php } else { ?>
-          <div class="pf-empty">No attendance recorded yet.</div>
-          <?php } ?>
-        </div>
-      </div>
-
-      <!-- Work shifts -->
-      <div class="tab-pane" id="shifts" role="tabpanel">
-        <div class="pf-sec">
-          <h4><i class="fa fa-clock-o"></i> Current shift</h4>
-          <?php if (!empty($cur_shift)) { ?>
-          <div class="pf-grid">
-            <div class="pf-field"><span>Shift</span><strong><?php echo htmlspecialchars($cur_shift['shift_name']); ?></strong></div>
-            <div class="pf-field"><span>Timing</span><strong><?php echo $pf_time($cur_shift['start_time']) . ' - ' . $pf_time($cur_shift['end_time']); ?></strong></div>
-            <div class="pf-field"><span>Working hours</span><strong><?php echo number_format((float)$cur_shift['working_hours'], 1); ?> hours</strong></div>
-            <div class="pf-field"><span>Grace period</span><strong><?php echo (int)$cur_shift['grace_period_mins']; ?> minutes</strong></div>
-            <div class="pf-field"><span>From</span><strong><?php echo date('d M Y', strtotime($cur_shift['effective_from'])); ?></strong></div>
-            <div class="pf-field"><span>Until</span><strong><?php echo !empty($cur_shift['effective_to']) ? date('d M Y', strtotime($cur_shift['effective_to'])) : 'Ongoing'; ?></strong></div>
-          </div>
-          <?php } else { ?>
-          <div class="pf-empty">No shift is assigned to you right now. Contact HR to have a shift assigned.</div>
-          <?php } ?>
-        </div>
-        <div class="pf-sec">
-          <h4><i class="fa fa-calendar-plus-o"></i> Upcoming shifts</h4>
-          <?php if (!empty($next_shifts)) { ?>
-          <div class="table-responsive"><table class="table pf-table">
-            <tr><th>Shift</th><th>Timing</th><th>From</th><th>Until</th></tr>
-            <?php foreach ($next_shifts as $sh) { ?>
-            <tr>
-              <td><?php echo htmlspecialchars($sh['shift_name']); ?></td>
-              <td><?php echo $pf_time($sh['start_time']) . ' - ' . $pf_time($sh['end_time']); ?></td>
-              <td><?php echo date('d M Y', strtotime($sh['effective_from'])); ?></td>
-              <td><?php echo !empty($sh['effective_to']) ? date('d M Y', strtotime($sh['effective_to'])) : 'Ongoing'; ?></td>
-            </tr>
-            <?php } ?>
-          </table></div>
-          <?php } else { ?>
-          <div class="pf-empty">No upcoming shift changes.</div>
-          <?php } ?>
-        </div>
       </div>
 
       <!-- Holiday Request: apply, my requests, company holidays -->
@@ -368,7 +267,7 @@ $pf_time = function ($t) { return !empty($t) && $t !== '00:00:00' ? date('h:i A'
 
 <script>
 $(document).ready(function() {
-  // Open the tab named in the address (#attendance, #shifts, #holidays) and keep it in the address when switching.
+  // Open the tab named in the address (#holidays) and keep it in the address when switching.
   var hash = window.location.hash;
   if (hash && $('#pfTabs a[href="' + hash + '"]').length) { $('#pfTabs a[href="' + hash + '"]').tab('show'); }
   (function () {
