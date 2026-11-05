@@ -9,15 +9,16 @@
   <link rel="icon" type="image/png" href="<?php echo base_url(); ?>assets/logo.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-auth.css?v=20261104_2">
+  <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-auth.css?v=20261105_1">
 </head>
 <body class="auth-page">
   <div class="auth-shell">
 <?php require(APPPATH . 'views/manager/elements/auth_visual.php'); ?>
-    <div class="auth-panel">
+    <main class="auth-panel">
+     <div class="auth-panel-inner">
       <div class="auth-brand"><img src="<?php echo base_url(); ?>assets/logo.png" alt="Seven Strokes"></div>
-      <h1 class="auth-title">Reset your password</h1>
-      <p class="auth-sub">Enter the email address registered to your account and we will send you a reset link.</p>
+      <h1 class="auth-title">Forgot Password</h1>
+      <p class="auth-sub">Enter your registered email address and we will send you a link to reset your password.</p>
 
       <?php 
         $err = $this->session->flashdata('error_message');
@@ -37,19 +38,19 @@
         <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
 
         <div class="auth-field">
-          <div class="auth-field-head"><label class="auth-label" for="forgot_email">Registered email address</label></div>
+          <label class="auth-label" for="forgot_email">Email address</label>
           <div class="auth-input-wrap">
-            <i class="fa fa-envelope-o"></i>
             <input type="email" class="auth-input" id="forgot_email" name="email" placeholder="name@company.com" required autocomplete="email">
           </div>
         </div>
 
-        <button type="submit" class="auth-btn" id="forgotBtn" style="margin-top: 6px;">Send reset link</button>
+        <button type="submit" class="auth-btn" id="forgotBtn" style="margin-top: 6px;">Send Reset Link</button>
       </form>
 
-      <p class="auth-alt">Remembered your password? <a href="<?php echo base_url(); ?>manager/login" class="auth-link">Sign in</a></p>
-      <div class="auth-foot">&copy; <?php echo date('Y'); ?> Seven Strokes. Authorised personnel only.</div>
-    </div>
+      <p class="auth-alt"><a href="<?php echo base_url(); ?>manager/login" class="auth-link">Back to Sign In</a></p>
+     </div>
+      <div class="auth-foot">&copy; <?php echo date('Y'); ?> Seven Strokes</div>
+    </main>
   </div>
 </body>
 </html>

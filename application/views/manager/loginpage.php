@@ -9,19 +9,20 @@
   <link rel="icon" type="image/png" href="<?php echo base_url(); ?>assets/logo.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-auth.css?v=20261104_2">
+  <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-auth.css?v=20261105_1">
 </head>
 <body class="auth-page">
   <div class="auth-shell">
 <?php require(APPPATH . 'views/manager/elements/auth_visual.php'); ?>
-    <div class="auth-panel">
+    <main class="auth-panel">
+     <div class="auth-panel-inner">
       <div class="auth-brand"><img src="<?php echo base_url(); ?>assets/logo.png" alt="Seven Strokes"></div>
-      <h1 class="auth-title">Welcome back</h1>
-      <p class="auth-sub">Sign in with your CRM username and password to continue.</p>
+      <h1 class="auth-title">Sign In</h1>
+      <p class="auth-sub">Sign in with your CRM and username and password to continue.</p>
 
       <?php if(isset($_GET['conflict'])) { ?>
         <div class="auth-alert auth-alert-danger">
-          <strong>Session terminated:</strong> you were signed out because another device signed in to your account.
+          You were signed out because your account was signed in on another device.
         </div>
       <?php } ?>
 
@@ -53,21 +54,16 @@
         <input type="hidden" name="location_status" id="login_loc_status" value="unrequested">
 
         <div class="auth-field">
-          <div class="auth-field-head"><label class="auth-label" for="login_email">Username</label></div>
+          <label class="auth-label" for="login_email">Username</label>
           <div class="auth-input-wrap">
-            <i class="fa fa-user-o"></i>
             <input type="text" class="auth-input" id="login_email" name="email" placeholder="Enter your username" required autocomplete="username">
           </div>
         </div>
 
         <div class="auth-field">
-          <div class="auth-field-head">
-            <label class="auth-label" for="login_password">Password</label>
-            <a href="<?php echo base_url(); ?>manager/forgot" class="auth-link">Forgot password?</a>
-          </div>
+          <label class="auth-label" for="login_password">Password</label>
           <div class="auth-input-wrap">
-            <i class="fa fa-lock"></i>
-            <input type="password" class="auth-input" name="password" id="login_password" placeholder="Enter your password" required autocomplete="current-password" style="padding-right: 42px;">
+            <input type="password" class="auth-input has-toggle" name="password" id="login_password" placeholder="Enter your password" required autocomplete="current-password">
             <button type="button" class="auth-pwd-toggle" id="btnToggleLoginPwd" title="Show or hide password">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
             </button>
@@ -75,12 +71,15 @@
         </div>
 
         <div class="auth-row">
-          <label class="auth-check" for="rememberMe"><input type="checkbox" id="rememberMe" name="remember_me"> Remember me</label>
+          <label class="auth-check" for="rememberMe"><input type="checkbox" id="rememberMe" name="remember_me"> Remember Me</label>
+          <a href="<?php echo base_url(); ?>manager/forgot" class="auth-link">Forgot Password?</a>
         </div>
 
-        <button type="submit" class="auth-btn" id="loginBtn">Sign in</button>      </form>
-      <div class="auth-foot">&copy; <?php echo date('Y'); ?> Seven Strokes. Authorised personnel only.</div>
-    </div>
+        <button type="submit" class="auth-btn" id="loginBtn">Sign In</button>
+      </form>
+     </div>
+      <div class="auth-foot">&copy; <?php echo date('Y'); ?> Seven Strokes</div>
+    </main>
   </div>
 
   <script src="<?php echo base_url(); ?>assets/plugins/jQuery/jquery-2.2.3.min.js"></script>

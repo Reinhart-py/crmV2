@@ -1,3 +1,9 @@
+## [2026-11-05] - Sign In and Forgot Password Redesign
+### Changed
+- Sign in, Forgot Password and Set New Password pages now use a full-screen split layout: the existing brand image on the left with a short Seven Strokes introduction, and a plain white form panel on the right. The floating card, blurred background and input icons were removed.
+- Login title is now "Sign In" with the new subtitle. Remember Me and Forgot Password? sit on one row under the password field.
+- Shorter, plainer messages and footer text. Form fields, actions, CSRF, location capture and all login and reset logic are unchanged.
+
 ## [2026-11-05] - One Stage Per Record: Database, Leads, Orders, Sales
 ### Fixed
 - A record converted to an Order kept `ci_pipeline.pipeline_stage = 'lead'`, so the Dashboard My Leads / Team Leads KPI, Lead status cards, Lead follow-up counters, My Leads donut, projection charts, the dialer lead queue, Live presentation stats and the Lead / Database reports still counted it as a Lead. The View Leads list already hid it, so numbers and lists disagreed. Example from local data: user 78 had 2 real Leads but the Dashboard showed 5.
