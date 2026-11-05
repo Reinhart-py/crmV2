@@ -571,3 +571,91 @@ input[type="checkbox"]:not(.full-screen-dash *), input[type="radio"]:not(.full-s
   .cv-actions { width: 100%; }
   .cv-actions .btn { flex: 1 1 auto; }
 }
+
+/* Full-width pages: some views open with Bootstrap's fixed 1170px .container,
+   which left wide empty margins on large screens. Let them use the page width. */
+.wrapper > .container, .my-profile > .container { width: auto; max-width: none; margin: 0; padding-left: 0; padding-right: 0; }
+
+/* List page header, filter bar and roomier list tables */
+.crm-list-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 6px 16px; }
+.crm-list-head > h1 { margin: 0; }
+.crm-list-count { font-size: 13px; font-weight: 600; color: var(--crm-muted); }
+.crm-filter-box { padding: 16px 18px !important; margin-bottom: 14px; border: 1px solid var(--crm-line) !important; border-radius: 8px !important; box-shadow: none !important; }
+.crm-filter-bar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 16px; margin: 0; }
+.crm-filter-field { display: flex; flex-direction: column; gap: 5px; flex: 0 1 190px; min-width: 150px; }
+.crm-filter-field.is-wide { flex: 1 1 340px; }
+.crm-filter-field > label { margin: 0; font-size: 12px; font-weight: 600; color: var(--crm-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.crm-filter-field > .form-control { width: 100%; height: 40px; font-size: 14px; border-radius: 6px; }
+.crm-filter-actions { display: flex; gap: 8px; }
+.crm-filter-actions > .btn { height: 40px; padding: 0 20px; font-size: 14px; font-weight: 600; border-radius: 6px; }
+.crm-list-box { border: 1px solid var(--crm-line) !important; border-radius: 8px !important; box-shadow: none !important; }
+.crm-list-box > .box-body { padding: 14px 18px 18px; }
+.content-wrapper .table.crm-list-table > thead > tr > th:not(.full-screen-dash *) { padding: 12px 14px !important; font-size: 12.5px !important; }
+.content-wrapper .table > tbody > tr > td:not(.full-screen-dash *) { font-size: 13px !important; }
+.content-wrapper .table.crm-list-table > tbody > tr > td:not(.full-screen-dash *) { padding: 12px 14px !important; font-size: 14px !important; line-height: 1.45; }
+.crm-list-table .crm-ref { color: var(--crm-ocean); }
+.crm-list-table .crm-sub { color: var(--crm-muted); font-size: 12.5px; }
+.crm-list-table .crm-amount { font-weight: 700; color: var(--crm-ink); white-space: nowrap; }
+.crm-list-table .crm-status { font-size: 12.5px; padding: 4px 10px; border-radius: 999px; }
+.crm-list-box .dataTables_wrapper .dataTables_filter input { width: 260px; height: 36px; font-size: 14px; }
+.crm-list-box .dataTables_wrapper .dataTables_length select { height: 36px; font-size: 14px; }
+.crm-list-box .dataTables_wrapper .dataTables_length,
+.crm-list-box .dataTables_wrapper .dataTables_filter { margin-bottom: 10px; font-size: 13.5px; }
+.crm-empty-state { padding: 28px 16px; text-align: center; color: var(--crm-muted); font-size: 14px; border: 1px dashed var(--crm-line); border-radius: 8px; }
+@media (max-width: 767px) {
+  .crm-filter-field, .crm-filter-field.is-wide { flex: 1 1 100%; }
+  .crm-filter-actions { flex: 1 1 100%; }
+  .crm-filter-actions > .btn { flex: 1 1 0; }
+  .crm-list-box > .box-body { padding: 10px; }
+  .crm-list-box .dataTables_wrapper .dataTables_filter input { width: auto; }
+}
+
+/* Events & Planning */
+.ev-list { display: flex; flex-direction: column; gap: 10px; }
+.ev-item { display: grid; grid-template-columns: 74px 1fr auto; gap: 14px; align-items: start; padding: 12px 14px; border: 1px solid var(--crm-line); border-radius: 8px; background: var(--crm-surface); }
+.ev-date { text-align: center; border-radius: 8px; background: var(--crm-ocean); color: #ffffff; padding: 8px 4px; line-height: 1.1; }
+.ev-day { display: block; font-size: 22px; font-weight: 800; }
+.ev-mon { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.9; }
+.ev-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+.ev-title { margin: 0 0 4px; font-size: 15px; font-weight: 700; color: var(--crm-ink); }
+.ev-desc { margin: 0 0 6px; font-size: 13.5px; color: var(--crm-ink-2); }
+.ev-meta { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--crm-muted); }
+.ev-remove { margin: 0; }
+@media (max-width: 575px) {
+  .ev-item { grid-template-columns: 58px 1fr; }
+  .ev-remove { grid-column: 1 / -1; }
+}
+
+/* Training */
+.tr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.tr-card { display: flex; flex-direction: column; gap: 8px; padding: 14px; border: 1px solid var(--crm-line); border-radius: 8px; background: var(--crm-surface); }
+.tr-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.tr-title { margin: 0; font-size: 15px; font-weight: 700; color: var(--crm-ink); }
+.tr-desc { margin: 0; font-size: 13.5px; color: var(--crm-ink-2); }
+.tr-bar { height: 6px; border-radius: 999px; background: var(--crm-line-soft); overflow: hidden; }
+.tr-bar > span { display: block; height: 100%; background: var(--crm-ocean); border-radius: 999px; }
+.tr-meta { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; font-size: 12.5px; color: var(--crm-muted); }
+.tr-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: auto; }
+.tr-actions form { margin: 0; }
+
+/* Search Topics */
+.tp-list { display: flex; flex-direction: column; gap: 8px; }
+.tp-item { border: 1px solid var(--crm-line); border-radius: 8px; background: var(--crm-surface); }
+.tp-item.is-archived { opacity: 0.6; }
+.tp-item > summary { list-style: none; cursor: pointer; padding: 12px 40px 12px 14px; position: relative; display: flex; flex-direction: column; gap: 2px; }
+.tp-item > summary::-webkit-details-marker { display: none; }
+.tp-item > summary::after { content: ""; position: absolute; right: 16px; top: 20px; width: 8px; height: 8px; border-right: 2px solid var(--crm-muted); border-bottom: 2px solid var(--crm-muted); transform: rotate(45deg); }
+.tp-item[open] > summary::after { transform: rotate(-135deg); top: 24px; }
+.tp-title { font-size: 15px; font-weight: 700; color: var(--crm-ink); }
+.tp-summary { font-size: 13.5px; color: var(--crm-ink-2); }
+.tp-body { padding: 0 14px 12px; font-size: 13.5px; color: var(--crm-ink-2); line-height: 1.55; border-top: 1px solid var(--crm-line-soft); padding-top: 10px; }
+.tp-foot { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+.tp-foot form { margin: 0; }
+
+/* Profile menu: collapsible HR & Training group */
+.google-profile-options .gp-group-toggle { width: 100%; border: 0; background: transparent; text-align: left; cursor: pointer; font: inherit; }
+.google-profile-options .gp-group-toggle .crm-collapse-caret { margin-left: auto; transition: transform 0.15s ease; }
+.google-profile-options .gp-group-toggle[aria-expanded="true"] .crm-collapse-caret { transform: rotate(-135deg); }
+.google-profile-options .gp-sub { list-style: none; margin: 0 0 4px; padding: 0 0 0 26px; }
+.google-profile-options .gp-sub[hidden] { display: none; }
+.google-profile-options .gp-sub .google-profile-item { padding: 7px 12px !important; font-size: 13px !important; }

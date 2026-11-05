@@ -1358,9 +1358,13 @@ class Ci_admin_orders extends CI_Controller {
 			$clean = $this->db->escape_like_str($search);
 			$this->db->where("(O.order_no LIKE '%$clean%' OR O.client_name LIKE '%$clean%' OR L.customer LIKE '%$clean%')", null, false);
 		}
-		if (!empty($d1) && !empty($d2)) {
-			$this->db->where('O.created_at >=', $d1 . ' 00:00:00');
-			$this->db->where('O.created_at <=', $d2 . ' 23:59:59');
+		$d1_ts = ($d1 !== '') ? strtotime($d1) : false;
+		$d2_ts = ($d2 !== '') ? strtotime($d2) : false;
+		if ($d1_ts) {
+			$this->db->where('O.created_at >=', date('Y-m-d 00:00:00', $d1_ts));
+		}
+		if ($d2_ts) {
+			$this->db->where('O.created_at <=', date('Y-m-d 23:59:59', $d2_ts));
 		}
 		$this->db->order_by('O.id', 'DESC');
 		$data['orders'] = $this->db->get()->result_array();
@@ -1401,9 +1405,13 @@ class Ci_admin_orders extends CI_Controller {
 			$clean = $this->db->escape_str($this->db->escape_like_str($search));
 			$this->db->where("(O.order_no LIKE '%$clean%' OR O.client_name LIKE '%$clean%' OR L.customer LIKE '%$clean%' OR O.service_title LIKE '%$clean%')");
 		}
-		if (!empty($d1) && !empty($d2)) {
-			$this->db->where('O.created_at >=', $d1 . ' 00:00:00');
-			$this->db->where('O.created_at <=', $d2 . ' 23:59:59');
+		$d1_ts = ($d1 !== '') ? strtotime($d1) : false;
+		$d2_ts = ($d2 !== '') ? strtotime($d2) : false;
+		if ($d1_ts) {
+			$this->db->where('O.created_at >=', date('Y-m-d 00:00:00', $d1_ts));
+		}
+		if ($d2_ts) {
+			$this->db->where('O.created_at <=', date('Y-m-d 23:59:59', $d2_ts));
 		}
 
 		$this->db->order_by('O.id', 'DESC');

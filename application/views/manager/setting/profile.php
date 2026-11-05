@@ -446,7 +446,8 @@
               <div class="col-md-5" style="margin-bottom: 12px;">
                 <div class="pf-panel pf-panel-center">
                   <span class="pf-note" style="margin: 0 0 12px;">Request time off for vacation, emergencies or medical rest.</span>
-                  <a href="<?php echo base_url('manager/hr/leaves'); ?>" class="btn btn-primary">Submit holiday / leave request</a>
+                  <a href="<?php echo base_url('manager/hr/leaves#new'); ?>" class="btn btn-primary">Submit holiday / leave request</a>
+                  <a href="<?php echo base_url('manager/hr/leaves'); ?>" class="btn btn-default btn-sm" style="margin-top:8px;">View my requests</a>
                 </div>
               </div>
             </div>
@@ -483,7 +484,39 @@
                 <h4 class="pf-panel-title">Learning and development</h4>
                 <a href="<?php echo base_url('manager/hr/training'); ?>" class="btn btn-sm btn-default">Open training</a>
               </div>
+              <?php
+                $pf_ci =& get_instance();
+                $pf_ci->load->model('hr_selfservice_model');
+                $pf_uid = (int)$this->session->userdata('manager_id');
+                $pf_role = (int)$this->session->userdata('manager_role');
+                $pf_tr = $pf_ci->hr_selfservice_model->training_summary($pf_uid, $pf_role);
+                $pf_open = array_slice(array_values(array_filter($pf_ci->hr_selfservice_model->my_training($pf_uid, $pf_role), function ($m) { return $m['my_status'] !== 'Completed'; })), 0, 3);
+              ?>
+              <?php if ((int)$pf_tr['assigned'] > 0) { ?>
+              <div class="crm-summary" style="margin-bottom:10px;">
+                <div><span>Assigned</span><strong><?php echo (int)$pf_tr['assigned']; ?></strong></div>
+                <div><span>Completed</span><strong><?php echo (int)$pf_tr['completed']; ?></strong></div>
+                <div><span>In progress</span><strong><?php echo (int)$pf_tr['in_progress']; ?></strong></div>
+                <div><span>Mandatory open</span><strong><?php echo (int)$pf_tr['mandatory_open']; ?></strong></div>
+              </div>
+              <?php if (!empty($pf_open)) { ?>
+              <div class="row">
+                <?php foreach ($pf_open as $m) { ?>
+                <div class="col-md-4 col-sm-6" style="margin-bottom: 10px;">
+                  <div class="pf-item">
+                    <span class="pf-item-type"><?php echo htmlspecialchars($m['category']); ?><?php echo (int)$m['is_mandatory'] ? ' &middot; Mandatory' : ''; ?></span>
+                    <h5 class="pf-item-title"><?php echo htmlspecialchars($m['title']); ?></h5>
+                    <span class="pf-note"><?php echo htmlspecialchars($m['my_status'] ?: 'Not started'); ?><?php echo !empty($m['due_date']) ? ' &middot; Due ' . date('d M Y', strtotime($m['due_date'])) : ''; ?></span>
+                  </div>
+                </div>
+                <?php } ?>
+              </div>
+              <?php } else { ?>
+              <div class="pf-empty">All your training is complete.</div>
+              <?php } ?>
+              <?php } else { ?>
               <div class="pf-empty">No training modules have been assigned to you yet.</div>
+              <?php } ?>
             </div>
           </div>
 

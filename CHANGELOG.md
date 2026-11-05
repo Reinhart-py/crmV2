@@ -1,3 +1,17 @@
+## [2026-11-05] - Full-Width Pages, HR & Training Self-Service, Profile Menu
+### Changed
+- Back Office > Pending Sales Approval uses the full page width: roomier filter bar (wide search, From / To, Search / Reset), 14px table text with more row spacing, a Status tag column, and an "N orders waiting" count. Same data, same actions.
+- Ten pages that were boxed into Bootstrap's fixed 1170px `.container` (Add Database, View Database edit and limited edit, Pending Sales Approval, Edit Pending Order, KAM Onboard, Meetings add/edit, Ticket edit, Vertical edit) plus My Profile now use the available width (`crm-theme.css`).
+- Table text outside the Dashboard is 13px everywhere (was forced to 12.5px by `crm-dashboard.css`); the Dashboard itself is unchanged.
+- Profile menu (avatar caret): new collapsible "HR & Training" group under View Profile / Event and Awards / Change Password with Holiday Request, Events & Planning, Search Topics and Training. Closed by default; click to open, click again to close.
+### Added
+- Holiday Request is now self-service: every employee can open it, sees only their own requests, can submit and cancel pending ones. HR / Admin still see everyone, filter by status or "Only mine", and approve or reject. Requests are checked for valid dates and for overlap with an existing pending or approved request; employees cannot file for someone else; HR cannot approve their own request (Admin can); a decision can be made only once.
+- Events & Planning: upcoming and past-90-days views; any employee can add a private plan (date, time range, location, notes) and remove their own; HR / Admin can also publish company-wide events. Stored in the existing `ci_events` table (soft delete).
+- Training is now real: HR publishes modules (category, link, duration, due date, mandatory, for everyone or one role), edits and archives them, and sees completion per module. Employees start a module (opens the material), mark it completed, and see overdue items. New tables `ci_training_modules` and `ci_training_progress`, created on first use by `hr_selfservice_model`. New modules notify the target employees.
+- Search Topics now reads a knowledge base table `ci_hr_topics` (created on first use, seeded with the five topics that were hard-coded) with keyword and category search and expandable full details. HR can add, edit and hide topics.
+- My Profile > Training tab shows the employee's real training counts and open modules.
+### Fixed
+- Pending Sales Approval / View Sales Approvals date filter never matched because the DD-MM-YYYY input was compared directly to the database date. Dates are now parsed, and From or To can be used alone.
 ## [2026-11-05] - Multiple Follow-Ups & Client View Redesign
 ### Added
 - Add Database and View Database edit: multiple follow-ups per record. A "+ Add follow-up" button adds as many rows as needed (date, time, status, remark), each row has its own remove button, no popup. Every row is saved as its own `ci_followup` record linked to the database record; status is stored in `followup_result`. When editing, all saved follow-ups are listed and new ones can be added; saved rows keep their date and time read-only, while status and remark stay editable (`followup_rows.php`, `crm-lead-form.js`, `ci_admin_leads::add()` / `edit()`).

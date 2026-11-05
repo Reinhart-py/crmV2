@@ -11,7 +11,58 @@ class Ci_admin_hr extends CI_Controller {
 		$this->load->library('session');
 		$this->load->helper(array('url', 'form', 'text', 'date'));
 		$this->if_not_login();
-		$this->_check_hr_access();
+
+		$uid = (int)$this->session->userdata('manager_id');
+		$role = (int)$this->session->userdata('manager_role');
+		$this->cur_uid = $uid;
+		$this->cur_role = $role;
+		$this->is_admin = ($role === 1 || $uid === 1);
+		$this->is_hr = ($this->is_admin || $role === 7 || has_section_perm('hr'));
+
+		// Employee self-service pages (opened from the profile menu) are open to
+		// every signed-in user; each method limits non-HR users to their own data.
+		$self_service = array(
+			'leaves', 'apply_leave', 'cancel_leave',
+			'events_plans', 'save_plan', 'delete_plan',
+			'training', 'training_progress',
+			'search_topics'
+		);
+		if (!in_array($this->router->fetch_method(), $self_service, true)) {
+			$this->_check_hr_access();
+		}
+	}
+
+	public $cur_uid = 0;
+	public $cur_role = 0;
+	public $is_admin = false;
+	public $is_hr = false;
+
+	private function _require_hr()
+	{
+		if (!$this->is_hr) {
+			$this->session->set_flashdata('error_message', 'Only HR or Administrators can do this.');
+			redirect('manager/profile');
+			exit;
+		}
+	}
+
+	private function _back($default)
+	{
+		$ret = (string)$this->input->post('return');
+		if ($ret !== '' && preg_match('#^manager/[a-z0-9_/\-]+$#i', $ret)) {
+			redirect($ret);
+		}
+		redirect($default);
+	}
+
+	private function _ymd($value)
+	{
+		$value = trim((string)$value);
+		if ($value === '') {
+			return '';
+		}
+		$ts = strtotime($value);
+		return $ts ? date('Y-m-d', $ts) : '';
 	}
 
 	private function if_not_login()
@@ -574,6 +625,12 @@ class Ci_admin_hr extends CI_Controller {
 			'page_heading' => 'Leaves & Time Off'
 		);
 		$data['active_tab'] = 'leaves';
+		$data['is_hr'] = $this->is_hr;
+		$data['is_admin'] = $this->is_admin;
+		$data['cur_uid'] = $this->cur_uid;
+		if (!$this->is_hr) {
+			$data['info']['page_heading'] = 'My Holiday Requests';
+		}
 
 		$filter_status = trim((string)$this->input->get('status'));
 
@@ -582,6 +639,9 @@ class Ci_admin_hr extends CI_Controller {
 			->join('ci_user U', 'U.id = L.user_id', 'left')
 			->join('ci_user Approver', 'Approver.id = L.approved_by', 'left');
 
+		if (!$this->is_hr || $this->input->get('mine') === '1') {
+			$this->db->where('L.user_id', $this->cur_uid);
+		}
 		if (!empty($filter_status)) {
 			$this->db->where('L.status', $filter_status);
 		}
@@ -594,7 +654,10 @@ class Ci_admin_hr extends CI_Controller {
 		unset($l);
 
 		$data['leaves'] = $raw_leaves;
-		$data['employees'] = $this->db->select('id, name, email')->where('status', 1)->order_by('name', 'ASC')->get('ci_user')->result_array();
+		$data['employees'] = $this->is_hr
+			? $this->db->select('id, name, email')->where('status', 1)->order_by('name', 'ASC')->get('ci_user')->result_array()
+			: array();
+		$data['my_leave'] = $this->ci_admin_model->hr_leave_summary($this->cur_uid);
 
 		$this->load->view('manager/hr/index', $data);
 	}
@@ -606,49 +669,81 @@ class Ci_admin_hr extends CI_Controller {
 			return;
 		}
 
-		$user_id = (int)$this->input->post('user_id') ?: (int)$this->session->userdata('manager_id');
-		$leave_type = trim((string)$this->input->post('leave_type')) ?: 'Annual Leave';
+		// Employees can only request leave for themselves; HR may file for anyone.
+		$user_id = $this->cur_uid;
+		if ($this->is_hr && (int)$this->input->post('user_id') > 0) {
+			$user_id = (int)$this->input->post('user_id');
+		}
+		$allowed_types = array('Annual Leave', 'Sick Leave', 'Casual Leave', 'Maternity Leave', 'Emergency Leave', 'Unpaid Leave');
+		$leave_type = trim((string)$this->input->post('leave_type'));
+		if (!in_array($leave_type, $allowed_types, true)) {
+			$leave_type = 'Annual Leave';
+		}
 
-		$from_date = trim((string)$this->input->post('from_date'));
-		if (empty($from_date)) {
-			$from_date = trim((string)$this->input->post('start_date'));
-		}
-		$to_date = trim((string)$this->input->post('to_date'));
-		if (empty($to_date)) {
-			$to_date = trim((string)$this->input->post('end_date'));
-		}
+		$from_date = $this->_ymd($this->input->post('from_date') ?: $this->input->post('start_date'));
+		$to_date = $this->_ymd($this->input->post('to_date') ?: $this->input->post('end_date'));
 		$reason = trim((string)$this->input->post('reason'));
 
-		$days = 1;
-		if (!empty($from_date) && !empty($to_date)) {
-			$days = max(1, round((strtotime($to_date) - strtotime($from_date)) / 86400) + 1);
+		if ($from_date === '' || $to_date === '') {
+			$this->session->set_flashdata('error_message', 'Please choose a valid start and end date.');
+			$this->_back('manager/hr/leaves');
+		}
+		if ($to_date < $from_date) {
+			$this->session->set_flashdata('error_message', 'The end date cannot be before the start date.');
+			$this->_back('manager/hr/leaves');
+		}
+		$this->load->model('hr_selfservice_model');
+		$clash = $this->hr_selfservice_model->leave_overlap($user_id, $from_date, $to_date);
+		if (!empty($clash)) {
+			$this->session->set_flashdata('error_message', 'These dates overlap an existing ' . strtolower($clash['status']) . ' request (' . date('d M Y', strtotime($clash['from_date'])) . ' to ' . date('d M Y', strtotime($clash['to_date'])) . ').');
+			$this->_back('manager/hr/leaves');
 		}
 
-		if (!empty($from_date) && !empty($to_date)) {
-			$this->db->insert('ci_leaves', array(
-				'user_id' => $user_id,
-				'leave_type' => $leave_type,
-				'from_date' => $from_date,
-				'to_date' => $to_date,
-				'total_days' => $days,
-				'reason' => $reason,
-				'status' => 'Pending',
-				'created_at' => date('Y-m-d H:i:s')
-			));
+		$days = (int)round((strtotime($to_date) - strtotime($from_date)) / 86400) + 1;
+		$this->db->insert('ci_leaves', array(
+			'user_id' => $user_id,
+			'leave_type' => $leave_type,
+			'from_date' => $from_date,
+			'to_date' => $to_date,
+			'total_days' => $days,
+			'reason' => $reason,
+			'status' => 'Pending',
+			'created_at' => date('Y-m-d H:i:s')
+		));
 
-			$this->ci_admin_model->notify_role(
-				array(1, 7),
-				'leave_requested',
-				'New Leave Request',
-				"Leave request ({$days} day(s), {$leave_type}) submitted by employee ID #{$user_id}",
-				base_url('manager/hr/leaves'),
-				'fa fa-calendar-check-o',
-				'#0072f0'
-			);
+		$emp = $this->db->select('name')->where('id', $user_id)->get('ci_user')->row_array();
+		$emp_name = !empty($emp['name']) ? $emp['name'] : ('employee ID #' . $user_id);
+		$this->ci_admin_model->notify_role(
+			array(1, 7),
+			'leave_requested',
+			'New Leave Request',
+			"{$emp_name} requested {$days} day(s) of {$leave_type} from " . date('d M Y', strtotime($from_date)) . ' to ' . date('d M Y', strtotime($to_date)) . '.',
+			base_url('manager/hr/leaves'),
+			'fa fa-calendar-check-o',
+			'#0072f0'
+		);
 
-			$this->session->set_flashdata('message', 'Leave application submitted for approval.');
+		$this->session->set_flashdata('message', 'Holiday request submitted for approval.');
+		$this->_back('manager/hr/leaves');
+	}
+
+	public function cancel_leave($id = 0)
+	{
+		$id = (int)$id;
+		if ($this->input->server('REQUEST_METHOD') !== 'POST' || $id <= 0) {
+			redirect('manager/hr/leaves');
+			return;
 		}
-		redirect('manager/hr/leaves');
+		$leave = $this->db->where('id', $id)->get('ci_leaves')->row_array();
+		if (empty($leave) || ((int)$leave['user_id'] !== $this->cur_uid && !$this->is_hr)) {
+			$this->session->set_flashdata('error_message', 'Leave request not found.');
+		} elseif ($leave['status'] !== 'Pending') {
+			$this->session->set_flashdata('error_message', 'Only pending requests can be cancelled.');
+		} else {
+			$this->db->where('id', $id)->where('status', 'Pending')->update('ci_leaves', array('status' => 'Cancelled'));
+			$this->session->set_flashdata('message', 'Holiday request cancelled.');
+		}
+		$this->_back('manager/hr/leaves');
 	}
 
 	public function leave_action($param1 = '', $param2 = '')
@@ -661,12 +756,22 @@ class Ci_admin_hr extends CI_Controller {
 			$id = (int)$param2;
 		}
 
-		$cur_uid = (int)$this->session->userdata('manager_id');
+		$cur_uid = $this->cur_uid;
 		$leave = $this->db->where('id', $id)->get('ci_leaves')->row_array();
 
 		if (!empty($leave) && in_array($action, array('approve', 'approved', 'reject', 'rejected'))) {
+			if ($leave['status'] !== 'Pending') {
+				$this->session->set_flashdata('error_message', 'This request was already ' . strtolower($leave['status']) . '.');
+				redirect('manager/hr/leaves');
+				return;
+			}
+			if ((int)$leave['user_id'] === $cur_uid && !$this->is_admin) {
+				$this->session->set_flashdata('error_message', 'You cannot approve or reject your own leave request.');
+				redirect('manager/hr/leaves');
+				return;
+			}
 			$new_status = in_array($action, array('approve', 'approved')) ? 'Approved' : 'Rejected';
-			$this->db->where('id', $id)->update('ci_leaves', array(
+			$this->db->where('id', $id)->where('status', 'Pending')->update('ci_leaves', array(
 				'status' => $new_status,
 				'approved_by' => $cur_uid
 			));
@@ -675,7 +780,7 @@ class Ci_admin_hr extends CI_Controller {
 				(int)$leave['user_id'],
 				'leave_update',
 				"Leave Request {$new_status}",
-				"Your leave request from {$leave['from_date']} to {$leave['to_date']} has been {$new_status}.",
+				'Your leave request from ' . date('d M Y', strtotime($leave['from_date'])) . ' to ' . date('d M Y', strtotime($leave['to_date'])) . " has been {$new_status}.",
 				base_url('manager/hr/leaves'),
 				($new_status === 'Approved') ? 'fa fa-check-circle' : 'fa fa-times-circle',
 				($new_status === 'Approved') ? '#16a34a' : '#dc2626'
@@ -1002,67 +1107,288 @@ class Ci_admin_hr extends CI_Controller {
 		redirect('manager/hr/documents');
 	}
 
+	/* ------------------------------------------------------------------
+	 * Events & Planning: company events (public) plus each employee's own
+	 * plans (private). Any employee can add a personal plan; HR/Admin can
+	 * also publish company-wide events.
+	 * ------------------------------------------------------------------ */
 	public function events_plans()
 	{
 		$data = array();
 		$data['info'] = array(
-			'title' => 'Events & Plans - HR & Training',
-			'page_heading' => 'Events & Plans'
+			'title' => 'Events & Planning - HR & Training',
+			'page_heading' => 'Events & Planning'
 		);
-		$cur_uid = (int)$this->session->userdata('manager_id');
-		$cur_role = (int)$this->session->userdata('manager_role');
-		$data['is_admin'] = ($cur_role === 1 || $cur_uid === 1);
+		$data['is_admin'] = $this->is_admin;
+		$data['is_hr'] = $this->is_hr;
+		$data['cur_uid'] = $this->cur_uid;
 
-		$events = $this->ci_admin_model->hr_upcoming_events($cur_uid);
-		$data['events'] = $events;
+		$show = $this->input->get('show') === 'past' ? 'past' : 'upcoming';
+		$data['show'] = $show;
+		$uid = $this->cur_uid;
+		$this->db->select('E.*, U.name AS created_by_name')
+			->from('ci_events E')
+			->join('ci_user U', 'U.id = E.created_by', 'left')
+			->where("(E.status IS NULL OR E.status = 'active')", null, false)
+			->where("(E.visibility = 'public' OR E.assigned_user_id = {$uid} OR E.created_by = {$uid})", null, false);
+		if ($show === 'past') {
+			$this->db->where('E.start_date <', date('Y-m-d 00:00:00'))
+				->where('E.start_date >=', date('Y-m-d 00:00:00', strtotime('-90 days')))
+				->order_by('E.start_date', 'DESC');
+		} else {
+			$this->db->where('E.start_date >=', date('Y-m-d 00:00:00'))->order_by('E.start_date', 'ASC');
+		}
+		$data['events'] = $this->db->get()->result_array();
 
 		$this->load->view('manager/hr/events_plans', $data);
 	}
 
+	public function save_plan()
+	{
+		if ($this->input->server('REQUEST_METHOD') !== 'POST') {
+			redirect('manager/hr/events_plans');
+			return;
+		}
+		$title = trim((string)$this->input->post('title'));
+		$date = $this->_ymd($this->input->post('event_date'));
+		$time = trim((string)$this->input->post('event_time'));
+		$end_time = trim((string)$this->input->post('end_time'));
+		if ($title === '' || $date === '') {
+			$this->session->set_flashdata('error_message', 'Please enter a title and a date.');
+			$this->_back('manager/hr/events_plans');
+		}
+		$time_ok = (bool)preg_match('/^\d{2}:\d{2}$/', $time);
+		$start = $date . ' ' . ($time_ok ? $time . ':00' : '00:00:00');
+		$end = null;
+		if ($time_ok && preg_match('/^\d{2}:\d{2}$/', $end_time) && $end_time > $time) {
+			$end = $date . ' ' . $end_time . ':00';
+		}
+		$types = array('meeting', 'training', 'holiday', 'celebration', 'plan', 'other');
+		$type = strtolower(trim((string)$this->input->post('event_type')));
+		if (!in_array($type, $types, true)) {
+			$type = 'plan';
+		}
+		$company_wide = ($this->is_hr && $this->input->post('visibility') === 'public');
+
+		$this->db->insert('ci_events', array(
+			'title' => $title,
+			'description' => trim((string)$this->input->post('description')),
+			'event_type' => $type,
+			'visibility' => $company_wide ? 'public' : 'private',
+			'assigned_user_id' => $company_wide ? 0 : $this->cur_uid,
+			'start_date' => $start,
+			'end_date' => $end,
+			'all_day' => $time_ok ? 0 : 1,
+			'location' => trim((string)$this->input->post('location')),
+			'created_by' => $this->cur_uid,
+			'created_at' => date('Y-m-d H:i:s'),
+			'status' => 'active'
+		));
+		$this->session->set_flashdata('message', $company_wide ? 'Company event published.' : 'Plan added to your calendar.');
+		$this->_back('manager/hr/events_plans');
+	}
+
+	public function delete_plan($id = 0)
+	{
+		$id = (int)$id;
+		if ($this->input->server('REQUEST_METHOD') !== 'POST' || $id <= 0) {
+			redirect('manager/hr/events_plans');
+			return;
+		}
+		$ev = $this->db->where('id', $id)->get('ci_events')->row_array();
+		if (empty($ev) || ((int)$ev['created_by'] !== $this->cur_uid && !$this->is_admin)) {
+			$this->session->set_flashdata('error_message', 'You can only remove events you created.');
+		} else {
+			// Soft delete: the row stays, it is just hidden.
+			$this->db->where('id', $id)->update('ci_events', array('status' => 'cancelled'));
+			$this->session->set_flashdata('message', 'Event removed.');
+		}
+		$this->_back('manager/hr/events_plans');
+	}
+
+	/* ------------------------------------------------------------------
+	 * Training: HR publishes modules (for everyone or one role); each
+	 * employee starts and completes them; HR sees completion counts.
+	 * ------------------------------------------------------------------ */
 	public function training()
 	{
+		$this->load->model('hr_selfservice_model');
 		$data = array();
 		$data['info'] = array(
-			'title' => 'Training Modules & LMS - HR & Training',
-			'page_heading' => 'Training & Development'
+			'title' => 'Training - HR & Training',
+			'page_heading' => 'Training'
 		);
-		$cur_uid = (int)$this->session->userdata('manager_id');
-		$cur_role = (int)$this->session->userdata('manager_role');
-		$data['is_admin'] = ($cur_role === 1 || $cur_uid === 1);
-
-		$modules = array();
-		$data['modules'] = $modules;
-
+		$data['is_admin'] = $this->is_admin;
+		$data['is_hr'] = $this->is_hr;
+		$data['modules'] = $this->hr_selfservice_model->my_training($this->cur_uid, $this->cur_role);
+		$data['summary'] = $this->hr_selfservice_model->training_summary($this->cur_uid, $this->cur_role);
+		if ($this->is_hr) {
+			$data['all_modules'] = $this->hr_selfservice_model->all_training();
+			$data['roles'] = $this->db->select('id, title')->where('status', 1)->order_by('title', 'ASC')->get('ci_roles')->result_array();
+			$edit_id = (int)$this->input->get('edit');
+			$data['edit_module'] = $edit_id > 0 ? $this->db->where('id', $edit_id)->get('ci_training_modules')->row_array() : array();
+		}
 		$this->load->view('manager/hr/training', $data);
 	}
 
+	public function training_progress($id = 0, $state = '')
+	{
+		$this->load->model('hr_selfservice_model');
+		$id = (int)$id;
+		if ($this->input->server('REQUEST_METHOD') !== 'POST' || $id <= 0) {
+			redirect('manager/hr/training');
+			return;
+		}
+		$mod = $this->hr_selfservice_model->module_visible_to($id, $this->cur_role);
+		if (empty($mod)) {
+			$this->session->set_flashdata('error_message', 'This training module is not available to you.');
+			$this->_back('manager/hr/training');
+		}
+		$status = ($state === 'complete') ? 'Completed' : 'In Progress';
+		$this->hr_selfservice_model->set_progress($id, $this->cur_uid, $status);
+		$this->session->set_flashdata('message', ($status === 'Completed' ? 'Marked as completed: ' : 'Started: ') . $mod['title']);
+		$this->_back('manager/hr/training');
+	}
+
+	public function training_save()
+	{
+		$this->load->model('hr_selfservice_model');
+		if ($this->input->server('REQUEST_METHOD') !== 'POST') {
+			redirect('manager/hr/training');
+			return;
+		}
+		$id = (int)$this->input->post('id');
+		$title = trim((string)$this->input->post('title'));
+		if ($title === '') {
+			$this->session->set_flashdata('error_message', 'Please enter a module title.');
+			redirect('manager/hr/training' . ($id ? '?edit=' . $id : ''));
+			return;
+		}
+		$url = trim((string)$this->input->post('content_url'));
+		if ($url !== '' && !preg_match('#^https?://#i', $url)) {
+			$url = 'https://' . $url;
+		}
+		$due = $this->_ymd($this->input->post('due_date'));
+		$row = array(
+			'title' => $title,
+			'category' => trim((string)$this->input->post('category')) ?: 'General',
+			'description' => trim((string)$this->input->post('description')),
+			'content_url' => $url,
+			'duration_minutes' => max(0, (int)$this->input->post('duration_minutes')),
+			'is_mandatory' => $this->input->post('is_mandatory') ? 1 : 0,
+			'audience_role_id' => max(0, (int)$this->input->post('audience_role_id')),
+			'due_date' => ($due !== '') ? $due : null,
+			'updated_at' => date('Y-m-d H:i:s')
+		);
+		if ($id > 0) {
+			$this->db->where('id', $id)->update('ci_training_modules', $row);
+			$this->session->set_flashdata('message', 'Training module updated.');
+		} else {
+			$row['status'] = 'active';
+			$row['created_by'] = $this->cur_uid;
+			$row['created_at'] = date('Y-m-d H:i:s');
+			$this->db->insert('ci_training_modules', $row);
+			$roles = ($row['audience_role_id'] > 0)
+				? array($row['audience_role_id'])
+				: array_map(function ($r) { return (int)$r['id']; }, $this->db->select('id')->get('ci_roles')->result_array());
+			$this->ci_admin_model->notify_role(
+				$roles,
+				'training_assigned',
+				'New training module',
+				($row['is_mandatory'] ? 'Mandatory training: ' : 'New training: ') . $title,
+				base_url('manager/hr/training'),
+				'fa fa-graduation-cap',
+				'#1e3a8a'
+			);
+			$this->session->set_flashdata('message', 'Training module published.');
+		}
+		redirect('manager/hr/training');
+	}
+
+	public function training_status($id = 0, $status = '')
+	{
+		$this->load->model('hr_selfservice_model');
+		$id = (int)$id;
+		if ($this->input->server('REQUEST_METHOD') === 'POST' && $id > 0 && in_array($status, array('active', 'archived'), true)) {
+			$this->db->where('id', $id)->update('ci_training_modules', array('status' => $status, 'updated_at' => date('Y-m-d H:i:s')));
+			$this->session->set_flashdata('message', $status === 'archived' ? 'Module archived. Employee progress is kept.' : 'Module restored.');
+		}
+		redirect('manager/hr/training');
+	}
+
+	/* ------------------------------------------------------------------
+	 * Search Topics: HR knowledge base stored in ci_hr_topics.
+	 * ------------------------------------------------------------------ */
 	public function search_topics()
 	{
+		$this->load->model('hr_selfservice_model');
 		$data = array();
 		$data['info'] = array(
-			'title' => 'HR Knowledge Base & Search Topics - HR & Training',
+			'title' => 'Search Topics - HR & Training',
 			'page_heading' => 'Search Topics'
 		);
 		$query = trim((string)$this->input->get('q'));
+		$category = trim((string)$this->input->get('category'));
 		$data['query'] = $query;
-
-		$topics = array(
-			array('id' => 1, 'title' => 'Leave Policy & Annual Holiday Entitlements', 'category' => 'Leaves & Attendance', 'summary' => 'Guidelines on statutory paid annual leave, sick leave certificate requirements, and advance approval notice.'),
-			array('id' => 2, 'title' => 'Working Hours, Shift Rosters & Grace Periods', 'category' => 'Operations', 'summary' => 'Overview of 9-hour daily shifts, check-in punch limits, overtime authorization, and weekly off schedules.'),
-			array('id' => 3, 'title' => 'Employee Health Insurance & Medical Coverage', 'category' => 'Benefits', 'summary' => 'Comprehensive policy on health network cards, direct billing clinics, dental riders, and dependent coverage.'),
-			array('id' => 4, 'title' => 'Performance Appraisals, KPIs & Commission Payouts', 'category' => 'Compensation', 'summary' => 'Calculation methodology for monthly sales incentives, quarterly target achievements, and yearly reviews.'),
-			array('id' => 5, 'title' => 'Code of Conduct, IT Usage & Data Privacy Standard', 'category' => 'Governance', 'summary' => 'Rules governing CRM client confidentiality, password security, device maintenance, and professional ethics.')
-		);
-
-		if (!empty($query)) {
-			$q_lower = strtolower($query);
-			$topics = array_filter($topics, function($t) use ($q_lower) {
-				return (strpos(strtolower($t['title']), $q_lower) !== false || strpos(strtolower($t['category']), $q_lower) !== false || strpos(strtolower($t['summary']), $q_lower) !== false);
-			});
+		$data['category'] = $category;
+		$data['is_hr'] = $this->is_hr;
+		$manage = ($this->is_hr && $this->input->get('manage') === '1');
+		$data['manage'] = $manage;
+		$data['topics'] = $this->hr_selfservice_model->topics($query, $category, $manage);
+		$data['categories'] = $this->hr_selfservice_model->topic_categories();
+		$data['edit_topic'] = array();
+		if ($this->is_hr) {
+			$edit_id = (int)$this->input->get('edit');
+			if ($edit_id > 0) {
+				$data['edit_topic'] = $this->db->where('id', $edit_id)->get('ci_hr_topics')->row_array();
+			}
 		}
-		$data['topics'] = $topics;
-
 		$this->load->view('manager/hr/search_topics', $data);
+	}
+
+	public function topic_save()
+	{
+		$this->load->model('hr_selfservice_model');
+		if ($this->input->server('REQUEST_METHOD') !== 'POST') {
+			redirect('manager/hr/search_topics');
+			return;
+		}
+		$id = (int)$this->input->post('id');
+		$title = trim((string)$this->input->post('title'));
+		if ($title === '') {
+			$this->session->set_flashdata('error_message', 'Please enter a topic title.');
+			redirect('manager/hr/search_topics?manage=1');
+			return;
+		}
+		$row = array(
+			'title' => $title,
+			'category' => trim((string)$this->input->post('category')) ?: 'General',
+			'summary' => trim((string)$this->input->post('summary')),
+			'body' => trim((string)$this->input->post('body')),
+			'updated_at' => date('Y-m-d H:i:s')
+		);
+		if ($id > 0) {
+			$this->db->where('id', $id)->update('ci_hr_topics', $row);
+			$this->session->set_flashdata('message', 'Topic updated.');
+		} else {
+			$row['status'] = 'active';
+			$row['created_by'] = $this->cur_uid;
+			$row['created_at'] = date('Y-m-d H:i:s');
+			$this->db->insert('ci_hr_topics', $row);
+			$this->session->set_flashdata('message', 'Topic published.');
+		}
+		redirect('manager/hr/search_topics?manage=1');
+	}
+
+	public function topic_status($id = 0, $status = '')
+	{
+		$this->load->model('hr_selfservice_model');
+		$id = (int)$id;
+		if ($this->input->server('REQUEST_METHOD') === 'POST' && $id > 0 && in_array($status, array('active', 'archived'), true)) {
+			$this->db->where('id', $id)->update('ci_hr_topics', array('status' => $status, 'updated_at' => date('Y-m-d H:i:s')));
+			$this->session->set_flashdata('message', $status === 'archived' ? 'Topic hidden from employees.' : 'Topic restored.');
+		}
+		redirect('manager/hr/search_topics?manage=1');
 	}
 
 }

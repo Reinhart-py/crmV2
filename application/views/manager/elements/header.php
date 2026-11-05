@@ -69,7 +69,7 @@
 <script src="<?php echo base_url();?>assets/bootstrap/js/jquery.validate.js"></script>
 <link rel="stylesheet" href="<?php echo base_url();?>assets/bootstrap/css/bootstrap-toggle.min.css">
 <script src="<?php echo base_url();?>assets/bootstrap/js/bootstrap-toggle.min.js"></script>
-<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-theme.css?v=20261105_3">
+<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-theme.css?v=20261106_4">
 
 
 
@@ -425,7 +425,33 @@
               <span>Change Password</span>
             </a>
           </li>
+          <li class="gp-group">
+            <button type="button" class="google-profile-item gp-group-toggle" id="gpHrToggle" aria-expanded="false" aria-controls="gpHrMenu">
+              <i class="fa fa-graduation-cap"></i>
+              <span>HR &amp; Training</span>
+              <span class="crm-collapse-caret" aria-hidden="true"></span>
+            </button>
+            <ul class="gp-sub" id="gpHrMenu" hidden>
+              <li><a href="<?php echo base_url(); ?>manager/hr/leaves" class="google-profile-item"><i class="fa fa-calendar-check-o"></i><span>Holiday Request</span></a></li>
+              <li><a href="<?php echo base_url(); ?>manager/hr/events_plans" class="google-profile-item"><i class="fa fa-calendar"></i><span>Events &amp; Planning</span></a></li>
+              <li><a href="<?php echo base_url(); ?>manager/hr/search_topics" class="google-profile-item"><i class="fa fa-search"></i><span>Search Topics</span></a></li>
+              <li><a href="<?php echo base_url(); ?>manager/hr/training" class="google-profile-item"><i class="fa fa-book"></i><span>Training</span></a></li>
+            </ul>
+          </li>
         </ul>
+        <script>
+        (function () {
+          var btn = document.getElementById('gpHrToggle'), menu = document.getElementById('gpHrMenu');
+          if (!btn || !menu) { return; }
+          btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var open = btn.getAttribute('aria-expanded') === 'true';
+            btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+            menu.hidden = open;
+          });
+        })();
+        </script>
 
         <div class="google-menu-divider"></div>
 

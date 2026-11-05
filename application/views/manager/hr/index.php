@@ -6,7 +6,11 @@
     <h1><?php echo htmlspecialchars($info['page_heading'] ?? 'HR Management'); ?></h1>
     <ol class="breadcrumb">
       <li><a href="<?php echo base_url(); ?>manager/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
+      <?php if (!isset($is_hr) || !empty($is_hr)) { ?>
       <li><a href="<?php echo base_url(); ?>manager/hr">HR</a></li>
+      <?php } else { ?>
+      <li><a href="<?php echo base_url(); ?>manager/profile">My Profile</a></li>
+      <?php } ?>
       <li class="active"><?php echo htmlspecialchars(ucfirst($active_tab ?? 'overview')); ?></li>
     </ol>
   </section>
@@ -730,54 +734,92 @@
       </div>
 
     <?php elseif (($active_tab ?? '') === 'leaves'): ?>
-      <div class="box box-default">
-        <div class="box-header with-border">
-          <h3 class="box-title">Leave Management</h3>
-          <div class="box-tools pull-right">
-            <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalApplyLeave"><i class="fa fa-plus"></i> Apply Leave</button>
+      <?php
+        $lv_is_hr = !empty($is_hr);
+        $lv_mine = ($this->input->get('mine') === '1');
+        $lv_status_f = (string)$this->input->get('status');
+        $lv_ml = isset($my_leave) ? $my_leave : array('used_by_type' => array(), 'pending' => 0);
+        $lv_used = 0;
+        foreach ($lv_ml['used_by_type'] as $u) { $lv_used += (int)$u['days']; }
+      ?>
+      <div class="crm-summary">
+        <div><span>Approved days this year</span><strong><?php echo $lv_used; ?></strong></div>
+        <div><span>Awaiting approval</span><strong><?php echo (int)$lv_ml['pending']; ?></strong></div>
+        <div><span>Most used type</span><strong><?php echo !empty($lv_ml['used_by_type']) ? htmlspecialchars($lv_ml['used_by_type'][0]['leave_type']) : '-'; ?></strong></div>
+        <div><span>Approver</span><strong>HR / Administrator</strong></div>
+      </div>
+
+      <div class="box box-default crm-list-box">
+        <div class="box-header with-border" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+          <h3 class="box-title"><?php echo $lv_is_hr && !$lv_mine ? 'All holiday requests' : 'My holiday requests'; ?></h3>
+          <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+            <?php if ($lv_is_hr) { ?>
+              <a href="<?php echo base_url('manager/hr/leaves'); ?>" class="btn btn-sm <?php echo !$lv_mine ? 'btn-primary' : 'btn-default'; ?>">All employees</a>
+              <a href="<?php echo base_url('manager/hr/leaves?mine=1'); ?>" class="btn btn-sm <?php echo $lv_mine ? 'btn-primary' : 'btn-default'; ?>">Only mine</a>
+            <?php } ?>
+            <form method="get" action="<?php echo base_url('manager/hr/leaves'); ?>" style="margin:0;">
+              <?php if ($lv_mine) { ?><input type="hidden" name="mine" value="1"><?php } ?>
+              <select name="status" class="form-control input-sm" onchange="this.form.submit()" aria-label="Filter by status">
+                <option value="">All statuses</option>
+                <?php foreach (array('Pending', 'Approved', 'Rejected', 'Cancelled') as $opt) { ?>
+                  <option value="<?php echo $opt; ?>" <?php echo $lv_status_f === $opt ? 'selected' : ''; ?>><?php echo $opt; ?></option>
+                <?php } ?>
+              </select>
+            </form>
+            <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalApplyLeave"><i class="fa fa-plus"></i> New holiday request</button>
           </div>
         </div>
-        <div class="box-body table-responsive no-padding">
-          <table class="table table-hover table-hr">
+        <div class="box-body table-responsive">
+          <table class="table table-hover table-hr crm-list-table" style="width:100%;">
             <thead>
               <tr>
-                <th>Employee</th>
+                <?php if ($lv_is_hr) { ?><th>Employee</th><?php } ?>
                 <th>Type</th>
                 <th>Start Date</th>
                 <th>End Date</th>
                 <th>Days</th>
                 <th>Reason</th>
                 <th>Status</th>
+                <th>Decided By</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody>
               <?php if (!empty($leaves)): ?>
                 <?php foreach ($leaves as $l): ?>
-                  <?php 
+                  <?php
                     $lEmp = ($l['employee_name'] ?? '') ?: 'User #' . ($l['user_id'] ?? 0);
                     $lType = $l['leave_type'] ?? 'Leave';
-                    $lFrom = ($l['from_date'] ?? $l['start_date'] ?? '') ?: '-';
-                    $lTo = ($l['to_date'] ?? $l['end_date'] ?? '') ?: '-';
+                    $lFrom = ($l['from_date'] ?? $l['start_date'] ?? '') ?: '';
+                    $lTo = ($l['to_date'] ?? $l['end_date'] ?? '') ?: '';
                     $lDays = (int)($l['total_days'] ?? 1);
-                    $lReason = $l['reason'] ?? '-';
+                    $lReason = ($l['reason'] ?? '') ?: '-';
                     $lStatus = $l['status'] ?? 'Pending';
                     $lId = (int)($l['id'] ?? 0);
+                    $lOwn = ((int)($l['user_id'] ?? 0) === (int)($cur_uid ?? 0));
+                    $lCls = ($lStatus === 'Approved') ? 'crm-status-ink' : (($lStatus === 'Rejected') ? 'crm-status-danger' : (($lStatus === 'Pending') ? 'crm-status-ocean' : ''));
                   ?>
                   <tr>
-                    <td><strong><?php echo htmlspecialchars($lEmp); ?></strong></td>
+                    <?php if ($lv_is_hr) { ?><td><strong><?php echo htmlspecialchars($lEmp); ?></strong></td><?php } ?>
                     <td><?php echo htmlspecialchars($lType); ?></td>
-                    <td><?php echo htmlspecialchars($lFrom); ?></td>
-                    <td><?php echo htmlspecialchars($lTo); ?></td>
+                    <td data-order="<?php echo htmlspecialchars($lFrom); ?>"><?php echo $lFrom ? date('d M Y', strtotime($lFrom)) : '-'; ?></td>
+                    <td data-order="<?php echo htmlspecialchars($lTo); ?>"><?php echo $lTo ? date('d M Y', strtotime($lTo)) : '-'; ?></td>
                     <td><?php echo $lDays; ?></td>
                     <td><?php echo htmlspecialchars($lReason); ?></td>
-                    <td>
-                      <span class="label <?php echo ($lStatus === 'Approved') ? 'label-success' : (($lStatus === 'Rejected') ? 'label-danger' : 'label-warning'); ?>"><?php echo htmlspecialchars($lStatus); ?></span>
-                    </td>
-                    <td>
+                    <td><span class="crm-status <?php echo $lCls; ?>"><?php echo htmlspecialchars($lStatus); ?></span></td>
+                    <td><?php echo htmlspecialchars(($l['approver_name'] ?? '') ?: '-'); ?></td>
+                    <td style="white-space:nowrap;">
                       <?php if ($lStatus === 'Pending'): ?>
-                        <a href="<?php echo base_url(); ?>manager/hr/leave_action/<?php echo $lId; ?>/Approved" class="btn btn-success btn-xs">Approve</a>
-                        <a href="<?php echo base_url(); ?>manager/hr/leave_action/<?php echo $lId; ?>/Rejected" class="btn btn-danger btn-xs">Reject</a>
+                        <?php if ($lv_is_hr && (!$lOwn || !empty($is_admin))): ?>
+                          <a href="<?php echo base_url(); ?>manager/hr/leave_action/<?php echo $lId; ?>/Approved" class="btn btn-success btn-xs">Approve</a>
+                          <a href="<?php echo base_url(); ?>manager/hr/leave_action/<?php echo $lId; ?>/Rejected" class="btn btn-danger btn-xs">Reject</a>
+                        <?php endif; ?>
+                        <?php if ($lOwn): ?>
+                          <form method="post" action="<?php echo base_url('manager/hr/cancel_leave/' . $lId); ?>" style="display:inline;" onsubmit="return confirm('Cancel this holiday request?');">
+                            <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
+                            <button type="submit" class="btn btn-default btn-xs">Cancel</button>
+                          </form>
+                        <?php endif; ?>
                       <?php else: ?>
                         <span class="text-muted">-</span>
                       <?php endif; ?>
@@ -785,7 +827,7 @@
                   </tr>
                 <?php endforeach; ?>
               <?php else: ?>
-                <tr><td colspan="8" class="text-center text-muted">No leave applications recorded</td></tr>
+                <tr><td colspan="<?php echo $lv_is_hr ? 9 : 8; ?>" class="text-center text-muted">No holiday requests yet.</td></tr>
               <?php endif; ?>
             </tbody>
           </table>
@@ -799,20 +841,19 @@
               <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
               <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Apply for Leave</h4>
+                <h4 class="modal-title">New holiday request</h4>
               </div>
               <div class="modal-body">
+                <?php if ($lv_is_hr && !empty($employees)): ?>
                 <div class="form-group">
                   <label>Employee <span class="text-danger">*</span></label>
                   <select name="user_id" class="form-control select2" style="width:100%;" required>
-                    <option value="">Select Employee</option>
-                    <?php if (!empty($employees)): ?>
-                      <?php foreach ($employees as $emp): ?>
-                        <option value="<?php echo (int)($emp['id'] ?? 0); ?>"><?php echo htmlspecialchars($emp['name'] ?? ''); ?></option>
-                      <?php endforeach; ?>
-                    <?php endif; ?>
+                    <?php foreach ($employees as $emp): ?>
+                      <option value="<?php echo (int)($emp['id'] ?? 0); ?>" <?php echo ((int)$emp['id'] === (int)($cur_uid ?? 0)) ? 'selected' : ''; ?>><?php echo htmlspecialchars($emp['name'] ?? ''); ?></option>
+                    <?php endforeach; ?>
                   </select>
                 </div>
+                <?php endif; ?>
                 <div class="form-group">
                   <label>Leave Type <span class="text-danger">*</span></label>
                   <select name="leave_type" class="form-control" required>
@@ -828,13 +869,13 @@
                   <div class="col-sm-6">
                     <div class="form-group">
                       <label>Start Date <span class="text-danger">*</span></label>
-                      <input type="date" name="from_date" class="form-control" value="<?php echo date('Y-m-d'); ?>" required>
+                      <input type="date" name="from_date" id="leaveFrom" class="form-control" value="<?php echo date('Y-m-d'); ?>" required>
                     </div>
                   </div>
                   <div class="col-sm-6">
                     <div class="form-group">
                       <label>End Date <span class="text-danger">*</span></label>
-                      <input type="date" name="to_date" class="form-control" value="<?php echo date('Y-m-d'); ?>" required>
+                      <input type="date" name="to_date" id="leaveTo" class="form-control" value="<?php echo date('Y-m-d'); ?>" required>
                     </div>
                   </div>
                 </div>
@@ -842,15 +883,29 @@
                   <label>Reason</label>
                   <textarea name="reason" class="form-control" rows="2"></textarea>
                 </div>
+                <span class="pf-note" id="leaveDays">1 day</span>
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary">Submit Application</button>
+                <button type="submit" class="btn btn-primary">Submit request</button>
               </div>
             </form>
           </div>
         </div>
       </div>
+      <script>
+      (function () {
+        var f = document.getElementById('leaveFrom'), t = document.getElementById('leaveTo'), o = document.getElementById('leaveDays');
+        function upd() {
+          if (t.value < f.value) { t.value = f.value; }
+          t.min = f.value;
+          var d = Math.round((new Date(t.value) - new Date(f.value)) / 86400000) + 1;
+          o.textContent = (isNaN(d) || d < 1) ? '' : d + (d === 1 ? ' day' : ' days');
+        }
+        f.addEventListener('change', upd); t.addEventListener('change', upd); upd();
+        if (location.hash === '#new') { $(function () { $('#modalApplyLeave').modal('show'); }); }
+      })();
+      </script>
 
     <?php elseif (($active_tab ?? '') === 'payroll'): ?>
       <?php $curMonthStr = $selected_month ?? $filter_month ?? date('Y-m'); ?>
