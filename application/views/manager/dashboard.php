@@ -247,8 +247,10 @@ if (!function_exists('render_donut_chart_svg')) {
         $current_angle = -M_PI / 2;
         $paths = '';
         $callouts = '';
-        $min_x = 0;
-        $max_x = $w;
+        $min_x = $cx - $r_out - 4;
+        $max_x = $cx + $r_out + 4;
+        $min_y = $cy - $r_out - 4;
+        $max_y = $cy + $r_out + 4;
         foreach ($items as $it) {
             $pct = $total > 0 ? (($it['count'] / $total) * 100) : (100 / max(1, $n));
             $angle_delta = ($pct / 100) * (2 * M_PI);
@@ -288,13 +290,18 @@ if (!function_exists('render_donut_chart_svg')) {
             $lbl_w = strlen($it['label'] . ': ' . (int)$it['count']) * 7.2;
             $min_x = min($min_x, $is_right ? $tx : $tx - $lbl_w);
             $max_x = max($max_x, $is_right ? $tx + $lbl_w : $tx);
+            $min_y = min($min_y, $ty - 13, $p2_y - 2);
+            $max_y = max($max_y, $ty + 5, $p2_y + 2);
             $callouts .= sprintf('<polyline points="%.1f,%.1f %.1f,%.1f %.1f,%.1f" fill="none" stroke="#94a3b8" stroke-width="1.3" />', $p1_x, $p1_y, $p2_x, $p2_y, $p3_x, $p3_y);
             $callouts .= sprintf('<text x="%.1f" y="%.1f" font-size="12" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="700" fill="#0f172a" class="donut-callout-text" text-anchor="%s">%s</text>', $tx, $ty, $anchor, $lbl);
             $current_angle = $next_angle;
         }
         $vb_x = floor($min_x - 4);
         $vb_w = ceil($max_x + 4) - $vb_x;
-        return '<svg viewBox="' . $vb_x . ' 0 ' . $vb_w . ' ' . $h . '" width="100%" height="' . $h . '" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="display:block; margin:0 auto; overflow:hidden; max-width:100%;"><g>' . $paths . $callouts . '</g></svg>';
+        $vb_y = floor($min_y - 2);
+        $vb_h = ceil($max_y + 2) - $vb_y;
+        // Fills the space left in the card (the wrapper is position:relative), as large as fits without cutting labels.
+        return '<svg viewBox="' . $vb_x . ' ' . $vb_y . ' ' . $vb_w . ' ' . $vb_h . '" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="position:absolute; left:0; top:0; width:100%; height:100%; display:block; overflow:hidden;"><g>' . $paths . $callouts . '</g></svg>';
     }
 }
 $curr = !empty($user_currency) ? $user_currency : 'AED';
@@ -499,7 +506,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                             <span><strong style="color:#0f172a; font-weight:700;"><?php echo isset($mylead_donut['total']) ? (int)$mylead_donut['total'] : 0; ?></strong> Total</span>
                         </div>
                     </div>
-                    <div style="width:100%; display:flex; align-items:center; justify-content:center; flex:1; overflow:visible;">
+                    <div style="width:100%; display:flex; align-items:center; justify-content:center; flex:1; overflow:visible; position:relative; min-height:0;">
                         <?php echo render_donut_chart_svg($lead_items, 480, 260, 240, 130, 120, 72, 'Lead'); ?>
                     </div>
                 </div>
@@ -511,7 +518,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                             <span><strong style="color:#0f172a; font-weight:700;"><?php echo isset($myorder_donut['total']) ? (int)$myorder_donut['total'] : 0; ?></strong> Total</span>
                         </div>
                     </div>
-                    <div style="width:100%; display:flex; align-items:center; justify-content:center; flex:1; overflow:visible;">
+                    <div style="width:100%; display:flex; align-items:center; justify-content:center; flex:1; overflow:visible; position:relative; min-height:0;">
                         <?php echo render_donut_chart_svg($order_items, 480, 260, 240, 130, 120, 72, 'Order'); ?>
                     </div>
                 </div>
