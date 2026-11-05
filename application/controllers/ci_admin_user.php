@@ -3,6 +3,10 @@
 
 
 class Ci_admin_user extends CI_Controller {
+	/** Address the pages are opened under: System (manager/users) or HR (manager/hr/staff). */
+	private $base = 'manager/users';
+	private $perm_key = 'users';
+	private $is_admin = false;
  function __construct() 
 	{
     parent::__construct();
@@ -14,6 +18,8 @@ class Ci_admin_user extends CI_Controller {
 		 header("Cache-Control: post-check=0, pre-check=0", false);
 		 header("Pragma: no-cache");
 		 header('Cache-Control: no-cache');
+		if ($this->uri->segment(2) === 'hr') { $this->base = 'manager/hr/staff'; $this->perm_key = 'hr_staff'; }
+		$this->load->helper('crm_permission');
   
 	}
 	
@@ -26,7 +32,12 @@ class Ci_admin_user extends CI_Controller {
             } else {
                 redirect('/manager/login');
             }
-        } elseif ($this->session->userdata('manager_role') != 1) {
+        }
+        // Admin: everything. Others: the Users (System) or Staff (HR) right from Roles & Permissions -
+        // View for the list and profile, Full for add / edit / credentials / enable-disable / delete.
+        $this->is_admin = ((int)$this->session->userdata('manager_role') === 1);
+        $need = in_array($this->router->fetch_method(), array('index', 'view'), true) ? 'read' : 'write';
+        if (!$this->is_admin && !crm_can($this->perm_key, $need)) {
         	$this->session->set_flashdata('error_message', 'Unauthorized Access!');
         		redirect('/manager/dashboard');
 
@@ -37,6 +48,29 @@ class Ci_admin_user extends CI_Controller {
            return $data;
         }
     }
+	/** Only an admin may open, change or create an Admin account. */
+	private function _guard_target($user)
+	{
+		if (!$this->is_admin && !empty($user) && (int)$user['user_type'] === 1) {
+			$this->session->set_flashdata('error_message', 'Only an admin can open or change an Admin account.');
+			redirect($this->base);
+		}
+	}
+
+	/** Pages share these: the address prefix, whether the person may change things, and the roles they may give. */
+	private function _page_data(&$data)
+	{
+		$data['base'] = $this->base;
+		$data['can_write'] = $this->is_admin || crm_can($this->perm_key, 'write');
+		if (isset($data['r_list']) && !$this->is_admin) {
+			$data['r_list'] = array_values(array_filter($data['r_list'], function ($r) { return (int)$r['id'] !== 1; }));
+		}
+		if (!$this->is_admin && $this->input->server('REQUEST_METHOD') === 'POST' && (int)$this->input->post('user_type') === 1) {
+			$this->session->set_flashdata('error_message', 'Only an admin can give the Admin role.');
+			redirect($this->base);
+		}
+	}
+
     public function is_user_login($url = '')
     {
         if ($this->session->userdata('manager_id') != '') {
@@ -58,16 +92,17 @@ class Ci_admin_user extends CI_Controller {
 		
 		$data['info2']=$this->if_not_login();
 		
-		$order_by = isset($_GET['order_by']) ? $_GET['order_by'] : 'A.id';
-		$sort_by = isset($_GET['sort_by']) ? $_GET['sort_by'] : 'DESC';
-		$search = isset($_GET['search']) ? $_GET['search'] : '';		
+		$order_by = in_array($this->input->get('order_by'), array('A.id', 'A.name', 'A.created'), true) ? $this->input->get('order_by') : 'A.id';
+		$sort_by = (strtoupper((string)$this->input->get('sort_by')) === 'ASC') ? 'ASC' : 'DESC';
+		$search = is_string($this->input->get('search')) ? trim($this->input->get('search')) : '';		
 		$data['product_list2']= $this->ci_admin_model->get_users('','',$order_by,$sort_by,$search); 
 		
 		
 		$params = array();
         $limit_per_page = 2000;
-        $page = ($this->uri->segment(3)) ? ($this->uri->segment(3) - 1) : 0;
-		 $page2 = ($this->uri->segment(3)) ? $this->uri->segment(3): 0;
+        $pseg = ($this->base === 'manager/users') ? 3 : 4; // page number position in the address
+        $page = ($this->uri->segment($pseg)) ? ($this->uri->segment($pseg) - 1) : 0;
+		 $page2 = ($this->uri->segment($pseg)) ? $this->uri->segment($pseg): 0;
         $total_records = count($data['product_list2']);
 		$page_index= $page*$limit_per_page;
 		
@@ -83,10 +118,10 @@ class Ci_admin_user extends CI_Controller {
 		 
 			$this->session->set_userdata('manager_return_string', urlencode($page2.$con_q));
 			$config['suffix'] = $con_q;
-            $config['base_url'] = base_url() . 'manager/users';
+            $config['base_url'] = base_url() . $this->base;
             $config['total_rows'] = $total_records;
             $config['per_page'] = $limit_per_page;
-            $config["uri_segment"] = 3;
+            $config["uri_segment"] = $pseg;
 			
 			 
             $config['num_links'] = 2;
@@ -125,6 +160,7 @@ class Ci_admin_user extends CI_Controller {
         }
 	
 		
+		$this->_page_data($data);
 		$this->load->view('manager/user/userlist',$data);
 	}
 
@@ -150,8 +186,10 @@ public function view($id='')
 
 			   {
 			   		$this->session->set_flashdata('error_message', 'Not allowed');
-				  	redirect('manager/users');
+				  	redirect($this->base);
 	           } 
+	           $this->_guard_target($data['p_info']);
+	           $this->_page_data($data);
 	           $this->load->view('manager/user/user_view',$data);
 
 }
@@ -232,6 +270,7 @@ public function view($id='')
 		$data['r_list'] =$this->comman_model->getAll(array('status'=>1),array('id','ASC'),'ci_roles');
 		$data['c_list'] =$this->comman_model->getAll('',array('id','ASC'),'countries');
 		$data['u_list'] =$this->comman_model->getAll('',array('id','ASC'),'ci_user');
+		$this->_page_data($data);
 		$this->_ensure_live_offices();
 		$data['pres_role_id'] = crm_presentation_role_id();
 		$data['office_codes'] = crm_office_codes();
@@ -245,12 +284,12 @@ public function view($id='')
 					$new_id = $this->comman_model->saveData('ci_user', $row);
 					if ($new_id) $this->_save_live_offices($new_id, $this->pres_offices);
 					$this->session->set_flashdata('message', 'Presentation user has been added successfully!');
-					redirect('manager/users');
+					redirect($this->base);
 				} else {
 					$this->session->set_flashdata('error_message', 'Company Username is already exists.');
 				}
 			}
-			redirect('manager/users/add');
+			redirect($this->base.'/add');
 		}
 		if($this->input->server('REQUEST_METHOD')==='POST')
 
@@ -324,7 +363,7 @@ public function view($id='')
 
 			 	$this->comman_model->saveData('ci_user',$list);
 			 	$this->session->set_flashdata('message', 'User has been added successfully!');
-				redirect('manager/users');
+				redirect($this->base);
 			 }
 			 else
 			 {
@@ -355,6 +394,8 @@ public function view($id='')
 			if(!empty($data['list']['country'])){
 				$data['state_list']= $this->comman_model->getAll(array('country_id'=>$data['list']['country']),'','states');
 			}
+			$this->_guard_target($data['list']);
+			$this->_page_data($data);
 			$this->_ensure_live_offices();
 			$data['pres_role_id'] = crm_presentation_role_id();
 			$data['office_codes'] = crm_office_codes();
@@ -374,15 +415,15 @@ public function view($id='')
 					$this->_save_live_offices($id, $this->pres_offices);
 					$this->ci_admin_model->log_admin_action('user_edit', 'Updated presentation user ID #'.$id, 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));
 					$this->session->set_flashdata('message', 'User has been updated successfully!');
-					redirect('manager/users');
+					redirect($this->base);
 				}
-				redirect('manager/users/edit/' . (int)$id);
+				redirect($this->base.'/edit/' . (int)$id);
 			}
     	 	   if(empty($data['list']))
 
 			   {
 			   		$this->session->set_flashdata('error_message', 'Not allowed');
-				  	redirect('manager/users');
+				  	redirect($this->base);
 	           }    
 
 			 if($this->input->server('REQUEST_METHOD')==='POST')
@@ -452,7 +493,7 @@ public function view($id='')
 					{
 						$this->ci_admin_model->log_admin_action('user_edit', 'Updated user ID #'.$id, 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));
 						$this->session->set_flashdata('message', 'User has been updated successfully!');
-						redirect('manager/users');
+						redirect($this->base);
 					}			
 
 			}   
@@ -475,8 +516,10 @@ public function view($id='')
 			$data['list']=$this->comman_model->getAll(array('id'=>$id),'','ci_user','first');
 			if(empty($data['list'])){
 			   		$this->session->set_flashdata('error_message', 'Not allowed');
-				  	redirect('manager/users');
+				  	redirect($this->base);
 			}
+			$this->_guard_target($data['list']);
+			$this->_page_data($data);
 			if($this->input->server('REQUEST_METHOD')==='POST')
 		     {
 			   extract($_POST);	
@@ -492,12 +535,12 @@ public function view($id='')
 					$response= $this->comman_model->updateData('id',$id,$save,'ci_user');
 
 					$this->session->set_flashdata('message', 'User settings has been updated successfully!');
-					redirect('manager/users');
+					redirect($this->base);
 
 				}else{
 
 					$this->session->set_flashdata('error_message', 'Sorry! Username already exist');
-					redirect('manager/users/cedit/'.$id);
+					redirect($this->base.'/cedit/'.$id);
 
 				}
 				
@@ -510,7 +553,7 @@ public function view($id='')
 
 				$response= $this->comman_model->updateData('id',$id,$save,'ci_user');
 				$this->session->set_flashdata('message', 'User settings has been updated successfully!');
-				redirect('manager/users/cedit/'.$id);
+				redirect($this->base.'/cedit/'.$id);
 
 			}
 				
@@ -535,23 +578,24 @@ public function view($id='')
 
 		$id = (int)$id;
 		if (empty($id)) {
-			redirect('manager/users');
+			redirect($this->base);
 			return;
 		}
 
 		$current_admin_id = (int)$this->session->userdata('manager_id');
 		if ($id === $current_admin_id) {
 			$this->session->set_flashdata('error_message', 'You cannot delete your own account while logged in.');
-			redirect('manager/users');
+			redirect($this->base);
 			return;
 		}
 
 		$user_to_delete = $this->comman_model->getAll(array('id' => $id), '', 'ci_user', 'first');
 		if (empty($user_to_delete)) {
 			$this->session->set_flashdata('error_message', 'User not found.');
-			redirect('manager/users');
+			redirect($this->base);
 			return;
 		}
+		$this->_guard_target($user_to_delete);
 		$uname = !empty($user_to_delete['name']) ? $user_to_delete['name'] : 'User #' . $id;
 
 		$owned_counts = $this->ci_admin_model->get_user_owned_records_count($id);
@@ -585,7 +629,7 @@ public function view($id='')
 			$this->session->set_flashdata('error_message', 'Failed to delete user.');
 		}
 
-		redirect('manager/users');
+		redirect($this->base);
 	}  
 	
 
@@ -593,11 +637,20 @@ public function view($id='')
 public function ajax_edit_status()
     {
 		
+			// Signed in, Full right on Users or Staff, never yourself, and only an admin may switch an Admin account.
+			$me = (int)$this->session->userdata('manager_id');
+			$is_admin = ((int)$this->session->userdata('manager_role') === 1);
+			$uid = (int)$this->input->post('id');
+			$target = $uid ? $this->comman_model->getAll(array('id' => $uid), '', 'ci_user', 'first') : array();
+			if (!$me || empty($target) || $uid === $me || (!$is_admin && (!(crm_can('users', 'write') || crm_can('hr_staff', 'write')) || (int)$target['user_type'] === 1))) {
+				echo "error";
+				return;
+			}
 			if ($this->input->server('REQUEST_METHOD') === 'POST') { 
 			
-				$status = ($_POST['admin_status']==1) ? 0 : 1;
-				$response= $this->comman_model->updateData('id',$_POST['id'],array('admin_status'=>$status),'ci_user');
-				$this->ci_admin_model->log_admin_action('user_status_toggle', 'Toggled user status for ID #'.$_POST['id'].' to '.$status, 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));
+				$status = ($this->input->post('admin_status')==1) ? 0 : 1;
+				$response= $this->comman_model->updateData('id',$uid,array('admin_status'=>$status),'ci_user');
+				$this->ci_admin_model->log_admin_action('user_status_toggle', 'Toggled user status for ID #'.$uid.' to '.$status, 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));
 				echo "ok";
 			}
 			else{

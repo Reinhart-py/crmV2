@@ -133,6 +133,7 @@ if (!function_exists('crm_perm_catalog')) {
 				'note' => 'Holiday requests stay open to every user from the profile menu for their own data; Self Training and Search Topics (Help & Support) are rights in Core Modules. The rights here add the HR menu and managing everyone.',
 				'items' => array(
 					'hr' => array('label' => 'HR Overview', 'desc' => 'HR dashboard', 'nav' => array(array('hr', 'Overview', 'fa-th-large')), 'pages' => array('hr')),
+					'hr_staff' => array('label' => 'Staff (Add / View)', 'desc' => 'Staff list and each person\'s profile; Full can add, edit, reset logins and enable or disable staff (never Admin accounts)', 'fallback' => 'users', 'nav' => array(array('hr/staff/add', 'Add Staff', 'fa-user-plus', 'write'), array('hr/staff', 'View Staff', 'fa-id-card-o', 'read')), 'pages' => array('hr/staff'), 'write' => array('hr/staff/add')),
 					'hr_attendance' => array('label' => 'Attendance & GPS', 'desc' => 'Attendance with location', 'fallback' => 'hr', 'nav' => array(array('hr/attendance', 'Attendance & GPS', 'fa-map-marker')), 'pages' => array('hr/attendance')),
 					'hr_shifts' => array('label' => 'Shifts', 'desc' => 'Create and assign shifts', 'fallback' => 'hr', 'nav' => array(array('hr/shifts', 'Shifts', 'fa-clock-o')), 'pages' => array('hr/shifts'), 'write' => array('hr/shifts/add', 'hr/shifts/assign')),
 					'hr_leaves' => array('label' => 'Holiday Requests (all staff)', 'desc' => 'See and approve everyone\'s leave', 'fallback' => 'hr', 'nav' => array(array('hr/leaves', 'Holiday Request', 'fa-calendar-check-o'))),

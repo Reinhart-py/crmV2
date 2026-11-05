@@ -74,7 +74,7 @@
    
      <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?> <?php echo get_message($this->session->flashdata('message'),'message'); ?>
      
-      <form role="form" action="<?php echo base_url(); ?>manager/users/add" method="post" name="add_form" autocomplete="off">
+      <form role="form" action="<?php echo base_url().$base; ?>/add" method="post" name="add_form" autocomplete="off">
 
          
 

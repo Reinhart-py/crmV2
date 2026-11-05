@@ -75,7 +75,7 @@
    <div class="container">
      <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?> <?php echo get_message($this->session->flashdata('message'),'message'); ?>
      
-      <form role="form" action="<?php echo base_url(); ?>manager/users/edit/<?php echo $list['id']; ?>" method="post" name="edit_form" autocomplete="off">
+      <form role="form" action="<?php echo base_url().$base; ?>/edit/<?php echo $list['id']; ?>" method="post" name="edit_form" autocomplete="off">
 
 
          <div class="box box-default js-sys-box">

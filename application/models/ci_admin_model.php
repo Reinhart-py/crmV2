@@ -1051,12 +1051,17 @@ public function dashboard_MyPro($table='ci_leads'){
 			  $this->db->join('states as E','A.state=E.id','LEFT');
 			   if(!empty($search))
 			  {
-			    $where = '(A.name LIKE "%'.$search.'%" OR A.emp_id LIKE "%'.$search.'%"  OR A.mobile LIKE "%'.$search.'%" OR A.email LIKE "%'.$search.'%")';	
+			    $q = $this->db->escape_like_str($search);
+			    $where = "(A.name LIKE '%{$q}%' OR A.emp_id LIKE '%{$q}%' OR A.mobile LIKE '%{$q}%' OR A.email LIKE '%{$q}%')";	
                $this->db->where($where);
 			  }	
 
-			   $where1="A.user_level > ".$this->session->userdata('manager_level');	
-			   $this->db->where($where1);
+			   // Admin: users below their level (as before). HR / anyone given the Users right: all staff except Admin accounts.
+			   if ((int)$this->session->userdata('manager_role') === 1) {
+			   	$this->db->where('A.user_level >', (int)$this->session->userdata('manager_level'));
+			   } else {
+			   	$this->db->where('A.user_type !=', 1);
+			   }
 
 		     $this->db->order_by($order_by,$sort_by);
 			  if(!empty($limit_per_page))

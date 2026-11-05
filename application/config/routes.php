@@ -312,6 +312,14 @@ $route['manager/ajax_get_notifications'] = 'ci_admin/ajax_get_notifications';
 $route['manager/ajax_mark_notifications_read'] = 'ci_admin/ajax_mark_notifications_read';
 
 $route['manager/hr'] = 'ci_admin_hr/index';
+// HR > Staff: the same user pages, opened from the HR menu (right: hr_staff)
+$route['manager/hr/staff'] = 'ci_admin_user/index';
+$route['manager/hr/staff/(:num)'] = 'ci_admin_user/index/$1';
+$route['manager/hr/staff/add'] = 'ci_admin_user/add';
+$route['manager/hr/staff/edit/(:num)'] = 'ci_admin_user/edit/$1';
+$route['manager/hr/staff/view/(:num)'] = 'ci_admin_user/view/$1';
+$route['manager/hr/staff/cedit/(:num)'] = 'ci_admin_user/cedit/$1';
+$route['manager/hr/staff/delete/(:num)'] = 'ci_admin_user/delete/$1';
 $route['manager/hr/targets'] = 'ci_admin_hr/targets';
 $route['manager/hr/targets/add'] = 'ci_admin_hr/add_target';
 $route['manager/hr/targets/delete/(:num)'] = 'ci_admin_hr/delete_target/$1';

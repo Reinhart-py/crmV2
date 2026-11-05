@@ -1,351 +1,144 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
-
-<div class="content-wrapper">
+<?php
+$p = $p_info;
+$can_write = !empty($can_write);
+$val = function ($k) use ($p) {
+	$v = isset($p[$k]) ? trim((string)$p[$k]) : '';
+	if ($v === '' || $v === '0000-00-00' || $v === '0000-00-00 00:00:00') return '';
+	return htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
+};
+$phone = function ($code, $num) use ($val) {
+	$n = $val($num);
+	if ($n === '') return '';
+	$c = $val($code);
+	return ($c !== '' ? '+' . ltrim($c, '+') . ' ' : '') . $n;
+};
+$manager_name = '';
+if (!empty($p['manager'])) {
+	$m = $this->db->select('name')->where('id', (int)$p['manager'])->get('ci_user')->row_array();
+	if (!empty($m['name'])) $manager_name = htmlspecialchars($m['name'], ENT_QUOTES, 'UTF-8');
+}
+$offices = function_exists('crm_user_live_offices') ? crm_user_live_offices($p) : array();
+// Sections in the same order as the form. Salary and bank details only for people who may edit staff.
+$sections = array(
+	'Login & Role' => array(
+		'Login Email' => $val('c_username'), 'User Type' => $val('role_title'), 'Upline / Manager' => $manager_name,
+		'Added On' => (!empty($p['created']) ? simple_date($p['created']) : ''),
+	),
+	'Personal Details' => array(
+		'Name' => $val('name'), 'Email' => $val('email'), 'Contact No' => $phone('country_code', 'mobile'), 'Alternate No' => $phone('country_code2', 'uae_mobile'),
+		'Date of Birth' => $val('dob'), 'Gender' => $val('gender'), 'Nationality' => $val('national'), 'Blood Group' => $val('blood'),
+		'Address' => $val('address'), 'City' => $val('city'), 'Country' => $val('country_name'), 'State / Emirate' => $val('state_name'),
+	),
+	'Company Details' => array(
+		'Employee ID' => $val('emp_id'), 'Department' => $val('department'), 'Office / Location' => $val('office'),
+		'Date of Joining' => $val('c_doj'), 'Date of Leaving' => $val('c_dol'),
+	),
+	'Identity & Visa' => array(
+		'Passport No' => $val('p_no'), 'Passport Expiry' => $val('p_exdate'), 'Emirates ID' => $val('eid_no'), 'ID Expiry' => $val('eid_expiry'),
+		'Visa Type' => $val('visa_type'), 'Visa Ref. No' => $val('visa_no'), 'Visa Issued By' => $val('visa_by'), 'Visa Expiry' => $val('visa_expiry'),
+	),
+	'Emergency Contact' => array(
+		'Contact Name' => $val('h_contact_name'), 'Relation' => $val('h_contact_relation'), 'Contact No' => $val('h_contact_no'), 'Alternate No' => $val('h_contact_no2'),
+	),
+);
+if ($can_write) {
+	$sections['Company Details']['Salary'] = $val('c_salary');
+	$sections['Bank Details'] = array(
+		'Bank Name' => $val('bank'), 'Account No' => $val('bank_no'), 'IBAN' => $val('iban'), 'SWIFT' => $val('swift'),
+		'IFSC / Branch' => $val('ifsc'), 'Bank Country' => $val('bank_country'),
+	);
+}
+if (!empty($offices)) $sections['Login & Role']['Office Codes'] = htmlspecialchars(implode(', ', $offices), ENT_QUOTES, 'UTF-8');
+$filled = 0; $total = 0;
+foreach ($sections as $rows) foreach ($rows as $v) { $total++; if ($v !== '') $filled++; }
+$initials = '';
+foreach (preg_split('/\s+/', trim((string)$p['name'])) as $w) { if ($w !== '' && strlen($initials) < 2) $initials .= strtoupper($w[0]); }
+$enabled = ((int)$p['admin_status'] === 1);
+?>
+<style>
+/* View User: one profile card + compact label/value grid, same groups as the form */
+.uview .content{padding-top:0}
+.uview .uv-wrap{max-width:1500px;margin:0 auto}
+.uview .uv-card{background:var(--crm-surface,#fff);border:1px solid var(--crm-line,#e2e8f0);border-radius:10px;margin-bottom:10px}
+.uview .uv-head{display:flex;align-items:center;gap:14px;padding:12px 14px;flex-wrap:wrap}
+.uview .uv-av{width:52px;height:52px;border-radius:50%;background:var(--crm-ocean,#1e3a8a);color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:700;flex:0 0 auto}
+.uview .uv-id{flex:1 1 240px;min-width:0}
+.uview .uv-id h2{margin:0;font-size:19px;font-weight:700;color:var(--crm-ink,#0f172a);text-transform:capitalize}
+.uview .uv-meta{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:4px;font-size:12.5px;color:var(--crm-muted,#64748b)}
+.uview .uv-meta i{margin-right:4px}
+.uview .uv-chip{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:600;background:var(--crm-ocean-soft,rgba(30,58,138,.1));color:var(--crm-ocean,#1e3a8a)}
+.uview .uv-chip.on{background:rgba(22,163,74,.12);color:#15803d}
+.uview .uv-chip.off{background:rgba(220,38,38,.12);color:#b91c1c}
+.uview .uv-actions{display:flex;gap:8px;flex-wrap:wrap}
+.uview .uv-actions .btn{height:32px;font-weight:600}
+.uview .uv-fill{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--crm-ink-2,#334155);padding:0 14px 10px}
+.uview .uv-fill .bar{width:140px;height:6px;border-radius:3px;background:var(--crm-line,#e2e8f0);overflow:hidden}
+.uview .uv-fill .bar span{display:block;height:100%;background:#f59e0b}
+.uview .uv-fill.done .bar span{background:#16a34a}
+.uview .uv-sec-h{padding:7px 14px;border-bottom:1px solid var(--crm-line-soft,#eef2f7);border-left:3px solid var(--crm-ocean,#1e3a8a);border-radius:10px 0 0 0;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--crm-ink,#0f172a);display:flex;justify-content:space-between}
+.uview .uv-sec-h small{font-weight:600;text-transform:none;letter-spacing:0;color:var(--crm-muted,#64748b)}
+.uview .uv-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2px 14px;padding:8px 14px 10px;margin:0}
+.uview .uv-grid > div{display:grid;grid-template-columns:112px minmax(0,1fr);gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px dashed var(--crm-line-soft,#eef2f7)}
+.uview .uv-grid dt{font-size:12px;font-weight:600;color:var(--crm-muted,#64748b);text-align:right}
+.uview .uv-grid dd{margin:0;font-size:13px;color:var(--crm-ink,#0f172a);word-break:break-word}
+.uview .uv-grid dd.empty{color:var(--crm-muted,#94a3b8);font-style:italic}
+@media (max-width:1399px){.uview .uv-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:991px){.uview .uv-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:575px){.uview .uv-grid{grid-template-columns:1fr}.uview .uv-grid > div{grid-template-columns:110px minmax(0,1fr)}}
+</style>
+<div class="content-wrapper uview">
   <section class="content-header">
-    <h1> <?php echo $info['page_heading']; ?> </h1>
+    <h1>View User</h1>
+    <ol class="breadcrumb">
+      <li><a href="<?php echo base_url(); ?>manager/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
+      <li><a href="<?php echo base_url().$base; ?>"><?php echo ($base === 'manager/hr/staff') ? 'Staff' : 'Users'; ?></a></li>
+      <li class="active">View</li>
+    </ol>
   </section>
-  <section class="content  my-profile">
-
-
-  <div class="container">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  <div class=" table-border">
-<div class="row">
-
-<div class="box-header">
-        <h3 class="box-title" style="text-transform:capitalize"><b>
-          <?php if((isset($p_info['name']))&&(!empty($p_info['name']))){echo $p_info['name'];}else echo ""; ?>
-          </b></h3>
-          <?php if($this->session->userdata['manager_role']==1){ ?>
-          <div class="pull-right">
-          <a href="<?php echo base_url(); ?>manager/users/edit/<?php echo $p_info['id']; ?>" class="btn btn-danger">Edit User</a>
-         
-         </div>
-          <?php } ?>
+  <section class="content">
+  <div class="uv-wrap">
+    <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?>
+    <?php echo get_message($this->session->flashdata('message'),'message'); ?>
+    <div class="uv-card">
+      <div class="uv-head">
+        <div class="uv-av"><?php echo htmlspecialchars($initials ? $initials : '?', ENT_QUOTES, 'UTF-8'); ?></div>
+        <div class="uv-id">
+          <h2><?php echo $val('name'); ?></h2>
+          <div class="uv-meta">
+            <span class="uv-chip"><?php echo sprintf('EMP-%05d', $p['id']); ?></span>
+            <?php if ($val('role_title') !== '') { ?><span class="uv-chip"><?php echo $val('role_title'); ?></span><?php } ?>
+            <span class="uv-chip <?php echo $enabled ? 'on' : 'off'; ?>"><?php echo $enabled ? 'Enabled' : 'Disabled'; ?></span>
+            <?php if ($val('department') !== '') { ?><span><i class="fa fa-building-o"></i><?php echo $val('department'); ?></span><?php } ?>
+            <?php if ($val('office') !== '') { ?><span><i class="fa fa-map-marker"></i><?php echo $val('office'); ?></span><?php } ?>
+            <?php if ($manager_name !== '') { ?><span><i class="fa fa-level-up"></i>Reports to <?php echo $manager_name; ?></span><?php } ?>
           </div>
-  <div class="col-md-6">
-      <div class="table-responsive border">
-          <table class="table">
-              <tr>
-                <th scope="col">Employee ID</th>
-                <td><span class="label label-primary" style="font-size:12px; letter-spacing:0.5px;"><?php echo sprintf('EMP-%05d', $p_info['id']); ?></span></td>
-              </tr>
-              <tr>
-                <th scope="col">Name</th>
-                <td><?php echo $p_info['name']; ?></td>
-              </tr>
-   
-            
-              <tr>
-              <th scope="col">DOB</th>
-                <td scope="col"><?php echo $p_info['dob']; ?></td>
-            
-              </tr>
-         
-              <tr>
-                <th scope="col">Mobile</th>
-                <td><?php echo $p_info['mobile']; ?></td>
-
-                
-              </tr>
-      
-          
-              <tr>
-              <th scope="col">Address</th>
-                <td scope="col"><?php echo $p_info['address']; ?></td>
-            
-              </tr>
-            
-              <tr>
-                <th scope="col">Country</th>
-                <td scope="col"><?php echo $p_info['country_name']; ?></td>
-
-                
-              </tr>
-      
-              
-            
-              <tr>
-              <th scope="col">User Name</th>
-                <td scope="col"><?php echo $p_info['c_username']; ?></th>
-            
-              </tr>
-          
-       
-              <tr>
-                <th scope="col">Salary</th>
-                <td><?php echo $p_info['c_salary']; ?></td>
-
-                
-              </tr>
-          
-          
-              <tr>
-              <th scope="col">Date of Leaving</th>
-              <td><?php echo $p_info['c_dol']; ?>
-            </td>
-            
-              </tr>
-           
-              <tr>
-                <th scope="col">Office Code / Work Location</th>
-                <td scope="col"><?php echo $p_info['office']; ?></td>
-
-                
-              </tr>
-           
-
-              <tr>
-              <th scope="col">Blood Group</th>
-                <td scope="col"><?php echo $p_info['blood']; ?></td>
-            
-              </tr>
-
-
-              <tr>
-                <th scope="col">Passport Expiry Date</th>
-                <td scope="col"><?php echo $p_info['p_exdate']; ?></td>
-                
-              </tr>
-
-              <tr>
-              <th scope="col">Visa Reference No.</th>
-              <td scope="col"><?php echo $p_info['visa_no']; ?></td>              
-            
-              </tr>
-
-            <tr>
-              <th scope="col">Visa Expiry Date </th>
-              <td scope="col"><?php echo $p_info['visa_expiry']; ?></td>              
-              </tr>
-
-              <tr>
-              <th scope="col">EID Expiry Date</th>
-              <td scope="col"><?php echo $p_info['eid_expiry']; ?></td>              
-            
-              </tr>
-
-
-              <th scope="col">Emg. Contact Person Relation</th>
-              <td scope="col"><?php echo $p_info['h_contact_relation']; ?></td>              
-            
-              </tr>
-
-               <tr>
-              <th scope="col">Emg. Contact Person Alternate Contact No.  </th>
-              <td scope="col"><?php echo $p_info['h_contact_no2']; ?></td>              
-            
-              </tr>
-
-              <tr>
-              <th scope="col">Bank Country  </th>
-              <td scope="col"><?php echo $p_info['bank']; ?></td>              
-            
-              </tr>
-
-
-
-              <tr>
-              <th scope="col">IFSC/Sort Code/Branch Code</th>
-              <td scope="col"><?php echo $p_info['ifsc']; ?></td>              
-            
-              </tr>
-
-
-
-
-
-              <tr>
-              <th scope="col">SWIFT</th>
-              <td scope="col"><?php echo $p_info['swift']; ?></td>              
-            
-              </tr>
-
-
-          </table>
+        </div>
+        <div class="uv-actions">
+          <?php if ($can_write) { ?>
+          <a href="<?php echo base_url().$base; ?>/edit/<?php echo (int)$p['id']; ?>" class="btn btn-primary"><i class="fa fa-pencil"></i> Edit</a>
+          <a href="<?php echo base_url().$base; ?>/cedit/<?php echo (int)$p['id']; ?>" class="btn btn-default"><i class="fa fa-key"></i> Login &amp; Password</a>
+          <?php } ?>
+          <a href="<?php echo base_url().$base; ?>" class="btn btn-default"><i class="fa fa-arrow-left"></i> Back</a>
+        </div>
       </div>
-  </div>
-
-
-  <div class="col-md-6">
-      <div class="table-responsive border">
-          <table class="table">
-    
-         
-          <tr>
-              <th scope="col">Gender</th>
-                <td scope="col"><?php echo $p_info['gender']; ?></td>
-              
-              </tr>
-
-               <tr>
-              <th scope="col">Email</th>
-                <td scope="col"><?php echo $p_info['email']; ?></td>
-            
-              </tr>
-
-             <tr>
-              <th scope="col">UAE Alternate Contect No</th>
-                <td scope="col"><?php echo $p_info['uae_mobile']; ?></td>
-              
-              </tr>
-
-            <tr>
-              <th scope="col">City</th>
-                <td scope="col"><?php echo $p_info['city']; ?></td>
-            
-              </tr>
-
-                 <tr>
-              <th scope="col">State / Province / Emirate</th>
-                <td scope="col"><?php echo $p_info['state_name']; ?></td>
-              
-              </tr>
-
-                <tr>
-              <th scope="col">Employee ID</th>
-                <td scope="col"><?php echo $p_info['emp_id']; ?></td>
-            
-              </tr>
-
-              <tr>
-              <th scope="col">Date of Joining</th>
-              <td><?php echo $p_info['c_doj']; ?></td>
-              
-              </tr>
-
-              <tr>
-              <th scope="col">Department</th>
-              <td scope="col"><?php echo $p_info['department']; ?></td>
-            
-              </tr>
-
-
-              <tr>
-              <th scope="col">Nationality</th>
-                <td scope="col"><?php echo $p_info['national']; ?></td>
-              
-              </tr>
-              <tr>
-              <th scope="col">Passport Number</th>
-                <td scope="col"><?php echo $p_info['p_no']; ?></td>
-            
-              </tr>
-           
-
-              
-              <tr>
-              <th scope="col">Visa Type</th>
-              <td scope="col"><?php echo $p_info['visa_type']; ?></td>              
-              </tr>
-          
-              <tr>
-              <th scope="col">Visa Issue By</th>
-              <td scope="col"><?php echo $p_info['visa_by']; ?></td>              
-            
-              </tr>
-
-
-
-          
-              <tr>
-              <th scope="col">National ID / EID Number</th>
-              <td scope="col"><?php echo $p_info['eid_no']; ?></td>              
-            
-              </tr>
-          
-
-              <tr>
-
-              <th scope="col">Emg. Contact Person Name</th>
-              <td scope="col"><?php echo $p_info['h_contact_name']; ?></td>              
-            
-              </tr>
-              <tr>
-
-
-              <tr>
-              <th scope="col">Emg. Contact Person Contact No.  </th>
-              <td scope="col"><?php echo $p_info['h_contact_no']; ?></td>              
-            
-              </tr>
-
-            
-
-
-              <tr>
-              <th scope="col">Bank Name  </th>
-              <td scope="col"><?php echo $p_info['iban']; ?></td>              
-            
-              </tr>
-
-
-
-
-
-              <tr>
-              <th scope="col">Bank Account Number </th>
-              <td scope="col"><?php echo $p_info['iban']; ?></td>              
-            
-              </tr>
-
-
-
-              <tr>
-              <th scope="col">IBAN </th>
-              <td scope="col"><?php echo $p_info['iban']; ?></td>              
-            
-              </tr>
-
-
-
-
-          </table>
+      <div class="uv-fill<?php echo ($filled === $total) ? ' done' : ''; ?>">
+        <div class="bar"><span style="width:<?php echo $total ? round($filled * 100 / $total) : 0; ?>%"></span></div>
+        <?php echo $filled; ?> of <?php echo $total; ?> details filled
       </div>
+    </div>
+    <?php foreach ($sections as $title => $rows) {
+      $empty = 0; foreach ($rows as $v) if ($v === '') $empty++; ?>
+    <div class="uv-card">
+      <div class="uv-sec-h"><span><?php echo htmlspecialchars($title, ENT_QUOTES, 'UTF-8'); ?></span><?php if ($empty) { ?><small><?php echo $empty; ?> empty</small><?php } ?></div>
+      <dl class="uv-grid">
+        <?php foreach ($rows as $label => $v) { ?>
+        <div><dt><?php echo htmlspecialchars($label, ENT_QUOTES, 'UTF-8'); ?></dt><dd<?php echo ($v === '') ? ' class="empty"' : ''; ?>><?php echo ($v === '') ? 'Not filled' : $v; ?></dd></div>
+        <?php } ?>
+      </dl>
+    </div>
+    <?php } ?>
   </div>
-
-</div>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   </section>
 </div>
-
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>
