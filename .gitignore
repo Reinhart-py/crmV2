@@ -25,3 +25,4 @@ project_memory.md
 .agents/
 
 application/uploads/staff_docs/
+application/config/crm_secret.php

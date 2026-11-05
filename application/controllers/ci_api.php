@@ -12,15 +12,15 @@ class Ci_api extends CI_Controller {
 
 	public function whatsapp_webhook()
 	{
-		if ($this->input->method(TRUE) === 'GET') {
+		if (strtoupper($_SERVER['REQUEST_METHOD']) === 'GET') {
 			$mode = $this->input->get('hub_mode');
 			$token = $this->input->get('hub_verify_token');
 			$challenge = $this->input->get('hub_challenge');
 
 			$setting = $this->db->where('service_name', 'whatsapp')->get('ci_integration_settings')->row_array();
-			$expected_token = (!empty($setting['api_key'])) ? $setting['api_key'] : 'crm_whatsapp_secret';
+			$expected_token = (!empty($setting['api_key'])) ? (string)$setting['api_key'] : '';
 
-			if ($mode === 'subscribe' && ($token === $expected_token || $token === 'crm_whatsapp_secret')) {
+			if ($mode === 'subscribe' && $expected_token !== '' && is_string($token) && hash_equals($expected_token, $token)) {
 				echo $challenge;
 				exit();
 			} else {
@@ -29,7 +29,7 @@ class Ci_api extends CI_Controller {
 			}
 		}
 
-		if ($this->input->method(TRUE) === 'POST') {
+		if (strtoupper($_SERVER['REQUEST_METHOD']) === 'POST') {
 			$raw_payload = file_get_contents('php://input');
 			$data = json_decode($raw_payload, true);
 
@@ -59,6 +59,15 @@ class Ci_api extends CI_Controller {
 
 	public function send_whatsapp()
 	{
+		// only a signed-in CRM user may send, and only by POST
+		$this->load->library('session');
+		if (strtoupper($_SERVER['REQUEST_METHOD']) !== 'POST' || (int)$this->session->userdata('manager_id') <= 0) {
+			http_response_code(403);
+			header('Content-Type: application/json');
+			echo json_encode(array('status' => false, 'message' => 'Please sign in to send WhatsApp messages'));
+			exit();
+		}
+
 		$phone = trim($this->input->post('phone'));
 		$message = trim($this->input->post('message'));
 

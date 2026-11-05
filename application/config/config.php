@@ -240,7 +240,22 @@ $config['cache_path'] = '';
 | MUST set an encryption key.  See the user guide for info.
 |
 */
-$config['encryption_key'] = 'abcdef123456';
+/* The key is secret and never stored in git: it comes from the CRM_SECRET environment variable, or from
+   application/config/crm_secret.php, which is created once with a random value on each server. */
+$crm_secret_file = APPPATH . 'config/crm_secret.php';
+$crm_secret = (string)getenv('CRM_SECRET');
+if ($crm_secret === '') {
+	if (!is_file($crm_secret_file)) {
+		@file_put_contents($crm_secret_file, "<?php defined('BASEPATH') OR exit('No direct script access allowed');\nreturn '" . bin2hex(random_bytes(32)) . "';\n", LOCK_EX);
+	}
+	$crm_secret = is_file($crm_secret_file) ? (string)(include $crm_secret_file) : '';
+}
+if (strlen($crm_secret) < 32) {
+	// last resort when the folder is read-only: a server-specific value, still never the old public key
+	$crm_secret = hash('sha256', __DIR__ . '|' . php_uname('n') . '|' . (isset($_SERVER['SERVER_SOFTWARE']) ? $_SERVER['SERVER_SOFTWARE'] : ''));
+}
+$config['encryption_key'] = $crm_secret;
+unset($crm_secret, $crm_secret_file);
 
 /*
 |--------------------------------------------------------------------------
@@ -264,7 +279,7 @@ $config['sess_cookie_name']		= 'ci_session';
 $config['sess_expiration']		= 7200;
 $config['sess_expire_on_close']	= FALSE;
 $config['sess_encrypt_cookie']	= FALSE;
-$config['sess_use_database']	= FALSE;
+$config['sess_use_database']	= TRUE;
 $config['sess_table_name']		= 'ci_sessions';
 $config['sess_match_ip']		= FALSE;
 $config['sess_match_useragent']	= TRUE;

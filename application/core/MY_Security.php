@@ -3,16 +3,22 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class MY_Security extends CI_Security {
 
+    // only calls that come from outside services (they cannot carry the CRM form token);
+    // everything else, including api/whatsapp/send, needs the token
     protected $_exclude_uris = array(
         'manager/calls/cdr_webhook',
-        'api'
+        'api/calls/recording_webhook',
+        'api/calls/cdr_webhook',
+        'api/calls/process_ai',
+        'api/whatsapp/webhook'
     );
 
     public function csrf_verify()
     {
-        $uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
+        $uri = isset($_SERVER['REQUEST_URI']) ? (string)parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) : '';
+        $uri = '/' . trim($uri, '/');
         foreach ($this->_exclude_uris as $exclude) {
-            if ($exclude !== '' && strpos($uri, $exclude) !== false) {
+            if ($exclude !== '' && strpos($uri, '/' . $exclude) !== false) {
                 return $this;
             }
         }

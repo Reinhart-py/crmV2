@@ -9,7 +9,9 @@
  * or by typing the address, shows a message and goes to the first page the
  * person may open. Full admins (Admin role, user #1, "Full admin" mode) pass.
  *
- * AJAX calls are left to each controller's own checks.
+ * AJAX calls get the same check (the X-Requested-With header is set by the browser script and
+ * can be added by anyone, so it must not open a way around the rights); a refused AJAX call gets
+ * HTTP 403 with a short JSON message instead of a redirect.
  */
 function crm_permission_guard()
 {
@@ -18,7 +20,7 @@ function crm_permission_guard()
 	if (!isset($ci->session) || (int)$ci->session->userdata('manager_id') <= 0) return;
 	require_once APPPATH . 'helpers/crm_permission_helper.php';
 	crm_sync_session_user();
-	if ($ci->input->is_ajax_request()) return;
+	$is_ajax = $ci->input->is_ajax_request();
 
 	$segs = $ci->uri->segment_array();
 	array_shift($segs);
@@ -33,7 +35,13 @@ function crm_permission_guard()
 
 	$items = crm_perm_items();
 	$label = isset($items[$rule[0]]['label']) ? $items[$rule[0]]['label'] : $rule[0];
-	$ci->session->set_flashdata('error_message', 'You do not have ' . ($rule[1] === 'write' ? 'Full' : 'View') . ' access to ' . $label . '. Ask your administrator if you need it.');
+	$msg = 'You do not have ' . ($rule[1] === 'write' ? 'Full' : 'View') . ' access to ' . $label . '. Ask your administrator if you need it.';
+	if ($is_ajax) {
+		if (!headers_sent()) { http_response_code(403); header('Content-Type: application/json; charset=utf-8'); }
+		echo json_encode(array('status' => 'error', 'message' => $msg));
+		exit;
+	}
+	$ci->session->set_flashdata('error_message', $msg);
 	$to = crm_landing_url();
 	if (trim($to, '/') === 'manager/' . $path) $to = 'manager/profile';
 	redirect($to);

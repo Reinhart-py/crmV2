@@ -8,6 +8,24 @@ class Ci_cron extends CI_Controller {
 		parent::__construct();
 		$this->load->database();
 		$this->load->model('ci_admin_model');
+		$this->_guard();
+	}
+
+	/**
+	 * Runs only from the server's command line (php index.php ci_cron run) or when the URL carries
+	 * ?key= equal to the Cron Secret Key saved in System > Integrations. Anything else gets 403.
+	 */
+	private function _guard()
+	{
+		if ($this->input->is_cli_request()) return;
+		$row = $this->db->where('service_name', 'schedule_cron')->get('ci_integration_settings')->row_array();
+		$expected = !empty($row['api_key']) ? (string)$row['api_key'] : '';
+		$given = (string)$this->input->get_post('key');
+		if (strlen($expected) >= 16 && $given !== '' && hash_equals($expected, $given)) return;
+		http_response_code(403);
+		header('Content-Type: application/json');
+		echo json_encode(array('status' => false, 'message' => 'Forbidden'));
+		exit();
 	}
 
 	public function run()
