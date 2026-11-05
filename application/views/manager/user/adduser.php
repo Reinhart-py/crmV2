@@ -3,35 +3,43 @@
 <!-- Content Wrapper. Contains page content -->
 
 <style>
-/* User Registration: compact layout (look only - same fields, names and behaviour) */
+/* User Registration / Edit User: compact form, label beside field (look only - same fields, names and behaviour) */
 .ureg .content-header{padding:10px 15px 6px}
 .ureg .content-header h1{font-size:20px}
 .ureg .content{padding-top:0}
 .ureg .container{width:100%;max-width:1500px;padding:0 6px}
-.ureg .box{margin-bottom:10px !important;border-radius:6px;box-shadow:none;border:1px solid #e2e8f0}
-.ureg .box-header.with-border{padding:6px 12px !important;border-bottom:1px solid #eef2f7;text-align:left}
-.ureg .box-header .box-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#334155}
-.ureg .box-body{padding:8px 6px 0 !important;display:flex;flex-wrap:wrap}
+.ureg .box{margin-bottom:10px !important;border-radius:8px;box-shadow:none;border:1px solid var(--crm-line, #e2e8f0);background:var(--crm-surface, #fff);overflow:visible}
+.ureg .box-header.with-border{padding:7px 12px !important;border-bottom:1px solid var(--crm-line-soft, #eef2f7);text-align:left;border-left:3px solid var(--crm-ocean, #1e3a8a);border-radius:8px 8px 0 0}
+.ureg .box-header .box-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--crm-ink, #0f172a)}
+.ureg .box-body{padding:10px 8px 2px !important;display:flex;flex-wrap:wrap}
 .ureg .box-body > .row{display:flex;flex-wrap:wrap;margin:0;flex-basis:100%;width:100%}
-.ureg .box-body > [class*="col-"],.ureg .box-body > .row > *{padding:0 6px}
+.ureg .box-body > [class*="col-"],.ureg .box-body > .row > *{padding:0 8px}
 .ureg .box-body > :not(.row):not([class*="col-"]),.ureg .box-body > .row > :not([class*="col-"]){flex-basis:100%}
-.ureg .form-group{margin-bottom:7px !important}
-.ureg .form-group label{font-size:12px !important;margin-bottom:2px !important;color:#475569;font-weight:600}
-.ureg .form-control{height:30px !important;min-height:30px !important;padding:3px 8px !important;font-size:13px !important}
-.ureg textarea.form-control{height:auto;min-height:32px}
+.ureg .form-group{margin-bottom:8px !important}
+.ureg .form-group label{font-size:12px !important;margin-bottom:2px !important;color:var(--crm-ink-2, #334155);font-weight:600}
+.ureg .form-group label span{color:#dc2626}
+.ureg .form-control{height:30px !important;min-height:30px !important;padding:3px 8px !important;font-size:13px !important;border-radius:5px}
+.ureg .form-control:focus{border-color:var(--crm-ocean, #1e3a8a) !important;box-shadow:0 0 0 3px var(--crm-ocean-soft, rgba(30,58,138,.12)) !important;outline:0}
+.ureg .form-control[readonly],.ureg .form-control[disabled]{opacity:.75}
+.ureg textarea.form-control{height:auto;min-height:30px}
 .ureg .input-group{display:flex !important;width:100%}
 .ureg .input-group-addon{display:flex !important;align-items:center;width:auto !important;padding:0 !important;border:0 !important;background:none !important}
-.ureg .input-group-addon select{height:30px !important;max-width:115px !important;font-size:12px !important;border:1px solid #cbd5e1 !important;border-right:0 !important;border-radius:4px 0 0 4px !important;padding:0 4px !important;background:#f8fafc !important}
-.ureg .input-group > .form-control{flex:1 1 auto;min-width:0;width:auto !important;border-radius:0 4px 4px 0 !important}
+.ureg .input-group-addon select{height:30px !important;max-width:115px !important;font-size:12px !important;border:1px solid var(--crm-line, #cbd5e1) !important;border-right:0 !important;border-radius:5px 0 0 5px !important;padding:0 4px !important;background:var(--crm-canvas, #f8fafc) !important;color:inherit}
+.ureg .input-group > .form-control{flex:1 1 auto;min-width:0;width:auto !important;border-radius:0 5px 5px 0 !important}
 .ureg .select2-container .select2-selection--single{height:30px !important}
-.ureg .box-footer{padding:8px 12px;margin-bottom:12px;border-radius:6px}
-@media (max-width:767px){.ureg .box-body [class*="col-"]{flex:0 0 100%;width:100%}}
+/* Sub-groups inside a section */
+.ureg .ureg-sub{margin:6px 8px 8px;padding-bottom:4px;border-bottom:1px dashed var(--crm-line, #e2e8f0);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--crm-ocean, #1e3a8a)}
+.ureg .ureg-sub:first-child{margin-top:0}
+/* Buttons always in view at the bottom */
+.ureg-footer.box-footer{position:sticky;bottom:0;z-index:20;display:flex;justify-content:center;gap:10px;padding:10px 12px !important;margin:6px 0 12px;border:1px solid var(--crm-line, #e2e8f0);border-radius:8px;background:var(--crm-surface, #fff);box-shadow:0 -6px 16px rgba(15,23,42,.08)}
+.ureg-footer.box-footer .btn{min-width:110px;height:34px;font-weight:600}
 /* Label on the left, field on the right */
-.ureg .form-group{display:grid;grid-template-columns:136px minmax(0,1fr);column-gap:8px;align-items:center;position:relative}
+.ureg .form-group{display:grid;grid-template-columns:128px minmax(0,1fr);column-gap:10px;align-items:center;position:relative}
 .ureg .form-group > label{margin:0 !important;line-height:1.2;text-align:right;word-break:break-word}
 .ureg .form-group > :not(label){grid-column:2}
 .ureg .form-group .btn-pwd-eye{top:50% !important;transform:translateY(-50%);bottom:auto !important}
 .ureg .form-group .select2-container{width:100% !important}
+@media (max-width:767px){.ureg .box-body [class*="col-"]{flex:0 0 100%;width:100%}}
 @media (min-width:1200px){.ureg .col-lg-4{width:33.333%}}
 @media (min-width:1700px){.ureg .col-lg-4{width:25%}}
 @media (max-width:575px){.ureg .form-group{grid-template-columns:1fr}.ureg .form-group > label{text-align:left;margin-bottom:2px !important}.ureg .form-group > :not(label){grid-column:1}}
@@ -74,7 +82,7 @@
         <div class="row">
         <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>User Name (Official Email)<span>*</span></label>
+                <label>Login Email<span>*</span></label>
                 <input type="email" class="form-control c_username" name="c_username" required="" onblur="check_cname()" autocomplete="off">
               </div>
             </div>
@@ -86,7 +94,7 @@
             </div>
          <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Category / User Type<span>*</span></label>
+                <label>User Type<span>*</span></label>
                 <select class="form-control" name="user_type" required>                          
                           <option value="">Select</option>
                             <?php if(isset($r_list) && !empty($r_list)){
@@ -209,7 +217,7 @@
 
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                 <label>Contect No</label>
+                 <label>Contact No</label>
                   <div class="input-group">
                         <span class="input-group-addon country-code">
                          <select name="country_code">                          
@@ -228,7 +236,7 @@
 
                 <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                 <label>UAE Alternate Contect No</label>
+                 <label>UAE Alternate No</label>
                   <div class="input-group">
                         <span class="input-group-addon country-code">
                          <select name="country_code2">                          
@@ -278,7 +286,7 @@
 
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>State / Province / Emirate<span>*</span></label>
+                <label>State / Emirate<span>*</span></label>
                  <select id="state" class="form-control" name="state" required >
                  <option value="">Select</option> 
                  </select>
@@ -348,7 +356,7 @@
             </div>
   <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Office Code / Work Location</label>
+                <label>Office / Location</label>
                 <select class="form-control" style="width: 100%;" name="office">
                 <option value="">Select</option>
                   <option value="01 - UAE-Dubai-SZR">01 - UAE-Dubai-SZR</option>
@@ -375,6 +383,7 @@
         <h3 class="box-title">Other Details</h3>
       </div>
       <div class="box-body" >
+            <div class="ureg-sub">Identity &amp; Visa</div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Nationality</label>
@@ -407,14 +416,14 @@
             </div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Passport Number</label>
+                <label>Passport No</label>
                 <input type="text" class="form-control" name="p_no"  >
               </div>
             </div>
             
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Passport Expiry Date</label>
+                <label>Passport Expiry</label>
                 <input type="text" class="form-control datepicker" name="p_exdate"  >
               </div>
             </div>
@@ -426,13 +435,13 @@
             </div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Visa Reference No.</label>
+                <label>Visa Ref. No</label>
                 <input type="text" class="form-control" name="visa_no"  >
               </div>
             </div>
              <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Visa Issue By</label>
+                <label>Visa Issued By</label>
                 <input type="text" class="form-control" name="visa_by"  >
               </div>
             </div>
@@ -444,42 +453,44 @@
             </div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>National ID / EID Number</label>
+                <label>Emirates / National ID</label>
                 <input type="text" class="form-control" name="eid_no"  >
               </div>
             </div>
              <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>EID Expiry Date</label>
+                <label>ID Expiry</label>
                 <input type="text" class="form-control datepicker" name="eid_expiry"  >
               </div>
             </div>
+            <div class="ureg-sub">Emergency Contact</div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Emergency Contact Person Name</label>
+                <label>Contact Name</label>
                 <input type="text" class="form-control" name="h_contact_name"  >
               </div>
             </div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Emergency Contact Person Relation</label>
+                <label>Relation</label>
                 <input type="text" class="form-control" name="h_contact_relation"  >
               </div>
             </div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Emergency Contact Person Contact Number</label>
+                <label>Contact No</label>
                 <input type="text" class="form-control only_digit" name="h_contact_no"  >
               </div>
             </div>
 
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>Emergency Contact Person ALternate Contact Number</label>
+                <label>Alternate No</label>
                 <input type="text" class="form-control only_digit" name="h_contact_no2"  >
               </div>
             </div>
            
+            <div class="ureg-sub">Bank Details</div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Bank Name</label>
@@ -503,13 +514,13 @@
              
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label> Bank Account Number</label>
+                <label>Account No</label>
                 <input type="text" class="form-control" name="bank_no"  >
               </div>
             </div>
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>IFSC / Sort Code / Bank Branch Code</label>
+                <label>IFSC / Sort / Branch</label>
                 <input type="text" class="form-control" name="ifsc"  >
               </div>
             </div>
@@ -536,7 +547,7 @@
         
       </div>
       
-      <div class="box-footer btn-center">
+      <div class="box-footer btn-center ureg-footer">
                 <button id="add_btn" type="submit" class="btn btn-info">Submit</button>
                 <button type="reset" class="btn btn-default">Cancel</button>
               </div>
