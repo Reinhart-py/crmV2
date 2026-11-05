@@ -699,38 +699,60 @@ $(function() {
   
 </aside>
 
-<!-- Header buttons: a small label right under the button instead of the browser's own hover text (which can show far from the cursor). -->
+<!-- Hover help on every page: the text from title="..." shows right next to the cursor (the browser's own hover text can appear far away).
+     The title is only taken off while hovering and put back after, so forms and other scripts still see it. -->
 <style>
-  .hdr-tip { position: fixed; z-index: 1000000; pointer-events: none; background: #0f172a; color: #fff; font-size: 12px; font-weight: 600; line-height: 1.3; padding: 5px 9px; border-radius: 6px; white-space: nowrap; box-shadow: 0 6px 18px rgba(0,0,0,.18); opacity: 0; transform: translateY(-3px); transition: opacity .12s, transform .12s; }
-  .hdr-tip.show { opacity: 1; transform: none; }
+  .hdr-tip { position: fixed; left: 0; top: 0; z-index: 1000000; pointer-events: none; background: #0f172a; color: #fff; font-size: 12px; font-weight: 600; line-height: 1.35; padding: 5px 9px; border-radius: 6px; max-width: 320px; white-space: normal; overflow-wrap: anywhere; box-shadow: 0 6px 18px rgba(0,0,0,.18); opacity: 0; transition: opacity .1s; }
+  .hdr-tip.show { opacity: 1; }
   [data-theme="dark"] .hdr-tip { background: #f8fafc; color: #0f172a; }
 </style>
 <script>
 (function () {
   function init() {
-    var tip = document.createElement('div');
+    var tip = document.createElement('div'), cur = null, timer = null, mx = 0, my = 0;
     tip.className = 'hdr-tip';
     tip.setAttribute('role', 'tooltip');
     document.body.appendChild(tip);
-    var els = document.querySelectorAll('.header-quick-actions [title]');
-    Array.prototype.forEach.call(els, function (el) {
+    function place() {
+      var w = tip.offsetWidth, h = tip.offsetHeight, x = mx + 12, y = my + 18;
+      if (x + w > window.innerWidth - 6) x = Math.max(6, mx - w - 10);
+      if (y + h > window.innerHeight - 6) y = Math.max(6, my - h - 10);
+      tip.style.left = x + 'px';
+      tip.style.top = y + 'px';
+    }
+    function hide() {
+      clearTimeout(timer);
+      if (cur) {
+        if (!cur.hasAttribute('title') && cur.__crmTip != null) cur.setAttribute('title', cur.__crmTip);
+        cur = null;
+      }
+      tip.classList.remove('show');
+    }
+    document.addEventListener('mouseover', function (e) {
+      if (cur && cur.contains(e.target)) return;
+      hide();
+      var el = e.target && e.target.closest ? e.target.closest('[title]') : null;
+      if (!el || el === document.documentElement || /^(OPTION|IFRAME|HTML|BODY)$/.test(el.tagName) || el.hasAttribute('data-original-title')) return;
       var t = el.getAttribute('title');
-      if (!t) return;
-      el.setAttribute('data-tip', t);
-      if (!el.getAttribute('aria-label')) el.setAttribute('aria-label', t);
+      if (!t || !t.trim()) return;
+      cur = el;
+      el.__crmTip = t;
       el.removeAttribute('title');
-      el.addEventListener('mouseenter', function () {
-        tip.textContent = el.getAttribute('data-tip');
-        var r = el.getBoundingClientRect(), w = tip.offsetWidth;
-        var x = Math.min(window.innerWidth - w - 8, Math.max(8, r.left + r.width / 2 - w / 2));
-        tip.style.left = x + 'px';
-        tip.style.top = (r.bottom + 8) + 'px';
-        tip.classList.add('show');
-      });
-      el.addEventListener('mouseleave', function () { tip.classList.remove('show'); });
-      el.addEventListener('click', function () { tip.classList.remove('show'); });
-    });
-    window.addEventListener('scroll', function () { tip.classList.remove('show'); }, { passive: true });
+      if (!el.getAttribute('aria-label') && !el.textContent.trim()) el.setAttribute('aria-label', t);
+      mx = e.clientX; my = e.clientY;
+      timer = setTimeout(function () { tip.textContent = t; tip.classList.add('show'); place(); }, 120);
+    }, true);
+    document.addEventListener('mousemove', function (e) {
+      mx = e.clientX; my = e.clientY;
+      if (cur && tip.classList.contains('show')) place();
+    }, { passive: true, capture: true });
+    document.addEventListener('mouseout', function (e) {
+      if (cur && (!e.relatedTarget || !cur.contains(e.relatedTarget))) hide();
+    }, true);
+    document.addEventListener('mousedown', hide, true);
+    document.addEventListener('keydown', hide, true);
+    window.addEventListener('scroll', hide, { passive: true, capture: true });
+    window.addEventListener('blur', hide);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
