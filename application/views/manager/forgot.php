@@ -9,12 +9,18 @@
   <link rel="icon" type="image/png" href="<?php echo base_url(); ?>assets/logo.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-auth.css?v=20261105_2">
+  <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-auth.css?v=20261105_4">
 </head>
 <body class="auth-page">
   <div class="auth-shell">
 <?php require(APPPATH . 'views/manager/elements/auth_visual.php'); ?>
     <main class="auth-panel">
+      <div class="sp-top sp-top-end">
+        <a href="<?php echo base_url(); ?>support" class="auth-support-btn" title="Get help from our support team">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14v-3a9 9 0 0 1 18 0v3"></path><path d="M21 15a2 2 0 0 1-2 2h-1v-5h1a2 2 0 0 1 2 2z"></path><path d="M3 15a2 2 0 0 0 2 2h1v-5H5a2 2 0 0 0-2 2z"></path><path d="M18 17v1a3 3 0 0 1-3 3h-3"></path></svg>
+          Support
+        </a>
+      </div>
      <div class="auth-panel-inner">
       <div class="auth-brand"><img src="<?php echo base_url(); ?>assets/logo.png" alt="Seven Strokes"></div>
       <h1 class="auth-title">Forgot Password</h1>

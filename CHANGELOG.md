@@ -1,3 +1,13 @@
+## [2026-11-05] - Support Page, Live Chat and New Sign In Panel
+### Added
+- Public Support page (`/support`) with a Support button on the Sign In, Forgot Password and Set New Password pages. Visitors leave name, phone, optional email and the issue, then chat live with an available agent.
+- When no agent is available, or nobody replies within 3 minutes, the request and conversation are emailed to the IT team (it@7strokes.ae, or the Helpdesk support email in Integrations) from the noreply SMTP mailbox, with Reply-To set to the visitor.
+- Live Support inbox for agents (`/manager/live-support`, profile menu): Available/Away switch, conversation list, replies, close chat, sound and browser notifications. Admin, Support role or the `live_support` permission.
+- Protection: 5 requests per hour per IP, hidden anti-bot field, CSRF, and chat access by a random token only.
+### Changed
+- Sign-in left panel: centered "Welcome to Seven Strokes CRM" heading, short introduction, three feature tiles (Industry Trusted, AI-Driven Insights, Automated Workflow) and a CRM dashboard illustration drawn in SVG over the existing background image.
+- The 5 minute idle sign-out is paused while an agent is marked Available in Live Support.
+
 ## [2026-11-05] - Password Reset Email Fix
 ### Fixed
 - Password reset emails were sent through a hard-coded mail server of the previous vendor (sender "SRJ CRM", SRJ contact footer), so they were likely filtered as spam, and the result of sending was ignored: the screen always said the link was sent. Now the mailer uses System > Integrations > Email SMTP (or `SMTP_*` in `.env`), reports failures, and logs every send to `application/logs/mail-YYYY-MM-DD.log`.

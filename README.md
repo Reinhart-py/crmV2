@@ -37,6 +37,7 @@ Old CRMs usually feel like using software from 2004—bulky boxes, neon rainbow 
 - [6. Deploy on AWS](#6-deploy-on-aws)
 - [7. Troubleshooting](#7-troubleshooting)
 - [Password reset email setup](#26-password-reset-emails-smtp-setup)
+- [Support page and Live Support](#27-support-page-and-live-support-chat)
 - [Copyright: Can You Claim This CRM?](#copyright--can-you-claim-this-crm)
 
 ---
@@ -438,6 +439,24 @@ The CRM cannot deliver email by itself. It needs a mailbox on your mail server (
 3. The old built-in mailbox `no-reply@storeyourcode.com` from the previous vendor. It only exists so mail does not stop completely. Do not rely on it: mail from it is often filtered as spam.
 
 **Logs:** every send is written to `application/logs/mail-YYYY-MM-DD.log` (`SENT` or `FAILED` with the server error), and each request appears in the admin activity log as `password_reset_request` / `password_reset`. Those log files are not committed to git.
+### 2.7 Support page and Live Support chat
+
+**For people who cannot sign in:** the **Support** button on the Sign In, Forgot Password and Set New Password pages opens `/support` (no login needed). The visitor enters name, phone number, email (optional) and the issue.
+
+- **A support agent is available:** a live chat starts on the same page. Messages update every few seconds.
+- **No agent is available:** the visitor sees "Support is not available right now" and the request is **emailed automatically to the IT team** (`it@7strokes.ae`), sent from the SMTP mailbox in section 2.6 (`noreply@7strokes.ae`). The email has the reference number (`SUP-00012`), name, phone, email, issue and the conversation, and Reply goes straight to the visitor when they gave an email.
+- **An agent is available but nobody replies within 3 minutes:** the same email is sent to IT and the visitor is told.
+
+**For the support team:** open the profile menu (top right) > **Live Support** (`/manager/live-support`). It is available to Admin and the Support role, and to anyone given the `live_support` permission.
+
+1. Switch **Available for chats** on and keep the page open. Agents count as online only while this page is open (it checks in every 3 seconds; after 90 seconds without it they are offline). While Available, the 5 minute idle sign-out is paused.
+2. New chats appear at the top with a sound and a browser notification (allow notifications when asked).
+3. Click a chat, reply (Enter to send), and click **Close chat** when done. Chats already emailed to IT can still be picked up and answered here.
+4. Switch to **Away** when you leave.
+
+**Change the IT email address:** System > Integrations > Helpdesk, field **Support email**. If it is empty, `it@7strokes.ae` is used.
+
+**Limits and data:** 5 requests per hour per IP address, a hidden anti-bot field, CSRF protection. Chats are stored in `ci_support_chats` and `ci_support_messages`, and agent status in `ci_support_agents`. The tables are created automatically the first time the page is opened. Timing values are constants at the top of `application/models/support_model.php`.
 ---
 
 ## 3. Database Migrations

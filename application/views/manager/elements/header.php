@@ -425,6 +425,14 @@
               <span>Change Password</span>
             </a>
           </li>
+          <?php $crm_r = (int)$this->session->userdata('manager_role'); if ($crm_r === 1 || $crm_r === 4 || (function_exists('has_perm') && has_perm('live_support', 'write'))) { ?>
+          <li>
+            <a href="<?php echo base_url(); ?>manager/live-support" class="google-profile-item">
+              <i class="fa fa-headphones"></i>
+              <span>Live Support</span>
+            </a>
+          </li>
+          <?php } ?>
           <li class="gp-group">
             <button type="button" class="google-profile-item gp-group-toggle" id="gpHrToggle" aria-expanded="false" aria-controls="gpHrMenu">
               <i class="fa fa-graduation-cap"></i>

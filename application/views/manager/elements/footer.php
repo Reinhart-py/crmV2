@@ -430,7 +430,8 @@ $(document).ready(function() {
     });
     setInterval(function() {
         crmIdleSecs += 5;
-        if (crmIdleSecs >= crmMaxIdleSecs) {
+        // Live Support inbox sets crmIdleExempt while the agent is marked Available.
+        if (crmIdleSecs >= crmMaxIdleSecs && !window.crmIdleExempt) {
             window.location.href = '<?php echo base_url(); ?>manager/logout?timeout=1';
         }
     }, 5000);

@@ -102,6 +102,9 @@ class Mail_model extends CI_Model {
 		$mail->setFrom($from, $cfg['from_name']);
 		$mail->Sender = $from;
 		$mail->addAddress($to, $to_name);
+		if (!empty($data['reply_to'][0]) && filter_var($data['reply_to'][0], FILTER_VALIDATE_EMAIL)) {
+			$mail->addReplyTo($data['reply_to'][0], isset($data['reply_to'][1]) ? $data['reply_to'][1] : '');
+		}
 		$mail->Subject = $subject;
 		$mail->msgHTML($full_msg);
 		$mail->AltBody = trim(html_entity_decode(strip_tags(str_replace(array('<br>', '<br/>', '<br />', '</p>'), "\n", $message))));

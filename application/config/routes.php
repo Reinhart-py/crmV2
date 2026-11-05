@@ -340,3 +340,9 @@ $route['manager/hr/(:any)'] = 'ci_admin_hr/$1';
 
 $route['sitemap.xml'] = 'ci_admin/sitemap_xml';
 $route['manager/sitemap'] = 'ci_admin/sitemap_html';
+
+// Public support page (sign-in screen) and the agent Live Support inbox
+$route['support'] = 'support/index';
+$route['support/(status|start|poll|send|end)'] = 'support/$1';
+$route['manager/live-support'] = 'ci_admin_support/index';
+$route['manager/live-support/(poll|availability|reply|close)'] = 'ci_admin_support/$1';
