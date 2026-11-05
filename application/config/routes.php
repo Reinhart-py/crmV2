@@ -42,6 +42,8 @@ $route['manager/terms/(:any)'] = "ci_admin_terms/$1";
 
 $route['manager/leads/import'] = "ci_admin_leads/import";
 $route['manager/leads/import_action'] = "ci_admin_leads/import_action";
+$route['manager/leads/import_confirm'] = "ci_admin_leads/import_confirm";
+$route['manager/leads/import_undo'] = "ci_admin_leads/import_undo";
 $route['manager/leads/export'] = "ci_admin_leads/export";
 $route['manager/leads/download_sample_csv'] = "ci_admin_leads/download_sample_csv";
 $route['manager/database'] = "ci_admin_leads/index";

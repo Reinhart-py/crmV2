@@ -2250,17 +2250,27 @@ $data['info2']=$this->if_not_login();
 		$data['is_support'] = crm_can('all_data');
 		$data['can_import'] = true; // checked above (Import Database right)
 
+		// Recent imports: your own, or everyone's for people who see all data
+		$this->_import_tables();
+		$me = (int)$this->session->userdata('manager_id');
+		$this->db->select('b.*, u.name AS by_name, u2.name AS undone_name')
+			->from('ci_import_batches b')
+			->join('ci_user u', 'u.id = b.created_by', 'left')
+			->join('ci_user u2', 'u2.id = b.undone_by', 'left')
+			->order_by('b.id', 'DESC')->limit(25);
+		if (!crm_can('all_data')) $this->db->where('b.created_by', $me);
+		$batches = $this->db->get()->result_array();
+		foreach ($batches as &$b) $b['can_undo'] = empty($b['undone_at']) && (int)$b['imported'] > 0 && $this->_import_can_undo($b);
+		unset($b);
+		$data['batches'] = $batches;
+
 		$this->load->view('manager/leads/import', $data);
 	}
 
-	
-
-
-
+	/** Step 1: read the file, check every row and show what would happen. Nothing is saved yet. */
 	public function import_action()
 	{
 		$this->if_not_login();
-		$role = $this->session->userdata('manager_role');
 		if (!crm_can('leads_import')) {
 			$this->session->set_flashdata('error_message', 'You do not have access to Import Database.');
 			redirect('manager/leads/import');
@@ -2273,38 +2283,260 @@ $data['info2']=$this->if_not_login();
 			return;
 		}
 
-		$file_ext = strtolower(pathinfo($_FILES['csv_file']['name'], PATHINFO_EXTENSION));
-		if ($file_ext !== 'csv') {
+		$file_name = basename((string)$_FILES['csv_file']['name']);
+		if (strtolower(pathinfo($file_name, PATHINFO_EXTENSION)) !== 'csv') {
 			$this->session->set_flashdata('error_message', 'Invalid file type. Please upload a .csv file.');
 			redirect('manager/leads/import');
 			return;
 		}
 
-		$handle = fopen($_FILES['csv_file']['tmp_name'], 'r');
-		if (!$handle) {
+		// Keep the file on the server until the import is confirmed (old ones are cleaned up after a day)
+		$dir = $this->_import_dir();
+		foreach ((array)glob($dir . '*.csv') as $old) {
+			if (is_file($old) && filemtime($old) < time() - 86400) @unlink($old);
+		}
+		$token = bin2hex(random_bytes(16));
+		if (!@move_uploaded_file($_FILES['csv_file']['tmp_name'], $dir . $token . '.csv')) {
 			$this->session->set_flashdata('error_message', 'Could not open the uploaded file.');
 			redirect('manager/leads/import');
 			return;
 		}
 
-		
-		$raw_headers = fgetcsv($handle, 5000, ',');
-		if (!$raw_headers) {
-			fclose($handle);
-			$this->session->set_flashdata('error_message', 'The uploaded CSV file is empty.');
+		$parsed = $this->_import_parse($dir . $token . '.csv');
+		if (!empty($parsed['fatal'])) {
+			@unlink($dir . $token . '.csv');
+			$this->session->set_flashdata('error_message', $parsed['fatal']);
 			redirect('manager/leads/import');
 			return;
 		}
 
-		
+		$prev = $this->session->userdata('import_pending');
+		if (is_array($prev) && !empty($prev['token']) && $prev['token'] !== $token) @unlink($dir . $prev['token'] . '.csv');
+		$this->session->set_userdata('import_pending', array('token' => $token, 'name' => $file_name, 'at' => time()));
+
+		$data = array();
+		$data['info'] = array('title' => 'Manager - Leads', 'page_heading' => 'Import preview');
+		$data['info2'] = $this->if_not_login();
+		$data['token'] = $token;
+		$data['file_name'] = $file_name;
+		$data['rows'] = $parsed['rows'];
+		$data['counts'] = $parsed['counts'];
+		$this->load->view('manager/leads/import_preview', $data);
+	}
+
+	/** Step 2: import the checked file as one batch that can be undone later. */
+	public function import_confirm()
+	{
+		$this->if_not_login();
+		if (!crm_can('leads_import')) {
+			$this->session->set_flashdata('error_message', 'You do not have access to Import Database.');
+			redirect('manager/leads/import');
+			return;
+		}
+		$token = (string)$this->input->post('token');
+		$pending = $this->session->userdata('import_pending');
+		$path = $this->_import_dir() . $token . '.csv';
+		if (!preg_match('/^[a-f0-9]{32}$/', $token) || !is_array($pending) || $pending['token'] !== $token || !is_file($path)) {
+			$this->session->set_flashdata('error_message', 'This import has expired or was already done. Please upload the file again.');
+			redirect('manager/leads/import');
+			return;
+		}
+		$with_dups = $this->input->post('dups') === 'import';
+
+		$parsed = $this->_import_parse($path);
+		if (!empty($parsed['fatal'])) {
+			$this->session->set_flashdata('error_message', $parsed['fatal']);
+			redirect('manager/leads/import');
+			return;
+		}
+
+		$this->_import_tables();
+		$me = (int)$this->session->userdata('manager_id');
+		$this->db->insert('ci_import_batches', array(
+			'file_name' => substr($pending['name'], 0, 255),
+			'created_by' => $me,
+			'created_at' => date('Y-m-d H:i:s'),
+			'total_rows' => $parsed['counts']['total'],
+			'errors' => $parsed['counts']['err'],
+		));
+		$batch_id = (int)$this->db->insert_id();
+
+		$imported = 0;
+		$skipped = 0;
+		foreach ($parsed['rows'] as $r) {
+			if ($r['state'] === 'err') continue;
+			if ($r['state'] === 'dup' && !$with_dups) { $skipped++; continue; }
+			$new_id = $this->comman_model->saveData('ci_leads', $r['data']);
+			if ($new_id) {
+				$this->comman_model->updateData('id', $new_id, array('lead_id' => 100000000 + $new_id), 'ci_leads');
+				$this->db->insert('ci_import_batch_leads', array('batch_id' => $batch_id, 'lead_id' => (int)$new_id));
+				$imported++;
+			}
+		}
+		$this->db->where('id', $batch_id)->update('ci_import_batches', array('imported' => $imported, 'skipped_dups' => $skipped));
+
+		@unlink($path);
+		$this->session->unset_userdata('import_pending');
+
+		$this->ci_admin_model->log_admin_action('lead_import', 'Imported ' . $imported . ' records from ' . $pending['name'] . ' (batch #' . $batch_id . '; ' . $skipped . ' duplicates skipped, ' . $parsed['counts']['err'] . ' rows with problems)', 'SUCCESS');
+
+		if ($imported > 0) {
+			$this->session->set_flashdata('message', 'Imported ' . self::_imp_n($imported, 'record') . ' from ' . html_escape($pending['name']) . '.'
+				. ($skipped ? ' ' . self::_imp_n($skipped, 'duplicate') . ($skipped === 1 ? ' was' : ' were') . ' skipped.' : '')
+				. ' If something is wrong you can undo this import below.');
+		} else {
+			$this->session->set_flashdata('error_message', 'Nothing was imported: every row was a duplicate or had a problem.');
+		}
+		redirect('manager/leads/import');
+	}
+
+	/** Undo an import: removes the records of that batch nobody has worked on yet. */
+	public function import_undo()
+	{
+		$this->if_not_login();
+		if (!crm_can('leads_import')) {
+			$this->session->set_flashdata('error_message', 'You do not have access to Import Database.');
+			redirect('manager/leads/import');
+			return;
+		}
+		$this->_import_tables();
+		$id = (int)$this->input->post('batch_id');
+		$b = $id ? $this->db->get_where('ci_import_batches', array('id' => $id))->row_array() : array();
+		if (empty($b) || !empty($b['undone_at']) || !$this->_import_can_undo($b)) {
+			$this->session->set_flashdata('error_message', 'This import cannot be undone (it was already undone, or it is not yours).');
+			redirect('manager/leads/import');
+			return;
+		}
+
+		$ids = array();
+		foreach ($this->db->select('lead_id')->get_where('ci_import_batch_leads', array('batch_id' => $id))->result_array() as $r) $ids[] = (int)$r['lead_id'];
+
+		// A record counts as worked on when it was edited, moved, or has follow-ups, calls, meetings, orders or pipeline entries
+		$keep = array();
+		if ($ids) {
+			foreach (array_chunk($ids, 500) as $chunk) {
+				$this->db->select('id')->where_in('id', $chunk)
+					->where("((modified IS NOT NULL AND modified <> '') OR (edited_by IS NOT NULL AND edited_by <> 0))", null, false);
+				foreach ($this->db->get('ci_leads')->result_array() as $r) $keep[(int)$r['id']] = true;
+				foreach (array('ci_boleads', 'ci_followup', 'ci_meetings', 'ci_call_logs', 'ci_orders', 'ci_pipeline', 'ci_pipeline_logs', 'ci_lead_transfers', 'ci_kam_client_details', 'ci_service_delivery') as $t) {
+					if (!$this->db->table_exists($t)) continue;
+					foreach ($this->db->select('DISTINCT lead_id', false)->where_in('lead_id', $chunk)->get($t)->result_array() as $r) $keep[(int)$r['lead_id']] = true;
+				}
+			}
+		}
+		$remove = array();
+		foreach ($ids as $lid) if (!isset($keep[$lid])) $remove[] = $lid;
+		$removed = 0;
+		foreach (array_chunk($remove, 500) as $chunk) {
+			$this->db->where_in('id', $chunk)->delete('ci_leads');
+			$removed += $this->db->affected_rows();
+		}
+		$kept = count($ids) - count($remove);
+
+		$this->db->where('id', $id)->update('ci_import_batches', array(
+			'undone_at' => date('Y-m-d H:i:s'),
+			'undone_by' => (int)$this->session->userdata('manager_id'),
+			'undo_removed' => $removed,
+			'undo_kept' => $kept,
+		));
+		$this->ci_admin_model->log_admin_action('lead_delete', 'Undid import batch #' . $id . ' (' . $b['file_name'] . '): ' . $removed . ' records removed, ' . $kept . ' kept because they were already worked on', 'SUCCESS');
+
+		$msg = 'Import undone: ' . self::_imp_n($removed, 'record') . ' removed.';
+		if ($kept) $msg .= ' ' . self::_imp_n($kept, 'record') . ($kept === 1 ? ' was' : ' were') . ' kept because someone has already worked on ' . ($kept === 1 ? 'it.' : 'them.');
+		$this->session->set_flashdata('message', $msg);
+		redirect('manager/leads/import');
+	}
+
+	/** Undo is for the person who imported, or for people who see all data. */
+	private function _import_can_undo($batch)
+	{
+		return (int)$batch['created_by'] === (int)$this->session->userdata('manager_id') || crm_can('all_data');
+	}
+
+	private function _import_dir()
+	{
+		$dir = APPPATH . 'cache/imports/';
+		if (!is_dir($dir)) {
+			@mkdir($dir, 0700, true);
+			@file_put_contents($dir . 'index.html', '<html><head><title>403 Forbidden</title></head><body><p>Directory access is forbidden.</p></body></html>');
+		}
+		return $dir;
+	}
+
+	private function _import_tables()
+	{
+		static $done = false;
+		if ($done) return;
+		$done = true;
+		$this->db->query("CREATE TABLE IF NOT EXISTS ci_import_batches (
+			id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+			file_name VARCHAR(255) NOT NULL DEFAULT '',
+			created_by INT NOT NULL DEFAULT 0,
+			created_at DATETIME NOT NULL,
+			total_rows INT NOT NULL DEFAULT 0,
+			imported INT NOT NULL DEFAULT 0,
+			skipped_dups INT NOT NULL DEFAULT 0,
+			errors INT NOT NULL DEFAULT 0,
+			undone_at DATETIME NULL,
+			undone_by INT NULL,
+			undo_removed INT NOT NULL DEFAULT 0,
+			undo_kept INT NOT NULL DEFAULT 0,
+			KEY created_by (created_by)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		$this->db->query("CREATE TABLE IF NOT EXISTS ci_import_batch_leads (
+			batch_id INT UNSIGNED NOT NULL,
+			lead_id INT NOT NULL,
+			PRIMARY KEY (batch_id, lead_id),
+			KEY lead_id (lead_id)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+	}
+
+	private static function _imp_n($n, $word)
+	{
+		return number_format($n) . ' ' . $word . ($n === 1 ? '' : 's');
+	}
+
+	private static function _imp_phone($v)
+	{
+		$d = preg_replace('/\D/', '', (string)$v);
+		return strlen($d) >= 7 ? substr($d, -9) : '';
+	}
+
+	private static function _imp_company($v)
+	{
+		$c = preg_replace('/[^a-z0-9]/', '', strtolower((string)$v));
+		return strlen($c) >= 3 ? $c : '';
+	}
+
+	/**
+	 * Reads the CSV and returns every row with its record data and a state:
+	 * 'ok' (ready), 'dup' (same company, phone or email as an existing record or an earlier row) or 'err' (cannot be imported).
+	 */
+	private function _import_parse($path)
+	{
+		$handle = @fopen($path, 'r');
+		if (!$handle) return array('fatal' => 'Could not open the uploaded file.');
+
+		$raw_headers = fgetcsv($handle, 5000, ',');
+		if (!$raw_headers) {
+			fclose($handle);
+			return array('fatal' => 'The uploaded CSV file is empty.');
+		}
+
 		$col_index = array();
 		foreach ($raw_headers as $idx => $hdr) {
-			$clean = strtolower(trim(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $hdr)));
+			$clean = strtolower(trim(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', (string)$hdr)));
 			$clean = preg_replace('/[^a-z0-9]/', '', $clean);
 			$col_index[$clean] = $idx;
 		}
+		$has_customer = false;
+		foreach (array('customername', 'customer', 'clientname', 'client') as $a) if (isset($col_index[$a])) $has_customer = true;
+		if (!$has_customer) {
+			fclose($handle);
+			return array('fatal' => 'The file has no "Customer Name" column. Please use the template (Download template) and keep its first row.');
+		}
 
-		$get_val = function($row, $aliases) use ($col_index) {
+		$get_val = function ($row, $aliases) use ($col_index) {
 			foreach ($aliases as $alias) {
 				if (isset($col_index[$alias]) && isset($row[$col_index[$alias]])) {
 					return trim($row[$col_index[$alias]]);
@@ -2313,228 +2545,303 @@ $data['info2']=$this->if_not_login();
 			return '';
 		};
 
-		$imported_count = 0;
-		$row_errors = array();
+		$rows = array();
 		$row_num = 1;
-		$manager_id = $this->session->userdata('manager_id');
-
 		while (($row = fgetcsv($handle, 5000, ',')) !== FALSE) {
 			$row_num++;
-			if (empty(array_filter($row))) {
-				continue;
-			}
-
-			
-			foreach ($row as $k => $val) {
-				$val = trim($val);
-				if (strlen($val) > 0 && in_array($val[0], array('=', '+', '-', '@'))) {
-					$row[$k] = "'" . $val;
-				}
-			}
-
-			$username_val = $get_val($row, array('username', 'user', 'assigneduser', 'agent'));
-			$assigned_user_id = 0;
-			if (!empty($username_val)) {
-				$username_clean = trim(ltrim($username_val, "'=@+-"));
-				$this->db->where("(email = '" . $this->db->escape_str($username_clean) . "' OR c_username = '" . $this->db->escape_str($username_clean) . "' OR name = '" . $this->db->escape_str($username_clean) . "' OR emp_id = '" . $this->db->escape_str($username_clean) . "')", null, false);
-				$u_match = $this->db->get('ci_user')->row_array();
-				if (!empty($u_match['id'])) {
-					$assigned_user_id = (int)$u_match['id'];
-				} else {
-					$row_errors[] = "Row {$row_num}: Username '{$username_val}' does not match any registered user.";
-					continue;
-				}
-			}
-
-			$customer = $get_val($row, array('customername', 'customer', 'clientname', 'client'));
-			if (empty($customer)) {
-				continue;
-			}
-
-			$poc = $get_val($row, array('pocname', 'poc', 'contactperson'));
-			$contact1 = $get_val($row, array('poccontactnumber', 'contact1', 'contactnumber', 'mobile', 'phone'));
-			$alt_contact = $get_val($row, array('alternativecontactnumber', 'altcontact', 'alternatecontact', 'alternativemobilenumber', 'altmobile', 'alternatemobile'));
-			$alt_mobile = $alt_contact;
-			$email = $get_val($row, array('email', 'emailid'));
-			$a_number = $get_val($row, array('accountnumber', 'anumber', 'accountno'));
-			$a_department = $get_val($row, array('accountundervertical', 'adepartment', 'department', 'vertical'));
-			$r_amount = $get_val($row, array('currentmonthlyrevenueamount', 'ramount', 'revenueamount'));
-			$r_date = $get_val($row, array('currentmonthlyrevenuedate', 'rdate', 'revenuedate'));
-			$category = $get_val($row, array('category', 'cat'));
-			if (empty($category)) {
-				$category = 'New';
-			}
-
-			$business_category = $get_val($row, array('industrycategory', 'industrycat', 'businesscategory', 'businesscat'));
-			$industry_category = $business_category;
-			$quote_status = $get_val($row, array('quotestatus', 'quotestat', 'quote'));
-			$quote_mode = $get_val($row, array('quotemode', 'quotemod'));
-			$quote_amount_val = $get_val($row, array('quoteamount', 'quoteamt', 'quotedamount'));
-			$quote_amount = (is_numeric($quote_amount_val) && $quote_amount_val !== '') ? floatval($quote_amount_val) : null;
-			$corporate_tax_status = $get_val($row, array('corporatetaxstatus', 'corporatetax', 'corptax'));
-			$vat_status = $get_val($row, array('vatstatus', 'vat'));
-			$data_source = $get_val($row, array('datasource', 'sourcecategory'));
-			$data_batch_referral_no = $get_val($row, array('databatchreferralnumber', 'databatchreferralno', 'batchreferralno', 'batchno', 'referralno'));
-			$database_category = $get_val($row, array('databasecategory', 'databasecat'));
-			if ($assigned_user_id == 0 && empty($database_category)) {
-				$database_category = 'Non-Allotted Database';
-			}
-			$status_category = $get_val($row, array('statuscategory', 'statuscat', 'lostreason'));
-			$status_remarks = $get_val($row, array('statusremarks', 'statusremark'));
-
-			$dnd_raw = strtolower(trim($get_val($row, array('dncrdnd', 'dncr', 'dnd', 'dndstatus', 'tncrtnd', 'tncr'))));
-			if (in_array($dnd_raw, array('yes', 'y', '1', 'true', 'dnd', 'dncr'))) {
-				$dnd_status = 'Yes';
-			} else {
-				$dnd_status = 'No';
-			}
-			$dnd_check_date = $get_val($row, array('dncrdate', 'dncrcheckdate', 'dndcheckdate', 'checkdate', 'tncrcheckdate'));
-
-			$s_cat = $get_val($row, array('servicecategory', 'scat'));
-			$p_cat = $get_val($row, array('productcategory', 'pcat'));
-			$p_details = $get_val($row, array('productdetails', 'pdetails'));
-			$tl_number = $get_val($row, array('tradelicensenumber', 'tlnumber', 'tradelicense'));
-			$tl_authority = $get_val($row, array('tradelicenseauthority', 'tlauthority', 'authority'));
-			$tl_issue_date = $get_val($row, array('tradelicenseissuedate', 'tlissuedate'));
-			$tl_expire_date = $get_val($row, array('tradelicenseexpirydate', 'tlexpiredate', 'tradelicenseexpiry'));
-			$qty = $get_val($row, array('qty', 'quantity'));
-			$mrc = $get_val($row, array('mrc'));
-			$revenue = $get_val($row, array('revenue'));
-			$mrr = $get_val($row, array('mrr'));
-			if (empty($mrr)) {
-				$mrr = (float)$mrc + (float)$revenue;
-			}
-
-			$location = $get_val($row, array('location'));
-			$status_raw = $get_val($row, array('status'));
-			$status = 36;
-			if (is_numeric($status_raw) && (int)$status_raw > 0) {
-				$status = (int)$status_raw;
-			} else if (!empty($status_raw)) {
-				$st_row = $this->db->like('status', $status_raw)->get('ci_status')->row_array();
-				if (!empty($st_row)) {
-					$status = $st_row['id'];
-				}
-			}
-
-			$close_date = $get_val($row, array('expclosedate', 'closedate', 'expectedclosedate'));
-			$remark = $get_val($row, array('remarks', 'remark'));
-			$address = $get_val($row, array('address'));
-			$country = $get_val($row, array('country'));
-			$state = $get_val($row, array('state'));
-			$city = $get_val($row, array('city'));
-			$poc2 = $get_val($row, array('alternatepocname', 'poc2', 'altpoc'));
-			$contact2 = $get_val($row, array('alternatepoccontactnumber', 'contact2', 'altpoccontact'));
-			$c_partner = $get_val($row, array('channelpartner', 'cpartner'));
-			$otc = $get_val($row, array('onetimecharges', 'otc'));
-			$lead_cat = $get_val($row, array('leadcategory', 'leadcat'));
-			$lead_source = $get_val($row, array('websitesourcelink', 'leadsource', 'source', 'website'));
-			$followup_date = $get_val($row, array('nextfollowupdate', 'followupdate', 'nextfu'));
-			$followup_time = $get_val($row, array('nextfollowuptime', 'followuptime'));
-			$m_date = $get_val($row, array('nextmeetingdate', 'mdate', 'meetingdate'));
-			$m_time = $get_val($row, array('nextmeetingtime', 'mtime', 'meetingtime'));
-
-			$company_status_raw = strtolower(trim($get_val($row, array('companystatus', 'company_status', 'cstatus'))));
-			if (in_array($company_status_raw, array('closed', 'close'))) {
-				$company_status = 'Closed';
-			} elseif (in_array($company_status_raw, array('inactive', 'in-active', 'deactive'))) {
-				$company_status = 'Inactive';
-			} else {
-				$company_status = 'Active';
-			}
-
-			$insert_data = array(
-				'lead_id' => 100000000,
-				'customer' => $customer,
-				'poc' => $poc,
-				'contact1' => $contact1,
-				'alt_mobile' => $alt_mobile,
-				'alt_contact' => $alt_contact,
-				'email' => $email,
-				'a_number' => $a_number,
-				'a_department' => $a_department,
-				'r_amount' => $r_amount,
-				'r_date' => !empty($r_date) ? db_date($r_date) : '',
-				'category' => $category,
-				'company_status' => $company_status,
-				'industry_category' => $industry_category,
-				'business_category' => $business_category,
-				'quote_status' => !empty($quote_status) ? $quote_status : null,
-				'quote_mode' => !empty($quote_mode) ? $quote_mode : null,
-				'quote_amount' => $quote_amount,
-				'corporate_tax_status' => !empty($corporate_tax_status) ? $corporate_tax_status : 'Not Registered',
-				'vat_status' => !empty($vat_status) ? $vat_status : 'Not Registered',
-				'data_source' => !empty($data_source) ? $data_source : '',
-				'data_batch_referral_no' => !empty($data_batch_referral_no) ? $data_batch_referral_no : '',
-				'database_category' => !empty($database_category) ? $database_category : '',
-				'status_category' => !empty($status_category) ? $status_category : '',
-				'status_remarks' => !empty($status_remarks) ? $status_remarks : '',
-				'lost_reason' => !empty($status_category) ? $status_category : null,
-				'dnd_status' => $dnd_status,
-				'dnd_check_date' => !empty($dnd_check_date) ? db_date($dnd_check_date) : '',
-				's_cat' => $s_cat,
-				'p_cat' => $p_cat,
-				'p_details' => $p_details,
-				'tl_number' => $tl_number,
-				'tl_authority' => $tl_authority,
-				'tl_issue_date' => !empty($tl_issue_date) ? db_date($tl_issue_date) : '',
-				'tl_expire_date' => !empty($tl_expire_date) ? db_date($tl_expire_date) : '',
-				'qty' => $qty,
-				'mrc' => $mrc,
-				'revenue' => $revenue,
-				'mrr' => $mrr,
-				'location' => $location,
-				'status' => $status,
-				'close_date' => !empty($close_date) ? db_date($close_date) : '',
-				'remark' => $remark,
-				'address' => $address,
-				'country' => is_numeric($country) ? $country : 0,
-				'state' => is_numeric($state) ? $state : 0,
-				'city' => $city,
-				'poc2' => $poc2,
-				'contact2' => $contact2,
-				'c_partner' => !empty($c_partner) ? $c_partner : 'Seven Strokes',
-				'otc' => $otc,
-				'lead_cat' => $lead_cat,
-				'lead_assign' => $assigned_user_id,
-				'lead_source' => $lead_source,
-				'followup_date' => !empty($followup_date) ? db_date($followup_date) : '',
-				'followup_time' => $followup_time,
-				'm_date' => !empty($m_date) ? db_date($m_date) : '',
-				'm_time' => $m_time,
-				'created_by' => $manager_id,
-				'admin_status' => 1,
-				'created' => date('Y-m-d')
-			);
-
-			$new_id = $this->comman_model->saveData('ci_leads', $insert_data);
-			if ($new_id) {
-				$this->comman_model->updateData('id', $new_id, array('lead_id' => 100000000 + $new_id), 'ci_leads');
-				$imported_count++;
-			}
+			if (empty(array_filter($row, 'strlen'))) continue;
+			$r = $this->_import_row($row, $get_val);
+			$r['line'] = $row_num;
+			$rows[] = $r;
 		}
-
 		fclose($handle);
 
-		if ($imported_count > 0) {
-			$msg = 'Success: ' . $imported_count . ' leads successfully imported!';
-			if (!empty($row_errors)) {
-				$msg .= '<br><br><strong>Row Warnings/Errors:</strong><br>' . implode('<br>', array_slice($row_errors, 0, 10));
+		// Duplicates: phone (last 9 digits), company name (letters and digits only) or email
+		$keys = array('phone' => array(), 'company' => array(), 'email' => array());
+		foreach ($rows as &$r) {
+			$r['keys'] = array('phone' => array(), 'company' => array(), 'email' => array());
+			if ($r['state'] === 'err') continue;
+			$d = $r['data'];
+			foreach (array('contact1', 'contact2', 'alt_contact') as $f) {
+				$p = self::_imp_phone(isset($d[$f]) ? $d[$f] : '');
+				if ($p !== '') $r['keys']['phone'][$p] = true;
 			}
-			$this->session->set_flashdata('message', $msg);
-		} else {
-			$err_msg = 'No valid lead rows could be imported.';
-			if (!empty($row_errors)) {
-				$err_msg .= '<br><br>' . implode('<br>', array_slice($row_errors, 0, 10));
-			}
-			$this->session->set_flashdata('error_message', $err_msg);
+			$c = self::_imp_company($d['customer']);
+			if ($c !== '') $r['keys']['company'][$c] = true;
+			$e = strtolower(trim((string)$d['email']));
+			if ($e !== '' && strpos($e, '@') !== false) $r['keys']['email'][$e] = true;
+			foreach ($r['keys'] as $k => $set) foreach ($set as $v => $_) $keys[$k][$v] = true;
 		}
+		unset($r);
 
-		redirect('manager/leads');
+		$found = array('phone' => array(), 'company' => array(), 'email' => array());
+		$sql_expr = array(
+			'phone' => array("RIGHT(REGEXP_REPLACE(contact1, '[^0-9]', ''), 9)", "RIGHT(REGEXP_REPLACE(contact2, '[^0-9]', ''), 9)", "RIGHT(REGEXP_REPLACE(alt_contact, '[^0-9]', ''), 9)", "RIGHT(REGEXP_REPLACE(mobile, '[^0-9]', ''), 9)"),
+			'company' => array("LOWER(REGEXP_REPLACE(customer, '[^A-Za-z0-9]', ''))"),
+			'email' => array('LOWER(TRIM(email))'),
+		);
+		$owners = array();
+		foreach ($sql_expr as $kind => $exprs) {
+			foreach (array_chunk(array_keys($keys[$kind]), 400) as $chunk) {
+				$in = implode(',', array_map(array($this->db, 'escape'), array_map('strval', $chunk)));
+				$sel = array();
+				foreach ($exprs as $i => $ex) $sel[] = $ex . ' AS k' . $i;
+				$where = array();
+				foreach ($exprs as $ex) $where[] = $ex . ' IN (' . $in . ')';
+				$res = $this->db->query('SELECT id, lead_id, customer, lead_assign, ' . implode(', ', $sel) . ' FROM ci_leads WHERE ' . implode(' OR ', $where) . ' ORDER BY id')->result_array();
+				foreach ($res as $l) {
+					foreach ($exprs as $i => $ex) {
+						$v = (string)$l['k' . $i];
+						if ($v !== '' && isset($keys[$kind][$v]) && !isset($found[$kind][$v])) $found[$kind][$v] = $l;
+					}
+					$owners[(int)$l['lead_assign']] = true;
+				}
+			}
+		}
+		$owner_name = array();
+		unset($owners[0]);
+		if ($owners) foreach ($this->db->select('id, name')->where_in('id', array_keys($owners))->get('ci_user')->result_array() as $u) $owner_name[(int)$u['id']] = $u['name'];
+
+		$labels = array('phone' => 'phone', 'company' => 'company name', 'email' => 'email');
+		$seen = array('phone' => array(), 'company' => array(), 'email' => array());
+		$counts = array('total' => count($rows), 'ok' => 0, 'dup' => 0, 'err' => 0);
+		foreach ($rows as &$r) {
+			if ($r['state'] !== 'err') {
+				$why = array();
+				foreach ($r['keys'] as $kind => $set) {
+					foreach ($set as $v => $_) {
+						if (isset($found[$kind][$v])) {
+							$l = $found[$kind][$v];
+							$a = (int)$l['lead_assign'];
+							$why[] = 'Same ' . $labels[$kind] . ' as ' . $l['lead_id'] . ' ' . $l['customer'] . ' (' . ($a && isset($owner_name[$a]) ? 'assigned to ' . $owner_name[$a] : 'not assigned') . ')';
+							break;
+						}
+						if (isset($seen[$kind][$v])) {
+							$why[] = 'Same ' . $labels[$kind] . ' as row ' . $seen[$kind][$v] . ' of this file';
+							break;
+						}
+					}
+				}
+				foreach ($r['keys'] as $kind => $set) foreach ($set as $v => $_) if (!isset($seen[$kind][$v])) $seen[$kind][$v] = $r['line'];
+				if ($why) {
+					$r['state'] = 'dup';
+					$r['reason'] = implode('; ', array_unique($why));
+				}
+			}
+			unset($r['keys']);
+			$counts[$r['state']]++;
+		}
+		unset($r);
+
+		return array('rows' => $rows, 'counts' => $counts);
 	}
 
-	
+	/** One CSV row to a ci_leads record (same mapping as before), or an error. */
+	private function _import_row($row, $get_val)
+	{
+		static $user_cache = array(), $status_cache = array();
+		$manager_id = $this->session->userdata('manager_id');
 
+		foreach ($row as $k => $val) {
+			$val = trim($val);
+			if (strlen($val) > 0 && in_array($val[0], array('=', '+', '-', '@'))) {
+				$row[$k] = "'" . $val;
+			}
+		}
+
+		$customer = $get_val($row, array('customername', 'customer', 'clientname', 'client'));
+		$out = array('state' => 'ok', 'reason' => '', 'customer' => $customer,
+			'poc' => $get_val($row, array('pocname', 'poc', 'contactperson')),
+			'phone' => $get_val($row, array('poccontactnumber', 'contact1', 'contactnumber', 'mobile', 'phone')),
+			'email' => $get_val($row, array('email', 'emailid')),
+			'assignee' => '');
+
+		$username_val = $get_val($row, array('username', 'user', 'assigneduser', 'agent'));
+		$assigned_user_id = 0;
+		if (!empty($username_val)) {
+			$username_clean = trim(ltrim($username_val, "'=@+-"));
+			$ck = strtolower($username_clean);
+			if (!array_key_exists($ck, $user_cache)) {
+				$this->db->where("(email = '" . $this->db->escape_str($username_clean) . "' OR c_username = '" . $this->db->escape_str($username_clean) . "' OR name = '" . $this->db->escape_str($username_clean) . "' OR emp_id = '" . $this->db->escape_str($username_clean) . "')", null, false);
+				$u_match = $this->db->get('ci_user')->row_array();
+				$user_cache[$ck] = !empty($u_match['id']) ? array((int)$u_match['id'], $u_match['name']) : null;
+			}
+			if ($user_cache[$ck] === null) {
+				$out['state'] = 'err';
+				$out['reason'] = 'Username "' . $username_val . '" does not match any staff member';
+				return $out;
+			}
+			$assigned_user_id = $user_cache[$ck][0];
+			$out['assignee'] = $user_cache[$ck][1];
+		}
+
+		if (empty($customer)) {
+			$out['state'] = 'err';
+			$out['reason'] = 'Customer Name is empty';
+			return $out;
+		}
+
+		$poc = $out['poc'];
+		$contact1 = $out['phone'];
+		$alt_contact = $get_val($row, array('alternativecontactnumber', 'altcontact', 'alternatecontact', 'alternativemobilenumber', 'altmobile', 'alternatemobile'));
+		$alt_mobile = $alt_contact;
+		$email = $out['email'];
+		$a_number = $get_val($row, array('accountnumber', 'anumber', 'accountno'));
+		$a_department = $get_val($row, array('accountundervertical', 'adepartment', 'department', 'vertical'));
+		$r_amount = $get_val($row, array('currentmonthlyrevenueamount', 'ramount', 'revenueamount'));
+		$r_date = $get_val($row, array('currentmonthlyrevenuedate', 'rdate', 'revenuedate'));
+		$category = $get_val($row, array('category', 'cat'));
+		if (empty($category)) {
+			$category = 'New';
+		}
+
+		$business_category = $get_val($row, array('industrycategory', 'industrycat', 'businesscategory', 'businesscat'));
+		$industry_category = $business_category;
+		$quote_status = $get_val($row, array('quotestatus', 'quotestat', 'quote'));
+		$quote_mode = $get_val($row, array('quotemode', 'quotemod'));
+		$quote_amount_val = $get_val($row, array('quoteamount', 'quoteamt', 'quotedamount'));
+		$quote_amount = (is_numeric($quote_amount_val) && $quote_amount_val !== '') ? floatval($quote_amount_val) : null;
+		$corporate_tax_status = $get_val($row, array('corporatetaxstatus', 'corporatetax', 'corptax'));
+		$vat_status = $get_val($row, array('vatstatus', 'vat'));
+		$data_source = $get_val($row, array('datasource', 'sourcecategory'));
+		$data_batch_referral_no = $get_val($row, array('databatchreferralnumber', 'databatchreferralno', 'batchreferralno', 'batchno', 'referralno'));
+		$database_category = $get_val($row, array('databasecategory', 'databasecat'));
+		if ($assigned_user_id == 0 && empty($database_category)) {
+			$database_category = 'Non-Allotted Database';
+		}
+		$status_category = $get_val($row, array('statuscategory', 'statuscat', 'lostreason'));
+		$status_remarks = $get_val($row, array('statusremarks', 'statusremark'));
+
+		$dnd_raw = strtolower(trim($get_val($row, array('dncrdnd', 'dncr', 'dnd', 'dndstatus', 'tncrtnd', 'tncr'))));
+		if (in_array($dnd_raw, array('yes', 'y', '1', 'true', 'dnd', 'dncr'))) {
+			$dnd_status = 'Yes';
+		} else {
+			$dnd_status = 'No';
+		}
+		$dnd_check_date = $get_val($row, array('dncrdate', 'dncrcheckdate', 'dndcheckdate', 'checkdate', 'tncrcheckdate'));
+
+		$s_cat = $get_val($row, array('servicecategory', 'scat'));
+		$p_cat = $get_val($row, array('productcategory', 'pcat'));
+		$p_details = $get_val($row, array('productdetails', 'pdetails'));
+		$tl_number = $get_val($row, array('tradelicensenumber', 'tlnumber', 'tradelicense'));
+		$tl_authority = $get_val($row, array('tradelicenseauthority', 'tlauthority', 'authority'));
+		$tl_issue_date = $get_val($row, array('tradelicenseissuedate', 'tlissuedate'));
+		$tl_expire_date = $get_val($row, array('tradelicenseexpirydate', 'tlexpiredate', 'tradelicenseexpiry'));
+		$qty = $get_val($row, array('qty', 'quantity'));
+		$mrc = $get_val($row, array('mrc'));
+		$revenue = $get_val($row, array('revenue'));
+		$mrr = $get_val($row, array('mrr'));
+		if (empty($mrr)) {
+			$mrr = (float)$mrc + (float)$revenue;
+		}
+
+		$location = $get_val($row, array('location'));
+		$status_raw = $get_val($row, array('status'));
+		$status = 36;
+		if (is_numeric($status_raw) && (int)$status_raw > 0) {
+			$status = (int)$status_raw;
+		} else if (!empty($status_raw)) {
+			$sk = strtolower($status_raw);
+			if (!array_key_exists($sk, $status_cache)) {
+				$st_row = $this->db->like('status', $status_raw)->get('ci_status')->row_array();
+				$status_cache[$sk] = !empty($st_row) ? $st_row['id'] : null;
+			}
+			if ($status_cache[$sk] !== null) {
+				$status = $status_cache[$sk];
+			}
+		}
+
+		$close_date = $get_val($row, array('expclosedate', 'closedate', 'expectedclosedate'));
+		$remark = $get_val($row, array('remarks', 'remark'));
+		$address = $get_val($row, array('address'));
+		$country = $get_val($row, array('country'));
+		$state = $get_val($row, array('state'));
+		$city = $get_val($row, array('city'));
+		$poc2 = $get_val($row, array('alternatepocname', 'poc2', 'altpoc'));
+		$contact2 = $get_val($row, array('alternatepoccontactnumber', 'contact2', 'altpoccontact'));
+		$c_partner = $get_val($row, array('channelpartner', 'cpartner'));
+		$otc = $get_val($row, array('onetimecharges', 'otc'));
+		$lead_cat = $get_val($row, array('leadcategory', 'leadcat'));
+		$lead_source = $get_val($row, array('websitesourcelink', 'leadsource', 'source', 'website'));
+		$followup_date = $get_val($row, array('nextfollowupdate', 'followupdate', 'nextfu'));
+		$followup_time = $get_val($row, array('nextfollowuptime', 'followuptime'));
+		$m_date = $get_val($row, array('nextmeetingdate', 'mdate', 'meetingdate'));
+		$m_time = $get_val($row, array('nextmeetingtime', 'mtime', 'meetingtime'));
+
+		$company_status_raw = strtolower(trim($get_val($row, array('companystatus', 'company_status', 'cstatus'))));
+		if (in_array($company_status_raw, array('closed', 'close'))) {
+			$company_status = 'Closed';
+		} elseif (in_array($company_status_raw, array('inactive', 'in-active', 'deactive'))) {
+			$company_status = 'Inactive';
+		} else {
+			$company_status = 'Active';
+		}
+
+		$out['data'] = array(
+			'lead_id' => 100000000,
+			'customer' => $customer,
+			'poc' => $poc,
+			'contact1' => $contact1,
+			'alt_mobile' => $alt_mobile,
+			'alt_contact' => $alt_contact,
+			'email' => $email,
+			'a_number' => $a_number,
+			'a_department' => $a_department,
+			'r_amount' => $r_amount,
+			'r_date' => !empty($r_date) ? db_date($r_date) : '',
+			'category' => $category,
+			'company_status' => $company_status,
+			'industry_category' => $industry_category,
+			'business_category' => $business_category,
+			'quote_status' => !empty($quote_status) ? $quote_status : null,
+			'quote_mode' => !empty($quote_mode) ? $quote_mode : null,
+			'quote_amount' => $quote_amount,
+			'corporate_tax_status' => !empty($corporate_tax_status) ? $corporate_tax_status : 'Not Registered',
+			'vat_status' => !empty($vat_status) ? $vat_status : 'Not Registered',
+			'data_source' => !empty($data_source) ? $data_source : '',
+			'data_batch_referral_no' => !empty($data_batch_referral_no) ? $data_batch_referral_no : '',
+			'database_category' => !empty($database_category) ? $database_category : '',
+			'status_category' => !empty($status_category) ? $status_category : '',
+			'status_remarks' => !empty($status_remarks) ? $status_remarks : '',
+			'lost_reason' => !empty($status_category) ? $status_category : null,
+			'dnd_status' => $dnd_status,
+			'dnd_check_date' => !empty($dnd_check_date) ? db_date($dnd_check_date) : '',
+			's_cat' => $s_cat,
+			'p_cat' => $p_cat,
+			'p_details' => $p_details,
+			'tl_number' => $tl_number,
+			'tl_authority' => $tl_authority,
+			'tl_issue_date' => !empty($tl_issue_date) ? db_date($tl_issue_date) : '',
+			'tl_expire_date' => !empty($tl_expire_date) ? db_date($tl_expire_date) : '',
+			'qty' => $qty,
+			'mrc' => $mrc,
+			'revenue' => $revenue,
+			'mrr' => $mrr,
+			'location' => $location,
+			'status' => $status,
+			'close_date' => !empty($close_date) ? db_date($close_date) : '',
+			'remark' => $remark,
+			'address' => $address,
+			'country' => is_numeric($country) ? $country : 0,
+			'state' => is_numeric($state) ? $state : 0,
+			'city' => $city,
+			'poc2' => $poc2,
+			'contact2' => $contact2,
+			'c_partner' => !empty($c_partner) ? $c_partner : 'Seven Strokes',
+			'otc' => $otc,
+			'lead_cat' => $lead_cat,
+			'lead_assign' => $assigned_user_id,
+			'lead_source' => $lead_source,
+			'followup_date' => !empty($followup_date) ? db_date($followup_date) : '',
+			'followup_time' => $followup_time,
+			'm_date' => !empty($m_date) ? db_date($m_date) : '',
+			'm_time' => $m_time,
+			'created_by' => $manager_id,
+			'admin_status' => 1,
+			'created' => date('Y-m-d')
+		);
+		return $out;
+	}
 
 	public function download_sample_csv()
 	{

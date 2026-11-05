@@ -28,10 +28,10 @@
             <input type="file" name="csv_file" id="csv_file" accept=".csv,text/csv" required style="position:absolute; left:-9999px;">
           </div>
           <div class="sx-card-b" style="padding-top:0;">
-            <p class="sx-help"><i class="fa fa-info-circle"></i> Customer Name is required on every row. Columns are matched to fields by their header names, so start from the template.</p>
+            <p class="sx-help"><i class="fa fa-info-circle"></i> Customer Name is required on every row. Columns are matched to fields by their header names, so start from the template. You will see every row and any duplicates before anything is saved.</p>
           </div>
           <div class="sx-card-f">
-            <button type="submit" class="btn btn-primary"><i class="fa fa-upload"></i> Import records</button>
+            <button type="submit" class="btn btn-primary" id="import_go"><i class="fa fa-search"></i> Upload and check</button>
             <a href="<?php echo base_url(); ?>manager/leads" class="btn btn-default">Cancel</a>
           </div>
         </form>
@@ -40,6 +40,47 @@
         <?php } ?>
       </div>
     </div>
+
+    <?php $h = function ($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }; $batches = isset($batches) ? $batches : array(); ?>
+    <div class="sx-card">
+      <div class="sx-card-h"><h3><i class="fa fa-history"></i> Recent imports</h3></div>
+      <?php if (!$batches) { ?>
+        <div class="sx-card-b"><div class="sx-empty"><i class="fa fa-inbox"></i> No imports yet.</div></div>
+      <?php } else { ?>
+      <div class="sx-table-wrap">
+        <table class="sx-table sx-cards">
+          <thead><tr><th>When</th><th>File</th><th>By</th><th>Imported</th><th>Skipped</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+          <?php foreach ($batches as $b) { ?>
+            <tr>
+              <td data-l="When" class="nw"><?php echo $h(date('d-m-Y H:i', strtotime($b['created_at']))); ?></td>
+              <td data-l="File"><?php echo $h($b['file_name']); ?></td>
+              <td data-l="By"><?php echo $h($b['by_name']); ?></td>
+              <td data-l="Imported"><span><b><?php echo number_format((int)$b['imported']); ?></b> of <?php echo number_format((int)$b['total_rows']); ?></span></td>
+              <td data-l="Skipped"><?php
+                $sk = array();
+                if ((int)$b['skipped_dups']) $sk[] = number_format((int)$b['skipped_dups']) . ' duplicates';
+                if ((int)$b['errors']) $sk[] = number_format((int)$b['errors']) . ' with problems';
+                echo $sk ? $h(implode(', ', $sk)) : '<span class="text-muted">-</span>';
+              ?></td>
+              <td data-l="Status"><?php if (!empty($b['undone_at'])) { ?>
+                <span class="chip na">Undone</span>
+                <div class="text-muted" style="font-size:12.5px;"><?php echo $h(date('d-m-Y H:i', strtotime($b['undone_at'])) . ($b['undone_name'] ? ' by ' . $b['undone_name'] : '') . ': ' . number_format((int)$b['undo_removed']) . ' removed' . ((int)$b['undo_kept'] ? ', ' . number_format((int)$b['undo_kept']) . ' kept (already worked on)' : '')); ?></div>
+              <?php } else { ?><span class="chip ok">Imported</span><?php } ?></td>
+              <td data-l="" class="nw"><?php if (!empty($b['can_undo'])) { ?>
+                <form action="<?php echo base_url(); ?>manager/leads/import_undo" method="post" class="imp-undo" style="margin:0;">
+                  <input type="hidden" name="batch_id" value="<?php echo (int)$b['id']; ?>">
+                  <button type="submit" class="btn btn-default btn-sm" data-n="<?php echo (int)$b['imported']; ?>"><i class="fa fa-undo"></i> Undo</button>
+                </form>
+              <?php } ?></td>
+            </tr>
+          <?php } ?>
+          </tbody>
+        </table>
+      </div>
+      <?php } ?>
+    </div>
+    <p class="sx-help"><i class="fa fa-info-circle"></i> Undo removes the records of that import that nobody has worked on yet. Records that were edited, moved, or have follow-ups, calls, meetings or orders are kept.</p>
   </section>
 </div>
 
@@ -60,7 +101,18 @@
   zone.addEventListener('drop', function (ev) {
     if (ev.dataTransfer && ev.dataTransfer.files.length) { input.files = ev.dataTransfer.files; show(); }
   });
+  var form = document.getElementById('import_form');
+  if (form) form.addEventListener('submit', function () {
+    var b = document.getElementById('import_go');
+    setTimeout(function () { b.disabled = true; b.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Checking...'; }, 0);
+  });
 })();
+document.querySelectorAll('form.imp-undo').forEach(function (f) {
+  f.addEventListener('submit', function (ev) {
+    var n = f.querySelector('button').getAttribute('data-n');
+    if (!confirm('Undo this import? Up to ' + n + ' records will be removed. Records someone has already worked on are kept.')) ev.preventDefault();
+  });
+});
 </script>
 
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>
