@@ -99,6 +99,16 @@ $enabled = ((int)$p['admin_status'] === 1);
 @media (max-width:1399px){.uview .uv-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:991px){.uview .uv-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:575px){.uview .uv-grid{grid-template-columns:1fr}.uview .uv-grid > div{grid-template-columns:110px minmax(0,1fr)}}
+/* Presentation: one font, larger values, softer labels */
+.uview, .uview .content-header h1, .uview .btn{font-family:"Plus Jakarta Sans","Inter",-apple-system,"Segoe UI",sans-serif}
+.uview .content-header h1{text-align:left;font-size:22px;font-weight:700;letter-spacing:-.02em;color:var(--crm-ink,#0f172a)}
+.uview .uv-id h2{font-size:21px;letter-spacing:-.02em}
+.uview .uv-av{width:56px;height:56px;font-size:20px;letter-spacing:.02em}
+.uview .uv-sec-h{font-size:12.5px;letter-spacing:.06em;padding:9px 14px}
+.uview .uv-grid > div{padding:6px 0}
+.uview .uv-grid dt{font-size:12.5px;font-weight:500}
+.uview .uv-grid dd{font-size:13.5px;font-weight:500}
+.uview .uv-grid dd.empty{font-weight:400}
 </style>
 <div class="content-wrapper uview">
   <section class="content-header">

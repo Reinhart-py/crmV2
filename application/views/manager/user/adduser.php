@@ -51,6 +51,16 @@
 .ureg-progress .todo{color:var(--crm-muted,#64748b);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ureg-progress .cnt{white-space:nowrap}
 @media (max-width:575px){.ureg-progress .bar,.ureg-progress .todo{display:none}.ureg-footer.box-footer .btn{min-width:84px}}
+/* Presentation: one font, calmer labels, slightly larger text in the fields */
+.ureg, .ureg .content-header h1, .ureg .form-control, .ureg .btn, .ureg select, .ureg-footer{font-family:"Plus Jakarta Sans","Inter",-apple-system,"Segoe UI",sans-serif}
+.ureg .content-header h1{text-align:left;font-size:22px !important;font-weight:700;letter-spacing:-.02em;color:var(--crm-ink,#0f172a)}
+.ureg .box-header .box-title{font-size:12.5px;letter-spacing:.06em}
+.ureg .form-group > label{font-size:12.5px !important;font-weight:500 !important;color:var(--crm-ink-2,#475569) !important}
+.ureg .form-group > label span{font-weight:700}
+.ureg .form-control{font-size:13.5px !important;color:var(--crm-ink,#0f172a)}
+.ureg .form-control::placeholder{color:var(--crm-muted,#94a3b8);opacity:1}
+.ureg .ureg-sub{font-size:11.5px;letter-spacing:.07em}
+.ureg-progress{font-size:12.5px}
 </style>
 <div class="content-wrapper ureg"> 
   

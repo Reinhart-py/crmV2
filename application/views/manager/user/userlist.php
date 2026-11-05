@@ -117,10 +117,37 @@ $filters = array('mgr' => 'Manager', 'cat' => 'Category', 'des' => 'Designation'
 .ulist .acts a.danger:hover{border-color:#dc2626;color:#dc2626}
 .ulist .dataTables_wrapper .dataTables_filter input,.ulist .dataTables_wrapper .dataTables_length select{height:30px;border-radius:6px}
 @media (max-width:767px){.ulist .ul-count{margin-left:0;width:100%}.ulist .ul-pop{min-width:200px}.ulist .ul-alert small{margin-left:0;width:100%}}
+/* Presentation: one font, clear title, summary tiles, left-aligned readable table */
+.ulist, .ulist .content-header h1, .ulist table, .ulist .btn, .ulist input, .ulist select{font-family:"Plus Jakarta Sans","Inter",-apple-system,"Segoe UI",sans-serif}
+.ulist .content-header{padding:14px 15px 10px}
+.ulist .content-header h1{text-align:left;font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.2;color:var(--crm-ink,#0f172a)}
+.ulist .content-header h1 small{display:block;margin-top:3px;font-size:12.5px;font-weight:500;letter-spacing:0;color:var(--crm-muted,#64748b)}
+.ulist .ul-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 10px}
+.ulist .ul-kpi{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;border:1px solid var(--crm-line,#e2e8f0);background:var(--crm-surface,#fff);cursor:pointer;transition:border-color .15s,box-shadow .15s;text-align:left;width:100%;font:inherit;color:inherit}
+.ulist .ul-kpi:hover{border-color:var(--crm-ocean,#1e3a8a);box-shadow:0 4px 14px rgba(15,23,42,.06)}
+.ulist .ul-kpi .ic{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex:0 0 auto;background:var(--crm-ocean-soft,rgba(30,58,138,.1));color:var(--crm-ocean,#1e3a8a)}
+.ulist .ul-kpi.g .ic{background:rgba(22,163,74,.12);color:#15803d}
+.ulist .ul-kpi.r .ic{background:rgba(220,38,38,.1);color:#b91c1c}
+.ulist .ul-kpi.a .ic{background:rgba(245,158,11,.14);color:#b45309}
+.ulist .ul-kpi b{display:block;font-size:20px;font-weight:700;line-height:1.1;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--crm-ink,#0f172a)}
+.ulist .ul-kpi span{display:block;font-size:12px;font-weight:500;color:var(--crm-muted,#64748b);margin-top:2px}
+@media (max-width:991px){.ulist .ul-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.ulist #example_user thead th,.ulist #example_user tbody td{text-align:left !important}
+.ulist #example_user thead th{font-size:11px;letter-spacing:.06em;padding:9px 22px 9px 10px !important}
+.ulist #example_user tbody td{padding:8px 10px !important;font-size:13px;line-height:1.35;font-variant-numeric:tabular-nums}
+.ulist #example_user tbody tr:nth-child(even) td{background:var(--crm-canvas,#fafbfd)}
+.ulist .who{display:flex;align-items:center;gap:10px;min-width:0}
+.ulist .av{width:32px;height:32px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;letter-spacing:.02em;color:#fff;background:var(--crm-ocean,#1e3a8a)}
+.ulist .who > div{min-width:0}
+.ulist .nm{font-size:13.5px;font-weight:600;line-height:1.25}
+.ulist .lg{font-size:12px;margin-top:1px}
+.ulist .emp{font-size:12px;letter-spacing:.02em}
+.ulist .chip{font-size:11.5px;padding:2px 9px}
+.ulist #example_user.dtr-inline.collapsed > tbody > tr > td.dtr-control{padding-left:34px !important;position:relative}
 </style>
 <div class="content-wrapper ulist">
   <section class="content-header">
-    <h1><?php echo $is_hr ? 'Staff' : 'Users'; ?></h1>
+    <h1><?php echo $is_hr ? 'Staff' : 'Users'; ?><small><?php echo $is_hr ? 'Everyone working in the company, their details and documents' : 'Everyone who can sign in, their details and documents'; ?></small></h1>
     <div class="hd-btns">
       <?php if (!empty($list)) { ?><button type="button" class="btn btn-default js-export" title="Download the list as it is filtered now (opens in Excel)"><i class="fa fa-file-excel-o"></i> Export</button><?php } ?>
       <?php if ($can_write) { ?><a href="<?php echo base_url().$base; ?>/add" class="btn btn-primary"><i class="fa fa-user-plus"></i> Add <?php echo $is_hr ? 'Staff' : 'User'; ?></a><?php } ?>
@@ -129,6 +156,14 @@ $filters = array('mgr' => 'Manager', 'cat' => 'Category', 'des' => 'Designation'
   <section class="content">
     <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?>
     <?php echo get_message($this->session->flashdata('message'),'message'); ?>
+    <?php if (!empty($list)) { ?>
+    <div class="ul-kpis">
+      <button type="button" class="ul-kpi js-kpi" data-f="" title="Show everyone"><div class="ic"><i class="fa fa-users"></i></div><div><b><?php echo count($list); ?></b><span>Total <?php echo $is_hr ? 'staff' : 'users'; ?></span></div></button>
+      <button type="button" class="ul-kpi g js-kpi" data-f="st" data-v="Enabled" title="Show enabled only"><div class="ic"><i class="fa fa-check-circle"></i></div><div><b><?php echo (int)$f['st']['Enabled']; ?></b><span>Enabled</span></div></button>
+      <button type="button" class="ul-kpi r js-kpi" data-f="st" data-v="Disabled" title="Show disabled only"><div class="ic"><i class="fa fa-ban"></i></div><div><b><?php echo (int)$f['st']['Disabled']; ?></b><span>Disabled</span></div></button>
+      <button type="button" class="ul-kpi a js-kpi" data-f="prof" data-v="Missing mandatory details" title="Show who still has mandatory details to fill"><div class="ic"><i class="fa fa-pencil-square-o"></i></div><div><b><?php echo (int)$f['prof']['Missing mandatory details']; ?></b><span>Missing mandatory details</span></div></button>
+    </div>
+    <?php } ?>
     <?php if (array_sum($alert) > 0) { ?>
     <div class="ul-alert<?php echo $alert['Expired'] ? '' : ' warn'; ?>">
       <b><i class="fa fa-exclamation-triangle"></i> Document expiry:</b>
@@ -183,7 +218,7 @@ $filters = array('mgr' => 'Manager', 'cat' => 'Category', 'des' => 'Designation'
                 'visa' => isset($exp_csv['Visa']) ? $exp_csv['Visa'] : '', 'eid' => isset($exp_csv['Emirates ID']) ? $exp_csv['Emirates ID'] : '', 'added' => simple_date($li['created'])); ?>
             <tr data-mgr="<?php echo $h($r['mgr']); ?>" data-cat="<?php echo $h($r['cat']); ?>" data-des="<?php echo $h($r['des']); ?>" data-st="<?php echo $r['on'] ? 'Enabled' : 'Disabled'; ?>" data-dep="<?php echo $h($r['dep']); ?>" data-off="<?php echo $h($r['off']); ?>" data-exp="<?php echo $h($r['exp']); ?>" data-prof="<?php echo $h($r['prof']); ?>" data-row="<?php echo $h(json_encode($export)); ?>">
               <td><span class="emp"><?php echo sprintf('EMP-%05d', $id); ?></span></td>
-              <td data-order="<?php echo $h(strtolower($li['name'])); ?>"><a class="nm" href="<?php echo base_url().$base; ?>/view/<?php echo $id; ?>"><?php echo $h($li['name']); ?></a><span class="lg"><?php echo $h($li['c_username']); ?></span></td>
+              <td data-order="<?php echo $h(strtolower($li['name'])); ?>"><?php $ini = ''; foreach (preg_split('/\s+/', trim((string)$li['name'])) as $w) { if ($w !== '' && strlen($ini) < 2) $ini .= strtoupper($w[0]); } $avc = array('#1e3a8a','#0f766e','#7c3aed','#b45309','#be185d','#0369a1','#4d7c0f','#9f1239'); ?><div class="who"><span class="av" style="background:<?php echo $avc[abs(crc32((string)$li['name'])) % count($avc)]; ?>"><?php echo $h($ini !== '' ? $ini : '?'); ?></span><div><a class="nm" href="<?php echo base_url().$base; ?>/view/<?php echo $id; ?>"><?php echo $h($li['name']); ?></a><span class="lg"><?php echo $h($li['c_username']); ?></span></div></div></td>
               <td><?php echo $h($li['manager_name']); ?></td>
               <td><span class="chip"><?php echo $h($li['role']); ?></span><?php if ($r['des'] !== '(Not set)') { ?><span class="lg"><?php echo $h($r['des']); ?></span><?php } ?></td>
               <?php if ($r['pres']) { ?>
@@ -244,7 +279,11 @@ $(document).ready(function(){
     pageLength: 50,
     order: [[0, 'desc']],
     autoWidth: false,
-    columnDefs: [{ targets: [8], orderable: false, searchable: false }]
+    columnDefs: [
+      { targets: [8], orderable: false, searchable: false },
+      // On phones the name, status and actions stay visible; the rest opens under the row
+      { targets: [1], responsivePriority: 1 }, { targets: [8], responsivePriority: 2 }, { targets: [7], responsivePriority: 3 }, { targets: [0], responsivePriority: 9 }
+    ]
   });
   function count(){
     var shown = table.rows({search: 'applied'}).count(), all = table.rows().count();
@@ -307,6 +346,14 @@ $(document).ready(function(){
   $('.ul-pop .q').on('input', function(){
     var q = this.value.toLowerCase();
     showOpts($(this).closest('.ul-f'));
+  });
+  // Summary tiles: show that group only (Total clears the filters)
+  $('.js-kpi').on('click', function(){
+    $('.ul-pop .opts input').prop('checked', false);
+    var k = $(this).data('f'), v = $(this).data('v');
+    if (k) $('.ul-f[data-f=' + k + '] .opts input').each(function(){ if (this.value === v) this.checked = true; });
+    apply();
+    $('html, body').animate({ scrollTop: $('.ul-card').offset().top - 70 }, 200);
   });
   // Expiry banner: show those people (enabled staff only)
   $('.js-exp').on('click', function(){
