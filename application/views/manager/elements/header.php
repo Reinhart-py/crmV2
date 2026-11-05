@@ -69,7 +69,7 @@
 <script src="<?php echo base_url();?>assets/bootstrap/js/jquery.validate.js"></script>
 <link rel="stylesheet" href="<?php echo base_url();?>assets/bootstrap/css/bootstrap-toggle.min.css">
 <script src="<?php echo base_url();?>assets/bootstrap/js/bootstrap-toggle.min.js"></script>
-<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-theme.css?v=20261105_1">
+<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-theme.css?v=20261105_3">
 
 
 

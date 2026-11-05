@@ -1,3 +1,10 @@
+## [2026-11-05] - Multiple Follow-Ups & Client View Redesign
+### Added
+- Add Database and View Database edit: multiple follow-ups per record. A "+ Add follow-up" button adds as many rows as needed (date, time, status, remark), each row has its own remove button, no popup. Every row is saved as its own `ci_followup` record linked to the database record; status is stored in `followup_result`. When editing, all saved follow-ups are listed and new ones can be added; saved rows keep their date and time read-only, while status and remark stay editable (`followup_rows.php`, `crm-lead-form.js`, `ci_admin_leads::add()` / `edit()`).
+- Removing a saved follow-up deletes only that row, only when it belongs to the record being edited, and is written to the admin log. Updates to saved follow-ups are also checked against the record.
+- The lead's own next follow-up date follows the existing rule: it changes only when new follow-ups are added (earliest upcoming new date, otherwise the latest new date). The Exp. Close Date check now uses the latest follow-up date in both forms.
+### Changed
+- KAM Client View (`manager/kam/view/{id}`) redesigned to fit on one screen: slim header with client ID, status, MRR and actions; one card with Contact, Account and Trade License & Compliance columns; compact upcoming tasks table. All fields, links and data logic are unchanged; columns stack on tablets and phones.
 ## [2026-11-05] - Approve & Onboard Fix, Dashboard Responsiveness, Table and Form Fixes
 ### Fixed
 - Back Office "Approve & Onboard" failed with `Unknown column 'sales_ref_no'` on `ci_pipeline`. Added migration `008_pipeline_sales_ref_no.php` (new column next to `db_ref_no` / `lead_ref_no`, filled from existing Sales orders) and wrapped `approve_sales_order()` in a database transaction so an order can no longer be half-approved. A second click on an already approved order now goes straight to onboarding. Two orders (O0000000007, O0000000008) that were left half-approved by the old error now have consistent pipeline rows.

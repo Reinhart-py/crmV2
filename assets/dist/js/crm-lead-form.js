@@ -49,6 +49,88 @@
     return $clone;
   }
 
+  function initPickers($scope) {
+    if ($.fn.datepicker) {
+      $scope.find('.datepicker2').datepicker({ format: 'dd-mm-yyyy', startDate: new Date(), autoclose: true }).on('changeDate', function () {
+        $(this).datepicker('hide');
+      });
+    }
+    if ($.fn.timepicker) {
+      $scope.find('.timepicker').timepicker({ showInputs: false });
+    }
+  }
+
+  function initFollowups($wrap) {
+    if (!$wrap.length || $wrap.data('fuReady')) {
+      return;
+    }
+    $wrap.data('fuReady', true);
+    var $list = $wrap.find('.crm-fu-list');
+    var tpl = $wrap.find('template.crm-fu-template')[0];
+
+    function addRow(withPickers) {
+      var $row = $(tpl.content.cloneNode(true)).children().first();
+      $list.append($row);
+      if (withPickers) {
+        initPickers($row);
+      }
+      return $row;
+    }
+
+    if (!$list.children('.crm-fu-row:not(.is-saved)').length) {
+      addRow(false);
+    }
+
+    $wrap.on('click', '[data-fu-add]', function () {
+      var $row = addRow(true);
+      $row.find('input:visible').first().trigger('focus');
+    });
+
+    $wrap.on('click', '[data-fu-remove]', function () {
+      var $row = $(this).closest('.crm-fu-row');
+      if ($row.hasClass('is-saved')) {
+        if (!window.confirm('Remove this saved follow-up? It will be deleted when you save the form.')) {
+          return;
+        }
+        var id = $row.find('input[name="flead_id[]"]').val();
+        $wrap.append($('<input type="hidden" name="followup_delete[]">').val(id));
+      }
+      $row.remove();
+    });
+  }
+
+  window.crmInitFollowups = function (selector) {
+    $(selector).each(function () {
+      initFollowups($(this));
+    });
+  };
+
+  function followupMirror($followBox, name, labelText, kind) {
+    var input = kind === 'date'
+      ? '<input type="text" class="form-control datepicker2" autocomplete="off" placeholder="DD-MM-YYYY">'
+      : '<div class="input-group bootstrap-timepicker timepicker"><input type="text" class="form-control input-small timepicker" autocomplete="off"><span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span></div>';
+    var $col = $('<div class="col-lg-3 col-md-4 col-sm-6 col-xs-12"><div class="form-group"><label></label>' + input + '</div></div>');
+    $col.find('label').text(labelText);
+    var $copy = $col.find('input');
+    $copy.attr('data-mirror-of', name);
+    function target() {
+      return $followBox.find('.crm-fu-row:not(.is-saved)').first().find('[name="' + name + '"]');
+    }
+    $copy.on('input change changeDate changeTime.timepicker', function () {
+      var $t = target();
+      if ($t.length && $t.val() !== $copy.val()) {
+        $t.val($copy.val()).trigger('change');
+      }
+    });
+    $followBox.on('input change changeDate changeTime.timepicker', '[name="' + name + '"]', function () {
+      var $t = target();
+      if ($t.length && this === $t[0] && $copy.val() !== $t.val()) {
+        $copy.val($t.val());
+      }
+    });
+    return $col;
+  }
+
   function makeCollapsible($box, startOpen) {
     var $header = $box.children('.box-header').first();
     var $body = $box.children('.box-body').first();
@@ -100,7 +182,7 @@
       return /followup/i.test($(this).find('.box-title').first().text());
     }).first();
 
-    $sources.find('[name]').add($followBox.find('[name="followup_date"], [name="followup_time"]')).each(function () {
+    $sources.find('[name]').each(function () {
       var $col = fieldColumn(this);
       if (!$col.length || seen.indexOf($col[0]) !== -1) {
         return;
@@ -113,6 +195,12 @@
         others.push($col);
       }
     });
+
+    if ($followBox.find('[data-crm-followups]').length) {
+      initFollowups($followBox.find('[data-crm-followups]').first());
+      primaries.push({ idx: PRIMARY_FIELDS.indexOf('followup_date'), col: followupMirror($followBox, 'followup_date[]', 'Next Follow Up Date', 'date') });
+      primaries.push({ idx: PRIMARY_FIELDS.indexOf('followup_time'), col: followupMirror($followBox, 'followup_time[]', 'Next Follow Up Time', 'time') });
+    }
 
     primaries.sort(function (a, b) { return a.idx - b.idx; });
     $.each(primaries, function (_, item) {

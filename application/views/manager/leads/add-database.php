@@ -704,34 +704,7 @@
       
       <div class="box-body" >
       
-        <div class="row">
-
-            <div class="col-lg-2 col-sm-6">
-              <div class="form-group">
-                <label>Next Follow Up Date</label>
-                <input type="text" class="form-control datepicker2" name="followup_date" id="followup_date"  >
-              </div>
-            </div>
-
-            <div class="col-lg-2 col-sm-6">
-              <div class="form-group">
-                <label>Next Follow Up Time</label>
-               
-                <div class="input-group bootstrap-timepicker timepicker">
-                  <input  type="text" class="form-control input-small timepicker" name="followup_time">
-                  <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-lg-8 col-sm-6">
-              <div class="form-group">
-                <label>Remark</label>
-                <input type="text" class="form-control" name="followup_remark"  >
-              </div>
-            </div>
-
-        </div>
+        <?php require(APPPATH . 'views/manager/leads/followup_rows.php'); ?>
         </div>
         </div>
 
@@ -1066,25 +1039,33 @@
     
 
    function checkCloseDateValidity() {
-     var fu = $('#followup_date').val();
      var cd = $('#close_date').val();
-     if (fu && cd) {
-       var fuP = fu.split('-');
-       var cdP = cd.split('-');
-       if (fuP.length === 3 && cdP.length === 3) {
-         var fuDate = new Date(fuP[2], fuP[1] - 1, fuP[0]);
-         var cdDate = new Date(cdP[2], cdP[1] - 1, cdP[0]);
-         if (cdDate < fuDate) {
-           alert('Exp. Close Date cannot be previous or past of the Follow Up Date (' + fu + ')!');
-           $('#close_date').val(fu);
-           return false;
+     var cdP = cd ? cd.split('-') : [];
+     if (cdP.length !== 3) {
+       return true;
+     }
+     var cdDate = new Date(cdP[2], cdP[1] - 1, cdP[0]);
+     var fu = '';
+     var fuDate = null;
+     $('form[name=add_form] [name="followup_date[]"]').each(function() {
+       var p = ($(this).val() || '').split('-');
+       if (p.length === 3) {
+         var d = new Date(p[2], p[1] - 1, p[0]);
+         if (!fuDate || d > fuDate) {
+           fuDate = d;
+           fu = $(this).val();
          }
        }
+     });
+     if (fuDate && cdDate < fuDate) {
+       alert('Exp. Close Date cannot be previous or past of the Follow Up Date (' + fu + ')!');
+       $('#close_date').val(fu);
+       return false;
      }
      return true;
    }
 
-   $('#close_date, #followup_date').on('change changeDate', function() {
+   $(document).off('change.crmCloseDate changeDate.crmCloseDate').on('change.crmCloseDate changeDate.crmCloseDate', '#close_date, form[name=add_form] [name="followup_date[]"]', function() {
      checkCloseDateValidity();
    });
 
@@ -1534,6 +1515,6 @@ $(document).ready(function() {
 
 });
 </script>
-<script src="<?php echo base_url(); ?>assets/dist/js/crm-lead-form.js?v=20261104_2"></script>
+<script src="<?php echo base_url(); ?>assets/dist/js/crm-lead-form.js?v=20261105_1"></script>
 <script>jQuery(function(){ crmCompactLeadForm('form[name="add_form"]'); });</script>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

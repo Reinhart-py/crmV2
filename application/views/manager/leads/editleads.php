@@ -797,64 +797,7 @@
       
       <div class="box-body" >
       
-        <div class="row">
-
-        
-            <?php if(!empty($follow_list)){ 
-                foreach($follow_list as $li){
-              ?>
-           <div class="col-lg-2 col-sm-6">
-              <div class="form-group">
-                <label>Date</label>
-                <input type="hidden" name="flead_id[]" value="<?php echo $li['id']; ?>">
-                <input type="text" class="form-control" name="followup_date[]" value="<?php echo simple_date($li['followup_date']); ?>" readonly="">
-                </div>
-            </div>
-
-              <div class="col-lg-2 col-sm-6">
-              <div class="form-group">
-                <label>Time</label>              
-                <input type="text" class="form-control" name="followup_time[]" value="<?php echo $li['followup_time']; ?>" readonly="">
-                </div>
-            </div>
-
-              <div class="col-lg-8 col-sm-6">
-              <div class="form-group">
-                <label>Remark</label>               
-                <input type="text" class="form-control" name="followup_remark[]" value="<?php echo $li['followup_remark']; ?>" >
-                </div>
-            </div>
-            
-           
-          <?php } } ?>
-
-            <div class="col-lg-2 col-sm-6">
-              <div class="form-group">
-                <label>Date</label>
-                <input type="hidden" name="flead_id[]" value="0">
-                <input type="text" class="form-control datepicker2" name="followup_date[]">
-                </div>
-            </div>
-
-               <div class="col-lg-2 col-sm-6">
-              <div class="form-group">
-                <label>Time</label>
-              <div class="input-group bootstrap-timepicker timepicker">              
-                <input type="text" class="form-control input-small timepicker" name="followup_time[]">
-                <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
-                </div>
-                </div>
-            </div>
-
-               <div class="col-lg-8 col-sm-6">
-              <div class="form-group">
-                <label>Remark</label>             
-                <input type="text" class="form-control" name="followup_remark[]">
-                </div>
-            </div>
-          
-
-        </div>
+        <?php require(APPPATH . 'views/manager/leads/followup_rows.php'); ?>
       </div>
     </div>
 
@@ -1257,7 +1200,7 @@
      return true;
    }
 
-   $('#close_date, [name="followup_date[]"]').on('change changeDate', function() {
+   $(document).off('change.crmCloseDate changeDate.crmCloseDate').on('change.crmCloseDate changeDate.crmCloseDate', '#close_date, [name="followup_date[]"]', function() {
      checkCloseDateValidity();
    });
 
@@ -1643,6 +1586,6 @@ $(document).ready(function() {
 
 });
 </script>
-<script src="<?php echo base_url(); ?>assets/dist/js/crm-lead-form.js?v=20261104_2"></script>
+<script src="<?php echo base_url(); ?>assets/dist/js/crm-lead-form.js?v=20261105_1"></script>
 <script>jQuery(function(){ crmCompactLeadForm('form[name="add_form"]'); });</script>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

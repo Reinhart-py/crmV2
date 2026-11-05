@@ -1056,8 +1056,15 @@ function __construct()
 
 				$lead_assign = $this->input->post('lead_assign');
 
-				$f_date = !empty($followup_date) ? db_date($followup_date) : '';
+				$posted_followups = $this->_posted_followups();
+				$next_fu = $this->_next_followup($posted_followups);
+				$f_date = $next_fu['date'];
+				$followup_time = $next_fu['time'];
 				$c_date = !empty($close_date) ? db_date($close_date) : '';
+				$latest_fu = $this->_latest_followup_date($posted_followups);
+				if(!empty($latest_fu) && !empty($c_date) && strtotime($c_date) < strtotime($latest_fu)){
+					$c_date = $latest_fu;
+				}
 				if(!empty($f_date) && !empty($c_date)){
 					if(strtotime($c_date) < strtotime($f_date)){
 						$c_date = $f_date;
@@ -1212,19 +1219,20 @@ function __construct()
 		     		}
 				 }	
 				 
-				 if(!empty($followup_date)){
-				
-						$so= array(
-							'lead_id'=>$lead_id,
-							'lead_type'=>'lead',
-							'followup_date'=>db_date($followup_date),
-							'followup_time'=>$followup_time,
-							'followup_remark'=>$followup_remark,
-							'user_id'=>$this->session->userdata('manager_id')		     				
-						);
-						$this->comman_model->saveData('ci_followup',$so);
-				
-				}
+				 foreach ($posted_followups as $fu) {
+					if ($fu['date'] === '') {
+						continue;
+					}
+					$this->comman_model->saveData('ci_followup', array(
+						'lead_id' => $lead_id,
+						'lead_type' => 'lead',
+						'followup_date' => $fu['date'],
+						'followup_time' => $fu['time'],
+						'followup_remark' => $fu['remark'],
+						'followup_result' => $fu['status'],
+						'user_id' => $this->session->userdata('manager_id')
+					));
+				 }
 
 				if(!empty($m_date)){
 				
@@ -1258,6 +1266,73 @@ function __construct()
 	}
 
 		
+
+	private function _posted_followups()
+	{
+		$dates = $this->input->post('followup_date');
+		$times = $this->input->post('followup_time');
+		$remarks = $this->input->post('followup_remark');
+		$statuses = $this->input->post('followup_status');
+		$ids = $this->input->post('flead_id');
+		if (!is_array($dates)) {
+			$dates = ($dates === false || $dates === null) ? array() : array($dates);
+			$times = array($times);
+			$remarks = array($remarks);
+			$statuses = array($statuses);
+			$ids = array(0);
+		}
+		$rows = array();
+		foreach (array_values($dates) as $i => $d) {
+			$id = (is_array($ids) && isset($ids[$i])) ? (int)$ids[$i] : 0;
+			$d = trim((string)$d);
+			$rows[] = array(
+				'id' => $id,
+				'date' => ($id === 0 && $d !== '') ? db_date($d) : $d,
+				'time' => (is_array($times) && isset($times[$i])) ? trim((string)$times[$i]) : '',
+				'remark' => (is_array($remarks) && isset($remarks[$i])) ? trim((string)$remarks[$i]) : '',
+				'status' => (is_array($statuses) && isset($statuses[$i])) ? trim((string)$statuses[$i]) : ''
+			);
+		}
+		return $rows;
+	}
+
+	private function _next_followup($rows)
+	{
+		$today = date('Y-m-d');
+		$upcoming = null;
+		$latest = null;
+		foreach ($rows as $fu) {
+			if ($fu['id'] > 0 || $fu['date'] === '') {
+				continue;
+			}
+			$ts = strtotime($fu['date']);
+			if ($ts === false) {
+				continue;
+			}
+			if ($fu['date'] >= $today && ($upcoming === null || $ts < strtotime($upcoming['date']))) {
+				$upcoming = $fu;
+			}
+			if ($latest === null || $ts > strtotime($latest['date'])) {
+				$latest = $fu;
+			}
+		}
+		$pick = $upcoming !== null ? $upcoming : $latest;
+		return array('date' => $pick ? $pick['date'] : '', 'time' => $pick ? $pick['time'] : '');
+	}
+
+	private function _latest_followup_date($rows)
+	{
+		$latest = '';
+		foreach ($rows as $fu) {
+			if ($fu['id'] > 0 || $fu['date'] === '' || strtotime($fu['date']) === false) {
+				continue;
+			}
+			if ($latest === '' || strtotime($fu['date']) > strtotime($latest)) {
+				$latest = $fu['date'];
+			}
+		}
+		return $latest;
+	}
 
      public function edit($id='',$action='')
 
@@ -1489,40 +1564,44 @@ function __construct()
 		     		}
 				 }
 				 
-				 if(!empty($flead_id)){
-
-					for($i=0;$i<count($flead_id);$i++){
-						if($flead_id[$i]!=0){
-
-							$so= array(								
-								'followup_remark'=>$followup_remark[$i]									     				
-							);
-							$this->comman_model->updateData('id',$flead_id[$i],$so,'ci_followup');
-
-						}else{
-
-							if(!empty($followup_date[$i])){
-								$new_fu = db_date($followup_date[$i]);
-								$so= array(		     				
-									'lead_id'=>$id,
-									'lead_type'=>'lead',
-									'followup_date'=>$new_fu,
-									'followup_time'=>$followup_time[$i],
-									'followup_remark'=>$followup_remark[$i],
-									'user_id'=>$this->session->userdata('manager_id')	     				
-								);
-								$this->comman_model->saveData('ci_followup',$so);
-								$lead_up = array('followup_date'=>$new_fu,'followup_time'=>$followup_time[$i]);
-								if(!empty($c_date) && strtotime($c_date) < strtotime($new_fu)){
-									$lead_up['close_date'] = $new_fu;
-								}
-								$this->comman_model->updateData('id',$id,$lead_up,'ci_leads');
-							}
-							
-							
-						}
-						
+				$fu_lead_id = (int)$id;
+				$fu_delete = $this->input->post('followup_delete');
+				if (is_array($fu_delete) && !empty($fu_delete)) {
+					$fu_delete = array_values(array_filter(array_map('intval', $fu_delete)));
+					if (!empty($fu_delete)) {
+						$this->db->where('lead_id', $fu_lead_id)->where('lead_type', 'lead')->where_in('id', $fu_delete)->delete('ci_followup');
+						$this->ci_admin_model->log_admin_action('followup_delete', 'Removed follow-up(s) #' . implode(', #', $fu_delete) . ' from lead #' . $fu_lead_id, 'SUCCESS');
 					}
+				}
+
+				$new_followups = array();
+				foreach ($this->_posted_followups() as $fu) {
+					if ($fu['id'] > 0) {
+						$this->db->where('id', $fu['id'])->where('lead_id', $fu_lead_id)->where('lead_type', 'lead')->update('ci_followup', array(
+							'followup_remark' => $fu['remark'],
+							'followup_result' => $fu['status']
+						));
+					} elseif ($fu['date'] !== '') {
+						$this->comman_model->saveData('ci_followup', array(
+							'lead_id' => $fu_lead_id,
+							'lead_type' => 'lead',
+							'followup_date' => $fu['date'],
+							'followup_time' => $fu['time'],
+							'followup_remark' => $fu['remark'],
+							'followup_result' => $fu['status'],
+							'user_id' => $this->session->userdata('manager_id')
+						));
+						$new_followups[] = $fu;
+					}
+				}
+				if (!empty($new_followups)) {
+					$next_fu = $this->_next_followup($new_followups);
+					$lead_up = array('followup_date' => $next_fu['date'], 'followup_time' => $next_fu['time']);
+					$latest_fu = $this->_latest_followup_date($new_followups);
+					if (!empty($c_date) && !empty($latest_fu) && strtotime($c_date) < strtotime($latest_fu)) {
+						$lead_up['close_date'] = $latest_fu;
+					}
+					$this->comman_model->updateData('id', $fu_lead_id, $lead_up, 'ci_leads');
 				}
 
 				if(!empty($mlead_id)){
