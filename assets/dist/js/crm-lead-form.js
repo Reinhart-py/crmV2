@@ -27,6 +27,28 @@
     return best;
   }
 
+  function mirrorColumn($original) {
+    var $clone = $original.clone(false, false);
+    $clone.find('[name]').each(function () {
+      var $copy = $(this);
+      var name = $copy.attr('name');
+      var $source = $original.find('[name="' + name + '"]');
+      $copy.removeAttr('name').removeAttr('id').removeAttr('required').attr('data-mirror-of', name);
+      $copy.on('input change changeDate changeTime.timepicker', function () {
+        if ($source.val() !== $copy.val()) {
+          $source.val($copy.val()).trigger('change');
+        }
+      });
+      $source.on('input change changeDate changeTime.timepicker', function () {
+        if ($copy.val() !== $source.val()) {
+          $copy.val($source.val());
+        }
+      });
+    });
+    $clone.find('label').removeAttr('for');
+    return $clone;
+  }
+
   function makeCollapsible($box, startOpen) {
     var $header = $box.children('.box-header').first();
     var $body = $box.children('.box-body').first();
@@ -94,8 +116,12 @@
 
     primaries.sort(function (a, b) { return a.idx - b.idx; });
     $.each(primaries, function (_, item) {
-      item.col.attr('class', item.col.find('textarea').length ? 'col-xs-12' : 'col-lg-3 col-md-4 col-sm-6 col-xs-12');
-      $primaryRow.append(item.col);
+      var $col = item.col;
+      if ($followBox.has($col).length) {
+        $col = mirrorColumn($col);
+      }
+      $col.attr('class', $col.find('textarea').length ? 'col-xs-12' : 'col-lg-3 col-md-4 col-sm-6 col-xs-12');
+      $primaryRow.append($col);
     });
     $.each(others, function (_, $col) {
       $col.attr('class', 'col-lg-3 col-md-4 col-sm-6 col-xs-12');
@@ -119,7 +145,7 @@
     });
 
     $form.children('.box').not($initial).each(function () {
-      makeCollapsible($(this), false);
+      makeCollapsible($(this), $followBox.length > 0 && this === $followBox[0]);
     });
 
     $form.find('input, select, textarea').on('invalid', function () {

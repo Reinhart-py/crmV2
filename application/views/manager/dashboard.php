@@ -247,6 +247,8 @@ if (!function_exists('render_donut_chart_svg')) {
         $current_angle = -M_PI / 2;
         $paths = '';
         $callouts = '';
+        $min_x = 0;
+        $max_x = $w;
         foreach ($items as $it) {
             $pct = $total > 0 ? (($it['count'] / $total) * 100) : (100 / max(1, $n));
             $angle_delta = ($pct / 100) * (2 * M_PI);
@@ -265,8 +267,12 @@ if (!function_exists('render_donut_chart_svg')) {
             $x2_in = $cx + $r_in * cos($next_angle);
             $y2_in = $cy + $r_in * sin($next_angle);
             $d = sprintf("M %.1f %.1f A %d %d 0 %d 1 %.1f %.1f L %.1f %.1f A %d %d 0 %d 0 %.1f %.1f Z", $x1_out, $y1_out, $r_out, $r_out, $large_arc, $x2_out, $y2_out, $x2_in, $y2_in, $r_in, $r_in, $large_arc, $x1_in, $y1_in);
+            $full_ring = ($angle_delta >= (2 * M_PI) - 0.001);
+            if ($full_ring) {
+                $d = sprintf("M %.1f %.1f A %d %d 0 1 1 %.1f %.1f A %d %d 0 1 1 %.1f %.1f Z M %.1f %.1f A %d %d 0 1 0 %.1f %.1f A %d %d 0 1 0 %.1f %.1f Z", $cx - $r_out, $cy, $r_out, $r_out, $cx + $r_out, $cy, $r_out, $r_out, $cx - $r_out, $cy, $cx - $r_in, $cy, $r_in, $r_in, $cx + $r_in, $cy, $r_in, $r_in, $cx - $r_in, $cy);
+            }
             $display_pct = $total > 0 ? number_format(($it['count'] / $total) * 100, 1) . '%' : '0.0%';
-            $paths .= '<path d="' . $d . '" fill="' . $it['color'] . '" stroke="#ffffff" stroke-width="2.5" class="donut-slice" data-label="' . htmlspecialchars($it['label']) . '" data-count="' . (int)$it['count'] . '" data-pct="' . $display_pct . '" data-type="' . $type . '" style="cursor:pointer; transition:transform 0.15s ease, opacity 0.15s ease;" />';
+            $paths .= '<path d="' . $d . '" fill-rule="evenodd" fill="' . $it['color'] . '" stroke="#ffffff" stroke-width="2.5" class="donut-slice" data-label="' . htmlspecialchars($it['label']) . '" data-count="' . (int)$it['count'] . '" data-pct="' . $display_pct . '" data-type="' . $type . '" style="cursor:pointer; transition:transform 0.15s ease, opacity 0.15s ease;" />';
             $mid = $current_angle + $angle_delta / 2;
             $p1_x = $cx + ($r_out + 2) * cos($mid);
             $p1_y = $cy + ($r_out + 2) * sin($mid);
@@ -279,11 +285,16 @@ if (!function_exists('render_donut_chart_svg')) {
             $tx = $p3_x + ($is_right ? 4 : -4);
             $ty = $p3_y + 3.5;
             $lbl = htmlspecialchars($it['label']) . ': ' . (int)$it['count'];
+            $lbl_w = strlen($it['label'] . ': ' . (int)$it['count']) * 7.2;
+            $min_x = min($min_x, $is_right ? $tx : $tx - $lbl_w);
+            $max_x = max($max_x, $is_right ? $tx + $lbl_w : $tx);
             $callouts .= sprintf('<polyline points="%.1f,%.1f %.1f,%.1f %.1f,%.1f" fill="none" stroke="#94a3b8" stroke-width="1.3" />', $p1_x, $p1_y, $p2_x, $p2_y, $p3_x, $p3_y);
             $callouts .= sprintf('<text x="%.1f" y="%.1f" font-size="12" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-weight="700" fill="#0f172a" class="donut-callout-text" text-anchor="%s">%s</text>', $tx, $ty, $anchor, $lbl);
             $current_angle = $next_angle;
         }
-        return '<svg viewBox="0 0 ' . $w . ' ' . $h . '" width="100%" height="' . $h . '" xmlns="http://www.w3.org/2000/svg" style="display:block; margin:0 auto; overflow:visible;"><g>' . $paths . $callouts . '</g></svg>';
+        $vb_x = floor($min_x - 4);
+        $vb_w = ceil($max_x + 4) - $vb_x;
+        return '<svg viewBox="' . $vb_x . ' 0 ' . $vb_w . ' ' . $h . '" width="100%" height="' . $h . '" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="display:block; margin:0 auto; overflow:hidden; max-width:100%;"><g>' . $paths . $callouts . '</g></svg>';
     }
 }
 $curr = !empty($user_currency) ? $user_currency : 'AED';
@@ -1567,11 +1578,17 @@ $(function () {
         };
     }
 
-    function formatChartLabels(list) {
-        return (list || []).map(function(lbl) {
+    function formatChartLabels(list, canvasEl) {
+        list = list || [];
+        var plotWidth = canvasEl && canvasEl.parentNode ? canvasEl.parentNode.clientWidth - 56 : 0;
+        var perLabel = (plotWidth > 0 && list.length) ? plotWidth / list.length : (isMobileAndroid ? 28 : 60);
+        var mode = perLabel >= 54 ? 'full' : (perLabel >= 30 ? 'month' : 'alternate');
+        return list.map(function(lbl, idx) {
             var parts = String(lbl).split('-');
             if (parts.length !== 2) { return lbl; }
-            return isMobileAndroid ? parts[0] : parts[0] + " '" + parts[1];
+            if (mode === 'full') { return parts[0] + " '" + parts[1]; }
+            if (mode === 'month') { return parts[0]; }
+            return (idx % 2 === 0) ? parts[0] : '';
         });
     }
 
@@ -1719,11 +1736,15 @@ $(function () {
     renderAchieveChart('barChartAchieveMy', achieveMonthsMy, achieveTargetMy, achieveDataMy, achieveDatesMy, '<?php echo base_url(); ?>manager/leads');
     renderAchieveChart('barChartAchieveTeam', achieveMonthsTeam, achieveTargetTeam, achieveDataTeam, achieveDatesTeam, '<?php echo base_url(); ?>manager/team/leads');
 
+    var targetLineCharts = [];
+    function drawTargetCharts() {
+    targetLineCharts.forEach(function(ch) { if (ch && typeof ch.destroy === 'function') { ch.destroy(); } });
+    targetLineCharts = [];
     var canvasAchieveLine = document.getElementById('lineChartTargetAchieve');
     if (canvasAchieveLine) {
         var ctxAch = canvasAchieveLine.getContext('2d');
-        new Chart(ctxAch).Line({
-            labels: formatChartLabels((achieveMonthsMy && achieveMonthsMy.length > 0) ? achieveMonthsMy : months),
+        targetLineCharts.push(new Chart(ctxAch).Line({
+            labels: formatChartLabels((achieveMonthsMy && achieveMonthsMy.length > 0) ? achieveMonthsMy : months, canvasAchieveLine),
             datasets: [
                 {
                     label: 'Target',
@@ -1759,15 +1780,15 @@ $(function () {
             scaleFontStyle: '600',
             scaleFontColor: '#0f172a',
             scaleLabel: "<%= Number(value).toLocaleString() %>"
-        });
+        }));
     }
 
     var canvasProjectLine = document.getElementById('lineChartTargetProject');
     if (canvasProjectLine) {
         var ctxProj = canvasProjectLine.getContext('2d');
         var projTargetData = (achieveTargetMy && achieveTargetMy.length > 0) ? achieveTargetMy.slice(0, months.length) : months.map(function(){ return 0; });
-        new Chart(ctxProj).Line({
-            labels: formatChartLabels(months),
+        targetLineCharts.push(new Chart(ctxProj).Line({
+            labels: formatChartLabels(months, canvasProjectLine),
             datasets: [
                 {
                     label: 'Target',
@@ -1803,8 +1824,22 @@ $(function () {
             scaleFontStyle: '600',
             scaleFontColor: '#0f172a',
             scaleLabel: "<%= Number(value).toLocaleString() %>"
-        });
+        }));
     }
+    }
+    drawTargetCharts();
+    var targetChartsWidth = window.innerWidth;
+    var targetChartsTimer = null;
+    $(window).on('resize orientationchange', function() {
+        clearTimeout(targetChartsTimer);
+        targetChartsTimer = setTimeout(function() {
+            if (Math.abs(window.innerWidth - targetChartsWidth) > 40) {
+                targetChartsWidth = window.innerWidth;
+                isMobileAndroid = (window.innerWidth <= 768);
+                drawTargetCharts();
+            }
+        }, 300);
+    });
 
 
     $('.crm-modern-stat-chip').on('click', function(e) {

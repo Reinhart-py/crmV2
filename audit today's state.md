@@ -210,6 +210,10 @@ Fixing the P0 items in section 3 should come before any other work.
 - **Priority**: P1
 - **Files**: `controllers/ci_api.php`, `config/config.php`
 
+### BUG-5. Approve & Onboard failed: missing `ci_pipeline.sales_ref_no` (FIXED 2026-11-05)
+- **Resolution**: migration `008_pipeline_sales_ref_no.php` adds the column and backfills it; `approve_sales_order()` now runs in a transaction.
+- **Priority**: done
+
 ### BUG-4. Schema created at runtime
 - **State**: several models create tables or columns while handling page requests (`ALTER TABLE` in `dashboard_countdata`, `log_admin_action`, campaign tables in `dialer_campaign_model`).
 - **Problem**: the database can differ between servers (BUG-1 is an example). Slow pages and failed requests can happen during schema changes.

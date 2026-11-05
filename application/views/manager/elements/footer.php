@@ -22,6 +22,30 @@
 <script src="<?php echo base_url(); ?>assets/plugins/datatables/dataTables.bootstrap.min.js"></script>
 <script src="https://cdn.datatables.net/rowreorder/1.2.7/js/dataTables.rowReorder.min.js"></script>
 <script src="https://cdn.datatables.net/responsive/2.2.5/js/dataTables.responsive.min.js"></script>
+<script>
+(function ($) {
+  if (!$ || !$.fn || !$.fn.dataTable) {
+    return;
+  }
+  if (window.innerWidth < 992) {
+    $.extend(true, $.fn.dataTable.defaults, { responsive: true });
+  }
+  $(function () {
+    setTimeout(function () {
+      $('.content-wrapper table.table[id^="example"]').each(function () {
+        var $t = $(this);
+        if ($.fn.DataTable.isDataTable(this) || $t.closest('.full-screen-dash').length) {
+          return;
+        }
+        if (!$t.children('thead').length || $t.find('tbody td[colspan]').length || !$t.find('tbody tr').length) {
+          return;
+        }
+        $t.DataTable({ pageLength: 50, responsive: true, order: [] });
+      });
+    }, 0);
+  });
+})(window.jQuery);
+</script>
 <script src="<?php echo base_url(); ?>assets/plugins/countdown/countdown-timer.js"></script>
 <script src="<?php echo base_url(); ?>assets/dist/js/app.min.js"></script>
 <script src="https://cdn.ckeditor.com/4.5.7/standard/ckeditor.js"></script>

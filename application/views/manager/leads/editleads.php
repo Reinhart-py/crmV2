@@ -1643,6 +1643,6 @@ $(document).ready(function() {
 
 });
 </script>
-<script src="<?php echo base_url(); ?>assets/dist/js/crm-lead-form.js?v=20261104_1"></script>
+<script src="<?php echo base_url(); ?>assets/dist/js/crm-lead-form.js?v=20261104_2"></script>
 <script>jQuery(function(){ crmCompactLeadForm('form[name="add_form"]'); });</script>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

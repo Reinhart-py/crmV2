@@ -118,7 +118,7 @@
                                         <td style="text-align: center;">
                                             <?php if (isset($status_filter) && $status_filter === 'followups'): ?>
                                                 <div class="btn-group" style="min-width: 85px;">
-                                                    <button type="button" class="btn btn-sm btn-default" style="border: 1px solid #cbd5e1; font-weight: 600;">Action</button>
+                                                    <button type="button" class="btn btn-sm btn-warning">Action</button>
                                                     <button type="button" class="btn btn-sm btn-warning dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                                                         <span class="caret"></span>
                                                         <span class="sr-only">Toggle Dropdown</span>
@@ -131,7 +131,7 @@
                                                 </div>
                                             <?php elseif (!empty($can_edit_orders)): ?>
                                                 <div class="btn-group" style="min-width: 85px;">
-                                                    <button type="button" class="btn btn-sm btn-default" >Action</button>
+                                                    <button type="button" class="btn btn-sm btn-warning">Action</button>
                                                     <button type="button" class="btn btn-sm btn-warning dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                                                         <span class="caret"></span>
                                                         <span class="sr-only">Toggle Dropdown</span>
@@ -139,7 +139,7 @@
                                                     <ul class="dropdown-menu dropdown-menu-right" role="menu" style="border: 1px solid #000000; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
                                                         <li><a href="<?php echo base_url(); ?>manager/orders/view/<?php echo $ord['id']; ?>" data-toggle="tooltip" title="View" style="font-weight: 600;">View</a></li>
                                                         <li><a href="<?php echo base_url(); ?>manager/orders/add_followup/<?php echo $ord['id']; ?>?return=<?php echo urlencode($fu_return); ?>">Add Follow-Up</a></li>
-                                                        <li><a href="<?php echo base_url(); ?>manager/orders/edit_pending/<?php echo $ord['id']; ?>" data-toggle="tooltip" title="Make Changes" style="font-weight: 600;">Make Changes</a></li>
+                                                        <li><a href="<?php echo base_url(); ?>manager/orders/edit_pending/<?php echo $ord['id']; ?>" data-toggle="tooltip" title="Edit" style="font-weight: 600;">Edit</a></li>
                                                         <?php if ($ord['status'] === 'Fulfilled' || $ord['status'] === 'Completed'): ?>
                                                             <li><a href="<?php echo base_url(); ?>manager/orders/mark_closed_sold/<?php echo $ord['id']; ?>" onclick="return confirm('Mark this completed order as Closed / Sold?');" data-toggle="tooltip" title="Mark as Closed / Sold" style="font-weight: 600;">Mark as Closed / Sold</a></li>
                                                         <?php endif; ?>
@@ -153,7 +153,7 @@
                                                 </div>
                                             <?php else: ?>
                                                 <div class="btn-group" style="min-width: 85px;">
-                                                    <button type="button" class="btn btn-sm btn-default" >Action</button>
+                                                    <button type="button" class="btn btn-sm btn-warning">Action</button>
                                                     <button type="button" class="btn btn-sm btn-warning dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                                                         <span class="caret"></span>
                                                         <span class="sr-only">Toggle Dropdown</span>

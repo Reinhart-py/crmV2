@@ -1,3 +1,13 @@
+## [2026-11-05] - Approve & Onboard Fix, Dashboard Responsiveness, Table and Form Fixes
+### Fixed
+- Back Office "Approve & Onboard" failed with `Unknown column 'sales_ref_no'` on `ci_pipeline`. Added migration `008_pipeline_sales_ref_no.php` (new column next to `db_ref_no` / `lead_ref_no`, filled from existing Sales orders) and wrapped `approve_sales_order()` in a database transaction so an order can no longer be half-approved. A second click on an already approved order now goes straight to onboarding. Two orders (O0000000007, O0000000008) that were left half-approved by the old error now have consistent pipeline rows.
+- Dashboard: My Leads / My Orders donut now draws a full ring when all records share one status, and callout labels (for example "Pending Sales Approval") stay inside the card at every width.
+- Dashboard: Target vs Achievement and Target vs Projection pick their month label format from the real chart width (Mon 'YY, Mon, or every other month) and redraw on resize / rotation, so labels never overlap or get cut.
+- Table headers on list pages are navy with white text again; Action buttons are orange and prominent again on every list page.
+- Open Orders: both Action buttons match View Database; "Make Changes" renamed to "Edit".
+- On screens under 992px every DataTable shows the "+" row expand. List tables that were plain HTML (Pending Sales Approval, Invoices, Payments, KAM Reminders, KAM Report, KAM Task Follow-up) now use the same DataTable setup as View Database. Desktop tables are unchanged.
+- Add Database / View Database edit: Follow-Up date and time stay in the Follow-Up section (open by default); the copies at the top are kept in sync and each value is submitted once.
+- DataTables "Show entries" and search controls wrap on phones instead of being cut off.
 ## [2026-11-04] - Fix View Leads Database Error & My Leads Donut
 ### Fixed
 - My Zone > View Leads failed with `Error Number: 1054 Unknown column 'P.order_ref_no'`. The column does not exist in `ci_pipeline` and no code writes it. Removed that condition from `ci_admin_model::get_Myleads()` (stage `lead`). Leads that already have an order are still hidden by the existing `NOT EXISTS (SELECT 1 FROM ci_orders ...)` check, and user access rules are unchanged.

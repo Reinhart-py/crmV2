@@ -424,6 +424,7 @@ Without SSH you can open `https://your-domain/migration_runner.php?key=YOUR_MIGR
 | `005_finance_and_operations.php` | Invoices, payments, expenses, service delivery, attendance, leaves |
 | `006_orders_and_sales_approval.php` | Order approval fields, sales conversion tracking, lead locking |
 | `007_performance_indexes.php` | Indexes on `ci_leads`, `ci_user`, `ci_orders`, `ci_tasks`, `ci_tickets` |
+| `008_pipeline_sales_ref_no.php` | Adds `ci_pipeline.sales_ref_no` (needed by Approve & Onboard) and fills it from existing Sales orders |
 
 Some tables and columns are also created by the app at runtime the first time a page needs them (for example `ci_dialer_campaigns`, `ci_dialer_progress` and `ci_call_logs.campaign_id` when the Dialer opens). The audit (BUG-4) asks to move these into migrations.
 

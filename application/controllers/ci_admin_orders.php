@@ -1427,7 +1427,14 @@ class Ci_admin_orders extends CI_Controller {
 			return;
 		}
 
+		if (!empty($order['sales_ref_no']) && $order['status'] === 'Sales') {
+			$this->session->set_flashdata('message', "Order #{$order['order_no']} is already approved as Sales #{$order['sales_ref_no']}.");
+			redirect('manager/kam/onboard?order_id=' . $id . '&lead_id=' . (int)$order['lead_id']);
+			return;
+		}
+
 		$sales_ref = $this->ci_admin_model->generate_next_ref('sales');
+		$this->db->trans_start();
 		$this->db->where('id', $id)->update('ci_orders', array(
 			'status' => 'Sales',
 			'approval_status' => 'approved',
@@ -1453,6 +1460,12 @@ class Ci_admin_orders extends CI_Controller {
 			'action_by_name' => $cur_name,
 			'created_at' => $now
 		));
+		$this->db->trans_complete();
+		if ($this->db->trans_status() === FALSE) {
+			$this->session->set_flashdata('error_message', "Order #{$order['order_no']} could not be approved. No changes were saved. Please try again.");
+			redirect('manager/orders/pending_sales_approval');
+			return;
+		}
 
 		$this->ci_admin_model->log_admin_action('sales_approval_granted', "Approved Sales for Order #{$order['order_no']} (Sales #{$sales_ref})", 'SUCCESS', $cur_uid, $cur_name);
 		$ord_owner = !empty($order['created_by']) ? (int)$order['created_by'] : 0;
