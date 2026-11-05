@@ -203,9 +203,9 @@
       <?php } ?>
 
       <?php if (function_exists('chatbot_can') && chatbot_can('access')) { ?>
-      <li class="<?php echo ($route1 == 'chatbot' || $route1 == 'live-support') ? 'active' : ''; ?>"> <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:4px;"><path d="M12 8V4H8"></path><rect x="4" y="8" width="16" height="12" rx="2"></rect><path d="M2 14h2"></path><path d="M20 14h2"></path><path d="M9 13v2"></path><path d="M15 13v2"></path></svg> <span>Chatbot</span> </a>
+      <li class="<?php echo ($route1 == 'chatbot' || $route1 == 'live-support') ? 'active' : ''; ?>"> <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:4px;"><path d="M12 8V4H8"></path><rect x="4" y="8" width="16" height="12" rx="2"></rect><path d="M2 14h2"></path><path d="M20 14h2"></path><path d="M9 13v2"></path><path d="M15 13v2"></path></svg> <span>Chatbot</span> <span class="cb-unread" style="display:none;"></span> </a>
         <ul>
-          <li><a href="<?php echo base_url();?>manager/chatbot"><i class="fa fa-comments"></i>Inbox</a></li>
+          <li><a href="<?php echo base_url();?>manager/chatbot"><i class="fa fa-comments"></i>Inbox <span class="cb-unread" style="display:none;"></span></a></li>
           <?php if (chatbot_can('history')) { ?><li><a href="<?php echo base_url();?>manager/chatbot/history"><i class="fa fa-history"></i>Chat History</a></li><?php } ?>
           <?php if (chatbot_can('settings')) { ?><li><a href="<?php echo base_url();?>manager/chatbot/settings"><i class="fa fa-sliders"></i>Settings</a></li><?php } ?>
         </ul>
@@ -597,7 +597,23 @@ $(function() {
   });
 });
 </script>
-<div class="clearfix"></div>
+<?php if (function_exists('chatbot_can') && chatbot_can('access')) { ?>
+<style>.cb-unread{display:inline-block;background:#dc2626;color:#fff;font-size:10px;font-weight:700;border-radius:10px;min-width:16px;height:16px;line-height:16px;text-align:center;padding:0 4px;margin-left:4px;vertical-align:1px;}</style>
+<script>
+(function () {
+  window.crmCbBadge = function (n) {
+    n = parseInt(n, 10) || 0;
+    $('.cb-unread').not('#lsList .cb-unread').text(n > 99 ? '99+' : n).css('display', n > 0 ? 'inline-block' : 'none');
+  };
+  function load() {
+    $.ajax({ url: '<?php echo base_url(); ?>manager/chatbot/unread', dataType: 'json', cache: false,
+      success: function (r) { if (r && r.ok) window.crmCbBadge(r.unread); } });
+  }
+  $(load);
+  if (!/\/manager\/chatbot\/?$/.test(location.pathname)) setInterval(load, 15000);
+})();
+</script>
+<?php } ?><div class="clearfix"></div>
 
 <aside class="main-sidebar"> 
   
@@ -662,9 +678,9 @@ $(function() {
 
       <?php if (function_exists('chatbot_can') && chatbot_can('access')) { $cb_on = ($route1 == 'chatbot' || $route1 == 'live-support'); ?>
       <li class="<?php echo $cb_on ? 'active menu-open' : ''; ?> treeview">
-        <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:6px;"><path d="M12 8V4H8"></path><rect x="4" y="8" width="16" height="12" rx="2"></rect><path d="M2 14h2"></path><path d="M20 14h2"></path><path d="M9 13v2"></path><path d="M15 13v2"></path></svg> <span>Chatbot</span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
+        <a href="javascript:void(0);"><svg class="crm-svg-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-2px; margin-right:6px;"><path d="M12 8V4H8"></path><rect x="4" y="8" width="16" height="12" rx="2"></rect><path d="M2 14h2"></path><path d="M20 14h2"></path><path d="M9 13v2"></path><path d="M15 13v2"></path></svg> <span>Chatbot</span> <span class="cb-unread" style="display:none;"></span> <span class="pull-right-container"><i class="fa fa-angle-left pull-right sidebar-arrow"></i></span> </a>
         <ul class="treeview-menu" style="<?php echo $cb_on ? 'display: block;' : ''; ?>">
-          <li><a href="<?php echo base_url();?>manager/chatbot"><i class="fa fa-comments"></i>Inbox</a></li>
+          <li><a href="<?php echo base_url();?>manager/chatbot"><i class="fa fa-comments"></i>Inbox <span class="cb-unread" style="display:none;"></span></a></li>
           <?php if (chatbot_can('history')) { ?><li><a href="<?php echo base_url();?>manager/chatbot/history"><i class="fa fa-history"></i>Chat History</a></li><?php } ?>
           <?php if (chatbot_can('settings')) { ?><li><a href="<?php echo base_url();?>manager/chatbot/settings"><i class="fa fa-sliders"></i>Settings</a></li><?php } ?>
         </ul>

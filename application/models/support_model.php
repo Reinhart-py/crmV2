@@ -61,6 +61,37 @@ class Support_model extends CI_Model {
 			last_seen DATETIME DEFAULT NULL,
 			PRIMARY KEY (user_id)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+		$this->db->query("CREATE TABLE IF NOT EXISTS ci_support_reads (
+			user_id INT(11) NOT NULL,
+			chat_id INT(11) NOT NULL,
+			last_id INT(11) NOT NULL DEFAULT 0,
+			PRIMARY KEY (user_id, chat_id)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+	}
+
+	/* ---------- unread (per agent) ---------- */
+
+	/** chat_id => number of visitor messages this agent has not seen, in open chats not taken by someone else. */
+	public function unread_counts($user_id)
+	{
+		$uid = (int)$user_id;
+		$rows = $this->db->query("SELECT m.chat_id, COUNT(*) AS n FROM ci_support_messages m
+			JOIN ci_support_chats c ON c.id = m.chat_id AND c.status IN ('waiting','active') AND (c.agent_id = 0 OR c.agent_id = $uid)
+			LEFT JOIN ci_support_reads r ON r.user_id = $uid AND r.chat_id = m.chat_id
+			WHERE m.sender = 'visitor' AND m.id > COALESCE(r.last_id, 0)
+			GROUP BY m.chat_id")->result_array();
+		$out = array();
+		foreach ($rows as $row) $out[(int)$row['chat_id']] = (int)$row['n'];
+		return $out;
+	}
+
+	/** Marks every message of a chat as seen by this agent. */
+	public function mark_read($user_id, $chat_id)
+	{
+		$uid = (int)$user_id; $cid = (int)$chat_id;
+		$this->db->query("INSERT INTO ci_support_reads (user_id, chat_id, last_id)
+			SELECT $uid, $cid, COALESCE(MAX(id), 0) FROM ci_support_messages WHERE chat_id = $cid
+			ON DUPLICATE KEY UPDATE last_id = VALUES(last_id)");
 	}
 
 	/* ---------- settings ---------- */

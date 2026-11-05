@@ -87,12 +87,17 @@ class Ci_admin_support extends CI_Controller {
 		// Someone whose "Go Active" right was removed is taken off duty.
 		$this->support_model->agent_heartbeat($this->uid, $can_status ? null : false);
 
+		$chat_id = (int)$this->input->get('chat');
+		if ($chat_id > 0) $this->support_model->mark_read($this->uid, $chat_id);
+		$unread = $this->support_model->unread_counts($this->uid);
+
 		$chats = $this->support_model->inbox_chats();
 		foreach ($chats as &$c) {
 			if ($c['status'] === 'waiting' && $this->support_model->handover_if_unanswered($this->support_model->get_chat($c['id']))) {
 				$c['status'] = 'emailed';
 			}
 			$c['last_message'] = mb_substr((string)$c['last_message'], 0, 90);
+			$c['unread'] = isset($unread[(int)$c['id']]) ? $unread[(int)$c['id']] : 0;
 		}
 		unset($c);
 
@@ -103,8 +108,8 @@ class Ci_admin_support extends CI_Controller {
 			'online_agents' => $this->support_model->agents_online(),
 			'enabled' => (int)$settings['enabled'],
 			'chats' => $chats,
+			'unread_total' => array_sum($unread),
 		);
-		$chat_id = (int)$this->input->get('chat');
 		if ($chat_id > 0) {
 			$chat = $this->support_model->get_chat($chat_id);
 			if (!empty($chat)) {
@@ -114,6 +119,13 @@ class Ci_admin_support extends CI_Controller {
 			}
 		}
 		$this->json($out);
+	}
+
+	/** GET: unread message count for the Chatbot menu badge. */
+	public function unread()
+	{
+		if (!$this->guard_ajax('access')) return;
+		$this->json(array('ok' => true, 'unread' => array_sum($this->support_model->unread_counts($this->uid))));
 	}
 
 	/** POST: available = 1|0 (Active / Inactive) */

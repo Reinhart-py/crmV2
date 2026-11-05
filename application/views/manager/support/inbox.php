@@ -136,7 +136,7 @@
         return '<button type="button" class="ls-item' + (+c.id === current ? ' is-active' : '') + '" data-id="' + c.id + '">' +
           '<div class="ls-item-top"><span class="ls-name">' + esc(c.name) + '</span><span class="ls-time">' + esc(fmtTime(c.updated_at)) + '</span></div>' +
           '<div class="ls-item-top" style="margin-top:4px;"><span class="ls-hint">' + esc(c.ref_no) + ' &middot; ' + esc(c.phone) + '</span><span class="ls-badge ls-b-' + esc(c.status) + '">' + esc(c.status) + '</span></div>' +
-          '<div class="ls-last">' + esc(last) + '</div></button>';
+          '<div class="ls-last">' + (+c.unread > 0 ? '<span class="cb-unread" style="float:right;margin-left:6px;">' + c.unread + '</span>' : '') + esc(last) + '</div></button>';
       }).join('');
     }
     el('lsCount').textContent = waiting ? waiting + ' waiting' : '';
@@ -233,6 +233,7 @@
         setAvailableUi(r.available);
         el('lsOnline').textContent = r.enabled ? onlineText(r.online_agents) : 'Chatbot is off';
         renderList(r.chats);
+        if (window.crmCbBadge) window.crmCbBadge(r.unread_total || 0);
         if (r.chat) renderChat(r.chat, r.messages || []);
         timer = setTimeout(tick, 3000);
       })
