@@ -299,6 +299,7 @@ $route['manager/awards/delete/(:num)'] = 'ci_admin_events/delete_award/$1';
 $route['manager/system/integrations'] = 'ci_admin_integrations/index';
 $route['manager/system/integrations/save'] = 'ci_admin_integrations/save';
 $route['manager/system/integrations/ajax_test_connection'] = 'ci_admin_integrations/ajax_test_connection';
+$route['manager/system/integrations/ajax_send_test_email'] = 'ci_admin_integrations/ajax_send_test_email';
 $route['manager/integrations'] = 'ci_admin_integrations/index';
 
 $route['api/calls/recording_webhook'] = 'ci_admin_calls/recording_webhook';

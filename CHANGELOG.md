@@ -1,3 +1,14 @@
+## [2026-11-05] - Password Reset Email Fix
+### Fixed
+- Password reset emails were sent through a hard-coded mail server of the previous vendor (sender "SRJ CRM", SRJ contact footer), so they were likely filtered as spam, and the result of sending was ignored: the screen always said the link was sent. Now the mailer uses System > Integrations > Email SMTP (or `SMTP_*` in `.env`), reports failures, and logs every send to `application/logs/mail-YYYY-MM-DD.log`.
+- Security: the Set New Password form accepted an empty token and could change the password of every user without a pending reset. The token is now validated and only its owner is updated.
+- The reset email goes to the email on the user profile (or the username if it is an email). The account can be found by username or profile email.
+- Saving Integrations > Email SMTP with the password field left empty no longer erases the saved password.
+### Added
+- Send Test Email button in System > Integrations > Email SMTP.
+- One reset email per minute per user, minimum password length 6, wrong-password-repeat returns to the same reset link, and the user is signed out of other sessions after a reset.
+- README section 2.6: step-by-step SMTP setup for password reset emails.
+
 ## [2026-11-05] - Sign In and Forgot Password Redesign
 ### Changed
 - Sign in, Forgot Password and Set New Password pages now use a full-screen split layout: the existing brand image on the left with a short Seven Strokes introduction, and a plain white form panel on the right. The floating card, blurred background and input icons were removed.

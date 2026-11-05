@@ -209,6 +209,14 @@
                     </select>
                   </div>
                 </div>
+                <div class="box-body" style="border-top:1px solid #e2e8f0;">
+                  <label for="smtpTestTo">Send a test email</label>
+                  <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <input type="email" id="smtpTestTo" class="form-control" style="flex:1; min-width:200px;" placeholder="you@7strokes.ae" value="<?php echo htmlspecialchars((string)$this->session->userdata('manager_email') ?: (string)$this->session->userdata('manager_username')); ?>" />
+                    <button type="button" class="btn btn-default" id="btnSmtpSendTest"><i class="fa fa-paper-plane"></i> Send Test Email</button>
+                  </div>
+                  <p class="help-block" style="margin-bottom:0;">Uses the saved settings (save first). Password reset emails are sent the same way.</p>
+                </div>
                 <div class="box-footer" style="display:flex; justify-content:space-between; align-items:center;">
                   <button type="button" class="btn btn-default btn-test-connection" data-service="email_smtp"><i class="fa fa-refresh"></i> Test SMTP Reachability</button>
                   <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Save Settings</button>
@@ -378,6 +386,28 @@
 
 <script>
 $(document).ready(function() {
+  $('#btnSmtpSendTest').on('click', function() {
+    var $btn = $(this), originalText = $btn.html();
+    $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Sending...');
+    $.ajax({
+      url: '<?php echo base_url(); ?>manager/system/integrations/ajax_send_test_email',
+      type: 'POST',
+      data: {
+        to_email: $('#smtpTestTo').val(),
+        '<?php echo $this->security->get_csrf_token_name(); ?>': (document.cookie.match(/(?:^|;\s*)csrf_cookie_name=([^;]+)/) || [])[1] || '<?php echo $this->security->get_csrf_hash(); ?>'
+      },
+      dataType: 'json',
+      success: function(res) {
+        $btn.prop('disabled', false).html(originalText);
+        alert((res && res.status ? 'Sent: ' : 'Failed: ') + (res && res.message ? res.message : 'Unknown response'));
+      },
+      error: function() {
+        $btn.prop('disabled', false).html(originalText);
+        alert('Server communication error while sending the test email.');
+      }
+    });
+  });
+
   $('.btn-test-connection').on('click', function() {
     var $btn = $(this);
     var srv = $btn.data('service');

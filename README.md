@@ -36,6 +36,7 @@ Old CRMs usually feel like using software from 2004—bulky boxes, neon rainbow 
 - [5. Netlify: Can This CRM Run There?](#5-netlify-can-this-crm-run-there)
 - [6. Deploy on AWS](#6-deploy-on-aws)
 - [7. Troubleshooting](#7-troubleshooting)
+- [Password reset email setup](#26-password-reset-emails-smtp-setup)
 - [Copyright: Can You Claim This CRM?](#copyright--can-you-claim-this-crm)
 
 ---
@@ -337,6 +338,7 @@ Logging in from a second browser logs out the first one (single active session),
 | `THREECX_CLIENT_ID` | 3CX API client ID | default only; `application/config/3cx_config.json` overrides it | `application/libraries/Threecx.php` |
 | `THREECX_CLIENT_SECRET` | 3CX API client secret | default only; `application/config/3cx_config.json` overrides it | `application/libraries/Threecx.php` |
 | `THREECX_EXTENSION` | Default 3CX extension | default only; `application/config/3cx_config.json` overrides it | `application/libraries/Threecx.php` |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_CRYPTO`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM_EMAIL`, `SMTP_FROM_NAME` | Mail server for password reset and other emails (`SMTP_CRYPTO` is `tls`, `ssl` or `none`) | only used when System > Integrations SMTP is not enabled; see 2.6 | `application/models/mail_model.php` |
 
 Not used by the code (safe to leave empty):
 
@@ -386,7 +388,7 @@ Open **System > Integrations** (`/manager/system/integrations`) as an admin. Val
 | Session lifetime cookie | `application/config/config.php` | `sess_expiration = 7200` | The 5 minute idle logout is separate, in `ci_admin_model::check_auth_timeout()` and `application/views/manager/elements/footer.php`. |
 | CSRF | `application/config/config.php` | on, token `csrf_test_name` | Keep on. |
 | Database debug output | `application/config/database.php` | `db_debug = TRUE` | Set `FALSE` in production (audit SEC-16). |
-| SMTP server for password reset emails | `application/models/mail_model.php` | hardcoded host and login | Edit host, port, user and password here. The Integrations SMTP screen is not used by this mailer yet (audit SEC-14). |
+| Fallback SMTP mailbox | `application/models/mail_model.php` | old vendor mailbox `no-reply@storeyourcode.com` | Only used when neither Integrations SMTP nor `SMTP_*` in `.env` is set. Configure your own SMTP (section 2.6) and then remove this fallback (audit SEC-14). |
 | Clean URLs base path | `.htaccess` | `RewriteBase /` | Change if the CRM is in a sub folder. |
 
 ### 2.5 Development vs production
@@ -401,6 +403,41 @@ Open **System > Integrations** (`/manager/system/integrations`) as an admin. Val
 | `log_threshold` | `0` or `4` | `1` |
 | `MIGRATION_KEY` | any | long random value, or run migrations by SSH only |
 
+### 2.6 Password reset emails (SMTP setup)
+
+**How it works:** on **Forgot Password?** the user enters their email address (their login username or the email on their profile). The CRM emails a **Reset Password** link that is valid for **15 minutes** and works once. The link opens **Set New Password**, and after saving the user signs in with the new password. It is a link, not an OTP code.
+
+The CRM cannot deliver email by itself. It needs a mailbox on your mail server (SMTP). Do this once on the live server.
+
+**Step 1. Create a sending mailbox** on the domain you send from, for example `noreply@7strokes.com`, in cPanel > Email Accounts, Microsoft 365 or Google Workspace. Note its password.
+
+**Step 2. Get the SMTP details** for that mailbox:
+
+| Provider | Host | Port | Encryption | Username |
+|---|---|---|---|---|
+| cPanel hosting | `mail.your-domain.com` (shown in cPanel > Email Accounts > Connect Devices) | 465 or 587 | SSL for 465, TLS for 587 | the full mailbox address |
+| Microsoft 365 | `smtp.office365.com` | 587 | TLS | the full mailbox address (SMTP AUTH must be enabled for that mailbox in the Microsoft 365 admin center) |
+| Google Workspace / Gmail | `smtp.gmail.com` | 587 | TLS | the full address, with an **App Password** (needs 2-step verification), not the normal password |
+
+**Step 3. Enter them in the CRM.** Sign in as an admin, open **System > Integrations > Email & SMTP Configuration**, fill in Host, Port, Username, Password, Encryption, From Email (use the same mailbox as Username) and From Name, set **Status = Enabled**, and click **Save Settings**. To change other fields later, leave Password empty and the saved password is kept.
+
+**Step 4. Send a test.** On the same screen, type your own address under **Send a test email** and click **Send Test Email**. The message shows whether it was sent, which server was used, and the exact error if it failed. Then check that it arrived (also look in spam).
+
+**Step 5. Make sure mail is not marked as spam** (ask whoever manages the domain's DNS):
+- SPF: the domain's SPF TXT record must include the mail server, for example `include:spf.protection.outlook.com` for Microsoft 365.
+- DKIM: turn on DKIM signing for the domain in cPanel (Email Deliverability) or Microsoft 365.
+- The **From Email** must be on that same domain. Sending as `noreply@7strokes.com` through another company's server is what sends mail to spam.
+
+**Step 6. Check `BASE_URL`** in `.env` is the real site address (for example `https://crm.7strokes.com/`). The reset link is built from it.
+
+**Each user needs an email address.** The link is sent to the email on the user's profile, or to their username if the username is an email address. Users with neither cannot reset by themselves; an admin must reset their password.
+
+**Which settings are used** (first match wins):
+1. System > Integrations > Email SMTP, when Status is Enabled and Host is filled in.
+2. `SMTP_HOST`, `SMTP_PORT`, `SMTP_CRYPTO`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM_EMAIL`, `SMTP_FROM_NAME` in `.env`.
+3. The old built-in mailbox `no-reply@storeyourcode.com` from the previous vendor. It only exists so mail does not stop completely. Do not rely on it: mail from it is often filtered as spam.
+
+**Logs:** every send is written to `application/logs/mail-YYYY-MM-DD.log` (`SENT` or `FAILED` with the server error), and each request appears in the admin activity log as `password_reset_request` / `password_reset`. Those log files are not committed to git.
 ---
 
 ## 3. Database Migrations
@@ -667,7 +704,7 @@ Add:
 - New `encryption_key`, `cookie_secure = TRUE`, `db_debug = FALSE`, `CI_ENV=production`.
 - Block private files (section 4.7). Do not deploy `database/localhost.sql` to production servers.
 - SSH only from your IP, database not public.
-- Change the SMTP password that is hardcoded in `application/models/mail_model.php`, then move it out of the code.
+- Set up your own SMTP mailbox (section 2.6), then remove the old vendor fallback mailbox from `application/models/mail_model.php`.
 - Work through the P0 list in `audit today's state.md`.
 
 ---
@@ -689,7 +726,7 @@ Add:
 | Deprecated warnings or errors on PHP 8.3+ | Untested PHP version | Use PHP 8.2. |
 | Avatar or attachment upload fails | Upload folder missing or not writable | Create `assets/uploads/...` folders and give PHP write access (section 4.6). |
 | Pages are slow | Missing indexes | Run migrations (`007_performance_indexes.php`). |
-| Password reset email never arrives | Mailer uses the hardcoded SMTP server in `mail_model.php` | Update the SMTP values in `application/models/mail_model.php`. |
+| Password reset email never arrives | SMTP not set up, wrong login, or mail filtered as spam | Follow section 2.6, use **Send Test Email** in System > Integrations, and read `application/logs/mail-YYYY-MM-DD.log`. |
 | 3CX calls are not logged automatically | Webhooks are behind the login check | Known issue (audit BUG-2). |
 
 Where to find logs:

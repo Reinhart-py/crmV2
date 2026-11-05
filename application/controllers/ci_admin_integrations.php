@@ -112,6 +112,14 @@ class Ci_admin_integrations extends CI_Controller {
 			$api_secret = $existing['api_secret'];
 		}
 
+		// Password-type config fields are shown empty; keep the stored value when left blank.
+		$old_cfg = !empty($existing['config_json']) ? json_decode($existing['config_json'], true) : array();
+		foreach (array('smtp_pass') as $secret_key) {
+			if (array_key_exists($secret_key, $config) && $config[$secret_key] === '' && !empty($old_cfg[$secret_key])) {
+				$config[$secret_key] = $old_cfg[$secret_key];
+			}
+		}
+
 		$data_update = array(
 			'endpoint' => $endpoint,
 			'api_key' => $api_key,
@@ -131,6 +139,31 @@ class Ci_admin_integrations extends CI_Controller {
 
 		$this->session->set_flashdata('message', strtoupper($service) . ' integration settings saved successfully.');
 		redirect('manager/system/integrations');
+	}
+
+	/** Sends a real test email with the active SMTP settings to the signed-in admin. */
+	public function ajax_send_test_email()
+	{
+		$this->if_not_login();
+		header('Content-Type: application/json');
+		$manager_role = (int)$this->session->userdata('manager_role');
+		if ($manager_role !== 1 && !has_perm('integrations')) {
+			echo json_encode(array('status' => false, 'message' => 'Unauthorized access.'));
+			return;
+		}
+		$to = trim((string)$this->input->post('to_email', true));
+		if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
+			echo json_encode(array('status' => false, 'message' => 'Enter a valid email address to send the test to.'));
+			return;
+		}
+		$this->load->model('mail_model');
+		$cfg = $this->mail_model->smtp_config();
+		$resp = $this->mail_model->sendmail($to, 'Seven Strokes CRM test email', array(), '<p>This is a test email from Seven Strokes CRM.</p><p>If you can read this, password reset emails will be delivered the same way.</p>');
+		if ($resp === 'ok') {
+			echo json_encode(array('status' => true, 'message' => 'Test email sent to ' . $to . ' via ' . $cfg['host'] . ':' . $cfg['port'] . ' (' . $cfg['source'] . '). Check the inbox and spam folder.'));
+		} else {
+			echo json_encode(array('status' => false, 'message' => 'Sending failed via ' . $cfg['host'] . ':' . $cfg['port'] . ' (' . $cfg['source'] . '): ' . $this->mail_model->last_error));
+		}
 	}
 
 	public function ajax_test_connection()

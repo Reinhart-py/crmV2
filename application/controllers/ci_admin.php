@@ -202,93 +202,161 @@ class Ci_admin extends CI_Controller {
 	}
 
 	public function forgot()
-    {
-		
-	   
-	  $data=array();
-		$data['info']=array(
-			'title'=>'Manager Forgot'
-			);
+	{
+		$data = array();
+		$data['info'] = array(
+			'title' => 'Forgot Password'
+		);
 
-
-	  
-	  if($this->input->server('REQUEST_METHOD')==='POST')
+		if ($this->input->server('REQUEST_METHOD') === 'POST')
 		{
-			extract($_POST);
-		  	$email= $this->security->xss_clean($email);
-		  
-			$data=array();			
-			$data['users']= $this->comman_model->getAll(array('c_username'=>$email,'status'=>1),'','ci_user','first');
-			if(!empty($data['users']))
-			{
-				$token = bin2hex(random_bytes(24)) . '_' . (time() + 900);
-				$this->comman_model->updateData('id', $data['users']['id'], array('fotp' => $token), 'ci_user');
+			$login = trim((string)$this->security->xss_clean($this->input->post('email')));
+			if ($login === '') {
+				$this->session->set_flashdata('error_message', 'Please enter your registered email address.');
+				redirect('manager/forgot');
+			}
 
-				$mail_str = '<p>Hello ' . htmlspecialchars($data['users']['name']) . ',</p>
-				<p>We received a request to reset your password for Seven Strokes CRM. Click the link below to reset your password (valid for 15 minutes):</p>
-				<p><a href="' . base_url() . 'manager/bnr54dfdf/' . $token . '">Reset Password</a></p>
-				<p>If you did not request this password reset, you can safely ignore this email.</p>';
-				
-				$resp = $this->mail_model->sendmail($email, "Password Reset - Seven Strokes CRM", $data = array(), $mail_str);
-				
-				$this->session->set_flashdata('message', 'Password reset link has been sent to your registered email. Valid for 15 minutes.');
-				redirect("manager/login");
+			// Match the account by login username or by the email saved on the profile.
+			$q = $this->db->escape($login);
+			$user = $this->db->where('status', 1)
+				->where("(c_username = {$q} OR email = {$q} OR c_email = {$q})", NULL, FALSE)
+				->order_by('id', 'asc')
+				->limit(1)->get('ci_user')->row_array();
+
+			if (empty($user)) {
+				$this->ci_admin_model->log_admin_action('password_reset_request', 'Reset requested for unknown account: ' . $login, 'FAILED', 0, $login);
+				$this->session->set_flashdata('error_message', 'No active account was found for that email address.');
+				redirect('manager/forgot');
 			}
-			else
-			{   
-				$this->session->set_flashdata('error_message', 'Sorry! Your username does not exist in our system.');
-				redirect("manager/forgot");
+
+			// Where to send: profile email first, then the username if it is an email.
+			$to = '';
+			foreach (array('email', 'c_email', 'c_username') as $col) {
+				if (!empty($user[$col]) && filter_var(trim($user[$col]), FILTER_VALIDATE_EMAIL)) {
+					$to = trim($user[$col]);
+					break;
+				}
 			}
+			if ($to === '') {
+				$this->session->set_flashdata('error_message', 'Your account has no email address on file. Please ask your administrator to reset your password.');
+				redirect('manager/forgot');
+			}
+
+			// Allow one new link per minute so the mailbox is not flooded.
+			$parts = explode('_', (string)$user['fotp']);
+			if (count($parts) >= 2 && ((int)$parts[1] - time()) > 840) {
+				$this->session->set_flashdata('message', 'A reset link was sent less than a minute ago. Please check your inbox and spam folder.');
+				redirect('manager/login');
+			}
+
+			$token = bin2hex(random_bytes(24)) . '_' . (time() + 900);
+			$this->comman_model->updateData('id', $user['id'], array('fotp' => $token), 'ci_user');
+
+			$link = base_url() . 'manager/bnr54dfdf/' . $token;
+			$name = htmlspecialchars($user['name']);
+			$mail_str = '<p>Hello ' . $name . ',</p>'
+				. '<p>We received a request to reset the password of your Seven Strokes CRM account (<strong>' . htmlspecialchars($user['c_username']) . '</strong>).</p>'
+				. '<p style="margin:24px 0;"><a href="' . $link . '" style="background:#1e3a8a;color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:6px;font-weight:bold;display:inline-block;">Reset Password</a></p>'
+				. '<p>This link is valid for 15 minutes and can be used once. If the button does not work, copy this address into your browser:<br><span style="color:#1e3a8a;word-break:break-all;">' . $link . '</span></p>'
+				. '<p>If you did not request a password reset, you can ignore this email. Your password will not change.</p>';
+
+			$resp = $this->mail_model->sendmail($to, 'Reset your Seven Strokes CRM password', array(), $mail_str, $user['name']);
+
+			if ($resp !== 'ok') {
+				// Do not leave a live token behind for an email that never went out.
+				$this->comman_model->updateData('id', $user['id'], array('fotp' => ''), 'ci_user');
+				$this->ci_admin_model->log_admin_action('password_reset_request', 'Reset email failed for ' . $to . ': ' . $this->mail_model->last_error, 'FAILED', $user['id'], $user['name']);
+				$this->session->set_flashdata('error_message', 'We could not send the reset email right now. Please try again in a few minutes or contact your administrator.');
+				redirect('manager/forgot');
+			}
+
+			$this->ci_admin_model->log_admin_action('password_reset_request', 'Reset link emailed to ' . $to, 'SUCCESS', $user['id'], $user['name']);
+			$this->session->set_flashdata('message', 'A password reset link has been sent to ' . $this->mask_email($to) . '. It is valid for 15 minutes. Please also check your spam folder.');
+			redirect('manager/login');
 		}
 		$this->load->view('manager/forgot', $data);
+	}
+
+	/** j***@7strokes.ae */
+	private function mask_email($email)
+	{
+		$at = strpos($email, '@');
+		if ($at === false || $at < 1) {
+			return $email;
+		}
+		return substr($email, 0, 1) . str_repeat('*', max(3, $at - 1)) . substr($email, $at);
+	}
+
+	/** Returns the active user that owns a valid, unexpired reset token, or null. */
+	private function reset_token_user($token)
+	{
+		$token = (string)$token;
+		if (!preg_match('/^[a-f0-9]{48}_\d+$/', $token)) {
+			return null;
+		}
+		$parts = explode('_', $token);
+		$user = $this->comman_model->getAll(array('fotp' => $token, 'status' => 1), '', 'ci_user', 'first');
+		if (empty($user)) {
+			return null;
+		}
+		if (time() > (int)$parts[1]) {
+			$this->comman_model->updateData('id', $user['id'], array('fotp' => ''), 'ci_user');
+			return null;
+		}
+		return $user;
 	}
 
 	public function reset($token = "")
 	{
 		$data = array();
 		$data['info'] = array(
-			'title' => 'Manager Password Reset'
+			'title' => 'Set New Password'
 		);
 		$data['token'] = $token;
-		$is_expired = false;
-		$parts = explode('_', $token);
-		if (count($parts) >= 2 && time() > (int)$parts[1]) {
-			$is_expired = true;
-		}
-		$data['users'] = $this->comman_model->getAll(array('fotp' => $token, 'status' => 1), '', 'ci_user', 'first');
-		if (empty($data['users']) || $is_expired) {
-			if (!empty($data['users']) && $is_expired) {
-				$this->comman_model->updateData('id', $data['users']['id'], array('fotp' => ''), 'ci_user');
-			}
-			$this->session->set_flashdata('error_message', 'Sorry! Password reset link is invalid or expired. Please request a new one.');
-			redirect("manager/forgot");
+		$data['users'] = $this->reset_token_user($token);
+		if (empty($data['users'])) {
+			$this->session->set_flashdata('error_message', 'This password reset link is invalid or has expired. Please request a new one.');
+			redirect('manager/forgot');
 		}
 		$this->load->view('manager/reset', $data);
 	}
 
 	public function fchange_password()
 	{
-		if ($this->input->server('REQUEST_METHOD') === 'POST') {
-			$token = $this->input->post('token');
-			$password = $this->input->post('password');
-			$confirm_password = $this->input->post('change_password');
-			$parts = explode('_', $token);
-			if (count($parts) >= 2 && time() > (int)$parts[1]) {
-				$this->session->set_flashdata('error_message', 'Error: Password reset link has expired. Please request a new one.');
-				redirect('manager/forgot');
-			}
-			if ($password === $confirm_password) {
-				$this->comman_model->updateData('fotp', $token, array('c_password' => sha1($password), 'fotp' => ''), 'ci_user');
-				$this->session->set_flashdata('message', 'Your password has been changed successfully!');
-			} else {
-				$this->session->set_flashdata('error_message', 'Error: Password and Confirm Password do not match!');
-			}
+		if ($this->input->server('REQUEST_METHOD') !== 'POST') {
 			redirect('manager/login');
 		}
+		$token = (string)$this->input->post('token');
+		$password = (string)$this->input->post('password');
+		$confirm_password = (string)$this->input->post('change_password');
+
+		$user = $this->reset_token_user($token);
+		if (empty($user)) {
+			$this->session->set_flashdata('error_message', 'This password reset link is invalid or has expired. Please request a new one.');
+			redirect('manager/forgot');
+		}
+		if (strlen($password) < 6) {
+			$this->session->set_flashdata('error_message', 'Password must be at least 6 characters.');
+			redirect('manager/bnr54dfdf/' . $token);
+		}
+		if ($password !== $confirm_password) {
+			$this->session->set_flashdata('error_message', 'Password and Repeat password do not match.');
+			redirect('manager/bnr54dfdf/' . $token);
+		}
+
+		// Update only the owner of this token; clear the token and any open session.
+		$this->db->where('id', (int)$user['id'])->where('fotp', $token)->update('ci_user', array(
+			'c_password' => sha1($password),
+			'fotp' => '',
+			'current_session_token' => null,
+		));
+		$this->ci_admin_model->log_admin_action('password_reset', 'Password changed with email reset link', 'SUCCESS', $user['id'], $user['name']);
+		$this->session->set_flashdata('message', 'Your password has been changed. You can now sign in with your new password.');
+		redirect('manager/login');
 	}
-   
-   
-   
+
+
+
 	    public function admin_profile()
 		    {
 				
