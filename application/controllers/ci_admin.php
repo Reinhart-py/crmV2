@@ -132,7 +132,9 @@ class Ci_admin extends CI_Controller {
 			'title'=>'Manager Dashboard'
 			);
 		$data['info2']=$this->if_not_login();
-		if ((int)$this->session->userdata('manager_role') === 5) {
+		// Operations opens Live instead of the dashboard, but only when the role has the Live right
+		// (otherwise Live would send them back here and the two pages would loop).
+		if ((int)$this->session->userdata('manager_role') === 5 && crm_can('live', 'read')) {
 			redirect('manager/live');
 		}
 		$data['dashboard_count']=$this->ci_admin_model->dashboard_countdata();
