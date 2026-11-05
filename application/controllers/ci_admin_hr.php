@@ -1038,79 +1038,48 @@ class Ci_admin_hr extends CI_Controller {
 		$data = array();
 		$data['info'] = array(
 			'title' => 'Document Vault - HR',
-			'page_heading' => 'Employee Documents'
+			'page_heading' => 'Document Vault'
 		);
 		$data['active_tab'] = 'documents';
 
-		$docs = $this->db->select('D.*, U.name as employee_name')
-			->from('ci_hr_documents D')
-			->join('ci_user U', 'U.id = D.user_id', 'left')
-			->order_by('D.id', 'DESC')
-			->get()
-			->result_array();
-
-		$u_docs = $this->db->select('id, name, p_no, p_date, p_exdate, visa_no, visa_type, visa_expiry, eid_no, eid_expiry')
-			->where($this->_active_sql(), NULL, FALSE)
-			->get('ci_user')
-			->result_array();
-
-		foreach ($u_docs as $ud) {
-			if (!empty($ud['p_no'])) {
-				$docs[] = array(
-					'id' => 100000 + (int)$ud['id'],
-					'user_id' => $ud['id'],
-					'employee_name' => $ud['name'],
-					'doc_type' => 'Passport',
-					'document_type' => 'Passport',
-					'title' => 'Passport Copy',
-					'doc_number' => $ud['p_no'],
-					'document_number' => $ud['p_no'],
-					'issue_date' => $ud['p_date'],
-					'expiry_date' => $ud['p_exdate'],
-					'status' => 'Valid'
-				);
-			}
-			if (!empty($ud['eid_no'])) {
-				$docs[] = array(
-					'id' => 200000 + (int)$ud['id'],
-					'user_id' => $ud['id'],
-					'employee_name' => $ud['name'],
-					'doc_type' => 'Emirates ID',
-					'document_type' => 'Emirates ID',
-					'title' => 'Emirates ID Card',
-					'doc_number' => $ud['eid_no'],
-					'document_number' => $ud['eid_no'],
-					'issue_date' => '',
-					'expiry_date' => $ud['eid_expiry'],
-					'status' => 'Valid'
-				);
-			}
-			if (!empty($ud['visa_no'])) {
-				$docs[] = array(
-					'id' => 300000 + (int)$ud['id'],
-					'user_id' => $ud['id'],
-					'employee_name' => $ud['name'],
-					'doc_type' => 'Visa',
-					'document_type' => 'Visa',
-					'title' => 'UAE Residence Visa (' . ($ud['visa_type'] ?: 'Employment') . ')',
-					'doc_number' => $ud['visa_no'],
-					'document_number' => $ud['visa_no'],
-					'issue_date' => '',
-					'expiry_date' => $ud['visa_expiry'],
-					'status' => 'Valid'
-				);
-			}
+		// One list of every working person's documents: Passport / Visa / Emirates ID details from the staff profile,
+		// the files uploaded on the profile (Documents section), and older number-only registrations.
+		$staff = $this->db->select('id, name, emp_id, p_no, p_exdate, visa_no, visa_expiry, eid_no, eid_expiry')
+			->where($this->_active_sql(), NULL, FALSE)->order_by('name', 'ASC')->get('ci_user')->result_array();
+		$files = array();
+		if ($this->db->table_exists('ci_user_docs')) {
+			foreach ($this->db->order_by('uploaded_at', 'DESC')->get('ci_user_docs')->result_array() as $fd) $files[(int)$fd['user_id']][] = $fd;
 		}
+		$legacy = array();
+		foreach ($this->db->order_by('id', 'DESC')->get('ci_hr_documents')->result_array() as $ld) $legacy[(int)$ld['user_id']][] = $ld;
 
-		foreach ($docs as &$d) {
-			$d['document_type'] = !empty($d['doc_type']) ? $d['doc_type'] : (!empty($d['document_type']) ? $d['document_type'] : 'Document');
-			$d['document_number'] = !empty($d['doc_number']) ? $d['doc_number'] : (!empty($d['document_number']) ? $d['document_number'] : '');
-			$d['title'] = !empty($d['title']) ? $d['title'] : $d['document_type'] . ' - ' . $d['document_number'];
+		$today = strtotime(date('Y-m-d'));
+		$days = function ($v) use ($today) { $v = trim((string)$v); return ($v !== '' && ($t = strtotime($v))) ? (int)floor(($t - $today) / 86400) : null; };
+		$rows = array();
+		$add = function ($u, $type, $num, $exp, $file) use (&$rows, $days) {
+			$d = $days($exp);
+			$state = ($d === null) ? 'nodate' : ($d < 0 ? 'expired' : ($d <= 30 ? 'd30' : ($d <= 60 ? 'd60' : 'valid')));
+			$rows[] = array('user_id' => (int)$u['id'], 'name' => $u['name'], 'type' => $type, 'number' => (string)$num, 'expiry' => ($d === null ? '' : date('Y-m-d', strtotime($exp))),
+				'days' => $d, 'state' => $state, 'file' => $file);
+		};
+		foreach ($staff as $u) {
+			$uid = (int)$u['id']; $mine = isset($files[$uid]) ? $files[$uid] : array(); $used = array();
+			$pick = function ($type) use ($mine, &$used) { foreach ($mine as $i => $fd) if ($fd['doc_type'] === $type && !isset($used[$i])) { $used[$i] = 1; return $fd; } return null; };
+			foreach (array(array('Passport', $u['p_no'], $u['p_exdate']), array('Visa', $u['visa_no'], $u['visa_expiry']), array('Emirates ID', $u['eid_no'], $u['eid_expiry'])) as $x) {
+				$fd = $pick($x[0]);
+				if (trim((string)$x[1]) !== '' || trim((string)$x[2]) !== '' || $fd) $add($u, $x[0], $x[1], $x[2], $fd);
+			}
+			foreach ($mine as $i => $fd) if (!isset($used[$i])) $add($u, $fd['doc_type'], '', '', $fd);
+			if (isset($legacy[$uid])) foreach ($legacy[$uid] as $ld) $add($u, $ld['doc_type'] !== '' ? $ld['doc_type'] : 'Document', $ld['doc_number'], $ld['expiry_date'], null);
 		}
-		unset($d);
+		$counts = array('all' => count($rows), 'expired' => 0, 'd30' => 0, 'd60' => 0, 'nofile' => 0);
+		foreach ($rows as $r) { if (isset($counts[$r['state']])) $counts[$r['state']]++; if (!$r['file']) $counts['nofile']++; }
 
-		$data['documents'] = $docs;
-		$data['employees'] = $this->db->select('id, name, email')->where($this->_active_sql(), NULL, FALSE)->order_by('name', 'ASC')->get('ci_user')->result_array();
+		$data['documents'] = $rows;
+		$data['doc_counts'] = $counts;
+		$data['employees'] = $staff;
+		// Files are opened (and uploaded) through the staff profile, which needs Full on Staff
+		$data['doc_base'] = ($this->is_admin || crm_can('hr_staff', 'write')) ? 'manager/hr/staff/' : '';
 
 		$this->load->view('manager/hr/index', $data);
 	}

@@ -114,6 +114,8 @@
       .hrx-chip.on[class*=st-]{color:#fff}
       .hrx-act{white-space:nowrap;text-align:right !important}
       .hrx-act .btn{height:30px;font-weight:600}
+      .hrx-file{font-weight:600;white-space:nowrap}
+      .hrx-bar .btn{height:34px;font-weight:600}
       .content-wrapper .content-header h1{font-family:"Plus Jakarta Sans","Inter",-apple-system,"Segoe UI",sans-serif;font-size:22px;font-weight:700;text-align:left}
       .content-wrapper .box .box-title{font-family:"Plus Jakarta Sans","Inter",-apple-system,"Segoe UI",sans-serif;font-size:16px;font-weight:700}
       .content-wrapper .table-hr .label{font-size:12px;padding:3px 9px;border-radius:999px;font-weight:600}
@@ -1241,130 +1243,50 @@
         </div>
       </div>
 
-    <?php elseif (($active_tab ?? '') === 'documents'): ?>
-      <div class="box box-default">
-        <div class="box-header with-border">
-          <h3 class="box-title">Document Vault</h3>
-          <div class="box-tools pull-right">
-            <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalAddDocument"><i class="fa fa-upload"></i> Upload Document</button>
-          </div>
+    <?php elseif (($active_tab ?? '') === 'documents'):
+      $dvH = function ($v) { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); };
+      $dvRows = !empty($documents) ? $documents : array();
+      $dvChip = array('all' => 'All', 'expired' => 'Expired', 'd30' => 'Within 30 days', 'd60' => 'Within 60 days', 'nofile' => 'No file');
+      $dvCls = array('all' => '', 'expired' => 'st-r', 'd30' => 'st-a', 'd60' => 'st-a', 'nofile' => 'st-s');
+    ?>
+      <div class="hrx">
+        <div class="hrx-chips">
+          <?php foreach ($dvChip as $k => $lbl) { ?>
+          <button type="button" class="hrx-chip js-dv <?php echo $dvCls[$k]; ?><?php echo $k === 'all' ? ' on' : ''; ?>" data-v="<?php echo $k; ?>"><?php echo $lbl; ?> <b><?php echo (int)($doc_counts[$k] ?? 0); ?></b></button>
+          <?php } ?>
         </div>
-        <div class="box-body table-responsive no-padding">
-          <table class="table table-hover table-hr">
-            <thead>
-              <tr>
-                <th>Employee</th>
-                <th>Type</th>
-                <th>Title / Number</th>
-                <th>Issue Date</th>
-                <th>Expiry Date</th>
-                <th>Status</th>
-              </tr>
-            </thead>
+        <div class="hrx-card">
+          <div class="hrx-bar">
+            <input type="search" class="form-control js-dv-q" placeholder="Search name or document">
+            <?php if ($doc_base !== '') { ?>
+            <select class="form-control js-dv-who"><option value="">Upload for...</option><?php foreach ($employees as $e) { ?><option value="<?php echo (int)$e['id']; ?>"><?php echo $dvH($e['name']); ?></option><?php } ?></select>
+            <button type="button" class="btn btn-primary js-dv-up"><i class="fa fa-upload"></i> Upload document</button>
+            <?php } ?>
+            <span class="hrx-count js-dv-count"></span>
+          </div>
+          <div class="hrx-note"><i class="fa fa-info-circle"></i> Numbers and expiry dates come from each person's staff profile (Identity &amp; Visa); files are uploaded in the profile's Documents section (JPG, PNG or PDF, max 1 MB).</div>
+          <div class="table-responsive">
+          <table class="table hrx-table">
+            <thead><tr><th>Employee</th><th>Document</th><th>Expiry</th><th>File</th></tr></thead>
             <tbody>
-              <?php if (!empty($documents)): ?>
-                <?php foreach ($documents as $doc): ?>
-                  <?php 
-                    $docEmp = ($doc['employee_name'] ?? '') ?: 'User #' . ($doc['user_id'] ?? 0);
-                    $docType = ($doc['document_type'] ?? $doc['doc_type'] ?? '') ?: 'Document';
-                    $docTitle = ($doc['title'] ?? '') ?: $docType;
-                    $docNum = ($doc['document_number'] ?? $doc['doc_number'] ?? '') ?: '-';
-                    $docIssue = ($doc['issue_date'] ?? '') ?: '-';
-                    $docExpiry = ($doc['expiry_date'] ?? '') ?: 'No Expiry';
-
-                    $today_ts = strtotime(date('Y-m-d'));
-                    $exp_ts = !empty($doc['expiry_date']) ? strtotime($doc['expiry_date']) : 0;
-                    $diff_days = $exp_ts ? floor(($exp_ts - $today_ts) / 86400) : 9999;
-                    if ($exp_ts && $diff_days < 0) {
-                      $status_badge = '<span class="label label-danger">Expired</span>';
-                    } elseif ($exp_ts && $diff_days <= 30) {
-                      $status_badge = '<span class="label label-warning">Expiring in '.$diff_days.'d</span>';
-                    } else {
-                      $status_badge = '<span class="label label-success">Valid</span>';
-                    }
-                  ?>
-                  <tr>
-                    <td><strong><?php echo htmlspecialchars($docEmp); ?></strong></td>
-                    <td><?php echo htmlspecialchars($docType); ?></td>
-                    <td>
-                      <div><strong><?php echo htmlspecialchars($docTitle); ?></strong></div>
-                      <div class="text-muted" style="font-size:11px;"><?php echo htmlspecialchars($docNum); ?></div>
-                    </td>
-                    <td><?php echo htmlspecialchars($docIssue); ?></td>
-                    <td><?php echo htmlspecialchars($docExpiry); ?></td>
-                    <td><?php echo $status_badge; ?></td>
-                  </tr>
-                <?php endforeach; ?>
-              <?php else: ?>
-                <tr><td colspan="6" class="text-center text-muted">No documents stored in vault</td></tr>
-              <?php endif; ?>
+            <?php if ($dvRows): foreach ($dvRows as $d):
+              $st = $d['state']; $dd = $d['days'];
+              $chip = $st === 'expired' ? array('st-r', 'Expired') : ($st === 'd30' || $st === 'd60' ? array('st-a', $dd . ' day' . ($dd == 1 ? '' : 's') . ' left') : ($st === 'valid' ? array('st-g', 'Valid') : array('st-s', 'No date'))); ?>
+              <tr data-state="<?php echo $st; ?>" data-file="<?php echo $d['file'] ? 1 : 0; ?>" data-q="<?php echo $dvH(strtolower($d['name'] . ' ' . $d['type'] . ' ' . $d['number'])); ?>">
+                <td><div class="hrx-who"><span class="hrx-emp"><?php echo sprintf('EMP-%05d', $d['user_id']); ?></span>
+                  <?php if ($doc_base !== '') { ?><a class="hrx-nm" href="<?php echo base_url() . $doc_base . 'view/' . $d['user_id']; ?>#docs"><?php echo $dvH($d['name']); ?></a><?php } else { ?><span class="hrx-nm"><?php echo $dvH($d['name']); ?></span><?php } ?></div></td>
+                <td><b class="hrx-strong"><?php echo $dvH($d['type']); ?></b><span class="hrx-sub"><?php echo $d['number'] !== '' ? $dvH($d['number']) : 'No number'; ?></span></td>
+                <td data-order="<?php echo $dd === null ? 999999 : $dd; ?>"><?php echo $d['expiry'] !== '' ? date('d-M-Y', strtotime($d['expiry'])) : ''; ?> <span class="hrx-st <?php echo $chip[0]; ?>"><?php echo $chip[1]; ?></span></td>
+                <td><?php if ($d['file']) { $isPdf = ($d['file']['mime'] === 'application/pdf'); ?>
+                  <?php if ($doc_base !== '') { ?><a class="hrx-file" href="<?php echo base_url() . $doc_base . 'doc_file/' . (int)$d['file']['id']; ?>" target="_blank" rel="noopener"><i class="fa <?php echo $isPdf ? 'fa-file-pdf-o' : 'fa-file-image-o'; ?>"></i> Open</a><?php } else { ?><span class="hrx-sub"><i class="fa fa-paperclip"></i> On file</span><?php } ?>
+                  <span class="hrx-sub"><?php echo date('d-M-Y', strtotime($d['file']['uploaded_at'])); ?></span>
+                <?php } else { ?><span class="hrx-miss">No file</span><?php if ($doc_base !== '') { ?> <a class="hrx-sub" style="display:inline" href="<?php echo base_url() . $doc_base . 'view/' . $d['user_id']; ?>#docs">Upload</a><?php } ?><?php } ?></td>
+              </tr>
+            <?php endforeach; else: ?>
+              <tr><td colspan="4" class="text-center text-muted">No documents yet. Passport, visa and Emirates ID details are added on each staff profile.</td></tr>
+            <?php endif; ?>
             </tbody>
           </table>
-        </div>
-      </div>
-
-      <div class="modal fade" id="modalAddDocument" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-          <div class="modal-content">
-            <form action="<?php echo base_url(); ?>manager/hr/add_document" method="POST">
-              <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
-              <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Add Employee Document</h4>
-              </div>
-              <div class="modal-body">
-                <div class="form-group">
-                  <label>Employee <span class="text-danger">*</span></label>
-                  <select name="user_id" class="form-control select2" style="width:100%;" required>
-                    <option value="">Select Employee</option>
-                    <?php if (!empty($employees)): ?>
-                      <?php foreach ($employees as $emp): ?>
-                        <option value="<?php echo (int)($emp['id'] ?? 0); ?>"><?php echo htmlspecialchars($emp['name'] ?? ''); ?></option>
-                      <?php endforeach; ?>
-                    <?php endif; ?>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label>Document Type <span class="text-danger">*</span></label>
-                  <select name="doc_type" class="form-control" required>
-                    <option value="National ID">National ID (Aadhaar / Emirates ID / SSN / PAN)</option>
-                    <option value="Passport">Passport</option>
-                    <option value="Work Permit / Visa">Work Permit / Visa / Residency</option>
-                    <option value="Employment Contract">Employment / Labour Contract</option>
-                    <option value="Tax Document">Tax Document / Form 16 / PAN</option>
-                    <option value="Educational Certificate">Educational / Degree Certificate</option>
-                    <option value="Bank / Payroll Document">Bank / Payroll Document</option>
-                    <option value="Other">Other Document</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label>Document Title <span class="text-danger">*</span></label>
-                  <input type="text" name="title" class="form-control" placeholder="e.g. Identification Card / Work Permit / Contract Copy" required>
-                </div>
-                <div class="form-group">
-                  <label>Document Number</label>
-                  <input type="text" name="doc_number" class="form-control" placeholder="e.g. ID or Registration Number">
-                </div>
-                <div class="row">
-                  <div class="col-sm-6">
-                    <div class="form-group">
-                      <label>Issue Date</label>
-                      <input type="date" name="issue_date" class="form-control">
-                    </div>
-                  </div>
-                  <div class="col-sm-6">
-                    <div class="form-group">
-                      <label>Expiry Date</label>
-                      <input type="date" name="expiry_date" class="form-control">
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary">Save Document</button>
-              </div>
-            </form>
           </div>
         </div>
       </div>
@@ -1375,6 +1297,28 @@
 
 <script>
 $(function() {
+  // Document Vault: chips, search and "Upload for" (opens that person's Documents section)
+  (function () {
+    var rows = $('.hrx-table tbody tr[data-state]'); if (!rows.length && !$('.js-dv').length) return;
+    var pick = 'all';
+    function run() {
+      var q = ($('.js-dv-q').val() || '').toLowerCase().trim(), n = 0;
+      rows.each(function () {
+        var r = $(this), s = r.data('state');
+        var ok = (pick === 'all' || (pick === 'nofile' ? String(r.data('file')) === '0' : s === pick)) && (!q || String(r.data('q')).indexOf(q) !== -1);
+        r.toggle(ok); if (ok) n++;
+      });
+      $('.js-dv-count').text(n + ' of ' + rows.length);
+    }
+    $('.js-dv').on('click', function () { $('.js-dv').removeClass('on'); $(this).addClass('on'); pick = $(this).data('v'); run(); });
+    $('.js-dv-q').on('input', run);
+    $('.js-dv-up').on('click', function () {
+      var id = $('.js-dv-who').val();
+      if (!id) { $('.js-dv-who').focus(); return; }
+      location.href = '<?php echo base_url(); ?>manager/hr/staff/view/' + id + '#docs';
+    });
+    run();
+  })();
   // Lifecycle: stage chips, department and search filter the rows in place
   (function () {
     var rows = $('.hrx-table tbody tr[data-stage]'); if (!rows.length) return;
