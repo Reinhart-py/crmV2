@@ -43,51 +43,119 @@ class Ci_admin_live extends CI_Controller
 		if (crm_is_presentation_user()) {
 			redirect('manager/live/presentation');
 		}
+		$v = $this->_viewer();
 		$data = array();
-		$data['info'] = array(
-			'title' => 'Live',
-			'page_heading' => 'Live'
-		);
-
-		$manager_id = (int)$this->session->userdata('manager_id');
-		$role = (int)$this->session->userdata('manager_role');
-		$is_admin = ($role === 1 || $manager_id === 1);
-		$data['is_admin'] = $is_admin;
-
-		$user_row = $this->db->select('id, name, office, department')->where('id', $manager_id)->get('ci_user')->row_array();
-		$data['current_user'] = $user_row;
-		$data['user_office'] = !empty($user_row['office']) ? $user_row['office'] : '';
-
-		$team_list = $this->ci_admin_model->fetchTeamList($manager_id, '');
-		$data['has_team'] = (!empty($team_list) || $is_admin);
-
-		$data['my_stats'] = $this->get_stats_block(array($manager_id));
-		$data['team_stats'] = $this->get_stats_block($is_admin ? array() : $team_list);
-		$data['performers'] = $this->get_performers_block($is_admin ? array() : $team_list);
-
-		$centers_query = $this->db->query("SELECT DISTINCT office FROM ci_user WHERE office IS NOT NULL AND office != '' ORDER BY office ASC");
-		$centers_data = array();
-		if ($centers_query && $centers_query->num_rows() > 0) {
-			foreach ($centers_query->result_array() as $c) {
-				$off = $c['office'];
-				$u_ids = array();
-				$u_rows = $this->db->query("SELECT id FROM ci_user WHERE office = " . $this->db->escape($off))->result_array();
-				foreach ($u_rows as $ur) {
-					$u_ids[] = (int)$ur['id'];
-				}
-				$centers_data[] = array(
-					'name' => $off,
-					'stats' => $this->get_stats_block($u_ids),
-					'perf' => $this->get_performers_block($u_ids)
-				);
-			}
-		}
-		$data['centers_data'] = $centers_data;
-		$data['company_stats'] = $this->get_stats_block(array());
-		$data['company_perf'] = $this->get_performers_block(array());
-
+		$data['info'] = array('title' => 'Live', 'page_heading' => 'Live');
+		$data['is_admin'] = $v['is_admin'];
+		$data['has_team'] = $v['is_admin'] || !empty($v['team']);
+		$data['me_name'] = $v['name'];
+		// Numbers are loaded by the page itself (ajax_get_data), so it opens at once.
 		$this->load->view('manager/live/index', $data);
 	}
+
+	/**
+	 * Who is looking and what they may see.
+	 * Ordinary user: own numbers only. Team leader: own + their team (everyone under them).
+	 * Admin: everything, including centers.
+	 */
+	private function _viewer()
+	{
+		$me = (int)$this->session->userdata('manager_id');
+		$role = (int)$this->session->userdata('manager_role');
+		$row = $this->db->select('id, name, office')->where('id', $me)->get('ci_user')->row_array();
+		$is_admin = ($role === 1 || $me === 1);
+		$team = array();
+		$ids = $this->ci_admin_model->fetchTeamList($me, '');
+		if (!empty($ids)) {
+			$ids = array_values(array_filter(array_map('intval', $ids), function ($x) use ($me) { return $x > 0 && $x !== $me; }));
+			if ($ids) {
+				foreach ($this->db->select('id')->where_in('id', $ids)->where('status', 1)->get('ci_user')->result_array() as $r) $team[] = (int)$r['id'];
+			}
+		}
+		return array(
+			'me' => $me,
+			'name' => $row ? $row['name'] : '',
+			'office' => $row ? trim((string)$row['office']) : '',
+			'is_admin' => $is_admin,
+			'team' => $team,
+		);
+	}
+
+	/** Active staff (not Presentation screens); $only limits to those ids. */
+	private function _staff_ids($only = null)
+	{
+		$this->db->select('id')->where('status', 1);
+		$pres = crm_presentation_role_id();
+		if ($pres > 0) $this->db->where('user_type !=', $pres);
+		if (is_array($only)) {
+			if (empty($only)) return array();
+			$this->db->where_in('id', $only);
+		}
+		$ids = array();
+		foreach ($this->db->get('ci_user')->result_array() as $r) $ids[] = (int)$r['id'];
+		return $ids;
+	}
+
+	/** Per-person numbers for $ids: calls, orders, sales (count + AED) and target. */
+	private function _people($ids)
+	{
+		$out = array();
+		if (empty($ids)) return $out;
+		$in = implode(',', array_map('intval', $ids));
+		$amt = $this->_amount_sql('o');
+		$sale = $this->_is_sale_sql('o');
+		$t1 = date('Y-m-d 00:00:00'); $t2 = date('Y-m-d 23:59:59');
+		$y1 = date('Y-m-d 00:00:00', strtotime('-1 day')); $y2 = date('Y-m-d 23:59:59', strtotime('-1 day'));
+		$m1 = date('Y-m-01 00:00:00'); $m2 = date('Y-m-t 23:59:59');
+		$month_key = date('Y-m'); $md1 = date('Y-m-01'); $md2 = date('Y-m-t');
+		foreach ($this->db->query("SELECT id, name, office, avatar FROM ci_user WHERE id IN ({$in})")->result_array() as $u) {
+			$av = (!empty($u['avatar']) && is_file(FCPATH . $u['avatar'])) ? base_url($u['avatar']) : '';
+			$out[(int)$u['id']] = array('id' => (int)$u['id'], 'name' => $u['name'], 'office' => trim((string)$u['office']), 'avatar' => $av,
+				'calls_today' => 0, 'calls_yday' => 0, 'orders_today' => 0, 'orders_yday' => 0, 'orders_month' => 0,
+				'sales_today' => 0, 'sales_count' => 0, 'sales_month' => 0.0, 'target' => 0.0);
+		}
+		$add = function ($sql, $key, $float = false) use (&$out) {
+			$r = $this->db->query($sql);
+			if (!$r || !is_object($r)) return;
+			foreach ($r->result_array() as $row) {
+				$id = (int)$row['uid'];
+				if (isset($out[$id])) $out[$id][$key] = $float ? (float)$row['v'] : (int)$row['v'];
+			}
+		};
+		$add("SELECT user_id uid, COUNT(*) v FROM ci_call_logs WHERE created_at BETWEEN '{$t1}' AND '{$t2}' AND user_id IN ({$in}) GROUP BY user_id", 'calls_today');
+		$add("SELECT user_id uid, COUNT(*) v FROM ci_call_logs WHERE created_at BETWEEN '{$y1}' AND '{$y2}' AND user_id IN ({$in}) GROUP BY user_id", 'calls_yday');
+		$add("SELECT o.created_by uid, COUNT(*) v FROM ci_orders o WHERE o.created_at BETWEEN '{$t1}' AND '{$t2}' AND o.created_by IN ({$in}) GROUP BY o.created_by", 'orders_today');
+		$add("SELECT o.created_by uid, COUNT(*) v FROM ci_orders o WHERE o.created_at BETWEEN '{$y1}' AND '{$y2}' AND o.created_by IN ({$in}) GROUP BY o.created_by", 'orders_yday');
+		$add("SELECT o.created_by uid, COUNT(*) v FROM ci_orders o WHERE o.created_at BETWEEN '{$m1}' AND '{$m2}' AND o.created_by IN ({$in}) GROUP BY o.created_by", 'orders_month');
+		$add("SELECT o.created_by uid, COUNT(*) v FROM ci_orders o WHERE {$sale} AND o.created_at BETWEEN '{$t1}' AND '{$t2}' AND o.created_by IN ({$in}) GROUP BY o.created_by", 'sales_today');
+		$add("SELECT o.created_by uid, COUNT(*) v FROM ci_orders o WHERE {$sale} AND o.created_at BETWEEN '{$m1}' AND '{$m2}' AND o.created_by IN ({$in}) GROUP BY o.created_by", 'sales_count');
+		$add("SELECT o.created_by uid, COALESCE(SUM({$amt}), 0) v FROM ci_orders o WHERE {$sale} AND o.created_at BETWEEN '{$m1}' AND '{$m2}' AND o.created_by IN ({$in}) GROUP BY o.created_by", 'sales_month', true);
+		$add("SELECT T.user_id uid, COALESCE(SUM(T.target_amount), 0) v FROM ci_hr_targets T WHERE T.status = 'Active' AND (T.period_month = '{$month_key}' OR ('{$md1}' <= T.end_date AND '{$md2}' >= T.start_date)) AND T.user_id IN ({$in}) GROUP BY T.user_id", 'target', true);
+		foreach ($out as &$p) $p['target_pct'] = $p['target'] > 0 ? (int)round($p['sales_month'] * 100 / $p['target']) : null;
+		unset($p);
+		return $out;
+	}
+
+	/** Totals of _people() rows. */
+	private function _sum_people($people)
+	{
+		$s = array('staff' => count($people), 'calls_today' => 0, 'calls_yday' => 0, 'orders_today' => 0, 'orders_yday' => 0, 'orders_month' => 0, 'sales_today' => 0, 'sales_count' => 0, 'sales_month' => 0.0, 'target' => 0.0);
+		foreach ($people as $p) foreach ($s as $k => $x) if ($k !== 'staff') $s[$k] += $p[$k];
+		$s['target_pct'] = $s['target'] > 0 ? (int)round($s['sales_month'] * 100 / $s['target']) : null;
+		return $s;
+	}
+
+	/** Calls in the last 7 days and the 7 days before (for "vs last week"). */
+	private function _calls_week($ids)
+	{
+		if (empty($ids)) return array('now' => 0, 'prev' => 0);
+		$in = implode(',', array_map('intval', $ids));
+		$a = date('Y-m-d 00:00:00', strtotime('-6 days')); $b = date('Y-m-d 23:59:59');
+		$c = date('Y-m-d 00:00:00', strtotime('-13 days')); $d = date('Y-m-d 23:59:59', strtotime('-7 days'));
+		$r = $this->db->query("SELECT COALESCE(SUM(created_at BETWEEN '{$a}' AND '{$b}'), 0) n, COALESCE(SUM(created_at BETWEEN '{$c}' AND '{$d}'), 0) p FROM ci_call_logs WHERE user_id IN ({$in}) AND created_at >= '{$c}'")->row_array();
+		return array('now' => (int)$r['n'], 'prev' => (int)$r['p']);
+	}
+
 
 	public function presentation()
 	{
@@ -306,86 +374,71 @@ class Ci_admin_live extends CI_Controller
 		);
 	}
 
+	/**
+	 * Live page data. Only what this viewer may see is sent:
+	 * own numbers for everyone, the team for team leaders, everything (and centers) for admins.
+	 */
 	public function ajax_get_data()
 	{
-		$manager_id = (int)$this->session->userdata('manager_id');
-		$role = (int)$this->session->userdata('manager_role');
-		$is_admin = ($role === 1 || $manager_id === 1);
+		$v = $this->_viewer();
+		$me = $v['me'];
 
-		$my_stats = $this->get_stats_block(array($manager_id));
-
-		$team_list = $this->ci_admin_model->fetchTeamList($manager_id, '');
-		$team_uids = array();
-		if (!empty($team_list)) {
-			$team_uids = array_values(array_filter(array_map(function($u) { return (int)$u['id']; }, $team_list)));
-		}
-		if (empty($team_uids) && $is_admin) {
-			$all_users = $this->db->select('id')->where('status', 1)->get('ci_user')->result_array();
-			$team_uids = array_map(function($u) { return (int)$u['id']; }, $all_users);
-		}
-		$team_stats = $this->get_stats_block($team_uids);
-
-		$performers_team = $this->get_performers_block($team_uids);
-
-		$company_stats = $this->get_stats_block(array());
-		$performers_company = $this->get_performers_block(array());
-
-		$centers_data = array();
-		$centers_query = $this->db->query("SELECT DISTINCT office FROM ci_user WHERE office IS NOT NULL AND office != '' ORDER BY office ASC")->result_array();
-		if (!empty($centers_query)) {
-			$idx = 1;
-			foreach ($centers_query as $crow) {
-				$office_name = trim($crow['office']);
-				if ($office_name === '') continue;
-				$c_users = $this->db->select('id')->from('ci_user')->where('office', $office_name)->where('status', 1)->get()->result_array();
-				if (!empty($c_users)) {
-					$c_uids = array_map(function($u) { return (int)$u['id']; }, $c_users);
-					$c_stats = $this->get_stats_block($c_uids);
-					$c_perf = $this->get_performers_block($c_uids);
-					$centers_data[] = array(
-						'center_code' => 'Center - ' . $idx,
-						'center_name' => $office_name,
-						'user_count' => count($c_uids),
-						'stats' => $c_stats,
-						'performers' => $c_perf
-					);
-					$idx++;
-				}
-			}
-		}
-
-		$current_user_row = $this->db->select('office')->where('id', $manager_id)->get('ci_user')->row_array();
-		$user_center_name = !empty($current_user_row['office']) ? trim($current_user_row['office']) : '';
-		$center_wise_only = null;
-		if ($user_center_name !== '') {
-			$center_users = $this->db->select('id')->from('ci_user')->where('office', $user_center_name)->where('status', 1)->get()->result_array();
-			if (!empty($center_users)) {
-				$c_uids = array_map(function($u) { return (int)$u['id']; }, $center_users);
-				$center_wise_only = array(
-					'center_name' => $user_center_name,
-					'stats' => $this->get_stats_block($c_uids),
-					'performers' => $this->get_performers_block($c_uids)
-				);
-			}
-		}
-
-		$response = array(
+		$mine = $this->_people(array($me));
+		$my = isset($mine[$me]) ? $mine[$me] : $this->_sum_people(array());
+		$res = array(
 			'status' => 'success',
-			'timestamp' => date('H:i:s'),
-			'date_formatted' => date('d M Y'),
-			'is_admin' => $is_admin,
-			'my_stats' => $my_stats,
-			'team_stats' => $team_stats,
-			'performers' => $performers_team,
-			'performers_team' => $performers_team,
-			'company_stats' => $company_stats,
-			'performers_company' => $performers_company,
-			'centers' => $centers_data,
-			'center_wise_only' => $center_wise_only
+			'updated' => date('h:i A'),
+			'month' => date('F Y'),
+			'me' => array('kpi' => $my, 'week' => $this->_calls_week(array($me)), 'stats' => $this->get_stats_block(array($me))),
+			'team' => null,
+			'centers' => null,
 		);
 
+		// Team: admins see everyone; team leaders see the people under them (and themselves in the totals).
+		$team_ids = $v['is_admin'] ? $this->_staff_ids() : (empty($v['team']) ? array() : $this->_staff_ids(array_merge($v['team'], array($me))));
+		if (!empty($team_ids)) {
+			$people = $this->_people($team_ids);
+			$members = array_values($people);
+			usort($members, function ($a, $b) {
+				foreach (array('sales_month', 'sales_count', 'orders_month', 'calls_today') as $k) if ($a[$k] != $b[$k]) return $a[$k] < $b[$k] ? 1 : -1;
+				return strcasecmp($a['name'], $b['name']);
+			});
+			foreach ($members as &$m) { unset($m['calls_yday'], $m['orders_yday']); $m['is_me'] = ($m['id'] === $me); unset($m['id']); }
+			unset($m);
+			$res['team'] = array(
+				'label' => $v['is_admin'] ? 'Company' : 'My Team',
+				'kpi' => $this->_sum_people($people),
+				'week' => $this->_calls_week($team_ids),
+				'stats' => $this->get_stats_block($team_ids),
+				'members' => $members,
+			);
+		}
+
+		// Performers (names only): admin = company, team leader = their team, others = their own center.
+		if ($v['is_admin']) { $p_ids = array(); $p_label = 'Company'; }
+		elseif (!empty($team_ids)) { $p_ids = $team_ids; $p_label = 'My Team'; }
+		elseif ($v['office'] !== '') {
+			$p_ids = array();
+			foreach ($this->db->select('id')->where('office', $v['office'])->where('status', 1)->get('ci_user')->result_array() as $r) $p_ids[] = (int)$r['id'];
+			$p_label = $v['office'];
+		} else { $p_ids = array($me); $p_label = 'Me'; }
+		$res['performers'] = array('label' => $p_label, 'rows' => $this->get_performers_block($v['is_admin'] ? array() : $p_ids));
+
+		// Centers: admins only.
+		if ($v['is_admin']) {
+			$by = array();
+			foreach ($this->_people($this->_staff_ids()) as $p) {
+				$k = $p['office'] !== '' ? $p['office'] : 'No center set';
+				$by[$k][] = $p;
+			}
+			$centers = array();
+			foreach ($by as $name => $list) { $c = $this->_sum_people($list); $c['name'] = $name; $centers[] = $c; }
+			usort($centers, function ($a, $b) { return $a['sales_month'] == $b['sales_month'] ? strcmp($a['name'], $b['name']) : ($a['sales_month'] < $b['sales_month'] ? 1 : -1); });
+			$res['centers'] = $centers;
+		}
+
 		header('Content-Type: application/json');
-		echo json_encode($response);
+		echo json_encode($res);
 		exit;
 	}
 
