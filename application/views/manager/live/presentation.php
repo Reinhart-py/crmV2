@@ -46,13 +46,17 @@
     .tv-btn, .tv-select { height:34px; border:1px solid var(--line); background:var(--panel); color:var(--text); border-radius:8px; font:inherit; font-size:13px; font-weight:700; padding:0 10px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
     .tv-btn:hover { border-color:var(--brand); }
     .tv-updated { font-size:12px; color:var(--muted); font-weight:600; white-space:nowrap; }
-    .tv-progress { height:3px; background:var(--track); border-radius:3px; overflow:hidden; margin:-8px 0 12px; }
-    .tv-progress i { display:block; height:100%; width:0; background:var(--brand); }
     body.tv-idle .tv-controls, body.tv-idle .tv-tabs { opacity:0; pointer-events:none; }
     body.tv-idle { cursor:none; }
 
     .tv-slide { display:none; flex:1; min-height:0; animation:fade .5s; }
     .tv-slide.active { display:flex; flex-direction:column; }
+    .fit { flex:1 0 auto; display:flex; flex-direction:column; transform-origin:top left; min-width:0; }
+    @media (min-width: 701px) {
+      html, body { overflow:hidden; }
+      .tv { height:calc(100vh - 28px); min-height:0; overflow:hidden; }
+      .tv-slide.active { overflow:hidden; }
+    }
     @keyframes fade { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
     .tv-slide-title { font-size:15px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-bottom:12px; display:flex; align-items:center; gap:8px; }
     .tv-slide-title i { color:var(--brand); }
@@ -221,7 +225,6 @@
         <div class="tv-clock"><b id="tvTime">--:--</b><span id="tvDate"></span></div>
       </div>
     </div>
-    <div class="tv-progress"><i id="tvProg"></i></div>
 
     <!-- 1. Overview -->
     <section class="tv-slide" data-slide="overview" data-title="Overview">
@@ -430,7 +433,10 @@
       bh += '<div class="tv-panel" style="padding:8px;"><h4>' + esc(c.name) + '<small>' + c.staff + ' staff</small></h4><table class="act"><thead><tr><th>Activity</th><th>Today</th><th>7 days</th><th>Month</th><th>Quarter</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
     });
     $('#bcGrid').html(bh);
+    // 3 or more centers: all side by side (two rows when more than 4).
+    $('#bcGrid').css('grid-template-columns', cs.length > 2 && window.innerWidth > 700 ? 'repeat(' + (cs.length > 4 ? Math.ceil(cs.length / 2) : cs.length) + ', minmax(0, 1fr))' : '');
     setOff('bycenter', cs.length < 2);
+    fit();
   }
 
   /* ---------- New sale celebration (5 seconds each) ---------- */
@@ -488,6 +494,7 @@
 
   /* ---------- Slides ---------- */
   var slides = $('.tv-slide');
+  slides.each(function () { $(this).wrapInner('<div class="fit"></div>'); });
   slides.each(function (i) {
     $('#tvTabs').append('<button type="button" data-i="' + i + '">' + $(this).data('title') + '</button>');
     if ($(this).hasClass('is-off')) $('#tvTabs button').last().hide();
@@ -505,12 +512,11 @@
     slides.removeClass('active').eq(cur).addClass('active');
     $('#tvTabs button').removeClass('active').eq(cur).addClass('active');
     slideStart = Date.now();
+    fit();
   }
   function tick() {
-    if (!playing) { $('#tvProg').css('width', '0'); return; }
-    var p = (Date.now() - slideStart) / SLIDE_MS;
-    if (p >= 1) { show(cur + 1); p = 0; }
-    $('#tvProg').css('width', (p * 100) + '%');
+    if (!playing) return;
+    if (Date.now() - slideStart >= SLIDE_MS) show(cur + 1);
   }
   $('#tvTabs').on('click', 'button', function () { show(+$(this).data('i')); });
   $('#tvPlay').on('click', function () {
@@ -518,6 +524,27 @@
     slideStart = Date.now();
     $(this).attr('title', playing ? 'Pause slides' : 'Play slides').find('i').attr('class', 'fa ' + (playing ? 'fa-pause' : 'fa-play'));
   });
+  // Shrink the shown slide until it fits the screen (wider layout first, then smaller).
+  function fit() {
+    var sl = slides.eq(cur), box = sl.children('.fit');
+    box.css({ transform: '', width: '' });
+    if (window.innerWidth <= 700 || !sl.hasClass('active')) return;
+    var avail = sl[0].clientHeight, k = 1;
+    if (!avail) return;
+    if (box[0].offsetHeight <= avail + 1) return;
+    // The wider the box, the shorter it gets: settle on a scale, then make sure it fits.
+    for (var n = 0; n < 6; n++) {
+      var k2 = Math.max(0.4, Math.min(1, avail / box[0].offsetHeight));
+      if (Math.abs(k2 - k) < 0.01) break;
+      k = k2;
+      box.css({ transform: 'scale(' + k + ')', width: (100 / k) + '%' });
+    }
+    var h = box[0].offsetHeight;
+    if (h * k > avail + 1) box.css('transform', 'scale(' + Math.max(0.4, avail / h) + ')');
+  }
+  var fitTimer = null;
+  $(window).on('resize', function () { clearTimeout(fitTimer); fitTimer = setTimeout(fit, 150); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
   show(0);
   slideTimer = setInterval(tick, 200);
 
@@ -544,6 +571,7 @@
   document.addEventListener('fullscreenchange', function () {
     var on = !!document.fullscreenElement;
     $('#tvFull i').attr('class', 'fa ' + (on ? 'fa-compress' : 'fa-arrows-alt'));
+    setTimeout(fit, 200);
     if (on) { keepAwake(); armIdle(); } else { $('body').removeClass('tv-idle'); if (wakeLock) { wakeLock.release(); wakeLock = null; } }
   });
   document.addEventListener('visibilitychange', function () { if (document.fullscreenElement && document.visibilityState === 'visible') keepAwake(); });
