@@ -4,7 +4,34 @@
 
   <!-- Content Wrapper. Contains page content -->
 
-  <div class="content-wrapper">
+<style>
+/* Edit User: compact layout (look only - same fields, names and behaviour) */
+.ureg .content-header{padding:10px 15px 6px}
+.ureg .content-header h1{font-size:20px}
+.ureg .content{padding-top:0}
+.ureg .container{width:100%;max-width:1500px;padding:0 6px}
+.ureg .box{margin-bottom:10px !important;border-radius:6px;box-shadow:none;border:1px solid #e2e8f0}
+.ureg .box-header.with-border{padding:6px 12px !important;border-bottom:1px solid #eef2f7;text-align:left}
+.ureg .box-header .box-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#334155}
+.ureg .box-body{padding:8px 6px 0 !important;display:flex;flex-wrap:wrap}
+.ureg .box-body > .row{display:flex;flex-wrap:wrap;margin:0;flex-basis:100%;width:100%}
+.ureg .box-body > [class*="col-"],.ureg .box-body > .row > *{padding:0 6px}
+.ureg .box-body > :not(.row):not([class*="col-"]),.ureg .box-body > .row > :not([class*="col-"]){flex-basis:100%}
+.ureg .form-group{margin-bottom:7px !important}
+.ureg .form-group label{font-size:12px !important;margin-bottom:2px !important;color:#475569;font-weight:600}
+.ureg .form-control{height:30px !important;min-height:30px !important;padding:3px 8px !important;font-size:13px !important}
+.ureg textarea.form-control{height:auto;min-height:32px}
+.ureg .input-group{display:flex !important;width:100%}
+.ureg .input-group-addon{display:flex !important;align-items:center;width:auto !important;padding:0 !important;border:0 !important;background:none !important}
+.ureg .input-group-addon select{height:30px !important;max-width:115px !important;font-size:12px !important;border:1px solid #cbd5e1 !important;border-right:0 !important;border-radius:4px 0 0 4px !important;padding:0 4px !important;background:#f8fafc !important}
+.ureg .input-group > .form-control{flex:1 1 auto;min-width:0;width:auto !important;border-radius:0 4px 4px 0 !important}
+.ureg .select2-container .select2-selection--single{height:30px !important}
+.ureg .box-footer{padding:8px 12px;margin-bottom:12px;border-radius:6px}
+@media (max-width:767px){.ureg .box-body [class*="col-"]{flex:0 0 100%;width:100%}}
+@media (min-width:1200px){.ureg .col-lg-4{width:25%}}
+@media (min-width:1600px){.ureg .col-lg-4{width:20%}}
+</style>
+  <div class="content-wrapper ureg">
 
     <!-- Content Header (Page header) -->
 
