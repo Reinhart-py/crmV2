@@ -28,8 +28,15 @@
 .ureg .select2-container .select2-selection--single{height:30px !important}
 .ureg .box-footer{padding:8px 12px;margin-bottom:12px;border-radius:6px}
 @media (max-width:767px){.ureg .box-body [class*="col-"]{flex:0 0 100%;width:100%}}
-@media (min-width:1200px){.ureg .col-lg-4{width:25%}}
-@media (min-width:1600px){.ureg .col-lg-4{width:20%}}
+/* Label on the left, field on the right */
+.ureg .form-group{display:grid;grid-template-columns:136px minmax(0,1fr);column-gap:8px;align-items:center;position:relative}
+.ureg .form-group > label{margin:0 !important;line-height:1.2;text-align:right;word-break:break-word}
+.ureg .form-group > :not(label){grid-column:2}
+.ureg .form-group .btn-pwd-eye{top:50% !important;transform:translateY(-50%);bottom:auto !important}
+.ureg .form-group .select2-container{width:100% !important}
+@media (min-width:1200px){.ureg .col-lg-4{width:33.333%}}
+@media (min-width:1700px){.ureg .col-lg-4{width:25%}}
+@media (max-width:575px){.ureg .form-group{grid-template-columns:1fr}.ureg .form-group > label{text-align:left;margin-bottom:2px !important}.ureg .form-group > :not(label){grid-column:1}}
 </style>
   <div class="content-wrapper ureg">
 
@@ -52,7 +59,7 @@
    <div class="container">
      <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?> <?php echo get_message($this->session->flashdata('message'),'message'); ?>
      
-      <form role="form" action="<?php echo base_url(); ?>manager/users/edit/<?php echo $list['id']; ?>" method="post" name="edit_form">
+      <form role="form" action="<?php echo base_url(); ?>manager/users/edit/<?php echo $list['id']; ?>" method="post" name="edit_form" autocomplete="off">
 
 
          <div class="box box-default js-sys-box">
