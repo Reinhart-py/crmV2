@@ -544,3 +544,40 @@ body.auth-page {
   body:has(.sp-chat:not([hidden])) .auth-visual { display: none; }
   body:has(.sp-chat:not([hidden])) .auth-panel { height: 100vh; height: 100dvh; min-height: 0; }
 }
+
+/* Phones: compact welcome strip (title only) and tighter spacing so the sign-in and support forms fit one screen. */
+@media (max-width: 860px) {
+  .auth-visual { padding: 14px 16px !important; min-height: 0 !important; }
+  .auth-visual .av-sub, .auth-visual .av-features, .auth-visual .av-art { display: none !important; }
+  .auth-visual .av-group { margin: 0 !important; }
+  .auth-visual .av-kicker { margin: 0 0 2px; font-size: 11px; }
+  .auth-visual .av-title { margin: 0; font-size: 20px; }
+  .auth-panel { min-height: 0; }
+}
+@media (max-width: 860px) and (max-height: 760px) {
+  .auth-brand img { height: 48px !important; }
+  .auth-title { font-size: 22px; margin-bottom: 2px; }
+  .auth-sub { margin-bottom: 10px !important; }
+  .auth-field { margin-bottom: 8px !important; }
+  .auth-input { height: 42px; }
+  .sp-textarea { min-height: 56px !important; height: 56px !important; }
+}
+@media (max-width: 860px) {
+  .auth-panel:has(.sp-inner) { padding-top: 14px; padding-bottom: 10px; }
+  .sp-inner { padding-top: 8px !important; }
+  .sp-inner .auth-brand { margin-bottom: 8px !important; }
+  .sp-inner .auth-brand img { height: 48px !important; }
+  .sp-inner .auth-sub { margin-bottom: 12px !important; }
+  .sp-inner .auth-field { margin-bottom: 10px !important; }
+  .sp-textarea { min-height: 72px !important; height: 72px !important; }
+  .sp-inner .auth-alt { margin-top: 10px !important; }
+  .auth-panel:has(.sp-inner) .auth-foot { margin-top: 8px !important; }
+}
+@media (max-width: 860px) and (max-height: 700px) {
+  .sp-inner .auth-brand { display: none; }
+  .sp-inner .auth-title { font-size: 20px; }
+  .sp-inner .auth-label { margin-bottom: 4px; }
+  .sp-inner .auth-input { height: 38px; }
+  .sp-textarea { min-height: 52px !important; height: 52px !important; }
+  .sp-inner .auth-field { margin-bottom: 6px !important; }
+}

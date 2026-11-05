@@ -54,7 +54,15 @@
   .ls-list { flex: 1; max-height: none; min-height: 0; }
   .ls-chat { min-height: 0; }
   .ls-msgs { flex: 1; max-height: none; min-height: 0; }
-  @media (max-width: 991px) { .ls-wrap { grid-template-columns: 1fr; height: auto; } .ls-list { max-height: 320px; } .ls-chat { height: 70vh; } }
+  .ls-back { display: none; }
+  /* Phones and tablets: the list fills the screen; tapping a chat shows only that chat, with Back to the list. */
+  @media (max-width: 991px) {
+    .ls-wrap { grid-template-columns: 1fr; height: calc(100vh - 150px); min-height: 360px; }
+    .ls-list { max-height: none; }
+    .ls-wrap:not(.has-chat) > .ls-chat { display: none; }
+    .ls-wrap.has-chat > .ls-card:first-child { display: none; }
+    .ls-back { display: flex; align-items: center; gap: 6px; border: 0; background: none; color: #1e3a8a; font-weight: 700; padding: 0 0 6px; cursor: pointer; font: inherit; }
+  }
 </style>
 
 <?php $cb_tab = 'closed'; $can_status = !empty($rights['status']); ?>
@@ -77,7 +85,7 @@
     <?php echo get_message($this->session->flashdata('error_message'), 'error_message'); ?>
     <?php echo get_message($this->session->flashdata('message'), 'message'); ?>
     <?php require(APPPATH . "views/manager/support/_tabs.php"); ?>
-    <div class="ls-wrap">
+    <div class="ls-wrap" id="lsWrap">
       <div class="ls-card">
         <div class="ls-list-head"><span>Closed chats</span><span class="ls-hint" id="lsCount"></span></div>
         <div class="ls-list" id="lsList"><div class="ls-empty">Loading...</div></div>
@@ -172,6 +180,15 @@
     }
   }
 
+  // Back (phones/tablets): return to the list.
+  el('lsChat').addEventListener('click', function (e) {
+    if (!e.target.closest('#lsBack')) return;
+    current = 0; lastId = 0; lastListKey = '';
+    el('lsWrap').classList.remove('has-chat');
+    el('lsChat').innerHTML = '<div class="ls-placeholder" id="lsPlaceholder">Select a conversation to view it and reply.</div>';
+    tick();
+  });
+
   el('lsList').addEventListener('click', function (e) {
     var b = e.target.closest('.ls-item'); if (!b) return;
     openChat(+b.getAttribute('data-id'));
@@ -179,8 +196,9 @@
 
   function openChat(id) {
     current = id; lastId = 0;
+    el('lsWrap').classList.add('has-chat');
     el('lsChat').innerHTML =
-      '<div class="ls-chat-head"><div><strong id="lsTitle"></strong> <span class="ls-badge" id="lsBadge"></span><div class="ls-contact" id="lsContact"></div></div>' +
+      '<div class="ls-chat-head"><div><button type="button" class="ls-back" id="lsBack"><i class="fa fa-arrow-left"></i> Back</button><strong id="lsTitle"></strong> <span class="ls-badge" id="lsBadge"></span><div class="ls-contact" id="lsContact"></div></div>' +
       '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
       (CAN.history ? '<a class="btn btn-sm btn-default" href="' + BASE + 'history/' + id + '"><i class="fa fa-file-text-o"></i> Transcript</a>' : '') +
       (CAN.close ? '<button type="button" class="btn btn-sm btn-default" id="lsClose"><i class="fa fa-check"></i> Close chat</button>' : '') + '</div></div>' +
