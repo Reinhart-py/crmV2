@@ -248,7 +248,7 @@
     </button>
 
     <div class="profile-menu-container">
-      <button type="button" class="profile-avatar-btn" id="profileMenuToggle" aria-haspopup="true" title="Account menu:<?php echo htmlspecialchars($current_user_name); ?>">
+      <button type="button" class="profile-avatar-btn" id="profileMenuToggle" aria-haspopup="true" title="Account menu" aria-label="Account menu">
         <img src="<?php echo base_url() . $user_avatar; ?>" alt="<?php echo htmlspecialchars($current_user_name); ?>" class="profile-avatar-img" />
         <span class="my-sup-unread" id="mySupAvatarBadge" style="display:none; position:absolute; top:-4px; right:-4px;"></span>
       </button>
