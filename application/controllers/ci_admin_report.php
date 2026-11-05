@@ -673,6 +673,65 @@ class Ci_admin_report extends CI_Controller {
 		}
 	}
 
+	/**
+	 * Sales & Activity reports. Everyone sees their own numbers, team leaders also their team,
+	 * admins everyone (and the Centers tab).
+	 */
+	public function insights($tab = '')
+	{
+		$this->if_not_login();
+		$me = (int)$this->session->userdata('manager_id');
+		$scope = $this->report_model->scope_ids();
+		$is_admin = ($scope === null);
+
+		$tabs = array(
+			'sales-target' => 'Sales vs Target',
+			'calls' => 'Call Activity',
+			'funnel' => 'Lead Funnel',
+			'services' => 'Revenue by Service',
+			'centers' => 'Centers',
+			'overdue' => 'Overdue Follow-ups',
+		);
+		if (!$is_admin) unset($tabs['centers']);
+		if (!isset($tabs[$tab])) $tab = 'sales-target';
+
+		$month = $this->_q('month');
+		if (!preg_match('/^\d{4}-\d{2}$/', $month)) $month = date('Y-m');
+		$d1 = $this->_q('d1'); $d2 = $this->_q('d2');
+		$d1 = ($d1 !== '' && strtotime($d1)) ? date('Y-m-d', strtotime($d1)) : date('Y-m-01');
+		$d2 = ($d2 !== '' && strtotime($d2)) ? date('Y-m-d', strtotime($d2)) : date('Y-m-d');
+
+		$all = $this->report_model->insight_people();
+		$person = (int)$this->_q('person');
+		if (!isset($all[$person])) $person = 0;
+		$people = $person ? array($person => $all[$person]) : $all;
+
+		$rows = array();
+		switch ($tab) {
+			case 'sales-target': $rows = $this->report_model->insight_sales_target($people, $month); break;
+			case 'calls': $rows = $this->report_model->insight_calls($people, $d1, $d2); break;
+			case 'funnel': $rows = $this->report_model->insight_funnel($people, $d1, $d2); break;
+			case 'services': $rows = $this->report_model->insight_services($people, $d1, $d2); break;
+			case 'centers': $rows = $this->report_model->insight_centers($people, $month); break;
+			case 'overdue': $rows = $this->report_model->insight_overdue($people); break;
+		}
+
+		$data = array();
+		$data['info'] = array('title' => 'Sales & Activity', 'page_heading' => 'Sales & Activity');
+		$data['tabs'] = $tabs;
+		$data['tab'] = $tab;
+		$data['rows'] = $rows;
+		$data['month'] = $month;
+		$data['d1'] = $d1;
+		$data['d2'] = $d2;
+		$data['person'] = $person;
+		$data['people'] = $all;
+		$data['is_admin'] = $is_admin;
+		$data['scope_label'] = $is_admin ? 'Everyone' : (count($all) > 1 ? 'You and your team' : 'Only you');
+		$data['groups'] = $this->report_model->insight_status_groups();
+		$this->load->view('manager/report/insights', $data);
+	}
+
 	public function revenue_list()
 	{
 		$this->if_not_login();

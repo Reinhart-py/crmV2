@@ -331,4 +331,199 @@ class Report_model extends CI_model {
 				  }
 	  
 	 
+
+	/* ------------------------------------------------------------------
+	 * Sales & Activity reports. Every function gets the people to report on
+	 * from insight_people(), so nobody sees anyone outside their own scope.
+	 * ------------------------------------------------------------------ */
+
+	/** People in scope (admin: all active staff; others: self + team), keyed by id. $only: just that one person. */
+	public function insight_people($only = 0)
+	{
+		$scope = $this->scope_ids();
+		$this->db->select('id, name, office')->from('ci_user')->where('status', 1);
+		$pres = function_exists('crm_presentation_role_id') ? crm_presentation_role_id() : 0;
+		if ($pres > 0) $this->db->where('user_type !=', $pres);
+		if ($scope !== null) $this->db->where_in('id', $scope ? $scope : array(-1));
+		if ((int)$only > 0) $this->db->where('id', (int)$only);
+		$this->db->order_by('name', 'ASC');
+		$out = array();
+		foreach ($this->db->get()->result_array() as $u) {
+			$out[(int)$u['id']] = array('id' => (int)$u['id'], 'name' => $u['name'], 'office' => trim((string)$u['office']));
+		}
+		return $out;
+	}
+
+	private function _amount_sql($o = 'o')
+	{
+		return "CAST(COALESCE(NULLIF({$o}.pricing_amount, 0), NULLIF({$o}.mrr, 0), 0) AS DECIMAL(12,2))";
+	}
+
+	private function _is_sale_sql($o = 'o')
+	{
+		return "({$o}.status IN ('Sales', 'Closed / Sold', 'Completed') OR ({$o}.sales_ref_no IS NOT NULL AND {$o}.sales_ref_no != ''))";
+	}
+
+	/** Runs $sql (must return uid + columns) and merges each column into $rows[uid]. */
+	private function _merge(&$rows, $sql)
+	{
+		$r = $this->db->query($sql);
+		if (!$r || !is_object($r)) return;
+		foreach ($r->result_array() as $row) {
+			$id = (int)$row['uid'];
+			if (!isset($rows[$id])) continue;
+			foreach ($row as $k => $v) if ($k !== 'uid') $rows[$id][$k] = is_numeric($v) ? $v + 0 : $v;
+		}
+	}
+
+	private function _range($d1, $d2)
+	{
+		$a = $this->_day($d1); $b = $this->_day($d2);
+		if ($a === '') $a = date('Y-m-01');
+		if ($b === '') $b = date('Y-m-d');
+		if ($a > $b) { $t = $a; $a = $b; $b = $t; }
+		return array($a, $b);
+	}
+
+	/** Sales vs target for one month ("Y-m"). Orders and sales always count for the person who made them. */
+	public function insight_sales_target($people, $month)
+	{
+		if (!preg_match('/^\d{4}-\d{2}$/', (string)$month)) $month = date('Y-m');
+		$m1 = $month . '-01'; $m2 = date('Y-m-t', strtotime($m1));
+		$rows = array();
+		foreach ($people as $id => $p) $rows[$id] = $p + array('orders' => 0, 'sales' => 0, 'sales_aed' => 0.0, 'target' => 0.0);
+		if (!$rows) return array();
+		$in = $this->_ids_sql(array_keys($rows));
+		$amt = $this->_amount_sql('o'); $sale = $this->_is_sale_sql('o');
+		$a = $this->db->escape($m1 . ' 00:00:00'); $b = $this->db->escape($m2 . ' 23:59:59');
+		$this->_merge($rows, "SELECT o.created_by uid, COUNT(*) orders, SUM({$sale}) sales, COALESCE(SUM(CASE WHEN {$sale} THEN {$amt} ELSE 0 END), 0) sales_aed
+			FROM ci_orders o WHERE o.created_at BETWEEN {$a} AND {$b} AND o.created_by IN ({$in}) GROUP BY o.created_by");
+		$mk = $this->db->escape($month); $e1 = $this->db->escape($m1); $e2 = $this->db->escape($m2);
+		$this->_merge($rows, "SELECT T.user_id uid, COALESCE(SUM(T.target_amount), 0) target FROM ci_hr_targets T
+			WHERE T.status = 'Active' AND (T.period_month = {$mk} OR ({$e1} <= T.end_date AND {$e2} >= T.start_date)) AND T.user_id IN ({$in}) GROUP BY T.user_id");
+		foreach ($rows as &$r) {
+			$r['pct'] = $r['target'] > 0 ? (int)round($r['sales_aed'] * 100 / $r['target']) : null;
+			$r['gap'] = $r['target'] > 0 ? max(0, $r['target'] - $r['sales_aed']) : null;
+		}
+		unset($r);
+		usort($rows, function ($x, $y) {
+			foreach (array('sales_aed', 'sales', 'orders', 'target') as $k) if ($x[$k] != $y[$k]) return $x[$k] < $y[$k] ? 1 : -1;
+			return strcasecmp($x['name'], $y['name']);
+		});
+		return $rows;
+	}
+
+	/** Calls per person between two dates. */
+	public function insight_calls($people, $d1, $d2)
+	{
+		list($a, $b) = $this->_range($d1, $d2);
+		$rows = array();
+		foreach ($people as $id => $p) $rows[$id] = $p + array('calls' => 0, 'completed' => 0, 'talk_sec' => 0, 'days' => 0);
+		if (!$rows) return array();
+		$in = $this->_ids_sql(array_keys($rows));
+		$ea = $this->db->escape($a . ' 00:00:00'); $eb = $this->db->escape($b . ' 23:59:59');
+		$this->_merge($rows, "SELECT user_id uid, COUNT(*) calls, SUM(call_status = 'Completed') completed, COALESCE(SUM(duration), 0) talk_sec, COUNT(DISTINCT DATE(created_at)) days
+			FROM ci_call_logs WHERE created_at BETWEEN {$ea} AND {$eb} AND user_id IN ({$in}) GROUP BY user_id");
+		foreach ($rows as &$r) $r['per_day'] = $r['days'] > 0 ? round($r['calls'] / $r['days'], 1) : 0;
+		unset($r);
+		usort($rows, function ($x, $y) { return $x['calls'] == $y['calls'] ? strcasecmp($x['name'], $y['name']) : ($x['calls'] < $y['calls'] ? 1 : -1); });
+		return $rows;
+	}
+
+	/** Lead status groups (by status name, so renamed ids still work). */
+	public function insight_status_groups()
+	{
+		$groups = array(
+			'new' => array('Database'),
+			'working' => array('Expected', 'In Process', 'Submitted', 'Pending Activation', 'Follow up / Call Back', 'Future', 'Busy / Not Responding'),
+			'won' => array('Closed', 'Activated'),
+			'lost' => array('Lost', 'Not Interested'),
+			'invalid' => array('Invalid Entry', 'DNCR / DND', 'Not Valid'),
+		);
+		$ids = array();
+		foreach ($this->db->select('id, status')->get('ci_status')->result_array() as $s) {
+			foreach ($groups as $g => $names) if (in_array(trim($s['status']), $names, true)) $ids[$g][] = (int)$s['id'];
+		}
+		foreach ($groups as $g => $x) if (empty($ids[$g])) $ids[$g] = array(-1);
+		return array('ids' => $ids, 'names' => $groups);
+	}
+
+	/** Lead funnel per current owner, for leads created between two dates. */
+	public function insight_funnel($people, $d1, $d2)
+	{
+		list($a, $b) = $this->_range($d1, $d2);
+		$g = $this->insight_status_groups();
+		$rows = array();
+		foreach ($people as $id => $p) $rows[$id] = $p + array('total' => 0, 'new' => 0, 'working' => 0, 'won' => 0, 'lost' => 0, 'invalid' => 0);
+		if (!$rows) return array();
+		$in = $this->_ids_sql(array_keys($rows));
+		$own = $this->owner_sql('A');
+		$cols = array();
+		foreach (array('new', 'working', 'won', 'lost', 'invalid') as $k) $cols[] = "SUM(A.status IN (" . $this->_ids_sql($g['ids'][$k]) . ")) {$k}";
+		$this->_merge($rows, "SELECT {$own} uid, COUNT(*) total, " . implode(', ', $cols) . "
+			FROM ci_leads A WHERE LEFT(A.created, 10) BETWEEN " . $this->db->escape($a) . " AND " . $this->db->escape($b) . " AND {$own} IN ({$in}) GROUP BY uid");
+		foreach ($rows as &$r) {
+			$valid = $r['total'] - $r['invalid'];
+			$r['conv'] = $valid > 0 ? round($r['won'] * 100 / $valid, 1) : null;
+		}
+		unset($r);
+		$rows = array_values(array_filter($rows, function ($r) { return $r['total'] > 0; }));
+		usort($rows, function ($x, $y) { return $x['total'] == $y['total'] ? strcasecmp($x['name'], $y['name']) : ($x['total'] < $y['total'] ? 1 : -1); });
+		return $rows;
+	}
+
+	/** Orders and sales by service, between two dates (orders made by people in scope). */
+	public function insight_services($people, $d1, $d2)
+	{
+		list($a, $b) = $this->_range($d1, $d2);
+		if (!$people) return array();
+		$in = $this->_ids_sql(array_keys($people));
+		$amt = $this->_amount_sql('o'); $sale = $this->_is_sale_sql('o');
+		$sql = "SELECT COALESCE(NULLIF(TRIM(o.service_title), ''), 'Not set') service, COUNT(*) orders, SUM({$sale}) sales,
+			COALESCE(SUM(CASE WHEN {$sale} THEN {$amt} ELSE 0 END), 0) sales_aed, COALESCE(SUM({$amt}), 0) order_aed, COUNT(DISTINCT o.created_by) sellers
+			FROM ci_orders o WHERE o.created_at BETWEEN " . $this->db->escape($a . ' 00:00:00') . " AND " . $this->db->escape($b . ' 23:59:59') . "
+			AND o.created_by IN ({$in}) GROUP BY service ORDER BY sales_aed DESC, orders DESC";
+		$r = $this->db->query($sql);
+		return ($r && is_object($r)) ? $r->result_array() : array();
+	}
+
+	/** Centers side by side for one month (admin only - the controller checks). */
+	public function insight_centers($people, $month)
+	{
+		if (!preg_match('/^\d{4}-\d{2}$/', (string)$month)) $month = date('Y-m');
+		$m1 = $month . '-01'; $m2 = date('Y-m-t', strtotime($m1));
+		$per = $this->insight_sales_target($people, $month);
+		$calls = array();
+		foreach ($this->insight_calls($people, $m1, $m2) as $c) $calls[$c['id']] = $c['calls'];
+		$by = array();
+		foreach ($per as $p) {
+			$k = $p['office'] !== '' ? $p['office'] : 'No center set';
+			if (!isset($by[$k])) $by[$k] = array('name' => $k, 'staff' => 0, 'calls' => 0, 'orders' => 0, 'sales' => 0, 'sales_aed' => 0.0, 'target' => 0.0);
+			$by[$k]['staff']++;
+			$by[$k]['calls'] += isset($calls[$p['id']]) ? $calls[$p['id']] : 0;
+			foreach (array('orders', 'sales', 'sales_aed', 'target') as $f) $by[$k][$f] += $p[$f];
+		}
+		foreach ($by as &$c) $c['pct'] = $c['target'] > 0 ? (int)round($c['sales_aed'] * 100 / $c['target']) : null;
+		unset($c);
+		$by = array_values($by);
+		usort($by, function ($x, $y) { return $x['sales_aed'] == $y['sales_aed'] ? strcmp($x['name'], $y['name']) : ($x['sales_aed'] < $y['sales_aed'] ? 1 : -1); });
+		return $by;
+	}
+
+	/** Open leads whose follow-up date has passed, for their current owners. */
+	public function insight_overdue($people, $limit = 1000)
+	{
+		if (!$people) return array();
+		$g = $this->insight_status_groups();
+		$closed = $this->_ids_sql(array_merge($g['ids']['won'], $g['ids']['lost'], $g['ids']['invalid']));
+		$own = $this->owner_sql('A');
+		$today = $this->db->escape(date('Y-m-d'));
+		$sql = "SELECT A.id, A.customer, A.poc, LEFT(A.followup_date, 10) followup, DATEDIFF({$today}, LEFT(A.followup_date, 10)) days_over, S.status status_name, U.name owner
+			FROM ci_leads A LEFT JOIN ci_status S ON S.id = A.status LEFT JOIN ci_user U ON U.id = {$own}
+			WHERE A.followup_date IS NOT NULL AND A.followup_date != '' AND LEFT(A.followup_date, 10) < {$today}
+			AND (A.status IS NULL OR A.status NOT IN ({$closed})) AND {$own} IN (" . $this->_ids_sql(array_keys($people)) . ")
+			ORDER BY LEFT(A.followup_date, 10) DESC LIMIT " . (int)$limit;
+		$r = $this->db->query($sql);
+		return ($r && is_object($r)) ? $r->result_array() : array();
+	}
 }
