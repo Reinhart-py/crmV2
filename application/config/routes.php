@@ -288,13 +288,8 @@ $route['manager/live/ajax_get_data'] = 'ci_admin_live/ajax_get_data';
 $route['manager/live/(:any)'] = 'ci_admin_live/$1';
 
 $route['manager/events'] = 'ci_admin_events/index';
-$route['manager/events/add'] = 'ci_admin_events/add';
-$route['manager/events/delete/(:num)'] = 'ci_admin_events/delete/$1';
-$route['manager/events/ajax_events'] = 'ci_admin_events/ajax_get_events';
 $route['manager/events/(:any)'] = 'ci_admin_events/$1';
-$route['manager/awards'] = 'ci_admin_events/awards';
-$route['manager/awards/add'] = 'ci_admin_events/add_award';
-$route['manager/awards/delete/(:num)'] = 'ci_admin_events/delete_award/$1';
+$route['manager/awards'] = 'ci_admin_events/index';
 
 $route['manager/system/integrations'] = 'ci_admin_integrations/index';
 $route['manager/system/integrations/save'] = 'ci_admin_integrations/save';

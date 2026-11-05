@@ -285,8 +285,8 @@
           </li>
           <li>
             <a href="<?php echo base_url(); ?>manager/events" class="google-profile-item">
-              <i class="fa fa-calendar-check-o"></i>
-              <span>Event and Awards</span>
+              <i class="fa fa-calendar"></i>
+              <span>Events &amp; Festivals</span>
             </a>
           </li>
           <li>
@@ -304,7 +304,6 @@
             </button>
             <ul class="gp-sub" id="gpHrMenu" hidden>
               <li><a href="<?php echo base_url(); ?>manager/hr/leaves" class="google-profile-item"><i class="fa fa-calendar-check-o"></i><span>Holiday Request</span></a></li>
-              <li><a href="<?php echo base_url(); ?>manager/hr/events_plans" class="google-profile-item"><i class="fa fa-calendar"></i><span>Events &amp; Planning</span></a></li>
               <li><a href="<?php echo base_url(); ?>manager/hr/search_topics" class="google-profile-item"><i class="fa fa-search"></i><span>Search Topics</span></a></li>
               <li><a href="<?php echo base_url(); ?>manager/hr/training" class="google-profile-item"><i class="fa fa-book"></i><span>Training</span></a></li>
             </ul>

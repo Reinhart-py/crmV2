@@ -739,14 +739,12 @@ class Ci_admin_system extends CI_Controller {
 				)
 			),
 			array(
-				'title' => 'Events & Awards',
+				'title' => 'Events & Festivals',
 				'key' => 'm_events',
 				'icon' => 'fa fa-trophy',
 				'children' => array(
-					array('title' => 'Events & Announcements', 'key' => 'ev_list', 'url' => 'manager/events'),
-					array('title' => 'Add Event', 'key' => 'ev_add', 'url' => 'manager/events/add'),
-					array('title' => 'Awards Recognition', 'key' => 'aw_list', 'url' => 'manager/awards'),
-					array('title' => 'Add Award', 'key' => 'aw_add', 'url' => 'manager/awards/add')
+					array('title' => 'Events & Festivals', 'key' => 'ev_list', 'url' => 'manager/events'),
+					array('title' => 'Manage Events & Festivals', 'key' => 'ev_add', 'url' => 'manager/events/manage')
 				)
 			),
 			array(

@@ -68,6 +68,7 @@ $my_leave_list = $this->db->select('leave_type, from_date, to_date, total_days, 
 $co_holidays = $this->db->select('title, event_type, start_date, end_date')
   ->from('ci_events')
   ->where("LOWER(event_type) IN ('holiday', 'public_holiday', 'festival')", null, false)
+  ->where('visibility', 'public')
   ->where('start_date >=', date('Y-01-01 00:00:00'))
   ->where('start_date <=', date('Y-12-31 23:59:59'))
   ->where("(status IS NULL OR status = 'active')", null, false)

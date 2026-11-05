@@ -33,12 +33,13 @@ if (!function_exists('crm_perm_catalog')) {
 
 		$cat = array(
 			'core' => array(
-				'title' => 'Dashboard, Calls & Live', 'key' => '', 'menu' => false,
+				'title' => 'Core Modules', 'key' => '', 'menu' => false,
 				'icon' => '<rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect>',
 				'items' => array(
 					'dashboard' => array('label' => 'Dashboard', 'desc' => 'Home page with pipeline counts and charts', 'pages' => array('dashboard'), 'levels' => 'r'),
 					'calls' => array('label' => 'Phone Dialer & Calls', 'desc' => 'Dialer, softphone and call logs (phone button in the top bar)', 'pages' => array('calls')),
 					'live' => array('label' => 'Live Operations Report', 'desc' => 'LIVE button in the top bar and the TV presentation screen', 'pages' => array('live'), 'levels' => 'r'),
+					'events_view' => array('label' => 'Events & Festivals', 'desc' => 'View company holidays, festivals, events and awards (profile menu); view only', 'fallback' => 'dashboard', 'pages' => array('events'), 'levels' => 'r'),
 				),
 			),
 			'my_zone' => array(
@@ -125,15 +126,14 @@ if (!function_exists('crm_perm_catalog')) {
 				),
 			),
 			'hr' => array(
-				'title' => 'HR & Training', 'key' => 'hr', 'match' => array('hr', 'events', 'awards'),
+				'title' => 'HR & Training', 'key' => 'hr', 'match' => array('hr'),
 				'icon' => '<rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><line x1="15" y1="8" x2="17" y2="8"></line><line x1="15" y1="12" x2="17" y2="12"></line><line x1="7" y1="16" x2="17" y2="16"></line>',
-				'note' => 'Holiday requests, Events & Plans, Training and Search Topics stay open to every user from the profile menu for their own data. The rights here add the HR menu and managing everyone.',
+				'note' => 'Holiday requests, Training and Search Topics stay open to every user from the profile menu for their own data. The rights here add the HR menu and managing everyone.',
 				'items' => array(
 					'hr' => array('label' => 'HR Overview', 'desc' => 'HR dashboard', 'nav' => array(array('hr', 'Overview', 'fa-th-large')), 'pages' => array('hr')),
 					'hr_attendance' => array('label' => 'Attendance & GPS', 'desc' => 'Attendance with location', 'fallback' => 'hr', 'nav' => array(array('hr/attendance', 'Attendance & GPS', 'fa-map-marker')), 'pages' => array('hr/attendance')),
 					'hr_shifts' => array('label' => 'Shifts', 'desc' => 'Create and assign shifts', 'fallback' => 'hr', 'nav' => array(array('hr/shifts', 'Shifts', 'fa-clock-o')), 'pages' => array('hr/shifts'), 'write' => array('hr/shifts/add', 'hr/shifts/assign')),
 					'hr_leaves' => array('label' => 'Holiday Requests (all staff)', 'desc' => 'See and approve everyone\'s leave', 'fallback' => 'hr', 'nav' => array(array('hr/leaves', 'Holiday Request', 'fa-calendar-check-o'))),
-					'hr_events' => array('label' => 'Events & Plans', 'desc' => 'Company events and plans; Full can publish for everyone', 'fallback' => 'hr', 'nav' => array(array('hr/events_plans', 'Events & Plans', 'fa-calendar'))),
 					'hr_training' => array('label' => 'Training', 'desc' => 'Training courses; Full can add courses', 'fallback' => 'hr', 'nav' => array(array('hr/training', 'Training', 'fa-graduation-cap'))),
 					'hr_topics' => array('label' => 'Search Topics', 'desc' => 'HR help topics; Full can edit topics', 'fallback' => 'hr', 'nav' => array(array('hr/search_topics', 'Search Topics', 'fa-search'))),
 					'hr_targets' => array('label' => 'Targets', 'desc' => 'Sales targets per person', 'fallback' => 'hr', 'nav' => array(array('hr/targets', 'Targets', 'fa-crosshairs')), 'pages' => array('hr/targets'), 'write' => array('hr/targets/add')),
@@ -142,7 +142,7 @@ if (!function_exists('crm_perm_catalog')) {
 					'hr_taxation' => array('label' => 'Taxation & Gratuity', 'desc' => 'Tax and end-of-service figures', 'fallback' => 'hr', 'nav' => array(array('hr/taxation', 'Taxation & Gratuity', 'fa-calculator')), 'pages' => array('hr/taxation')),
 					'hr_appraisals' => array('label' => 'Appraisals', 'desc' => 'Performance reviews', 'fallback' => 'hr', 'nav' => array(array('hr/appraisals', 'Appraisals', 'fa-star-o')), 'pages' => array('hr/appraisals'), 'write' => array('hr/appraisals/add')),
 					'hr_documents' => array('label' => 'Document Vault', 'desc' => 'Employee documents', 'fallback' => 'hr', 'nav' => array(array('hr/documents', 'Document Vault', 'fa-folder-open-o')), 'pages' => array('hr/documents'), 'write' => array('hr/documents/add')),
-					'events_list' => array('label' => 'Events & Awards', 'desc' => 'Company events and awards page', 'fallback' => 'events', 'nav' => array(array('events', 'Events & Awards', 'fa-trophy')), 'pages' => array('events', 'awards'), 'write' => array('events/add', 'awards/add')),
+					'events_list' => array('label' => 'Manage Events & Festivals', 'desc' => 'Publish company holidays, festivals, events and awards for everyone', 'fallback' => 'events', 'nav' => array(array('events/manage', 'Events & Festivals', 'fa-calendar', 'write')), 'write' => array('events/manage')),
 				),
 			),
 			'reports' => array(
@@ -229,7 +229,7 @@ if (!function_exists('crm_perm_resolve')) {
 			if ($g['key'] === $key) $children = array_keys($g['items']);
 		}
 		if ($key === 'tasks') $children = array('internal_tasks', 'external_tasks', 'team_tasks');
-		if ($key === 'events') $children = array('events_list');
+		if ($key === 'events') $children = array('events_list', 'events_view');
 		$best = 'no_access';
 		foreach ($children as $c) {
 			if (!isset($map[$c])) continue;
@@ -280,7 +280,7 @@ if (!function_exists('crm_perm_normalize')) {
 			if ($g['key'] !== '' && !isset($items[$g['key']])) $clean[$g['key']] = $best(array_keys($g['items']));
 		}
 		$clean['tasks'] = $best(array('internal_tasks', 'external_tasks', 'team_tasks'));
-		$clean['events'] = $best(array('events_list'));
+		$clean['events'] = $best(array('events_list', 'events_view'));
 		return $clean;
 	}
 }

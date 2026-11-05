@@ -24,7 +24,7 @@ class Ci_admin_hr extends CI_Controller {
 		$method = $this->router->fetch_method();
 		$self_service = array(
 			'leaves' => 'hr_leaves', 'apply_leave' => 'hr_leaves', 'cancel_leave' => 'hr_leaves',
-			'events_plans' => 'hr_events', 'save_plan' => 'hr_events', 'delete_plan' => 'hr_events',
+			'events_plans' => 'events_view',
 			'training' => 'hr_training', 'training_progress' => 'hr_training',
 			'search_topics' => 'hr_topics'
 		);
@@ -1137,98 +1137,10 @@ class Ci_admin_hr extends CI_Controller {
 	 * plans (private). Any employee can add a personal plan; HR/Admin can
 	 * also publish company-wide events.
 	 * ------------------------------------------------------------------ */
+	// Events & Planning was merged into Events & Festivals (profile menu).
 	public function events_plans()
 	{
-		$data = array();
-		$data['info'] = array(
-			'title' => 'Events & Planning - HR & Training',
-			'page_heading' => 'Events & Planning'
-		);
-		$data['is_admin'] = $this->is_admin;
-		$data['is_hr'] = $this->is_hr;
-		$data['cur_uid'] = $this->cur_uid;
-
-		$show = $this->input->get('show') === 'past' ? 'past' : 'upcoming';
-		$data['show'] = $show;
-		$uid = $this->cur_uid;
-		$this->db->select('E.*, U.name AS created_by_name')
-			->from('ci_events E')
-			->join('ci_user U', 'U.id = E.created_by', 'left')
-			->where("(E.status IS NULL OR E.status = 'active')", null, false)
-			->where("(E.visibility = 'public' OR E.assigned_user_id = {$uid} OR E.created_by = {$uid})", null, false);
-		if ($show === 'past') {
-			$this->db->where('E.start_date <', date('Y-m-d 00:00:00'))
-				->where('E.start_date >=', date('Y-m-d 00:00:00', strtotime('-90 days')))
-				->order_by('E.start_date', 'DESC');
-		} else {
-			$this->db->where('E.start_date >=', date('Y-m-d 00:00:00'))->order_by('E.start_date', 'ASC');
-		}
-		$data['events'] = $this->db->get()->result_array();
-
-		$this->load->view('manager/hr/events_plans', $data);
-	}
-
-	public function save_plan()
-	{
-		if ($this->input->server('REQUEST_METHOD') !== 'POST') {
-			redirect('manager/hr/events_plans');
-			return;
-		}
-		$title = trim((string)$this->input->post('title'));
-		$date = $this->_ymd($this->input->post('event_date'));
-		$time = trim((string)$this->input->post('event_time'));
-		$end_time = trim((string)$this->input->post('end_time'));
-		if ($title === '' || $date === '') {
-			$this->session->set_flashdata('error_message', 'Please enter a title and a date.');
-			$this->_back('manager/hr/events_plans');
-		}
-		$time_ok = (bool)preg_match('/^\d{2}:\d{2}$/', $time);
-		$start = $date . ' ' . ($time_ok ? $time . ':00' : '00:00:00');
-		$end = null;
-		if ($time_ok && preg_match('/^\d{2}:\d{2}$/', $end_time) && $end_time > $time) {
-			$end = $date . ' ' . $end_time . ':00';
-		}
-		$types = array('meeting', 'training', 'holiday', 'celebration', 'plan', 'other');
-		$type = strtolower(trim((string)$this->input->post('event_type')));
-		if (!in_array($type, $types, true)) {
-			$type = 'plan';
-		}
-		$company_wide = ($this->is_hr && $this->input->post('visibility') === 'public');
-
-		$this->db->insert('ci_events', array(
-			'title' => $title,
-			'description' => trim((string)$this->input->post('description')),
-			'event_type' => $type,
-			'visibility' => $company_wide ? 'public' : 'private',
-			'assigned_user_id' => $company_wide ? 0 : $this->cur_uid,
-			'start_date' => $start,
-			'end_date' => $end,
-			'all_day' => $time_ok ? 0 : 1,
-			'location' => trim((string)$this->input->post('location')),
-			'created_by' => $this->cur_uid,
-			'created_at' => date('Y-m-d H:i:s'),
-			'status' => 'active'
-		));
-		$this->session->set_flashdata('message', $company_wide ? 'Company event published.' : 'Plan added to your calendar.');
-		$this->_back('manager/hr/events_plans');
-	}
-
-	public function delete_plan($id = 0)
-	{
-		$id = (int)$id;
-		if ($this->input->server('REQUEST_METHOD') !== 'POST' || $id <= 0) {
-			redirect('manager/hr/events_plans');
-			return;
-		}
-		$ev = $this->db->where('id', $id)->get('ci_events')->row_array();
-		if (empty($ev) || ((int)$ev['created_by'] !== $this->cur_uid && !$this->is_admin)) {
-			$this->session->set_flashdata('error_message', 'You can only remove events you created.');
-		} else {
-			// Soft delete: the row stays, it is just hidden.
-			$this->db->where('id', $id)->update('ci_events', array('status' => 'cancelled'));
-			$this->session->set_flashdata('message', 'Event removed.');
-		}
-		$this->_back('manager/hr/events_plans');
+		redirect('manager/events');
 	}
 
 	/* ------------------------------------------------------------------

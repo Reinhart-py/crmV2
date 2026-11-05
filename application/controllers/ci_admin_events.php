@@ -1,445 +1,240 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
+/**
+ * Events & Festivals.
+ *  - index():  view-only page for everyone with the "Events & Festivals" right (Roles > Core Modules):
+ *              company holidays, festivals, company events and awards for last / this / next year.
+ *  - manage(): publishing page for Admin, HR and roles with Full on "Manage Events & Festivals".
+ */
 class Ci_admin_events extends CI_Controller {
 
-	public function __construct() 
+	// Stored event_type => label, colour
+	public static $types = array(
+		'public_holiday' => array('Public Holiday', '#dc2626'),
+		'festival'       => array('Festival', '#d97706'),
+		'company_event'  => array('Company Event', '#2563eb'),
+	);
+
+	private $cur_uid = 0;
+	private $can_manage = false;
+
+	public function __construct()
 	{
 		parent::__construct();
 		$this->load->library(array('Session'));
-		$this->load->helper(array('form', 'url', 'directory', 'text', 'date'));
+		$this->load->helper(array('form', 'url', 'text', 'date'));
 		$this->load->model(array('comman_model', 'ci_admin_model'));
-		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT"); 
-		header("Cache-Control: no-store, no-cache, must-revalidate"); 
-		header("Cache-Control: post-check=0, pre-check=0", false);
-		header("Pragma: no-cache");
-		header('Cache-Control: no-cache');
-	}
+		header('Cache-Control: no-store, no-cache, must-revalidate');
+		header('Pragma: no-cache');
 
-	public function if_not_login($url = '')
-	{
-		$mgr_id = (int)$this->session->userdata('manager_id');
-		$mgr_role = (int)$this->session->userdata('manager_role');
-		if ($mgr_id === 0) {
-			if ($url != '') {
-				redirect($url);
-			} else {
-				redirect('/manager/login');
+		$this->cur_uid = (int)$this->session->userdata('manager_id');
+		if ($this->cur_uid === 0) {
+			redirect('/manager/login');
+			exit;
+		}
+		$role = (int)$this->session->userdata('manager_role');
+		$is_admin = ($role === 1 || $this->cur_uid === 1);
+		$this->can_manage = ($is_admin || $role === 7 || crm_can('events_list', 'write'));
+
+		$method = $this->router->fetch_method();
+		if ($method === 'index') {
+			if (!$is_admin && !$this->can_manage && !crm_can('events_view', 'read')) {
+				$this->session->set_flashdata('error_message', 'You do not have access to Events & Festivals. Ask your administrator if you need it.');
+				redirect(crm_landing_url());
+				exit;
 			}
-		} elseif ($mgr_role !== 1 && $mgr_id !== 1 && !has_section_perm('events')) {
-			$this->session->set_flashdata('error_message', 'Access denied. You do not have permission to view Events.');
-			redirect('manager/dashboard');
+		} elseif (!$this->can_manage) {
+			$this->session->set_flashdata('error_message', 'Only HR and administrators can manage Events & Festivals.');
+			redirect('manager/events');
 			exit;
 		}
 	}
 
+	/** Selected year, limited to last / this / next year. */
+	private function _year()
+	{
+		$now = (int)date('Y');
+		$y = (int)$this->input->get('year');
+		return ($y >= $now - 1 && $y <= $now + 1) ? $y : $now;
+	}
+
+	/** Company-wide events and awards of one year, sorted by date. */
+	private function _items($year)
+	{
+		$items = array();
+		$events = $this->db->select('id, title, description, event_type, start_date, end_date, all_day, location')
+			->from('ci_events')
+			->where('visibility', 'public')
+			->where("(status IS NULL OR status = 'active')", null, false)
+			->where('start_date >=', $year . '-01-01 00:00:00')
+			->where('start_date <=', $year . '-12-31 23:59:59')
+			->order_by('start_date', 'ASC')
+			->get()->result_array();
+		foreach ($events as $e) {
+			$t = strtolower((string)$e['event_type']);
+			if ($t === 'holiday') $t = 'public_holiday';
+			if (!isset(self::$types[$t])) $t = 'company_event';
+			$items[] = array(
+				'kind' => 'event', 'id' => (int)$e['id'], 'type' => $t,
+				'title' => $e['title'], 'description' => (string)$e['description'],
+				'start' => $e['start_date'], 'end' => $e['end_date'], 'all_day' => (int)$e['all_day'],
+				'location' => (string)$e['location'],
+			);
+		}
+		$awards = $this->db->select('A.id, A.title, A.category, A.award_date, A.description, A.user_id, U.name AS employee')
+			->from('ci_awards A')
+			->join('ci_user U', 'U.id = A.user_id', 'left')
+			->where('A.award_date >=', $year . '-01-01')
+			->where('A.award_date <=', $year . '-12-31')
+			->order_by('A.award_date', 'ASC')
+			->get()->result_array();
+		foreach ($awards as $a) {
+			$items[] = array(
+				'kind' => 'award', 'id' => (int)$a['id'], 'type' => 'award',
+				'title' => $a['title'], 'description' => (string)$a['description'],
+				'start' => $a['award_date'] . ' 00:00:00', 'end' => null, 'all_day' => 1, 'location' => '',
+				'employee' => (string)$a['employee'], 'user_id' => (int)$a['user_id'], 'category' => (string)$a['category'],
+			);
+		}
+		usort($items, function ($x, $y) { return strcmp($x['start'], $y['start']); });
+		return $items;
+	}
+
 	public function index()
 	{
-		$this->if_not_login();
-		$manager_id = (int)$this->session->userdata('manager_id');
-		$manager_role = (int)$this->session->userdata('manager_role');
-
+		$year = $this->_year();
 		$data = array();
-		$data['info'] = array(
-			'title' => 'Event and Awards',
-			'page_heading' => 'Events & Awards Calendar'
-		);
-
-		$type = trim($this->input->get('type'));
-		$month = trim($this->input->get('month'));
-		if (empty($month)) {
-			$month = date('Y-m');
-		}
-
-		$this->db->select('E.*, U.name as creator_name');
-		$this->db->from('ci_events as E');
-		$this->db->join('ci_user as U', 'U.id = E.created_by', 'left');
-		if (!empty($type)) {
-			$this->db->where('E.event_type', $type);
-		}
-		if (!empty($month)) {
-			$this->db->like('E.start_date', $month, 'after');
-		}
-		$this->db->order_by('E.start_date', 'ASC');
-		$data['events'] = $this->db->get()->result_array();
-
-		$data['upcoming_events'] = array();
-		$data['current_month'] = $month;
-		$data['filter_type'] = $type;
-		$data['can_manage'] = ($manager_role == 1 || $manager_role == 4 || $this->session->userdata('is_manager'));
-		$data['users_list'] = $this->db->select('id, name, department')->where('status', 1)->order_by('name', 'ASC')->get('ci_user')->result_array();
-
+		$data['info'] = array('title' => 'Events & Festivals', 'page_heading' => 'Events & Festivals');
+		$data['year'] = $year;
+		$data['items'] = $this->_items($year);
+		$data['types'] = self::$types;
+		$data['can_manage'] = $this->can_manage;
+		// Today and the next few items (from today on), whatever year is selected.
+		$today = date('Y-m-d');
+		$soon = array_merge($this->_items((int)date('Y')), $this->_items((int)date('Y') + 1));
+		$data['today_items'] = array_values(array_filter($soon, function ($it) use ($today) {
+			$s = substr($it['start'], 0, 10);
+			$e = !empty($it['end']) ? substr($it['end'], 0, 10) : $s;
+			return $s <= $today && $e >= $today;
+		}));
+		$data['next_items'] = array_slice(array_values(array_filter($soon, function ($it) use ($today) {
+			return substr($it['start'], 0, 10) > $today;
+		})), 0, 3);
 		$this->load->view('manager/events/index', $data);
 	}
 
-	public function add()
+	public function manage()
 	{
-		$this->if_not_login();
-		$manager_id = (int)$this->session->userdata('manager_id');
-
-		if ($this->input->post()) {
-			$title = trim($this->input->post('title'));
-			$event_type = trim($this->input->post('event_type'));
-			$start_date = trim($this->input->post('start_date'));
-			$end_date = trim($this->input->post('end_date'));
-			$all_day = (int)$this->input->post('all_day');
-			$location = trim($this->input->post('location'));
-			$description = trim($this->input->post('description'));
-
-			if (!empty($title) && !empty($start_date)) {
-				$insert_data = array(
-					'title' => $title,
-					'description' => $description,
-					'event_type' => $event_type ?: 'Meeting',
-					'start_date' => date('Y-m-d H:i:s', strtotime($start_date)),
-					'end_date' => !empty($end_date) ? date('Y-m-d H:i:s', strtotime($end_date)) : date('Y-m-d H:i:s', strtotime($start_date . ' +1 hour')),
-					'all_day' => $all_day,
-					'location' => $location,
-					'created_by' => $manager_id,
-					'created_at' => date('Y-m-d H:i:s'),
-					'status' => 'active'
-				);
-				$this->db->insert('ci_events', $insert_data);
-				$this->session->set_flashdata('message', 'Event scheduled successfully.');
-			} else {
-				$this->session->set_flashdata('error_message', 'Title and Start Date are required.');
-			}
-		}
-		redirect('manager/events');
+		$year = $this->_year();
+		$data = array();
+		$data['info'] = array('title' => 'Manage Events & Festivals', 'page_heading' => 'Manage Events & Festivals');
+		$data['year'] = $year;
+		$data['items'] = $this->_items($year);
+		$data['types'] = self::$types;
+		$data['users'] = $this->db->select('id, name')->where('status', 1)->order_by('name', 'ASC')->get('ci_user')->result_array();
+		$this->load->view('manager/events/manage', $data);
 	}
 
-	public function delete($id = 0)
+	private function _date($v)
 	{
-		$this->if_not_login();
-		$id = (int)$id;
-		if ($id > 0) {
-			$this->db->where('id', $id)->delete('ci_events');
-			$this->session->set_flashdata('message', 'Event removed.');
-		}
-		redirect('manager/events');
+		$v = trim((string)$v);
+		return (preg_match('/^\d{4}-\d{2}-\d{2}$/', $v) && strtotime($v) !== false) ? $v : '';
 	}
 
-	public function ajax_get_events()
+	private function _back()
 	{
-		$this->if_not_login();
-		$start = $this->input->get('start');
-		$end = $this->input->get('end');
-
-		$calendar_events = array();
-
-		$cur_role = (int)$this->session->userdata('manager_role');
-		$cur_uid = (int)$this->session->userdata('manager_id');
-		$is_admin = ($cur_role === 1 || $cur_uid === 1);
-
-		$this->db->select('E.*, U.name as creator_name');
-		$this->db->from('ci_events as E');
-		$this->db->join('ci_user as U', 'U.id = E.created_by', 'left');
-		if (!empty($start)) {
-			$this->db->where('E.start_date >=', date('Y-m-d 00:00:00', strtotime($start)));
-		}
-		if (!empty($end)) {
-			$this->db->where('E.start_date <=', date('Y-m-d 23:59:59', strtotime($end)));
-		}
-		if (!$is_admin) {
-			$this->db->where("(E.visibility = 'public' OR E.created_by = {$cur_uid} OR E.assigned_user_id = {$cur_uid})");
-		}
-		$events_rows = $this->db->get()->result_array();
-
-		foreach ($events_rows as $r) {
-			$color = '#2563eb';
-			if ($r['event_type'] == 'Training') $color = '#0284c7';
-			elseif ($r['event_type'] == 'Company Event') $color = '#16a34a';
-			elseif ($r['event_type'] == 'Milestone') $color = '#8b5cf6';
-			elseif ($r['event_type'] == 'Holiday') $color = '#dc2626';
-			elseif ($r['event_type'] == 'Reminder') $color = '#0d9488';
-
-			$calendar_events[] = array(
-				'id' => 'evt_' . $r['id'],
-				'title' => $r['title'],
-				'start' => date('Y-m-d\TH:i:s', strtotime($r['start_date'])),
-				'end' => !empty($r['end_date']) ? date('Y-m-d\TH:i:s', strtotime($r['end_date'])) : date('Y-m-d\TH:i:s', strtotime($r['start_date'])),
-				'allDay' => (bool)$r['all_day'],
-				'color' => $color,
-				'textColor' => '#ffffff',
-				'className' => 'crm-event-pill',
-				'raw_id' => (int)$r['id'],
-				'item_type' => 'event',
-				'event_type' => $r['event_type'],
-				'location' => $r['location'] ?: '',
-				'description' => $r['description'] ?: '',
-				'creator' => $r['creator_name'] ?: ''
-			);
-		}
-
-		$this->db->select('A.*, U.name as employee_name, U.department, C.name as creator_name');
-		$this->db->from('ci_awards as A');
-		$this->db->join('ci_user as U', 'U.id = A.user_id', 'left');
-		$this->db->join('ci_user as C', 'C.id = A.created_by', 'left');
-		if (!empty($start)) {
-			$this->db->where('A.award_date >=', date('Y-m-d', strtotime($start)));
-		}
-		if (!empty($end)) {
-			$this->db->where('A.award_date <=', date('Y-m-d', strtotime($end)));
-		}
-		$awards_rows = $this->db->get()->result_array();
-
-		foreach ($awards_rows as $a) {
-			$emp = !empty($a['employee_name']) ? $a['employee_name'] : 'Employee';
-			$pts = !empty($a['reward_points']) ? ' (' . $a['reward_points'] . ' pts)' : '';
-			$calendar_events[] = array(
-				'id' => 'award_' . $a['id'],
-				'title' => '🏆 ' . $emp . ': ' . $a['title'] . $pts,
-				'start' => date('Y-m-d', strtotime($a['award_date'])),
-				'allDay' => true,
-				'color' => '#d97706',
-				'textColor' => '#ffffff',
-				'className' => 'crm-award-pill',
-				'raw_id' => (int)$a['id'],
-				'item_type' => 'award',
-				'event_type' => 'Award',
-				'employee' => $emp,
-				'category' => $a['category'],
-				'points' => (int)$a['reward_points'],
-				'description' => $a['description'] ?: '',
-				'creator' => $a['creator_name'] ?: ''
-			);
-		}
-
-		$ref_year = !empty($start) ? date('Y', strtotime($start)) : date('Y');
-		$users = $this->db->select('id, name, dob, department')->where('status', 1)->where('dob IS NOT NULL')->where('dob !=', '')->get('ci_user')->result_array();
-		$seen_birthdays = array();
-		foreach ($users as $u) {
-			$dob_ts = strtotime($u['dob']);
-			if ($dob_ts !== false && $dob_ts > 0) {
-				$m_d = date('m-d', $dob_ts);
-				$years_to_check = array($ref_year, (int)$ref_year + 1, (int)$ref_year - 1);
-				foreach ($years_to_check as $yr) {
-					$b_date = $yr . '-' . $m_d;
-					$b_key = $u['id'] . '_' . $b_date;
-					if (isset($seen_birthdays[$b_key])) {
-						continue;
-					}
-					if ((empty($start) || $b_date >= date('Y-m-d', strtotime($start))) && (empty($end) || $b_date <= date('Y-m-d', strtotime($end)))) {
-						$seen_birthdays[$b_key] = true;
-						$calendar_events[] = array(
-							'id' => 'bday_' . $u['id'] . '_' . $yr,
-							'title' => '🎂 Birthday: ' . $u['name'],
-							'start' => $b_date,
-							'allDay' => true,
-							'color' => '#ec4899',
-							'textColor' => '#ffffff',
-							'className' => 'crm-birthday-pill',
-							'raw_id' => (int)$u['id'],
-							'item_type' => 'birthday',
-							'event_type' => 'Birthday',
-							'employee' => $u['name'],
-							'department' => $u['department'] ?: '',
-							'description' => 'Employee birthday on ' . date('M j', $dob_ts)
-						);
-					}
-				}
-			}
-		}
-
-		header('Content-Type: application/json');
-		echo json_encode($calendar_events);
-		exit();
+		$y = (int)$this->input->post('year');
+		redirect('manager/events/manage' . ($y > 0 ? '?year=' . $y : ''));
 	}
 
-	public function ajax_save_event()
+	public function save_event()
 	{
-		$this->if_not_login();
-		$manager_id = (int)$this->session->userdata('manager_id');
-
+		if ($this->input->server('REQUEST_METHOD') !== 'POST') redirect('manager/events/manage');
 		$id = (int)$this->input->post('id');
-		$title = trim($this->input->post('title'));
-		$event_type = trim($this->input->post('event_type'));
-		$start_date = trim($this->input->post('start_date'));
-		$end_date = trim($this->input->post('end_date'));
-		$all_day = (int)$this->input->post('all_day');
-		$location = trim($this->input->post('location'));
-		$description = trim($this->input->post('description'));
-
-		if (empty($title) || empty($start_date)) {
-			header('Content-Type: application/json');
-			echo json_encode(array('success' => false, 'message' => 'Title and Start Date are required.'));
-			exit();
+		$title = trim((string)$this->input->post('title'));
+		$type = (string)$this->input->post('event_type');
+		$from = $this->_date($this->input->post('start_date'));
+		$to = $this->_date($this->input->post('end_date'));
+		$time = trim((string)$this->input->post('start_time'));
+		$end_time = trim((string)$this->input->post('end_time'));
+		if ($title === '' || $from === '' || !isset(self::$types[$type])) {
+			$this->session->set_flashdata('error_message', 'Please enter a title, a type and a start date.');
+			$this->_back();
 		}
-
-		$cur_role = (int)$this->session->userdata('manager_role');
-		$cur_uid = (int)$this->session->userdata('manager_id');
-		$is_admin = ($cur_role === 1 || $cur_uid === 1);
-
-		$visibility = trim($this->input->post('visibility', true));
-		$assigned_user_id = (int)$this->input->post('assigned_user_id', true);
-
-		if ($is_admin) {
-			$visibility = in_array($visibility, array('public', 'individual', 'private')) ? $visibility : 'public';
-			if ($visibility !== 'individual') {
-				$assigned_user_id = 0;
-			}
-		} elseif ($cur_role === 4 || has_perm('back_office') || has_perm('support')) {
-			$visibility = 'public';
-			$assigned_user_id = 0;
-		} else {
-			$visibility = 'private';
-			$assigned_user_id = $manager_id;
-		}
-
+		if ($to !== '' && $to < $from) $to = $from;
+		$timed = (bool)preg_match('/^\d{2}:\d{2}$/', $time);
 		$payload = array(
 			'title' => $title,
-			'description' => $description,
-			'event_type' => $event_type ?: 'Meeting',
-			'start_date' => date('Y-m-d H:i:s', strtotime($start_date)),
-			'end_date' => !empty($end_date) ? date('Y-m-d H:i:s', strtotime($end_date)) : date('Y-m-d H:i:s', strtotime($start_date . ' +1 hour')),
-			'all_day' => $all_day,
-			'location' => $location,
-			'visibility' => $visibility,
-			'assigned_user_id' => $assigned_user_id,
-			'status' => 'active'
+			'description' => trim((string)$this->input->post('description')),
+			'event_type' => $type,
+			'visibility' => 'public',
+			'assigned_user_id' => 0,
+			'start_date' => $from . ' ' . ($timed ? $time . ':00' : '00:00:00'),
+			'end_date' => ($to !== '' && $to !== $from) ? $to . ' 23:59:59' : (($timed && preg_match('/^\d{2}:\d{2}$/', $end_time) && $end_time > $time) ? $from . ' ' . $end_time . ':00' : null),
+			'all_day' => $timed ? 0 : 1,
+			'location' => trim((string)$this->input->post('location')),
+			'status' => 'active',
 		);
-
 		if ($id > 0) {
 			$this->db->where('id', $id)->update('ci_events', $payload);
-			$msg = 'Event updated successfully.';
+			$this->session->set_flashdata('message', 'Event updated.');
 		} else {
-			$payload['created_by'] = $manager_id;
+			$payload['created_by'] = $this->cur_uid;
 			$payload['created_at'] = date('Y-m-d H:i:s');
 			$this->db->insert('ci_events', $payload);
-			$msg = 'Event scheduled successfully.';
+			$this->session->set_flashdata('message', 'Event published for everyone.');
 		}
-
-		header('Content-Type: application/json');
-		echo json_encode(array('success' => true, 'message' => $msg));
-		exit();
+		$this->_back();
 	}
 
-	public function ajax_save_award()
+	public function delete_event($id = 0)
 	{
-		$this->if_not_login();
-		$manager_id = (int)$this->session->userdata('manager_id');
-		$manager_role = (int)$this->session->userdata('manager_role');
-
-		if ($manager_role != 1 && $manager_role != 4 && !$this->session->userdata('is_manager')) {
-			header('Content-Type: application/json');
-			echo json_encode(array('success' => false, 'message' => 'Permission denied.'));
-			exit();
+		$id = (int)$id;
+		if ($this->input->server('REQUEST_METHOD') === 'POST' && $id > 0) {
+			$this->db->where('id', $id)->update('ci_events', array('status' => 'cancelled'));
+			$this->session->set_flashdata('message', 'Event removed.');
 		}
+		$this->_back();
+	}
 
+	public function save_award()
+	{
+		if ($this->input->server('REQUEST_METHOD') !== 'POST') redirect('manager/events/manage');
+		$id = (int)$this->input->post('id');
 		$user_id = (int)$this->input->post('user_id');
-		$title = trim($this->input->post('title'));
-		$category = trim($this->input->post('category'));
-		$award_date = trim($this->input->post('award_date'));
-		$description = trim($this->input->post('description'));
-		$reward_points = (int)$this->input->post('reward_points');
-
-		if ($user_id <= 0 || empty($title) || empty($award_date)) {
-			header('Content-Type: application/json');
-			echo json_encode(array('success' => false, 'message' => 'Employee, Title, and Award Date are required.'));
-			exit();
+		$title = trim((string)$this->input->post('title'));
+		$date = $this->_date($this->input->post('award_date'));
+		if ($user_id <= 0 || $title === '' || $date === '') {
+			$this->session->set_flashdata('error_message', 'Please choose the employee and enter the award title and date.');
+			$this->_back();
 		}
-
 		$payload = array(
 			'user_id' => $user_id,
 			'title' => $title,
-			'category' => $category ?: 'Top Performer',
-			'award_date' => date('Y-m-d', strtotime($award_date)),
-			'description' => $description,
-			'reward_points' => ($reward_points > 0) ? $reward_points : 100,
-			'created_by' => $manager_id,
-			'created_at' => date('Y-m-d H:i:s')
+			'category' => trim((string)$this->input->post('category')) ?: 'Recognition',
+			'award_date' => $date,
+			'description' => trim((string)$this->input->post('description')),
 		);
-
-		$this->db->insert('ci_awards', $payload);
-
-		header('Content-Type: application/json');
-		echo json_encode(array('success' => true, 'message' => 'Award recorded successfully.'));
-		exit();
-	}
-
-	public function ajax_delete_item()
-	{
-		$this->if_not_login();
-		$type = trim($this->input->post('type'));
-		$id = (int)$this->input->post('id');
-
-		if ($id <= 0) {
-			header('Content-Type: application/json');
-			echo json_encode(array('success' => false, 'message' => 'Invalid ID.'));
-			exit();
-		}
-
-		if ($type === 'award') {
-			$this->db->where('id', $id)->delete('ci_awards');
-			$msg = 'Award deleted.';
+		if ($id > 0) {
+			$this->db->where('id', $id)->update('ci_awards', $payload);
+			$this->session->set_flashdata('message', 'Award updated.');
 		} else {
-			$this->db->where('id', $id)->delete('ci_events');
-			$msg = 'Event deleted.';
+			$payload['reward_points'] = 0;
+			$payload['created_by'] = $this->cur_uid;
+			$payload['created_at'] = date('Y-m-d H:i:s');
+			$this->db->insert('ci_awards', $payload);
+			$this->session->set_flashdata('message', 'Award published for everyone.');
 		}
-
-		header('Content-Type: application/json');
-		echo json_encode(array('success' => true, 'message' => $msg));
-		exit();
-	}
-
-	public function awards()
-	{
-		$this->if_not_login();
-		redirect('manager/events');
-	}
-
-	public function add_award()
-	{
-		$this->if_not_login();
-		$manager_id = (int)$this->session->userdata('manager_id');
-		$manager_role = (int)$this->session->userdata('manager_role');
-
-		if ($manager_role != 1 && $manager_role != 4 && !$this->session->userdata('is_manager')) {
-			$this->session->set_flashdata('error_message', 'Permission denied.');
-			redirect('manager/events');
-		}
-
-		if ($this->input->post()) {
-			$user_id = (int)$this->input->post('user_id');
-			$title = trim($this->input->post('title'));
-			$category = trim($this->input->post('category'));
-			$award_date = trim($this->input->post('award_date'));
-			$description = trim($this->input->post('description'));
-			$reward_points = (int)$this->input->post('reward_points');
-
-			if ($user_id > 0 && !empty($title) && !empty($award_date)) {
-				$insert_data = array(
-					'user_id' => $user_id,
-					'title' => $title,
-					'category' => $category ?: 'Top Performer',
-					'award_date' => date('Y-m-d', strtotime($award_date)),
-					'description' => $description,
-					'reward_points' => ($reward_points > 0) ? $reward_points : 100,
-					'created_by' => $manager_id,
-					'created_at' => date('Y-m-d H:i:s')
-				);
-				$this->db->insert('ci_awards', $insert_data);
-				$this->session->set_flashdata('message', 'Achievement award conferred successfully.');
-			} else {
-				$this->session->set_flashdata('error_message', 'Employee, Title, and Award Date are required.');
-			}
-		}
-		redirect('manager/events');
+		$this->_back();
 	}
 
 	public function delete_award($id = 0)
 	{
-		$this->if_not_login();
-		$manager_role = (int)$this->session->userdata('manager_role');
-		if ($manager_role != 1 && $manager_role != 4 && !$this->session->userdata('is_manager')) {
-			$this->session->set_flashdata('error_message', 'Permission denied.');
-			redirect('manager/events');
-		}
-
 		$id = (int)$id;
-		if ($id > 0) {
+		if ($this->input->server('REQUEST_METHOD') === 'POST' && $id > 0) {
 			$this->db->where('id', $id)->delete('ci_awards');
 			$this->session->set_flashdata('message', 'Award removed.');
 		}
-		redirect('manager/events');
+		$this->_back();
 	}
 }
