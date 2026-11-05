@@ -411,7 +411,7 @@ class CI_DB_active_record extends CI_DB_driver {
 
 		foreach ($key as $k => $v)
 		{
-			$prefix = (count($this->ar_where) == 0 AND count($this->ar_cache_where) == 0) ? '' : $type;
+			$prefix = $this->_group_prefix($type, count($this->ar_cache_where) == 0);
 
 			if (is_null($v) && ! $this->_has_operator($k))
 			{
@@ -551,7 +551,7 @@ class CI_DB_active_record extends CI_DB_driver {
 			$this->ar_wherein[] = $this->escape($value);
 		}
 
-		$prefix = (count($this->ar_where) == 0) ? '' : $type;
+		$prefix = $this->_group_prefix($type, TRUE);
 
 		$where_in = $prefix . $this->_protect_identifiers($key) . $not . " IN (" . implode(", ", $this->ar_wherein) . ") ";
 
@@ -2040,9 +2040,21 @@ class CI_DB_active_record extends CI_DB_driver {
 
 		$this->_reset_run($ar_reset_items);
 	}
+	/**
+	 * AND / OR in front of a new condition: none for the first condition, and none for the first
+	 * condition inside a group just opened with group_start() (otherwise the query reads "( AND ...").
+	 */
+	protected function _group_prefix($type, $cache_empty = TRUE)
+	{
+		if (count($this->ar_where) == 0) return $cache_empty ? '' : $type;
+		$last = rtrim((string)end($this->ar_where));
+		return (substr($last, -1) === '(') ? '' : $type;
+	}
+
 	public function group_start($not = '', $type = 'AND ')
 	{
 		$prefix = (count($this->ar_where) === 0 && count($this->ar_cache_where) === 0) ? '' : $type;
+		if (count($this->ar_where) > 0 && substr(rtrim((string)end($this->ar_where)), -1) === '(') $prefix = '';
 		$this->ar_where[] = $prefix . $not . '(';
 		return $this;
 	}
