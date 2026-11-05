@@ -40,6 +40,9 @@ class Ci_admin_live extends CI_Controller
 
 	public function index()
 	{
+		if (crm_is_presentation_user()) {
+			redirect('manager/live/presentation');
+		}
 		$data = array();
 		$data['info'] = array(
 			'title' => 'Live',
@@ -420,19 +423,39 @@ class Ci_admin_live extends CI_Controller
 		$q = function ($sql) { $r = $this->db->query($sql); return ($r && is_object($r)) ? $r->row_array() : array(); };
 		$qa = function ($sql) { $r = $this->db->query($sql); return ($r && is_object($r)) ? $r->result_array() : array(); };
 
+		// Presentation users only see the centers set on their user (Users > Edit > Presentation Centers).
+		$scope_offices = null;
+		$scope_ids = null;
+		if (crm_is_presentation_user()) {
+			$me = $this->db->select('id, office')->where('id', (int)$this->session->userdata('manager_id'))->get('ci_user')->row_array();
+			$scope_offices = crm_user_live_offices($me ? $me : array());
+			$scope_ids = array(0);
+			if (!empty($scope_offices)) {
+				foreach ($this->db->select('id')->where_in('office', $scope_offices)->get('ci_user')->result_array() as $r) $scope_ids[] = (int)$r['id'];
+			}
+		}
+		$in = function ($col) use ($scope_ids) { return $scope_ids === null ? '' : " AND {$col} IN (" . implode(',', $scope_ids) . ")"; };
+		$f_o = $in('o.created_by');
+		$f_a = $in('a.created_by');
+		$f_c = $in('user_id');
+		$f_t = $in('T.user_id');
+		// Presentation (screen) users are not staff: leave them out of the leaderboard and centers.
+		$pres_role = crm_presentation_role_id();
+		$f_u = ($pres_role > 0 ? " AND user_type != {$pres_role}" : '') . $in('id');
+
 		// KPIs
-		$s_cur = $q("SELECT COUNT(*) c, COALESCE(SUM({$amt}), 0) v FROM ci_orders o WHERE {$sale} AND o.created_at BETWEEN '{$m1}' AND '{$m2}'");
-		$s_prev = $q("SELECT COUNT(*) c, COALESCE(SUM({$amt}), 0) v FROM ci_orders o WHERE {$sale} AND o.created_at BETWEEN '{$lm1}' AND '{$lm2}'");
-		$s_today = $q("SELECT COUNT(*) c, COALESCE(SUM({$amt}), 0) v FROM ci_orders o WHERE {$sale} AND o.created_at BETWEEN '{$t1}' AND '{$t2}'");
-		$o_cur = $q("SELECT COUNT(*) c FROM ci_orders o WHERE o.created_at BETWEEN '{$m1}' AND '{$m2}'");
-		$o_prev = $q("SELECT COUNT(*) c FROM ci_orders o WHERE o.created_at BETWEEN '{$lm1}' AND '{$lm2}'");
+		$s_cur = $q("SELECT COUNT(*) c, COALESCE(SUM({$amt}), 0) v FROM ci_orders o WHERE {$sale} AND o.created_at BETWEEN '{$m1}' AND '{$m2}'{$f_o}");
+		$s_prev = $q("SELECT COUNT(*) c, COALESCE(SUM({$amt}), 0) v FROM ci_orders o WHERE {$sale} AND o.created_at BETWEEN '{$lm1}' AND '{$lm2}'{$f_o}");
+		$s_today = $q("SELECT COUNT(*) c, COALESCE(SUM({$amt}), 0) v FROM ci_orders o WHERE {$sale} AND o.created_at BETWEEN '{$t1}' AND '{$t2}'{$f_o}");
+		$o_cur = $q("SELECT COUNT(*) c FROM ci_orders o WHERE o.created_at BETWEEN '{$m1}' AND '{$m2}'{$f_o}");
+		$o_prev = $q("SELECT COUNT(*) c FROM ci_orders o WHERE o.created_at BETWEEN '{$lm1}' AND '{$lm2}'{$f_o}");
 		$lead_join = "FROM ci_leads a INNER JOIN ci_pipeline p ON p.lead_id = a.id AND p.pipeline_stage = 'lead'";
-		$l_cur = $q("SELECT COUNT(DISTINCT a.id) c {$lead_join} WHERE a.created BETWEEN '{$m1}' AND '{$m2}'");
-		$l_prev = $q("SELECT COUNT(DISTINCT a.id) c {$lead_join} WHERE a.created BETWEEN '{$lm1}' AND '{$lm2}'");
-		$c_today = $q("SELECT COUNT(*) c FROM ci_call_logs WHERE created_at BETWEEN '{$t1}' AND '{$t2}'");
-		$c_yday = $q("SELECT COUNT(*) c FROM ci_call_logs WHERE created_at BETWEEN '{$y1}' AND '{$y2}'");
+		$l_cur = $q("SELECT COUNT(DISTINCT a.id) c {$lead_join} WHERE a.created BETWEEN '{$m1}' AND '{$m2}'{$f_a}");
+		$l_prev = $q("SELECT COUNT(DISTINCT a.id) c {$lead_join} WHERE a.created BETWEEN '{$lm1}' AND '{$lm2}'{$f_a}");
+		$c_today = $q("SELECT COUNT(*) c FROM ci_call_logs WHERE created_at BETWEEN '{$t1}' AND '{$t2}'{$f_c}");
+		$c_yday = $q("SELECT COUNT(*) c FROM ci_call_logs WHERE created_at BETWEEN '{$y1}' AND '{$y2}'{$f_c}");
 		$period = "T.status = 'Active' AND (T.period_month = '{$month_key}' OR ('{$md1}' <= T.end_date AND '{$md2}' >= T.start_date))";
-		$tgt = $q("SELECT COALESCE(SUM(T.target_amount), 0) v FROM ci_hr_targets T WHERE {$period}");
+		$tgt = $q("SELECT COALESCE(SUM(T.target_amount), 0) v FROM ci_hr_targets T WHERE {$period}{$f_t}");
 
 		$kpi = array(
 			'sales_month' => (float)$s_cur['v'], 'sales_count' => (int)$s_cur['c'],
@@ -446,7 +469,7 @@ class Ci_admin_live extends CI_Controller
 
 		// Sales of the last 7 days
 		$trend = array();
-		$rows = $qa("SELECT DATE(o.created_at) d, COALESCE(SUM({$amt}), 0) v, COUNT(*) c FROM ci_orders o WHERE {$sale} AND o.created_at >= '" . date('Y-m-d', strtotime('-6 days')) . " 00:00:00' GROUP BY DATE(o.created_at)");
+		$rows = $qa("SELECT DATE(o.created_at) d, COALESCE(SUM({$amt}), 0) v, COUNT(*) c FROM ci_orders o WHERE {$sale} AND o.created_at >= '" . date('Y-m-d', strtotime('-6 days')) . " 00:00:00'{$f_o} GROUP BY DATE(o.created_at)");
 		$by_day = array();
 		foreach ($rows as $r) $by_day[$r['d']] = $r;
 		for ($i = 6; $i >= 0; $i--) {
@@ -456,13 +479,13 @@ class Ci_admin_live extends CI_Controller
 
 		// Top services this month
 		$products = array();
-		foreach ($qa("SELECT MIN(o.service_title) n, COALESCE(SUM({$amt}), 0) v, COUNT(*) c FROM ci_orders o WHERE {$sale} AND o.created_at BETWEEN '{$m1}' AND '{$m2}' AND o.service_title != '' GROUP BY LOWER(TRIM(o.service_title)) ORDER BY v DESC, c DESC LIMIT 5") as $r) {
+		foreach ($qa("SELECT MIN(o.service_title) n, COALESCE(SUM({$amt}), 0) v, COUNT(*) c FROM ci_orders o WHERE {$sale} AND o.created_at BETWEEN '{$m1}' AND '{$m2}'{$f_o} AND o.service_title != '' GROUP BY LOWER(TRIM(o.service_title)) ORDER BY v DESC, c DESC LIMIT 5") as $r) {
 			$products[] = array('name' => $r['n'], 'value' => (float)$r['v'], 'count' => (int)$r['c']);
 		}
 
 		// Per person (active users)
 		$users = array();
-		foreach ($qa("SELECT id, name, office, avatar FROM ci_user WHERE status = 1") as $u) {
+		foreach ($qa("SELECT id, name, office, avatar FROM ci_user WHERE status = 1{$f_u}") as $u) {
 			$av = (!empty($u['avatar']) && is_file(FCPATH . $u['avatar'])) ? base_url($u['avatar']) : '';
 			$users[(int)$u['id']] = array('name' => $u['name'], 'office' => trim((string)$u['office']), 'avatar' => $av,
 				'sales_month' => 0.0, 'sales_count' => 0, 'sales_last' => 0.0, 'orders_month' => 0, 'calls_today' => 0, 'leads_month' => 0, 'target' => 0.0);
@@ -473,13 +496,13 @@ class Ci_admin_live extends CI_Controller
 				if (isset($users[$id])) $users[$id][$key] = $float ? (float)$r['v'] : (int)$r['v'];
 			}
 		};
-		$add($qa("SELECT o.created_by uid, COALESCE(SUM({$amt}), 0) v FROM ci_orders o WHERE {$sale} AND o.created_at BETWEEN '{$m1}' AND '{$m2}' GROUP BY o.created_by"), 'sales_month', true);
-		$add($qa("SELECT o.created_by uid, COUNT(*) v FROM ci_orders o WHERE {$sale} AND o.created_at BETWEEN '{$m1}' AND '{$m2}' GROUP BY o.created_by"), 'sales_count');
-		$add($qa("SELECT o.created_by uid, COALESCE(SUM({$amt}), 0) v FROM ci_orders o WHERE {$sale} AND o.created_at BETWEEN '{$lm1}' AND '{$lm2}' GROUP BY o.created_by"), 'sales_last', true);
-		$add($qa("SELECT o.created_by uid, COUNT(*) v FROM ci_orders o WHERE o.created_at BETWEEN '{$m1}' AND '{$m2}' GROUP BY o.created_by"), 'orders_month');
-		$add($qa("SELECT user_id uid, COUNT(*) v FROM ci_call_logs WHERE created_at BETWEEN '{$t1}' AND '{$t2}' GROUP BY user_id"), 'calls_today');
-		$add($qa("SELECT a.created_by uid, COUNT(DISTINCT a.id) v {$lead_join} WHERE a.created BETWEEN '{$m1}' AND '{$m2}' GROUP BY a.created_by"), 'leads_month');
-		$add($qa("SELECT T.user_id uid, COALESCE(SUM(T.target_amount), 0) v FROM ci_hr_targets T WHERE {$period} GROUP BY T.user_id"), 'target', true);
+		$add($qa("SELECT o.created_by uid, COALESCE(SUM({$amt}), 0) v FROM ci_orders o WHERE {$sale} AND o.created_at BETWEEN '{$m1}' AND '{$m2}'{$f_o} GROUP BY o.created_by"), 'sales_month', true);
+		$add($qa("SELECT o.created_by uid, COUNT(*) v FROM ci_orders o WHERE {$sale} AND o.created_at BETWEEN '{$m1}' AND '{$m2}'{$f_o} GROUP BY o.created_by"), 'sales_count');
+		$add($qa("SELECT o.created_by uid, COALESCE(SUM({$amt}), 0) v FROM ci_orders o WHERE {$sale} AND o.created_at BETWEEN '{$lm1}' AND '{$lm2}'{$f_o} GROUP BY o.created_by"), 'sales_last', true);
+		$add($qa("SELECT o.created_by uid, COUNT(*) v FROM ci_orders o WHERE o.created_at BETWEEN '{$m1}' AND '{$m2}'{$f_o} GROUP BY o.created_by"), 'orders_month');
+		$add($qa("SELECT user_id uid, COUNT(*) v FROM ci_call_logs WHERE created_at BETWEEN '{$t1}' AND '{$t2}'{$f_c} GROUP BY user_id"), 'calls_today');
+		$add($qa("SELECT a.created_by uid, COUNT(DISTINCT a.id) v {$lead_join} WHERE a.created BETWEEN '{$m1}' AND '{$m2}'{$f_a} GROUP BY a.created_by"), 'leads_month');
+		$add($qa("SELECT T.user_id uid, COALESCE(SUM(T.target_amount), 0) v FROM ci_hr_targets T WHERE {$period}{$f_t} GROUP BY T.user_id"), 'target', true);
 
 		// Leaderboard: top 10 by sales this month, then orders, then calls today
 		$board = array_filter($users, function ($u) { return $u['sales_month'] > 0 || $u['sales_count'] > 0 || $u['orders_month'] > 0 || $u['calls_today'] > 0 || $u['leads_month'] > 0; });
@@ -510,7 +533,7 @@ class Ci_admin_live extends CI_Controller
 
 		// Latest sales (newest first)
 		$latest = array();
-		foreach ($qa("SELECT o.id, o.client_name, o.company_name, o.service_title, {$amt} v, o.created_at, o.created_by FROM ci_orders o WHERE {$sale} ORDER BY o.id DESC LIMIT 6") as $r) {
+		foreach ($qa("SELECT o.id, o.client_name, o.company_name, o.service_title, {$amt} v, o.created_at, o.created_by FROM ci_orders o WHERE {$sale}{$f_o} ORDER BY o.id DESC LIMIT 6") as $r) {
 			$uid = (int)$r['created_by'];
 			$latest[] = array(
 				'id' => (int)$r['id'],
@@ -534,7 +557,8 @@ class Ci_admin_live extends CI_Controller
 			'leaderboard' => $leaderboard,
 			'centers' => $centers,
 			'latest' => $latest,
-			'company_stats' => $this->get_stats_block(array()),
+			'company_stats' => $this->get_stats_block($scope_ids === null ? array() : $scope_ids),
+			'scope' => $scope_offices,
 		));
 		exit;
 	}

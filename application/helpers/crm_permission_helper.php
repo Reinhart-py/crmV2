@@ -398,10 +398,75 @@ if (!function_exists('crm_page_rule')) {
 	}
 }
 
+/** Id of the "Presentation" role (TV screen users), 0 when there is none. */
+if (!function_exists('crm_presentation_role_id')) {
+	function crm_presentation_role_id()
+	{
+		static $id = null;
+		if ($id !== null) return $id;
+		$ci =& get_instance();
+		if (!isset($ci->db)) $ci->load->database();
+		$row = $ci->db->query("SELECT id FROM ci_roles WHERE LOWER(TRIM(title)) = 'presentation' ORDER BY id ASC LIMIT 1")->row_array();
+		$id = !empty($row['id']) ? (int)$row['id'] : 0;
+		return $id;
+	}
+}
+
+/** True when the signed-in user (or the given role) is a Presentation user. */
+if (!function_exists('crm_is_presentation_user')) {
+	function crm_is_presentation_user($role_id = null)
+	{
+		if ($role_id === null) {
+			$ci =& get_instance();
+			$role_id = (int)$ci->session->userdata('manager_role');
+		}
+		$pid = crm_presentation_role_id();
+		return $pid > 0 && (int)$role_id === $pid;
+	}
+}
+
+/** Office codes (centers) offered on the user form: the standard list plus any already in use. */
+if (!function_exists('crm_office_codes')) {
+	function crm_office_codes()
+	{
+		$codes = array('01 - UAE-Dubai-SZR', '07 - UAE-WFH', '08 - UAE-Remote', '09 - UAE-Other', '11 - IN-Jaipur', '12 - IN - Delhi', '13 - IN-Indore', '17 - IN-WFH', '18 - IN-Remote', '19 - IN-Other');
+		$ci =& get_instance();
+		foreach ($ci->db->query("SELECT DISTINCT office FROM ci_user WHERE office IS NOT NULL AND office != ''")->result_array() as $r) {
+			$o = trim($r['office']);
+			if ($o !== '' && !in_array($o, $codes, true)) $codes[] = $o;
+		}
+		sort($codes);
+		return $codes;
+	}
+}
+
+/** Centers a Presentation user may show (table ci_user_live_offices, JSON list; ci_user has no room for another column). */
+if (!function_exists('crm_user_live_offices')) {
+	function crm_user_live_offices($user)
+	{
+		$list = array();
+		$raw = '';
+		if (!empty($user['id'])) {
+			$CI =& get_instance();
+			if ($CI->db->table_exists('ci_user_live_offices')) {
+				$row = $CI->db->select('offices')->where('user_id', (int)$user['id'])->get('ci_user_live_offices')->row_array();
+				if ($row) $raw = (string)$row['offices'];
+			}
+		}
+		if ($raw !== '') {
+			$dec = json_decode($raw, true);
+			if (is_array($dec)) $list = array_values(array_filter(array_map('trim', $dec), 'strlen'));
+		}
+		if (empty($list) && !empty($user['office'])) $list = array(trim($user['office']));
+		return $list;
+	}
+}
+
 /** First page this user may open (used when a page is refused). */
 if (!function_exists('crm_landing_url')) {
 	function crm_landing_url()
 	{
+		if (crm_is_presentation_user()) return 'manager/live/presentation';
 		if (crm_can('dashboard')) return 'manager/dashboard';
 		foreach (crm_nav_menu() as $g) {
 			foreach ($g['links'] as $l) {

@@ -162,7 +162,7 @@
         <img src="<?php echo base_url(); ?>assets/logo.png" alt="">
         <div>
           <h1>Live Sales</h1>
-          <span class="tv-live"><i></i> LIVE &middot; <span id="tvMonth"></span></span>
+          <span class="tv-live"><i></i> LIVE &middot; <span id="tvMonth"></span><span id="tvScope"></span></span>
         </div>
       </div>
       <div class="tv-right">
@@ -226,7 +226,7 @@
 
     <!-- 4. Activity -->
     <section class="tv-slide" data-slide="activity" data-title="Activity">
-      <div class="tv-slide-title"><i class="fa fa-bar-chart"></i> Company activity</div>
+      <div class="tv-slide-title"><i class="fa fa-bar-chart"></i> <span id="actTitle">Company activity</span></div>
       <div class="tv-panel" style="padding:4px 8px;">
         <table class="act">
           <thead><tr><th>Activity</th><th>Today</th><th>7 days</th><th>This month</th><th>This quarter</th></tr></thead>
@@ -275,6 +275,10 @@
   function render(d) {
     var k = d.kpi;
     $('#tvMonth, .js-month').text(d.month);
+    // Presentation users: the centers this screen shows.
+    var scope = (d.scope && d.scope.length) ? d.scope.join(', ') : '';
+    $('#tvScope').text(scope ? ' · ' + scope : '');
+    $('#actTitle').text(scope ? 'Activity · ' + scope : 'Company activity');
     setVal('kSales', money(k.sales_month));
     setVal('kSalesSub', k.sales_count + ' sale' + (k.sales_count === 1 ? '' : 's') + ' &middot; ' + growth(k.sales_growth, 'last month'));
     setVal('kOrders', num(k.orders_month));

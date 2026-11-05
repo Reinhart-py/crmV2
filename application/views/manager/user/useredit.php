@@ -28,7 +28,7 @@
       <form role="form" action="<?php echo base_url(); ?>manager/users/edit/<?php echo $list['id']; ?>" method="post" name="edit_form">
 
 
-         <div class="box box-default">
+         <div class="box box-default js-sys-box">
       <div class="box-header with-border">
         <h3 class="box-title">System Details</h3>
       </div>
@@ -60,7 +60,7 @@
               </div>
             </div>
 
-             <div class="col-lg-4 col-sm-6">
+             <div class="col-lg-4 col-sm-6 js-manager-col">
               <div class="form-group select">
                 <label>Upline / Manager<span>*</span></label>
                 <select class="form-control select2" required="" name="manager">                          
@@ -91,6 +91,37 @@
        </div>
      </div>
       
+      <!-- Presentation (TV screen) user: only a screen name and the centers it shows. -->
+      <div class="box box-default js-pres-box" style="display:none;">
+        <div class="box-header with-border">
+          <h3 class="box-title">Presentation Centers</h3>
+        </div>
+        <div class="box-body">
+          <p class="text-muted" style="margin-top:0;">A Presentation user only opens the Live presentation. It shows the numbers of the office codes ticked here.</p>
+          <div class="row">
+            <div class="col-lg-4 col-sm-6">
+              <div class="form-group">
+                <label>Screen Name<span>*</span></label>
+                <input type="text" name="name" class="form-control" maxlength="100" placeholder="e.g. Dubai Office TV" value="<?php echo htmlspecialchars((string)$list['name']); ?>">
+              </div>
+            </div>
+          </div>
+          <label>Office Codes<span>*</span> <small class="text-muted" style="font-weight:normal;">(one or more)</small></label>
+          <div class="pres-offices">
+            <?php foreach ($office_codes as $oc) { ?>
+            <label class="pres-office"><input type="checkbox" name="live_offices[]" value="<?php echo htmlspecialchars($oc); ?>" <?php echo in_array($oc, $live_offices, true) ? 'checked' : ''; ?>> <span><?php echo htmlspecialchars($oc); ?></span></label>
+            <?php } ?>
+          </div>
+          <div class="text-danger js-pres-error" style="display:none; margin-top:6px;">Tick at least one office code.</div>
+        </div>
+      </div>
+      <style>
+        .pres-offices { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:8px; }
+        .pres-office { display:flex; align-items:center; gap:8px; margin:0; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px; background:#fff; font-weight:600; cursor:pointer; }
+        .pres-office input { margin:0; }
+        .pres-office span { color:#1e293b !important; }
+        .pres-office:has(input:checked) { border-color:#1e3a8a; background:#eff6ff; }
+      </style>
        <div class="box box-default">
       <div class="box-header with-border">
         <h3 class="box-title">Personal Details</h3>
@@ -510,6 +541,33 @@
 </script>
 
 
+<script>
+// Presentation user type: hide the personal, company and other details (and the upline);
+// show only the screen name and the office codes.
+(function () {
+  var PRES = <?php echo (int)$pres_role_id; ?>;
+  var form = $('form[name=edit_form]');
+  function isPres() { return PRES > 0 && parseInt(form.find('select[name=user_type]').val(), 10) === PRES; }
+  function apply() {
+    var p = isPres();
+    form.find('.box').not('.js-sys-box, .js-pres-box').toggle(!p).find(':input').prop('disabled', p);
+    form.find('.js-manager-col').toggle(!p).find(':input').prop('disabled', p);
+    form.find('.js-pres-box').toggle(p).find(':input').prop('disabled', !p);
+    form.find('.js-pres-error').hide();
+  }
+  form.on('change', 'select[name=user_type]', apply);
+  // Bound before the validation plugin, so it can stop a submit with no office ticked.
+  form.on('submit', function (e) {
+    if (isPres() && !form.find('input[name="live_offices[]"]:checked').length) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      form.find('.js-pres-error').show();
+      return false;
+    }
+  });
+  apply();
+})();
+</script>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>
 
  

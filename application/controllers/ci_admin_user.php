@@ -157,6 +157,66 @@ public function view($id='')
 }
 	
 
+	/** Presentation users keep their centers in ci_user_live_offices (JSON list per user). */
+	private function _ensure_live_offices()
+	{
+		$this->db->query("CREATE TABLE IF NOT EXISTS ci_user_live_offices (user_id INT NOT NULL PRIMARY KEY, offices TEXT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+	}
+
+	private $pres_offices = array();
+
+	private function _save_live_offices($user_id, $offices)
+	{
+		$this->db->query('REPLACE INTO ci_user_live_offices (user_id, offices) VALUES (?, ?)', array((int)$user_id, json_encode(array_values($offices))));
+	}
+
+	/** The office codes ticked on the form, limited to known codes. */
+	private function _posted_offices()
+	{
+		$allowed = crm_office_codes();
+		$picked = (array)$this->input->post('live_offices');
+		return array_values(array_unique(array_filter(array_map('trim', $picked), function ($o) use ($allowed) { return in_array($o, $allowed, true); })));
+	}
+
+	/**
+	 * Presentation (TV screen) user: only login, name, status and centers are kept.
+	 * Returns the row to save, or sets a flash error and returns false.
+	 */
+	private function _presentation_row($is_new)
+	{
+		$name = trim((string)$this->input->post('name'));
+		$offices = $this->_posted_offices();
+		$this->pres_offices = $offices;
+		if ($name === '' || empty($offices)) {
+			$this->session->set_flashdata('error_message', 'For a Presentation user, enter the screen name and tick at least one office code.');
+			return false;
+		}
+		$row = array(
+			'name' => $name,
+			'office' => '',
+			'admin_status' => (int)$this->input->post('admin_status') === 0 ? 0 : 1,
+			'user_type' => crm_presentation_role_id(),
+		);
+		if ($is_new) {
+			$me = (int)$this->session->userdata('manager_id');
+			$mine = $this->db->select('user_level')->where('id', $me)->get('ci_user')->row_array();
+			$row += array(
+				'c_username' => trim((string)$this->input->post('c_username')),
+				'c_password' => sha1((string)$this->input->post('c_password')),
+				'status' => 1,
+				'manager' => $me,
+				'user_level' => (!empty($mine['user_level']) ? (int)$mine['user_level'] : 0) + 1,
+				'created' => date('Y-m-d'),
+				// Fields that have no default in the table.
+				'address' => '', 'country_code' => '', 'country_code2' => '', 'c_email' => '', 'c_mobile' => '',
+				'c_salary' => '', 'c_doj' => '', 'c_dol' => '', 'national' => '', 'p_no' => '', 'p_date' => '', 'p_exdate' => '',
+			);
+		} else {
+			$row['modified'] = date('Y-m-d');
+		}
+		return $row;
+	}
+
 	public function add()
 
 	{
@@ -172,6 +232,26 @@ public function view($id='')
 		$data['r_list'] =$this->comman_model->getAll(array('status'=>1),array('id','ASC'),'ci_roles');
 		$data['c_list'] =$this->comman_model->getAll('',array('id','ASC'),'countries');
 		$data['u_list'] =$this->comman_model->getAll('',array('id','ASC'),'ci_user');
+		$this->_ensure_live_offices();
+		$data['pres_role_id'] = crm_presentation_role_id();
+		$data['office_codes'] = crm_office_codes();
+		if($this->input->server('REQUEST_METHOD')==='POST' && crm_is_presentation_user($this->input->post('user_type')))
+		{
+			$row = $this->_presentation_row(true);
+			if ($row !== false) {
+				if ($row['c_username'] === '' || (string)$this->input->post('c_password') === '') {
+					$this->session->set_flashdata('error_message', 'Please enter the user name and password.');
+				} elseif ($this->ci_admin_model->checkDuplicateUsername($row['c_username']) == FALSE) {
+					$new_id = $this->comman_model->saveData('ci_user', $row);
+					if ($new_id) $this->_save_live_offices($new_id, $this->pres_offices);
+					$this->session->set_flashdata('message', 'Presentation user has been added successfully!');
+					redirect('manager/users');
+				} else {
+					$this->session->set_flashdata('error_message', 'Company Username is already exists.');
+				}
+			}
+			redirect('manager/users/add');
+		}
 		if($this->input->server('REQUEST_METHOD')==='POST')
 
 		{
@@ -274,6 +354,21 @@ public function view($id='')
 			$data['list']=$this->comman_model->getAll(array('id'=>$id),'','ci_user','first');
 			if(!empty($data['list']['country'])){
 				$data['state_list']= $this->comman_model->getAll(array('country_id'=>$data['list']['country']),'','states');
+			}
+			$this->_ensure_live_offices();
+			$data['pres_role_id'] = crm_presentation_role_id();
+			$data['office_codes'] = crm_office_codes();
+			$data['live_offices'] = !empty($data['list']) ? crm_user_live_offices($data['list']) : array();
+			if (!empty($data['list']) && $this->input->server('REQUEST_METHOD') === 'POST' && crm_is_presentation_user($this->input->post('user_type'))) {
+				$row = $this->_presentation_row(false);
+				if ($row !== false) {
+					$this->comman_model->updateData('id', $id, $row, 'ci_user');
+					$this->_save_live_offices($id, $this->pres_offices);
+					$this->ci_admin_model->log_admin_action('user_edit', 'Updated presentation user ID #'.$id, 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));
+					$this->session->set_flashdata('message', 'User has been updated successfully!');
+					redirect('manager/users');
+				}
+				redirect('manager/users/edit/' . (int)$id);
 			}
     	 	   if(empty($data['list']))
 

@@ -112,7 +112,8 @@ class Ci_admin extends CI_Controller {
 				);		
 				$this->session->set_userdata($user_data);
 				$this->ci_admin_model->log_admin_action('login', 'User logged in successfully (IP: ' . $client_ip . ')', 'SUCCESS', $data['users']['id'], $data['users']['name']);
-				redirect('manager/dashboard');
+				// Presentation (TV screen) users land on the Live presentation.
+				redirect(crm_is_presentation_user($data['users']['user_type']) ? 'manager/live/presentation' : 'manager/dashboard');
 			}
 			else
 			{   
@@ -134,6 +135,9 @@ class Ci_admin extends CI_Controller {
 		$data['info2']=$this->if_not_login();
 		// Operations opens Live instead of the dashboard, but only when the role has the Live right
 		// (otherwise Live would send them back here and the two pages would loop).
+		if (crm_is_presentation_user()) {
+			redirect('manager/live/presentation');
+		}
 		if ((int)$this->session->userdata('manager_role') === 5 && crm_can('live', 'read')) {
 			redirect('manager/live');
 		}
