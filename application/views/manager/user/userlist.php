@@ -29,7 +29,7 @@ foreach ($rows as $li) {
 	$r['left'] = !empty($li['left_on']);
 	$r['stl'] = $r['left'] ? 'Left' : ($r['on'] ? 'Enabled' : 'Disabled');
 	$r['mgr'] = trim((string)$li['manager_name']) !== '' ? trim($li['manager_name']) : '(No manager)';
-	$r['cat'] = trim((string)$li['role']) !== '' ? trim($li['role']) : '(No category)';
+	$r['cat'] = trim((string)$li['role']) !== '' ? trim($li['role']) : '(No role)';
 	$r['des'] = (isset($li['designation']) && trim((string)$li['designation']) !== '') ? trim($li['designation']) : '(Not set)';
 	$r['dep'] = trim((string)$li['department']) !== '' ? trim($li['department']) : '(Not set)';
 	$r['off'] = trim((string)$li['office']) !== '' ? trim($li['office']) : '(Not set)';
@@ -66,7 +66,7 @@ foreach ($rows as $li) {
 	$list[] = $r;
 }
 foreach (array('mgr', 'cat', 'des', 'dep', 'off') as $k) ksort($f[$k], SORT_NATURAL | SORT_FLAG_CASE);
-$filters = array('mgr' => 'Manager', 'cat' => 'Category', 'des' => 'Designation', 'st' => 'Status', 'dep' => 'Department', 'off' => 'Office', 'exp' => 'Expiry', 'prof' => 'Profile', 'rpt' => 'Reporting');
+$filters = array('mgr' => 'Manager', 'cat' => 'Role', 'des' => 'Designation', 'st' => 'Status', 'dep' => 'Department', 'off' => 'Office', 'exp' => 'Expiry', 'prof' => 'Profile', 'rpt' => 'Reporting');
 ?>
 <style>
 /* View Users: compact list, sortable columns, tick-box filters, expiry alerts */
@@ -282,6 +282,7 @@ $filters = array('mgr' => 'Manager', 'cat' => 'Category', 'des' => 'Designation'
             <button type="button" class="btn btn-default btn-sm js-bulk-do" data-a="enable"><i class="fa fa-check"></i> Enable</button>
             <button type="button" class="btn btn-default btn-sm js-bulk-do" data-a="disable"><i class="fa fa-ban"></i> Disable</button>
             <span class="grp"><select name="manager" class="form-control input-sm"><option value="">Change manager to...</option><?php foreach ($bulk_managers as $bm) { ?><option value="<?php echo (int)$bm['id']; ?>"><?php echo $h($bm['name']); ?></option><?php } ?></select><button type="button" class="btn btn-default btn-sm js-bulk-do" data-a="manager">Apply</button></span>
+            <span class="grp"><select name="role" class="form-control input-sm"><option value="">Change role to...</option><?php foreach ($bulk_roles as $br) { ?><option value="<?php echo (int)$br['id']; ?>"><?php echo $h($br['title']); ?></option><?php } ?></select><button type="button" class="btn btn-default btn-sm js-bulk-do" data-a="role">Apply</button></span>
             <button type="button" class="btn btn-default btn-sm js-bulk-export"><i class="fa fa-file-excel-o"></i> Export selected</button>
             <a class="js-bulk-clear">Clear</a>
           </form>
@@ -292,7 +293,7 @@ $filters = array('mgr' => 'Manager', 'cat' => 'Category', 'des' => 'Designation'
               <th>Emp. No</th>
               <th><?php if ($can_write) { ?><input type="checkbox" class="pick js-pick-all" title="Tick everyone shown by the filters"> <?php } ?>Name / Login</th>
               <th>Manager</th>
-              <th>Category / Designation</th>
+              <th>Role / Designation</th>
               <th>Profile</th>
               <th>Documents</th>
               <th>Added</th>
@@ -468,7 +469,7 @@ $(document).ready(function(){
 
   // Export what is shown now (filters and search applied) as a CSV file that opens in Excel
   function exportRows(nodes, suffix){
-    var cols = [['emp','Emp. No'],['name','Name'],['login','Login'],['emp_id','Employee ID'],['mgr','Manager'],['cat','Category'],['des','Designation'],['dep','Department'],['off','Office / Location'],
+    var cols = [['emp','Emp. No'],['name','Name'],['login','Login'],['emp_id','Employee ID'],['mgr','Manager'],['cat','Role'],['des','Designation'],['dep','Department'],['off','Office / Location'],
       ['status','Status'],['pct','Profile filled'],['missing','Missing mandatory details'],['pp','Passport Expiry'],['visa','Visa Expiry'],['eid','Emirates ID Expiry'],['added','Added'],['wa','WhatsApp No'],
       ['re','Reporting Email'],['rev','Email check'],['rp','Reporting Phone'],['rpv','Phone check'],['rw','Reporting WhatsApp'],['rwv','WhatsApp check']];
     var esc = function(v){ v = (v == null ? '' : String(v)); if (/^[=+\-@]/.test(v)) v = "'" + v; return '"' + v.replace(/"/g, '""') + '"'; };
@@ -510,7 +511,8 @@ $(document).ready(function(){
     var f = $('.js-bulk'), a = $(this).data('a'), ids = Object.keys(picked), n = ids.length;
     if (!n) return;
     if (a === 'manager' && !f.find('[name=manager]').val()) { f.find('[name=manager]').focus(); return; }
-    var what = a === 'enable' ? 'Enable' : (a === 'disable' ? 'Disable' : 'Move to ' + f.find('[name=manager] option:selected').text() + ':');
+    if (a === 'role' && !f.find('[name=role]').val()) { f.find('[name=role]').focus(); return; }
+    var what = a === 'enable' ? 'Enable' : (a === 'disable' ? 'Disable' : (a === 'role' ? 'Give the role ' + f.find('[name=role] option:selected').text() + ' to' : 'Move to ' + f.find('[name=manager] option:selected').text() + ':'));
     if (!confirm(what + ' ' + n + (n == 1 ? ' person' : ' people') + '?')) return;
     f.find('[name=bulk_action]').val(a);
     f.find('.ids').html(ids.map(function(id){ return '<input type="hidden" name="ids[]" value="' + parseInt(id, 10) + '">'; }).join(''));

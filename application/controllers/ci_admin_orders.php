@@ -25,7 +25,7 @@ class Ci_admin_orders extends CI_Controller {
 		$data = array();
 		$cur_uid = (int)$this->session->userdata('manager_id');
 		$cur_role = (int)$this->session->userdata('manager_role');
-		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
+		$is_backoffice = ($cur_role === 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
 
 		$client_filter = $this->input->get('client', true);
 		$vertical_filter = $this->input->get('vertical', true);
@@ -383,7 +383,7 @@ class Ci_admin_orders extends CI_Controller {
 
 		$cur_uid = (int)$this->session->userdata('manager_id');
 		$cur_role = (int)$this->session->userdata('manager_role');
-		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
+		$is_backoffice = ($cur_role === 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
 
 		if (!$is_backoffice) {
 			$has_ownership = false;
@@ -427,8 +427,8 @@ class Ci_admin_orders extends CI_Controller {
 
 		$is_assigned = ((int)$order['assigned_to'] === $cur_uid);
 		$can_edit = $is_backoffice || $is_assigned;
-		$can_approve = ($is_backoffice && ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('back_office') || has_section_perm('kam', 'write')));
-		$can_assign_operation = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
+		$can_approve = ($is_backoffice && ($cur_role === 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || $cur_uid === 1 || has_section_perm('back_office') || has_section_perm('kam', 'write')));
+		$can_assign_operation = ($cur_role === 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
 
 		$data = array();
 		$data['info'] = array(
@@ -459,7 +459,7 @@ class Ci_admin_orders extends CI_Controller {
 		$cur_name = (string)$this->session->userdata('manager_name');
 		$remarks = trim((string)$this->input->post('remarks'));
 
-		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
+		$is_backoffice = ($cur_role === 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
 		if (!$is_backoffice) {
 			$this->session->set_flashdata('error_message', 'Access denied. Only Back Office / Admin can approve orders.');
 			redirect('manager/orders/view/' . $id);
@@ -514,7 +514,7 @@ class Ci_admin_orders extends CI_Controller {
 		$cur_name = (string)$this->session->userdata('manager_name');
 		$remarks = trim((string)$this->input->post('remarks'));
 
-		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
+		$is_backoffice = ($cur_role === 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
 		if (!$is_backoffice) {
 			$this->session->set_flashdata('error_message', 'Access denied.');
 			redirect('manager/orders/view/' . $id);
@@ -574,7 +574,7 @@ class Ci_admin_orders extends CI_Controller {
 			return;
 		}
 
-		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
+		$is_backoffice = ($cur_role === 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
 		$is_assigned = ((int)$order['assigned_to'] === $cur_uid);
 
 		if (!$is_backoffice && !$is_assigned) {
@@ -623,7 +623,7 @@ class Ci_admin_orders extends CI_Controller {
 			return;
 		}
 
-		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
+		$is_backoffice = ($cur_role === 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
 		$is_assigned = ((int)$order['assigned_to'] === $cur_uid);
 
 		if (!$is_backoffice && !$is_assigned) {
@@ -675,7 +675,7 @@ class Ci_admin_orders extends CI_Controller {
 			return;
 		}
 
-		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
+		$is_backoffice = ($cur_role === 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
 		$is_assigned = ((int)$order['assigned_to'] === $cur_uid);
 
 		if (!$is_backoffice && !$is_assigned) {
@@ -705,7 +705,7 @@ class Ci_admin_orders extends CI_Controller {
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$cur_name = (string)$this->session->userdata('manager_name');
 
-		$can_assign = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office') || has_section_perm('orders', 'write'));
+		$can_assign = ($cur_role === 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office') || has_section_perm('orders', 'write'));
 		if (!$can_assign) {
 			$this->session->set_flashdata('error_message', 'Access denied.');
 			redirect('manager/orders/view/' . $id);
@@ -764,7 +764,7 @@ class Ci_admin_orders extends CI_Controller {
 		$cur_uid = (int)$this->session->userdata('manager_id');
 		$cur_role = (int)$this->session->userdata('manager_role');
 
-		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
+		$is_backoffice = ($cur_role === 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
 		if (!$is_backoffice) {
 			$this->session->set_flashdata('error_message', 'Access denied. Pending Order Process is restricted to Back Office and KAM staff.');
 			redirect('manager/dashboard');
@@ -809,7 +809,7 @@ class Ci_admin_orders extends CI_Controller {
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$cur_name = (string)$this->session->userdata('manager_name');
 
-		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
+		$is_backoffice = ($cur_role === 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
 		if (!$is_backoffice) {
 			$this->session->set_flashdata('error_message', 'Only authorized KAM, Back Office staff, or Admin can convert an Order to Sales.');
 			redirect('manager/orders/view/' . $id);
@@ -876,7 +876,7 @@ class Ci_admin_orders extends CI_Controller {
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$cur_name = (string)$this->session->userdata('manager_name');
 
-		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
+		$is_backoffice = ($cur_role === 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
 		if (!$is_backoffice) {
 			$this->session->set_flashdata('error_message', 'Access denied.');
 			redirect('manager/orders');
@@ -919,7 +919,7 @@ class Ci_admin_orders extends CI_Controller {
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$cur_name = (string)$this->session->userdata('manager_name');
 
-		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
+		$is_backoffice = ($cur_role === 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
 		if (!$is_backoffice) {
 			$this->session->set_flashdata('error_message', 'Access denied. Order processing is restricted to KAM and Admin.');
 			redirect('manager/dashboard');
@@ -1331,7 +1331,7 @@ class Ci_admin_orders extends CI_Controller {
 		$this->if_not_login();
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$cur_uid  = (int)$this->session->userdata('manager_id');
-		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_uid === 1 || has_section_perm('back_office'));
+		$is_backoffice = ($cur_role === 1 || has_section_perm('back_office', 'write') || $cur_uid === 1 || has_section_perm('back_office'));
 		if (!$is_backoffice) {
 			$this->session->set_flashdata('error_message', 'Access denied.');
 			redirect('manager/dashboard');
@@ -1378,7 +1378,7 @@ class Ci_admin_orders extends CI_Controller {
 		$this->if_not_login();
 		$cur_uid = (int)$this->session->userdata('manager_id');
 		$cur_role = (int)$this->session->userdata('manager_role');
-		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
+		$is_backoffice = ($cur_role === 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
 		if (!$is_backoffice) {
 			$this->session->set_flashdata('error_message', 'Access denied.');
 			redirect('manager/dashboard');
@@ -1586,7 +1586,7 @@ class Ci_admin_orders extends CI_Controller {
 		$data = array();
 		$cur_uid = (int)$this->session->userdata('manager_id');
 		$cur_role = (int)$this->session->userdata('manager_role');
-		$is_backoffice = ($cur_role === 1 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('back_office'));
+		$is_backoffice = ($cur_role === 1 || crm_can('all_data') || $cur_uid === 1 || has_section_perm('back_office'));
 		if (!$is_backoffice) {
 			redirect('manager/orders/my');
 			return;
@@ -1758,7 +1758,7 @@ class Ci_admin_orders extends CI_Controller {
 		$cur_uid = (int)$this->session->userdata('manager_id');
 		$cur_dept = (string)$this->session->userdata('manager_dept');
 		$cur_name = (string)$this->session->userdata('manager_name');
-		$is_backoffice = ($cur_role === 1 || $cur_role === 2 || $cur_uid === 1 || strcasecmp($cur_dept, 'Back Office') === 0 || has_section_perm('orders_management', 'write'));
+		$is_backoffice = ($cur_role === 1 || has_section_perm('back_office', 'write') || $cur_uid === 1 || strcasecmp($cur_dept, 'Back Office') === 0 || has_section_perm('orders_management', 'write'));
 		if (!$is_backoffice) {
 			$this->session->set_flashdata('error_message', 'Permission denied.');
 			redirect('manager/orders?status=completed');
@@ -1849,7 +1849,7 @@ class Ci_admin_orders extends CI_Controller {
 		$order_id = (int)$order_id;
 		$cur_uid = (int)$this->session->userdata('manager_id');
 		$cur_role = (int)$this->session->userdata('manager_role');
-		$is_backoffice = ($cur_role === 1 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('back_office'));
+		$is_backoffice = ($cur_role === 1 || crm_can('all_data') || $cur_uid === 1 || has_section_perm('back_office'));
 		$order = $this->db->select('O.*, A.customer as lead_customer, A.lead_id as lead_code, A.poc, A.contact1')
 			->from('ci_orders O')
 			->join('ci_leads A', 'O.lead_id = A.id', 'LEFT')

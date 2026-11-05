@@ -960,7 +960,7 @@ class Ci_admin_kam extends CI_Controller
 		$this->db->order_by('id', 'DESC');
 		if ($filter_tab === 'my') {
 			$this->db->where('assigned_to', $manager_id);
-		} elseif ($role != 1 && $role != 4) {
+		} elseif ($role != 1 && !crm_can('all_data')) {
 			$this->db->where("(assigned_to = $manager_id OR created_by = $manager_id)");
 		}
 		$data['schedules'] = $this->db->get('ci_kam_schedules')->result_array();
@@ -1018,7 +1018,7 @@ class Ci_admin_kam extends CI_Controller
 		if ($id > 0) {
 			$role = (int)$this->session->userdata('manager_role');
 			$manager_id = (int)$this->session->userdata('manager_id');
-			if ($role == 1 || $role == 4) {
+			if ($role == 1 || crm_can('all_data')) {
 				$this->db->where('id', $id)->delete('ci_kam_schedules');
 			} else {
 				$this->db->where('id', $id)->where('(created_by = ' . $manager_id . ' OR assigned_to = ' . $manager_id . ')')->delete('ci_kam_schedules');
@@ -1075,7 +1075,7 @@ class Ci_admin_kam extends CI_Controller
 		);
 		$cur_uid = (int)$this->session->userdata('manager_id');
 		$cur_role = (int)$this->session->userdata('manager_role');
-		$is_admin = ($cur_role === 1 || $cur_role === 2 || $cur_uid === 1);
+		$is_admin = ($cur_role === 1 || has_section_perm('back_office', 'write') || $cur_uid === 1);
 
 		$search = $this->input->get('search', true);
 		$d1 = $this->input->get('d1', true);

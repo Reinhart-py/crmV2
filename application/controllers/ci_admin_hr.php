@@ -29,7 +29,7 @@ class Ci_admin_hr extends CI_Controller {
 			'search_topics' => 'hr_topics'
 		);
 		if (isset($self_service[$method])) {
-			$this->is_hr = ($this->is_admin || $role === 7 || crm_can($self_service[$method], 'write'));
+			$this->is_hr = ($this->is_admin || crm_can($self_service[$method], 'write'));
 			return;
 		}
 		// HR pages: each needs its own permission (View to open, Full to change).
@@ -48,7 +48,7 @@ class Ci_admin_hr extends CI_Controller {
 		);
 		$key = isset($page_keys[$method]) ? $page_keys[$method] : 'hr';
 		$changes = ($this->input->server('REQUEST_METHOD') === 'POST') || preg_match('/^(add_|delete_|update_|generate_|assign_|leave_action|payroll_status|topic_)/', $method);
-		$this->is_hr = ($this->is_admin || $role === 7 || crm_can($key, $changes ? 'write' : 'read'));
+		$this->is_hr = ($this->is_admin || crm_can($key, $changes ? 'write' : 'read'));
 		if ($method !== 'ajax_clock' && !$this->is_hr) {
 			$this->session->set_flashdata('error_message', 'You do not have ' . ($changes ? 'Full' : 'View') . ' access to this HR page. Ask your administrator if you need it.');
 			redirect(crm_landing_url());
@@ -111,7 +111,7 @@ class Ci_admin_hr extends CI_Controller {
 		$uid = (int)$this->session->userdata('manager_id');
 		$role = (int)$this->session->userdata('manager_role');
 		$is_admin = ($role === 1 || $uid === 1);
-		$is_hr = ($is_admin || $role === 7 || has_section_perm('hr'));
+		$is_hr = ($is_admin || has_section_perm('hr'));
 		if (!$is_hr) {
 			$this->session->set_flashdata('error_message', 'Access denied. HR Management is restricted to HR personnel and Administrators.');
 			redirect('manager/dashboard');

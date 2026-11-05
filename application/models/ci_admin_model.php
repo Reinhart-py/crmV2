@@ -16,7 +16,7 @@ class Ci_admin_model extends CI_model {
 		}
 		$manager_id = (int)$this->session->userdata('manager_id');
 		$user_role = (int)($this->session->userdata('manager_role') ? $this->session->userdata('manager_role') : $this->session->userdata('user_role'));
-		$is_admin = ($user_role === 1 || $user_role === 4 || $manager_id === 1);
+		$is_admin = ($user_role === 1 || crm_can('all_data') || $manager_id === 1);
 		$data = array(
 			'count_database' => 0,
 			'count_verticals' => 0,
@@ -65,7 +65,7 @@ class Ci_admin_model extends CI_model {
 		public function dashboard_Tcountdata(){
 			$manager_id = (int)$this->session->userdata('manager_id');
 			$user_role = (int)($this->session->userdata('manager_role') ? $this->session->userdata('manager_role') : $this->session->userdata('user_role'));
-			$is_admin = ($user_role === 1 || $user_role === 4 || $manager_id === 1);
+			$is_admin = ($user_role === 1 || crm_can('all_data') || $manager_id === 1);
 			$team_array = $this->fetchTeamList($manager_id, '');
 			if (!is_array($team_array)) {
 				$team_array = array();
@@ -191,7 +191,7 @@ class Ci_admin_model extends CI_model {
 			if ($is_team == 0) {
 				$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(DISTINCT l.id) FROM ci_leads l LEFT JOIN ci_pipeline p ON p.lead_id = l.id WHERE l.status = A.id AND (p.pipeline_stage = 'database' OR p.pipeline_stage IS NULL) AND (l.lead_assign = ".$manager_id." OR (l.created_by = ".$manager_id." AND (l.lead_assign = 0 OR l.lead_assign IS NULL)) OR (l.agents IS NOT NULL AND l.agents != '' AND FIND_IN_SET(".$manager_id.", l.agents) > 0)) AND (l.company_status IS NULL OR LOWER(l.company_status) != 'closed')) as lead_count FROM ci_status as A WHERE A.id BETWEEN 37 AND 44 ORDER BY A.id ASC";
 			} else {
-				if ($user_role === 1 || $user_role === 4) {
+				if ($user_role === 1 || crm_can('all_data')) {
 					$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(DISTINCT l.id) FROM ci_leads l LEFT JOIN ci_pipeline p ON p.lead_id = l.id WHERE l.status = A.id AND (p.pipeline_stage = 'database' OR p.pipeline_stage IS NULL) AND (l.company_status IS NULL OR LOWER(l.company_status) != 'closed')) as lead_count FROM ci_status as A WHERE A.id BETWEEN 37 AND 44 ORDER BY A.id ASC";
 				} else {
 					$team_array = $this->fetchTeamList($manager_id, '');
@@ -219,7 +219,7 @@ class Ci_admin_model extends CI_model {
 			if ($is_team == 0) {
 				$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(DISTINCT l.id) FROM ci_leads l INNER JOIN ci_pipeline p ON p.lead_id = l.id AND " . crm_stage_lead_sql('l', 'p') . " WHERE l.status = A.id AND (l.lead_assign = ".$manager_id." OR (l.created_by = ".$manager_id." AND (l.lead_assign = 0 OR l.lead_assign IS NULL)) OR (l.agents IS NOT NULL AND l.agents != '' AND FIND_IN_SET(".$manager_id.", l.agents) > 0)) AND (l.company_status IS NULL OR LOWER(l.company_status) != 'closed')) as lead_count FROM ci_status as A WHERE A.id BETWEEN 45 AND 50 ORDER BY A.id ASC";
 			} else {
-				if ($user_role === 1 || $user_role === 4) {
+				if ($user_role === 1 || crm_can('all_data')) {
 					$sql = "SELECT A.id as status_id, A.status, (SELECT COUNT(DISTINCT l.id) FROM ci_leads l INNER JOIN ci_pipeline p ON p.lead_id = l.id AND " . crm_stage_lead_sql('l', 'p') . " WHERE l.status = A.id AND (l.company_status IS NULL OR LOWER(l.company_status) != 'closed')) as lead_count FROM ci_status as A WHERE A.id BETWEEN 45 AND 50 ORDER BY A.id ASC";
 				} else {
 					$team_array = $this->fetchTeamList($manager_id, '');
@@ -248,7 +248,7 @@ class Ci_admin_model extends CI_model {
 				// Same scope as the My Orders page and the My Orders KPI.
 				$scope = $this->my_orders_scope_sql($manager_id);
 			} else {
-				if ($user_role === 1 || $user_role === 4) {
+				if ($user_role === 1 || crm_can('all_data')) {
 					$scope = "1=1";
 				} else {
 					$team_array = $this->fetchTeamList($manager_id, '');
@@ -299,7 +299,7 @@ class Ci_admin_model extends CI_model {
 			if ($is_team == 0) {
 				$scope = "(a.lead_assign = ".$manager_id." OR (a.created_by = ".$manager_id." AND (a.lead_assign = 0 OR a.lead_assign IS NULL)) OR (a.agents IS NOT NULL AND a.agents != '' AND FIND_IN_SET(".$manager_id.", a.agents) > 0))";
 			} else {
-				if ($user_role === 1 || $user_role === 4) {
+				if ($user_role === 1 || crm_can('all_data')) {
 					$scope = "1=1";
 				} else {
 					$team_array = $this->fetchTeamList($manager_id, '');
@@ -353,7 +353,7 @@ class Ci_admin_model extends CI_model {
 						$monthly_target = (float)$t_row['target_amount'];
 					}
 				} else {
-					if ($user_role === 1 || $user_role === 4) {
+					if ($user_role === 1 || crm_can('all_data')) {
 						$t_row = $this->db->query("SELECT SUM(target_amount) as s FROM ci_hr_targets WHERE status = 'Active' AND (period_month = '{$month_key}' OR ('{$d1}' <= end_date AND '{$d2}' >= start_date))")->row_array();
 						if (!empty($t_row['s'])) {
 							$monthly_target = (float)$t_row['s'];
@@ -378,7 +378,7 @@ class Ci_admin_model extends CI_model {
 					$lq = $this->db->query("SELECT COALESCE(SUM(CAST(mrr AS DECIMAL(10,2))), 0) as val FROM ci_leads WHERE close_date >= '$d1' AND close_date <= '$d2' AND close_date != '' AND close_date != '0000-00-00' AND status IN (39, 42) AND (created_by = $manager_id OR lead_assign = $manager_id)")->row_array();
 					$oq = $this->db->query("SELECT COALESCE(SUM(CAST(pricing_amount AS DECIMAL(10,2))), 0) as val FROM ci_orders WHERE created_at >= '$d1 00:00:00' AND created_at <= '$d2 23:59:59' AND status IN ('completed', 'accepted', 'active', 'processing') AND created_by = $manager_id")->row_array();
 				} else {
-					if ($user_role === 1 || $user_role === 4) {
+					if ($user_role === 1 || crm_can('all_data')) {
 						$lq = $this->db->query("SELECT COALESCE(SUM(CAST(mrr AS DECIMAL(10,2))), 0) as val FROM ci_leads WHERE close_date >= '$d1' AND close_date <= '$d2' AND close_date != '' AND close_date != '0000-00-00' AND status IN (39, 42)")->row_array();
 						$oq = $this->db->query("SELECT COALESCE(SUM(CAST(pricing_amount AS DECIMAL(10,2))), 0) as val FROM ci_orders WHERE created_at >= '$d1 00:00:00' AND created_at <= '$d2 23:59:59' AND status IN ('completed', 'accepted', 'active', 'processing')")->row_array();
 					} else {
@@ -681,14 +681,14 @@ public function dashboard_TeamPro($table='ci_leads'){
 		$d1 = date("Y-m-01", strtotime("+$i month"));
 		$d2 = date("Y-m-t", strtotime("+$i month"));
 		$month_dates[] = array('d1' => $d1, 'd2' => $d2);
-		if ($user_role === 1 || $user_role === 4) {
+		if ($user_role === 1 || crm_can('all_data')) {
 			$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ci_leads a INNER JOIN ci_pipeline P ON P.lead_id = a.id AND " . crm_stage_lead_sql('a', 'P') . " WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND a.status NOT IN (42,43,44) AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS pt_".$i;
 		} else {
 			$select_parts[] = "(SELECT COALESCE(SUM(CAST(a.mrr AS DECIMAL(10,2))), 0) FROM ci_leads a INNER JOIN ci_pipeline P ON P.lead_id = a.id AND " . crm_stage_lead_sql('a', 'P') . " WHERE a.close_date >= '$d1' AND a.close_date <= '$d2' AND a.close_date != '' AND a.close_date != '0000-00-00' AND a.status NOT IN (42,43,44) AND (FIND_IN_SET(a.created_by,'".$team_str."')>0 OR (a.lead_assign > 0 AND FIND_IN_SET(a.lead_assign,'".$team_str."')>0)) AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')) AS pt_".$i;
 		}
 	}
 
-	if ($user_role === 1 || $user_role === 4) {
+	if ($user_role === 1 || crm_can('all_data')) {
 		$sql = "SELECT " . implode(", ", $select_parts) . " FROM ci_leads a INNER JOIN ci_pipeline P ON P.lead_id = a.id AND " . crm_stage_lead_sql('a', 'P') . " WHERE a.status NOT IN (42,43,44) AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')"; 
 	} else {
 		$sql = "SELECT " . implode(", ", $select_parts) . " FROM ci_leads a INNER JOIN ci_pipeline P ON P.lead_id = a.id AND " . crm_stage_lead_sql('a', 'P') . " WHERE a.status NOT IN (42,43,44) AND (FIND_IN_SET(a.created_by,'".$team_str."')>0 OR (a.lead_assign > 0 AND FIND_IN_SET(a.lead_assign,'".$team_str."')>0)) AND (a.company_status IS NULL OR LOWER(a.company_status) != 'closed')"; 
@@ -716,7 +716,7 @@ public function dashboard_projection_targets($is_team = 0){
 	}
 	$scope = "user_id = {$manager_id}";
 	if ($is_team) {
-		if ($user_role === 1 || $user_role === 4) {
+		if ($user_role === 1 || crm_can('all_data')) {
 			$scope = '1=1';
 		} else {
 			$team_array = $this->fetchTeamList($manager_id, '');
@@ -865,7 +865,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			$user_cond = "(assigned_to = ".$manager_id." OR (assigned_users IS NOT NULL AND assigned_users != '' AND FIND_IN_SET('".$manager_id."', assigned_users) > 0))";
 		}else{
 			$not_me = "(assigned_to != ".$manager_id." AND (assigned_users IS NULL OR assigned_users = '' OR FIND_IN_SET('".$manager_id."', assigned_users) = 0))";
-			if($user_role === 1 || $user_role === 4){
+			if($user_role === 1 || crm_can('all_data')){
 				$user_cond = "((assigned_to > 0 OR (assigned_users IS NOT NULL AND assigned_users != '')) AND ".$not_me.")";
 			}else{
 				$team_raw = $this->fetchTeamList($manager_id, '');
@@ -929,7 +929,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			$user_cond = "(assigned_to = ".$manager_id." OR (assigned_users IS NOT NULL AND assigned_users != '' AND FIND_IN_SET('".$manager_id."', assigned_users) > 0))";
 		}else{
 			$not_me = "(assigned_to != ".$manager_id." AND (assigned_users IS NULL OR assigned_users = '' OR FIND_IN_SET('".$manager_id."', assigned_users) = 0))";
-			if($user_role === 1 || $user_role === 4){
+			if($user_role === 1 || crm_can('all_data')){
 				$user_cond = "((assigned_to > 0 OR (assigned_users IS NOT NULL AND assigned_users != '')) AND ".$not_me.")";
 			}else{
 				$team_raw = $this->fetchTeamList($manager_id, '');
@@ -1216,12 +1216,12 @@ public function dashboard_MyPro($table='ci_leads'){
 
 			   $uid = (int)$this->session->userdata('manager_id');
 			   $urole = (int)$this->session->userdata('manager_role');
-			   if ($urole == 5) {
+			   if (crm_is_presentation_user($urole)) {
 				   if ($stage !== 'back_office') {
 					   $this->db->where('A.id', -1);
 				   }
 			   } elseif ($stage === 'pending_approval' || $stage === 'review_leads') {
-				   if ($urole !== 1 && $urole !== 2 && $urole !== 4 && $uid !== 1 && !has_section_perm('lead_review') && !has_section_perm('back_office')) {
+				   if (!crm_can('all_data') && !has_section_perm('lead_review') && !has_section_perm('back_office')) {
 					   $team_members = $this->fetchTeamList($uid, '');
 					   if (!is_array($team_members)) $team_members = array();
 					   if (!empty($team_members)) {
@@ -1240,7 +1240,7 @@ public function dashboard_MyPro($table='ci_leads'){
 				   $this->db->where($where1);
 				   $this->db->where("(A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)");
 			   } else {
-				   if ($urole !== 1 && $urole !== 4 && $uid !== 1) {
+				   if ($urole !== 1 && !crm_can('all_data') && $uid !== 1) {
 					   $where1 = "(A.lead_assign = $uid OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET($uid, A.agents) > 0))";	
 					   $this->db->where($where1);
 				   }
@@ -1846,7 +1846,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			  
 				$cur_role = (int)$this->session->userdata('manager_role');
 				$cur_id = (int)$this->session->userdata('manager_id');
-				if ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || has_section_perm('lead_review') || has_section_perm('back_office')) {
+				if ($cur_role === 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || has_section_perm('lead_review') || has_section_perm('back_office')) {
 					if (isset($_GET['assign_scope']) && $_GET['assign_scope'] === 'unassigned') {
 						$this->db->where('(A.lead_assign = 0 OR A.lead_assign IS NULL)');
 					} else if (isset($_GET['assign_scope']) && is_numeric($_GET['assign_scope']) && (int)$_GET['assign_scope'] > 0) {
@@ -2297,7 +2297,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			$approver_id = (int)$this->session->userdata('manager_id');
 		}
 		$approver_role = (int)$this->session->userdata('manager_role');
-		if ($approver_role === 1 || $approver_role === 4) {
+		if ($approver_role === 1 || crm_can('all_data')) {
 			return true;
 		}
 		if ((int)$requester_id === (int)$approver_id) {
@@ -2358,7 +2358,7 @@ public function dashboard_MyPro($table='ci_leads'){
 	  {
 					$uid = (int)$this->session->userdata('manager_id');
 					$urole = (int)($this->session->userdata('manager_role') ? $this->session->userdata('manager_role') : $this->session->userdata('user_role'));
-					$is_admin = ($urole === 1 || $urole === 4 || $uid === 1);
+					$is_admin = ($urole === 1 || crm_can('all_data') || $uid === 1);
 
 					$result=array();
 				   $this->db->select(array('A.*','B.title as vertical_status','C.title as v_cat','D.title as v_subcat'));
@@ -2440,7 +2440,7 @@ public function dashboard_MyPro($table='ci_leads'){
 	  {
 					$uid = (int)$this->session->userdata('manager_id');
 					$urole = (int)($this->session->userdata('manager_role') ? $this->session->userdata('manager_role') : $this->session->userdata('user_role'));
-					$is_admin = ($urole === 1 || $urole === 4 || $uid === 1);
+					$is_admin = ($urole === 1 || crm_can('all_data') || $uid === 1);
 					$team_array = $this->fetchTeamList($uid, '');
 					if (!is_array($team_array)) { $team_array = array(); }
 					$team_clean = array_filter(array_map('intval', $team_array));
@@ -3087,7 +3087,7 @@ public function dashboard_MyPro($table='ci_leads'){
 	public function dashboard_pipeline_summary() {
 		$manager_id = (int)$this->session->userdata('manager_id');
 		$role = (int)$this->session->userdata('manager_role');
-		$is_admin = ($role === 1 || $role === 4 || $manager_id === 1);
+		$is_admin = ($role === 1 || crm_can('all_data') || $manager_id === 1);
 
 		$team_array = $this->fetchTeamList($manager_id, '');
 		if (!is_array($team_array)) {
@@ -3211,10 +3211,11 @@ public function dashboard_MyPro($table='ci_leads'){
 		}
 		$user_role = (int)$this->session->userdata('manager_role');
 		$is_admin = ($user_role === 1 || $user_id === 1);
-		$is_backoffice = (!$is_admin && ($user_role === 2 || has_section_perm('back_office') || has_section_perm('kam', 'write')));
-		$is_sales = (!$is_admin && !$is_backoffice && ($user_role === 3 || $user_role === 5 || $user_role === 6));
-		$is_support = (!$is_admin && !$is_backoffice && $user_role === 4);
-		$is_hr = (!$is_admin && $user_role === 7);
+		// alerts follow the person's rights, not fixed role numbers
+		$is_backoffice = (!$is_admin && (has_section_perm('back_office') || has_section_perm('kam', 'write')));
+		$is_support = (!$is_admin && !$is_backoffice && crm_can('support_desk'));
+		$is_hr = (!$is_admin && crm_can('hr_leaves', 'write'));
+		$is_sales = (!$is_admin && !$is_backoffice && !$is_support && !$is_hr && crm_can('database'));
 
 		$notifs = array();
 

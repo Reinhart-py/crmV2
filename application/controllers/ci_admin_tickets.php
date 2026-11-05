@@ -32,10 +32,9 @@ class Ci_admin_tickets extends CI_Controller {
 
 	public function is_support_user()
 	{
-		$role = (int)$this->session->userdata('manager_role');
-		if ($role === 4) return true;
-		$role_row = $this->db->get_where('ci_roles', array('id' => $role))->row_array();
-		return (!empty($role_row['title']) && strtolower(trim($role_row['title'])) === 'support');
+		// "Support desk" in Special rights (administrators are not counted as support staff)
+		if (crm_is_full_admin()) return false;
+		return crm_can('support_desk');
 	}
 
 	public function is_admin_or_support()
@@ -116,7 +115,7 @@ class Ci_admin_tickets extends CI_Controller {
 		$this->db->join('ci_user l', 'l.id = t.last_updated_by', 'left');
 
 		if ($team === 1) {
-			if ($role !== 1 && $role !== 4) {
+			if ($role !== 1 && !crm_can('all_data')) {
 				$team_array = $this->ci_admin_model->fetchTeamList($manager_id, '');
 				if (!is_array($team_array)) {
 					$team_array = array();

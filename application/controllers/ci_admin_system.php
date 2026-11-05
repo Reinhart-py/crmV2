@@ -106,7 +106,7 @@ class Ci_admin_system extends CI_Controller {
 		$this->if_not_login();
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$cur_uid = (int)$this->session->userdata('manager_id');
-		if ($cur_role !== 1 && $cur_role !== 4 && $cur_uid !== 1) {
+		if ($cur_role !== 1 && !crm_can('all_data') && $cur_uid !== 1) {
 			redirect('manager/dashboard');
 			return;
 		}
@@ -193,7 +193,7 @@ class Ci_admin_system extends CI_Controller {
 		$this->if_not_login();
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$cur_uid = (int)$this->session->userdata('manager_id');
-		if ($cur_role !== 1 && $cur_role !== 4 && $cur_uid !== 1) {
+		if ($cur_role !== 1 && !crm_can('all_data') && $cur_uid !== 1) {
 			header('Content-Type: application/json');
 			echo json_encode(array('success' => false, 'message' => 'Unauthorized'));
 			exit();
@@ -754,8 +754,8 @@ class Ci_admin_system extends CI_Controller {
 					array('title' => 'Add User', 'key' => 'sys_users_add', 'url' => 'manager/users/add'),
 					array('title' => 'Roles & Permissions', 'key' => 'sys_roles', 'url' => 'manager/roles'),
 					array('title' => 'Add Role', 'key' => 'sys_roles_add', 'url' => 'manager/roles/add'),
-					array('title' => 'Category & Terms', 'key' => 'sys_terms', 'url' => 'manager/terms'),
-					array('title' => 'Add Category / Term', 'key' => 'sys_terms_add', 'url' => 'manager/terms/add'),
+					array('title' => 'Lists', 'key' => 'sys_terms', 'url' => 'manager/terms'),
+					array('title' => 'Add to a list', 'key' => 'sys_terms_add', 'url' => 'manager/terms/add'),
 					array('title' => 'Import Leads', 'key' => 'sys_import', 'url' => 'manager/leads/import'),
 					array('title' => 'Export Leads', 'key' => 'sys_export', 'url' => 'manager/leads/export'),
 					array('title' => 'Allotted Database', 'key' => 'sys_allotted', 'url' => 'manager/assigned-leads'),

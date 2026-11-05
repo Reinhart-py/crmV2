@@ -49,7 +49,7 @@ $offices = function_exists('crm_user_live_offices') ? crm_user_live_offices($p) 
 // Sections in the same order as the form. Salary and bank details only for people who may edit staff.
 $sections = array(
 	'Login & Role' => array(
-		'Login Email' => $val('c_username'), 'User Type' => $val('role_title'), 'Upline / Manager' => $manager_name,
+		'Login Email' => $val('c_username'), 'Role' => $val('role_title'), 'Upline / Manager' => $manager_name,
 		'Added On' => (!empty($p['created']) ? simple_date($p['created']) : ''),
 	),
 	'Personal Details' => array(

@@ -195,7 +195,7 @@ class Ci_admin_tasks extends CI_Controller {
 		$this->db->where('(company_status IS NULL OR LOWER(company_status) != "closed")');
 		$this->db->where('customer IS NOT NULL', null, false);
 		$this->db->where("TRIM(customer) != ''", null, false);
-		if ($role !== 1 && $role !== 4) {
+		if ($role !== 1 && !crm_can('all_data')) {
 			$this->db->where("(lead_assign = {$manager_id} OR (created_by = {$manager_id} AND (lead_assign = 0 OR lead_assign IS NULL)) OR (agents IS NOT NULL AND agents != '' AND FIND_IN_SET({$manager_id}, agents) > 0))");
 		}
 		$this->db->like('customer', $term);
@@ -245,7 +245,7 @@ class Ci_admin_tasks extends CI_Controller {
 			'page_heading' => 'Internal Tasks'
 		);
 		$data['info2'] = $this->if_not_login();
-		$data['can_create'] = ($role === 1 || $role === 4 || $manager_id === 1);
+		$data['can_create'] = ($role === 1 || crm_can('all_data') || $manager_id === 1);
 
 		$data['st_list'] = $this->comman_model->getAll(array('active' => 1), '', 'ci_status');
 		$data['u_list'] = $this->comman_model->getAll('', array('name', 'ASC'), 'ci_user');
@@ -266,7 +266,7 @@ class Ci_admin_tasks extends CI_Controller {
 		$this->db->where("(t.task_scope = 'internal' OR t.task_scope IS NULL)");
 
 		if ($team === 1) {
-			if ($role !== 1 && $role !== 4) {
+			if ($role !== 1 && !crm_can('all_data')) {
 				$team_array = $this->ci_admin_model->fetchTeamList($manager_id, '');
 				if (!is_array($team_array)) {
 					$team_array = array();
@@ -281,7 +281,7 @@ class Ci_admin_tasks extends CI_Controller {
 				$this->db->where("(FIND_IN_SET(t.created_by, '".$team_str."') > 0 OR FIND_IN_SET(t.assigned_to, '".$team_str."') > 0)");
 			}
 		} else {
-			if ($role !== 1 && $role !== 4) {
+			if ($role !== 1 && !crm_can('all_data')) {
 				$this->db->group_start();
 				$this->db->where('t.created_by', $manager_id);
 				$this->db->or_where('t.assigned_to', $manager_id);
@@ -353,7 +353,7 @@ class Ci_admin_tasks extends CI_Controller {
 			'page_heading' => 'External Tasks'
 		);
 		$data['info2'] = $this->if_not_login();
-		$data['can_create'] = ($role === 1 || $role === 4 || $manager_id === 1);
+		$data['can_create'] = ($role === 1 || crm_can('all_data') || $manager_id === 1);
 
 		$data['st_list'] = $this->comman_model->getAll(array('active' => 1), '', 'ci_status');
 		$data['u_list'] = $this->comman_model->getAll('', array('name', 'ASC'), 'ci_user');
@@ -361,7 +361,7 @@ class Ci_admin_tasks extends CI_Controller {
 		$this->db->select('id, customer');
 		$this->db->from('ci_leads');
 		$this->db->where('(company_status IS NULL OR LOWER(company_status) != "closed")');
-		if ($role !== 1 && $role !== 4) {
+		if ($role !== 1 && !crm_can('all_data')) {
 			$this->db->where("(lead_assign = {$manager_id} OR (created_by = {$manager_id} AND (lead_assign = 0 OR lead_assign IS NULL)) OR (agents IS NOT NULL AND agents != '' AND FIND_IN_SET({$manager_id}, agents) > 0))");
 		}
 		$this->db->order_by('customer', 'ASC');
@@ -383,7 +383,7 @@ class Ci_admin_tasks extends CI_Controller {
 		$this->db->where('t.task_scope', 'external');
 
 		if ($team === 1) {
-			if ($role !== 1 && $role !== 4) {
+			if ($role !== 1 && !crm_can('all_data')) {
 				$team_array = $this->ci_admin_model->fetchTeamList($manager_id, '');
 				if (!is_array($team_array)) {
 					$team_array = array();
@@ -398,7 +398,7 @@ class Ci_admin_tasks extends CI_Controller {
 				$this->db->where("(FIND_IN_SET(t.created_by, '".$team_str."') > 0 OR FIND_IN_SET(t.assigned_to, '".$team_str."') > 0)");
 			}
 		} else {
-			if ($role !== 1 && $role !== 4) {
+			if ($role !== 1 && !crm_can('all_data')) {
 				$this->db->group_start();
 				$this->db->where('t.created_by', $manager_id);
 				$this->db->or_where('t.assigned_to', $manager_id);
@@ -462,7 +462,7 @@ class Ci_admin_tasks extends CI_Controller {
 			$scope = 'internal';
 		}
 
-		if ($role !== 1 && $role !== 4 && $manager_id !== 1) {
+		if ($role !== 1 && !crm_can('all_data') && $manager_id !== 1) {
 			$this->session->set_flashdata('error_message', 'Access denied. Adding tasks is restricted to Admin and Support.');
 			redirect('manager/tasks/' . $scope);
 			return;
@@ -492,7 +492,7 @@ class Ci_admin_tasks extends CI_Controller {
 		$this->db->select('id, customer, poc, contact1, email');
 		$this->db->from('ci_leads');
 		$this->db->where('(company_status IS NULL OR LOWER(company_status) != "closed")');
-		if ($role !== 1 && $role !== 4) {
+		if ($role !== 1 && !crm_can('all_data')) {
 			$this->db->where("(lead_assign = {$manager_id} OR (created_by = {$manager_id} AND (lead_assign = 0 OR lead_assign IS NULL)) OR (agents IS NOT NULL AND agents != '' AND FIND_IN_SET({$manager_id}, agents) > 0))");
 		}
 		$this->db->order_by('customer', 'ASC');
@@ -745,7 +745,7 @@ class Ci_admin_tasks extends CI_Controller {
 		}
 
 		$role = (int)$this->session->userdata('manager_role');
-		$data['can_edit'] = ($task['task_scope'] === 'external') ? ($role === 1 || $role === 4 || has_section_perm('external_tasks', 'write')) : ($role === 1 || has_section_perm('internal_tasks', 'write'));
+		$data['can_edit'] = ($task['task_scope'] === 'external') ? ($role === 1 || crm_can('all_data') || has_section_perm('external_tasks', 'write')) : ($role === 1 || has_section_perm('internal_tasks', 'write'));
 
 		$data['task'] = $task;
 		$this->load->view('manager/tasks/view', $data);
@@ -765,7 +765,7 @@ class Ci_admin_tasks extends CI_Controller {
 		$manager_id = (int)$this->session->userdata('manager_id');
 		$role = (int)$this->session->userdata('manager_role');
 		$can_internal_write = ($role === 1 || has_section_perm('internal_tasks', 'write'));
-		$can_external_write = ($role === 1 || $role === 4 || has_section_perm('external_tasks', 'write'));
+		$can_external_write = ($role === 1 || crm_can('all_data') || has_section_perm('external_tasks', 'write'));
 
 		$this->db->where('id', $id);
 		$task = $this->db->get('ci_tasks')->row_array();
@@ -806,7 +806,7 @@ class Ci_admin_tasks extends CI_Controller {
 		$this->db->select('id, customer, poc, contact1, email');
 		$this->db->from('ci_leads');
 		$this->db->where('(company_status IS NULL OR LOWER(company_status) != "closed")');
-		if ($role !== 1 && $role !== 4) {
+		if ($role !== 1 && !crm_can('all_data')) {
 			$this->db->where("(lead_assign = {$manager_id} OR (created_by = {$manager_id} AND (lead_assign = 0 OR lead_assign IS NULL)) OR (agents IS NOT NULL AND agents != '' AND FIND_IN_SET({$manager_id}, agents) > 0))");
 		}
 		$this->db->order_by('customer', 'ASC');
@@ -1059,7 +1059,7 @@ class Ci_admin_tasks extends CI_Controller {
 		}
 
 		if ($team === 1) {
-			if ($role !== 1 && $role !== 4) {
+			if ($role !== 1 && !crm_can('all_data')) {
 				$team_array = $this->ci_admin_model->fetchTeamList($manager_id, '');
 				if (!is_array($team_array)) {
 					$team_array = array();
@@ -1074,7 +1074,7 @@ class Ci_admin_tasks extends CI_Controller {
 				$this->db->where("(FIND_IN_SET(t.created_by, '".$team_str."') > 0 OR FIND_IN_SET(t.assigned_to, '".$team_str."') > 0)");
 			}
 		} else {
-			if ($role !== 1 && $role !== 4) {
+			if ($role !== 1 && !crm_can('all_data')) {
 				$this->db->group_start();
 				$this->db->where('t.created_by', $manager_id);
 				$this->db->or_where('t.assigned_to', $manager_id);

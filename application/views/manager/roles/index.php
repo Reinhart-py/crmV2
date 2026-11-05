@@ -12,6 +12,25 @@
   };
 ?>
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-perms.css?v=20261106_1">
+<style>
+  .rp-role-name a { color: var(--crm-ink); }
+  .rp-role-name a:hover { color: var(--crm-ocean); }
+  .rc-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .rc-head::before, .rc-head::after { display: none; }
+  .rc-only { font-weight: 600; font-size: 13px; margin: 0; display: inline-flex; gap: 6px; align-items: center; }
+  .rc-scroll { overflow: auto; max-height: 70vh; border: 1px solid var(--crm-line); border-radius: 10px; }
+  .rc-table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 13px; }
+  .rc-table th, .rc-table td { padding: 7px 10px; border-bottom: 1px solid var(--crm-line-soft); text-align: center; white-space: nowrap; }
+  .rc-table thead th { position: sticky; top: 0; background: var(--crm-surface, #fff); z-index: 2; font-weight: 700; border-bottom: 1px solid var(--crm-line); }
+  .rc-table .rc-area { text-align: left; position: sticky; left: 0; background: var(--crm-surface, #fff); z-index: 1; min-width: 190px; white-space: normal; font-weight: 600; }
+  .rc-table thead .rc-area { z-index: 3; }
+  .rc-group td { text-align: left; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--crm-muted); background: var(--crm-line-soft); position: sticky; left: 0; }
+  .rc-v { display: inline-block; min-width: 38px; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
+  .rc-w { background: var(--crm-ocean); color: #fff; }
+  .rc-r { background: #dbeafe; color: #1e40af; }
+  .rc-n { color: var(--crm-muted); }
+  .rp-del[disabled] { opacity: .45; cursor: not-allowed; }
+</style>
 <div class="content-wrapper">
   <section class="content-header crm-list-head">
     <h1>Roles &amp; Permissions</h1>
@@ -26,13 +45,14 @@
 
     <div class="rp-tabs" role="tablist">
       <button type="button" role="tab" id="tabRoles" aria-controls="paneRoles" class="is-on" data-tab="roles"><i class="fa fa-sitemap"></i> Roles <span class="rp-tab-count"><?php echo count($roles); ?></span></button>
+      <button type="button" role="tab" id="tabCompare" aria-controls="paneCompare" data-tab="compare"><i class="fa fa-th"></i> Compare roles</button>
       <button type="button" role="tab" id="tabUsers" aria-controls="paneUsers" data-tab="users"><i class="fa fa-user"></i> User permissions <span class="rp-tab-count"><?php echo count($users); ?></span></button>
     </div>
 
     <!-- ===== Roles ===== -->
     <div id="paneRoles" role="tabpanel" aria-labelledby="tabRoles">
       <div class="rp-help">
-        <div class="rp-help-item"><span class="rp-help-ico"><i class="fa fa-sitemap"></i></span><div><b>1. Roles set the default</b><span>Everyone gets the access of their role. Change a role once and it applies to all its people.</span></div></div>
+        <div class="rp-help-item"><span class="rp-help-ico"><i class="fa fa-sitemap"></i></span><div><b>1. Roles set the default</b><span>Admin has everything. Every other role is a department (Sales, Back Office, KAM...) with its own access. Who reports to whom is set per person on their staff profile.</span></div></div>
         <div class="rp-help-item"><span class="rp-help-ico"><i class="fa fa-user"></i></span><div><b>2. Adjust one person</b><span>In User permissions, set someone to Custom to give or take away single areas, or to Full admin.</span></div></div>
         <div class="rp-help-item"><span class="rp-help-ico"><i class="fa fa-eye"></i></span><div><b>3. Only what they may use</b><span>Menus show only allowed pages, and a page opened without the right is refused. View opens it, Full also adds, edits and deletes.</span></div></div>
       </div>
@@ -41,13 +61,13 @@
         <div class="box-body">
           <div class="table-responsive">
             <table class="table table-hover crm-list-table">
-              <thead><tr><th>Role</th><th>Reports to</th><th>People</th><th>Access</th><th class="text-right">Actions</th></tr></thead>
+              <thead><tr><th>Role</th><th>Type</th><th>People</th><th>Access</th><th class="text-right">Actions</th></tr></thead>
               <tbody>
               <?php foreach ($roles as $r) { $rid = (int)$r['id']; $pct = function ($n) use ($r) { return $r['n_total'] ? round(100 * $n / $r['n_total'], 1) : 0; }; ?>
                 <tr>
-                  <td><span class="rp-role-name"><?php echo htmlspecialchars($r['title']); ?></span><?php if ($rid === 1) { ?> <span class="rp-chip rp-chip-ink">Administrator</span><?php } ?></td>
-                  <td><?php echo $r['parent_title'] !== '' ? htmlspecialchars($r['parent_title']) : '<span class="crm-sub">Top level</span>'; ?></td>
-                  <td><a href="#" class="js-role-people" data-role="<?php echo $rid; ?>"><?php echo (int)$r['users']; ?> <?php echo (int)$r['users'] === 1 ? 'person' : 'people'; ?></a></td>
+                  <td><span class="rp-role-name"><a href="<?php echo base_url('manager/roles/view/' . $rid); ?>"><?php echo htmlspecialchars($r['title']); ?></a></span></td>
+                  <td><?php $rt = $r['role_type']; ?><span class="rp-chip <?php echo $rt === 'admin' ? 'rp-chip-ink' : ($rt === 'system' ? 'rp-chip-amber' : 'rp-chip-ocean'); ?>" title="<?php echo htmlspecialchars($role_types[$rt]['desc']); ?>"><?php echo htmlspecialchars($role_types[$rt]['label']); ?></span></td>
+                  <td><a href="<?php echo base_url('manager/roles/view/' . $rid); ?>#people"><?php echo (int)$r['users']; ?> <?php echo (int)$r['users'] === 1 ? 'person' : 'people'; ?></a></td>
                   <td class="rp-access">
                     <?php if ($rid === 1) { ?>
                       <div class="rp-bar"><i class="w" style="width:100%"></i></div><small>Full access to everything</small>
@@ -60,19 +80,57 @@
                   </td>
                   <td>
                     <div class="rp-actions">
-                      <a href="<?php echo base_url('manager/roles/edit/' . $rid); ?>" class="btn btn-default btn-xs"><i class="fa <?php echo ($can_write && $rid !== 1) ? 'fa-pencil' : 'fa-eye'; ?>"></i> <?php echo ($can_write && $rid !== 1) ? 'Edit permissions' : 'View'; ?></a>
+                      <a href="<?php echo base_url('manager/roles/view/' . $rid); ?>" class="btn btn-default btn-xs"><i class="fa fa-eye"></i> View</a>
+                      <?php if ($can_write && $rid !== 1) { ?><a href="<?php echo base_url('manager/roles/edit/' . $rid); ?>" class="btn btn-default btn-xs"><i class="fa fa-pencil"></i> Edit</a><?php } ?>
                       <?php if ($can_write) { ?>
                         <a href="<?php echo base_url('manager/roles/add?copy=' . $rid); ?>" class="btn btn-default btn-xs" title="New role starting from <?php echo htmlspecialchars($r['title']); ?>"><i class="fa fa-clone"></i> Copy</a>
-                        <?php if ($rid !== 1) { ?>
-                        <form method="post" action="<?php echo base_url('manager/roles/delete/' . $rid); ?>" style="display:inline" onsubmit="return <?php echo (int)$r['users'] > 0 ? "alert('Move the " . (int)$r['users'] . " people in this role to another role first.'), false" : "confirm('Delete the role " . htmlspecialchars(addslashes($r['title']), ENT_QUOTES) . "?')"; ?>;">
+                        <?php if ($rid !== 1) { if ((int)$r['users'] > 0) { ?>
+                        <button type="button" class="btn btn-default btn-xs rp-del" disabled title="Only an empty role can be deleted. Open the role and move its <?php echo (int)$r['users']; ?> people first."><i class="fa fa-trash-o"></i></button>
+                        <?php } else { ?>
+                        <form method="post" action="<?php echo base_url('manager/roles/delete/' . $rid); ?>" style="display:inline" onsubmit="return confirm('Delete the role <?php echo htmlspecialchars(addslashes($r['title']), ENT_QUOTES); ?>? It has nobody in it.');">
                           <input type="hidden" name="<?php echo $csrf_name; ?>" value="<?php echo $csrf_hash; ?>">
-                          <button type="submit" class="btn btn-default btn-xs" title="Delete role"><i class="fa fa-trash-o"></i></button>
+                          <button type="submit" class="btn btn-default btn-xs" title="Delete role (it is empty)"><i class="fa fa-trash-o"></i></button>
                         </form>
-                        <?php } ?>
+                        <?php } } ?>
                       <?php } ?>
                     </div>
                   </td>
                 </tr>
+              <?php } ?>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Compare ===== -->
+    <div id="paneCompare" role="tabpanel" aria-labelledby="tabCompare" hidden>
+      <div class="box crm-list-box">
+        <div class="box-header with-border rc-head">
+          <h3 class="box-title">What each role can open</h3>
+          <label class="rc-only"><input type="checkbox" id="rcDiff"> Only rows where roles differ</label>
+        </div>
+        <div class="box-body">
+          <p class="crm-sub" style="margin:0 0 10px;"><span class="rc-v rc-w">Full</span> opens, adds, edits and deletes &middot; <span class="rc-v rc-r">View</span> opens only &middot; <span class="rc-v rc-n">&ndash;</span> no access. Click a role name to open it.</p>
+          <div class="rc-scroll">
+            <table class="rc-table">
+              <thead><tr><th class="rc-area">Area</th>
+                <?php foreach ($roles as $r) { ?><th><a href="<?php echo base_url('manager/roles/view/' . (int)$r['id']); ?>"><?php echo htmlspecialchars($r['title']); ?></a></th><?php } ?>
+              </tr></thead>
+              <tbody>
+              <?php foreach (crm_perm_catalog() as $gk => $g) { ?>
+                <tr class="rc-group"><td colspan="<?php echo count($roles) + 1; ?>"><?php echo htmlspecialchars($g['title']); ?></td></tr>
+                <?php foreach ($g['items'] as $k => $it) {
+                  $vals = array();
+                  foreach ($roles as $r) $vals[] = isset($r['expanded'][$k]) ? $r['expanded'][$k] : 'no_access';
+                  $same = count(array_unique($vals)) === 1;
+                ?>
+                <tr class="rc-row" data-same="<?php echo $same ? 1 : 0; ?>">
+                  <td class="rc-area" title="<?php echo htmlspecialchars($it['desc']); ?>"><?php echo htmlspecialchars($it['label']); ?></td>
+                  <?php foreach ($vals as $v) { ?><td><?php echo $v === 'write' ? '<span class="rc-v rc-w">Full</span>' : ($v === 'read' ? '<span class="rc-v rc-r">' . ((isset($it['levels']) && $it['levels'] === 'r') ? 'Yes' : 'View') . '</span>' : '<span class="rc-v rc-n">&ndash;</span>'); ?></td><?php } ?>
+                </tr>
+                <?php } ?>
               <?php } ?>
               </tbody>
             </table>
@@ -208,10 +266,16 @@
     });
     $('paneRoles').hidden = name !== 'roles';
     $('paneUsers').hidden = name !== 'users';
-    if (history.replaceState) history.replaceState(null, '', name === 'users' ? '#user-wise' : location.pathname + location.search);
+    $('paneCompare').hidden = name !== 'compare';
+    if (history.replaceState) history.replaceState(null, '', name === 'users' ? '#user-wise' : (name === 'compare' ? '#compare' : location.pathname + location.search));
   }
   document.querySelectorAll('[data-tab]').forEach(function (b) { b.addEventListener('click', function () { showTab(b.getAttribute('data-tab')); }); });
   if (/user/.test(location.hash)) showTab('users');
+  if (/compare/.test(location.hash)) showTab('compare');
+  $('rcDiff').addEventListener('change', function () {
+    var only = this.checked;
+    document.querySelectorAll('.rc-row').forEach(function (r) { r.hidden = only && r.getAttribute('data-same') === '1'; });
+  });
 
   /* ---- people list ---- */
   function filterPeople() {

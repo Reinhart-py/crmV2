@@ -196,6 +196,8 @@ class Ci_admin_user extends CI_Controller {
 		
 		$this->_page_data($data);
 		$data['exit_reasons'] = self::exit_reasons();
+		$data['bulk_roles'] = $this->db->select('id, title')->where('status', 1)->order_by('id', 'ASC')->get('ci_roles')->result_array();
+		if (!$this->is_admin) $data['bulk_roles'] = array_values(array_filter($data['bulk_roles'], function ($r) { return (int)$r['id'] !== 1; }));
 		$data['bulk_managers'] = $this->db->select('id, name')->where('admin_status', 1)->where('id NOT IN (SELECT user_id FROM ci_user_exit)', NULL, FALSE)->order_by('name', 'ASC')->get('ci_user')->result_array();
 		$data['doc_counts'] = array();
 		foreach ($this->db->query('SELECT user_id, COUNT(*) n, GROUP_CONCAT(DISTINCT doc_type ORDER BY doc_type SEPARATOR ", ") t FROM ci_user_docs GROUP BY user_id')->result_array() as $dc) $data['doc_counts'][(int)$dc['user_id']] = $dc;
@@ -984,7 +986,7 @@ public function view($id='')
 		if ($g('manager') !== '') { $m = $this->db->select('name')->where('id', (int)$u['manager'])->get('ci_user')->row_array(); $mgr = !empty($m['name']) ? $m['name'] : ''; }
 		$email = $g('email'); $mob = $ph('country_code', 'mobile'); $wa = $ph('whatsapp_code', 'whatsapp'); $alt = $ph('country_code2', 'uae_mobile');
 		return array(
-			'Login Email' => $g('c_username'), 'User Type' => $g('role_title'), 'Upline / Manager' => $mgr, 'Status' => ((int)$g('admin_status') === 1 ? 'Enabled' : 'Disabled'),
+			'Login Email' => $g('c_username'), 'Role' => $g('role_title'), 'Upline / Manager' => $mgr, 'Status' => ((int)$g('admin_status') === 1 ? 'Enabled' : 'Disabled'),
 			'Name' => $g('name'), 'Gender' => $g('gender'), 'Date of Birth' => $g('dob'), 'Blood Group' => $g('blood'),
 			'Email' => $email, 'Email verified' => $vf('email_verified', $email), 'Contact No' => $mob, 'Contact No verified' => $vf('mobile_verified', $mob),
 			'WhatsApp No' => $wa, 'WhatsApp No verified' => $vf('wa_verified', $wa), 'Alternate No' => $alt, 'Alternate No verified' => $vf('alt_verified', $alt),
@@ -1013,8 +1015,9 @@ public function view($id='')
 		}
 	}
 
-	/** Bulk actions from the list: enable, disable or change the manager of the ticked people.
-	 *  Skips yourself, Admin accounts (for non-admins), and enabling people who left (Rejoin is needed). */
+	/** Bulk actions from the list: enable, disable, change the manager or the role of the ticked people.
+	 *  Skips yourself, Admin accounts (for non-admins), and enabling people who left (Rejoin is needed).
+	 *  Only an administrator can give the Admin role. */
 	public function bulk()
 	{
 		$this->if_not_login();
@@ -1022,7 +1025,7 @@ public function view($id='')
 		$me = (int)$this->session->userdata('manager_id');
 		$ids = array_values(array_unique(array_filter(array_map('intval', (array)$this->input->post('ids')))));
 		$action = (string)$this->input->post('bulk_action');
-		if (!$ids || !in_array($action, array('enable', 'disable', 'manager'), true)) {
+		if (!$ids || !in_array($action, array('enable', 'disable', 'manager', 'role'), true)) {
 			$this->session->set_flashdata('error_message', 'Tick at least one person and choose an action.');
 			redirect($this->base);
 		}
@@ -1034,6 +1037,16 @@ public function view($id='')
 				$this->session->set_flashdata('error_message', 'Choose a manager who is still working here.');
 				redirect($this->base);
 			}
+		}
+		$new_role = null;
+		if ($action === 'role') {
+			$new_role = $this->db->get_where('ci_roles', array('id' => (int)$this->input->post('role'), 'status' => 1))->row_array();
+			if (empty($new_role) || ((int)$new_role['id'] === 1 && !$this->is_admin)) {
+				$this->session->set_flashdata('error_message', 'Choose the new role.');
+				redirect($this->base);
+			}
+			$role_titles = array();
+			foreach ($this->db->select('id, title')->get('ci_roles')->result_array() as $rr) $role_titles[(int)$rr['id']] = $rr['title'];
 		}
 		$left = array_flip($this->_left_ids());
 		$done = 0; $skip = array();
@@ -1049,6 +1062,12 @@ public function view($id='')
 				$this->comman_model->updateData('id', $id, array('admin_status' => $to), 'ci_user');
 				$this->_history($id, 'Status', $to ? 'Disabled' : 'Enabled', $to ? 'Enabled' : 'Disabled');
 				$done++;
+			} elseif ($action === 'role') {
+				if ($id === 1) { $skip[] = $u['name'] . ' (main administrator)'; continue; }
+				if ((int)$u['user_type'] === (int)$new_role['id']) continue;
+				$this->comman_model->updateData('id', $id, array('user_type' => (int)$new_role['id'], 'modified' => date('Y-m-d')), 'ci_user');
+				$this->_history($id, 'Role', isset($role_titles[(int)$u['user_type']]) ? $role_titles[(int)$u['user_type']] : '', $new_role['title']);
+				$done++;
 			} else {
 				if ((int)$mgr['id'] === $id) { $skip[] = $u['name'] . ' (cannot report to themselves)'; continue; }
 				if ((int)$u['manager'] === (int)$mgr['id']) continue;
@@ -1058,7 +1077,7 @@ public function view($id='')
 				$done++;
 			}
 		}
-		$what = $action === 'enable' ? 'enabled' : ($action === 'disable' ? 'disabled' : 'moved to ' . $mgr['name']);
+		$what = $action === 'enable' ? 'enabled' : ($action === 'disable' ? 'disabled' : ($action === 'role' ? 'given the role ' . $new_role['title'] : 'moved to ' . $mgr['name']));
 		$this->ci_admin_model->log_admin_action('user_bulk_' . $action, 'Bulk ' . $action . ' on ' . $done . ' user(s): #' . implode(', #', $ids), 'SUCCESS', $me, $this->session->userdata('manager_name'));
 		$msg = $done . ' ' . ($done == 1 ? 'person' : 'people') . ' ' . $what . '.';
 		if ($skip) $msg .= ' Skipped: ' . implode(', ', $skip) . '.';

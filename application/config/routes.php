@@ -28,12 +28,16 @@ $route['manager/roles/edit/(:num)'] = "ci_admin_roles/edit/$1";
 $route['manager/roles/delete/(:num)'] = "ci_admin_roles/delete/$1";
 $route['manager/roles/ajax_get_user_permissions/(:num)'] = "ci_admin_roles/ajax_get_user_permissions/$1";
 $route['manager/roles/ajax_save_user_permissions'] = "ci_admin_roles/ajax_save_user_permissions";
+$route['manager/roles/view/(:num)'] = "ci_admin_roles/view/$1";
+$route['manager/roles/move'] = "ci_admin_roles/move";
 $route['manager/roles/(:any)'] = "ci_admin_roles/$1";
 
 $route['manager/terms'] = "ci_admin_terms/index";
 $route['manager/terms/add'] = "ci_admin_terms/add";
 $route['manager/terms/edit/(:num)'] = "ci_admin_terms/edit/$1";
 $route['manager/terms/delete/(:num)'] = "ci_admin_terms/delete/$1";
+$route['manager/terms/save'] = "ci_admin_terms/save";
+$route['manager/terms/toggle/(:num)'] = "ci_admin_terms/toggle/$1";
 $route['manager/terms/(:any)'] = "ci_admin_terms/$1";
 
 $route['manager/leads/import'] = "ci_admin_leads/import";

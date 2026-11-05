@@ -152,7 +152,7 @@ class Ci_admin_report extends CI_Controller {
 			$m_role = 1;
 		}
 
-		$is_admin_or_support = ($m_role == 1 || $m_role == 4 || $manager_id == 1);
+		$is_admin_or_support = ($m_role == 1 || crm_can('all_data') || $manager_id == 1);
 
 		$user_row = $this->db->select('name, department, user_type')->where('id', $manager_id)->get('ci_user')->row_array();
 		$user_name = isset($user_row['name']) ? $user_row['name'] : '';
@@ -560,7 +560,7 @@ class Ci_admin_report extends CI_Controller {
 			$m_role = 1;
 		}
 
-		$is_admin_or_support = ($m_role == 1 || $m_role == 4 || $manager_id == 1);
+		$is_admin_or_support = ($m_role == 1 || crm_can('all_data') || $manager_id == 1);
 
 		$user_row = $this->db->select('name, department, user_type')->where('id', $manager_id)->get('ci_user')->row_array();
 		$user_name = isset($user_row['name']) ? $user_row['name'] : '';
@@ -749,8 +749,8 @@ class Ci_admin_report extends CI_Controller {
 		$client = trim($this->input->get('client'));
 		$filter_type = trim($this->input->get('type'));
 		$user_id = (int)$this->input->get('user_id');
-		// Only yourself or someone under you can be picked (admin / support: anyone).
-		if ($user_id > 0 && $manager_role != 1 && $manager_role != 4 && $manager_id != 1 && !in_array($user_id, $this->ci_admin_model->get_accessible_user_ids($manager_id), true)) $user_id = 0;
+		// Only yourself or someone under you can be picked (All company data: anyone).
+		if ($user_id > 0 && !crm_can('all_data') && !in_array($user_id, $this->ci_admin_model->get_accessible_user_ids($manager_id), true)) $user_id = 0;
 
 		$orders_data = array();
 		if ($filter_type !== 'projected') {
@@ -767,7 +767,7 @@ class Ci_admin_report extends CI_Controller {
 			}
 			if ($user_id > 0) {
 				$this->db->where('O.created_by', $user_id);
-			} elseif ($manager_role != 1 && $manager_role != 4) {
+			} elseif (!crm_can('all_data')) {
 				$accessible = $this->ci_admin_model->get_accessible_user_ids($manager_id);
 				if (!empty($accessible)) {
 					$this->db->where_in('O.created_by', $accessible);
@@ -796,7 +796,7 @@ class Ci_admin_report extends CI_Controller {
 			}
 			if ($user_id > 0) {
 				$this->db->where('L.lead_assign', $user_id);
-			} elseif ($manager_role != 1 && $manager_role != 4) {
+			} elseif (!crm_can('all_data')) {
 				$accessible = $this->ci_admin_model->get_accessible_user_ids($manager_id);
 				if (!empty($accessible)) {
 					$this->db->where_in('L.lead_assign', $accessible);
@@ -857,8 +857,8 @@ class Ci_admin_report extends CI_Controller {
 		$d2 = trim($this->input->get('d2'));
 		$search = trim($this->input->get('search'));
 		$user_id = (int)$this->input->get('user_id');
-		// Only yourself or someone under you can be picked (admin / support: anyone).
-		if ($user_id > 0 && $manager_role != 1 && $manager_role != 4 && $manager_id != 1 && !in_array($user_id, $this->ci_admin_model->get_accessible_user_ids($manager_id), true)) $user_id = 0;
+		// Only yourself or someone under you can be picked (All company data: anyone).
+		if ($user_id > 0 && !crm_can('all_data') && !in_array($user_id, $this->ci_admin_model->get_accessible_user_ids($manager_id), true)) $user_id = 0;
 
 		$this->db->select('L.*, S.status as status_title, U.name as owner_name, P.pipeline_stage, P.lead_ref_no');
 		$this->db->from('ci_leads as L');
@@ -878,7 +878,7 @@ class Ci_admin_report extends CI_Controller {
 		}
 		if ($user_id > 0) {
 			$this->db->where('L.lead_assign', $user_id);
-		} elseif ($manager_role != 1 && $manager_role != 4) {
+		} elseif (!crm_can('all_data')) {
 			$accessible = $this->ci_admin_model->get_accessible_user_ids($manager_id);
 			if (!empty($accessible)) {
 				$this->db->where_in('L.lead_assign', $accessible);

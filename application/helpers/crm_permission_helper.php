@@ -44,6 +44,15 @@ if (!function_exists('crm_perm_catalog')) {
 					'events_view' => array('label' => 'Events & Festivals', 'desc' => 'View company holidays, festivals, events and awards (profile menu); view only', 'fallback' => 'dashboard', 'pages' => array('events'), 'levels' => 'r'),
 				),
 			),
+			'powers' => array(
+				'title' => 'Special rights', 'key' => '', 'menu' => false,
+				'icon' => '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>',
+				'items' => array(
+					'all_data' => array('label' => 'All company data', 'desc' => 'See and choose anyone\'s records in reports, Assign Database, Import and transfers, not only own team', 'levels' => 'r'),
+					'support_desk' => array('label' => 'Support desk', 'desc' => 'Handle every ticket as support staff and get open-ticket alerts', 'levels' => 'r'),
+					'start_live' => array('label' => 'Start on Live screen', 'desc' => 'Open the Live Operations Report instead of the Dashboard after sign-in (also needs Live Operations Report)', 'levels' => 'r'),
+				),
+			),
 			'my_zone' => array(
 				'title' => 'My Zone', 'key' => 'my_zone', 'match' => array('leads', 'verticals', 'database-transfer', 'sales', 'tasks', 'tickets', 'database'),
 				'icon' => '<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>',
@@ -168,7 +177,7 @@ if (!function_exists('crm_perm_catalog')) {
 				'items' => array(
 					'users' => array('label' => 'Users', 'desc' => 'User list; Full can add and edit users', 'nav' => array(array('users/add', 'Add Staff', 'fa-user-plus', 'write'), array('users', 'View Staff', 'fa-id-card-o', 'read')), 'pages' => array('users'), 'write' => array('users/add', 'user/add')),
 					'roles' => array('label' => 'Roles & Permissions', 'desc' => 'This page. Full lets the person change roles and user rights', 'nav' => array(array('roles', 'Roles & Permissions', 'fa-shield')), 'pages' => array('roles'), 'write' => array('roles/add')),
-					'terms' => array('label' => 'Category', 'desc' => 'Categories and terms used in forms', 'nav' => array(array('terms', 'Category', 'fa-list')), 'pages' => array('terms', 'categories', 'category-tree'), 'write' => array('terms/add')),
+					'terms' => array('label' => 'Lists', 'desc' => 'Choices offered in forms: Industry, Products, Lead Temperature, Business Category...; Full can add, rename and disable', 'nav' => array(array('terms', 'Lists', 'fa-list')), 'pages' => array('terms', 'categories', 'category-tree'), 'write' => array('terms/add')),
 					'leads_import' => array('label' => 'Import Database', 'desc' => 'Upload records from a file', 'nav' => array(array('leads/import', 'Import Database', 'fa-upload')), 'pages' => array('leads/import'), 'levels' => 'r'),
 					'leads_export' => array('label' => 'Export Leads', 'desc' => 'Download records to a file', 'nav' => array(array('leads/export', 'Export Leads', 'fa-download')), 'pages' => array('leads/export'), 'levels' => 'r'),
 					'assigned_leads' => array('label' => 'Allotted Database', 'desc' => 'Allotted and non-allotted records', 'nav' => array(array('assigned-leads', 'Allotted Database', 'fa-tasks'), array('assigned-leads?alloc_filter=non_allotted', 'Non-Allotted Database', 'fa-folder-open-o')), 'pages' => array('assigned-leads')),
@@ -303,6 +312,7 @@ if (!function_exists('crm_sync_session_user')) {
 		$uid = (int)$ci->session->userdata('manager_id');
 		if ($uid <= 0) return;
 		if (!isset($ci->db)) $ci->load->database();
+		crm_roles_upgrade();
 		$u = $ci->db->select('user_type, user_level, name')->where('id', $uid)->get('ci_user')->row_array();
 		if (empty($u)) return;
 		$set = array();
@@ -421,6 +431,70 @@ if (!function_exists('crm_page_rule')) {
 			}
 		}
 		return $best;
+	}
+}
+
+/** Role types: Admin (everything), Department (Sales, Back Office, KAM, ...), System login (TV screen). */
+if (!function_exists('crm_role_types')) {
+	function crm_role_types()
+	{
+		return array(
+			'admin' => array('label' => 'Administrator', 'desc' => 'Full access to everything'),
+			'department' => array('label' => 'Department', 'desc' => 'A team such as Sales, Back Office or KAM; access is set below'),
+			'system' => array('label' => 'System login', 'desc' => 'Not a person, e.g. the TV presentation screen'),
+		);
+	}
+}
+
+/**
+ * One-time upgrade of ci_roles (runs once per server, when the role_type column is missing):
+ * - adds role_type (admin / department / system); every department sits directly under Admin,
+ * - moves rights that used to be fixed to role numbers into the role's permissions
+ *   (Support: All company data + Support desk; Operations: Start on Live screen;
+ *   HR: Manage Events & Festivals), so nobody gains or loses access,
+ * - adds a KAM department when there is none.
+ */
+if (!function_exists('crm_roles_upgrade')) {
+	function crm_roles_upgrade()
+	{
+		static $done = false;
+		if ($done) return;
+		$done = true;
+		$ci =& get_instance();
+		if (!isset($ci->db)) $ci->load->database();
+		if ($ci->db->query("SHOW COLUMNS FROM ci_roles LIKE 'role_type'")->num_rows() > 0) return;
+		$ci->db->query("ALTER TABLE ci_roles ADD role_type VARCHAR(12) NOT NULL DEFAULT 'department' AFTER title");
+		$ci->db->data_cache = array();
+		$ci->db->query("UPDATE ci_roles SET role_type = 'admin', parent_id = 0, level = 1 WHERE id = 1");
+		$ci->db->query("UPDATE ci_roles SET role_type = 'system' WHERE id <> 1 AND LOWER(TRIM(title)) = 'presentation'");
+		$ci->db->query("UPDATE ci_roles SET parent_id = 1, level = 2 WHERE id <> 1");
+		if ($ci->db->table_exists('ci_user_history')) $ci->db->query("UPDATE ci_user_history SET field = 'Role' WHERE field = 'User Type'");
+
+		foreach ($ci->db->get('ci_roles')->result_array() as $r) {
+			$id = (int)$r['id'];
+			if ($id === 1) continue;
+			$map = json_decode((string)$r['permissions'], true);
+			if (!is_array($map)) $map = array();
+			$t = strtolower(trim($r['title']));
+			$changed = false;
+			if ($id === 4 || $t === 'support') { $map['all_data'] = 'read'; $map['support_desk'] = 'read'; $changed = true; }
+			if ($id === 5 && $t !== 'presentation') { $map['start_live'] = 'read'; $changed = true; }
+			if ($id === 7 && !isset($map['events_list'])) { $map['events_list'] = 'write'; $changed = true; }
+			if ($changed) $ci->db->where('id', $id)->update('ci_roles', array('permissions' => json_encode($map)));
+		}
+
+		if ($ci->db->query("SELECT id FROM ci_roles WHERE LOWER(TRIM(title)) = 'kam'")->num_rows() === 0) {
+			$sales = $ci->db->query("SELECT permissions FROM ci_roles WHERE id = 3")->row_array();
+			$map = json_decode(!empty($sales['permissions']) ? $sales['permissions'] : '{}', true);
+			if (!is_array($map)) $map = array();
+			foreach (array('kam_clients', 'kam_schedule', 'kam_sales_approval', 'kam_task_followup', 'kam_reminders') as $k) $map[$k] = 'write';
+			$map['kam_report'] = 'read';
+			$ci->db->insert('ci_roles', array(
+				'title' => 'KAM', 'role_type' => 'department', 'level' => 2, 'parent_id' => 1, 'role' => 3,
+				'status' => 1, 'created' => date('Y-m-d H:i:s'), 'deletable' => 1,
+				'permissions' => json_encode(crm_perm_normalize(crm_perm_expand($map))),
+			));
+		}
 	}
 }
 

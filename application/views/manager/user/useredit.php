@@ -117,7 +117,7 @@
         
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
-                <label>User Type<span>*</span></label>
+                <label>Role<span>*</span></label>
                 <select class="form-control" name="user_type">
                           
                             <?php if(isset($r_list) && !empty($r_list)){

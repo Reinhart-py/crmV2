@@ -10,6 +10,10 @@
  *
  * Opening this page needs View on "Roles & Permissions"; saving needs Full.
  * Only full admins can edit the Admin role, give "Full admin", or change an admin.
+ *
+ * Role types (crm_role_types()): the Admin role has everything; every other role is a Department
+ * (Sales, Back Office, KAM, ...) directly under Admin, or a System login (TV screen). There is no
+ * "Reports to" between roles: who reports to whom is set per person (Manager on the staff profile).
  */
 class Ci_admin_roles extends CI_Controller {
 
@@ -88,6 +92,7 @@ class Ci_admin_roles extends CI_Controller {
 			$r['n_total'] = $total;
 			$r['users'] = isset($counts[(int)$r['id']]) ? $counts[(int)$r['id']] : 0;
 			$r['parent_title'] = isset($names[(int)$r['parent_id']]) ? $names[(int)$r['parent_id']] : '';
+			$r['role_type'] = ((int)$r['id'] === 1) ? 'admin' : (isset($r['role_type']) && $r['role_type'] === 'system' ? 'system' : 'department');
 		}
 		unset($r);
 		return $roles;
@@ -112,6 +117,7 @@ class Ci_admin_roles extends CI_Controller {
 			WHERE u.status = 1 ORDER BY u.name ASC")->result_array();
 		$data['can_write'] = $this->can_write();
 		$data['is_full_admin'] = crm_is_full_admin();
+		$data['role_types'] = crm_role_types();
 		$this->load->view('manager/roles/index', $data);
 	}
 
@@ -124,18 +130,13 @@ class Ci_admin_roles extends CI_Controller {
 
 		if ($this->input->server('REQUEST_METHOD') === 'POST') {
 			$title = trim((string)$this->input->post('title', true));
-			$parent_id = (int)$this->input->post('parent_id');
+			$type = $this->input->post('role_type') === 'system' ? 'system' : 'department';
 			if ($title === '' || mb_strlen($title) > 60) $this->deny('Role name is required (up to 60 characters).', 'manager/roles/add');
 			if ($this->db->where('title', $title)->where('status', 1)->count_all_results('ci_roles') > 0) {
 				$this->deny('A role with this name already exists.', 'manager/roles/add');
 			}
-			$level = 1;
-			if ($parent_id > 0) {
-				$p = $this->db->get_where('ci_roles', array('id' => $parent_id))->row_array();
-				$level = !empty($p) ? (int)$p['level'] + 1 : 1;
-			}
 			$this->db->insert('ci_roles', array(
-				'title' => $title, 'parent_id' => $parent_id, 'level' => $level, 'status' => 1,
+				'title' => $title, 'role_type' => $type, 'parent_id' => 1, 'level' => 2, 'status' => 1,
 				'permissions' => json_encode(crm_perm_normalize($this->input->post('permissions'))),
 				'created' => date('Y-m-d')
 			));
@@ -144,7 +145,8 @@ class Ci_admin_roles extends CI_Controller {
 			redirect('manager/roles');
 		}
 		$from = (int)$this->input->get('copy');
-		$data['role'] = array('id' => 0, 'title' => '', 'parent_id' => 0, 'status' => 1);
+		$data['role'] = array('id' => 0, 'title' => '', 'parent_id' => 1, 'status' => 1, 'role_type' => 'department');
+		$data['role_types'] = crm_role_types();
 		$data['values'] = array();
 		foreach ($data['roles'] as $r) {
 			if ((int)$r['id'] === $from) $data['values'] = $r['expanded'];
@@ -167,23 +169,17 @@ class Ci_admin_roles extends CI_Controller {
 				$this->deny('You cannot change your own role. Ask a full administrator.');
 			}
 			$title = trim((string)$this->input->post('title', true));
-			$parent_id = (int)$this->input->post('parent_id');
+			$type = $this->input->post('role_type') === 'system' ? 'system' : 'department';
 			$status = (int)$this->input->post('status') === 0 ? 0 : 1;
 			if ($title === '' || mb_strlen($title) > 60) $this->deny('Role name is required (up to 60 characters).', 'manager/roles/edit/' . $id);
 			if ($this->db->where('title', $title)->where('id !=', $id)->where('status', 1)->count_all_results('ci_roles') > 0) {
 				$this->deny('A role with this name already exists.', 'manager/roles/edit/' . $id);
 			}
-			if ($parent_id === $id) $parent_id = 0;
 			if ($status === 0 && $this->db->where('user_type', $id)->where('status', 1)->count_all_results('ci_user') > 0) {
 				$this->deny('Move the people in this role to another role before making it inactive.', 'manager/roles/edit/' . $id);
 			}
-			$level = 1;
-			if ($parent_id > 0) {
-				$p = $this->db->get_where('ci_roles', array('id' => $parent_id))->row_array();
-				$level = !empty($p) ? (int)$p['level'] + 1 : 1;
-			}
 			$this->db->where('id', $id)->update('ci_roles', array(
-				'title' => $title, 'parent_id' => $parent_id, 'level' => $level, 'status' => $status,
+				'title' => $title, 'role_type' => $type, 'parent_id' => 1, 'level' => 2, 'status' => $status,
 				'permissions' => json_encode(crm_perm_normalize($this->input->post('permissions')))
 			));
 			$this->ci_admin_model->log_admin_action('role_edit', 'Updated role #' . $id . ' "' . $title . '"');
@@ -201,7 +197,71 @@ class Ci_admin_roles extends CI_Controller {
 		}
 		$data['readonly'] = ($id === 1) || !$this->can_write();
 		$data['users_in_role'] = $this->db->where('user_type', $id)->where('status', 1)->count_all_results('ci_user');
+		$data['role_types'] = crm_role_types();
 		$this->load->view('manager/roles/edit', $data);
+	}
+
+	/** One role: its type, its people (with Move to another role) and its access, area by area. */
+	public function view($id = '')
+	{
+		$id = (int)$id;
+		$roles = $this->roles_overview();
+		$role = null;
+		foreach ($roles as $r) { if ((int)$r['id'] === $id) $role = $r; }
+		if (empty($role)) $this->deny('Role not found.');
+		$data = array();
+		$data['info'] = array('title' => 'Role: ' . $role['title'], 'page_heading' => 'Role');
+		$data['role'] = $role;
+		$data['roles'] = $roles;
+		$data['role_types'] = crm_role_types();
+		$data['people'] = $this->db->query("SELECT u.id, u.name, u.email, u.emp_id, u.admin_status, m.name AS manager_name,
+				(SELECT X.left_on FROM ci_user_exit X WHERE X.user_id = u.id LIMIT 1) AS left_on
+			FROM ci_user u LEFT JOIN ci_user m ON m.id = u.manager
+			WHERE u.status = 1 AND u.user_type = " . $id . " ORDER BY u.admin_status DESC, u.name ASC")->result_array();
+		$data['can_write'] = $this->can_write();
+		$data['is_full_admin'] = crm_is_full_admin();
+		$data['me'] = (int)$this->session->userdata('manager_id');
+		$data['profile_base'] = crm_can('users') ? 'manager/users/view/' : (crm_can('hr_staff') ? 'manager/hr/staff/view/' : '');
+		$this->load->view('manager/roles/view', $data);
+	}
+
+	/** Move the ticked people of one role to another role. Admin role in or out: full admins only; never yourself. */
+	public function move()
+	{
+		if ($this->input->server('REQUEST_METHOD') !== 'POST') redirect('manager/roles');
+		$from = (int)$this->input->post('from_role');
+		$back = $from > 0 ? 'manager/roles/view/' . $from : 'manager/roles';
+		if (!$this->can_write()) $this->deny('Moving people needs Full on Roles & Permissions.', $back);
+		$to = (int)$this->input->post('to_role');
+		$target = $this->db->get_where('ci_roles', array('id' => $to, 'status' => 1))->row_array();
+		if (empty($target)) $this->deny('Choose the role to move them to.', $back);
+		$ids = array_values(array_unique(array_filter(array_map('intval', (array)$this->input->post('ids')))));
+		if (!$ids) $this->deny('Tick at least one person.', $back);
+		$full = crm_is_full_admin();
+		$me = (int)$this->session->userdata('manager_id');
+		if ($to === 1 && !$full) $this->deny('Only a full administrator can move people into the Admin role.', $back);
+		$titles = array();
+		foreach ($this->db->select('id, title')->get('ci_roles')->result_array() as $r) $titles[(int)$r['id']] = $r['title'];
+		$has_hist = $this->db->table_exists('ci_user_history');
+		$done = 0; $skip = array();
+		foreach ($this->db->select('id, name, user_type')->where_in('id', $ids)->get('ci_user')->result_array() as $u) {
+			$uid = (int)$u['id'];
+			if ($uid === $me || $uid === 1) { $skip[] = $u['name'] . ($uid === $me ? ' (yourself)' : ' (main administrator)'); continue; }
+			if ((int)$u['user_type'] === 1 && !$full) { $skip[] = $u['name'] . ' (Admin account)'; continue; }
+			if ((int)$u['user_type'] === $to) continue;
+			$this->db->where('id', $uid)->update('ci_user', array('user_type' => $to, 'modified' => date('Y-m-d')));
+			if ($has_hist) {
+				$old = isset($titles[(int)$u['user_type']]) ? $titles[(int)$u['user_type']] : '';
+				$this->db->insert('ci_user_history', array('user_id' => $uid, 'field' => 'Role', 'old_value' => $old, 'new_value' => $target['title'],
+					'changed_by' => $me, 'changed_at' => date('Y-m-d H:i:s')));
+			}
+			$done++;
+		}
+		$this->ci_admin_model->log_admin_action('role_move', 'Moved ' . $done . ' user(s) to role #' . $to . ' "' . $target['title'] . '": #' . implode(', #', $ids), 'SUCCESS', $me, $this->session->userdata('manager_name'));
+		$msg = $done . ' ' . ($done === 1 ? 'person' : 'people') . ' moved to ' . $target['title'] . '. Their access changes on their next page.';
+		if ($skip) $msg .= ' Skipped: ' . implode(', ', $skip) . '.';
+		$this->session->set_flashdata($done || !$skip ? 'message' : 'error_message', $msg);
+		redirect($back);
 	}
 
 	public function delete($id = '')
@@ -210,7 +270,7 @@ class Ci_admin_roles extends CI_Controller {
 		if ($this->input->server('REQUEST_METHOD') !== 'POST') $this->deny('Use the Delete button to remove a role.');
 		if (!$this->can_write()) $this->deny('You can view roles but not delete them.');
 		if ($id <= 1) $this->deny('The Admin role cannot be deleted.');
-		$n = $this->db->where('user_type', $id)->where('status', 1)->count_all_results('ci_user');
+		$n = $this->db->where('user_type', $id)->count_all_results('ci_user');
 		if ($n > 0) $this->deny('This role still has ' . $n . ' ' . ($n === 1 ? 'person' : 'people') . '. Move them to another role first.');
 		$this->db->where('id', $id)->update('ci_roles', array('status' => 0));
 		$this->ci_admin_model->log_admin_action('role_delete', 'Deleted role ID #' . $id, 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));

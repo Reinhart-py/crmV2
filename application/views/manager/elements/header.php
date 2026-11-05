@@ -112,8 +112,8 @@
             $m_role = 1;
         }
         $is_admin = ($m_role === 1 || $current_user_id === 1);
-        $is_support = ($m_role === 4);
-        $is_presentation = ($m_role === 5);
+        $is_support = (!$is_admin && crm_can('support_desk'));
+        $is_presentation = crm_is_presentation_user($m_role);
         $user_team_count = $current_user_id ? count($this->ci_admin_model->fetchTeamList($current_user_id, '')) : 0;
         $can_see_review = ($is_admin || has_section_perm('back_office') || has_section_perm('lead_review'));
         $is_hr = ($is_admin || has_section_perm('hr'));
@@ -298,7 +298,7 @@
             </a>
           </li>
           <?php } ?>
-          <?php if (crm_can('self_training', 'read') || crm_can('hr_training', 'write') || in_array((int)$this->session->userdata('manager_role'), array(1, 7), true)) { ?>
+          <?php if (crm_can('self_training', 'read') || crm_can('hr_training', 'write')) { ?>
           <li>
             <a href="<?php echo base_url(); ?>manager/self-training" class="google-profile-item">
               <i class="fa fa-graduation-cap"></i>
@@ -640,8 +640,8 @@ $(function() {
             $m_role = 1;
         }
         $is_admin = ($m_role === 1 || $current_user_id === 1);
-        $is_support = ($m_role === 4);
-        $is_presentation = ($m_role === 5);
+        $is_support = (!$is_admin && crm_can('support_desk'));
+        $is_presentation = crm_is_presentation_user($m_role);
         $user_team_count = $current_user_id ? count($this->ci_admin_model->fetchTeamList($current_user_id, '')) : 0;
         $can_see_review = ($is_admin || has_section_perm('back_office') || has_section_perm('lead_review'));
       ?>

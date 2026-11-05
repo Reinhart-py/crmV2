@@ -161,7 +161,7 @@ class Ci_admin_support extends CI_Controller {
 		$role = (int)$this->session->userdata('manager_role');
 		$data = array('info' => array('title' => 'Help & Support', 'page_heading' => 'Help & Support'));
 		$data['topics'] = $this->hr_selfservice_model->topics('', '', false);
-		$data['can_manage_topics'] = ($role === 1 || $this->uid === 1 || $role === 7 || crm_can('hr_topics', 'write'));
+		$data['can_manage_topics'] = ($role === 1 || $this->uid === 1 || has_section_perm('hr', 'write') || crm_can('hr_topics', 'write'));
 		$this->load->view('manager/support/help', $data);
 	}
 

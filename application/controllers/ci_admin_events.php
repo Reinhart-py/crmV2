@@ -34,7 +34,7 @@ class Ci_admin_events extends CI_Controller {
 		}
 		$role = (int)$this->session->userdata('manager_role');
 		$is_admin = ($role === 1 || $this->cur_uid === 1);
-		$this->can_manage = ($is_admin || $role === 7 || crm_can('events_list', 'write'));
+		$this->can_manage = ($is_admin || crm_can('events_list', 'write'));
 
 		$method = $this->router->fetch_method();
 		if ($method === 'index') {

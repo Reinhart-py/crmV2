@@ -29,7 +29,7 @@ class Ci_admin_calls extends CI_Controller
 		$manager_id = (int)$this->session->userdata('manager_id');
 		$role = (int)$this->session->userdata('manager_role');
 
-		if ($role != 1 && $role != 4) {
+		if ($role != 1 && !crm_can('all_data')) {
 			$this->db->where("(A.lead_assign = {$manager_id} OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET({$manager_id}, A.agents) > 0))");
 		} else {
 			$assigned_row = $this->db->query("SELECT COUNT(*) AS total FROM ci_leads WHERE lead_assign = " . (int)$manager_id . " AND (contact1 != '' OR alt_contact != '' OR mobile != '' OR contact2 != '')")->row_array();
@@ -161,7 +161,7 @@ class Ci_admin_calls extends CI_Controller
 		$this->db->select('L.*, C.customer as lead_customer, C.lead_id as lead_code');
 		$this->db->from('ci_call_logs as L');
 		$this->db->join('ci_leads as C', 'C.id = L.lead_id', 'left');
-		if ($role != 1 && $role != 4) {
+		if ($role != 1 && !crm_can('all_data')) {
 			$this->db->where('L.user_id', $manager_id);
 		}
 		$this->db->where_not_in('L.call_status', array('Initiated', 'Dialing'));
@@ -251,7 +251,7 @@ class Ci_admin_calls extends CI_Controller
 		$this->db->join('ci_status as S', 'S.id = A.status', 'left');
 		$this->db->join('ci_pipeline as P', 'P.lead_id = A.id', 'left');
 
-		if ($role != 1 && $role != 4) {
+		if ($role != 1 && !crm_can('all_data')) {
 			$this->db->where("(A.lead_assign = {$manager_id} OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET({$manager_id}, A.agents) > 0))");
 		} else {
 			$assigned_row = $this->db->query("SELECT COUNT(*) AS total FROM ci_leads WHERE lead_assign = " . (int)$manager_id . " AND (contact1 != '' OR alt_contact != '' OR mobile != '' OR contact2 != '')")->row_array();
@@ -623,7 +623,7 @@ class Ci_admin_calls extends CI_Controller
 		$this->db->join('ci_status as S', 'S.id = A.status', 'left');
 		$this->db->where('A.id', $lead_id);
 
-		if ($role != 1 && $role != 4) {
+		if ($role != 1 && !crm_can('all_data')) {
 			$this->db->where("(A.lead_assign = {$manager_id} OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET({$manager_id}, A.agents) > 0))");
 		} else {
 			$assigned_row = $this->db->query("SELECT COUNT(*) AS total FROM ci_leads WHERE lead_assign = " . (int)$manager_id . " AND (contact1 != '' OR alt_contact != '' OR mobile != '' OR contact2 != '')")->row_array();
@@ -919,7 +919,7 @@ class Ci_admin_calls extends CI_Controller
 		$this->db->select('L.*, C.customer as lead_customer, C.lead_id as lead_code');
 		$this->db->from('ci_call_logs as L');
 		$this->db->join('ci_leads as C', 'C.id = L.lead_id', 'left');
-		if ($role != 1 && $role != 4) {
+		if ($role != 1 && !crm_can('all_data')) {
 			$this->db->where('L.user_id', $manager_id);
 		}
 		$this->db->where_not_in('L.call_status', array('Initiated', 'Dialing', 'calling', 'ringing'));
@@ -980,7 +980,7 @@ class Ci_admin_calls extends CI_Controller
 			$date_clause = "1=1";
 		}
 
-		$user_clause = ($role != 1 && $role != 4) ? "L.user_id = $manager_id AND " : "";
+		$user_clause = ($role != 1 && !crm_can('all_data')) ? "L.user_id = $manager_id AND " : "";
 
 		$stats_sql = "SELECT 
 			COUNT(*) AS total_calls,
@@ -1288,7 +1288,7 @@ class Ci_admin_calls extends CI_Controller
 	public function calling_api()
 	{
 		$role = (int)$this->session->userdata('manager_role');
-		if ($role != 1 && $role != 4) {
+		if ($role != 1 && !crm_can('all_data')) {
 			redirect('manager/dashboard');
 			return;
 		}

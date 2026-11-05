@@ -56,7 +56,7 @@ class Dialer_campaign_model extends CI_Model
 
 	public function is_manager_role($role, $uid)
 	{
-		return ((int)$role === 1 || (int)$role === 4 || (int)$uid === 1);
+		return ((int)$role === 1 || crm_can('all_data', 'read', (int)$uid) || (int)$uid === 1);
 	}
 
 	public function get_campaigns($uid, $role)

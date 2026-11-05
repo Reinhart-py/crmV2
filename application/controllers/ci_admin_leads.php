@@ -290,7 +290,7 @@ function __construct()
 		$cur_uid = (int)$this->session->userdata('manager_id');
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$team = $this->ci_admin_model->fetchTeamList($cur_uid, '');
-		$is_authorized = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_uid === 1 || has_section_perm('lead_review') || has_section_perm('back_office') || !empty($team));
+		$is_authorized = ($cur_role === 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || $cur_uid === 1 || has_section_perm('lead_review') || has_section_perm('back_office') || !empty($team));
 		if (!$is_authorized) {
 			$this->session->set_flashdata('error_message', 'Access denied. You do not have permission to review leads.');
 			redirect('manager/dashboard');
@@ -379,7 +379,7 @@ function __construct()
 			$team_members = array();
 		}
 		$can_convert = false;
-		if ($cur_role === 1 || $cur_uid === 1 || $cur_role === 2 || $cur_role === 4 || has_section_perm('lead_review', 'write') || has_section_perm('back_office', 'write')) {
+		if ($cur_role === 1 || $cur_uid === 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || has_section_perm('lead_review', 'write') || has_section_perm('back_office', 'write')) {
 			$can_convert = true;
 		} elseif ($lead_owner > 0 && $cur_uid !== $lead_owner && in_array($lead_owner, array_map('intval', $team_members))) {
 			$can_convert = true;
@@ -558,7 +558,7 @@ function __construct()
 			$team_members = array();
 		}
 		$can_review = false;
-		if ($cur_role === 1 || $cur_uid === 1 || $cur_role === 2 || $cur_role === 4 || has_section_perm('lead_review', 'write') || has_section_perm('back_office', 'write')) {
+		if ($cur_role === 1 || $cur_uid === 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || has_section_perm('lead_review', 'write') || has_section_perm('back_office', 'write')) {
 			$can_review = true;
 		} elseif ($lead_owner > 0 && $cur_uid !== $lead_owner && in_array($lead_owner, array_map('intval', $team_members))) {
 			$can_review = true;
@@ -645,7 +645,7 @@ function __construct()
 		if (!is_array($team_members)) {
 			$team_members = array();
 		}
-		$can_request = ($cur_role === 1 || $cur_uid === 1 || $cur_role === 4 || $cur_uid === $lead_owner || $is_collab || in_array($lead_owner, array_map('intval', $team_members)));
+		$can_request = ($cur_role === 1 || $cur_uid === 1 || crm_can('all_data') || $cur_uid === $lead_owner || $is_collab || in_array($lead_owner, array_map('intval', $team_members)));
 
 		if (!$can_request) {
 			$this->session->set_flashdata('error_message', 'Access denied. You do not have permission to request Order conversion.');
@@ -934,7 +934,7 @@ function __construct()
 			if(!empty($data['p_info'])){
 				$cur_mgr_id = (int)$this->session->userdata('manager_id');
 				$cur_mgr_role = (int)$this->session->userdata('manager_role');
-				$is_bo = ($cur_mgr_role === 1 || $cur_mgr_role === 2 || $cur_mgr_role === 4 || $cur_mgr_id === 1 || has_section_perm('back_office') || has_section_perm('lead_review'));
+				$is_bo = ($cur_mgr_role === 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || $cur_mgr_id === 1 || has_section_perm('back_office') || has_section_perm('lead_review'));
 				$lead_owner = !empty($data['p_info']['lead_assign']) ? (int)$data['p_info']['lead_assign'] : (int)$data['p_info']['created_by'];
 				$team_members = is_array($data['p_team']) ? array_map('intval', $data['p_team']) : array();
 				$is_mgr_above_owner = (!empty($team_members) && in_array($lead_owner, $team_members));
@@ -1203,7 +1203,7 @@ function __construct()
 				$user_role = (int)$this->session->userdata('manager_role');
 				$user_id = (int)$this->session->userdata('manager_id');
 				$user_dept = (string)$this->session->userdata('manager_department');
-				$can_edit_bo = ($user_role === 2 || $user_role === 1 || $user_id === 1 || strcasecmp($user_dept, 'Back Office') === 0);
+				$can_edit_bo = (has_section_perm('back_office', 'write') || $user_role === 1 || $user_id === 1 || strcasecmp($user_dept, 'Back Office') === 0);
 
 		     	if(!empty($bo_cat) && $can_edit_bo){
 		     		for($i=0;$i<=6;$i++){
@@ -1368,7 +1368,7 @@ function __construct()
 		
 		$cur_role = (int)$this->session->userdata('manager_role');
 		$cur_mgr_id = (int)$this->session->userdata('manager_id');
-		$is_bo = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_mgr_id === 1 || has_section_perm('back_office', 'write') || has_section_perm('lead_review', 'write'));
+		$is_bo = ($cur_role === 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || $cur_mgr_id === 1 || has_section_perm('back_office', 'write') || has_section_perm('lead_review', 'write'));
 
 		$pipe_lock = $this->db->get_where('ci_pipeline', array('lead_id' => $id))->row_array();
 		if (!empty($pipe_lock['is_locked']) && (int)$pipe_lock['is_locked'] === 1 && !$is_bo) {
@@ -1549,7 +1549,7 @@ function __construct()
 				$user_role = (int)$this->session->userdata('manager_role');
 				$user_id = (int)$this->session->userdata('manager_id');
 				$user_dept = (string)$this->session->userdata('manager_department');
-				$can_edit_bo = ($user_role === 2 || $user_role === 1 || $user_id === 1 || strcasecmp($user_dept, 'Back Office') === 0);
+				$can_edit_bo = (has_section_perm('back_office', 'write') || $user_role === 1 || $user_id === 1 || strcasecmp($user_dept, 'Back Office') === 0);
 
 		     	if(!empty($bo_id) && $can_edit_bo){
 		     		for($i=0;$i<=6;$i++){
@@ -1696,7 +1696,7 @@ function __construct()
 
 		  $cur_role = (int)$this->session->userdata('manager_role');
 		  $cur_mgr_id = (int)$this->session->userdata('manager_id');
-		  $is_bo = ($cur_role === 1 || $cur_role === 2 || $cur_role === 4 || $cur_mgr_id === 1 || has_section_perm('back_office', 'write') || has_section_perm('lead_review', 'write'));
+		  $is_bo = ($cur_role === 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || $cur_mgr_id === 1 || has_section_perm('back_office', 'write') || has_section_perm('lead_review', 'write'));
 		  $pipe_lock = $this->db->get_where('ci_pipeline', array('lead_id' => $id))->row_array();
 		  if (!empty($pipe_lock['is_locked']) && (int)$pipe_lock['is_locked'] === 1 && !$is_bo) {
 			  $this->session->set_flashdata('error_message', 'This Lead is locked because an Order conversion process is active. Editing is disabled.');
@@ -1790,7 +1790,7 @@ $data['info2']=$this->if_not_login();
 		if (empty($m_role) && $manager_id == 1) {
 			$m_role = 1;
 		}
-		if ($m_role != 1 && $m_role != 4 && $manager_id != 1) {
+		if ($m_role != 1 && !crm_can('all_data') && $manager_id != 1) {
 			echo json_encode(array('status' => false, 'message' => 'Unauthorized access'));
 			return;
 		}
@@ -2105,7 +2105,7 @@ $data['info2']=$this->if_not_login();
 	{
 		$this->if_not_login();
 		$role = $this->session->userdata('manager_role');
-		if ($role != 1 && $role != 4) {
+		if (!crm_can('leads_import')) {
 			show_error('Access Denied: You do not have permission to access Leads Import.', 403);
 			return;
 		}
@@ -2117,7 +2117,7 @@ $data['info2']=$this->if_not_login();
 		);
 		$data['info2'] = $this->if_not_login();
 		$data['is_admin'] = ($role == 1);
-		$data['is_support'] = ($role == 4);
+		$data['is_support'] = crm_can('all_data');
 
 		$this->load->view('manager/leads/import', $data);
 	}
@@ -2130,7 +2130,7 @@ $data['info2']=$this->if_not_login();
 	{
 		$this->if_not_login();
 		$role = $this->session->userdata('manager_role');
-		if ($role != 1 && $role != 4) {
+		if ($role != 1 && !crm_can('all_data')) {
 			$this->session->set_flashdata('error_message', 'Permission Denied: Only Admin and Support are permitted to import Leads data.');
 			redirect('manager/leads/import');
 			return;
@@ -2409,7 +2409,7 @@ $data['info2']=$this->if_not_login();
 	{
 		$this->if_not_login();
 		$role = $this->session->userdata('manager_role');
-		if ($role != 1 && $role != 4) {
+		if ($role != 1 && !crm_can('all_data')) {
 			show_error('Access Denied', 403);
 			return;
 		}
@@ -2551,7 +2551,7 @@ $data['info2']=$this->if_not_login();
 		$data['info2'] = $this->if_not_login();
 
 		$role = $this->session->userdata('manager_role');
-		if ($role != 1 && $role != 4) {
+		if ($role != 1 && !crm_can('all_data')) {
 			$this->session->set_flashdata('error_message', 'Access denied.');
 			redirect('manager/dashboard');
 			return;
@@ -2618,7 +2618,7 @@ $data['info2']=$this->if_not_login();
 	{
 		$this->if_not_login();
 		$role = $this->session->userdata('manager_role');
-		if ($role != 1 && $role != 4) {
+		if ($role != 1 && !crm_can('all_data')) {
 			$this->session->set_flashdata('error_message', 'Access denied.');
 			redirect('manager/dashboard');
 			return;
@@ -2680,7 +2680,7 @@ $data['info2']=$this->if_not_login();
 		$from_user = (int)$this->input->get('from_user');
 
 		$source_user_id = $manager_id;
-		if (($manager_role === 1 || $manager_role === 4) && $from_user > 0) {
+		if (crm_can('all_data') && $from_user > 0) {
 			$source_user_id = $from_user;
 		}
 
@@ -2743,7 +2743,7 @@ $data['info2']=$this->if_not_login();
 		$sanitized_ids = array_unique(array_filter(array_map('intval', $lead_ids)));
 
 		$this->db->where_in('id', $sanitized_ids);
-		if ($manager_role != 1 && $manager_role != 4) {
+		if (!crm_can('all_data')) {
 			$this->db->where("(lead_assign = $manager_id OR (created_by = $manager_id AND (lead_assign = 0 OR lead_assign IS NULL)) OR (agents IS NOT NULL AND FIND_IN_SET($manager_id, agents) > 0))");
 			$this->db->where("(database_category != 'KAM Onboarded' OR database_category IS NULL)");
 		}

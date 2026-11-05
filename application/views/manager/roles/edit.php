@@ -11,7 +11,7 @@
 <div class="content-wrapper">
   <section class="content-header crm-list-head">
     <h1><?php echo $is_new ? 'Add Role' : 'Role: ' . htmlspecialchars($role['title']); ?></h1>
-    <a href="<?php echo base_url('manager/roles'); ?>" class="btn btn-sm btn-default"><i class="fa fa-arrow-left"></i> Back to Roles</a>
+    <a href="<?php echo $is_new ? base_url('manager/roles') : base_url('manager/roles/view/' . $rid); ?>" class="btn btn-sm btn-default"><i class="fa fa-arrow-left"></i> <?php echo $is_new ? 'Back to Roles' : 'Back to role'; ?></a>
   </section>
 
   <section class="content">
@@ -36,11 +36,11 @@
               <input type="text" id="rTitle" name="title" class="form-control" maxlength="60" required value="<?php echo htmlspecialchars($role['title']); ?>" <?php echo $readonly ? 'disabled' : ''; ?> placeholder="e.g. Sales Manager">
             </div>
             <div>
-              <label for="rParent">Reports to</label>
-              <select id="rParent" name="parent_id" class="form-control" <?php echo $readonly ? 'disabled' : ''; ?>>
-                <option value="0">Nobody (top level)</option>
-                <?php foreach ($roles as $r) { if ((int)$r['id'] === $rid) continue; ?>
-                <option value="<?php echo (int)$r['id']; ?>" <?php echo (int)$role['parent_id'] === (int)$r['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($r['title']); ?></option>
+              <label for="rType">Type</label>
+              <?php $cur_type = $rid === 1 ? 'admin' : ((isset($role['role_type']) && $role['role_type'] === 'system') ? 'system' : 'department'); ?>
+              <select id="rType" name="role_type" class="form-control" <?php echo ($readonly || $rid === 1) ? 'disabled' : ''; ?>>
+                <?php foreach ($role_types as $tk => $tv) { if ($tk === 'admin' && $rid !== 1) continue; ?>
+                <option value="<?php echo $tk; ?>" <?php echo $cur_type === $tk ? 'selected' : ''; ?>><?php echo htmlspecialchars($tv['label'] . ' - ' . $tv['desc']); ?></option>
                 <?php } ?>
               </select>
             </div>
@@ -103,7 +103,7 @@
     if (!this.value || !ROLES[this.value]) return;
     ed.set(ROLES[this.value]); markDirty();
   });
-  ['rTitle', 'rParent', 'rStatus'].forEach(function (id) { var e = document.getElementById(id); if (e) e.addEventListener('change', markDirty); });
+  ['rTitle', 'rType', 'rStatus'].forEach(function (id) { var e = document.getElementById(id); if (e) e.addEventListener('change', markDirty); });
   var form = document.getElementById('roleForm');
   form.addEventListener('submit', function () { dirty = false; });
   window.addEventListener('beforeunload', function (e) { if (dirty) { e.preventDefault(); e.returnValue = ''; } });

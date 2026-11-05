@@ -52,7 +52,7 @@ class Ci_admin_training extends CI_Controller {
 		}
 		$this->role = (int)$this->session->userdata('manager_role');
 		$is_admin = ($this->role === 1 || $this->uid === 1);
-		$this->can_manage = ($is_admin || $this->role === 7 || crm_can('hr_training', 'write'));
+		$this->can_manage = ($is_admin || crm_can('hr_training', 'write'));
 
 		$method = $this->router->fetch_method();
 		if (in_array($method, array('index', 'view', 'done', 'file'), true)) {

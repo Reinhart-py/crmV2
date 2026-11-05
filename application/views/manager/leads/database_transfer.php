@@ -43,7 +43,7 @@
 
                                 <?php 
                                 $m_role = (int)$this->session->userdata('manager_role');
-                                if(($m_role === 1 || $m_role === 4) && !empty($all_users)){ ?>
+                                if(($m_role === 1 || crm_can('all_data')) && !empty($all_users)){ ?>
                                 <div class="form-group">
                                     <select class="form-control" name="from_user" onchange="this.form.submit()">
                                         <option value="<?php echo (int)$this->session->userdata('manager_id'); ?>">Current User (Self)</option>

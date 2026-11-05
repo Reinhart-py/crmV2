@@ -596,7 +596,7 @@
             </div>
             <?php 
               $cur_user_role = (int)$this->session->userdata('manager_role');
-              if ($cur_user_role == 1 || $cur_user_role == 2 || $cur_user_role == 4 || has_section_perm('database', 'write')) { 
+              if ($cur_user_role == 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || has_section_perm('database', 'write')) { 
                 $my_id = (int)$this->session->userdata('manager_id');
             ?>
             <div class="col-lg-4 col-sm-6">
@@ -876,7 +876,7 @@
   $user_role = (int)$this->session->userdata('manager_role');
   $user_id = (int)$this->session->userdata('manager_id');
   $user_dept = (string)$this->session->userdata('manager_department');
-  $can_edit_bo = ($user_role === 2 || $user_role === 1 || $user_id === 1 || strcasecmp($user_dept, 'Back Office') === 0);
+  $can_edit_bo = (has_section_perm('back_office', 'write') || $user_role === 1 || $user_id === 1 || strcasecmp($user_dept, 'Back Office') === 0);
   $bo_dis = !$can_edit_bo ? ' disabled style="background-color:#f1f5f9; cursor:not-allowed;"' : '';
   $bo_ro = !$can_edit_bo ? ' readonly style="background-color:#f1f5f9; cursor:not-allowed;"' : '';
 ?>

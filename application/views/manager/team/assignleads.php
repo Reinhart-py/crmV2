@@ -98,7 +98,7 @@ foreach($lc_list as $cli){
                 </select>
             </div> 
 
-            <?php if ($this->session->userdata('manager_role') == 1 || $this->session->userdata('manager_role') == 4) { 
+            <?php if (crm_can('all_data')) { 
               $scope = isset($_GET['assign_scope']) ? $_GET['assign_scope'] : '';
             ?>
               <div class="form-group">
@@ -220,7 +220,7 @@ foreach($lc_list as $cli){
                   <ul class="dropdown-menu" role="menu">
                     <li> <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>/tm" data-toggle="tooltip" title="View">Preview</a> </li>                  
                     <li> <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($li['id']); ?>/tm" data-toggle="tooltip" title="Edit">
-                      <?php echo ($this->session->userdata('manager_role') == 1 || $this->session->userdata('manager_role') == 4) ? 'Edit / Assign' : 'Edit'; ?>
+                      <?php echo crm_can('all_data') ? 'Edit / Assign' : 'Edit'; ?>
                     </a>  </li>
                   </ul>
                 </div>
