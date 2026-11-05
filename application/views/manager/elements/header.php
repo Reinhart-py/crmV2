@@ -273,8 +273,14 @@
         <ul class="google-profile-options">
           <li>
             <a href="<?php echo base_url(); ?>manager/profile" class="google-profile-item">
-              <i class="fa fa-user-circle"></i>
+              <i class="fa fa-user"></i>
               <span>View Profile</span>
+            </a>
+          </li>
+          <li>
+            <a href="<?php echo base_url(); ?>manager/password" class="google-profile-item">
+              <i class="fa fa-key"></i>
+              <span>Change Password</span>
             </a>
           </li>
           <li>
@@ -288,12 +294,6 @@
               <i class="fa fa-life-ring"></i>
               <span>Support</span>
               <span class="my-sup-unread" style="display:none; margin-left:auto;"></span>
-            </a>
-          </li>
-          <li>
-            <a href="<?php echo base_url(); ?>manager/password" class="google-profile-item">
-              <i class="fa fa-key"></i>
-              <span>Change Password</span>
             </a>
           </li>
           <li class="gp-group">
