@@ -698,3 +698,40 @@ $(function() {
    
   
 </aside>
+
+<!-- Header buttons: a small label right under the button instead of the browser's own hover text (which can show far from the cursor). -->
+<style>
+  .hdr-tip { position: fixed; z-index: 1000000; pointer-events: none; background: #0f172a; color: #fff; font-size: 12px; font-weight: 600; line-height: 1.3; padding: 5px 9px; border-radius: 6px; white-space: nowrap; box-shadow: 0 6px 18px rgba(0,0,0,.18); opacity: 0; transform: translateY(-3px); transition: opacity .12s, transform .12s; }
+  .hdr-tip.show { opacity: 1; transform: none; }
+  [data-theme="dark"] .hdr-tip { background: #f8fafc; color: #0f172a; }
+</style>
+<script>
+(function () {
+  function init() {
+    var tip = document.createElement('div');
+    tip.className = 'hdr-tip';
+    tip.setAttribute('role', 'tooltip');
+    document.body.appendChild(tip);
+    var els = document.querySelectorAll('.header-quick-actions [title]');
+    Array.prototype.forEach.call(els, function (el) {
+      var t = el.getAttribute('title');
+      if (!t) return;
+      el.setAttribute('data-tip', t);
+      if (!el.getAttribute('aria-label')) el.setAttribute('aria-label', t);
+      el.removeAttribute('title');
+      el.addEventListener('mouseenter', function () {
+        tip.textContent = el.getAttribute('data-tip');
+        var r = el.getBoundingClientRect(), w = tip.offsetWidth;
+        var x = Math.min(window.innerWidth - w - 8, Math.max(8, r.left + r.width / 2 - w / 2));
+        tip.style.left = x + 'px';
+        tip.style.top = (r.bottom + 8) + 'px';
+        tip.classList.add('show');
+      });
+      el.addEventListener('mouseleave', function () { tip.classList.remove('show'); });
+      el.addEventListener('click', function () { tip.classList.remove('show'); });
+    });
+    window.addEventListener('scroll', function () { tip.classList.remove('show'); }, { passive: true });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
