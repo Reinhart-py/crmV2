@@ -1,6 +1,6 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
-<div class="content-wrapper px-4">
+<div class="content-wrapper px-4 hrx-page">
 
   <section class="content-header">
     <h1><?php echo htmlspecialchars($info['page_heading'] ?? 'HR Management'); ?></h1>
@@ -80,6 +80,28 @@
         color: #1e293b;
         border-top: 1px solid #f1f5f9 !important;
       }
+      /* Whole HR area: same font and sizes as View Staff */
+      .hrx-page, .hrx-page .btn, .hrx-page .form-control, .hrx-page table, .hrx-page .box-title, .hrx-page .modal-content{font-family:"Plus Jakarta Sans","Inter",-apple-system,"Segoe UI",sans-serif}
+      .hrx-page .box{border-radius:10px;border:1px solid var(--crm-line,#e2e8f0);box-shadow:none}
+      .hrx-page .box-header.with-border{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:10px 14px}
+      .hrx-page .box-header.with-border::before, .hrx-page .box-header.with-border::after{display:none}
+      .hrx-page .box-header .box-title{float:none;text-align:left;font-size:16px;font-weight:700;margin:0}
+      .hrx-page .box-header .box-tools{position:static;float:none}
+      .hrx-page .table-hr td{white-space:nowrap}
+      .hrx-page .table-hr td.hrx-wrap{white-space:normal;min-width:180px;max-width:320px}
+      .hrx-page .table-hr td strong, .hrx-page .table-hr td b{font-size:14.5px}
+      .hrx-page .table-hr td .text-muted, .hrx-page .table-hr td small{font-size:12.5px !important}
+      .hrx-page .table-hr tbody tr:nth-child(even) td{background:var(--crm-canvas,#fafbfd)}
+      .hrx-page .hr-stat-card{border-radius:10px;padding:14px 16px}
+      .hrx-page .hr-stat-label{font-size:12.5px !important;font-weight:600;letter-spacing:.04em}
+      .hrx-page .hr-stat-value{font-size:24px !important;font-weight:700;letter-spacing:-.02em}
+      @media (max-width:767px){
+        .hrx-page.content-wrapper{padding-left:10px !important;padding-right:10px !important}
+        .hrx-page .content-header h1{font-size:19px}
+        .hrx-page .hr-stat-card{margin-bottom:10px;padding:10px 12px}
+        .hrx-page .hr-stat-value{font-size:20px !important}
+        .hrx-page .box-header.with-border .btn{width:100%}
+      }
       /* HR pages in the same look as View Staff: one font, readable sizes, chips, phone friendly */
       .hrx, .hrx .form-control, .hrx .btn, .hrx table{font-family:"Plus Jakarta Sans","Inter",-apple-system,"Segoe UI",sans-serif}
       .hrx-chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
@@ -125,10 +147,16 @@
         .hrx-chip{height:30px;font-size:12.5px;padding:0 10px}
         .hrx-table thead{display:none}
         .hrx-table, .hrx-table tbody, .hrx-table tr, .hrx-table td{display:block;width:100%}
-        .hrx-table tbody tr{border-bottom:1px solid var(--crm-line,#e2e8f0);padding:8px 4px}
+        .hrx-table tbody tr{border-bottom:1px solid var(--crm-line,#e2e8f0);padding:8px 4px;display:grid !important;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:6px}
+        .hrx-table tbody td:first-child, .hrx-table tbody td.hrx-act, .hrx-table tbody td[colspan]{grid-column:1 / -1}
+        .hrx-table tbody tr[style*="display: none"]{display:none !important}
         .hrx-table tbody tr:nth-child(even) td{background:transparent}
         .hrx-table tbody td{border:0 !important;padding:3px 8px !important;font-size:13.5px !important}
         .hrx-table tbody td:empty{display:none}
+        .hrx .table-responsive{overflow:visible;border:0;margin:0}
+        .hrx-table{width:100% !important;max-width:100%}
+        .hrx-table tbody td{min-width:0 !important;max-width:100%;overflow-wrap:anywhere}
+        .hrx-table tbody td[data-l]:not(:first-child):not(.hrx-act)::before{content:attr(data-l);display:block;white-space:normal;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--crm-muted,#94a3b8);margin-top:2px}
         .hrx-act{text-align:left !important}
         .content-wrapper .table-hr td, .content-wrapper .table-hr th{font-size:13px !important;padding:7px 8px !important}
       }
@@ -1295,6 +1323,19 @@
   </section>
 </div>
 
+<script>
+// HR tables: short values (dates, amounts, months) stay on one line; long text such as reasons wraps in a readable column
+$(function () {
+  // phone cards: each value gets its column name as a small label
+  $('.hrx-table').each(function () {
+    var h = $(this).find('thead th').map(function () { return $.trim($(this).text()); }).get();
+    $(this).find('tbody tr').each(function () { $(this).children('td').each(function (i) { if (h[i]) $(this).attr('data-l', h[i]); }); });
+  });
+  $('.hrx-page .table-hr tbody td').each(function () {
+    if ($.trim($(this).text()).length > 28 && !$(this).find('.btn,select').length) $(this).addClass('hrx-wrap');
+  });
+});
+</script>
 <script>
 $(function() {
   // Document Vault: chips, search and "Upload for" (opens that person's Documents section)
