@@ -137,7 +137,7 @@
     .bc-grid .act td { font-size:16px; }
 
     .tv-banner { display:none; position:fixed; top:14px; left:50%; transform:translateX(-50%); background:var(--bad); color:#fff; font-weight:700; padding:8px 16px; border-radius:8px; z-index:20; }
-    /* New sale celebration: photo + name for 5 seconds */
+    /* New sale celebration: photo + name for 20 seconds */
     .cele { position:fixed; inset:0; z-index:50; display:none; align-items:center; justify-content:center; background:rgba(2,6,23,.72); overflow:hidden; padding:16px; }
     .cele.show { display:flex; animation:celeIn .35s ease-out; }
     .cele.out { animation:celeOut .4s ease-in forwards; }
@@ -154,7 +154,7 @@
     .cele-name { font-size:clamp(32px, 5vw, 64px); font-weight:800; line-height:1.1; text-shadow:0 4px 20px rgba(0,0,0,.4); }
     .cele-sub { margin-top:10px; font-size:clamp(16px, 2vw, 24px); font-weight:600; opacity:.9; }
     .cele-amt { margin-top:14px; font-size:clamp(28px, 4vw, 52px); font-weight:800; color:#4ade80; }
-    .cele-bit { position:absolute; top:-20px; width:12px; height:18px; border-radius:3px; opacity:.95; animation:celeFall linear forwards; z-index:1; }
+    .cele-bit { position:absolute; top:-20px; width:12px; height:18px; border-radius:3px; opacity:.95; animation:celeFall linear infinite; animation-fill-mode:backwards; z-index:1; }
     @keyframes celeFall { to { transform:translateY(110vh) rotate(720deg); } }
     @media (prefers-reduced-motion: reduce) { .cele-card, .cele-photo::before, .cele-photo::after, .cele-bit { animation:none !important; } .cele-bit { display:none; } }
 
@@ -377,7 +377,7 @@
     (d.latest || []).slice(0, 4).forEach(function (s) {
       var isNew = lastSaleId !== null && s.id > lastSaleId;
       fh += '<div class="feed-item' + (isNew ? ' is-new' : '') + '">' + avatar(s.avatar, s.rep) +
-        '<div class="who"><b>' + esc(s.rep) + '</b><span>' + esc(s.client) + (s.service ? ' &middot; ' + esc(s.service) : '') + '</span></div>' +
+        '<div class="who"><b>' + esc(s.rep) + '</b><span>' + esc(s.service || 'Sale') + '</span></div>' +
         '<div class="amt">' + (s.amount > 0 ? money(s.amount) : '&nbsp;') + '<span>' + esc(s.when) + '</span></div></div>';
     });
     $('#feed').html(fh || '<div class="tv-empty">No sales yet.</div>');
@@ -439,8 +439,35 @@
     fit();
   }
 
-  /* ---------- New sale celebration (5 seconds each) ---------- */
+  /* ---------- New sale celebration (20 seconds each) ---------- */
   var celeQueue = [], celeBusy = false;
+  // Celebration sound, made in the browser (no sound file). Browsers only allow sound
+  // after the screen has been clicked or a key pressed once, so the first touch unlocks it.
+  var audio = null;
+  function audioCtx() {
+    if (!audio) { var A = window.AudioContext || window.webkitAudioContext; if (!A) return null; audio = new A(); }
+    if (audio.state === 'suspended') audio.resume();
+    return audio;
+  }
+  $(document).one('click keydown touchstart', function () { audioCtx(); });
+  function saleSound() {
+    var ac = audioCtx(); if (!ac) return;
+    var t = ac.currentTime + 0.05, master = ac.createGain();
+    master.gain.value = 0.35; master.connect(ac.destination);
+    function note(freq, at, len, type, vol) {
+      var o = ac.createOscillator(), g = ac.createGain();
+      o.type = type; o.frequency.value = freq;
+      g.gain.setValueAtTime(0.0001, at);
+      g.gain.exponentialRampToValueAtTime(vol, at + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, at + len);
+      o.connect(g); g.connect(master); o.start(at); o.stop(at + len + 0.05);
+    }
+    // Rising fanfare, then a bright chord with a bell on top.
+    [523.25, 659.25, 783.99].forEach(function (f, i) { note(f, t + i * 0.11, 0.25, 'triangle', 0.6); });
+    [523.25, 659.25, 783.99, 1046.5].forEach(function (f) { note(f, t + 0.36, 1.1, 'triangle', 0.45); });
+    note(2093, t + 0.36, 1.4, 'sine', 0.25);
+    note(1568, t + 0.5, 1.2, 'sine', 0.18);
+  }
   function playCele() {
     if (celeBusy || !celeQueue.length) return;
     celeBusy = true;
@@ -448,18 +475,19 @@
     var bits = '', colors = ['#f59e0b', '#22c55e', '#3b82f6', '#ef4444', '#a855f7', '#fbbf24', '#ffffff'];
     for (var i = 0; i < 70; i++) {
       bits += '<i class="cele-bit" style="left:' + (Math.random() * 100).toFixed(1) + '%; background:' + colors[i % colors.length] +
-        '; animation-duration:' + (2.6 + Math.random() * 2.2).toFixed(2) + 's; animation-delay:' + (Math.random() * 1.2).toFixed(2) + 's; transform:rotate(' + Math.round(Math.random() * 360) + 'deg);"></i>';
+        '; animation-duration:' + (2.6 + Math.random() * 2.2).toFixed(2) + 's; animation-delay:' + (Math.random() * 3).toFixed(2) + 's; transform:rotate(' + Math.round(Math.random() * 360) + 'deg);"></i>';
     }
     box.html(bits + '<div class="cele-card"><span class="cele-tag"><i class="fa fa-trophy"></i> New sale!</span>' +
       '<div class="cele-photo">' + avatar(s.avatar, s.rep) + '</div>' +
       '<div class="cele-name">' + esc(s.rep) + '</div>' +
-      '<div class="cele-sub">' + esc(s.client) + (s.service ? ' &middot; ' + esc(s.service) : '') + '</div>' +
+      (s.service ? '<div class="cele-sub">' + esc(s.service) + '</div>' : '') +
       (s.amount > 0 ? '<div class="cele-amt">' + money(s.amount) + '</div>' : '') + '</div>')
       .removeClass('out').addClass('show');
+    saleSound();
     setTimeout(function () {
       box.addClass('out');
       setTimeout(function () { box.removeClass('show out').empty(); celeBusy = false; playCele(); }, 400);
-    }, 4600);
+    }, 19600);
   }
   // A click hides the current one early.
   $('#tvCele').on('click', function () { $(this).removeClass('show out').empty(); });

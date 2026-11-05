@@ -549,13 +549,12 @@ class Ci_admin_live extends CI_Controller
 
 		// Latest sales (newest first)
 		$latest = array();
-		foreach ($qa("SELECT o.id, o.client_name, o.company_name, o.service_title, {$amt} v, o.created_at, o.created_by FROM ci_orders o WHERE {$sale}{$f_o} ORDER BY o.id DESC LIMIT 6") as $r) {
+		foreach ($qa("SELECT o.id, o.service_title, {$amt} v, o.created_at, o.created_by FROM ci_orders o WHERE {$sale}{$f_o} ORDER BY o.id DESC LIMIT 6") as $r) {
 			$uid = (int)$r['created_by'];
 			$latest[] = array(
 				'id' => (int)$r['id'],
 				'rep' => isset($users[$uid]) ? $users[$uid]['name'] : '-',
 				'avatar' => isset($users[$uid]) ? $users[$uid]['avatar'] : '',
-				'client' => (string)($r['company_name'] ?: $r['client_name']),
 				'service' => (string)$r['service_title'],
 				'amount' => (float)$r['v'],
 				'when' => date('d M, h:i A', strtotime($r['created_at'])),
