@@ -22,6 +22,7 @@ class Ci_admin_user extends CI_Controller {
 		$this->load->helper('crm_permission');
 		$this->_ensure_designation();
 		$this->_ensure_contact();
+		$this->_ensure_exit();
   
 	}
 	
@@ -192,6 +193,7 @@ class Ci_admin_user extends CI_Controller {
 	
 		
 		$this->_page_data($data);
+		$data['exit_reasons'] = self::exit_reasons();
 		$this->load->view('manager/user/userlist',$data);
 	}
 
@@ -221,6 +223,14 @@ public function view($id='')
 	           } 
 	           $this->_guard_target($data['p_info']);
 	           $this->_page_data($data);
+	           $data['exit'] = $this->db->where('user_id', (int)$id)->get('ci_user_exit')->row_array();
+	           if (!empty($data['exit'])) {
+	           	$mb = $this->db->select('name')->where('id', (int)$data['exit']['marked_by'])->get('ci_user')->row_array();
+	           	$data['exit']['marked_by_name'] = !empty($mb['name']) ? $mb['name'] : '';
+	           	$data['owned'] = $this->ci_admin_model->get_user_owned_records_count((int)$id);
+	           }
+	           $data['exit_reasons'] = self::exit_reasons();
+	           $data['is_self'] = ((int)$id === (int)$this->session->userdata('manager_id'));
 	           $this->load->view('manager/user/user_view',$data);
 
 }
@@ -386,6 +396,7 @@ public function view($id='')
 		$data['u_list'] =$this->comman_model->getAll('',array('id','ASC'),'ci_user');
 		$this->_page_data($data);
 		$data['designations'] = $this->_designation_list();
+		$this->_drop_left($data['u_list']);
 		$this->_ensure_live_offices();
 		$data['pres_role_id'] = crm_presentation_role_id();
 		$data['office_codes'] = crm_office_codes();
@@ -526,6 +537,7 @@ public function view($id='')
 				}
 			}
 			$data['designations'] = $this->_designation_list();
+			$this->_drop_left($data['u_list'], !empty($data['list']['manager']) ? $data['list']['manager'] : 0);
 			$this->_ensure_live_offices();
 			$data['pres_role_id'] = crm_presentation_role_id();
 			$data['office_codes'] = crm_office_codes();
@@ -770,6 +782,69 @@ public function view($id='')
 	
 
 
+	/** Leaving the company: date, reason and note, kept in ci_user_exit. The login is switched off;
+	 *  database and leads stay with the person until transferred, orders and sales always stay with them. */
+	private function _ensure_exit()
+	{
+		$this->db->query("CREATE TABLE IF NOT EXISTS ci_user_exit (user_id INT NOT NULL PRIMARY KEY, left_on DATE NOT NULL, reason VARCHAR(60) NOT NULL DEFAULT '', note VARCHAR(500) NOT NULL DEFAULT '', marked_by INT NULL, marked_at DATETIME NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		$this->db->data_cache = array();
+	}
+	public static function exit_reasons()
+	{
+		return array('Resigned', 'Terminated', 'Contract ended', 'Absconded', 'Retired', 'Other');
+	}
+	/** Ids of people who have left (to keep them out of the Upline / Manager picker). */
+	private function _left_ids()
+	{
+		return array_map('intval', array_column($this->db->select('user_id')->get('ci_user_exit')->result_array(), 'user_id'));
+	}
+	private function _drop_left(&$list, $keep_id = 0)
+	{
+		$left = array_flip($this->_left_ids());
+		$list = array_values(array_filter((array)$list, function ($u) use ($left, $keep_id) { return !isset($left[(int)$u['id']]) || (int)$u['id'] === (int)$keep_id; }));
+	}
+
+	public function left($id = '')
+	{
+		$this->if_not_login();
+		$id = (int)$id;
+		$u = $id ? $this->comman_model->getAll(array('id' => $id), '', 'ci_user', 'first') : array();
+		if (empty($u) || $this->input->server('REQUEST_METHOD') !== 'POST') redirect($this->base);
+		$this->_guard_target($u);
+		if ($id === (int)$this->session->userdata('manager_id')) {
+			$this->session->set_flashdata('error_message', 'You cannot mark yourself as left.');
+			redirect($this->base . '/view/' . $id);
+		}
+		$t = strtotime((string)$this->input->post('left_on'));
+		$on = $t ? date('Y-m-d', $t) : date('Y-m-d');
+		$reason = (string)$this->input->post('reason');
+		if (!in_array($reason, self::exit_reasons(), true)) $reason = 'Other';
+		$note = mb_substr(trim((string)$this->input->post('note')), 0, 500);
+		$this->db->replace('ci_user_exit', array('user_id' => $id, 'left_on' => $on, 'reason' => $reason, 'note' => $note,
+			'marked_by' => (int)$this->session->userdata('manager_id'), 'marked_at' => date('Y-m-d H:i:s')));
+		$this->comman_model->updateData('id', $id, array('admin_status' => 0, 'c_dol' => $on), 'ci_user');
+		$this->ci_admin_model->log_admin_action('user_left', 'Marked user ID #' . $id . ' as left on ' . $on . ' (' . $reason . ')', 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));
+		$owned = $this->ci_admin_model->get_user_owned_records_count($id);
+		$msg = $u['name'] . ' is marked as left on ' . date('d-M-Y', strtotime($on)) . ' and can no longer sign in.';
+		if ($owned['total'] > 0) $msg .= ' They still own ' . $owned['total'] . ' record(s) - transfer them from this page.';
+		$this->session->set_flashdata('message', $msg);
+		redirect($this->base . '/view/' . $id);
+	}
+
+	public function rejoin($id = '')
+	{
+		$this->if_not_login();
+		$id = (int)$id;
+		$u = $id ? $this->comman_model->getAll(array('id' => $id), '', 'ci_user', 'first') : array();
+		if (empty($u) || $this->input->server('REQUEST_METHOD') !== 'POST') redirect($this->base);
+		$this->_guard_target($u);
+		$this->db->where('user_id', $id)->delete('ci_user_exit');
+		$this->comman_model->updateData('id', $id, array('admin_status' => 1, 'c_dol' => ''), 'ci_user');
+		$this->ci_admin_model->log_admin_action('user_rejoined', 'User ID #' . $id . ' rejoined (leaving record removed, login enabled)', 'SUCCESS', $this->session->userdata('manager_id'), $this->session->userdata('manager_name'));
+		$this->session->set_flashdata('message', $u['name'] . ' is back: the leaving record is removed and the login is enabled again.');
+		redirect($this->base . '/view/' . $id);
+	}
+
 public function ajax_edit_status()
     {
 		
@@ -782,6 +857,7 @@ public function ajax_edit_status()
 				echo "error";
 				return;
 			}
+			if ($this->db->where('user_id', $uid)->count_all_results('ci_user_exit') > 0) { echo "error"; return; }
 			if ($this->input->server('REQUEST_METHOD') === 'POST') { 
 			
 				$status = ($this->input->post('admin_status')==1) ? 0 : 1;

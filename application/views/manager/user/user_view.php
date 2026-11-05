@@ -104,6 +104,13 @@ $enabled = ((int)$p['admin_status'] === 1);
 .uview .uv-chip.soon{background:rgba(234,179,8,.14);color:#854d0e}
 .uview .uv-alert{margin:0 14px 10px;padding:7px 10px;border-radius:8px;background:rgba(220,38,38,.07);border:1px solid rgba(220,38,38,.22);font-size:12.5px;color:var(--crm-ink,#0f172a)}
 .uview .uv-actions{display:flex;gap:8px;flex-wrap:wrap}
+.uview .uv-chip.lft{background:rgba(100,116,139,.14);color:#475569;border-color:rgba(100,116,139,.3)}
+.uview .uv-left{margin:0 14px 10px;padding:9px 12px;border-radius:8px;background:rgba(100,116,139,.08);border:1px solid rgba(100,116,139,.25);font-size:13px;display:flex;gap:12px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}
+.uview .uv-left .nt{margin-top:3px;color:var(--crm-ink-2,#334155)}
+.uview .uv-left .by{margin-top:3px;font-size:12px;color:var(--crm-muted,#64748b)}
+.uview .uv-left .ow{margin-top:5px;font-size:12.5px;color:#b45309}
+.uview .uv-left .ow a{font-weight:600}
+.uview .uv-left .btn{height:32px;font-weight:600}
 .uview .uv-actions .btn{height:32px;font-weight:600}
 .uview .uv-fill{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--crm-ink-2,#334155);padding:0 14px 10px}
 .uview .uv-fill .bar{width:140px;height:6px;border-radius:3px;background:var(--crm-line,#e2e8f0);overflow:hidden}
@@ -151,7 +158,7 @@ $enabled = ((int)$p['admin_status'] === 1);
           <div class="uv-meta">
             <span class="uv-chip"><?php echo sprintf('EMP-%05d', $p['id']); ?></span>
             <?php if ($val('role_title') !== '') { ?><span class="uv-chip"><?php echo $val('role_title'); ?></span><?php } ?>
-            <span class="uv-chip <?php echo $enabled ? 'on' : 'off'; ?>"><?php echo $enabled ? 'Enabled' : 'Disabled'; ?></span>
+            <?php if (!empty($exit)) { ?><span class="uv-chip lft">Left</span><?php } else { ?><span class="uv-chip <?php echo $enabled ? 'on' : 'off'; ?>"><?php echo $enabled ? 'Enabled' : 'Disabled'; ?></span><?php } ?>
             <?php if ($val('designation') !== '') { ?><span><i class="fa fa-briefcase"></i><?php echo $val('designation'); ?></span><?php } ?>
             <?php if ($val('department') !== '') { ?><span><i class="fa fa-building-o"></i><?php echo $val('department'); ?></span><?php } ?>
             <?php if ($val('office') !== '') { ?><span><i class="fa fa-map-marker"></i><?php echo $val('office'); ?></span><?php } ?>
@@ -162,10 +169,28 @@ $enabled = ((int)$p['admin_status'] === 1);
           <?php if ($can_write) { ?>
           <a href="<?php echo base_url().$base; ?>/edit/<?php echo (int)$p['id']; ?>" class="btn btn-primary"><i class="fa fa-pencil"></i> Edit</a>
           <a href="<?php echo base_url().$base; ?>/cedit/<?php echo (int)$p['id']; ?>" class="btn btn-default"><i class="fa fa-key"></i> Login &amp; Password</a>
+          <?php if (empty($exit) && empty($is_self)) { ?><a href="javascript:void(0);" class="btn btn-default js-left" data-id="<?php echo (int)$p['id']; ?>" data-name="<?php echo $val('name'); ?>" style="color:#b91c1c"><i class="fa fa-sign-out"></i> Mark as left</a><?php } ?>
           <?php } ?>
           <a href="<?php echo base_url().$base; ?>" class="btn btn-default"><i class="fa fa-arrow-left"></i> Back</a>
         </div>
       </div>
+      <?php if (!empty($exit)) {
+        $own = !empty($owned['total']) ? (int)$owned['total'] : 0; ?>
+      <div class="uv-left">
+        <div><i class="fa fa-sign-out"></i> <b>Left on <?php echo date('d-M-Y', strtotime($exit['left_on'])); ?></b> &middot; <?php echo htmlspecialchars($exit['reason'], ENT_QUOTES, 'UTF-8'); ?>
+          <?php if ($exit['note'] !== '') { ?><div class="nt"><?php echo nl2br(htmlspecialchars($exit['note'], ENT_QUOTES, 'UTF-8')); ?></div><?php } ?>
+          <div class="by">Marked<?php echo $exit['marked_by_name'] !== '' ? ' by ' . htmlspecialchars($exit['marked_by_name'], ENT_QUOTES, 'UTF-8') : ''; ?><?php echo !empty($exit['marked_at']) ? ' on ' . date('d-M-Y H:i', strtotime($exit['marked_at'])) : ''; ?>. Login is switched off.</div>
+          <?php if ($own > 0) { ?><div class="ow"><i class="fa fa-exclamation-triangle"></i> Still owns <?php echo $own; ?> record(s) (<?php echo (int)$owned['leads']; ?> leads, <?php echo (int)$owned['kam']; ?> database, <?php echo (int)$owned['tasks']; ?> tasks).
+            <?php if ($this->session->userdata('manager_role') == 1) { ?><a href="<?php echo base_url(); ?>manager/database-transfer?from_user=<?php echo (int)$p['id']; ?>">Transfer them</a><?php } else { ?>Ask an admin to transfer them.<?php } ?></div><?php } ?>
+        </div>
+        <?php if ($can_write) { ?>
+        <form method="post" action="<?php echo base_url().$base; ?>/rejoin/<?php echo (int)$p['id']; ?>" onsubmit="return confirm('Bring this person back? The leaving record is removed and the login is enabled.');">
+          <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
+          <button type="submit" class="btn btn-default"><i class="fa fa-undo"></i> Rejoin</button>
+        </form>
+        <?php } ?>
+      </div>
+      <?php } ?>
       <?php if ($exp_alerts) { ?><div class="uv-alert"><i class="fa fa-exclamation-triangle" style="color:#dc2626"></i> <b>Document expiry:</b> <?php echo htmlspecialchars(implode(' · ', $exp_alerts), ENT_QUOTES, 'UTF-8'); ?></div><?php } ?>
       <div class="uv-fill<?php echo ($filled === $total) ? ' done' : ''; ?>">
         <div class="bar"><span style="width:<?php echo $total ? round($filled * 100 / $total) : 0; ?>%"></span></div>
@@ -186,4 +211,5 @@ $enabled = ((int)$p['admin_status'] === 1);
   </div>
   </section>
 </div>
+<?php if ($can_write) require(APPPATH . "views/manager/user/_left_modal.php"); ?>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

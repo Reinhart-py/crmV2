@@ -16,7 +16,7 @@ $docs = array('p_exdate' => 'Passport', 'visa_expiry' => 'Visa', 'eid_expiry' =>
 $is_set = function ($li, $k) { $v = isset($li[$k]) ? trim((string)$li[$k]) : ''; return !($v === '' || $v === '0' || $v === '0000-00-00'); };
 
 $list = array(); $alert = array('Expired' => 0, 'Within 30 days' => 0, 'Within 60 days' => 0);
-$f = array('mgr' => array(), 'cat' => array(), 'des' => array(), 'dep' => array(), 'off' => array(), 'st' => array('Enabled' => 0, 'Disabled' => 0),
+$f = array('mgr' => array(), 'cat' => array(), 'des' => array(), 'dep' => array(), 'off' => array(), 'st' => array('Enabled' => 0, 'Disabled' => 0, 'Left' => 0),
 	'exp' => array('Expired' => 0, 'Within 30 days' => 0, 'Within 60 days' => 0, 'Valid' => 0, 'No dates' => 0),
 	'prof' => array('Missing mandatory details' => 0, 'Mandatory details complete' => 0),
 	'rpt' => array('Email verified' => 0, 'Email not verified' => 0, 'Email not set' => 0, 'Phone verified' => 0, 'Phone not verified' => 0, 'Phone not set' => 0, 'WhatsApp verified' => 0, 'WhatsApp not verified' => 0, 'WhatsApp not set' => 0));
@@ -26,6 +26,8 @@ $bump = function (&$arr, $k) { $arr[$k] = isset($arr[$k]) ? $arr[$k] + 1 : 1; };
 foreach ($rows as $li) {
 	$r = array('li' => $li);
 	$r['on'] = ((int)$li['admin_status'] === 1);
+	$r['left'] = !empty($li['left_on']);
+	$r['stl'] = $r['left'] ? 'Left' : ($r['on'] ? 'Enabled' : 'Disabled');
 	$r['mgr'] = trim((string)$li['manager_name']) !== '' ? trim($li['manager_name']) : '(No manager)';
 	$r['cat'] = trim((string)$li['role']) !== '' ? trim($li['role']) : '(No category)';
 	$r['des'] = (isset($li['designation']) && trim((string)$li['designation']) !== '') ? trim($li['designation']) : '(Not set)';
@@ -53,7 +55,7 @@ foreach ($rows as $li) {
 	$r['missing'] = array(); foreach ($mandatory as $k => $label) if (!$is_set($li, $k)) $r['missing'][] = $label;
 	$r['prof'] = $r['pres'] ? 'Mandatory details complete' : ($r['missing'] ? 'Missing mandatory details' : 'Mandatory details complete');
 	$bump($f['mgr'], $r['mgr']); $bump($f['cat'], $r['cat']); $bump($f['des'], $r['des']); $bump($f['dep'], $r['dep']); $bump($f['off'], $r['off']);
-	$f['st'][$r['on'] ? 'Enabled' : 'Disabled']++; $f['exp'][$r['exp']]++; $f['prof'][$r['prof']]++;
+	$f['st'][$r['stl']]++; $f['exp'][$r['exp']]++; $f['prof'][$r['prof']]++;
 	$r['rpt'] = array();
 	foreach ($rep_keys as $rk => $rl) {
 		$set = isset($li[$rk]) && trim((string)$li[$rk]) !== '';
@@ -136,13 +138,15 @@ $filters = array('mgr' => 'Manager', 'cat' => 'Category', 'des' => 'Designation'
 .ulist .content-header{padding:14px 15px 10px}
 .ulist .content-header h1{text-align:left;font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.2;color:var(--crm-ink,#0f172a)}
 .ulist .content-header h1 small{display:block;margin-top:3px;font-size:12.5px;font-weight:500;letter-spacing:0;color:var(--crm-muted,#64748b)}
-.ulist .ul-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 10px}
+.ulist .ul-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:0 0 10px}
 .ulist .ul-kpi{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;border:1px solid var(--crm-line,#e2e8f0);background:var(--crm-surface,#fff);cursor:pointer;transition:border-color .15s,box-shadow .15s;text-align:left;width:100%;font:inherit;color:inherit}
 .ulist .ul-kpi:hover{border-color:var(--crm-ocean,#1e3a8a);box-shadow:0 4px 14px rgba(15,23,42,.06)}
 .ulist .ul-kpi .ic{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex:0 0 auto;background:var(--crm-ocean-soft,rgba(30,58,138,.1));color:var(--crm-ocean,#1e3a8a)}
 .ulist .ul-kpi.g .ic{background:rgba(22,163,74,.12);color:#15803d}
 .ulist .ul-kpi.r .ic{background:rgba(220,38,38,.1);color:#b91c1c}
 .ulist .ul-kpi.a .ic{background:rgba(245,158,11,.14);color:#b45309}
+.ulist .ul-kpi.s .ic{background:rgba(100,116,139,.14);color:#475569}
+.ulist .chip.lft{background:rgba(100,116,139,.14);color:#475569;border-color:rgba(100,116,139,.3)}
 .ulist .ul-kpi b{display:block;font-size:20px;font-weight:700;line-height:1.1;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--crm-ink,#0f172a)}
 .ulist .ul-kpi span{display:block;font-size:12px;font-weight:500;color:var(--crm-muted,#64748b);margin-top:2px}
 @media (max-width:991px){.ulist .ul-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -175,6 +179,7 @@ $filters = array('mgr' => 'Manager', 'cat' => 'Category', 'des' => 'Designation'
       <button type="button" class="ul-kpi js-kpi" data-f="" title="Show everyone"><div class="ic"><i class="fa fa-users"></i></div><div><b><?php echo count($list); ?></b><span>Total <?php echo $is_hr ? 'staff' : 'users'; ?></span></div></button>
       <button type="button" class="ul-kpi g js-kpi" data-f="st" data-v="Enabled" title="Show enabled only"><div class="ic"><i class="fa fa-check-circle"></i></div><div><b><?php echo (int)$f['st']['Enabled']; ?></b><span>Enabled</span></div></button>
       <button type="button" class="ul-kpi r js-kpi" data-f="st" data-v="Disabled" title="Show disabled only"><div class="ic"><i class="fa fa-ban"></i></div><div><b><?php echo (int)$f['st']['Disabled']; ?></b><span>Disabled</span></div></button>
+      <button type="button" class="ul-kpi s js-kpi" data-f="st" data-v="Left" title="Show people who have left"><div class="ic"><i class="fa fa-sign-out"></i></div><div><b><?php echo (int)$f['st']['Left']; ?></b><span>Left</span></div></button>
       <button type="button" class="ul-kpi a js-kpi" data-f="prof" data-v="Missing mandatory details" title="Show who still has mandatory details to fill"><div class="ic"><i class="fa fa-pencil-square-o"></i></div><div><b><?php echo (int)$f['prof']['Missing mandatory details']; ?></b><span>Missing mandatory details</span></div></button>
     </div>
     <?php } ?>
@@ -227,13 +232,13 @@ $filters = array('mgr' => 'Manager', 'cat' => 'Category', 'des' => 'Designation'
             <?php foreach ($list as $r) { $li = $r['li']; $id = (int)$li['id'];
               $exp_csv = array(); foreach ($r['docs'] as $d) $exp_csv[$d[0]] = $d[1];
               $export = array('emp' => sprintf('EMP-%05d', $id), 'name' => $li['name'], 'login' => $li['c_username'], 'emp_id' => $li['emp_id'], 'mgr' => $li['manager_name'], 'cat' => $li['role'], 'des' => ($r['des'] === '(Not set)' ? '' : $r['des']),
-                'dep' => $li['department'], 'off' => $li['office'], 'status' => $r['on'] ? 'Enabled' : 'Disabled', 'pct' => $r['pres'] ? '' : $r['pct'] . '%',
+                'dep' => $li['department'], 'off' => $li['office'], 'status' => $r['stl'] . ($r['left'] ? ' on ' . date('d-M-Y', strtotime($li['left_on'])) . ' (' . $li['left_reason'] . ')' : ''), 'pct' => $r['pres'] ? '' : $r['pct'] . '%',
                 'missing' => $r['pres'] ? '' : implode(', ', $r['missing']), 'pp' => isset($exp_csv['Passport']) ? $exp_csv['Passport'] : '',
                 'visa' => isset($exp_csv['Visa']) ? $exp_csv['Visa'] : '', 'eid' => isset($exp_csv['Emirates ID']) ? $exp_csv['Emirates ID'] : '', 'added' => simple_date($li['created']),
                 'wa' => (isset($li['whatsapp']) && $li['whatsapp'] !== '' ? (($li['whatsapp_code'] !== '' ? '+' . $li['whatsapp_code'] . ' ' : '') . $li['whatsapp']) : ''),
                 're' => $r['rpt']['report_email'][1], 'rev' => $r['rpt']['report_email'][2], 'rp' => $r['rpt']['report_phone'][1], 'rpv' => $r['rpt']['report_phone'][2], 'rw' => $r['rpt']['report_whatsapp'][1], 'rwv' => $r['rpt']['report_whatsapp'][2]);
               $rpt_attr = array(); foreach ($r['rpt'] as $x) $rpt_attr[] = $x[0] . ' ' . $x[2]; ?>
-            <tr data-mgr="<?php echo $h($r['mgr']); ?>" data-cat="<?php echo $h($r['cat']); ?>" data-des="<?php echo $h($r['des']); ?>" data-st="<?php echo $r['on'] ? 'Enabled' : 'Disabled'; ?>" data-dep="<?php echo $h($r['dep']); ?>" data-off="<?php echo $h($r['off']); ?>" data-exp="<?php echo $h($r['exp']); ?>" data-prof="<?php echo $h($r['prof']); ?>" data-rpt="<?php echo $h(implode('|', $rpt_attr)); ?>" data-row="<?php echo $h(json_encode($export)); ?>">
+            <tr data-mgr="<?php echo $h($r['mgr']); ?>" data-cat="<?php echo $h($r['cat']); ?>" data-des="<?php echo $h($r['des']); ?>" data-st="<?php echo $r['stl']; ?>" data-dep="<?php echo $h($r['dep']); ?>" data-off="<?php echo $h($r['off']); ?>" data-exp="<?php echo $h($r['exp']); ?>" data-prof="<?php echo $h($r['prof']); ?>" data-rpt="<?php echo $h(implode('|', $rpt_attr)); ?>" data-row="<?php echo $h(json_encode($export)); ?>">
               <td><span class="emp"><?php echo sprintf('EMP-%05d', $id); ?></span></td>
               <td data-order="<?php echo $h(strtolower($li['name'])); ?>"><?php $ini = ''; foreach (preg_split('/\s+/', trim((string)$li['name'])) as $w) { if ($w !== '' && strlen($ini) < 2) $ini .= strtoupper($w[0]); } $avc = array('#1e3a8a','#0f766e','#7c3aed','#b45309','#be185d','#0369a1','#4d7c0f','#9f1239'); ?><div class="who"><span class="av" style="background:<?php echo $avc[abs(crc32((string)$li['name'])) % count($avc)]; ?>"><?php echo $h($ini !== '' ? $ini : '?'); ?></span><div><a class="nm" href="<?php echo base_url().$base; ?>/view/<?php echo $id; ?>"><?php echo $h($li['name']); ?></a><span class="lg"><?php echo $h($li['c_username']); ?></span></div></div></td>
               <td><?php echo $h($li['manager_name']); ?></td>
@@ -252,14 +257,17 @@ $filters = array('mgr' => 'Manager', 'cat' => 'Category', 'des' => 'Designation'
               <td data-order="<?php echo $d[2] + 100000; ?>"><span class="chip <?php echo $cls; ?>" title="<?php echo $h(implode(' | ', $tip)); ?>"><?php echo $h($txt); ?></span></td>
               <?php } ?>
               <td data-order="<?php echo date('YmdHis', strtotime($li['created'])); ?>" style="white-space:nowrap"><?php echo simple_date($li['created']); ?></td>
-              <td><span class="chip <?php echo $r['on'] ? 'on' : 'off'; ?>"><?php echo $r['on'] ? 'Enabled' : 'Disabled'; ?></span></td>
+              <td><?php if ($r['left']) { ?><span class="chip lft" title="<?php echo $h('Left on ' . date('d-M-Y', strtotime($li['left_on'])) . ' - ' . $li['left_reason']); ?>">Left</span><span class="lg"><?php echo date('d-M-Y', strtotime($li['left_on'])); ?></span><?php } else { ?><span class="chip <?php echo $r['on'] ? 'on' : 'off'; ?>"><?php echo $r['on'] ? 'Enabled' : 'Disabled'; ?></span><?php } ?></td>
               <td>
                 <div class="acts">
                   <a href="<?php echo base_url().$base; ?>/view/<?php echo $id; ?>" title="View details"><i class="fa fa-eye"></i></a>
                   <?php if ($can_write) { ?>
                   <a href="<?php echo base_url().$base; ?>/edit/<?php echo $id; ?>" title="Edit user"><i class="fa fa-pencil"></i></a>
                   <a href="<?php echo base_url().$base; ?>/cedit/<?php echo $id; ?>" title="Change login or password"><i class="fa fa-key"></i></a>
+                  <?php if (!$r['left']) { ?>
                   <a href="javascript:void(0);" class="js-status" data-id="<?php echo $id; ?>" data-admin_status="<?php echo $r['on'] ? 1 : 0; ?>" title="<?php echo $r['on'] ? 'Disable user' : 'Enable user'; ?>"><i class="fa <?php echo $r['on'] ? 'fa-ban' : 'fa-check'; ?>"></i></a>
+                  <?php if ($id !== (int)$this->session->userdata('manager_id')) { ?><a href="javascript:void(0);" class="js-left" data-id="<?php echo $id; ?>" data-name="<?php echo $h($li['name']); ?>" title="Mark as left (exit)"><i class="fa fa-sign-out"></i></a><?php } ?>
+                  <?php } ?>
                   <a href="<?php echo base_url().$base; ?>/delete/<?php echo $id; ?>" class="danger" onclick="return do_confirm();" title="Delete user"><i class="fa fa-trash"></i></a>
                   <?php } ?>
                 </div>
@@ -419,4 +427,5 @@ $(document).ready(function(){
   });
 });
 </script>
+<?php if ($can_write) require(APPPATH . "views/manager/user/_left_modal.php"); ?>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>
