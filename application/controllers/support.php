@@ -73,7 +73,12 @@ class Support extends CI_Controller {
 			return $this->json(array('ok' => false, 'error' => 'Too many requests from this network. Please email ' . $this->support_model->it_email() . ' instead.'), 403);
 		}
 
-		$chat = $this->support_model->create_chat($name, $phone, $email, $issue, $ip, $this->input->user_agent());
+		$back = $this->support_model->returning_chat($this->input->post('prev'), $phone);
+		if ($back) {
+			$chat = $this->support_model->reopen_chat($back, $issue, $quick ? array() : array('name' => $name, 'phone' => $phone, 'email' => $email));
+		} else {
+			$chat = $this->support_model->create_chat($name, $phone, $email, $issue, $ip, $this->input->user_agent());
+		}
 		$online = $this->support_model->agents_online() > 0;
 		if ($online) {
 			$this->support_model->add_message($chat['id'], 'system', $this->support_model->welcome_text($chat));

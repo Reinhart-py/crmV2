@@ -14,6 +14,11 @@
   .ls-switch input:checked ~ #lsAvailText { color: #15803d; }
   .ls-hint { color: #64748b; font-size: 13px; }
   .ls-list-head { padding: 12px 14px; border-bottom: 1px solid #e2e8f0; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+  .ls-tabs { display: flex; border-bottom: 1px solid #e2e8f0; }
+  .ls-tab { flex: 1; border: 0; background: #fff; padding: 12px 10px; font: inherit; font-weight: 700; color: #64748b; cursor: pointer; border-bottom: 2px solid transparent; }
+  .ls-tab.is-on { color: #1e3a8a; border-bottom-color: #1e3a8a; }
+  .ls-tab-n { display: inline-block; min-width: 20px; padding: 0 6px; border-radius: 10px; background: #f1f5f9; color: #475569; font-size: 11px; line-height: 18px; }
+  .ls-tab.is-on .ls-tab-n { background: #e0e7ff; color: #1e3a8a; }
   .ls-list { max-height: 600px; overflow-y: auto; }
   .ls-item { display: block; width: 100%; text-align: left; border: 0; border-bottom: 1px solid #f1f5f9; background: #fff; padding: 12px 14px; cursor: pointer; font: inherit; }
   .ls-item:hover { background: #f8fafc; }
@@ -74,7 +79,8 @@
     </p>
     <div class="ls-wrap">
       <div class="ls-card">
-        <div class="ls-list-head"><span>Conversations</span><span class="ls-hint" id="lsCount"></span></div>
+        <div class="ls-tabs" role="tablist"><button type="button" class="ls-tab is-on" data-tab="open" role="tab">Open chats <span class="ls-tab-n" id="lsOpenN"></span></button><button type="button" class="ls-tab" data-tab="closed" role="tab">Closed chats <span class="ls-tab-n" id="lsClosedN"></span></button></div>
+        <div class="ls-hint" id="lsCount" style="padding:6px 14px 0;"></div>
         <div class="ls-list" id="lsList"><div class="ls-empty">Loading...</div></div>
       </div>
       <div class="ls-card ls-chat" id="lsChat">
@@ -122,16 +128,27 @@
 
   function fmtTime(dt) { return dt ? dt.substr(11, 5) + (dt.substr(0, 10) !== new Date().toISOString().substr(0, 10) ? ' ' + dt.substr(8, 2) + '/' + dt.substr(5, 2) : '') : ''; }
 
-  var lastListKey = '';
-  function renderList(chats) {
-    var key = current + '|' + JSON.stringify(chats);
+  var lastListKey = '', tab = 'open', allChats = [];
+  [].forEach.call(document.querySelectorAll('.ls-tab'), function (b) {
+    b.addEventListener('click', function () {
+      tab = b.getAttribute('data-tab');
+      [].forEach.call(document.querySelectorAll('.ls-tab'), function (x) { x.classList.toggle('is-on', x === b); });
+      lastListKey = ''; renderList(allChats);
+    });
+  });
+  function renderList(all) {
+    allChats = all;
+    var openN = 0, closedN = 0;
+    all.forEach(function (c) { if (c.status === 'closed') closedN++; else openN++; });
+    el('lsOpenN').textContent = openN; el('lsClosedN').textContent = closedN;
+    var chats = all.filter(function (c) { return tab === 'closed' ? c.status === 'closed' : c.status !== 'closed'; });
+    var key = tab + '|' + current + '|' + JSON.stringify(chats);
     if (key === lastListKey) return; // nothing changed: keep the list as is
     lastListKey = key;
     var waiting = 0;
-    if (!chats.length) { el('lsList').innerHTML = '<div class="ls-empty">No conversations in the last 7 days.</div>'; }
+    if (!chats.length) { el('lsList').innerHTML = '<div class="ls-empty">' + (tab === 'closed' ? 'No closed chats in the last 7 days.' : 'No open chats.') + '</div>'; }
     else {
       el('lsList').innerHTML = chats.map(function (c) {
-        if (c.status === 'waiting') waiting++;
         var last = (c.last_sender === 'agent' ? 'You: ' : '') + (c.last_message || '');
         return '<button type="button" class="ls-item' + (+c.id === current ? ' is-active' : '') + '" data-id="' + c.id + '">' +
           '<div class="ls-item-top"><span class="ls-name">' + esc(c.name) + '</span><span class="ls-time">' + esc(fmtTime(c.updated_at)) + '</span></div>' +
@@ -139,11 +156,13 @@
           '<div class="ls-last">' + (+c.unread > 0 ? '<span class="cb-unread" style="float:right;margin-left:6px;">' + c.unread + '</span>' : '') + esc(last) + '</div></button>';
       }).join('');
     }
+    all.forEach(function (c) { if (c.status === 'waiting') waiting++; });
     el('lsCount').textContent = waiting ? waiting + ' waiting' : '';
     document.title = (waiting ? '(' + waiting + ') ' : '') + 'Chatbot Inbox';
 
     // Alert on new waiting chats.
-    chats.forEach(function (c) {
+    all.forEach(function (c) {
+      if (c.status !== 'waiting') delete knownWaiting[c.id];
       if (c.status === 'waiting' && !knownWaiting[c.id]) {
         knownWaiting[c.id] = true;
         if (!firstLoad) notify(c);

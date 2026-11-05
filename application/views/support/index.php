@@ -116,6 +116,8 @@
   }
   function store(v) { try { v ? localStorage.setItem(KEY, v) : localStorage.removeItem(KEY); } catch (e) {} }
   function stored() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
+  function prevChat() { try { return localStorage.getItem(KEY + '_prev') || ''; } catch (e) { return ''; } }
+  function rememberPrev(t) { try { localStorage.setItem(KEY + '_prev', t); } catch (e) {} }
 
   function post(path, data) {
     var body = new URLSearchParams(data);
@@ -151,7 +153,7 @@
     $('spFormError').style.display = 'none';
     btn.disabled = true; btn.textContent = 'Sending...';
     post('start', {
-      name: f['name'].value, phone: f['phone'].value, email: f['email'].value, issue: f['issue'].value, website: f['website'].value
+      name: f['name'].value, phone: f['phone'].value, email: f['email'].value, issue: f['issue'].value, website: f['website'].value, prev: prevChat()
     }).then(function (res) {
       btn.disabled = false; setOnline(online);
       if (!res.ok) {
@@ -178,7 +180,7 @@
   /* ---------- step 2 ---------- */
   function openChat(t) {
     token = t; lastId = 0; status = '';
-    store(t);
+    store(t); rememberPrev(t);
     $('spForm').hidden = true;
     $('spChat').hidden = false;
     $('spMsgs').innerHTML = '';
@@ -244,7 +246,7 @@
     if (!text) return;
     input.value = '';
     if (!token) {
-      post('start', { chat: '1', issue: text }).then(function (res) {
+      post('start', { chat: '1', issue: text, prev: prevChat() }).then(function (res) {
         if (!res.ok) { input.value = text; if (res.errors) { online = false; showReady(); } else alert(res.error || 'Message not sent.'); return; }
         openChat(res.token);
       }).catch(function () { input.value = text; alert('Could not reach the server.'); });

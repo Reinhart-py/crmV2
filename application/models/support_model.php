@@ -61,6 +61,9 @@ class Support_model extends CI_Model {
 			last_seen DATETIME DEFAULT NULL,
 			PRIMARY KEY (user_id)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+		if (!$this->db->field_exists('reopened_at', 'ci_support_chats')) {
+			$this->db->query("ALTER TABLE ci_support_chats ADD reopened_at DATETIME DEFAULT NULL");
+		}
 		$this->db->query("CREATE TABLE IF NOT EXISTS ci_support_reads (
 			user_id INT(11) NOT NULL,
 			chat_id INT(11) NOT NULL,
@@ -255,6 +258,33 @@ class Support_model extends CI_Model {
 		return $this->get_chat($id);
 	}
 
+	/** The visitor's last closed/emailed chat: by the browser's previous chat token, else by phone number. */
+	public function returning_chat($token, $phone)
+	{
+		$token = (string)$token;
+		if (preg_match('/^[a-f0-9]{48}$/', $token)) {
+			$c = $this->db->where('token', $token)->where_in('status', array('closed', 'emailed'))->get('ci_support_chats')->row_array();
+			if (!empty($c)) return $c;
+		}
+		if ($phone !== '') {
+			$c = $this->db->where('phone', $phone)->where_in('status', array('closed', 'emailed'))->order_by('id', 'DESC')->limit(1)->get('ci_support_chats')->row_array();
+			if (!empty($c)) return $c;
+		}
+		return null;
+	}
+
+	/** Same visitor needs help again: the chat moves back to Open with the new message. */
+	public function reopen_chat($chat, $issue, $details = array())
+	{
+		$now = date('Y-m-d H:i:s');
+		$this->db->where('id', (int)$chat['id'])->update('ci_support_chats', array_merge($details, array(
+			'status' => 'waiting', 'agent_id' => 0, 'closed_at' => null, 'reopened_at' => $now, 'updated_at' => $now,
+		)));
+		$this->add_message($chat['id'], 'system', 'The visitor came back and needs help again.');
+		$this->add_message($chat['id'], 'visitor', $issue);
+		return $this->get_chat($chat['id']);
+	}
+
 	public function get_chat($id)
 	{
 		return $this->db->where('id', (int)$id)->get('ci_support_chats')->row_array();
@@ -309,7 +339,8 @@ class Support_model extends CI_Model {
 		if (empty($chat) || $chat['status'] !== 'waiting') {
 			return false;
 		}
-		if (time() - strtotime($chat['created_at']) < $this->no_reply_seconds()) {
+		$since = !empty($chat['reopened_at']) ? $chat['reopened_at'] : $chat['created_at'];
+		if (time() - strtotime($since) < $this->no_reply_seconds()) {
 			return false;
 		}
 		$this->email_it($chat, 'No support agent answered the live chat within ' . round($this->no_reply_seconds() / 60) . ' minutes.');
