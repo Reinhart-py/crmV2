@@ -199,8 +199,7 @@
       <div class="tv-brand">
         <img src="<?php echo base_url(); ?>assets/logo.png" alt="">
         <div>
-          <h1>Live Sales</h1>
-          <span class="tv-live"><i></i> LIVE &middot; <span id="tvMonth"></span></span>
+          <h1>Live Dashboard</h1>
         </div>
       </div>
       <div class="tv-right">
