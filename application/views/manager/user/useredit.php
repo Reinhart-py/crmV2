@@ -200,14 +200,14 @@
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Email<span>*</span></label>
-                <input type="email" class="form-control"  name="email"  value="<?php echo $list['email']; ?>" >
+                <input type="email" class="form-control"  name="email"  value="<?php echo $list['email']; ?>"  required>
               </div>
             </div>
 
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Date of Birth<span>*</span></label>
-                <input type="text" class="form-control" name="dob" value="<?php echo $list['dob']; ?>"  >
+                <input type="text" class="form-control" name="dob" value="<?php echo $list['dob']; ?>"   required>
               </div>
             </div>
      
@@ -238,7 +238,7 @@
                         <?php } }  ?>
                       </select>
                         </span>
-                    <input type="text" class="form-control only_number" name="mobile"  value="<?php echo $list['mobile']; ?>">
+                    <input type="text" class="form-control only_number" name="mobile"  value="<?php echo $list['mobile']; ?>" required>
                   </div> 
                   </div>                
                 </div>
@@ -321,7 +321,7 @@
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Employee ID<span>*</span></label>
-                <input type="text" class="form-control" name="emp_id" value="<?php echo $list['emp_id']; ?>"  >
+                <input type="text" class="form-control" name="emp_id" value="<?php echo $list['emp_id']; ?>"   required>
               </div>
             </div>
             
@@ -334,7 +334,7 @@
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Date of Joining<span>*</span></label>
-                <input type="text" class="form-control datepicker" name="c_doj"  value="<?php echo $list['c_doj']; ?>" >
+                <input type="text" class="form-control datepicker" name="c_doj"  value="<?php echo $list['c_doj']; ?>"  required>
               </div>
             </div>
             <div class="col-lg-4 col-sm-6">
@@ -347,7 +347,7 @@
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Department<span>*</span></label>
-                <select class="form-control" style="width: 100%;" name="department">
+                <select class="form-control" style="width: 100%;" name="department" required>
                 <option value="">Select</option>
                   <option  <?php if($list['department']=='Board of Director'){ echo "selected"; } ?> value="Board of Director" selected="selected">Board of Director</option>
                   <option <?php if($list['department']=='Administration'){ echo "selected"; } ?> value="Administration">Administration</option>
@@ -365,7 +365,7 @@
   <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Office / Location<span>*</span></label>
-                <select class="form-control" style="width: 100%;" name="office">
+                <select class="form-control" style="width: 100%;" name="office" required>
                 <option value="">Select</option>
                   <option <?php if($list['office']=='01 - UAE-Dubai-SZR'){ echo "selected"; } ?> value="01 - UAE-Dubai-SZR" selected="selected">01 - UAE-Dubai-SZR</option>
                   <option <?php if($list['office']=='07 - UAE-WFH'){ echo "selected"; } ?> value="07 - UAE-WFH">07 - UAE-WFH</option>
@@ -395,7 +395,7 @@
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Nationality<span>*</span></label>
-                 <select class="form-control" name="national">                          
+                 <select class="form-control" name="national" required>                          
                  <option value="">Select</option>
                             <?php if(isset($c_list) && !empty($c_list)){
                               foreach($c_list as $cli){
@@ -424,7 +424,7 @@
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Passport No<span>*</span></label>
-                <input type="text" class="form-control" name="p_no" value="<?php echo $list['p_no']; ?>" >
+                <input type="text" class="form-control" name="p_no" value="<?php echo $list['p_no']; ?>"  required>
               </div>
             </div>
            
@@ -474,7 +474,7 @@
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Contact Name<span>*</span></label>
-                <input type="text" class="form-control" name="h_contact_name" value="<?php echo $list['h_contact_name']; ?>" >
+                <input type="text" class="form-control" name="h_contact_name" value="<?php echo $list['h_contact_name']; ?>"  required>
               </div>
             </div>
             <div class="col-lg-4 col-sm-6">
@@ -486,7 +486,7 @@
             <div class="col-lg-4 col-sm-6">
               <div class="form-group">
                 <label>Contact No<span>*</span></label>
-                <input type="text" class="form-control only_digit" name="h_contact_no" value="<?php echo $list['h_contact_no']; ?>" >
+                <input type="text" class="form-control only_digit" name="h_contact_no" value="<?php echo $list['h_contact_no']; ?>"  required>
               </div>
             </div>
 
