@@ -241,7 +241,10 @@ if (!function_exists('render_donut_chart_svg')) {
             $total += (float)$it['count'];
         }
         if ($total <= 0) {
-            return '<div class="dash-donut-empty">No ' . strtolower($type) . ' data yet</div>';
+            // No data: blank grey ring, like the Operational Activity donuts.
+            $pad = 12;
+            $vb = ($cx - $r_out - $pad) . ' ' . ($cy - $r_out - $pad) . ' ' . (2 * ($r_out + $pad)) . ' ' . (2 * ($r_out + $pad));
+            return '<svg viewBox="' . $vb . '" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="position:absolute; left:0; top:0; width:100%; height:100%; display:block;" aria-label="No ' . strtolower($type) . ' data yet"><circle cx="' . $cx . '" cy="' . $cy . '" r="' . (($r_out + $r_in) / 2) . '" fill="none" stroke="#e2e8f0" stroke-width="' . ($r_out - $r_in) . '" /></svg>';
         }
         $n = count($items);
         $current_angle = -M_PI / 2;
