@@ -287,6 +287,31 @@ if (!function_exists('crm_perm_normalize')) {
 	}
 }
 
+/**
+ * Role, level and name are copied into the session at login. Re-read them once per request,
+ * so a change made in Users or Roles applies on the user's next page load or refresh.
+ */
+if (!function_exists('crm_sync_session_user')) {
+	function crm_sync_session_user()
+	{
+		static $done = false;
+		if ($done) return;
+		$ci =& get_instance();
+		if (!isset($ci->session)) return;
+		$done = true;
+		$uid = (int)$ci->session->userdata('manager_id');
+		if ($uid <= 0) return;
+		if (!isset($ci->db)) $ci->load->database();
+		$u = $ci->db->select('user_type, user_level, name')->where('id', $uid)->get('ci_user')->row_array();
+		if (empty($u)) return;
+		$set = array();
+		if ((string)$ci->session->userdata('manager_role') !== (string)$u['user_type']) $set['manager_role'] = $u['user_type'];
+		if ((string)$ci->session->userdata('manager_level') !== (string)$u['user_level']) $set['manager_level'] = $u['user_level'];
+		if ((string)$ci->session->userdata('manager_name') !== (string)$u['name']) $set['manager_name'] = $u['name'];
+		if ($set) $ci->session->set_userdata($set);
+	}
+}
+
 /** Can the signed-in user (or $user_id) use $key at $level ('read' or 'write')? */
 if (!function_exists('crm_can')) {
 	function crm_can($key, $level = 'read', $user_id = null)

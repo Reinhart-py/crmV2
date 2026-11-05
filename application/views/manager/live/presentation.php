@@ -24,7 +24,8 @@
     html, body { height:100%; }
     body { background:var(--bg); color:var(--text); font-family:'Plus Jakarta Sans', -apple-system, "Segoe UI", Roboto, sans-serif; padding:14px; overflow-x:hidden; }
     .tv { max-width:1800px; margin:0 auto; min-height:calc(100vh - 28px); background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 24px; display:flex; flex-direction:column; }
-    .tv-head { display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap; padding-bottom:12px; border-bottom:1px solid var(--line); margin-bottom:14px; }
+    .tv-head { display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:nowrap; padding:10px 0 12px; border-bottom:1px solid var(--line); margin:-10px 0 14px; position:sticky; top:0; z-index:10; background:var(--card); }
+    .tv-brand h1, .tv-brand .tv-live { white-space:nowrap; }
     .tv-brand { display:flex; align-items:center; gap:12px; }
     .tv-brand img { height:38px; }
     body.tv-dark .tv-brand img { background:#fff; border-radius:6px; padding:3px; }
@@ -32,7 +33,8 @@
     .tv-brand .tv-live { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:800; color:var(--bad); letter-spacing:.08em; }
     .tv-brand .tv-live i { width:8px; height:8px; border-radius:50%; background:var(--bad); animation:pulse 1.6s infinite; }
     @keyframes pulse { 50% { opacity:.25; } }
-    .tv-right { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+    .tv-right { display:flex; align-items:center; gap:14px; flex-wrap:nowrap; min-width:0; }
+    .tv-tabs button, .tv-clock b, .tv-clock span { white-space:nowrap; }
     .tv-clock { text-align:right; }
     .tv-clock b { display:block; font-size:22px; font-weight:800; font-variant-numeric:tabular-nums; }
     .tv-clock span { font-size:12px; color:var(--muted); font-weight:600; }
@@ -124,6 +126,11 @@
     .act th:first-child, .act td:first-child { text-align:left; }
     .act td { font-size:18px; font-weight:700; }
     .act td.today { color:var(--brand); font-weight:800; }
+    .bc-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 430px), 1fr)); gap:14px; }
+    .bc-grid h4 { font-size:17px; font-weight:800; margin:4px 8px 2px; display:flex; justify-content:space-between; gap:8px; }
+    .bc-grid h4 small { font-size:12px; color:var(--muted); font-weight:700; }
+    .bc-grid .act th, .bc-grid .act td { padding:8px 10px; }
+    .bc-grid .act td { font-size:16px; }
 
     .tv-banner { display:none; position:fixed; top:14px; left:50%; transform:translateX(-50%); background:var(--bad); color:#fff; font-weight:700; padding:8px 16px; border-radius:8px; z-index:20; }
     /* New sale celebration: photo + name for 5 seconds */
@@ -147,14 +154,28 @@
     @keyframes celeFall { to { transform:translateY(110vh) rotate(720deg); } }
     @media (prefers-reduced-motion: reduce) { .cele-card, .cele-photo::before, .cele-photo::after, .cele-bit { animation:none !important; } .cele-bit { display:none; } }
 
+    @media (max-width: 1500px) { .tv-updated { display:none; } }
     @media (max-width: 1200px) {
+      .tv-head, .tv-right { gap:10px; }
+      .tv-tabs button { padding:7px 9px; }
+      .tv-clock span { display:none; }
+      .tv-clock b { font-size:18px; }
+      .tv-brand img { height:30px; }
+      .tv-brand h1 { font-size:20px; }
+      .tv-btn .lbl { display:none; }
+      .tv-btn, .tv-select { padding:0 7px; }
+      .tv { padding:14px 16px; }
+      .tv-tabs button { padding:7px 8px; font-size:12.5px; }
+      .tv-controls { gap:4px; }
       .ov-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); }
       .ov-main { grid-template-columns:1fr; }
     }
     @media (max-width: 700px) {
       body { padding:8px; }
       .tv { padding:14px; }
-      .tv-head { flex-direction:column; align-items:flex-start; }
+      .tv-head { flex-direction:column; align-items:flex-start; flex-wrap:wrap; position:static; margin-top:0; }
+      .tv-right { flex-wrap:wrap; }
+      .tv-clock span { display:inline; }
       .tv-clock { text-align:left; }
       .tv-right { width:100%; }
       .tv-tabs { max-width:100%; overflow-x:auto; }
@@ -179,7 +200,7 @@
         <img src="<?php echo base_url(); ?>assets/logo.png" alt="">
         <div>
           <h1>Live Sales</h1>
-          <span class="tv-live"><i></i> LIVE &middot; <span id="tvMonth"></span><span id="tvScope"></span></span>
+          <span class="tv-live"><i></i> LIVE &middot; <span id="tvMonth"></span></span>
         </div>
       </div>
       <div class="tv-right">
@@ -196,6 +217,7 @@
           <button type="button" class="tv-btn" id="tvPlay" title="Pause slides"><i class="fa fa-pause"></i></button>
           <button type="button" class="tv-btn" id="tvTheme" title="Dark / light"><i class="fa fa-moon-o"></i></button>
           <button type="button" class="tv-btn" id="tvFull" title="Full screen"><i class="fa fa-arrows-alt"></i></button>
+          <a class="tv-btn" id="tvLogout" href="<?php echo base_url('manager/logout'); ?>" title="Log out" onclick="return confirm('Log out of this screen?');" style="text-decoration:none;"><i class="fa fa-sign-out"></i><span class="lbl"> Logout</span></a>
         </div>
         <div class="tv-clock"><b id="tvTime">--:--</b><span id="tvDate"></span></div>
       </div>
@@ -241,7 +263,13 @@
       <div class="ct-grid" id="ctGrid"></div>
     </section>
 
-    <!-- 4. Activity -->
+    <!-- 4. By Center (only when the screen has 2 or more centers) -->
+    <section class="tv-slide is-off" data-slide="bycenter" data-title="By Center">
+      <div class="tv-slide-title"><i class="fa fa-th-large"></i> Activity by center</div>
+      <div class="bc-grid" id="bcGrid"></div>
+    </section>
+
+    <!-- 5. Activity -->
     <section class="tv-slide" data-slide="activity" data-title="Activity">
       <div class="tv-slide-title"><i class="fa fa-bar-chart"></i> <span id="actTitle">Company activity</span></div>
       <div class="tv-panel" style="padding:4px 8px;">
@@ -294,7 +322,6 @@
     $('#tvMonth, .js-month').text(d.month);
     // Presentation users: the centers this screen shows.
     var scope = (d.scope && d.scope.length) ? d.scope.join(', ') : '';
-    $('#tvScope').text(scope ? ' · ' + scope : '');
     $('#actTitle').text(scope ? 'Activity · ' + scope : 'Company activity');
     setVal('kSales', money(k.sales_month));
     setVal('kSalesSub', k.sales_count + ' sale' + (k.sales_count === 1 ? '' : 's') + ' &middot; ' + growth(k.sales_growth, 'last month'));
@@ -392,6 +419,19 @@
       ah += '<tr><td>' + esc(s.metric) + '</td><td class="today">' + f(s.today) + '</td><td>' + f(s.seven_days) + '</td><td>' + f(s.month) + '</td><td>' + f(s.quarter) + '</td></tr>';
     });
     $('#actBody').html(ah);
+
+    // By Center
+    var cs = d.center_stats || [], bh = '';
+    cs.forEach(function (c) {
+      var rows = '';
+      (c.stats || []).forEach(function (s) {
+        var f = function (v) { return isNaN(v) ? esc(v).replace(/\(AED/, '<br><small style="color:var(--muted); font-size:12px;">(AED') : num(v); };
+        rows += '<tr><td>' + esc(s.metric) + '</td><td class="today">' + f(s.today) + '</td><td>' + f(s.seven_days) + '</td><td>' + f(s.month) + '</td><td>' + f(s.quarter) + '</td></tr>';
+      });
+      bh += '<div class="tv-panel" style="padding:8px;"><h4>' + esc(c.name) + '<small>' + c.staff + ' staff</small></h4><table class="act"><thead><tr><th>Activity</th><th>Today</th><th>7 days</th><th>Month</th><th>Quarter</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+    });
+    $('#bcGrid').html(bh);
+    setOff('bycenter', cs.length < 2);
   }
 
   /* ---------- New sale celebration (5 seconds each) ---------- */
@@ -451,9 +491,18 @@
   var slides = $('.tv-slide');
   slides.each(function (i) {
     $('#tvTabs').append('<button type="button" data-i="' + i + '">' + $(this).data('title') + '</button>');
+    if ($(this).hasClass('is-off')) $('#tvTabs button').last().hide();
   });
-  function show(i) {
+  function setOff(name, off) {
+    var idx = slides.index(slides.filter('[data-slide="' + name + '"]'));
+    slides.eq(idx).toggleClass('is-off', off);
+    $('#tvTabs button').eq(idx).toggle(!off);
+    if (off && cur === idx) show(cur + 1);
+  }
+  function show(i, dir) {
+    dir = dir || 1;
     cur = (i + slides.length) % slides.length;
+    for (var n = 0; n < slides.length && slides.eq(cur).hasClass('is-off'); n++) cur = (cur + dir + slides.length) % slides.length;
     slides.removeClass('active').eq(cur).addClass('active');
     $('#tvTabs button').removeClass('active').eq(cur).addClass('active');
     slideStart = Date.now();
@@ -509,7 +558,7 @@
   $(document).on('keydown', function (e) {
     if ($(e.target).is('select, input')) return;
     if (e.key === 'ArrowRight') show(cur + 1);
-    else if (e.key === 'ArrowLeft') show(cur - 1);
+    else if (e.key === 'ArrowLeft') show(cur - 1, -1);
     else if (e.key === ' ') { e.preventDefault(); $('#tvPlay').click(); }
   });
 

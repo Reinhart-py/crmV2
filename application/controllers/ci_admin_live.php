@@ -425,13 +425,17 @@ class Ci_admin_live extends CI_Controller
 
 		// Presentation users only see the centers set on their user (Users > Edit > Presentation Centers).
 		$scope_offices = null;
+		$office_ids = array();
 		$scope_ids = null;
 		if (crm_is_presentation_user()) {
 			$me = $this->db->select('id, office')->where('id', (int)$this->session->userdata('manager_id'))->get('ci_user')->row_array();
 			$scope_offices = crm_user_live_offices($me ? $me : array());
-			$scope_ids = array(0);
+			$scope_ids = array(-1);
 			if (!empty($scope_offices)) {
-				foreach ($this->db->select('id')->where_in('office', $scope_offices)->get('ci_user')->result_array() as $r) $scope_ids[] = (int)$r['id'];
+				foreach ($this->db->select('id, office')->where_in('office', $scope_offices)->get('ci_user')->result_array() as $r) {
+					$scope_ids[] = (int)$r['id'];
+					$office_ids[trim($r['office'])][] = (int)$r['id'];
+				}
 			}
 		}
 		$in = function ($col) use ($scope_ids) { return $scope_ids === null ? '' : " AND {$col} IN (" . implode(',', $scope_ids) . ")"; };
@@ -519,8 +523,11 @@ class Ci_admin_live extends CI_Controller
 			$leaderboard[] = $u;
 		}
 
-		// Centers (offices)
+		// Centers (offices). A Presentation screen shows every center set on it, even with no staff or sales yet.
 		$centers = array();
+		foreach ((array)$scope_offices as $k) {
+			$centers[$k] = array('name' => $k, 'staff' => 0, 'sales_month' => 0.0, 'sales_count' => 0, 'orders_month' => 0, 'calls_today' => 0, 'leads_month' => 0, 'target' => 0.0);
+		}
 		foreach ($users as $u) {
 			if ($u['office'] === '') continue;
 			$k = $u['office'];
@@ -530,6 +537,15 @@ class Ci_admin_live extends CI_Controller
 		}
 		$centers = array_values($centers);
 		usort($centers, function ($a, $b) { return $a['sales_month'] == $b['sales_month'] ? strcmp($a['name'], $b['name']) : ($a['sales_month'] < $b['sales_month'] ? 1 : -1); });
+
+		// Two or more centers on a Presentation screen: the activity of each center.
+		$center_stats = array();
+		if (is_array($scope_offices) && count($scope_offices) > 1) {
+			foreach ($scope_offices as $k) {
+				$ids = isset($office_ids[$k]) ? $office_ids[$k] : array(-1);
+				$center_stats[] = array('name' => $k, 'staff' => isset($office_ids[$k]) ? count($office_ids[$k]) : 0, 'stats' => $this->get_stats_block($ids));
+			}
+		}
 
 		// Latest sales (newest first)
 		$latest = array();
@@ -559,6 +575,7 @@ class Ci_admin_live extends CI_Controller
 			'latest' => $latest,
 			'company_stats' => $this->get_stats_block($scope_ids === null ? array() : $scope_ids),
 			'scope' => $scope_offices,
+			'center_stats' => $center_stats,
 		));
 		exit;
 	}

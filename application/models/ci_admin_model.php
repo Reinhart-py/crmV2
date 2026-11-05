@@ -4,7 +4,8 @@ class Ci_admin_model extends CI_model {
 	 function __construct() {
     parent::__construct();
 	$this->load->database();
-	
+	// Apply role changes at once (no need to log out and in).
+	crm_sync_session_user();
 	}
 	
 	   public function dashboard_countdata(){
@@ -2980,6 +2981,7 @@ public function dashboard_MyPro($table='ci_leads'){
 
 	public function check_permission($section, $required = 'read', $redirect = false, $override_user_id = null)
 	{
+		crm_sync_session_user();
 		$user_id = ($override_user_id !== null) ? (int)$override_user_id : (int)$this->session->userdata('manager_id');
 		$role = (int)$this->session->userdata('manager_role');
 		if ($override_user_id !== null && $override_user_id > 0) {

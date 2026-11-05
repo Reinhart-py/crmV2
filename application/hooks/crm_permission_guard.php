@@ -16,6 +16,8 @@ function crm_permission_guard()
 	$ci =& get_instance();
 	if (!isset($ci->uri) || $ci->uri->segment(1) !== 'manager') return;
 	if (!isset($ci->session) || (int)$ci->session->userdata('manager_id') <= 0) return;
+	require_once APPPATH . 'helpers/crm_permission_helper.php';
+	crm_sync_session_user();
 	if ($ci->input->is_ajax_request()) return;
 
 	$segs = $ci->uri->segment_array();
