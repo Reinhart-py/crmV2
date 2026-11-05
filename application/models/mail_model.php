@@ -70,10 +70,12 @@ class Mail_model extends CI_Model {
 		$this->last_error = '';
 		$cfg = $this->smtp_config();
 
-		$logo = base_url() . 'assets/logo.png';
+		// Logo travels inside the email (cid:), so it shows even where the CRM address is not reachable.
+		$logo_file = FCPATH . 'assets/email-logo.png';
+		$logo = 'cid:crm-logo';
 		$full_msg = '<table cellpadding="0" cellspacing="0" width="100%" style="background:#f1f5f9;padding:24px 0;font-family:Arial,Helvetica,sans-serif;"><tr><td align="center">'
 			. '<table cellpadding="0" cellspacing="0" width="560" style="background:#ffffff;border-radius:8px;border:1px solid #e2e8f0;">'
-			. '<tr><td style="padding:24px 28px 8px;"><img src="' . $logo . '" alt="Seven Strokes" height="48" style="display:block;"></td></tr>'
+			. '<tr><td style="padding:24px 28px 8px;"><img src="' . $logo . '" alt="Seven Strokes" width="80" height="56" style="display:block;border:0;"></td></tr>'
 			. '<tr><td style="padding:8px 28px 24px;color:#0f172a;font-size:15px;line-height:1.6;">' . $message . '</td></tr>'
 			. '<tr><td style="padding:14px 28px;border-top:1px solid #e2e8f0;color:#64748b;font-size:12px;">Seven Strokes CRM. This is an automated message, please do not reply.</td></tr>'
 			. '</table></td></tr></table>';
@@ -100,6 +102,10 @@ class Mail_model extends CI_Model {
 
 		$from = filter_var($cfg['from_email'], FILTER_VALIDATE_EMAIL) ? $cfg['from_email'] : $cfg['user'];
 		$mail->setFrom($from, $cfg['from_name']);
+		// Message-ID and SMTP greeting use the sending domain, not "localhost"; no mailer advert header.
+		$domain = substr(strrchr($from, '@'), 1);
+		if ($domain) $mail->Hostname = $domain;
+		$mail->XMailer = ' ';
 		$mail->Sender = $from;
 		$mail->addAddress($to, $to_name);
 		if (!empty($data['reply_to'][0]) && filter_var($data['reply_to'][0], FILTER_VALIDATE_EMAIL)) {
@@ -107,6 +113,9 @@ class Mail_model extends CI_Model {
 		}
 		$mail->Subject = $subject;
 		$mail->msgHTML($full_msg);
+		if (is_file($logo_file)) {
+			$mail->addStringEmbeddedImage(file_get_contents($logo_file), 'crm-logo', 'seven-strokes.png', 'base64', 'image/png');
+		}
 		$mail->AltBody = trim(html_entity_decode(strip_tags(str_replace(array('<br>', '<br/>', '<br />', '</p>'), "\n", $message))));
 
 		try {
