@@ -53,7 +53,7 @@
   @media (max-width: 991px) { .ls-wrap { grid-template-columns: 1fr; } .ls-list { max-height: 320px; } }
 </style>
 
-<?php $cb_tab = 'inbox'; $can_status = !empty($rights['status']); $wait_min = (int)$settings['no_reply_minutes']; ?>
+<?php $cb_tab = $list_tab; $can_status = !empty($rights['status']); $wait_min = (int)$settings['no_reply_minutes']; ?>
 <div class="content-wrapper">
   <section class="content-header crm-list-head">
     <h1>Chatbot</h1>
@@ -79,8 +79,7 @@
     </p>
     <div class="ls-wrap">
       <div class="ls-card">
-        <div class="ls-tabs" role="tablist"><button type="button" class="ls-tab is-on" data-tab="open" role="tab">Open chats <span class="ls-tab-n" id="lsOpenN"></span></button><button type="button" class="ls-tab" data-tab="closed" role="tab">Closed chats <span class="ls-tab-n" id="lsClosedN"></span></button></div>
-        <div class="ls-hint" id="lsCount" style="padding:6px 14px 0;"></div>
+        <div class="ls-list-head"><span><?php echo $list_tab === 'closed' ? 'Closed chats' : 'Open chats'; ?></span><span class="ls-hint" id="lsCount"></span></div>
         <div class="ls-list" id="lsList"><div class="ls-empty">Loading...</div></div>
       </div>
       <div class="ls-card ls-chat" id="lsChat">
@@ -128,7 +127,7 @@
 
   function fmtTime(dt) { return dt ? dt.substr(11, 5) + (dt.substr(0, 10) !== new Date().toISOString().substr(0, 10) ? ' ' + dt.substr(8, 2) + '/' + dt.substr(5, 2) : '') : ''; }
 
-  var lastListKey = '', tab = 'open', allChats = [];
+  var lastListKey = '', tab = <?php echo json_encode($list_tab); ?>, allChats = [];
   [].forEach.call(document.querySelectorAll('.ls-tab'), function (b) {
     b.addEventListener('click', function () {
       tab = b.getAttribute('data-tab');
@@ -138,9 +137,6 @@
   });
   function renderList(all) {
     allChats = all;
-    var openN = 0, closedN = 0;
-    all.forEach(function (c) { if (c.status === 'closed') closedN++; else openN++; });
-    el('lsOpenN').textContent = openN; el('lsClosedN').textContent = closedN;
     var chats = all.filter(function (c) { return tab === 'closed' ? c.status === 'closed' : c.status !== 'closed'; });
     var key = tab + '|' + current + '|' + JSON.stringify(chats);
     if (key === lastListKey) return; // nothing changed: keep the list as is
@@ -158,7 +154,7 @@
     }
     all.forEach(function (c) { if (c.status === 'waiting') waiting++; });
     el('lsCount').textContent = waiting ? waiting + ' waiting' : '';
-    document.title = (waiting ? '(' + waiting + ') ' : '') + 'Chatbot Inbox';
+    document.title = (waiting ? '(' + waiting + ') ' : '') + <?php echo json_encode($list_tab === 'closed' ? 'Closed Chats' : 'Open Chats'); ?>;
 
     // Alert on new waiting chats.
     all.forEach(function (c) {

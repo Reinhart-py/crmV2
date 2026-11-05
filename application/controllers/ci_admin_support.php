@@ -63,8 +63,20 @@ class Ci_admin_support extends CI_Controller {
 
 	public function index()
 	{
+		$this->chat_list('open');
+	}
+
+	public function closed()
+	{
+		$this->chat_list('closed');
+	}
+
+	/** Open Chats (new + not closed) and Closed Chats pages share one view. */
+	private function chat_list($tab)
+	{
 		$this->guard_page('access');
-		$data = $this->common_data('Chatbot Inbox');
+		$data = $this->common_data($tab === 'closed' ? 'Closed Chats' : 'Open Chats');
+		$data['list_tab'] = $tab;
 		$data['available'] = chatbot_can('status') ? $this->support_model->agent_state($this->uid) : 0;
 		$data['it_email'] = $this->support_model->it_email();
 		$data['open_chat'] = (int)$this->input->get('chat');

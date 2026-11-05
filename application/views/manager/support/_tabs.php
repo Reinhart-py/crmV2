@@ -16,7 +16,8 @@ $cb_base = base_url('manager/chatbot');
   @media (max-width: 767px) { .cb-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 </style>
 <nav class="cb-tabs" aria-label="Chatbot">
-  <a href="<?php echo $cb_base; ?>" class="<?php echo $cb_tab === 'inbox' ? 'is-on' : ''; ?>"><i class="fa fa-comments"></i> Inbox<?php if (!empty($counts['waiting'])) { ?> <span class="cb-count"><?php echo (int)$counts['waiting']; ?></span><?php } ?></a>
+  <a href="<?php echo $cb_base; ?>" class="<?php echo $cb_tab === 'open' ? 'is-on' : ''; ?>"><i class="fa fa-comments"></i> Open Chats<?php if (!empty($counts['waiting'])) { ?> <span class="cb-count"><?php echo (int)$counts['waiting']; ?></span><?php } ?></a>
+  <a href="<?php echo $cb_base; ?>/closed" class="<?php echo $cb_tab === 'closed' ? 'is-on' : ''; ?>"><i class="fa fa-check-circle-o"></i> Closed Chats</a>
   <?php if (!empty($rights['history'])) { ?><a href="<?php echo $cb_base; ?>/history" class="<?php echo $cb_tab === 'history' ? 'is-on' : ''; ?>"><i class="fa fa-history"></i> History</a><?php } ?>
   <?php if (!empty($rights['settings'])) { ?><a href="<?php echo $cb_base; ?>/settings" class="<?php echo $cb_tab === 'settings' ? 'is-on' : ''; ?>"><i class="fa fa-sliders"></i> Settings</a><?php } ?>
 </nav>
