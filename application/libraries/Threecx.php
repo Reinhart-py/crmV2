@@ -46,6 +46,28 @@ class Threecx
 		return $this->config;
 	}
 
+	/** "Extension for each person" setting as user_id => extension (digits only). */
+	public function extension_map()
+	{
+		$map = array();
+		$raw = isset($this->config['multiple_lines']) ? (string)$this->config['multiple_lines'] : '';
+		foreach (preg_split('~[,\n;]+~', $raw) as $pair) {
+			if (strpos($pair, '=') === false) continue;
+			list($uid, $ext) = array_map('trim', explode('=', $pair, 2));
+			$ext = preg_replace('~\D~', '', $ext);
+			if ((int)$uid > 0 && $ext !== '') $map[(int)$uid] = $ext;
+		}
+		return $map;
+	}
+
+	/** A person's 3CX extension: their own from the setting, else the default extension. */
+	public function extension_for($uid)
+	{
+		$map = $this->extension_map();
+		if (isset($map[(int)$uid])) return $map[(int)$uid];
+		return isset($this->config['default_extension']) ? (string)$this->config['default_extension'] : '';
+	}
+
 	/** Key 3CX must send with the webhooks; made once and kept in the git-ignored local config file. */
 	public function webhook_key($renew = false)
 	{
@@ -266,7 +288,8 @@ class Threecx
 	{
 		$clean_phone = preg_replace('/[^\d\+]/', '', trim($phone));
 		$fqdn = $this->config['pbx_fqdn'];
-		$ext = $from_extension ? $from_extension : $this->config['default_extension'];
+		$ci =& get_instance();
+		$ext = $from_extension ? $from_extension : $this->extension_for((int)$ci->session->userdata('manager_id'));
 
 		$webclient_url = '';
 		if (!empty($fqdn)) {

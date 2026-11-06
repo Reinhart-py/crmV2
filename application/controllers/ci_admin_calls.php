@@ -88,6 +88,21 @@ class Ci_admin_calls extends CI_Controller
 		return $url;
 	}
 
+	/** Duration to store: 3CX's own figure once its report has arrived, else the dialer timer. */
+	private function _call_duration($call_log_id, $posted)
+	{
+		$row = $this->db->query("SELECT call_id, duration FROM ci_call_logs WHERE id = " . (int)$call_log_id . " LIMIT 1")->row_array();
+		if (!empty($row['call_id']) && (int)$row['duration'] > 0) return (int)$row['duration'];
+		return (int)$posted;
+	}
+
+	/** Calls the agent started but never finished (left on Dialing for 2 hours) are closed as "Not completed". */
+	private function _close_stale_calls()
+	{
+		$this->db->query("UPDATE ci_call_logs SET call_status = 'Not completed', disposition = 'Not completed'
+			WHERE call_status = 'Initiated' AND created_at < " . $this->db->escape(date('Y-m-d H:i:s', time() - 7200)));
+	}
+
 	private function _deny($msg = 'You cannot change this record.')
 	{
 		echo json_encode(array('status' => false, 'message' => $msg));
@@ -187,6 +202,7 @@ class Ci_admin_calls extends CI_Controller
 
 	public function index()
 	{
+		$this->_close_stale_calls();
 		$manager_id = (int)$this->session->userdata('manager_id');
 		$role = (int)$this->session->userdata('manager_role');
 		$selected_status = trim($this->input->get('status'));
@@ -866,6 +882,7 @@ class Ci_admin_calls extends CI_Controller
 		}
 
 		if ($call_log_id > 0) {
+			$duration = $this->_call_duration($call_log_id, $duration);
 			$this->db->where('id', $call_log_id);
 			$this->db->update('ci_call_logs', array(
 				'call_status' => 'Completed',
@@ -1102,7 +1119,7 @@ class Ci_admin_calls extends CI_Controller
 
 		$agent_info = array(
 			'agent_name' => !empty($user_row['name']) ? $user_row['name'] : 'Agent',
-			'default_extension' => !empty($user_row['emp_id']) ? $user_row['emp_id'] : '101',
+			'default_extension' => ($my_ext = $this->threecx->extension_for($manager_id)) !== '' ? $my_ext : (!empty($user_row['emp_id']) ? $user_row['emp_id'] : '101'),
 			'pbx_fqdn' => !empty($threecx_cfg['pbx_fqdn']) ? $threecx_cfg['pbx_fqdn'] : 'Local PBX',
 			'caller_id' => !empty($user_row['uae_mobile']) ? $user_row['uae_mobile'] : (!empty($user_row['mobile']) ? $user_row['mobile'] : 'Outbound Line')
 		);
@@ -1307,6 +1324,7 @@ class Ci_admin_calls extends CI_Controller
 		}
 
 		if ($call_log_id > 0) {
+			$duration = $this->_call_duration($call_log_id, $duration);
 			$this->db->where('id', $call_log_id);
 			$this->db->update('ci_call_logs', array(
 				'call_status' => 'Completed',
@@ -1444,7 +1462,61 @@ class Ci_admin_calls extends CI_Controller
 		$recording_url = isset($payload['recording_url']) ? trim($payload['recording_url']) : (isset($payload['RecordingUrl']) ? trim($payload['RecordingUrl']) : (isset($payload['recording']) ? trim($payload['recording']) : ''));
 		$recording_url = $this->_safe_recording_url($recording_url);
 
-		$phone = !empty($caller) ? $caller : $callee;
+		// Which side is our agent? Their 3CX extension ("Extension for each person") tells us.
+		$ext_uid = array_flip($this->threecx->extension_map());
+		$caller_d = preg_replace('/\D/', '', $caller);
+		$callee_d = preg_replace('/\D/', '', $callee);
+		$agent_uid = 0;
+		$direction = '';
+		if ($caller_d !== '' && isset($ext_uid[$caller_d])) {
+			$agent_uid = (int)$ext_uid[$caller_d];
+			$direction = 'out';
+		} elseif ($callee_d !== '' && isset($ext_uid[$callee_d])) {
+			$agent_uid = (int)$ext_uid[$callee_d];
+			$direction = 'in';
+		} elseif (stripos($call_type, 'out') !== false) {
+			$direction = 'out';
+		}
+		$phone = ($direction === 'out') ? $callee : (!empty($caller) ? $caller : $callee);
+
+		$disposition = ($duration > 0) ? 'Connected' : 'Missed Call';
+		if (stripos($status, 'busy') !== false) {
+			$disposition = 'Busy';
+		} elseif (stripos($status, 'no answer') !== false || stripos($status, 'unanswered') !== false) {
+			$disposition = 'Unanswered';
+		}
+
+		// The call the agent started from the dialer: same 3CX call id, else same number in the last 3 hours.
+		$match = null;
+		if ($call_id !== '') {
+			$match = $this->db->where('call_id', $call_id)->order_by('id', 'DESC')->get('ci_call_logs')->row_array();
+		}
+		$tail = substr(preg_replace('/\D/', '', $phone), -9);
+		if (empty($match) && strlen($tail) >= 7) {
+			$this->db->select('id, user_id, call_status, disposition, phone_number');
+			$this->db->where('call_id IS NULL', null, false);
+			$this->db->where('created_at >=', date('Y-m-d H:i:s', time() - 3 * 3600));
+			if ($agent_uid > 0) $this->db->where('user_id', $agent_uid);
+			$cands = $this->db->order_by('id', 'DESC')->limit(30)->get('ci_call_logs')->result_array();
+			foreach ($cands as $c) {
+				if (substr(preg_replace('/\D/', '', $c['phone_number']), -9) === $tail) { $match = $c; break; }
+			}
+		}
+		if (!empty($match)) {
+			$upd = array('duration' => $duration);
+			if ($call_id !== '') $upd['call_id'] = $call_id;
+			if ($recording_url !== '') { $upd['recording_url'] = $recording_url; $upd['ai_processing_status'] = 'pending'; }
+			// Agent has not saved an outcome yet: take 3CX's result.
+			if (in_array($match['call_status'], array('Initiated', 'Dialing', 'calling', 'ringing', 'Not completed'), true)) {
+				$upd['call_status'] = 'Completed';
+				$upd['disposition'] = $disposition;
+			}
+			$this->db->where('id', (int)$match['id'])->update('ci_call_logs', $upd);
+			if ($recording_url !== '') $this->_run_post_call_ai((int)$match['id']);
+			echo json_encode(array('status' => true, 'message' => 'CDR matched to call', 'call_log_id' => (int)$match['id']));
+			return;
+		}
+
 		$lead = null;
 		if (!empty($phone)) {
 			$clean_p = preg_replace('/[^\d]/', '', $phone);
@@ -1455,23 +1527,16 @@ class Ci_admin_calls extends CI_Controller
 			}
 		}
 
-		$disposition = ($duration > 0) ? 'Answered' : 'Missed Call';
-		if (stripos($status, 'busy') !== false) {
-			$disposition = 'Busy';
-		} elseif (stripos($status, 'no answer') !== false || stripos($status, 'unanswered') !== false) {
-			$disposition = 'Unanswered';
-		}
-
 		$lead_id = !empty($lead) ? (int)$lead['id'] : null;
-		$user_id = !empty($lead) ? (int)$lead['lead_assign'] : 1;
-		$customer_name = !empty($lead) ? $lead['customer'] : 'Inbound Caller (' . $phone . ')';
+		$user_id = $agent_uid > 0 ? $agent_uid : (!empty($lead) && (int)$lead['lead_assign'] > 0 ? (int)$lead['lead_assign'] : 1);
+		$customer_name = !empty($lead) ? $lead['customer'] : (($direction === 'out' ? 'Outbound Call (' : 'Inbound Caller (') . $phone . ')');
 
 		$log_data = array(
 			'user_id' => $user_id,
 			'lead_id' => $lead_id,
 			'customer_name' => $customer_name,
 			'phone_number' => $phone,
-			'call_type' => $call_type,
+			'call_type' => isset($payload['type']) ? $call_type : ($direction === 'out' ? 'Outbound 3CX' : 'Inbound 3CX'),
 			'call_status' => $status,
 			'duration' => $duration,
 			'disposition' => $disposition,
@@ -1485,7 +1550,8 @@ class Ci_admin_calls extends CI_Controller
 		$this->db->insert('ci_call_logs', $log_data);
 		$call_log_id = $this->db->insert_id();
 
-		if ($lead_id && $duration == 0) {
+		// A missed incoming call puts the lead on follow-up (not our own unanswered outgoing calls).
+		if ($lead_id && $duration == 0 && $direction !== 'out') {
 			$this->db->where('id', $lead_id)->update('ci_leads', array(
 				'call_status' => 'Missed Call - Follow Up Needed',
 				'status' => 38,

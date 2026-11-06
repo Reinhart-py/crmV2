@@ -3199,12 +3199,32 @@ function handleCallButtonClick() {
   }
 }
 
+<?php $tcx_cfg = get_instance()->threecx->get_config(); ?>
+var TCX_FQDN = <?php echo json_encode((string)$tcx_cfg['pbx_fqdn']); ?>;
+var TCX_WEB = <?php echo !empty($tcx_cfg['auto_open_webclient']) ? 'true' : 'false'; ?>;
+
+// Place the real call: the 3CX web client when it is set up, else the phone app (3CX app / tel: link).
+function launch3cxCall(phone) {
+  var digits = String(phone || '').replace(/[^\d+]/g, '');
+  if (!digits) return;
+  if (TCX_FQDN && TCX_WEB) {
+    window.open('https://' + TCX_FQDN + '/webclient/#/call?phone=' + encodeURIComponent(digits), 'crm3cxCall');
+  } else {
+    var a = document.createElement('a');
+    a.href = 'tel:' + digits;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+}
+
 function startDialing() {
   var phone = $('#dialerInput').val().trim();
   if (!phone) {
     showToast('Please enter a phone number');
     return;
   }
+  launch3cxCall(phone);
 
   callState = 'calling';
   if (window.innerWidth <= 991) {
