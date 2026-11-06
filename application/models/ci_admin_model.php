@@ -2566,6 +2566,112 @@ public function dashboard_MyPro($table='ci_leads'){
 					return $result;
 		}	
 
+	/** Payouts to verticals (referral partners), recorded in HR & Payroll > Vertical Payouts. */
+	public function vertical_payout_table()
+	{
+		static $done = false;
+		if ($done) return;
+		$done = true;
+		$this->db->query("CREATE TABLE IF NOT EXISTS ci_vertical_payouts (
+			id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+			vertical_id INT NOT NULL, lead_id INT NULL,
+			pay_date DATE NOT NULL, amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+			method VARCHAR(30) NOT NULL DEFAULT '', reference VARCHAR(100) NOT NULL DEFAULT '', note VARCHAR(255) NOT NULL DEFAULT '',
+			recorded_by INT NULL, created_at DATETIME NULL,
+			KEY vertical_id (vertical_id), KEY lead_id (lead_id)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+	}
+
+	/** May the signed-in user open this vertical? Admin / All company data: any; others: their own and their team's. */
+	public function can_see_vertical($v)
+	{
+		if (empty($v)) return false;
+		$me = (int)$this->session->userdata('manager_id');
+		$role = (int)$this->session->userdata('manager_role');
+		if ($role === 1 || $me === 1 || crm_can('all_data')) return true;
+		$owner = (int)$v['created_by'];
+		if ($owner === $me) return true;
+		return in_array($owner, array_map('intval', (array)$this->fetchTeamList($me, '')), true);
+	}
+
+	/**
+	 * Clients a vertical referred (ci_leads.vertical_id) with business achieved from sales (this month, quarter, year, lifetime),
+	 * what is still pending in leads and orders, the agreed payout ("Amount to Pay" on each client) and what has been paid.
+	 * A sale: an order with a sales number, or status Sales / Completed / Fulfilled (not Cancelled or Rejected).
+	 * Its value: the order MRR, else the order price, else the client's MRR. Its date: when it became a sale, else approval, else creation.
+	 */
+	public function vertical_business($vid)
+	{
+		$vid = (int)$vid;
+		$this->vertical_payout_table();
+		$num = function ($x) { return (float)str_replace(',', '', (string)$x); };
+		$now = time();
+		$m0 = date('Y-m-01', $now);
+		$q0 = date('Y', $now) . '-' . str_pad((string)(floor((date('n', $now) - 1) / 3) * 3 + 1), 2, '0', STR_PAD_LEFT) . '-01';
+		$y0 = date('Y-01-01', $now);
+		$out = array('clients' => array(), 'payouts' => array(),
+			'tot' => array('m' => 0, 'q' => 0, 'y' => 0, 'l' => 0, 'pend_lead' => 0, 'pend_order' => 0, 'n_lead' => 0, 'n_order' => 0, 'owed' => 0, 'paid' => 0, 'sales' => 0),
+			'cur' => 'AED');
+
+		$leads = $this->db->query("SELECT L.id, L.lead_id, L.customer, L.mrr, L.v_amount, L.v_remark, P.pipeline_stage, P.sales_ref_no, S.status AS status_name
+			FROM ci_leads L LEFT JOIN ci_pipeline P ON P.lead_id = L.id LEFT JOIN ci_status S ON S.id = L.status
+			WHERE L.vertical_id = " . $vid . " ORDER BY L.customer ASC")->result_array();
+		$paid_by_lead = array();
+		$out['payouts'] = $this->db->query("SELECT V.*, U.name AS recorded_name, L.customer
+			FROM ci_vertical_payouts V LEFT JOIN ci_user U ON U.id = V.recorded_by LEFT JOIN ci_leads L ON L.id = V.lead_id
+			WHERE V.vertical_id = " . $vid . " ORDER BY V.pay_date DESC, V.id DESC")->result_array();
+		foreach ($out['payouts'] as $p) {
+			$out['tot']['paid'] += (float)$p['amount'];
+			if (!empty($p['lead_id'])) $paid_by_lead[(int)$p['lead_id']] = (isset($paid_by_lead[(int)$p['lead_id']]) ? $paid_by_lead[(int)$p['lead_id']] : 0) + (float)$p['amount'];
+		}
+		if (empty($leads)) return $out;
+
+		$ids = array();
+		foreach ($leads as $l) $ids[] = (int)$l['id'];
+		$orders = array();
+		foreach ($this->db->query('SELECT lead_id, status, sales_ref_no, mrr, pricing_amount, currency, sales_converted_at, approved_at, created_at FROM ci_orders WHERE lead_id IN (' . implode(',', $ids) . ')')->result_array() as $o) {
+			$orders[(int)$o['lead_id']][] = $o;
+		}
+		foreach ($leads as $l) {
+			$id = (int)$l['id'];
+			$c = array('id' => $id, 'ref' => $l['lead_id'], 'name' => $l['customer'], 'stage' => ucfirst((string)$l['pipeline_stage']), 'status' => (string)$l['status_name'],
+				'm' => 0, 'q' => 0, 'y' => 0, 'l' => 0, 'pending' => 0, 'pending_from' => '',
+				'owed' => $num($l['v_amount']), 'paid' => isset($paid_by_lead[$id]) ? $paid_by_lead[$id] : 0);
+			$has_sale = false; $has_open_order = false;
+			foreach (isset($orders[$id]) ? $orders[$id] : array() as $o) {
+				$st = strtolower((string)$o['status']);
+				if (in_array($st, array('cancelled', 'rejected'), true)) continue;
+				$val = $num($o['mrr']) > 0 ? $num($o['mrr']) : ($num($o['pricing_amount']) > 0 ? $num($o['pricing_amount']) : $num($l['mrr']));
+				if (!empty($o['currency'])) $out['cur'] = $o['currency'];
+				if (!empty($o['sales_ref_no']) || in_array($st, array('sales', 'completed', 'fulfilled'), true)) {
+					$has_sale = true;
+					$d = !empty($o['sales_converted_at']) ? $o['sales_converted_at'] : (!empty($o['approved_at']) ? $o['approved_at'] : $o['created_at']);
+					$d = substr((string)$d, 0, 10);
+					$c['l'] += $val;
+					if ($d >= $y0) $c['y'] += $val;
+					if ($d >= $q0) $c['q'] += $val;
+					if ($d >= $m0) $c['m'] += $val;
+					$out['tot']['sales']++;
+				} else {
+					$has_open_order = true;
+					$c['pending'] += $val; $c['pending_from'] = 'Order';
+					$out['tot']['pend_order'] += $val; $out['tot']['n_order']++;
+				}
+			}
+			if ($has_sale) $c['stage'] = 'Sale';
+			elseif ($has_open_order) $c['stage'] = 'Order';
+			elseif (strtolower((string)$l['pipeline_stage']) === 'lead') {
+				$c['pending'] = $num($l['mrr']); $c['pending_from'] = 'Lead';
+				$out['tot']['pend_lead'] += $num($l['mrr']); $out['tot']['n_lead']++;
+			}
+			if ($c['stage'] === '') $c['stage'] = 'Database';
+			foreach (array('m', 'q', 'y', 'l') as $k) $out['tot'][$k] += $c[$k];
+			$out['tot']['owed'] += $c['owed'];
+			$out['clients'][] = $c;
+		}
+		return $out;
+	}
+
 	private static $_team_list_cache = array();
 	/**
 	 * People whose records the Team pages show for $uid: the people under them in the hierarchy.

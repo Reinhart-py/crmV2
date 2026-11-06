@@ -52,6 +52,6 @@ window.TM_CHART = {
   base: <?php echo json_encode(base_url()); ?>
 };
 </script>
-<script src="<?php echo base_url(); ?>assets/dist/js/crm-team-chart.js?v=20261106_2"></script>
+<script src="<?php echo base_url(); ?>assets/dist/js/crm-team-chart.js?v=20261106_3"></script>
 
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

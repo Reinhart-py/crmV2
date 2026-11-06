@@ -299,7 +299,7 @@ function __construct()
 		$data['cat_list']= $this->comman_model->getAll(array('parent_id'=>0,'status'=>1,'cat_type'=>'v_cat'),'','ci_terms');
 		$data['c_list'] =$this->comman_model->getAll('',array('id','ASC'),'countries');
 		$data['list']=$this->comman_model->getAll(array('id'=>$id),'','ci_verticals','first');
-		if(empty($data['list'])){
+		if(empty($data['list']) || !$this->ci_admin_model->can_see_vertical($data['list'])){
 				$this->session->set_flashdata('error_message', 'Not allowed');
 			   redirect('manager/verticals');
 		}
@@ -362,28 +362,29 @@ function __construct()
 
 	   public function view($id='')
 	   {
-
 			$data=array();
-			   $data['info']=array(
-				   'title'=>'Manager - Verticals',
-				   'page_heading'=>'Preview Vertical Information'
-		   );
-		   $data['info2']=$this->if_not_login();
-		   $id= base64_decode($id);
-		   $data['p_info']=$this->ci_admin_model->getSingleVertical($id);
-			if(empty($data['p_info'])){
-					  $this->session->set_flashdata('error_message', 'Not allowed');
-					 redirect('manager/verticals');
-			  }		  
-			  $this->load->view('manager/verticals/view',$data);
-
+			$data['info']=array(
+				'title'=>'Manager - Verticals',
+				'page_heading'=>'Vertical'
+			);
+			$data['info2']=$this->if_not_login();
+			$id= (int)base64_decode($id);
+			$data['p_info']=$this->ci_admin_model->getSingleVertical($id);
+			if(empty($data['p_info']) || !$this->ci_admin_model->can_see_vertical($data['p_info'])){
+				$this->session->set_flashdata('error_message', 'Not allowed');
+				redirect('manager/verticals');
+			}
+			$data['info']['page_heading'] = $data['p_info']['company_name'];
+			$owner = $this->db->query('SELECT name FROM ci_user WHERE id = ' . (int)$data['p_info']['created_by'])->row_array();
+			$data['owner_name'] = $owner ? $owner['name'] : '';
+			$data['biz'] = $this->ci_admin_model->vertical_business($id);
+			$me = (int)$this->session->userdata('manager_id');
+			$data['can_pay'] = ((int)$this->session->userdata('manager_role') === 1 || $me === 1 || crm_can('hr_vertical_payouts', 'write'));
+			$data['can_edit'] = true; // same rule as the list's Edit link: anyone who may open the vertical
+			$this->load->view('manager/verticals/view',$data);
 		}
 
-
-
 }
-
-
 
 /* End of file welcome.php */
 

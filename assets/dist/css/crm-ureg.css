@@ -1,0 +1,68 @@
+/* Compact form with the label beside the field: the same look as the Staff form (views/manager/user/useredit.php). Wrap the page in .ureg */
+/* User Registration / Edit User: compact form, label beside field (look only - same fields, names and behaviour) */
+.ureg .content-header{padding:10px 15px 6px}
+.ureg .content-header h1{font-size:20px}
+.ureg .content{padding-top:0}
+.ureg .container{width:100%;max-width:1500px;padding:0 6px}
+.ureg .box{margin-bottom:8px !important;border-radius:8px;box-shadow:none;border:1px solid var(--crm-line, #e2e8f0);background:var(--crm-surface, #fff);overflow:visible}
+.ureg .box-header.with-border{padding:7px 12px !important;border-bottom:1px solid var(--crm-line-soft, #eef2f7);text-align:left;border-left:3px solid var(--crm-ocean, #1e3a8a);border-radius:8px 8px 0 0}
+.ureg .box-header .box-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--crm-ink, #0f172a)}
+.ureg .box-body{padding:8px 6px 2px !important;display:flex;flex-wrap:wrap}
+.ureg .box-body > .row{display:flex;flex-wrap:wrap;margin:0;flex-basis:100%;width:100%}
+.ureg .ureg-line{display:flex;flex-wrap:wrap;flex-basis:100%;width:100%}
+.ureg .ureg-line > [class*="col-"],.ureg .box-body > [class*="col-"],.ureg .box-body > .row > *{padding:0 6px}
+.ureg .box-body > :not(.row):not([class*="col-"]),.ureg .box-body > .row > :not([class*="col-"]){flex-basis:100%}
+.ureg .form-group{margin-bottom:6px !important}
+.ureg .form-group label{font-size:12px !important;margin-bottom:2px !important;color:var(--crm-ink-2, #334155);font-weight:600}
+.ureg .form-group label span{color:#dc2626}
+.ureg .form-control{height:30px !important;min-height:30px !important;padding:3px 8px !important;font-size:13px !important;border-radius:5px}
+.ureg .form-control:focus{border-color:var(--crm-ocean, #1e3a8a) !important;box-shadow:0 0 0 3px var(--crm-ocean-soft, rgba(30,58,138,.12)) !important;outline:0}
+.ureg .form-control[readonly],.ureg .form-control[disabled]{opacity:.75}
+.ureg textarea.form-control{height:auto;min-height:30px}
+.ureg .input-group{display:flex !important;width:100%}
+.ureg .input-group-addon{display:flex !important;align-items:center;width:auto !important;padding:0 !important;border:0 !important;background:none !important}
+.ureg .input-group-addon select{height:30px !important;max-width:115px !important;font-size:12px !important;border:1px solid var(--crm-line, #cbd5e1) !important;border-right:0 !important;border-radius:5px 0 0 5px !important;padding:0 4px !important;background:var(--crm-canvas, #f8fafc) !important;color:inherit}
+.ureg .input-group > .form-control{flex:1 1 auto;min-width:0;width:auto !important;border-radius:0 5px 5px 0 !important}
+.ureg .select2-container .select2-selection--single{height:30px !important}
+/* Sub-groups inside a section */
+.ureg .ureg-sub{margin:4px 6px 6px;padding-bottom:3px;border-bottom:1px dashed var(--crm-line, #e2e8f0);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--crm-ocean, #1e3a8a)}
+.ureg .ureg-sub:first-child{margin-top:0}
+/* Buttons always in view at the bottom */
+.ureg-footer.box-footer{position:sticky;bottom:0;z-index:20;display:flex;justify-content:center;gap:10px;padding:10px 12px !important;margin:6px 0 12px;border:1px solid var(--crm-line, #e2e8f0);border-radius:8px;background:var(--crm-surface, #fff);box-shadow:0 -6px 16px rgba(15,23,42,.08)}
+.ureg-footer.box-footer .btn{min-width:110px;height:34px;font-weight:600}
+/* Label on the left, field on the right */
+.ureg .form-group{display:grid;grid-template-columns:112px minmax(0,1fr);column-gap:8px;align-items:center;position:relative}
+.ureg .form-group > label{margin:0 !important;line-height:1.2;text-align:right;word-break:break-word}
+.ureg .form-group > :not(label){grid-column:2}
+.ureg .form-group .btn-pwd-eye{top:50% !important;transform:translateY(-50%);bottom:auto !important}
+.ureg .form-group .select2-container{width:100% !important}
+@media (max-width:767px){.ureg .box-body [class*="col-"]{flex:0 0 100%;width:100%}}
+@media (min-width:1200px){.ureg .col-lg-4{width:25%}}
+@media (min-width:1200px) and (max-width:1399px){.ureg .form-group{grid-template-columns:96px minmax(0,1fr)}}
+@media (max-width:575px){.ureg .form-group{grid-template-columns:1fr}.ureg .form-group > label{text-align:left;margin-bottom:2px !important}.ureg .form-group > :not(label){grid-column:1}}
+.ureg-progress{display:flex;align-items:center;gap:10px;margin-right:auto;font-size:12px;color:var(--crm-ink-2,#334155);min-width:0}
+.ureg-progress .bar{width:160px;height:6px;border-radius:3px;background:var(--crm-line,#e2e8f0);overflow:hidden;flex:0 0 auto}
+.ureg-progress .bar span{display:block;height:100%;width:0;background:#f59e0b;transition:width .25s}
+.ureg-progress.done .bar span{background:#16a34a}
+.ureg-progress .todo{color:var(--crm-muted,#64748b);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ureg-progress .cnt{white-space:nowrap}
+@media (max-width:575px){.ureg-progress .bar,.ureg-progress .todo{display:none}.ureg-footer.box-footer .btn{min-width:84px}}
+/* Presentation: one font, calmer labels, slightly larger text in the fields */
+.ureg, .ureg .content-header h1, .ureg .form-control, .ureg .btn, .ureg select, .ureg-footer{font-family:"Plus Jakarta Sans","Inter",-apple-system,"Segoe UI",sans-serif}
+.ureg .content-header h1{text-align:left;font-size:22px !important;font-weight:700;letter-spacing:-.02em;color:var(--crm-ink,#0f172a)}
+.ureg .box-header .box-title{font-size:12.5px;letter-spacing:.06em}
+.ureg .form-group > label{font-size:12.5px !important;font-weight:500 !important;color:var(--crm-ink-2,#475569) !important}
+.ureg .form-group > label span{font-weight:700}
+.ureg .form-control{font-size:13.5px !important;color:var(--crm-ink,#0f172a)}
+.ureg .form-control::placeholder{color:var(--crm-muted,#94a3b8);opacity:1}
+.ureg .ureg-sub{font-size:11.5px;letter-spacing:.07em}
+.ureg-progress{font-size:12.5px}
+/* Details for Reporting: dropdown of the person's own details + verified tick */
+.ureg .ureg-vw{display:flex;align-items:center;width:100%}
+.ureg .ureg-vw > .form-control{flex:1 1 auto;min-width:0}
+.ureg .form-group label.ureg-vf{flex:0 0 auto;display:flex !important;align-items:center;justify-content:center;width:30px;height:30px;margin:0 0 0 4px !important;border:1px solid var(--crm-line,#cbd5e1);border-radius:5px;cursor:pointer;color:var(--crm-muted,#94a3b8) !important;background:var(--crm-surface,#fff);font-size:15px !important}
+.ureg .form-group label.ureg-vf input{position:absolute;opacity:0;width:0;height:0}
+.ureg .form-group label.ureg-vf:hover{border-color:#16a34a}
+.ureg .form-group label.ureg-vf.on{color:#fff !important;background:#16a34a;border-color:#16a34a}
+.ureg .form-group label.ureg-vf.off{opacity:.45;cursor:not-allowed}
+.ureg .ureg-code-err select{border-color:#dc2626 !important;color:#dc2626}

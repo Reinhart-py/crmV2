@@ -105,7 +105,7 @@
       '<h3>' + esc(p.n) + '</h3><div class="rl">' + esc(sub(p)) + '</div><div class="st' + (p.on ? ' on' : '') + '">' + (p.on ? '● Online now' : 'Offline') + '</div>' +
       '<dl class="tc-kv">' +
       (mgr ? '<div><dt>Reports to</dt><dd><button type="button" data-goto="' + mgr.id + '">' + esc(mgr.n) + '</button></dd></div>' : '') +
-      (p.o ? '<div><dt>Office</dt><dd>' + esc(p.o) + '</dd></div>' : '') +
+      (p.o ? '<div><dt>Location</dt><dd>' + esc(p.o) + '</dd></div>' : '') +
       (p.e ? '<div><dt>Email</dt><dd><a href="mailto:' + esc(p.e) + '">' + esc(p.e) + '</a></dd></div>' : '') +
       (p.p ? '<div><dt>Phone</dt><dd><a href="tel:' + esc(String(p.p).replace(/[^\d+]/g, '')) + '">' + esc(p.p) + '</a></dd></div>' : '') +
       '</dl>' +

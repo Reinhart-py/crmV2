@@ -1978,6 +1978,82 @@ class Ci_admin_hr extends CI_Controller {
 		redirect('manager/hr/loans');
 	}
 
+	/* ---------- Payouts to verticals (referral partners) ---------- */
+
+	private function _can_pay_verticals()
+	{
+		return $this->is_admin || crm_can('hr_vertical_payouts', 'write');
+	}
+
+	/** Each vertical with its clients, the agreed payout ("Amount to Pay" on its clients), what was paid and what is left. */
+	public function vertical_payouts()
+	{
+		if (!($this->is_admin || crm_can('hr_vertical_payouts', 'read'))) { $this->session->set_flashdata('error_message', 'You do not have access to Vertical Payouts.'); redirect('manager/hr'); }
+		$this->ci_admin_model->vertical_payout_table();
+		$data = array();
+		$data['info'] = array('title' => 'Vertical Payouts - HR', 'page_heading' => 'Vertical Payouts');
+		$data['set'] = $this->_hr_settings();
+		$data['can_edit'] = $this->_can_pay_verticals();
+		$data['verticals'] = $this->db->query("SELECT V.id, V.v_id, V.company_name, V.poc,
+				(SELECT COUNT(*) FROM ci_leads L WHERE L.vertical_id = V.id) AS clients,
+				(SELECT COALESCE(SUM(CAST(NULLIF(REPLACE(L.v_amount, ',', ''), '') AS DECIMAL(14,2))), 0) FROM ci_leads L WHERE L.vertical_id = V.id) AS owed,
+				(SELECT COALESCE(SUM(P.amount), 0) FROM ci_vertical_payouts P WHERE P.vertical_id = V.id) AS paid,
+				(SELECT MAX(P.pay_date) FROM ci_vertical_payouts P WHERE P.vertical_id = V.id) AS last_paid
+			FROM ci_verticals V ORDER BY V.company_name ASC")->result_array();
+		$data['clients'] = array();
+		foreach ($this->db->query("SELECT id, vertical_id, customer, v_amount FROM ci_leads WHERE vertical_id > 0 ORDER BY customer ASC")->result_array() as $c) {
+			$data['clients'][(int)$c['vertical_id']][] = array('id' => (int)$c['id'], 'n' => $c['customer'], 'a' => (float)str_replace(',', '', (string)$c['v_amount']));
+		}
+		$vf = (int)$this->input->get('vertical');
+		$data['vf'] = $vf;
+		$data['payouts'] = $this->db->query("SELECT P.*, V.company_name, V.v_id, L.customer, U.name AS recorded_name
+			FROM ci_vertical_payouts P LEFT JOIN ci_verticals V ON V.id = P.vertical_id LEFT JOIN ci_leads L ON L.id = P.lead_id LEFT JOIN ci_user U ON U.id = P.recorded_by"
+			. ($vf ? ' WHERE P.vertical_id = ' . $vf : '') . " ORDER BY P.pay_date DESC, P.id DESC LIMIT 300")->result_array();
+		$this->load->view('manager/hr/vertical_payouts', $data);
+	}
+
+	public function vertical_payout_save()
+	{
+		$back = 'manager/hr/vertical_payouts';
+		$this->_post_only($back);
+		$this->_need($this->_can_pay_verticals(), 'You do not have Full access to Vertical Payouts.', $back);
+		$this->ci_admin_model->vertical_payout_table();
+		$vid = (int)$this->input->post('vertical_id');
+		$lid = (int)$this->input->post('lead_id');
+		$amount = round((float)str_replace(',', '', (string)$this->input->post('amount')), 2);
+		$date = (string)$this->input->post('pay_date');
+		$v = $vid ? $this->db->select('id, company_name')->where('id', $vid)->get('ci_verticals')->row_array() : array();
+		$back_v = $back . ($vid ? '?vertical=' . $vid : '');
+		$this->_need($v && $amount > 0 && preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) && strtotime($date), 'Choose the vertical, the date and an amount above zero.', $back_v);
+		$this->_need($date <= date('Y-m-d'), 'The payment date cannot be in the future.', $back_v);
+		if ($lid) {
+			$l = $this->db->select('id')->where('id', $lid)->where('vertical_id', $vid)->get('ci_leads')->row_array();
+			$this->_need(!empty($l), 'That client is not linked to this vertical.', $back_v);
+		}
+		$methods = array('Bank transfer', 'Cash', 'Cheque', 'Other');
+		$method = in_array($this->input->post('method'), $methods, true) ? $this->input->post('method') : 'Bank transfer';
+		$this->db->insert('ci_vertical_payouts', array('vertical_id' => $vid, 'lead_id' => $lid ? $lid : null, 'pay_date' => $date, 'amount' => $amount, 'method' => $method,
+			'reference' => mb_substr(trim((string)$this->input->post('reference')), 0, 100), 'note' => mb_substr(trim((string)$this->input->post('note')), 0, 255),
+			'recorded_by' => $this->cur_uid, 'created_at' => date('Y-m-d H:i:s')));
+		$this->ci_admin_model->log_admin_action('vertical_payout_add', 'Payout of ' . number_format($amount, 2) . ' to vertical ' . $v['company_name'] . ' (#' . $vid . ') on ' . $date, 'SUCCESS');
+		$this->session->set_flashdata('message', 'Payout of ' . number_format($amount, 2) . ' to ' . $v['company_name'] . ' recorded.');
+		redirect($back_v);
+	}
+
+	public function vertical_payout_delete()
+	{
+		$back = 'manager/hr/vertical_payouts';
+		$this->_post_only($back);
+		$this->_need($this->_can_pay_verticals(), 'You do not have Full access to Vertical Payouts.', $back);
+		$this->ci_admin_model->vertical_payout_table();
+		$p = $this->db->where('id', (int)$this->input->post('id'))->get('ci_vertical_payouts')->row_array();
+		$this->_need(!empty($p), 'Payout not found.', $back);
+		$this->db->where('id', $p['id'])->delete('ci_vertical_payouts');
+		$this->ci_admin_model->log_admin_action('vertical_payout_delete', 'Removed payout #' . $p['id'] . ' of ' . number_format((float)$p['amount'], 2) . ' to vertical #' . $p['vertical_id'] . ' dated ' . $p['pay_date'], 'SUCCESS');
+		$this->session->set_flashdata('message', 'Payout removed.');
+		redirect($back . '?vertical=' . (int)$p['vertical_id']);
+	}
+
 	/* ---------- Gratuity and final settlement (UAE) ---------- */
 
 	/**

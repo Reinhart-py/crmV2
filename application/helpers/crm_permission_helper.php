@@ -154,6 +154,7 @@ if (!function_exists('crm_perm_catalog')) {
 					'hr_targets' => array('label' => 'Targets', 'tab' => 'hr_perf', 'desc' => 'Sales targets per person', 'fallback' => 'hr', 'nav' => array(array('hr/targets', 'Targets', 'fa-crosshairs')), 'pages' => array('hr/targets'), 'write' => array('hr/targets/add')),
 					'hr_lifecycle' => array('label' => 'Employee Lifecycle', 'tab' => 'hr_people', 'desc' => 'Joining, probation and exit, with the onboarding and exit checklists', 'fallback' => 'hr', 'nav' => array(array('hr/lifecycle', 'Employee Lifecycle', 'fa-users')), 'pages' => array('hr/lifecycle', 'hr/checklists', 'hr/checklist')),
 					'hr_payroll' => array('label' => 'Payroll', 'tab' => 'hr_pay', 'desc' => 'Monthly payroll, payslips, overtime, loans and the WPS salary file; Full can prepare payroll and mark it paid', 'fallback' => 'hr', 'nav' => array(array('hr/payroll', 'Payroll', 'fa-money')), 'pages' => array('hr/payroll', 'hr/payroll_run', 'hr/loans'), 'write' => array('hr/payroll/generate')),
+					'hr_vertical_payouts' => array('label' => 'Vertical Payouts', 'tab' => 'hr_pay', 'desc' => 'Money paid to verticals (referral partners) for the clients they bring; Full can record and remove payouts', 'fallback' => 'hr_payroll', 'nav' => array(array('hr/vertical_payouts', 'Vertical Payouts', 'fa-users')), 'pages' => array('hr/vertical_payouts'), 'write' => array('hr/vertical_payout_save', 'hr/vertical_payout_delete')),
 					'hr_payroll_approve' => array('label' => 'Approve Payroll', 'desc' => 'Approve or reopen a month\'s payroll and final settlements (also needs Payroll or Gratuity & Settlement to open them)', 'levels' => 'r'),
 					'hr_taxation' => array('label' => 'Gratuity & Settlement', 'tab' => 'hr_pay', 'desc' => 'End-of-service gratuity for everyone and final settlements when people leave', 'fallback' => 'hr', 'nav' => array(array('hr/taxation', 'Gratuity & Settlement', 'fa-calculator')), 'pages' => array('hr/taxation', 'hr/settlement')),
 					'hr_appraisals' => array('label' => 'Performance Reviews', 'tab' => 'hr_perf', 'desc' => 'Everyone\'s reviews; Full can start review rounds and review anyone (managers always review their own team, and everyone does their own self review from My HR)', 'fallback' => 'hr', 'nav' => array(array('hr/appraisals', 'Performance Reviews', 'fa-star-o')), 'pages' => array('hr/appraisals'), 'write' => array('hr/appraisals/add')),
@@ -486,6 +487,7 @@ if (!function_exists('crm_tab_groups')) {
 				array('hr_payroll', 'hr/payroll', 'Payroll', 'fa-money'),
 				array('hr_payroll', 'hr/loans', 'Loans & Advances', 'fa-credit-card'),
 				array('hr_taxation', 'hr/taxation', 'Gratuity & Settlement', 'fa-calculator'),
+				array('hr_vertical_payouts', 'hr/vertical_payouts', 'Vertical Payouts', 'fa-users'),
 			)),
 			'hr_perf' => array('label' => 'Performance', 'icon' => 'fa-star-o', 'tabs' => array(
 				array('hr_appraisals', 'hr/appraisals', 'Performance Reviews', 'fa-star-o'),
