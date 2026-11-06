@@ -1,6 +1,6 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
-<div class="content-wrapper">
+<div class="content-wrapper crm-rec" data-rec="lead">
   <section class="content ">
     <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?>
     <?php echo get_message($this->session->flashdata('message'),'message'); ?>

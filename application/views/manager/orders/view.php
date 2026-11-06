@@ -1,111 +1,13 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
-<div class="content-wrapper">
-  <section class="content-header">
-    <h1> <?php echo $info['page_heading']; ?> </h1>
-  </section>
+<div class="content-wrapper crm-rec" data-rec="order">
 
   <section class="content">
     <?php echo get_message($this->session->flashdata('error_message'), 'error_message'); ?>
     <?php echo get_message($this->session->flashdata('message'), 'message'); ?>
 
     <div class="container">
-      <div class="row">
-        <div class="box box-default">
-          <div class="box-header">
-            <div class="col-sm-12">
-              <div class="pull-left">
-                <?php 
-                  $back_url = base_url('manager/orders');
-                  if (empty($can_edit)) {
-                    $back_url = ($order['status'] === 'Sales') ? base_url('manager/sales') : base_url('manager/orders/my');
-                  }
-                ?>
-                <a href="<?php echo $back_url; ?>" class="btn btn-default" style="background:#1e3a8a; border-color:#1e3a8a; color:#ffffff; font-weight:600; border-radius:4px; padding:6px 16px;">Back</a>
-              </div>
-
-              <div class="pull-right">
-                <?php if(!empty($can_approve) && ($order['approval_status'] === 'pending' || $order['status'] === 'Pending Sales Approval')){ ?>
-                  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#approveOrderModal" style="background:#1e3a8a; border-color:#1e3a8a; color:#ffffff; font-weight:600; border-radius:4px; margin-right:5px; padding:6px 14px;">
-                    <i class="fa fa-check"></i> Approve Order
-                  </button>
-                  <button type="button" class="btn btn-default" data-toggle="modal" data-target="#rejectOrderModal" style="background:#f1f5f9; border-color:#cbd5e1; color:#334155; font-weight:600; border-radius:4px; margin-right:5px; padding:6px 14px;">
-                    <i class="fa fa-times"></i> Reject
-                  </button>
-                <?php } ?>
-
-                <?php if(!empty($can_edit)){ ?>
-                  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#updateStatusModal" style="background:#1e3a8a; border-color:#1e3a8a; color:#ffffff; font-weight:600; border-radius:4px; margin-right:5px; padding:6px 14px;">
-                    <i class="fa fa-refresh"></i> Update Status
-                  </button>
-                <?php } ?>
-
-                <?php if(!empty($can_assign_operation)){ ?>
-                  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#assignOperationModal" style="background:#1e3a8a; border-color:#1e3a8a; color:#ffffff; font-weight:600; border-radius:4px; margin-right:5px; padding:6px 14px;">
-                    <i class="fa fa-user-plus"></i> Assign to Operations
-                  </button>
-                <?php } ?>
-
-                <?php if(!empty($can_edit) && !empty($can_approve) && $order['status'] !== 'Sales'){ ?>
-                  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#convertToSalesModal" style="background:#1e3a8a; border-color:#1e3a8a; color:#ffffff; font-weight:600; border-radius:4px; margin-right:5px; padding:6px 14px;">
-                    <i class="fa fa-line-chart"></i> Convert to Sales
-                  </button>
-                <?php } ?>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="box box-default" style="border-radius:6px; margin-bottom:15px; border-top:3px solid #1e3a8a;">
-        <div class="box-body" style="padding:12px 18px;">
-          <div class="row text-center">
-            <div class="col-xs-6 col-sm-3" style="border-right:1px solid #e2e8f0;">
-              <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Database Ref</div>
-              <div style="font-size:15px; font-weight:700; color:#0f172a; margin-top:3px;">
-                <span class="label" style="background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; font-size:13px; font-weight:700;">
-                  <?php echo htmlspecialchars($order['db_ref_no'] ?: '-'); ?>
-                </span>
-              </div>
-            </div>
-
-            <div class="col-xs-6 col-sm-3" style="border-right:1px solid #e2e8f0;">
-              <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Lead Ref</div>
-              <div style="font-size:15px; font-weight:700; color:#0f172a; margin-top:3px;">
-                <?php if (!empty($order['lead_ref_no'])) { ?>
-                  <span class="label" style="background:#f8fafc; color:#065f46; border:1px solid #e2e8f0; font-size:13px; font-weight:700;">
-                    <?php echo htmlspecialchars($order['lead_ref_no']); ?>
-                  </span>
-                <?php } else { ?>
-                  <span style="color:#94a3b8; font-size:13px;">-</span>
-                <?php } ?>
-              </div>
-            </div>
-
-            <div class="col-xs-6 col-sm-3" style="border-right:1px solid #e2e8f0;">
-              <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Order Ref</div>
-              <div style="font-size:15px; font-weight:700; color:#0f172a; margin-top:3px;">
-                <span class="label" style="background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; font-size:13px; font-weight:700;">
-                  <?php echo htmlspecialchars($order['order_no']); ?>
-                </span>
-              </div>
-            </div>
-
-            <div class="col-xs-6 col-sm-3">
-              <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Sales Ref</div>
-              <div style="font-size:15px; font-weight:700; color:#0f172a; margin-top:3px;">
-                <?php if (!empty($order['sales_ref_no'])) { ?>
-                  <span class="label" style="background:#f8fafc; color:#0f172a; border:1px solid #86efac; font-size:13px; font-weight:700;">
-                    <?php echo htmlspecialchars($order['sales_ref_no']); ?>
-                  </span>
-                <?php } else { ?>
-                  <span style="color:#94a3b8; font-size:13px;">Pending Sales</span>
-                <?php } ?>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <?php require(APPPATH . 'views/manager/orders/view_head.php'); ?>
 
       <div class="my-profile">
         <div class="box box-default">
