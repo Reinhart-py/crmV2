@@ -501,6 +501,23 @@ function __construct()
 			return;
 		}
 
+		// only the owner, a collaborator, their team lead, Back Office or Admin; and not twice
+		$rq_owner = !empty($lead['lead_assign']) ? (int)$lead['lead_assign'] : (int)$lead['created_by'];
+		$rq_role = (int)$this->session->userdata('manager_role');
+		$rq_team = $this->ci_admin_model->fetchTeamList($cur_uid, '');
+		$rq_team = is_array($rq_team) ? array_map('intval', $rq_team) : array();
+		$rq_collab = (!empty($lead['agents']) && in_array($cur_uid, array_map('intval', explode(',', $lead['agents']))));
+		if (!($rq_role === 1 || $cur_uid === 1 || crm_can('all_data') || has_section_perm('back_office', 'write') || $cur_uid === $rq_owner || $rq_collab || in_array($rq_owner, $rq_team))) {
+			$this->session->set_flashdata('error_message', 'Access denied. Only the record owner, their team lead, Back Office or Admin can request this conversion.');
+			redirect('manager/leads/view/' . base64_encode($lead_id));
+			return;
+		}
+		if (!empty($lead['conversion_status']) && $lead['conversion_status'] === 'pending') {
+			$this->session->set_flashdata('message', 'Lead conversion is already requested and waiting for review.');
+			redirect('manager/leads/view/' . base64_encode($lead_id));
+			return;
+		}
+
 		$now = date('Y-m-d H:i:s');
 		$exists = $this->db->where('lead_id', $lead_id)->count_all_results('ci_pipeline');
 		if ($exists == 0) {

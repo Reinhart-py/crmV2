@@ -112,4 +112,4 @@ $sv_order = array('database' => 0, 'lead' => 1, 'order' => 2, 'sale' => 3);
   <div class="svh-note"><i class="fa fa-lock"></i> Locked while the order is in progress. Only Back Office can edit it.</div>
   <?php } ?>
 </div>
-<script defer src="<?php echo base_url(); ?>assets/dist/js/crm-record.js?v=20261106_30"></script>
+<script defer src="<?php echo base_url(); ?>assets/dist/js/crm-record.js?v=20261106_31"></script>

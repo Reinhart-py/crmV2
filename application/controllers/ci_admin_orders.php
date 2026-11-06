@@ -392,9 +392,9 @@ class Ci_admin_orders extends CI_Controller {
 			}
 			if (!$has_ownership && !empty($order['lead_id'])) {
 				$lid = (int)$order['lead_id'];
-				$lead_row = $this->db->select('created_by, manager_id, agents')->where('id', $lid)->get('ci_leads')->row_array();
+				$lead_row = $this->db->select('created_by, manager_id, agents, lead_assign')->where('id', $lid)->get('ci_leads')->row_array();
 				if (!empty($lead_row)) {
-					if ((int)$lead_row['created_by'] === $cur_uid || (int)$lead_row['manager_id'] === $cur_uid) {
+					if ((int)$lead_row['created_by'] === $cur_uid || (int)$lead_row['manager_id'] === $cur_uid || (int)$lead_row['lead_assign'] === $cur_uid) {
 						$has_ownership = true;
 					} elseif (!empty($lead_row['agents']) && in_array((string)$cur_uid, explode(',', $lead_row['agents']))) {
 						$has_ownership = true;
@@ -410,7 +410,7 @@ class Ci_admin_orders extends CI_Controller {
 				}
 				if (!$has_ownership) {
 					$pipe_exists = $this->db->where('lead_id', $lid)
-						->where("(conversion_requested_by = {$cur_uid} OR order_requested_by = {$cur_uid} OR action_by = {$cur_uid})")
+						->where('action_by', $cur_uid)
 						->count_all_results('ci_pipeline_logs');
 					if ($pipe_exists > 0) {
 						$has_ownership = true;
@@ -780,7 +780,7 @@ class Ci_admin_orders extends CI_Controller {
 		$client = trim((string)$this->input->get('client'));
 		if (!empty($client)) {
 			$safe = $this->db->escape_like_str($client);
-			$this->db->where("(L.customer LIKE '%{\}%' OR L.poc LIKE '%{\}%' OR P.db_ref_no LIKE '%{\}%' OR P.lead_ref_no LIKE '%{\}%')", null, false);
+			$this->db->where("(L.customer LIKE '%{$safe}%' OR L.poc LIKE '%{$safe}%' OR P.db_ref_no LIKE '%{$safe}%' OR P.lead_ref_no LIKE '%{$safe}%')", null, false);
 		}
 
 		$d1 = trim((string)$this->input->get('d1'));
@@ -851,6 +851,12 @@ class Ci_admin_orders extends CI_Controller {
 		));
 
 		if (!empty($order['lead_id'])) {
+			// the record follows the order, so its preview shows Sale (same as Approve Sales Order)
+			$this->db->where('lead_id', (int)$order['lead_id'])->update('ci_pipeline', array(
+				'order_request_status' => 'approved',
+				'sales_ref_no' => $sales_ref_no,
+				'updated_at' => $now
+			));
 			$this->db->insert('ci_pipeline_logs', array(
 				'lead_id' => (int)$order['lead_id'],
 				'action' => 'convert_to_sales',
@@ -959,6 +965,13 @@ class Ci_admin_orders extends CI_Controller {
 					$this->session->set_flashdata('message', 'Review remark added successfully.');
 				}
 				redirect('manager/orders/edit_pending/' . $id);
+				return;
+			}
+
+			// only while the request is still waiting: a second submit (double click, Back) made a second order
+			if (in_array($action_type, array('reject_order', 'approve_order', 'process_order', 'send_for_approval', 'save_order')) && (string)$lead['order_request_status'] !== 'pending') {
+				$this->session->set_flashdata('error_message', 'This order request is no longer waiting (already processed or rejected). Nothing was changed.');
+				redirect('manager/orders/pending_process');
 				return;
 			}
 
@@ -1424,6 +1437,14 @@ class Ci_admin_orders extends CI_Controller {
 	public function approve_sales_order($id = 0)
 	{
 		$this->if_not_login();
+		// same right as the Pending Sales Approval page (the link could be opened by anyone)
+		$chk_role = (int)$this->session->userdata('manager_role');
+		$chk_uid = (int)$this->session->userdata('manager_id');
+		if (!($chk_role === 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || $chk_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'))) {
+			$this->session->set_flashdata('error_message', 'Access denied.');
+			redirect('manager/dashboard');
+			return;
+		}
 		$id = (int)$id;
 		$cur_uid = (int)$this->session->userdata('manager_id');
 		$cur_name = (string)$this->session->userdata('manager_name');

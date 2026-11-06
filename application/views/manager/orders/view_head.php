@@ -61,4 +61,4 @@ $ov_steps = array(
     <?php } ?>
   </ol>
 </div>
-<script defer src="<?php echo base_url(); ?>assets/dist/js/crm-record.js?v=20261106_30"></script>
+<script defer src="<?php echo base_url(); ?>assets/dist/js/crm-record.js?v=20261106_31"></script>

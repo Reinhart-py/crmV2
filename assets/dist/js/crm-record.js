@@ -8,6 +8,8 @@
     var $w = $('.content-wrapper.crm-rec');
     if (!$w.length) return;
     var page = $w.data('rec');
+    // pop-up forms (Approve & Convert, Request Order, ...) go to the page body first, so moving sections into tabs never hides them
+    $w.find('.modal').appendTo(document.body);
 
     // 1. Details: label/value lists become short groups of fields; empty fields fold away
     var GROUPS = {
