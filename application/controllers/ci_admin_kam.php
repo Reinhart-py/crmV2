@@ -774,24 +774,27 @@ class Ci_admin_kam extends CI_Controller
 				if ($order_id > 0) {
 					$order_rec = $this->db->where('id', $order_id)->get('ci_orders')->row_array();
 					if (!empty($order_rec)) {
-						$this->db->where('id', $order_id)->update('ci_orders', array(
+						// a Sale stays a Sale after onboarding; other orders move to Completed as before
+						$ob_is_sale = ($order_rec['status'] === 'Sales' || !empty($order_rec['sales_ref_no']));
+						$ob_update = array(
 							'company_name' => $client_name,
 							'owner_name' => $owner_name,
 							'company_id' => (int)$inserted_lead_id,
-							'status' => 'Completed',
 							'updated_at' => date('Y-m-d H:i:s')
-						));
+						);
+						if (!$ob_is_sale) $ob_update['status'] = 'Completed';
+						$this->db->where('id', $order_id)->update('ci_orders', $ob_update);
 						$this->db->insert('ci_order_history', array(
 							'order_id' => $order_id,
 							'action' => 'onboarding_completed',
-							'notes' => "Client onboarding completed for company '{$client_name}'. Order #{$order_rec['order_no']} moved to Completed Orders.",
+							'notes' => "Client onboarding completed for company '{$client_name}'. Order #{$order_rec['order_no']} " . ($ob_is_sale ? 'stays in Sales.' : 'moved to Completed Orders.'),
 							'action_by' => $manager_id,
 							'action_by_name' => (string)$this->session->userdata('manager_name'),
 							'created_at' => date('Y-m-d H:i:s')
 						));
 						$this->ci_admin_model->log_admin_action('order_onboarded', "Order #{$order_rec['order_no']} onboarded for {$client_name}", 'SUCCESS', $manager_id, (string)$this->session->userdata('manager_name'));
-						$this->session->set_flashdata('message', "Client '{$client_name}' onboarded successfully. Order #{$order_rec['order_no']} moved to Completed Orders.");
-						redirect('manager/orders?status=completed');
+						$this->session->set_flashdata('message', "Client '{$client_name}' onboarded successfully. Order #{$order_rec['order_no']} " . ($ob_is_sale ? 'stays in Sales.' : 'moved to Completed Orders.'));
+						redirect($ob_is_sale ? 'manager/sales' : 'manager/orders?status=completed');
 						return;
 					}
 				}

@@ -208,16 +208,14 @@
           <div class="form-group">
             <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #475569;">Order Status</label>
             <select name="status" class="form-control" style="border: 1px solid #cbd5e1; border-radius: 4px;">
-              <option value="Open" <?php echo ($order['status'] === 'Open') ? 'selected' : ''; ?>>Open</option>
-              <option value="In Progress" <?php echo ($order['status'] === 'In Progress') ? 'selected' : ''; ?>>In Progress</option>
-              <option value="Follow Up" <?php echo ($order['status'] === 'Follow Up') ? 'selected' : ''; ?>>Follow Up</option>
-              <option value="Under Review" <?php echo ($order['status'] === 'Under Review') ? 'selected' : ''; ?>>Under Review</option>
-              <option value="Pending Sales Approval" <?php echo ($order['status'] === 'Pending Sales Approval') ? 'selected' : ''; ?>>Pending Sales Approval</option>
-              <option value="Completed" <?php echo ($order['status'] === 'Completed') ? 'selected' : ''; ?>>Completed</option>
-              <option value="Fulfilled" <?php echo ($order['status'] === 'Fulfilled') ? 'selected' : ''; ?>>Fulfilled</option>
-              <option value="Sales" <?php echo ($order['status'] === 'Sales') ? 'selected' : ''; ?>>Sales</option>
-              <option value="Cancelled" <?php echo ($order['status'] === 'Cancelled') ? 'selected' : ''; ?>>Cancelled</option>
-              <option value="Rejected" <?php echo ($order['status'] === 'Rejected') ? 'selected' : ''; ?>>Rejected</option>
+              <?php
+              // A Sale can only be closed; Sales and Pending Sales Approval come from the Approve / Convert to Sales buttons
+              $os_is_sale = ($order['status'] === 'Sales' || !empty($order['sales_ref_no']));
+              $os_opts = $os_is_sale ? array('Completed', 'Fulfilled', 'Cancelled') : array('Open', 'In Progress', 'Follow Up', 'Under Review', 'Completed', 'Fulfilled', 'Cancelled', 'Rejected');
+              if (!in_array($order['status'], $os_opts)) { ?><option value="<?php echo htmlspecialchars($order['status']); ?>" selected><?php echo htmlspecialchars($order['status']); ?> (current)</option><?php }
+              foreach ($os_opts as $os_o) { ?>
+              <option value="<?php echo $os_o; ?>" <?php echo ($order['status'] === $os_o) ? 'selected' : ''; ?>><?php echo $os_o; ?></option>
+              <?php } ?>
             </select>
           </div>
           <div class="form-group" style="margin-bottom: 0;">
@@ -244,7 +242,7 @@
           <h4 class="modal-title" style="font-size: 16px; font-weight: 700; color: #ffffff; margin: 0;">Approve Order</h4>
         </div>
         <div class="modal-body" style="padding: 20px; background: #ffffff;">
-          <p style="font-size: 13px; color: #475569; margin-bottom: 14px;">Are you sure you want to approve this order? This will authorize processing and move it to approved state.</p>
+          <p style="font-size: 13px; color: #475569; margin-bottom: 14px;">Approve this order? It becomes a Sale and gets a Sales number, the same as approving it from Pending Sales Approval.</p>
           <div class="form-group" style="margin-bottom: 0;">
             <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #475569;">Approval Notes (Optional)</label>
             <textarea name="remarks" class="form-control" rows="3" placeholder="Enter approval remarks..." style="border: 1px solid #cbd5e1; border-radius: 4px; resize: vertical;"></textarea>

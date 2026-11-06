@@ -472,6 +472,22 @@ class Ci_admin_orders extends CI_Controller {
 			return;
 		}
 
+		// waiting for Sales Approval: approve it the same way as the Pending Sales Approval list (it becomes a Sale)
+		if ($order['status'] === 'Pending Sales Approval' || $order['approval_status'] === 'pending_approval') {
+			if ($remarks !== '') {
+				$this->db->insert('ci_order_history', array(
+					'order_id' => $id,
+					'action' => 'approval_note',
+					'notes' => "Approval note: {$remarks}",
+					'action_by' => $cur_uid,
+					'action_by_name' => $cur_name,
+					'created_at' => date('Y-m-d H:i:s')
+				));
+			}
+			$this->approve_sales_order($id);
+			return;
+		}
+
 		$history = !empty($order['approval_history']) ? json_decode($order['approval_history'], true) : array();
 		$now = date('Y-m-d H:i:s');
 		$history[] = array(
@@ -583,8 +599,20 @@ class Ci_admin_orders extends CI_Controller {
 			return;
 		}
 
-		$allowed = array('Draft', 'Submitted', 'Under Review', 'Approved', 'In Progress', 'Fulfilled', 'Completed', 'Sales', 'Cancelled');
-		if (!in_array($status, $allowed)) {
+		// Same choices as the Update Status list. Sales and Pending Sales Approval come only from the Approve / Convert to Sales buttons
+		// (they also set the Sales number and move the record); a Sale can only be closed.
+		$is_sale = ($order['status'] === 'Sales' || !empty($order['sales_ref_no']));
+		$allowed = $is_sale ? array('Completed', 'Fulfilled', 'Cancelled') : array('Open', 'In Progress', 'Follow Up', 'Under Review', 'Completed', 'Fulfilled', 'Cancelled', 'Rejected', 'Draft', 'Submitted', 'Approved');
+		if ($status === $order['status']) {
+			if ($notes === '') {
+				$this->session->set_flashdata('message', 'Status is unchanged.');
+				redirect('manager/orders/view/' . $id);
+				return;
+			}
+		} elseif (!in_array($status, $allowed)) {
+			$this->session->set_flashdata('error_message', $is_sale
+				? 'This order is a Sale. Its status can only be changed to Completed, Fulfilled or Cancelled.'
+				: "'" . $status . "' cannot be set here. Use the Approve or Convert to Sales button.");
 			redirect('manager/orders/view/' . $id);
 			return;
 		}

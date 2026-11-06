@@ -45,7 +45,7 @@ $ov_steps = array(
       <?php } ?>
       <?php if (!empty($can_approve) && ($order['approval_status'] === 'pending' || $order['status'] === 'Pending Sales Approval')) { ?>
         <button type="button" class="btn btn-default svh-reject" data-toggle="modal" data-target="#rejectOrderModal"><i class="fa fa-times"></i> Reject</button>
-        <button type="button" class="btn btn-primary svh-next" data-toggle="modal" data-target="#approveOrderModal"><i class="fa fa-check"></i> Approve Order</button>
+        <button type="button" class="btn btn-primary svh-next" data-toggle="modal" data-target="#approveOrderModal"><i class="fa fa-check"></i> Approve as Sale</button>
       <?php } ?>
       <?php if (!empty($can_edit) && !empty($can_approve) && $order['status'] !== 'Sales') { ?>
         <button type="button" class="btn btn-primary svh-next" data-toggle="modal" data-target="#convertToSalesModal"><i class="fa fa-line-chart"></i> Convert to Sales</button>
