@@ -438,7 +438,7 @@ if (!function_exists('crm_tab_groups')) {
 				array('calling_api', 'system/calling-api', 'Calling API', 'fa-phone-square'),
 				array('integrations', 'system/integrations', 'Third-Party API', 'fa-plug'),
 			)),
-			'hr_people' => array('label' => 'People', 'icon' => 'fa-users', 'tabs' => array(
+			'hr_people' => array('label' => 'Staff', 'icon' => 'fa-users', 'tabs' => array(
 				array('hr_staff', 'hr/staff', 'Staff', 'fa-id-card-o'),
 				array('hr_employees', 'hr/employees', 'Employees', 'fa-users'),
 				array('hr_documents', 'hr/documents', 'Documents & Expiry', 'fa-folder-open-o'),
