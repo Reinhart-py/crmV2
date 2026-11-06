@@ -99,6 +99,9 @@
       .hrx-page .box-header .box-title{float:none;text-align:left;font-size:16px;font-weight:700;margin:0}
       .hrx-page .box-header .box-tools{position:static;float:none}
       .hrx-page .table-hr td{white-space:nowrap}
+      /* Keep the details of a row together: columns hug their content, the last column takes the spare width */
+      .hrx-page .table-hr th, .hrx-page .table-hr td{padding-right:28px !important}
+      .hrx-page .table-hr th:last-child, .hrx-page .table-hr td:last-child{width:100%}
       .hrx-page .table-hr td.hrx-wrap{white-space:normal;min-width:180px;max-width:320px}
       .hrx-page .table-hr td strong, .hrx-page .table-hr td b{font-size:14.5px}
       .hrx-page .table-hr td .text-muted, .hrx-page .table-hr td small{font-size:12.5px !important}
