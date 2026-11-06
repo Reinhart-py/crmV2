@@ -44,10 +44,14 @@ class Ci_admin_hr extends CI_Controller {
 			'taxation' => 'hr_taxation',
 			'appraisals' => 'hr_appraisals', 'add_appraisal' => 'hr_appraisals',
 			'documents' => 'hr_documents', 'add_document' => 'hr_documents',
+			'employees' => 'hr_employees', 'employee_save' => 'hr_employees', 'salary_add' => 'hr_employees', 'salary_delete' => 'hr_employees',
+			'settings' => 'hr_settings', 'settings_save' => 'hr_settings',
 			'topic_save' => 'hr_topics', 'topic_status' => 'hr_topics',
 		);
 		$key = isset($page_keys[$method]) ? $page_keys[$method] : 'hr';
-		$changes = ($this->input->server('REQUEST_METHOD') === 'POST') || preg_match('/^(add_|delete_|update_|generate_|assign_|leave_action|payroll_status|topic_)/', $method);
+		// The HR file's save actions check their own right (Employees or Salary & Bank Details, Full) inside the method
+		$own_check = in_array($method, array('employee_save', 'salary_add', 'salary_delete'), true);
+		$changes = !$own_check && (($this->input->server('REQUEST_METHOD') === 'POST') || preg_match('/^(add_|delete_|update_|generate_|assign_|leave_action|payroll_status|topic_)/', $method));
 		$this->is_hr = ($this->is_admin || crm_can($key, $changes ? 'write' : 'read'));
 		if ($method !== 'ajax_clock' && !$this->is_hr) {
 			$this->session->set_flashdata('error_message', 'You do not have ' . ($changes ? 'Full' : 'View') . ' access to this HR page. Ask your administrator if you need it.');
@@ -1033,19 +1037,453 @@ class Ci_admin_hr extends CI_Controller {
 		redirect('manager/hr/appraisals');
 	}
 
-	public function documents()
+	/* ------------------------------------------------------------------
+	 * People: company HR settings, employee list, each employee's HR file
+	 * and the documents & expiry list.
+	 * Personal details stay in the staff profile (ci_user); the HR file adds
+	 * job & contract (shared with Employee Lifecycle), identity documents,
+	 * salary structure history and bank / salary transfer (WPS) details.
+	 * ------------------------------------------------------------------ */
+
+	/** Company HR settings with their defaults (UAE). */
+	public static function hr_setting_defaults()
+	{
+		return array(
+			'company_name' => '', 'trade_licence_no' => '', 'mol_establishment_id' => '',
+			'employer_bank_name' => '', 'employer_routing_code' => '', 'currency' => 'AED', 'salary_day' => '28',
+			'weekend' => 'Sat,Sun', 'work_hours' => '8',
+			'probation_months' => '6', 'notice_days' => '30', 'annual_leave_days' => '30', 'doc_alert_days' => '60',
+		);
+	}
+
+	public static function contract_types()
+	{
+		return array('Permanent', 'Fixed term', 'Part time', 'Intern', 'Consultant');
+	}
+
+	public static function payment_methods()
+	{
+		return array('Bank transfer (WPS)', 'Exchange house (WPS)', 'Cash', 'Cheque');
+	}
+
+	private function _hr_tables()
+	{
+		static $done = false;
+		if ($done) return;
+		$done = true;
+		$this->db->query("CREATE TABLE IF NOT EXISTS ci_hr_settings (k VARCHAR(60) NOT NULL PRIMARY KEY, v VARCHAR(500) NOT NULL DEFAULT '', updated_by INT NULL, updated_at DATETIME NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		$this->db->query("CREATE TABLE IF NOT EXISTS ci_hr_employee (
+			user_id INT NOT NULL PRIMARY KEY,
+			grade VARCHAR(60) NOT NULL DEFAULT '',
+			contract_start DATE NULL, contract_end DATE NULL,
+			notice_days INT NULL, annual_leave_days INT NULL,
+			labour_card_no VARCHAR(60) NOT NULL DEFAULT '', labour_card_expiry DATE NULL,
+			mol_person_id VARCHAR(30) NOT NULL DEFAULT '',
+			insurance_provider VARCHAR(120) NOT NULL DEFAULT '', insurance_no VARCHAR(60) NOT NULL DEFAULT '', insurance_expiry DATE NULL,
+			payment_method VARCHAR(40) NOT NULL DEFAULT '', wps_routing_code VARCHAR(20) NOT NULL DEFAULT '',
+			updated_by INT NULL, updated_at DATETIME NULL
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		$this->db->query("CREATE TABLE IF NOT EXISTS ci_hr_salary (
+			id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+			user_id INT NOT NULL,
+			effective_from DATE NOT NULL,
+			basic DECIMAL(12,2) NOT NULL DEFAULT 0, housing DECIMAL(12,2) NOT NULL DEFAULT 0,
+			transport DECIMAL(12,2) NOT NULL DEFAULT 0, other DECIMAL(12,2) NOT NULL DEFAULT 0,
+			extras TEXT NULL, total DECIMAL(12,2) NOT NULL DEFAULT 0,
+			reason VARCHAR(200) NOT NULL DEFAULT '',
+			created_by INT NULL, created_at DATETIME NULL,
+			KEY user_from (user_id, effective_from)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		$this->db->query("CREATE TABLE IF NOT EXISTS ci_user_history (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL, field VARCHAR(60) NOT NULL, old_value VARCHAR(500) NOT NULL DEFAULT '', new_value VARCHAR(500) NOT NULL DEFAULT '', changed_by INT NULL, changed_at DATETIME NOT NULL, KEY user_when (user_id, changed_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		$this->db->query("CREATE TABLE IF NOT EXISTS ci_user_designation (user_id INT NOT NULL PRIMARY KEY, designation VARCHAR(150) NOT NULL DEFAULT '') ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		$this->db->data_cache = array();
+	}
+
+	/** All company HR settings (saved values over the defaults). */
+	private function _hr_settings()
+	{
+		$this->_hr_tables();
+		$out = self::hr_setting_defaults();
+		foreach ($this->db->get('ci_hr_settings')->result_array() as $r) if (array_key_exists($r['k'], $out)) $out[$r['k']] = $r['v'];
+		return $out;
+	}
+
+	/** One line in the person's Change History (same list as the staff profile). */
+	private function _hist($uid, $field, $old, $new)
+	{
+		if ((string)$old === (string)$new) return;
+		$this->db->insert('ci_user_history', array('user_id' => (int)$uid, 'field' => mb_substr($field, 0, 60), 'old_value' => mb_substr((string)$old, 0, 500),
+			'new_value' => mb_substr((string)$new, 0, 500), 'changed_by' => $this->cur_uid, 'changed_at' => date('Y-m-d H:i:s')));
+	}
+
+	private function _days_left($date)
+	{
+		$date = trim((string)$date);
+		if ($date === '' || $date === '0000-00-00' || !($t = strtotime($date))) return null;
+		return (int)floor(($t - strtotime(date('Y-m-d'))) / 86400);
+	}
+
+	/** expired / soon (within the alert days) / valid / none */
+	private function _doc_state($days, $alert)
+	{
+		if ($days === null) return 'none';
+		if ($days < 0) return 'expired';
+		return $days <= $alert ? 'soon' : 'valid';
+	}
+
+	/** Current salary structure per person: the latest one that has started (or the first one, if all start later). */
+	private function _current_salaries($ids = null)
+	{
+		$this->_hr_tables();
+		$this->db->order_by('user_id ASC, effective_from ASC, id ASC');
+		if ($ids !== null) { if (!$ids) return array(); $this->db->where_in('user_id', $ids); }
+		$out = array();
+		$today = date('Y-m-d');
+		foreach ($this->db->get('ci_hr_salary')->result_array() as $s) {
+			$u = (int)$s['user_id'];
+			if (!isset($out[$u]) || $s['effective_from'] <= $today) $out[$u] = $s;
+		}
+		return $out;
+	}
+
+	/** HR settings page (Full on Company HR Settings to save). */
+	public function settings()
 	{
 		$data = array();
-		$data['info'] = array(
-			'title' => 'Document Vault - HR',
-			'page_heading' => 'Document Vault'
-		);
-		$data['active_tab'] = 'documents';
+		$data['info'] = array('title' => 'HR Settings - HR', 'page_heading' => 'HR Settings');
+		$data['set'] = $this->_hr_settings();
+		$data['can_edit'] = $this->is_admin || crm_can('hr_settings', 'write');
+		$last = $this->db->select('S.updated_at, U.name')->from('ci_hr_settings S')->join('ci_user U', 'U.id = S.updated_by', 'left')->order_by('S.updated_at', 'DESC')->limit(1)->get()->row_array();
+		$data['last'] = $last;
+		$this->load->view('manager/hr/settings', $data);
+	}
 
-		// One list of every working person's documents: Passport / Visa / Emirates ID details from the staff profile,
-		// the files uploaded on the profile (Documents section), and older number-only registrations.
-		$staff = $this->db->select('id, name, emp_id, p_no, p_exdate, visa_no, visa_expiry, eid_no, eid_expiry')
-			->where($this->_active_sql(), NULL, FALSE)->order_by('name', 'ASC')->get('ci_user')->result_array();
+	public function settings_save()
+	{
+		if ($this->input->server('REQUEST_METHOD') !== 'POST') redirect('manager/hr/settings');
+		$def = self::hr_setting_defaults();
+		$old = $this->_hr_settings();
+		$p = function ($k) { return trim((string)$this->input->post($k)); };
+		$num = function ($v, $min, $max, $d) { return (is_numeric($v) && $v >= $min && $v <= $max) ? (string)(0 + $v) : $d; };
+		$days = array_values(array_intersect(array('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'), (array)$this->input->post('weekend')));
+		$new = array(
+			'company_name' => mb_substr($p('company_name'), 0, 150),
+			'trade_licence_no' => mb_substr($p('trade_licence_no'), 0, 60),
+			'mol_establishment_id' => preg_replace('/\D/', '', $p('mol_establishment_id')),
+			'employer_bank_name' => mb_substr($p('employer_bank_name'), 0, 120),
+			'employer_routing_code' => preg_replace('/\D/', '', $p('employer_routing_code')),
+			'currency' => preg_match('/^[A-Z]{3}$/', strtoupper($p('currency'))) ? strtoupper($p('currency')) : $def['currency'],
+			'salary_day' => $num($p('salary_day'), 1, 31, $def['salary_day']),
+			'weekend' => implode(',', $days),
+			'work_hours' => $num($p('work_hours'), 1, 24, $def['work_hours']),
+			'probation_months' => $num($p('probation_months'), 0, 12, $def['probation_months']),
+			'notice_days' => $num($p('notice_days'), 0, 180, $def['notice_days']),
+			'annual_leave_days' => $num($p('annual_leave_days'), 0, 60, $def['annual_leave_days']),
+			'doc_alert_days' => $num($p('doc_alert_days'), 1, 365, $def['doc_alert_days']),
+		);
+		$changed = array();
+		foreach ($new as $k => $v) {
+			if ((string)$old[$k] === (string)$v) continue;
+			$changed[] = $k;
+			$this->db->query('REPLACE INTO ci_hr_settings (k, v, updated_by, updated_at) VALUES (?, ?, ?, ?)', array($k, $v, $this->cur_uid, date('Y-m-d H:i:s')));
+		}
+		if ($changed) $this->ci_admin_model->log_admin_action('hr_settings', 'Changed HR settings: ' . implode(', ', $changed), 'SUCCESS');
+		$this->session->set_flashdata('message', $changed ? 'HR settings saved.' : 'Nothing was changed.');
+		redirect('manager/hr/settings');
+	}
+
+	/** Employee list, or one employee's HR file (manager/hr/employees/<id>). */
+	public function employees($id = 0)
+	{
+		$this->_hr_tables();
+		if ((int)$id > 0) return $this->_employee_file((int)$id);
+
+		$set = $this->_hr_settings();
+		$alert = (int)$set['doc_alert_days'];
+		$see_pay = $this->is_admin || crm_can('hr_salary', 'read');
+		$has_exit = $this->db->table_exists('ci_user_exit');
+
+		$this->db->select('U.id, U.name, U.emp_id, U.department, U.office, U.c_doj, U.admin_status, U.user_type, U.c_salary, U.p_exdate, U.visa_expiry, U.eid_expiry, R.title AS role_title, G.designation, L.stage, L.probation_end_date, L.contract_type, E.contract_end, E.labour_card_expiry, E.insurance_expiry, E.grade')
+			->from('ci_user U')
+			->join('ci_roles R', 'R.id = U.user_type', 'left')
+			->join('ci_user_designation G', 'G.user_id = U.id', 'left')
+			->join('ci_hr_lifecycle L', 'L.user_id = U.id', 'left')
+			->join('ci_hr_employee E', 'E.user_id = U.id', 'left')
+			->where("(R.role_type IS NULL OR R.role_type <> 'system')", null, false);
+		if ($has_exit) { $this->db->select('X.left_on'); $this->db->join('ci_user_exit X', 'X.user_id = U.id', 'left'); }
+		if (!$this->is_admin) $this->db->where('U.user_type <>', 1);
+		$rows = $this->db->order_by('U.name', 'ASC')->get()->result_array();
+
+		$sal = $see_pay ? $this->_current_salaries() : array();
+		$today = date('Y-m-d');
+		$month = date('Y-m');
+		$k = array('working' => 0, 'probation' => 0, 'joined' => 0, 'docs' => 0, 'nosalary' => 0);
+		$depts = array();
+		foreach ($rows as &$r) {
+			$r['left'] = !empty($r['left_on']);
+			$r['status'] = $r['left'] ? 'left' : ((int)$r['admin_status'] === 1 ? 'working' : 'disabled');
+			$r['probation'] = !$r['left'] && !empty($r['probation_end_date']) && $r['probation_end_date'] >= $today;
+			$worst = null; $worst_label = '';
+			foreach (array('Passport' => 'p_exdate', 'Visa' => 'visa_expiry', 'Emirates ID' => 'eid_expiry', 'Labour card' => 'labour_card_expiry', 'Insurance' => 'insurance_expiry') as $lbl => $f) {
+				$d = $this->_days_left($r[$f]);
+				if ($d !== null && ($worst === null || $d < $worst)) { $worst = $d; $worst_label = $lbl; }
+			}
+			$r['doc_days'] = $worst;
+			$r['doc_label'] = $worst_label;
+			$r['doc_state'] = $this->_doc_state($worst, $alert);
+			$s = isset($sal[(int)$r['id']]) ? $sal[(int)$r['id']] : null;
+			$r['salary'] = $s ? (float)$s['total'] : null;
+			$r['salary_old'] = (!$s && is_numeric($r['c_salary']) && (float)$r['c_salary'] > 1) ? (float)$r['c_salary'] : null;
+			if ($r['status'] === 'working') {
+				$k['working']++;
+				if ($r['probation']) $k['probation']++;
+				if (substr((string)$r['c_doj'], 0, 7) === $month) $k['joined']++;
+				if (in_array($r['doc_state'], array('expired', 'soon'), true)) $k['docs']++;
+				if ($see_pay && !$s) $k['nosalary']++;
+			}
+			$dep = trim((string)$r['department']);
+			if ($dep !== '') $depts[$dep] = true;
+		}
+		unset($r);
+		ksort($depts);
+
+		$data = array();
+		$data['info'] = array('title' => 'Employees - HR', 'page_heading' => 'Employees');
+		$data['rows'] = $rows;
+		$data['kpi'] = $k;
+		$data['depts'] = array_keys($depts);
+		$data['see_pay'] = $see_pay;
+		$data['currency'] = $set['currency'];
+		$data['alert_days'] = $alert;
+		$data['can_add'] = $this->is_admin || crm_can('hr_staff', 'write');
+		$this->load->view('manager/hr/employees', $data);
+	}
+
+	private function _employee_file($id)
+	{
+		$u = $this->ci_admin_model->getSingleUser($id);
+		if (empty($u) || (!$this->is_admin && (int)$u['user_type'] === 1)) {
+			$this->session->set_flashdata('error_message', empty($u) ? 'That employee was not found.' : 'Only an admin can open an Admin account.');
+			redirect('manager/hr/employees');
+			return;
+		}
+		$set = $this->_hr_settings();
+		$data = array();
+		$data['info'] = array('title' => $u['name'] . ' - HR file', 'page_heading' => 'HR file');
+		$data['u'] = $u;
+		$data['set'] = $set;
+		$data['emp'] = $this->db->where('user_id', $id)->get('ci_hr_employee')->row_array();
+		$data['life'] = $this->db->where('user_id', $id)->get('ci_hr_lifecycle')->row_array();
+		$data['exit'] = $this->db->table_exists('ci_user_exit') ? $this->db->where('user_id', $id)->get('ci_user_exit')->row_array() : array();
+		$mgr = (int)$u['manager'] ? $this->db->select('id, name')->where('id', (int)$u['manager'])->get('ci_user')->row_array() : array();
+		$data['manager'] = $mgr;
+		$data['can_edit'] = $this->is_admin || crm_can('hr_employees', 'write');
+		$data['see_pay'] = $this->is_admin || crm_can('hr_salary', 'read');
+		$data['edit_pay'] = $this->is_admin || crm_can('hr_salary', 'write');
+		$data['salaries'] = $data['see_pay'] ? $this->db->query('SELECT S.*, U.name AS by_name FROM ci_hr_salary S LEFT JOIN ci_user U ON U.id = S.created_by WHERE S.user_id = ? ORDER BY S.effective_from DESC, S.id DESC', array($id))->result_array() : array();
+		$cur = $data['see_pay'] ? $this->_current_salaries(array($id)) : array();
+		$data['salary_now'] = isset($cur[$id]) ? $cur[$id] : null;
+		$data['staff_full'] = $this->is_admin || crm_can('hr_staff', 'write') || crm_can('users', 'write');
+		$data['staff_view'] = $data['staff_full'] || crm_can('hr_staff', 'read');
+		$data['files'] = ($data['staff_full'] && $this->db->table_exists('ci_user_docs')) ? $this->db->query('SELECT D.*, U.name AS uploader FROM ci_user_docs D LEFT JOIN ci_user U ON U.id = D.uploaded_by WHERE D.user_id = ? ORDER BY D.doc_type, D.uploaded_at DESC', array($id))->result_array() : array();
+		$data['history'] = $this->db->query('SELECT H.*, U.name AS by_name FROM ci_user_history H LEFT JOIN ci_user U ON U.id = H.changed_by WHERE H.user_id = ? ORDER BY H.changed_at DESC, H.id DESC LIMIT 200', array($id))->result_array();
+		if (!$data['see_pay']) {
+			$hidden = array('Salary', 'Salary structure', 'Bank', 'IBAN', 'Bank account no', 'SWIFT', 'Bank routing code (WPS)', 'Salary payment method', 'MOL person ID');
+			$data['history'] = array_values(array_filter($data['history'], function ($h) use ($hidden) { return !in_array($h['field'], $hidden, true); }));
+		}
+		$data['designations'] = array_map(function ($r) { return $r['designation']; }, $this->db->query("SELECT DISTINCT designation FROM ci_user_designation WHERE designation <> '' ORDER BY designation")->result_array());
+		$data['departments'] = array_map(function ($r) { return $r['department']; }, $this->db->query("SELECT DISTINCT department FROM ci_user WHERE department <> '' ORDER BY department")->result_array());
+		$data['grades'] = array_map(function ($r) { return $r['grade']; }, $this->db->query("SELECT DISTINCT grade FROM ci_hr_employee WHERE grade <> '' ORDER BY grade")->result_array());
+		$data['stages'] = self::lifecycle_stages();
+		$data['contract_types'] = self::contract_types();
+		$data['pay_methods'] = self::payment_methods();
+		$data['alert_days'] = (int)$set['doc_alert_days'];
+		$data['countries'] = $this->db->table_exists('countries') ? array_map(function ($r) { return $r['name']; }, $this->db->select('name')->order_by('name', 'ASC')->get('countries')->result_array()) : array();
+		$this->load->view('manager/hr/employee', $data);
+	}
+
+	/** Saves one section of the HR file: job, identity, bank (POST hr/employee_save/<id>/<section>). */
+	public function employee_save($id = 0, $section = '')
+	{
+		$this->_hr_tables();
+		$id = (int)$id;
+		$back = 'manager/hr/employees/' . $id;
+		$u = $id ? $this->db->where('id', $id)->get('ci_user')->row_array() : array();
+		if (empty($u) || $this->input->server('REQUEST_METHOD') !== 'POST' || (!$this->is_admin && (int)$u['user_type'] === 1)) redirect('manager/hr/employees');
+		$need = ($section === 'bank') ? 'hr_salary' : 'hr_employees';
+		if (!$this->is_admin && !crm_can($need, 'write')) {
+			$this->session->set_flashdata('error_message', 'You do not have Full access to change this part of the HR file.');
+			redirect($back);
+		}
+		$p = function ($k, $max = 150) { return mb_substr(trim(preg_replace('/\s+/', ' ', (string)$this->input->post($k))), 0, $max); };
+		$ymd = function ($k) { $v = trim((string)$this->input->post($k)); return ($v !== '' && ($t = strtotime($v))) ? date('Y-m-d', $t) : ''; };
+		$emp = $this->db->where('user_id', $id)->get('ci_hr_employee')->row_array();
+		$emp_new = array();
+		$user_new = array();
+		$labels = array();
+
+		if ($section === 'job') {
+			$des_old = $this->db->where('user_id', $id)->get('ci_user_designation')->row_array();
+			$des = $p('designation');
+			$this->_hist($id, 'Designation', !empty($des_old['designation']) ? $des_old['designation'] : '', $des);
+			$this->db->query('REPLACE INTO ci_user_designation (user_id, designation) VALUES (?, ?)', array($id, $des));
+			$user_new = array('department' => $p('department', 100), 'office' => $p('office', 100), 'c_doj' => $ymd('c_doj'));
+			$labels = array('department' => 'Department', 'office' => 'Office / Location', 'c_doj' => 'Date of Joining');
+			$ct = (string)$this->input->post('contract_type');
+			$emp_new = array('grade' => $p('grade', 60), 'contract_start' => $ymd('contract_start') ?: null, 'contract_end' => $ymd('contract_end') ?: null,
+				'notice_days' => is_numeric($this->input->post('notice_days')) ? max(0, min(365, (int)$this->input->post('notice_days'))) : null,
+				'annual_leave_days' => is_numeric($this->input->post('annual_leave_days')) ? max(0, min(90, (int)$this->input->post('annual_leave_days'))) : null);
+			$elabels = array('grade' => 'Grade', 'contract_start' => 'Contract start', 'contract_end' => 'Contract end', 'notice_days' => 'Notice period (days)', 'annual_leave_days' => 'Annual leave (days)');
+			// Stage, probation, confirmation and contract type are the Employee Lifecycle record
+			$life = $this->db->where('user_id', $id)->get('ci_hr_lifecycle')->row_array();
+			$stage = (string)$this->input->post('stage');
+			$life_new = array(
+				'stage' => in_array($stage, self::lifecycle_stages(), true) ? $stage : (!empty($life['stage']) ? $life['stage'] : 'Confirmed'),
+				'probation_end_date' => $ymd('probation_end_date') ?: null,
+				'confirmation_date' => $ymd('confirmation_date') ?: null,
+				'contract_type' => in_array($ct, self::contract_types(), true) ? $ct : 'Permanent',
+				'updated_at' => date('Y-m-d H:i:s'),
+			);
+			foreach (array('stage' => 'Stage', 'probation_end_date' => 'Probation ends', 'confirmation_date' => 'Confirmed on', 'contract_type' => 'Contract type') as $f => $l)
+				$this->_hist($id, $l, !empty($life[$f]) ? $life[$f] : '', (string)$life_new[$f]);
+			if ($life) $this->db->where('user_id', $id)->update('ci_hr_lifecycle', $life_new);
+			else { $life_new['user_id'] = $id; $life_new['created_at'] = date('Y-m-d H:i:s'); $this->db->insert('ci_hr_lifecycle', $life_new); }
+		} elseif ($section === 'identity') {
+			$user_new = array('national' => $p('national', 100), 'p_no' => $p('p_no', 40), 'p_date' => $ymd('p_date'), 'p_exdate' => $ymd('p_exdate'),
+				'visa_no' => $p('visa_no', 40), 'visa_type' => $p('visa_type', 60), 'visa_by' => $p('visa_by', 100), 'visa_expiry' => $ymd('visa_expiry'),
+				'eid_no' => $p('eid_no', 40), 'eid_expiry' => $ymd('eid_expiry'));
+			$labels = array('national' => 'Nationality', 'p_no' => 'Passport No', 'p_date' => 'Passport Issue Date', 'p_exdate' => 'Passport Expiry',
+				'visa_no' => 'Visa No', 'visa_type' => 'Visa Type', 'visa_by' => 'Visa Sponsor', 'visa_expiry' => 'Visa Expiry', 'eid_no' => 'Emirates ID No', 'eid_expiry' => 'Emirates ID Expiry');
+			$emp_new = array('labour_card_no' => $p('labour_card_no', 60), 'labour_card_expiry' => $ymd('labour_card_expiry') ?: null,
+				'insurance_provider' => $p('insurance_provider', 120), 'insurance_no' => $p('insurance_no', 60), 'insurance_expiry' => $ymd('insurance_expiry') ?: null);
+			$elabels = array('labour_card_no' => 'Labour Card No', 'labour_card_expiry' => 'Labour Card Expiry', 'insurance_provider' => 'Insurance provider', 'insurance_no' => 'Insurance No', 'insurance_expiry' => 'Insurance Expiry');
+		} elseif ($section === 'bank') {
+			$iban = strtoupper(preg_replace('/\s+/', '', (string)$this->input->post('iban')));
+			if ($iban !== '' && !preg_match('/^[A-Z]{2}[0-9]{2}[A-Z0-9]{10,30}$/', $iban)) {
+				$this->session->set_flashdata('error_message', 'The IBAN does not look right (UAE IBANs are AE followed by 21 digits).');
+				redirect($back . '#bank');
+			}
+			$user_new = array('bank' => $p('bank', 100), 'iban' => $iban, 'bank_no' => $p('bank_no', 40), 'swift' => strtoupper($p('swift', 20)));
+			$labels = array('bank' => 'Bank', 'iban' => 'IBAN', 'bank_no' => 'Bank account no', 'swift' => 'SWIFT');
+			$pm = (string)$this->input->post('payment_method');
+			$emp_new = array('payment_method' => in_array($pm, self::payment_methods(), true) ? $pm : '',
+				'wps_routing_code' => preg_replace('/\D/', '', (string)$this->input->post('wps_routing_code')),
+				'mol_person_id' => preg_replace('/\D/', '', (string)$this->input->post('mol_person_id')));
+			$elabels = array('payment_method' => 'Salary payment method', 'wps_routing_code' => 'Bank routing code (WPS)', 'mol_person_id' => 'MOL person ID');
+		} else {
+			redirect($back);
+		}
+
+		foreach ($user_new as $f => $v) $this->_hist($id, $labels[$f], isset($u[$f]) ? $u[$f] : '', $v);
+		if ($user_new) { $user_new['modified'] = date('Y-m-d'); $this->db->where('id', $id)->update('ci_user', $user_new); }
+		foreach ($emp_new as $f => $v) $this->_hist($id, $elabels[$f], isset($emp[$f]) ? (string)$emp[$f] : '', (string)$v);
+		$emp_new['updated_by'] = $this->cur_uid;
+		$emp_new['updated_at'] = date('Y-m-d H:i:s');
+		if ($emp) $this->db->where('user_id', $id)->update('ci_hr_employee', $emp_new);
+		else { $emp_new['user_id'] = $id; $this->db->insert('ci_hr_employee', $emp_new); }
+
+		$names = array('job' => 'Job & contract', 'identity' => 'Identity documents', 'bank' => 'Bank & salary transfer');
+		$this->ci_admin_model->log_admin_action('hr_employee_update', 'Updated ' . $names[$section] . ' in the HR file of user ID #' . $id, 'SUCCESS');
+		$this->session->set_flashdata('message', $names[$section] . ' saved.');
+		redirect($back . '#' . $section);
+	}
+
+	/** Adds a salary structure from a date (keeps the earlier ones as history). Needs Full on Salary & Bank Details. */
+	public function salary_add($id = 0)
+	{
+		$this->_hr_tables();
+		$id = (int)$id;
+		$back = 'manager/hr/employees/' . $id;
+		$u = $id ? $this->db->where('id', $id)->get('ci_user')->row_array() : array();
+		if (empty($u) || $this->input->server('REQUEST_METHOD') !== 'POST' || (!$this->is_admin && (int)$u['user_type'] === 1)) redirect('manager/hr/employees');
+		if (!$this->is_admin && !crm_can('hr_salary', 'write')) {
+			$this->session->set_flashdata('error_message', 'You do not have Full access to Salary & Bank Details.');
+			redirect($back);
+		}
+		$money = function ($v) { $v = str_replace(',', '', trim((string)$v)); return (is_numeric($v) && $v >= 0) ? round((float)$v, 2) : 0.0; };
+		$from = trim((string)$this->input->post('effective_from'));
+		$from = ($from !== '' && ($t = strtotime($from))) ? date('Y-m-d', $t) : '';
+		if ($from === '') {
+			$this->session->set_flashdata('error_message', 'Choose the date this salary starts from.');
+			redirect($back . '#salary');
+		}
+		$row = array('basic' => $money($this->input->post('basic')), 'housing' => $money($this->input->post('housing')),
+			'transport' => $money($this->input->post('transport')), 'other' => $money($this->input->post('other')));
+		$extras = array();
+		$en = (array)$this->input->post('extra_name');
+		$ea = (array)$this->input->post('extra_amount');
+		foreach ($en as $i => $n) {
+			$n = mb_substr(trim((string)$n), 0, 60);
+			$a = isset($ea[$i]) ? $money($ea[$i]) : 0;
+			if ($n !== '' && $a > 0) $extras[] = array('name' => $n, 'amount' => $a);
+		}
+		$total = array_sum($row);
+		foreach ($extras as $x) $total += $x['amount'];
+		if ($row['basic'] <= 0) {
+			$this->session->set_flashdata('error_message', 'Basic salary is required (end-of-service gratuity is worked out from it).');
+			redirect($back . '#salary');
+		}
+		$prev = $this->_current_salaries(array($id));
+		$prev = isset($prev[$id]) ? $prev[$id] : null;
+		$row += array('user_id' => $id, 'effective_from' => $from, 'extras' => $extras ? json_encode($extras) : null, 'total' => round($total, 2),
+			'reason' => mb_substr(trim((string)$this->input->post('reason')), 0, 200), 'created_by' => $this->cur_uid, 'created_at' => date('Y-m-d H:i:s'));
+		$this->db->insert('ci_hr_salary', $row);
+
+		$fmt = function ($s) { return 'Basic ' . number_format($s['basic'], 2) . ', housing ' . number_format($s['housing'], 2) . ', transport ' . number_format($s['transport'], 2) . ', other ' . number_format($s['other'], 2) . ' = ' . number_format($s['total'], 2); };
+		$this->_hist($id, 'Salary structure', $prev ? $fmt($prev) . ' (from ' . $prev['effective_from'] . ')' : '', $fmt($row) . ' (from ' . $from . ')');
+		// The staff profile shows one salary figure: keep it the same as the salary in force today
+		$now = $this->_current_salaries(array($id));
+		if (isset($now[$id])) {
+			$v = (string)(0 + $now[$id]['total']);
+			if ((string)$u['c_salary'] !== $v) {
+				$this->_hist($id, 'Salary', $u['c_salary'], $v);
+				$this->db->where('id', $id)->update('ci_user', array('c_salary' => $v));
+			}
+		}
+		$this->ci_admin_model->log_admin_action('hr_salary_change', 'Salary structure from ' . $from . ' added for user ID #' . $id, 'SUCCESS');
+		$this->session->set_flashdata('message', 'Salary structure saved (from ' . date('d-m-Y', strtotime($from)) . ').');
+		redirect($back . '#salary');
+	}
+
+	/** Removes a salary structure entered by mistake. */
+	public function salary_delete($sid = 0)
+	{
+		$this->_hr_tables();
+		$s = (int)$sid ? $this->db->where('id', (int)$sid)->get('ci_hr_salary')->row_array() : array();
+		if (empty($s) || $this->input->server('REQUEST_METHOD') !== 'POST') redirect('manager/hr/employees');
+		$id = (int)$s['user_id'];
+		$u = $this->db->where('id', $id)->get('ci_user')->row_array();
+		if ((!$this->is_admin && !crm_can('hr_salary', 'write')) || (!$this->is_admin && !empty($u) && (int)$u['user_type'] === 1)) {
+			$this->session->set_flashdata('error_message', 'You do not have Full access to Salary & Bank Details.');
+			redirect('manager/hr/employees/' . $id . '#salary');
+		}
+		$this->db->where('id', (int)$s['id'])->delete('ci_hr_salary');
+		$this->_hist($id, 'Salary structure', 'Total ' . number_format($s['total'], 2) . ' from ' . $s['effective_from'], 'Deleted');
+		$now = $this->_current_salaries(array($id));
+		if (isset($now[$id]) && !empty($u) && (string)$u['c_salary'] !== (string)(0 + $now[$id]['total'])) {
+			$this->_hist($id, 'Salary', $u['c_salary'], (string)(0 + $now[$id]['total']));
+			$this->db->where('id', $id)->update('ci_user', array('c_salary' => (string)(0 + $now[$id]['total'])));
+		}
+		$this->ci_admin_model->log_admin_action('hr_salary_change', 'Deleted salary structure from ' . $s['effective_from'] . ' of user ID #' . $id, 'SUCCESS');
+		$this->session->set_flashdata('message', 'Salary structure deleted.');
+		redirect('manager/hr/employees/' . $id . '#salary');
+	}
+
+	public function documents()
+	{
+		$this->_hr_tables();
+		$set = $this->_hr_settings();
+		$alert = (int)$set['doc_alert_days'];
+		$data = array();
+		$data['info'] = array('title' => 'Documents & Expiry - HR', 'page_heading' => 'Documents & Expiry');
+
+		// Every working person's documents: identity details from the HR file / staff profile,
+		// the files uploaded on the staff profile, and older number-only registrations.
+		$this->db->select('U.id, U.name, U.emp_id, U.department, U.p_no, U.p_exdate, U.visa_no, U.visa_expiry, U.eid_no, U.eid_expiry, E.labour_card_no, E.labour_card_expiry, E.insurance_no, E.insurance_expiry')
+			->from('ci_user U')->join('ci_hr_employee E', 'E.user_id = U.id', 'left')->join('ci_roles R', 'R.id = U.user_type', 'left')
+			->where($this->_active_sql('U'), NULL, FALSE)->where("(R.role_type IS NULL OR R.role_type <> 'system')", null, false);
+		if (!$this->is_admin) $this->db->where('U.user_type <>', 1);
+		$staff = $this->db->order_by('U.name', 'ASC')->get()->result_array();
 		$files = array();
 		if ($this->db->table_exists('ci_user_docs')) {
 			foreach ($this->db->order_by('uploaded_at', 'DESC')->get('ci_user_docs')->result_array() as $fd) $files[(int)$fd['user_id']][] = $fd;
@@ -1053,35 +1491,57 @@ class Ci_admin_hr extends CI_Controller {
 		$legacy = array();
 		foreach ($this->db->order_by('id', 'DESC')->get('ci_hr_documents')->result_array() as $ld) $legacy[(int)$ld['user_id']][] = $ld;
 
-		$today = strtotime(date('Y-m-d'));
-		$days = function ($v) use ($today) { $v = trim((string)$v); return ($v !== '' && ($t = strtotime($v))) ? (int)floor(($t - $today) / 86400) : null; };
 		$rows = array();
-		$add = function ($u, $type, $num, $exp, $file) use (&$rows, $days) {
-			$d = $days($exp);
-			$state = ($d === null) ? 'nodate' : ($d < 0 ? 'expired' : ($d <= 30 ? 'd30' : ($d <= 60 ? 'd60' : 'valid')));
-			$rows[] = array('user_id' => (int)$u['id'], 'name' => $u['name'], 'type' => $type, 'number' => (string)$num, 'expiry' => ($d === null ? '' : date('Y-m-d', strtotime($exp))),
-				'days' => $d, 'state' => $state, 'file' => $file);
+		$add = function ($u, $type, $num, $exp, $file) use (&$rows, $alert) {
+			$d = $this->_days_left($exp);
+			$rows[] = array('user_id' => (int)$u['id'], 'name' => $u['name'], 'emp_id' => $u['emp_id'], 'department' => $u['department'], 'type' => $type, 'number' => (string)$num,
+				'expiry' => ($d === null ? '' : date('Y-m-d', strtotime($exp))), 'days' => $d, 'state' => $this->_doc_state($d, $alert), 'file' => $file);
 		};
+		$missing = array();
 		foreach ($staff as $u) {
 			$uid = (int)$u['id']; $mine = isset($files[$uid]) ? $files[$uid] : array(); $used = array();
 			$pick = function ($type) use ($mine, &$used) { foreach ($mine as $i => $fd) if ($fd['doc_type'] === $type && !isset($used[$i])) { $used[$i] = 1; return $fd; } return null; };
-			foreach (array(array('Passport', $u['p_no'], $u['p_exdate']), array('Visa', $u['visa_no'], $u['visa_expiry']), array('Emirates ID', $u['eid_no'], $u['eid_expiry'])) as $x) {
+			foreach (array(array('Passport', $u['p_no'], $u['p_exdate']), array('Visa', $u['visa_no'], $u['visa_expiry']), array('Emirates ID', $u['eid_no'], $u['eid_expiry']),
+				array('Labour Card', $u['labour_card_no'], $u['labour_card_expiry']), array('Insurance', $u['insurance_no'], $u['insurance_expiry'])) as $x) {
 				$fd = $pick($x[0]);
 				if (trim((string)$x[1]) !== '' || trim((string)$x[2]) !== '' || $fd) $add($u, $x[0], $x[1], $x[2], $fd);
+				elseif (in_array($x[0], array('Passport', 'Visa', 'Emirates ID'), true)) $missing[] = array('user_id' => $uid, 'name' => $u['name'], 'emp_id' => $u['emp_id'], 'department' => $u['department'], 'type' => $x[0]);
 			}
 			foreach ($mine as $i => $fd) if (!isset($used[$i])) $add($u, $fd['doc_type'], '', '', $fd);
 			if (isset($legacy[$uid])) foreach ($legacy[$uid] as $ld) $add($u, $ld['doc_type'] !== '' ? $ld['doc_type'] : 'Document', $ld['doc_number'], $ld['expiry_date'], null);
 		}
-		$counts = array('all' => count($rows), 'expired' => 0, 'd30' => 0, 'd60' => 0, 'nofile' => 0);
-		foreach ($rows as $r) { if (isset($counts[$r['state']])) $counts[$r['state']]++; if (!$r['file']) $counts['nofile']++; }
+		usort($rows, function ($a, $b) {
+			$x = $a['days'] === null ? PHP_INT_MAX : $a['days']; $y = $b['days'] === null ? PHP_INT_MAX : $b['days'];
+			return $x === $y ? strcasecmp($a['name'], $b['name']) : ($x < $y ? -1 : 1);
+		});
+		$counts = array('all' => count($rows), 'expired' => 0, 'soon' => 0, 'valid' => 0, 'none' => 0, 'missing' => count($missing));
+		foreach ($rows as $r) $counts[$r['state']]++;
+
+		if ($this->input->get('csv')) {
+			$this->ci_admin_model->log_admin_action('hr_documents_export', 'Downloaded the documents & expiry list (' . count($rows) . ' documents)', 'SUCCESS');
+			while (ob_get_level()) ob_end_clean();
+			header('Content-Type: text/csv; charset=utf-8');
+			header('Content-Disposition: attachment; filename="employee_documents_' . date('Y-m-d') . '.csv"');
+			$out = fopen('php://output', 'w');
+			fwrite($out, "\xEF\xBB\xBF");
+			$cell = function ($v) { if (is_int($v)) return $v; $v = (string)$v; return ($v !== '' && strpos('=+-@', $v[0]) !== false) ? "'" . $v : $v; };
+			fputcsv($out, array('Employee', 'Employee ID', 'Department', 'Document', 'Number', 'Expiry', 'Days left', 'Status', 'File uploaded'));
+			$st = array('expired' => 'Expired', 'soon' => 'Expiring soon', 'valid' => 'Valid', 'none' => 'No expiry date');
+			foreach ($rows as $r) fputcsv($out, array_map($cell, array($r['name'], $r['emp_id'], $r['department'], $r['type'], $r['number'], $r['expiry'] ? date('d-m-Y', strtotime($r['expiry'])) : '', $r['days'] === null ? '' : $r['days'], $st[$r['state']], $r['file'] ? 'Yes' : 'No')));
+			foreach ($missing as $m) fputcsv($out, array_map($cell, array($m['name'], $m['emp_id'], $m['department'], $m['type'], '', '', '', 'Missing', 'No')));
+			fclose($out);
+			exit;
+		}
 
 		$data['documents'] = $rows;
+		$data['missing'] = $missing;
 		$data['doc_counts'] = $counts;
+		$data['alert_days'] = $alert;
 		$data['employees'] = $staff;
-		// Files are opened (and uploaded) through the staff profile, which needs Full on Staff
-		$data['doc_base'] = ($this->is_admin || crm_can('hr_staff', 'write')) ? 'manager/hr/staff/' : '';
-
-		$this->load->view('manager/hr/index', $data);
+		$data['can_add'] = $this->is_admin || crm_can('hr_documents', 'write');
+		$data['file_base'] = ($this->is_admin || crm_can('hr_staff', 'write')) ? 'manager/hr/staff/' : '';
+		$data['hr_file'] = $this->is_admin || crm_can('hr_employees', 'read');
+		$this->load->view('manager/hr/documents', $data);
 	}
 
 	public function add_document()

@@ -1,6 +1,17 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
 <div class="content-wrapper px-4 hrx-page">
+  <?php
+  // Tabs of the HR & Payroll area this page belongs to (People / Time & Leave / Payroll / Performance)
+  $hr_tab_of = array('lifecycle' => array('hr_people', 'hr/lifecycle'), 'attendance' => array('hr_time', 'hr/attendance'), 'shifts' => array('hr_time', 'hr/shifts'),
+    'leaves' => array('hr_time', 'hr/leaves'), 'payroll' => array('hr_pay', 'hr/payroll'), 'taxation' => array('hr_pay', 'hr/taxation'),
+    'appraisals' => array('hr_perf', 'hr/appraisals'), 'targets' => array('hr_perf', 'hr/targets'));
+  $hr_tab = isset($hr_tab_of[$active_tab ?? '']) ? $hr_tab_of[$active_tab] : null;
+  $hr_bar = ($hr_tab && (!isset($is_hr) || !empty($is_hr))) ? crm_tabbar($hr_tab[0], $hr_tab[1]) : '';
+  if ($hr_bar !== '') { ?>
+  <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
+  <div class="sx" style="margin:0 -10px;"><?php echo $hr_bar; ?></div>
+  <?php } ?>
 
   <section class="content-header">
     <h1><?php echo htmlspecialchars($info['page_heading'] ?? 'HR Management'); ?></h1>
