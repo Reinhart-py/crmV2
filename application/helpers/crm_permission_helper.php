@@ -511,9 +511,13 @@ if (!function_exists('crm_mz_tabbar')) {
 			if (strpos($gk, 'mz_') !== 0) continue;
 			foreach ($g['tabs'] as $t) {
 				if ($t[1] === $path) {
+					// One compact bar: tabs (or the page title when only one tab is allowed) and, on the right, count, Filters and the page's buttons (assets/dist/js/crm-mz.js)
 					$bar = crm_tabbar($gk, $path);
-					if ($bar === '') return '';
-					return '<link rel="stylesheet" href="' . base_url() . 'assets/dist/css/crm-sys.css?v=20261106_7"><div class="sx crm-mz-tabs">' . $bar . '</div>';
+					$v = '20261106_11';
+					return '<link rel="stylesheet" href="' . base_url() . 'assets/dist/css/crm-sys.css?v=20261106_7"><link rel="stylesheet" href="' . base_url() . 'assets/dist/css/crm-mz.css?v=' . $v . '">'
+						. '<div class="mz-bar" id="mzBar"><div class="sx mz-nav">' . $bar . '</div><div class="mz-tools"></div></div>'
+						. '<script>(function(w){var o=false;try{o=localStorage.getItem("mzf:"+location.pathname)==="1";}catch(e){}new URLSearchParams(location.search).forEach(function(x){if(x!=="")o=true;});w.classList.add("mz-on",o?"mz-f-open":"mz-f-closed");})(document.currentScript.closest(".content-wrapper"));</script>'
+						. '<script defer src="' . base_url() . 'assets/dist/js/crm-mz.js?v=' . $v . '"></script>';
 				}
 			}
 		}
