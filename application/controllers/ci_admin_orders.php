@@ -130,7 +130,7 @@ class Ci_admin_orders extends CI_Controller {
 				'title' => 'Open Orders - Back Office',
 				'page_heading' => 'Open Orders'
 			);
-			$this->db->where_not_in('O.status', array('Fulfilled', 'Completed', 'Sales', 'Cancelled', 'Rejected'));
+			$this->db->where_not_in('O.status', array('Fulfilled', 'Completed', 'Sales', 'Cancelled', 'Rejected', 'Lost', 'Closed'));
 			$this->db->where("(O.sales_ref_no IS NULL OR O.sales_ref_no = '')");
 			$can_edit_orders = $is_backoffice;
 			$reset_url = base_url('manager/orders/open');
@@ -1582,9 +1582,11 @@ class Ci_admin_orders extends CI_Controller {
 			$clean = $this->db->escape_str($this->db->escape_like_str($search));
 			$this->db->where("(invoice_no LIKE '%$clean%' OR customer_name LIKE '%$clean%')");
 		}
-		if (!empty($d1) && !empty($d2)) {
-			$this->db->where('invoice_date >=', $d1);
-			$this->db->where('invoice_date <=', $d2);
+		if ($d1 !== '' && strtotime($d1)) {
+			$this->db->where('invoice_date >=', date('Y-m-d', strtotime($d1)));
+		}
+		if ($d2 !== '' && strtotime($d2)) {
+			$this->db->where('invoice_date <=', date('Y-m-d', strtotime($d2)));
 		}
 		$this->db->order_by('id', 'DESC');
 		$data['invoices'] = $this->db->get()->result_array();
@@ -1614,9 +1616,11 @@ class Ci_admin_orders extends CI_Controller {
 			$clean = $this->db->escape_str($this->db->escape_like_str($search));
 			$this->db->where("(receipt_no LIKE '%$clean%' OR invoice_no LIKE '%$clean%' OR customer_name LIKE '%$clean%')");
 		}
-		if (!empty($d1) && !empty($d2)) {
-			$this->db->where('payment_date >=', $d1);
-			$this->db->where('payment_date <=', $d2);
+		if ($d1 !== '' && strtotime($d1)) {
+			$this->db->where('payment_date >=', date('Y-m-d', strtotime($d1)));
+		}
+		if ($d2 !== '' && strtotime($d2)) {
+			$this->db->where('payment_date <=', date('Y-m-d', strtotime($d2)));
 		}
 		$this->db->order_by('ci_payments.id', 'DESC');
 		$data['payments'] = $this->db->get()->result_array();
@@ -1651,7 +1655,9 @@ class Ci_admin_orders extends CI_Controller {
 		$this->db->from('ci_orders O');
 		$this->db->join('ci_user U', 'O.assigned_to = U.id', 'LEFT');
 		$this->db->join('ci_leads A', 'O.lead_id = A.id', 'LEFT');
-		$this->db->where_not_in('O.status', array('Completed', 'Fulfilled', 'Sales', 'Cancelled', 'Rejected'));
+		$this->db->where_not_in('O.status', array('Completed', 'Fulfilled', 'Sales', 'Cancelled', 'Rejected', 'Lost', 'Closed'));
+		$this->db->where("(O.sales_ref_no IS NULL OR O.sales_ref_no = '')", NULL, FALSE);
+		$this->db->where('O.followup_date IS NOT NULL', NULL, FALSE);
 
 		$client_filter = $this->input->get('client', true);
 		if (!empty($client_filter)) {
@@ -1665,7 +1671,8 @@ class Ci_admin_orders extends CI_Controller {
 			$this->db->where("O.created_at >= '{$d1_clean}' AND O.created_at <= '{$d2_clean}'");
 		}
 
-		$this->db->order_by('O.id', 'DESC');
+		$this->db->order_by('O.followup_date', 'ASC');
+		$this->db->order_by('O.followup_time', 'ASC');
 		$data['orders_list'] = $this->db->get()->result_array();
 		$data['can_edit_orders'] = true;
 		$data['status_filter'] = 'followups';

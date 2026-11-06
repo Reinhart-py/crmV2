@@ -110,18 +110,18 @@ if (!function_exists('crm_perm_catalog')) {
 				'title' => 'Back Office', 'key' => 'back_office', 'match' => array('back-office', 'back_office', 'invoices', 'payments'),
 				'icon' => '<rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>',
 				'items' => array(
-					'lead_review' => array('label' => 'Pending Leads Approval', 'desc' => 'Approve database records as leads', 'fallback' => 'back_office', 'nav' => array(array('leads/review_leads', 'Pending Leads Approval', 'fa-check-square-o')), 'pages' => array('leads/review_leads', 'back-office', 'back_office')),
-					'orders_pending' => array('label' => 'Pending Order Process', 'desc' => 'Orders waiting to be processed', 'fallback' => 'back_office', 'nav' => array(array('orders/pending_process', 'Pending Order Process', 'fa-hourglass-half')), 'pages' => array('orders/pending_process')),
-					'orders_pending_sales' => array('label' => 'View Sales Approvals', 'desc' => 'Orders sent for sales approval', 'fallback' => 'back_office', 'nav' => array(array('orders/view_sales_approvals', 'View Sales Approvals', 'fa-eye')), 'pages' => array('orders/view_sales_approvals')),
-					'kam_onboard' => array('label' => 'Onboard Client', 'desc' => 'Turn a sale into a KAM client', 'fallback' => 'kam', 'nav' => array(array('kam/onboard', 'Onboard Client', 'fa-user-plus')), 'pages' => array('kam/onboard')),
-					'orders_open' => array('label' => 'Open Orders', 'desc' => 'Orders in progress', 'fallback' => 'back_office', 'nav' => array(array('orders/open', 'Open Orders', 'fa-folder-open-o')), 'pages' => array('orders/open')),
-					'orders_followups' => array('label' => 'Orders Follow-up', 'desc' => 'Follow-ups on orders', 'fallback' => 'back_office', 'nav' => array(array('orders/followups', 'Orders Follow-up', 'fa-calendar-check-o')), 'pages' => array('orders/followups')),
-					'orders_completed' => array('label' => 'Completed Orders', 'desc' => 'Finished orders', 'fallback' => 'back_office', 'nav' => array(array('orders?status=completed', 'Completed Orders', 'fa-check-circle')), 'pages' => array('orders?status=completed')),
-					'orders_closed' => array('label' => 'Closed Orders', 'desc' => 'Closed orders', 'fallback' => 'back_office', 'nav' => array(array('orders?status=closed', 'Closed Orders', 'fa-flag-checkered')), 'pages' => array('orders?status=closed')),
-					'orders_rejected' => array('label' => 'Rejected / Lost Orders', 'desc' => 'Rejected or lost orders', 'fallback' => 'back_office', 'nav' => array(array('orders?status=rejected_lost', 'Rejected / Lost Orders', 'fa-times-circle')), 'pages' => array('orders?status=rejected_lost')),
-					'orders_management' => array('label' => 'All Orders', 'desc' => 'Every order in the company', 'fallback' => 'back_office', 'nav' => array(array('orders', 'View All Orders', 'fa-list')), 'pages' => array('orders'), 'write' => array('orders/add')),
-					'orders_invoices' => array('label' => 'Invoices', 'desc' => 'Order invoices', 'fallback' => 'back_office', 'nav' => array(array('orders/invoices', 'Invoices', 'fa-file-text-o')), 'pages' => array('orders/invoices', 'invoices')),
-					'orders_payments' => array('label' => 'Payments', 'desc' => 'Payments received on orders', 'fallback' => 'back_office', 'nav' => array(array('orders/payments', 'Payments', 'fa-credit-card')), 'pages' => array('orders/payments', 'payments')),
+					'lead_review' => array('tab' => 'bo_approvals', 'label' => 'Pending Leads Approval', 'desc' => 'Approve database records as leads', 'fallback' => 'back_office', 'nav' => array(array('leads/review_leads', 'Pending Leads Approval', 'fa-check-square-o')), 'pages' => array('leads/review_leads', 'back-office', 'back_office')),
+					'orders_pending' => array('tab' => 'bo_approvals', 'label' => 'Pending Order Process', 'desc' => 'Orders waiting to be processed', 'fallback' => 'back_office', 'nav' => array(array('orders/pending_process', 'Pending Order Process', 'fa-hourglass-half')), 'pages' => array('orders/pending_process')),
+					'orders_pending_sales' => array('tab' => 'bo_approvals', 'label' => 'View Sales Approvals', 'desc' => 'Orders sent for sales approval', 'fallback' => 'back_office', 'nav' => array(array('orders/view_sales_approvals', 'View Sales Approvals', 'fa-eye')), 'pages' => array('orders/view_sales_approvals')),
+					'kam_onboard' => array('tab' => 'bo_approvals', 'label' => 'Onboard Client', 'desc' => 'Turn a sale into a KAM client', 'fallback' => 'kam', 'nav' => array(array('kam/onboard', 'Onboard Client', 'fa-user-plus')), 'pages' => array('kam/onboard')),
+					'orders_open' => array('tab' => 'bo_orders', 'label' => 'Open Orders', 'desc' => 'Orders in progress', 'fallback' => 'back_office', 'nav' => array(array('orders/open', 'Open Orders', 'fa-folder-open-o')), 'pages' => array('orders/open')),
+					'orders_followups' => array('tab' => 'bo_orders', 'label' => 'Orders Follow-up', 'desc' => 'Follow-ups on orders', 'fallback' => 'back_office', 'nav' => array(array('orders/followups', 'Orders Follow-up', 'fa-calendar-check-o')), 'pages' => array('orders/followups')),
+					'orders_completed' => array('tab' => 'bo_orders', 'label' => 'Completed Orders', 'desc' => 'Finished orders', 'fallback' => 'back_office', 'nav' => array(array('orders?status=completed', 'Completed Orders', 'fa-check-circle')), 'pages' => array('orders?status=completed')),
+					'orders_closed' => array('tab' => 'bo_orders', 'label' => 'Closed Orders', 'desc' => 'Closed orders', 'fallback' => 'back_office', 'nav' => array(array('orders?status=closed', 'Closed Orders', 'fa-flag-checkered')), 'pages' => array('orders?status=closed')),
+					'orders_rejected' => array('tab' => 'bo_orders', 'label' => 'Rejected / Lost Orders', 'desc' => 'Rejected or lost orders', 'fallback' => 'back_office', 'nav' => array(array('orders?status=rejected_lost', 'Rejected / Lost Orders', 'fa-times-circle')), 'pages' => array('orders?status=rejected_lost')),
+					'orders_management' => array('tab' => 'bo_orders', 'label' => 'All Orders', 'desc' => 'Every order in the company', 'fallback' => 'back_office', 'nav' => array(array('orders', 'View All Orders', 'fa-list')), 'pages' => array('orders'), 'write' => array('orders/add')),
+					'orders_invoices' => array('tab' => 'bo_billing', 'label' => 'Invoices', 'desc' => 'Order invoices', 'fallback' => 'back_office', 'nav' => array(array('orders/invoices', 'Invoices', 'fa-file-text-o')), 'pages' => array('orders/invoices', 'invoices')),
+					'orders_payments' => array('tab' => 'bo_billing', 'label' => 'Payments', 'desc' => 'Payments received on orders', 'fallback' => 'back_office', 'nav' => array(array('orders/payments', 'Payments', 'fa-credit-card')), 'pages' => array('orders/payments', 'payments')),
 				),
 			),
 			'kam' => array(
@@ -448,6 +448,25 @@ if (!function_exists('crm_tab_groups')) {
 			'tm_tickets' => array('label' => 'Tickets', 'icon' => 'fa-ticket', 'tabs' => array(
 				array('team_tickets', 'team/tickets', 'Tickets', 'fa-ticket'),
 			)),
+			// Back Office: approvals, orders and billing, each one menu link with tabs
+			'bo_approvals' => array('label' => 'Approvals', 'icon' => 'fa-check-square-o', 'tabs' => array(
+				array('lead_review', 'leads/review_leads', 'Leads', 'fa-check-square-o'),
+				array('orders_pending', 'orders/pending_process', 'Order Process', 'fa-hourglass-half'),
+				array('orders_pending_sales', 'orders/view_sales_approvals', 'Sales Approvals', 'fa-check-circle'),
+				array('kam_onboard', 'kam/onboard', 'Onboard Client', 'fa-user-plus'),
+			)),
+			'bo_orders' => array('label' => 'Orders', 'icon' => 'fa-shopping-cart', 'tabs' => array(
+				array('orders_open', 'orders/open', 'Open', 'fa-folder-open-o'),
+				array('orders_followups', 'orders/followups', 'Follow-up', 'fa-calendar-check-o'),
+				array('orders_completed', 'orders?status=completed', 'Completed', 'fa-check-circle'),
+				array('orders_closed', 'orders?status=closed', 'Closed', 'fa-flag-checkered'),
+				array('orders_rejected', 'orders?status=rejected_lost', 'Rejected / Lost', 'fa-times-circle'),
+				array('orders_management', 'orders', 'All', 'fa-list'),
+			)),
+			'bo_billing' => array('label' => 'Invoices & Payments', 'icon' => 'fa-file-text-o', 'tabs' => array(
+				array('orders_invoices', 'orders/invoices', 'Invoices', 'fa-file-text-o'),
+				array('orders_payments', 'orders/payments', 'Payments', 'fa-credit-card'),
+			)),
 			'database' => array('label' => 'Database', 'icon' => 'fa-database', 'tabs' => array(
 				array('leads_import', 'leads/import', 'Import', 'fa-upload'),
 				array('leads_export', 'leads/export', 'Export', 'fa-download'),
@@ -536,10 +555,17 @@ if (!function_exists('crm_mz_tabbar')) {
 		$CI =& get_instance();
 		$path = trim(preg_replace('~^manager/?~', '', $CI->uri->uri_string()), '/');
 		$path = preg_replace('~(/[0-9]+)+$~', '', $path); // list page number, e.g. leads/0
-		$alias = array('database' => 'leads');
+		$alias = array('database' => 'leads', 'back-office' => 'leads/review_leads', 'back_office' => 'leads/review_leads',
+			'orders/completed' => 'orders?status=completed', 'orders/closed' => 'orders?status=closed', 'orders/rejected_lost' => 'orders?status=rejected_lost',
+			'invoices' => 'orders/invoices', 'payments' => 'orders/payments');
 		if (isset($alias[$path])) $path = $alias[$path];
+		if ($path === 'orders') {
+			$st = (string)$CI->input->get('status');
+			if (in_array($st, array('completed', 'closed', 'rejected_lost'), true)) $path = 'orders?status=' . $st;
+			elseif (in_array($st, array('open', 'followups'), true)) $path = 'orders/' . $st;
+		}
 		foreach (crm_tab_groups() as $gk => $g) {
-			if (strpos($gk, 'mz_') !== 0 && strpos($gk, 'tm_') !== 0) continue;
+			if (strpos($gk, 'mz_') !== 0 && strpos($gk, 'tm_') !== 0 && strpos($gk, 'bo_') !== 0) continue;
 			foreach ($g['tabs'] as $t) {
 				if ($t[1] === $path || (strpos($gk, 'tm_') === 0 && strpos($path, $t[1] . '/') === 0)) {
 					$path = $t[1];

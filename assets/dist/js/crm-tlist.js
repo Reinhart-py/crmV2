@@ -1,7 +1,7 @@
 /* Team lists: phone card labels, status chips and owner initials.
    Display only; DataTables sorting, search and filters still use the original values. */
 jQuery(function ($) {
-  var $t = $('.tlv #example_lead');
+  var $t = $('.tlv #example_lead, .tlv table.tl-t').first();
   if (!$t.length || !$.fn.dataTable || !$.fn.dataTable.isDataTable($t)) return;
   var dt = $t.DataTable();
   var heads = $t.find('thead th').map(function () { return $.trim($(this).text()); }).get();
@@ -16,9 +16,11 @@ jQuery(function ($) {
   function color(s) { var h = 0; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return COLORS[h % COLORS.length]; }
   function chip(t) {
     t = t.toLowerCase();
-    if (/won|converted|approved|active|completed|sale/.test(t)) return 's-ok';
+    if (/unpaid|overdue/.test(t)) return 's-x';
+    if (/partial/.test(t)) return 's-w';
+    if (/won|converted|approved|active|completed|fulfilled|sale|paid/.test(t)) return 's-ok';
     if (/lost|reject|dead|cancel|dncr|not interested/.test(t)) return 's-x';
-    if (/pending|review|expected|follow|progress|hold|process/.test(t)) return 's-w';
+    if (/pending|review|expected|follow|progress|hold|process|onboarding|submitted/.test(t)) return 's-w';
     if (/database|new/.test(t)) return 's-na';
     return '';
   }

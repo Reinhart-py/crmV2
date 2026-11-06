@@ -1,6 +1,6 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
-<div class="content-wrapper px-4">
+<div class="content-wrapper px-4 tlv">
 <?php echo crm_mz_tabbar(); ?>
     <section class="content-header" style="padding: 15px 15px 5px 15px;">
         <h1 style="font-size: 22px; font-weight: 800; color: #000000; margin: 0; letter-spacing: -0.02em;"> <?php echo $info['page_heading']; ?> </h1>
@@ -25,21 +25,15 @@
                                         <option value="corporate" <?php echo ($this->input->get('vertical') === 'corporate') ? 'selected' : ''; ?>>Corporate Services</option>
                                     </select>
                                 </div>
-                                <?php if (!isset($status_filter) || ($status_filter !== 'sales' && $status_filter !== 'Sales')) { ?>
+                                <?php
+                                // Status choice only on All Orders: the Open, Follow-up, Completed, Closed and Rejected / Lost tabs are fixed lists
+                                if (empty($scope_filter) && (empty($status_filter) || !in_array($status_filter, array('sales', 'Sales', 'open', 'followups', 'completed', 'closed', 'rejected_lost', 'ongoing'), true))) { ?>
                                 <div class="form-group">
-                                    <select class="form-control" name="status" style="border: 1px solid #cbd5e1; border-radius: 4px;">
-                                        <option value="">All Statuses</option>
-                                        <option value="open" <?php echo ($this->input->get('status') === 'open' || (isset($status_filter) && $status_filter === 'open')) ? 'selected' : ''; ?>>Open Orders</option>
-                                        <option value="followups" <?php echo ($this->input->get('status') === 'followups' || (isset($status_filter) && $status_filter === 'followups')) ? 'selected' : ''; ?>>Orders Follow-up</option>
-                                        <option value="completed" <?php echo ($this->input->get('status') === 'completed' || (isset($status_filter) && $status_filter === 'completed')) ? 'selected' : ''; ?>>Completed Orders</option>
-                                        <option value="closed" <?php echo ($this->input->get('status') === 'closed' || (isset($status_filter) && $status_filter === 'closed')) ? 'selected' : ''; ?>>Closed Orders</option>
-                                        <option value="rejected_lost" <?php echo ($this->input->get('status') === 'rejected_lost' || (isset($status_filter) && $status_filter === 'rejected_lost')) ? 'selected' : ''; ?>>Rejected / Lost Orders</option>
-                                        <option value="Submitted" <?php echo ($this->input->get('status') === 'Submitted') ? 'selected' : ''; ?>>Submitted</option>
-                                        <option value="Approved" <?php echo ($this->input->get('status') === 'Approved') ? 'selected' : ''; ?>>Approved</option>
-                                        <option value="In Progress" <?php echo ($this->input->get('status') === 'In Progress') ? 'selected' : ''; ?>>In Progress</option>
-                                        <option value="Fulfilled" <?php echo ($this->input->get('status') === 'Fulfilled') ? 'selected' : ''; ?>>Fulfilled</option>
-                                        <option value="Sales" <?php echo ($this->input->get('status') === 'Sales') ? 'selected' : ''; ?>>Sales</option>
-                                        <option value="Cancelled" <?php echo ($this->input->get('status') === 'Cancelled') ? 'selected' : ''; ?>>Cancelled</option>
+                                    <select class="form-control" name="status" aria-label="Status">
+                                        <option value="">All statuses</option>
+                                        <?php foreach (array('Submitted', 'Approved', 'In Progress', 'Onboarding', 'Pending Sales Approval', 'Fulfilled', 'Cancelled') as $so) { ?>
+                                        <option value="<?php echo $so; ?>"<?php echo $this->input->get('status') === $so ? ' selected' : ''; ?>><?php echo $so; ?></option>
+                                        <?php } ?>
                                     </select>
                                 </div>
                                 <?php } ?>
@@ -65,7 +59,7 @@
                         <?php echo get_message($this->session->flashdata('message'), 'message'); ?>
                         <?php if(isset($orders_list) && !empty($orders_list)) { ?>
                         <div class="table-responsive">
-                            <table id="example_orders" class="table table-hover table-bordered crm-table" style="width:100%; font-size: 13px;">
+                            <table id="example_orders" class="table table-hover table-bordered crm-table tl-t" style="width:100%;">
                                 <thead>
                                     <tr>
                                         <th>Order No.</th>
@@ -91,9 +85,9 @@
                                             <?php } ?>
                                         </td>
                                         <td style="color: #0f172a; font-weight: 600;"><?php echo htmlspecialchars($ord['service_title'] ?: ($ord['vertical_code'] ?: '-')); ?></td>
-                                        <td style="font-weight: 800; color: #000000;">AED <?php echo number_format((float)($ord['mrr'] ?: $ord['pricing_amount']), 2); ?></td>
+                                        <td data-order="<?php echo (float)($ord['mrr'] ?: $ord['pricing_amount']); ?>">AED <?php echo number_format((float)($ord['mrr'] ?: $ord['pricing_amount']), 2); ?></td>
                                         <td style="color: #0f172a; font-weight: 600;"><?php echo htmlspecialchars($ord['staff_name'] ?: ($ord['assigned_dept'] ?: '-')); ?></td>
-                                        <td><span class="no_show"><?php echo !empty($ord['created_at']) ? date('Ymd', strtotime($ord['created_at'])) : ''; ?></span><?php echo !empty($ord['created_at']) ? date('d-m-Y', strtotime($ord['created_at'])) : '-'; ?></td>
+                                        <td data-order="<?php echo htmlspecialchars((string)($ord['created_at'] ?? '')); ?>"><span class="no_show"><?php echo !empty($ord['created_at']) ? date('Ymd', strtotime($ord['created_at'])) : ''; ?></span><?php echo !empty($ord['created_at']) ? date('d-m-Y', strtotime($ord['created_at'])) : '-'; ?></td>
                                         <td>
                                             <?php if (!empty($ord['followup_date'])) { ?>
                                                 <strong style="color: #000000;"><?php echo date('d-m-Y', strtotime($ord['followup_date'])); ?></strong>
@@ -114,7 +108,7 @@
                                                 elseif(in_array($st, ['Cancelled','Rejected','Lost'])) $badge_color = 'danger';
                                                 elseif($st === 'Pending Sales Approval') $badge_color = 'neutral';
                                             ?>
-                                            <span class="crm-status crm-status-<?php echo $badge_color; ?>"><?php echo htmlspecialchars($st); ?></span>
+                                            <?php echo htmlspecialchars($st); ?>
                                         </td>
                                         <td style="text-align: center;">
                                             <?php if (isset($status_filter) && $status_filter === 'followups'): ?>
@@ -230,7 +224,8 @@ $(document).ready(function() {
     }
     $('#example_orders').DataTable({
         "pageLength": 50,
-        responsive: true
+        "order": <?php echo (isset($status_filter) && $status_filter === 'followups') ? '[]' : '[[0, "desc"]]'; ?>,
+        responsive: window.innerWidth >= 768 // phones: each order is a card (crm-tlist.css)
     });
 
     if ($.fn.datepicker) {
@@ -260,5 +255,7 @@ $(document).ready(function() {
 
     });
 </script>
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-tlist.css?v=20261106_4">
+<script src="<?php echo base_url(); ?>assets/dist/js/crm-tlist.js?v=20261106_3"></script>
 
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

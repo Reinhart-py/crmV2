@@ -320,6 +320,6 @@ return false;
  
   </script>
 
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-tlist.css?v=20261106_2">
-<script src="<?php echo base_url(); ?>assets/dist/js/crm-tlist.js?v=20261106_2"></script>
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-tlist.css?v=20261106_4">
+<script src="<?php echo base_url(); ?>assets/dist/js/crm-tlist.js?v=20261106_3"></script>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>
