@@ -58,6 +58,17 @@ $weekend = array_filter(explode(',', $set['weekend']));
       </div>
 
       <div class="sx-card">
+        <div class="sx-card-h"><h3><i class="fa fa-money"></i> Payroll rules</h3></div>
+        <div class="sx-card-b sx-grid">
+          <div class="form-group"><label for="s13">Overtime rate, normal</label><input id="s13" type="number" min="1" max="5" step="0.05" class="form-control" name="ot_rate" value="<?php echo $h($set['ot_rate']); ?>"<?php echo $dis; ?>><p class="help-block">Times the hourly basic pay. UAE: 1.25.</p></div>
+          <div class="form-group"><label for="s14">Overtime rate, night or rest day</label><input id="s14" type="number" min="1" max="5" step="0.05" class="form-control" name="ot_rest_rate" value="<?php echo $h($set['ot_rest_rate']); ?>"<?php echo $dis; ?>><p class="help-block">UAE: 1.5 (10 pm to 4 am, rest days, public holidays).</p></div>
+          <div class="form-group"><label for="s15">Gratuity days a year, first 5 years</label><input id="s15" type="number" min="0" max="60" class="form-control" name="gratuity_days_first5" value="<?php echo $h($set['gratuity_days_first5']); ?>"<?php echo $dis; ?>><p class="help-block">UAE: 21 days of basic pay.</p></div>
+          <div class="form-group"><label for="s16">Gratuity days a year, after 5 years</label><input id="s16" type="number" min="0" max="60" class="form-control" name="gratuity_days_after5" value="<?php echo $h($set['gratuity_days_after5']); ?>"<?php echo $dis; ?>><p class="help-block">UAE: 30 days of basic pay; total at most 2 years' pay.</p></div>
+          <div class="form-group" style="grid-column: 1 / -1;"><div class="checkbox" style="margin:0;"><label style="font-weight:500;"><input type="checkbox" name="deduct_absence" value="1"<?php echo $set['deduct_absence'] === '1' ? ' checked' : ''; ?><?php echo $dis; ?>> Deduct pay for working days with no attendance and no approved leave</label></div><p class="help-block">Leave this off unless everyone clocks in every day.</p></div>
+        </div>
+      </div>
+
+      <div class="sx-card">
         <div class="sx-card-h"><h3><i class="fa fa-file-text-o"></i> Policies</h3></div>
         <div class="sx-card-b sx-grid">
           <div class="form-group"><label for="s9">Probation (months)</label><input id="s9" type="number" min="0" max="12" class="form-control" name="probation_months" value="<?php echo $h($set['probation_months']); ?>"<?php echo $dis; ?>><p class="help-block">UAE law allows at most 6 months.</p></div>

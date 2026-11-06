@@ -153,8 +153,9 @@ if (!function_exists('crm_perm_catalog')) {
 					'hr_topics' => array('label' => 'Search Topics', 'desc' => 'HR help topics; Full can edit topics', 'fallback' => 'hr', 'nav' => array(array('hr/search_topics', 'Search Topics', 'fa-search'))),
 					'hr_targets' => array('label' => 'Targets', 'tab' => 'hr_perf', 'desc' => 'Sales targets per person', 'fallback' => 'hr', 'nav' => array(array('hr/targets', 'Targets', 'fa-crosshairs')), 'pages' => array('hr/targets'), 'write' => array('hr/targets/add')),
 					'hr_lifecycle' => array('label' => 'Employee Lifecycle', 'tab' => 'hr_people', 'desc' => 'Joining, probation and exit', 'fallback' => 'hr', 'nav' => array(array('hr/lifecycle', 'Employee Lifecycle', 'fa-users')), 'pages' => array('hr/lifecycle')),
-					'hr_payroll' => array('label' => 'Payroll', 'tab' => 'hr_pay', 'desc' => 'Salaries and payslips', 'fallback' => 'hr', 'nav' => array(array('hr/payroll', 'Payroll', 'fa-money')), 'pages' => array('hr/payroll'), 'write' => array('hr/payroll/generate')),
-					'hr_taxation' => array('label' => 'Taxation & Gratuity', 'tab' => 'hr_pay', 'desc' => 'Tax and end-of-service figures', 'fallback' => 'hr', 'nav' => array(array('hr/taxation', 'Taxation & Gratuity', 'fa-calculator')), 'pages' => array('hr/taxation')),
+					'hr_payroll' => array('label' => 'Payroll', 'tab' => 'hr_pay', 'desc' => 'Monthly payroll, payslips, overtime, loans and the WPS salary file; Full can prepare payroll and mark it paid', 'fallback' => 'hr', 'nav' => array(array('hr/payroll', 'Payroll', 'fa-money')), 'pages' => array('hr/payroll', 'hr/payroll_run', 'hr/loans'), 'write' => array('hr/payroll/generate')),
+					'hr_payroll_approve' => array('label' => 'Approve Payroll', 'desc' => 'Approve or reopen a month\'s payroll and final settlements (also needs Payroll or Gratuity & Settlement to open them)', 'levels' => 'r'),
+					'hr_taxation' => array('label' => 'Gratuity & Settlement', 'tab' => 'hr_pay', 'desc' => 'End-of-service gratuity for everyone and final settlements when people leave', 'fallback' => 'hr', 'nav' => array(array('hr/taxation', 'Gratuity & Settlement', 'fa-calculator')), 'pages' => array('hr/taxation', 'hr/settlement')),
 					'hr_appraisals' => array('label' => 'Appraisals', 'tab' => 'hr_perf', 'desc' => 'Performance reviews', 'fallback' => 'hr', 'nav' => array(array('hr/appraisals', 'Appraisals', 'fa-star-o')), 'pages' => array('hr/appraisals'), 'write' => array('hr/appraisals/add')),
 					'hr_documents' => array('label' => 'Documents & Expiry', 'tab' => 'hr_people', 'desc' => 'Passport, visa, Emirates ID, labour card and insurance expiry for everyone, with the files', 'fallback' => 'hr', 'nav' => array(array('hr/documents', 'Document Vault', 'fa-folder-open-o')), 'pages' => array('hr/documents'), 'write' => array('hr/documents/add')),
 					'events_list' => array('label' => 'Manage Events & Festivals', 'desc' => 'Publish company holidays, festivals, events and awards for everyone', 'fallback' => 'events', 'nav' => array(array('events/manage', 'Events & Festivals', 'fa-calendar', 'write')), 'write' => array('events/manage')),
@@ -427,7 +428,8 @@ if (!function_exists('crm_tab_groups')) {
 			)),
 			'hr_pay' => array('label' => 'Payroll', 'icon' => 'fa-money', 'tabs' => array(
 				array('hr_payroll', 'hr/payroll', 'Payroll', 'fa-money'),
-				array('hr_taxation', 'hr/taxation', 'Taxation & Gratuity', 'fa-calculator'),
+				array('hr_payroll', 'hr/loans', 'Loans & Advances', 'fa-credit-card'),
+				array('hr_taxation', 'hr/taxation', 'Gratuity & Settlement', 'fa-calculator'),
 			)),
 			'hr_perf' => array('label' => 'Performance', 'icon' => 'fa-star-o', 'tabs' => array(
 				array('hr_appraisals', 'hr/appraisals', 'Appraisals', 'fa-star-o'),

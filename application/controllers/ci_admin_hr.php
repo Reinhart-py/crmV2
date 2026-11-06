@@ -26,7 +26,8 @@ class Ci_admin_hr extends CI_Controller {
 			'leaves' => 'hr_leaves', 'apply_leave' => 'hr_leaves', 'cancel_leave' => 'hr_leaves', 'leave_action' => 'hr_leaves',
 			'events_plans' => 'events_view',
 			'training' => 'self_training',
-			'search_topics' => 'hr_topics'
+			'search_topics' => 'hr_topics',
+			'payslip' => 'hr_payroll'
 		);
 		if (isset($self_service[$method])) {
 			$this->is_hr = ($this->is_admin || crm_can($self_service[$method], 'write'));
@@ -40,8 +41,11 @@ class Ci_admin_hr extends CI_Controller {
 			'attendance' => 'hr_attendance', 'ajax_clock' => 'hr_attendance', 'attendance_save' => 'hr_attendance',
 			'shifts' => 'hr_shifts', 'add_shift' => 'hr_shifts', 'assign_shift' => 'hr_shifts',
 			'leave_balances' => 'hr_leaves', 'leave_adjust' => 'hr_leaves', 'leave_calendar' => 'hr_leaves', 'leave_types' => 'hr_leaves', 'leave_type_save' => 'hr_leaves',
-			'payroll' => 'hr_payroll', 'generate_payroll' => 'hr_payroll', 'payroll_status' => 'hr_payroll',
-			'taxation' => 'hr_taxation',
+			'payroll' => 'hr_payroll', 'generate_payroll' => 'hr_payroll', 'payroll_status' => 'hr_payroll', 'payroll_old_csv' => 'hr_payroll',
+			'payroll_run' => 'hr_payroll', 'payroll_recalc' => 'hr_payroll', 'payroll_item_add' => 'hr_payroll', 'payroll_item_delete' => 'hr_payroll',
+			'payroll_step' => 'hr_payroll', 'payroll_csv' => 'hr_payroll', 'payroll_sif' => 'hr_payroll',
+			'loans' => 'hr_payroll', 'loan_save' => 'hr_payroll', 'loan_close' => 'hr_payroll',
+			'taxation' => 'hr_taxation', 'settlement' => 'hr_taxation', 'settlement_save' => 'hr_taxation', 'settlement_step' => 'hr_taxation',
 			'appraisals' => 'hr_appraisals', 'add_appraisal' => 'hr_appraisals',
 			'documents' => 'hr_documents', 'add_document' => 'hr_documents',
 			'employees' => 'hr_employees', 'employee_save' => 'hr_employees', 'salary_add' => 'hr_employees', 'salary_delete' => 'hr_employees',
@@ -50,8 +54,8 @@ class Ci_admin_hr extends CI_Controller {
 		);
 		$key = isset($page_keys[$method]) ? $page_keys[$method] : 'hr';
 		// The HR file's save actions check their own right (Employees or Salary & Bank Details, Full) inside the method
-		$own_check = in_array($method, array('employee_save', 'salary_add', 'salary_delete'), true);
-		$changes = !$own_check && (($this->input->server('REQUEST_METHOD') === 'POST') || preg_match('/^(add_|delete_|update_|generate_|assign_|leave_adjust|leave_type_save|attendance_save|payroll_status|topic_)/', $method));
+		$own_check = in_array($method, array('employee_save', 'salary_add', 'salary_delete', 'payroll_step', 'settlement_step'), true);
+		$changes = !$own_check && (($this->input->server('REQUEST_METHOD') === 'POST') || preg_match('/^(add_|delete_|update_|generate_|assign_|leave_adjust|leave_type_save|attendance_save|payroll_status|payroll_recalc|payroll_item_|loan_save|loan_close|settlement_save|topic_)/', $method));
 		$this->is_hr = ($this->is_admin || crm_can($key, $changes ? 'write' : 'read'));
 		if ($method !== 'ajax_clock' && !$this->is_hr) {
 			$this->session->set_flashdata('error_message', 'You do not have ' . ($changes ? 'Full' : 'View') . ' access to this HR page. Ask your administrator if you need it.');
@@ -1299,126 +1303,881 @@ class Ci_admin_hr extends CI_Controller {
 		return strtotime($date . ' ' . $time) > strtotime($date . ' ' . $shift['start_time']) + 60 * (int)$shift['grace_period_mins'] ? 'Late' : 'Present';
 	}
 
+	/* ======================= Payroll (HR part 3) ======================= */
+
+	public static function pay_item_kinds()
+	{
+		return array('addition' => 'Addition (bonus, commission, allowance)', 'deduction' => 'Deduction (fine, damage, other)', 'ot' => 'Overtime, normal', 'ot_rest' => 'Overtime, night or rest day');
+	}
+
+	public static function settlement_reasons()
+	{
+		return array('Resignation', 'Termination', 'End of contract', 'Retirement', 'Other');
+	}
+
+	private function _pay_tables()
+	{
+		static $done = false;
+		if ($done) return;
+		$done = true;
+		$this->_leave_tables();
+		$this->db->query("CREATE TABLE IF NOT EXISTS ci_hr_pay_runs (
+			id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+			month CHAR(7) NOT NULL,
+			status VARCHAR(12) NOT NULL DEFAULT 'Draft',
+			people INT NOT NULL DEFAULT 0,
+			gross DECIMAL(14,2) NOT NULL DEFAULT 0, deductions DECIMAL(14,2) NOT NULL DEFAULT 0, net DECIMAL(14,2) NOT NULL DEFAULT 0,
+			created_by INT NULL, created_at DATETIME NULL, calculated_at DATETIME NULL,
+			approved_by INT NULL, approved_at DATETIME NULL, paid_by INT NULL, paid_at DATETIME NULL,
+			UNIQUE KEY month (month)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		$this->db->query("CREATE TABLE IF NOT EXISTS ci_hr_payslips (
+			id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+			run_id INT NOT NULL, user_id INT NOT NULL,
+			info TEXT NULL, earnings TEXT NULL, deductions TEXT NULL,
+			days_in_month INT NOT NULL DEFAULT 30, days_paid DECIMAL(5,1) NOT NULL DEFAULT 0, leave_days DECIMAL(5,1) NOT NULL DEFAULT 0,
+			fixed DECIMAL(12,2) NOT NULL DEFAULT 0, variable DECIMAL(12,2) NOT NULL DEFAULT 0,
+			gross DECIMAL(12,2) NOT NULL DEFAULT 0, total_deductions DECIMAL(12,2) NOT NULL DEFAULT 0, net DECIMAL(12,2) NOT NULL DEFAULT 0,
+			UNIQUE KEY run_user (run_id, user_id), KEY user_id (user_id)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		$this->db->query("CREATE TABLE IF NOT EXISTS ci_hr_pay_items (
+			id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+			user_id INT NOT NULL, month CHAR(7) NOT NULL, kind VARCHAR(12) NOT NULL,
+			label VARCHAR(100) NOT NULL DEFAULT '', hours DECIMAL(6,2) NOT NULL DEFAULT 0, amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+			created_by INT NULL, created_at DATETIME NULL,
+			KEY month_user (month, user_id)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		$this->db->query("CREATE TABLE IF NOT EXISTS ci_hr_loans (
+			id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+			user_id INT NOT NULL, kind VARCHAR(20) NOT NULL DEFAULT 'Loan',
+			amount DECIMAL(12,2) NOT NULL, monthly DECIMAL(12,2) NOT NULL, start_month CHAR(7) NOT NULL,
+			reason VARCHAR(255) NOT NULL DEFAULT '', status VARCHAR(12) NOT NULL DEFAULT 'Active',
+			created_by INT NULL, created_at DATETIME NULL, closed_by INT NULL, closed_at DATETIME NULL, close_note VARCHAR(255) NOT NULL DEFAULT '',
+			KEY user_id (user_id)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		$this->db->query("CREATE TABLE IF NOT EXISTS ci_hr_loan_pay (
+			id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+			loan_id INT NOT NULL, user_id INT NOT NULL, run_id INT NULL, settlement_id INT NULL, month CHAR(7) NOT NULL, amount DECIMAL(12,2) NOT NULL,
+			KEY loan_id (loan_id), KEY run_id (run_id)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		$this->db->query("CREATE TABLE IF NOT EXISTS ci_hr_settlements (
+			id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+			user_id INT NOT NULL, last_day DATE NOT NULL, reason VARCHAR(40) NOT NULL DEFAULT '',
+			basic DECIMAL(12,2) NOT NULL DEFAULT 0, gross DECIMAL(12,2) NOT NULL DEFAULT 0,
+			service_days INT NOT NULL DEFAULT 0, unpaid_days DECIMAL(6,1) NOT NULL DEFAULT 0,
+			gratuity DECIMAL(12,2) NOT NULL DEFAULT 0,
+			leave_days DECIMAL(5,1) NOT NULL DEFAULT 0, leave_pay DECIMAL(12,2) NOT NULL DEFAULT 0,
+			salary_days DECIMAL(5,1) NOT NULL DEFAULT 0, salary_pay DECIMAL(12,2) NOT NULL DEFAULT 0,
+			notice_pay DECIMAL(12,2) NOT NULL DEFAULT 0, loans DECIMAL(12,2) NOT NULL DEFAULT 0,
+			extra_lines TEXT NULL, total DECIMAL(12,2) NOT NULL DEFAULT 0,
+			note VARCHAR(500) NOT NULL DEFAULT '', status VARCHAR(12) NOT NULL DEFAULT 'Draft',
+			created_by INT NULL, created_at DATETIME NULL, approved_by INT NULL, approved_at DATETIME NULL, paid_at DATETIME NULL,
+			KEY user_id (user_id)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		$this->db->data_cache = array();
+	}
+
+	/** Approving payroll and settlements is its own right (Admin always has it). */
+	private function _can_approve_pay()
+	{
+		return $this->is_admin || crm_can('hr_payroll_approve', 'read');
+	}
+
+	private function _can_edit_pay()
+	{
+		return $this->is_admin || crm_can('hr_payroll', 'write');
+	}
+
+	/** Salary structure in force on a date: [user_id] => row. People with no structure fall back to the staff salary as basic. */
+	private function _salaries_on($users, $date)
+	{
+		$ids = array();
+		foreach ($users as $u) $ids[] = (int)$u['id'];
+		if (!$ids) return array();
+		$out = array();
+		foreach ($this->db->where_in('user_id', $ids)->where('effective_from <=', $date)->order_by('user_id ASC, effective_from ASC, id ASC')->get('ci_hr_salary')->result_array() as $s) $out[(int)$s['user_id']] = $s;
+		$cs = array();
+		foreach ($this->db->select('id, c_salary')->where_in('id', $ids)->get('ci_user')->result_array() as $r) $cs[(int)$r['id']] = $r['c_salary'];
+		foreach ($ids as $id) {
+			if (isset($out[$id])) { $out[$id]['source'] = 'structure'; continue; }
+			$v = (float)str_replace(',', '', (string)(isset($cs[$id]) ? $cs[$id] : 0));
+			if ($v > 0) $out[$id] = array('basic' => $v, 'housing' => 0, 'transport' => 0, 'other' => 0, 'extras' => null, 'total' => $v, 'source' => 'staff');
+		}
+		return $out;
+	}
+
+	/** Salary lines of a structure: list of [label, amount]. */
+	private static function _salary_lines($s)
+	{
+		$l = array(array('Basic salary', (float)$s['basic']));
+		if ((float)$s['housing'] > 0) $l[] = array('Housing allowance', (float)$s['housing']);
+		if ((float)$s['transport'] > 0) $l[] = array('Transport allowance', (float)$s['transport']);
+		if ((float)$s['other'] > 0) $l[] = array('Other allowance', (float)$s['other']);
+		foreach ((array)json_decode((string)$s['extras'], true) as $x) if (!empty($x['name'])) $l[] = array($x['name'], (float)$x['amount']);
+		return $l;
+	}
+
+	/**
+	 * Leave pay cuts of one person between two dates: how many days of pay are lost to unpaid / half-pay leave.
+	 * UAE sick leave: first 15 days full pay, next 30 half pay, then unpaid; maternity: 45 full, 15 half, then unpaid (counted over the year).
+	 */
+	private function _leave_cuts($leaves, $types, $start, $end, $hol, $wk)
+	{
+		$cum = array();
+		$by = array();
+		$leave_days = 0.0;
+		foreach ($leaves as $l) {
+			$name = $l['leave_type'];
+			$t = isset($types[$name]) ? $types[$name] : array('pay' => 'full', 'count_mode' => 'working');
+			if (!isset($cum[$name])) $cum[$name] = 0.0;
+			$units = array();
+			if ((float)$l['total_days'] == 0.5 && $l['from_date'] === $l['to_date']) $units[$l['from_date']] = 0.5;
+			else for ($d = strtotime($l['from_date']); $d <= strtotime($l['to_date']); $d += 86400) {
+				$k = date('Y-m-d', $d);
+				if ($t['count_mode'] === 'working' && (in_array(date('D', $d), $wk, true) || isset($hol[$k]))) continue;
+				$units[$k] = 1.0;
+			}
+			foreach ($units as $k => $u) {
+				$p = $cum[$name];
+				switch ($t['pay']) {
+					case 'unpaid': $cut = 1.0; break;
+					case 'half': $cut = 0.5; break;
+					case 'sick_uae': $cut = $p < 15 ? 0.0 : ($p < 45 ? 0.5 : 1.0); break;
+					case 'maternity_uae': $cut = $p < 45 ? 0.0 : ($p < 60 ? 0.5 : 1.0); break;
+					default: $cut = 0.0;
+				}
+				$cum[$name] += $u;
+				if ($k < $start || $k > $end) continue;
+				$leave_days += $u;
+				if (!isset($by[$name])) $by[$name] = array('days' => 0.0, 'cut' => 0.0);
+				$by[$name]['days'] += $u;
+				$by[$name]['cut'] += $u * $cut;
+			}
+		}
+		return array('by' => $by, 'leave_days' => $leave_days);
+	}
+
+	/** Everything a pay run needs for one month, loaded once. */
+	private function _pay_context($month, $run_id)
+	{
+		$from = $month . '-01';
+		$to = date('Y-m-t', strtotime($from));
+		$year = substr($month, 0, 4);
+		$ctx = array('month' => $month, 'from' => $from, 'to' => $to, 'dim' => (int)date('t', strtotime($from)), 'run_id' => (int)$run_id);
+		$ctx['set'] = $this->_hr_settings();
+		$ctx['types'] = $this->_leave_types(true);
+		$ctx['wk'] = $this->_weekend();
+		$ctx['hol'] = $this->_holidays($year . '-01-01', $year . '-12-31');
+		$ctx['exit'] = array();
+		if ($this->db->table_exists('ci_user_exit')) foreach ($this->db->get('ci_user_exit')->result_array() as $r) $ctx['exit'][(int)$r['user_id']] = $r['left_on'];
+		// people on the payroll: still working, or left during or after this month
+		$people = array();
+		$on = array();
+		foreach ($this->db->select('id, admin_status')->get('ci_user')->result_array() as $r) $on[(int)$r['id']] = (int)$r['admin_status'] === 1;
+		foreach ($this->_people(true) as $u) {
+			$uid = (int)$u['id'];
+			if (isset($ctx['exit'][$uid]) && $ctx['exit'][$uid] < $from) continue;
+			if (!isset($ctx['exit'][$uid]) && empty($on[$uid])) continue;
+			if (!empty($u['c_doj']) && strtotime($u['c_doj']) && date('Y-m-d', strtotime($u['c_doj'])) > $to) continue;
+			$people[$uid] = $u;
+		}
+		$ctx['people'] = $people;
+		$ids = array_keys($people);
+		$ctx['sal'] = $this->_salaries_on($people, $to);
+		$ctx['leaves'] = array();
+		$ctx['items'] = array();
+		$ctx['loans'] = array();
+		$ctx['emp'] = array();
+		$ctx['att'] = array();
+		if ($ids) {
+			foreach ($this->db->where_in('user_id', $ids)->where('status', 'Approved')->where('from_date <=', $to)->where('to_date >=', $year . '-01-01')->order_by('from_date ASC, id ASC')->get('ci_leaves')->result_array() as $l) $ctx['leaves'][(int)$l['user_id']][] = $l;
+			foreach ($this->db->where_in('user_id', $ids)->where('month', $month)->order_by('id ASC')->get('ci_hr_pay_items')->result_array() as $r) $ctx['items'][(int)$r['user_id']][] = $r;
+			foreach ($this->db->where_in('user_id', $ids)->where('status', 'Active')->where('start_month <=', $month)->get('ci_hr_loans')->result_array() as $r) {
+				$paid = $this->db->query("SELECT COALESCE(SUM(P.amount),0) AS s FROM ci_hr_loan_pay P LEFT JOIN ci_hr_pay_runs R ON R.id = P.run_id WHERE P.loan_id = ? AND (P.settlement_id IS NOT NULL OR (P.run_id <> ? AND R.status IN ('Approved','Paid')))", array((int)$r['id'], (int)$run_id))->row_array();
+				$r['left'] = round((float)$r['amount'] - (float)$paid['s'], 2);
+				if ($r['left'] > 0) $ctx['loans'][(int)$r['user_id']][] = $r;
+			}
+			foreach ($this->db->where_in('user_id', $ids)->get('ci_hr_employee')->result_array() as $r) $ctx['emp'][(int)$r['user_id']] = $r;
+			if ($ctx['set']['deduct_absence'] === '1') foreach ($this->db->select('user_id, attendance_date')->where_in('user_id', $ids)->where('attendance_date >=', $from)->where('attendance_date <=', $to)->get('ci_attendance')->result_array() as $r) $ctx['att'][(int)$r['user_id']][$r['attendance_date']] = 1;
+			$ctx['users'] = array();
+			foreach ($this->db->select('id, name, emp_id, department, c_doj, iban, bank, bank_no')->where_in('id', $ids)->get('ci_user')->result_array() as $r) $ctx['users'][(int)$r['id']] = $r;
+			$ctx['desig'] = array();
+			foreach ($this->db->where_in('user_id', $ids)->get('ci_user_designation')->result_array() as $r) $ctx['desig'][(int)$r['user_id']] = $r['designation'];
+		}
+		return $ctx;
+	}
+
+	/** One payslip (not saved): null when the person has no salary or did not work in the month. */
+	private function _calc_slip($uid, $ctx)
+	{
+		if (empty($ctx['sal'][$uid])) return null;
+		$s = $ctx['sal'][$uid];
+		$u = $ctx['users'][$uid];
+		$set = $ctx['set'];
+		$start = $ctx['from'];
+		$end = $ctx['to'];
+		if (!empty($u['c_doj']) && strtotime($u['c_doj'])) $start = max($start, date('Y-m-d', strtotime($u['c_doj'])));
+		if (isset($ctx['exit'][$uid])) $end = min($end, $ctx['exit'][$uid]);
+		if ($start > $end) return null;
+		$dim = $ctx['dim'];
+		$days = (int)round((strtotime($end) - strtotime($start)) / 86400) + 1;
+		$f = $days >= $dim ? 1.0 : $days / $dim;
+		$notes = array();
+		if ($f < 1) $notes[] = 'Paid for ' . $days . ' of ' . $dim . ' days (' . ($start > $ctx['from'] ? 'joined ' . date('d M', strtotime($start)) : 'last day ' . date('d M', strtotime($end))) . ').';
+		if ($s['source'] === 'staff') $notes[] = 'No salary structure in the HR file: the staff salary is used as basic.';
+
+		$earn = array();
+		$fixed = 0.0;
+		foreach (self::_salary_lines($s) as $l) { $a = round($l[1] * $f, 2); if ($a > 0) { $earn[] = array($l[0], $a); $fixed += $a; } }
+		$variable = 0.0;
+		$ded = array();
+		$hourly = (float)$s['basic'] / 30 / max(1, (float)$set['work_hours']);
+		foreach (isset($ctx['items'][$uid]) ? $ctx['items'][$uid] : array() as $it) {
+			if ($it['kind'] === 'ot' || $it['kind'] === 'ot_rest') {
+				$rate = (float)($it['kind'] === 'ot' ? $set['ot_rate'] : $set['ot_rest_rate']);
+				$a = (float)$it['amount'] > 0 ? (float)$it['amount'] : round($hourly * (float)$it['hours'] * $rate, 2);
+				$earn[] = array(($it['label'] !== '' ? $it['label'] : 'Overtime') . ' (' . (0 + $it['hours']) . ' h x ' . (0 + $rate) . ')', $a);
+				$variable += $a;
+			} elseif ($it['kind'] === 'addition') {
+				$earn[] = array($it['label'], (float)$it['amount']);
+				$variable += (float)$it['amount'];
+			} else {
+				$ded[] = array($it['label'], (float)$it['amount']);
+			}
+		}
+		$daily = (float)$s['total'] / 30;
+		$lc = $this->_leave_cuts(isset($ctx['leaves'][$uid]) ? $ctx['leaves'][$uid] : array(), $ctx['types'], $start, $end, $ctx['hol'], $ctx['wk']);
+		foreach ($lc['by'] as $name => $b) {
+			if ($b['cut'] <= 0) continue;
+			$fd = rtrim(rtrim(number_format($b['days'], 1), '0'), '.');
+			$label = $name . ', ' . $fd . ' day' . ($b['days'] == 1 ? '' : 's') . ($b['cut'] < $b['days'] ? ' (' . rtrim(rtrim(number_format($b['cut'], 1), '0'), '.') . ' unpaid)' : ' unpaid');
+			$ded[] = array($label, round($daily * $b['cut'], 2));
+		}
+		if ($set['deduct_absence'] === '1') {
+			$abs = 0;
+			$last = min($end, date('Y-m-d', strtotime('-1 day')));
+			$on_leave = array();
+			foreach (isset($ctx['leaves'][$uid]) ? $ctx['leaves'][$uid] : array() as $l) for ($d = strtotime($l['from_date']); $d <= strtotime($l['to_date']); $d += 86400) $on_leave[date('Y-m-d', $d)] = 1;
+			for ($d = strtotime($start); $d <= strtotime($last); $d += 86400) {
+				$k = date('Y-m-d', $d);
+				if (isset($ctx['att'][$uid][$k]) || isset($on_leave[$k]) || isset($ctx['hol'][$k]) || in_array(date('D', $d), $ctx['wk'], true)) continue;
+				$abs++;
+			}
+			if ($abs > 0) $ded[] = array('Absent without leave, ' . $abs . ' day' . ($abs === 1 ? '' : 's'), round($daily * $abs, 2));
+		}
+		$gross = round($fixed + $variable, 2);
+		$sum = 0.0;
+		foreach ($ded as $d) $sum += $d[1];
+		$loan_pay = array();
+		foreach (isset($ctx['loans'][$uid]) ? $ctx['loans'][$uid] : array() as $ln) {
+			$a = round(min((float)$ln['monthly'], (float)$ln['left'], max(0, $gross - $sum)), 2);
+			if ($a <= 0) continue;
+			$ded[] = array($ln['kind'] . ' repayment (' . number_format((float)$ln['left'] - $a, 2) . ' left after this)', $a);
+			$sum += $a;
+			$loan_pay[] = array('loan_id' => (int)$ln['id'], 'amount' => $a);
+		}
+		$sum = round($sum, 2);
+		$net = round($gross - $sum, 2);
+		if ($net < 0) { $notes[] = 'Deductions are more than the pay; net set to 0.'; $net = 0.0; }
+		$e = isset($ctx['emp'][$uid]) ? $ctx['emp'][$uid] : array();
+		$info = array('name' => $u['name'], 'emp_id' => $u['emp_id'], 'department' => $u['department'], 'designation' => isset($ctx['desig'][$uid]) ? $ctx['desig'][$uid] : '',
+			'doj' => $u['c_doj'], 'iban' => $u['iban'], 'bank' => $u['bank'], 'payment_method' => isset($e['payment_method']) ? $e['payment_method'] : '',
+			'routing' => isset($e['wps_routing_code']) ? $e['wps_routing_code'] : '', 'mol_id' => isset($e['mol_person_id']) ? $e['mol_person_id'] : '',
+			'start' => $start, 'end' => $end, 'currency' => $set['currency'], 'notes' => $notes);
+		return array('slip' => array('user_id' => $uid, 'info' => json_encode($info), 'earnings' => json_encode($earn), 'deductions' => json_encode($ded),
+			'days_in_month' => $dim, 'days_paid' => $days, 'leave_days' => $lc['leave_days'], 'fixed' => round($fixed, 2), 'variable' => round($variable, 2),
+			'gross' => $gross, 'total_deductions' => $sum, 'net' => $net), 'loan_pay' => $loan_pay);
+	}
+
+	/** Work out every payslip of a draft run again. */
+	private function _calc_run($run)
+	{
+		$rid = (int)$run['id'];
+		$ctx = $this->_pay_context($run['month'], $rid);
+		$this->db->trans_start();
+		$this->db->where('run_id', $rid)->delete('ci_hr_payslips');
+		$this->db->where('run_id', $rid)->delete('ci_hr_loan_pay');
+		$t = array('people' => 0, 'gross' => 0.0, 'deductions' => 0.0, 'net' => 0.0);
+		foreach (array_keys($ctx['people']) as $uid) {
+			$r = $this->_calc_slip($uid, $ctx);
+			if (!$r) continue;
+			$this->db->insert('ci_hr_payslips', $r['slip'] + array('run_id' => $rid));
+			foreach ($r['loan_pay'] as $lp) $this->db->insert('ci_hr_loan_pay', $lp + array('user_id' => $uid, 'run_id' => $rid, 'month' => $run['month']));
+			$t['people']++;
+			$t['gross'] += $r['slip']['gross'];
+			$t['deductions'] += $r['slip']['total_deductions'];
+			$t['net'] += $r['slip']['net'];
+		}
+		$this->db->where('id', $rid)->update('ci_hr_pay_runs', array('people' => $t['people'], 'gross' => round($t['gross'], 2), 'deductions' => round($t['deductions'], 2), 'net' => round($t['net'], 2), 'calculated_at' => date('Y-m-d H:i:s')));
+		$this->db->trans_complete();
+		return $t;
+	}
+
+	private function _run($id)
+	{
+		$this->_pay_tables();
+		$run = (int)$id > 0 ? $this->db->where('id', (int)$id)->get('ci_hr_pay_runs')->row_array() : array();
+		if (empty($run)) {
+			$this->session->set_flashdata('error_message', 'Pay run not found.');
+			redirect('manager/hr/payroll');
+		}
+		return $run;
+	}
+
+	private function _post_only($back)
+	{
+		if ($this->input->server('REQUEST_METHOD') !== 'POST') redirect($back);
+	}
+
+	private function _need($ok, $msg, $back)
+	{
+		if ($ok) return;
+		$this->session->set_flashdata('error_message', $msg);
+		redirect($back);
+	}
+
+	/** Payroll home: pay runs, and the older payroll records kept from before. */
 	public function payroll()
 	{
+		$this->_pay_tables();
 		$data = array();
-		$data['info'] = array(
-			'title' => 'Payroll & Compensation - HR',
-			'page_heading' => 'Payroll Processing'
-		);
-		$data['active_tab'] = 'payroll';
-
-		$filter_month = trim((string)$this->input->get('month')) ?: date('Y-m');
-
-		$this->db->select('P.*, U.name as employee_name, U.email as employee_email')
-			->from('ci_hr_payroll P')
-			->join('ci_user U', 'U.id = P.user_id', 'left')
-			->where('P.month_year', $filter_month);
-
-		$raw_pay = $this->db->order_by('P.id', 'DESC')->get()->result_array();
-		foreach ($raw_pay as &$p) {
-			$p['period_month'] = $p['month_year'];
-			$p['allowances'] = floatval($p['housing_allowance']) + floatval($p['transport_allowance']) + floatval($p['other_allowance']);
-			$p['deductions'] = floatval($p['tax_deduction']) + floatval($p['other_deductions']);
-		}
-		unset($p);
-
-		$data['payroll_records'] = $raw_pay;
-		$data['filter_month'] = $filter_month;
-		$data['selected_month'] = $filter_month;
-		$data['employees'] = $this->db->select('id, name, email, c_salary')->where($this->_active_sql(), NULL, FALSE)->order_by('name', 'ASC')->get('ci_user')->result_array();
-
-		$this->load->view('manager/hr/index', $data);
+		$data['info'] = array('title' => 'Payroll - HR', 'page_heading' => 'Payroll');
+		$data['runs'] = $this->db->query('SELECT R.*, A.name AS approved_name FROM ci_hr_pay_runs R LEFT JOIN ci_user A ON A.id = R.approved_by ORDER BY R.month DESC')->result_array();
+		$have = array();
+		foreach ($data['runs'] as $r) $have[$r['month']] = 1;
+		$next = date('Y-m');
+		while (isset($have[$next])) $next = date('Y-m', strtotime($next . '-01 +1 month'));
+		$data['next_month'] = $next;
+		$data['old'] = $this->db->query('SELECT month_year, COUNT(*) AS n, SUM(net_salary) AS net, SUM(status = \'Paid\') AS paid FROM ci_hr_payroll GROUP BY month_year ORDER BY month_year DESC')->result_array();
+		$data['set'] = $this->_hr_settings();
+		$data['can_edit'] = $this->_can_edit_pay();
+		$data['can_approve'] = $this->_can_approve_pay();
+		$data['loans_open'] = (int)$this->db->where('status', 'Active')->count_all_results('ci_hr_loans');
+		$this->load->view('manager/hr/payroll', $data);
 	}
 
+	/** Older payroll records (before pay runs), one month as CSV. */
+	public function payroll_old_csv()
+	{
+		$m = preg_match('/^\d{4}-\d{2}$/', (string)$this->input->get('month')) ? $this->input->get('month') : '';
+		if ($m === '') redirect('manager/hr/payroll');
+		$rows = $this->db->query('SELECT U.name, U.emp_id, P.* FROM ci_hr_payroll P LEFT JOIN ci_user U ON U.id = P.user_id WHERE P.month_year = ? ORDER BY U.name', array($m))->result_array();
+		$out = fopen('php://temp', 'w+');
+		fputcsv($out, array('Employee', 'Employee ID', 'Basic', 'Housing', 'Transport', 'Other', 'Gross', 'Deductions', 'Net', 'Status', 'Paid on'));
+		foreach ($rows as $r) fputcsv($out, array($r['name'], $r['emp_id'], $r['basic_salary'], $r['housing_allowance'], $r['transport_allowance'], $r['other_allowance'], $r['gross_salary'], (float)$r['tax_deduction'] + (float)$r['other_deductions'], $r['net_salary'], $r['status'], $r['payment_date']));
+		rewind($out);
+		$csv = stream_get_contents($out);
+		header('Content-Type: text/csv; charset=utf-8');
+		header('Content-Disposition: attachment; filename="payroll-old-' . $m . '.csv"');
+		echo "\xEF\xBB\xBF" . $csv;
+		exit;
+	}
+
+	/** Start a pay run for a month (POST month_year) and work it out. */
 	public function generate_payroll()
 	{
-		if ($this->input->server('REQUEST_METHOD') !== 'POST') {
-			redirect('manager/hr/payroll');
-			return;
-		}
-
-		$month = trim((string)$this->input->post('month_year'));
-		if (empty($month)) {
-			$month = trim((string)$this->input->post('period_month')) ?: date('Y-m');
-		}
-
-		$cur_uid = (int)$this->session->userdata('manager_id');
-		$employees = $this->db->select('id, name, c_salary')->where($this->_active_sql(), NULL, FALSE)->get('ci_user')->result_array();
-
-		$gen_count = 0;
-		foreach ($employees as $emp) {
-			$uid = (int)$emp['id'];
-			$exist = $this->db->where('user_id', $uid)->where('month_year', $month)->count_all_results('ci_hr_payroll');
-			if ($exist == 0) {
-				$emp_salary = floatval($emp['c_salary']);
-				$basic = ($emp_salary > 0) ? round($emp_salary * 0.60, 2) : 6000.00;
-				$housing = ($emp_salary > 0) ? round($emp_salary * 0.25, 2) : 2500.00;
-				$trans = ($emp_salary > 0) ? round($emp_salary * 0.15, 2) : 1500.00;
-				$gross = $basic + $housing + $trans;
-				$tax = 0.00;
-				$deduct = 0.00;
-				$net = $gross - $tax - $deduct;
-
-				$this->db->insert('ci_hr_payroll', array(
-					'user_id' => $uid,
-					'month_year' => $month,
-					'basic_salary' => $basic,
-					'housing_allowance' => $housing,
-					'transport_allowance' => $trans,
-					'other_allowance' => 0.00,
-					'gross_salary' => $gross,
-					'tax_deduction' => $tax,
-					'other_deductions' => $deduct,
-					'net_salary' => $net,
-					'status' => 'Pending',
-					'created_by' => $cur_uid,
-					'created_at' => date('Y-m-d H:i:s')
-				));
-				$gen_count++;
-			}
-		}
-
-		$this->session->set_flashdata('message', "Generated payroll slips for {$gen_count} employees for {$month}.");
-		redirect('manager/hr/payroll?month=' . urlencode($month));
+		$this->_pay_tables();
+		$this->_post_only('manager/hr/payroll');
+		$month = trim((string)($this->input->post('month_year') ?: $this->input->post('period_month')));
+		$this->_need(preg_match('/^\d{4}-\d{2}$/', $month), 'Choose the month.', 'manager/hr/payroll');
+		$run = $this->db->where('month', $month)->get('ci_hr_pay_runs')->row_array();
+		if ($run) redirect('manager/hr/payroll_run/' . $run['id']);
+		$this->db->insert('ci_hr_pay_runs', array('month' => $month, 'status' => 'Draft', 'created_by' => $this->cur_uid, 'created_at' => date('Y-m-d H:i:s')));
+		$run = $this->db->where('id', $this->db->insert_id())->get('ci_hr_pay_runs')->row_array();
+		$t = $this->_calc_run($run);
+		$this->ci_admin_model->log_admin_action('hr_payroll_run', 'Started payroll for ' . $month . ': ' . $t['people'] . ' people', 'SUCCESS');
+		$this->session->set_flashdata('message', 'Payroll for ' . date('F Y', strtotime($month . '-01')) . ' worked out for ' . $t['people'] . ' people. Check it, add overtime or other items, then approve.');
+		redirect('manager/hr/payroll_run/' . $run['id']);
 	}
 
+	/** The old status links: now part of the pay run. */
 	public function payroll_status($id = 0, $status = '')
 	{
-		$id = (int)$id;
-		$allowed = array('Paid', 'Pending', 'Cancelled');
-		if ($id > 0 && in_array($status, $allowed)) {
-			$up = array('status' => $status);
-			if ($status === 'Paid') {
-				$up['payment_date'] = date('Y-m-d');
-			}
-			$this->db->where('id', $id)->update('ci_hr_payroll', $up);
-			$this->session->set_flashdata('message', "Payroll record marked {$status}.");
-		}
 		redirect('manager/hr/payroll');
 	}
 
+	public function payroll_run($id = 0)
+	{
+		$run = $this->_run($id);
+		$data = array();
+		$data['info'] = array('title' => 'Payroll ' . date('F Y', strtotime($run['month'] . '-01')) . ' - HR', 'page_heading' => 'Payroll');
+		$data['run'] = $run;
+		$data['slips'] = $this->db->query('SELECT S.* FROM ci_hr_payslips S WHERE S.run_id = ? ORDER BY S.id', array((int)$run['id']))->result_array();
+		foreach ($data['slips'] as &$s) { $s['i'] = json_decode($s['info'], true); $s['e'] = json_decode($s['earnings'], true); $s['d'] = json_decode($s['deductions'], true); }
+		unset($s);
+		usort($data['slips'], function ($a, $b) { return strcasecmp($a['i']['name'], $b['i']['name']); });
+		$data['items'] = $this->db->query('SELECT I.*, U.name FROM ci_hr_pay_items I LEFT JOIN ci_user U ON U.id = I.user_id WHERE I.month = ? ORDER BY U.name, I.id', array($run['month']))->result_array();
+		$ctx = $this->_pay_context($run['month'], (int)$run['id']);
+		$paid = array();
+		foreach ($data['slips'] as $s) $paid[(int)$s['user_id']] = 1;
+		$data['missing'] = array();
+		foreach ($ctx['people'] as $uid => $p) if (!isset($paid[$uid]) && empty($ctx['sal'][$uid])) $data['missing'][] = $p;
+		$data['people'] = $ctx['people'];
+		$data['set'] = $ctx['set'];
+		// WPS check: people paid through WPS need the MOL person ID, the agent routing code and the IBAN
+		$wps = array();
+		foreach ($data['slips'] as $s) {
+			$i = $s['i'];
+			if (stripos((string)$i['payment_method'], 'wps') === false && $i['payment_method'] !== '') continue;
+			$miss = array();
+			if (!preg_match('/^\d{14}$/', (string)$i['mol_id'])) $miss[] = 'MOL person ID (14 digits)';
+			if (!preg_match('/^\d{9}$/', (string)($i['routing'] !== '' ? $i['routing'] : $ctx['set']['employer_routing_code']))) $miss[] = 'routing code';
+			if (!preg_match('/^AE\d{21}$/', strtoupper(str_replace(' ', '', (string)$i['iban'])))) $miss[] = 'IBAN';
+			if ($miss) $wps[] = array('user_id' => $s['user_id'], 'name' => $i['name'], 'miss' => $miss);
+		}
+		$data['wps_missing'] = $wps;
+		$data['wps_company'] = preg_match('/^\d{13}$/', (string)$ctx['set']['mol_establishment_id']) && preg_match('/^\d{9}$/', (string)$ctx['set']['employer_routing_code']);
+		$data['item_kinds'] = self::pay_item_kinds();
+		$data['can_edit'] = $this->_can_edit_pay();
+		$data['can_approve'] = $this->_can_approve_pay();
+		foreach (array('created_by', 'approved_by', 'paid_by') as $k) {
+			$data['who'][$k] = '';
+			if (!empty($run[$k])) { $w = $this->db->select('name')->where('id', (int)$run[$k])->get('ci_user')->row_array(); $data['who'][$k] = $w ? $w['name'] : ''; }
+		}
+		$this->load->view('manager/hr/payroll_run', $data);
+	}
+
+	public function payroll_recalc($id = 0)
+	{
+		$run = $this->_run($id);
+		$back = 'manager/hr/payroll_run/' . $run['id'];
+		$this->_post_only($back);
+		$this->_need($run['status'] === 'Draft', 'Only a draft can be worked out again. Reopen it first.', $back);
+		$t = $this->_calc_run($run);
+		$this->session->set_flashdata('message', 'Worked out again: ' . $t['people'] . ' payslips.');
+		redirect($back);
+	}
+
+	/** Overtime, bonus or deduction for one person in a month (POST). */
+	public function payroll_item_add()
+	{
+		$this->_pay_tables();
+		$this->_post_only('manager/hr/payroll');
+		$month = (string)$this->input->post('month');
+		$run = $this->db->where('month', $month)->get('ci_hr_pay_runs')->row_array();
+		$back = $run ? 'manager/hr/payroll_run/' . $run['id'] : 'manager/hr/payroll';
+		$this->_need(!$run || $run['status'] === 'Draft', 'This payroll is ' . strtolower($run ? $run['status'] : '') . '. Reopen it to make changes.', $back);
+		$uid = (int)$this->input->post('user_id');
+		$kind = (string)$this->input->post('kind');
+		$kinds = self::pay_item_kinds();
+		$hours = round((float)$this->input->post('hours'), 2);
+		$amount = round((float)str_replace(',', '', (string)$this->input->post('amount')), 2);
+		$label = mb_substr(trim((string)$this->input->post('label')), 0, 100);
+		$ot = ($kind === 'ot' || $kind === 'ot_rest');
+		$ok = $uid > 0 && isset($kinds[$kind]) && preg_match('/^\d{4}-\d{2}$/', $month) && ($ot ? $hours > 0 && $hours <= 300 : ($amount > 0 && $label !== '')) && $amount >= 0;
+		$this->_need($ok, $ot ? 'Enter the overtime hours.' : 'Enter a description and an amount above 0.', $back);
+		$this->db->insert('ci_hr_pay_items', array('user_id' => $uid, 'month' => $month, 'kind' => $kind, 'label' => $label, 'hours' => $ot ? $hours : 0, 'amount' => $amount,
+			'created_by' => $this->cur_uid, 'created_at' => date('Y-m-d H:i:s')));
+		if ($run) $this->_calc_run($run);
+		$this->ci_admin_model->log_admin_action('hr_payroll_item', 'Added ' . $kinds[$kind] . ' for user ID #' . $uid . ' in ' . $month . ($ot ? ': ' . $hours . ' h' : ': ' . $amount), 'SUCCESS');
+		$this->session->set_flashdata('message', 'Added' . ($run ? ' and payslip updated.' : '.'));
+		redirect($back);
+	}
+
+	public function payroll_item_delete($id = 0)
+	{
+		$this->_pay_tables();
+		$this->_post_only('manager/hr/payroll');
+		$it = $this->db->where('id', (int)$id)->get('ci_hr_pay_items')->row_array();
+		$run = $it ? $this->db->where('month', $it['month'])->get('ci_hr_pay_runs')->row_array() : array();
+		$back = $run ? 'manager/hr/payroll_run/' . $run['id'] : 'manager/hr/payroll';
+		$this->_need($it && (!$run || $run['status'] === 'Draft'), 'This item cannot be removed now.', $back);
+		$this->db->where('id', (int)$id)->delete('ci_hr_pay_items');
+		if ($run) $this->_calc_run($run);
+		$this->session->set_flashdata('message', 'Removed' . ($run ? ' and payslip updated.' : '.'));
+		redirect($back);
+	}
+
+	/** Draft -> Approved (needs Approve Payroll), Approved -> Paid, Approved -> Draft (reopen), Draft -> deleted. */
+	public function payroll_step($id = 0, $step = '')
+	{
+		$run = $this->_run($id);
+		$back = 'manager/hr/payroll_run/' . $run['id'];
+		$this->_post_only($back);
+		$m = date('F Y', strtotime($run['month'] . '-01'));
+		$now = date('Y-m-d H:i:s');
+		if ($step === 'approve') {
+			$this->_need($this->_can_approve_pay(), 'You do not have the Approve Payroll right.', $back);
+			$this->_need($run['status'] === 'Draft', 'Only a draft can be approved.', $back);
+			$this->_calc_run($run);
+			$this->db->where('id', $run['id'])->update('ci_hr_pay_runs', array('status' => 'Approved', 'approved_by' => $this->cur_uid, 'approved_at' => $now));
+			$msg = 'Payroll for ' . $m . ' approved. Download the WPS file for the bank, then mark it as paid.';
+		} elseif ($step === 'reopen') {
+			$this->_need($this->_can_approve_pay(), 'You do not have the Approve Payroll right.', $back);
+			$this->_need($run['status'] === 'Approved', 'Only an approved (not paid) payroll can be reopened.', $back);
+			$this->db->where('id', $run['id'])->update('ci_hr_pay_runs', array('status' => 'Draft', 'approved_by' => null, 'approved_at' => null));
+			$msg = 'Payroll for ' . $m . ' reopened as a draft.';
+		} elseif ($step === 'paid') {
+			$this->_need($this->_can_edit_pay(), 'You need Full access to Payroll to do this.', $back);
+			$this->_need($run['status'] === 'Approved', 'Approve the payroll first.', $back);
+			$this->db->where('id', $run['id'])->update('ci_hr_pay_runs', array('status' => 'Paid', 'paid_by' => $this->cur_uid, 'paid_at' => $now));
+			foreach ($this->db->select('id, user_id, net')->where('run_id', $run['id'])->get('ci_hr_payslips')->result_array() as $s)
+				$this->ci_admin_model->add_notification((int)$s['user_id'], 'payslip', 'Payslip ready', 'Your payslip for ' . $m . ' is ready.', base_url('manager/hr/payslip/' . $s['id']), 'fa fa-money', '#16a34a');
+			// loans fully repaid are closed
+			foreach ($this->db->query("SELECT L.id, L.amount, COALESCE(SUM(CASE WHEN R.status IN ('Approved','Paid') OR P.settlement_id IS NOT NULL THEN P.amount END),0) AS paid FROM ci_hr_loans L LEFT JOIN ci_hr_loan_pay P ON P.loan_id = L.id LEFT JOIN ci_hr_pay_runs R ON R.id = P.run_id WHERE L.status = 'Active' GROUP BY L.id")->result_array() as $l)
+				if ((float)$l['paid'] >= (float)$l['amount'] - 0.001) $this->db->where('id', $l['id'])->update('ci_hr_loans', array('status' => 'Repaid', 'closed_at' => $now));
+			$msg = 'Payroll for ' . $m . ' marked as paid. Everyone can now see their payslip.';
+		} elseif ($step === 'delete') {
+			$this->_need($this->_can_edit_pay() && $run['status'] === 'Draft', 'Only a draft can be deleted.', $back);
+			$this->db->where('run_id', $run['id'])->delete('ci_hr_payslips');
+			$this->db->where('run_id', $run['id'])->delete('ci_hr_loan_pay');
+			$this->db->where('id', $run['id'])->delete('ci_hr_pay_runs');
+			$this->ci_admin_model->log_admin_action('hr_payroll_delete', 'Deleted draft payroll for ' . $run['month'], 'SUCCESS');
+			$this->session->set_flashdata('message', 'Draft payroll for ' . $m . ' deleted. Overtime and other items for the month are kept.');
+			redirect('manager/hr/payroll');
+		} else {
+			redirect($back);
+		}
+		$this->ci_admin_model->log_admin_action('hr_payroll_' . $step, $msg, 'SUCCESS');
+		$this->session->set_flashdata('message', $msg);
+		redirect($back);
+	}
+
+	/** Pay run as CSV (one line per person, every pay line in its own column). */
+	public function payroll_csv($id = 0)
+	{
+		$run = $this->_run($id);
+		$slips = $this->db->where('run_id', $run['id'])->get('ci_hr_payslips')->result_array();
+		$ecols = array(); $dcols = array();
+		foreach ($slips as &$s) {
+			$s['i'] = json_decode($s['info'], true); $s['e'] = array(); $s['d'] = array();
+			foreach ((array)json_decode($s['earnings'], true) as $l) { $k = preg_replace('/ \(.*$/', '', $l[0]); $ecols[$k] = 1; $s['e'][$k] = (isset($s['e'][$k]) ? $s['e'][$k] : 0) + $l[1]; }
+			foreach ((array)json_decode($s['deductions'], true) as $l) { $k = preg_replace('/(,| \().*$/', '', $l[0]); $dcols[$k] = 1; $s['d'][$k] = (isset($s['d'][$k]) ? $s['d'][$k] : 0) + $l[1]; }
+		}
+		unset($s);
+		usort($slips, function ($a, $b) { return strcasecmp($a['i']['name'], $b['i']['name']); });
+		$out = fopen('php://temp', 'w+');
+		fputcsv($out, array_merge(array('Employee', 'Employee ID', 'Department', 'Days paid'), array_keys($ecols), array('Gross'), array_keys($dcols), array('Total deductions', 'Net pay', 'Payment method', 'IBAN')));
+		foreach ($slips as $s) {
+			$row = array($s['i']['name'], $s['i']['emp_id'], $s['i']['department'], 0 + $s['days_paid']);
+			foreach (array_keys($ecols) as $k) $row[] = isset($s['e'][$k]) ? round($s['e'][$k], 2) : '';
+			$row[] = $s['gross'];
+			foreach (array_keys($dcols) as $k) $row[] = isset($s['d'][$k]) ? round($s['d'][$k], 2) : '';
+			array_push($row, $s['total_deductions'], $s['net'], $s['i']['payment_method'], $s['i']['iban']);
+			fputcsv($out, $row);
+		}
+		rewind($out);
+		$csv = stream_get_contents($out);
+		$this->ci_admin_model->log_admin_action('hr_payroll_export', 'Downloaded payroll ' . $run['month'], 'SUCCESS');
+		header('Content-Type: text/csv; charset=utf-8');
+		header('Content-Disposition: attachment; filename="payroll-' . $run['month'] . '.csv"');
+		echo "\xEF\xBB\xBF" . $csv;
+		exit;
+	}
+
+	/**
+	 * WPS Salary Information File (UAE): one EDR line per employee paid through WPS and one SCR line for the company.
+	 * EDR,person ID,agent routing code,IBAN,pay start,pay end,days,fixed pay,variable pay,days on leave
+	 * SCR,establishment ID,routing code,file date,file time,salary month (MMYYYY),EDR count,total,currency,reference
+	 */
+	public function payroll_sif($id = 0)
+	{
+		$run = $this->_run($id);
+		$back = 'manager/hr/payroll_run/' . $run['id'];
+		$this->_need($run['status'] !== 'Draft', 'Approve the payroll before making the WPS file.', $back);
+		$set = $this->_hr_settings();
+		$this->_need(preg_match('/^\d{13}$/', $set['mol_establishment_id']) && preg_match('/^\d{9}$/', $set['employer_routing_code']), 'Add the 13-digit MOL establishment ID and the 9-digit company bank routing code in HR Settings first.', $back);
+		$lines = array();
+		$total = 0.0;
+		$skipped = 0;
+		foreach ($this->db->where('run_id', $run['id'])->where('net >', 0)->get('ci_hr_payslips')->result_array() as $s) {
+			$i = json_decode($s['info'], true);
+			if ($i['payment_method'] !== '' && stripos($i['payment_method'], 'wps') === false) continue;
+			$iban = strtoupper(str_replace(' ', '', (string)$i['iban']));
+			$routing = $i['routing'] !== '' ? $i['routing'] : $set['employer_routing_code'];
+			if (!preg_match('/^\d{14}$/', (string)$i['mol_id']) || !preg_match('/^\d{9}$/', (string)$routing) || !preg_match('/^AE\d{21}$/', $iban)) { $skipped++; continue; }
+			// fixed = net pay less the variable part (variable pay cannot be more than the net)
+			$var = min((float)$s['variable'], (float)$s['net']);
+			$fix = round((float)$s['net'] - $var, 2);
+			$lines[] = implode(',', array('EDR', $i['mol_id'], $routing, $iban, $i['start'], $i['end'], (int)round((float)$s['days_paid']), number_format($fix, 2, '.', ''), number_format($var, 2, '.', ''), (int)round((float)$s['leave_days'])));
+			$total += (float)$s['net'];
+		}
+		$this->_need(count($lines) > 0, 'Nobody in this payroll has complete WPS details (MOL person ID, routing code and IBAN).', $back);
+		$now = time();
+		$lines[] = implode(',', array('SCR', $set['mol_establishment_id'], $set['employer_routing_code'], date('Y-m-d', $now), date('Hi', $now), date('mY', strtotime($run['month'] . '-01')), count($lines), number_format($total, 2, '.', ''), $set['currency'], 'SAL' . str_replace('-', '', $run['month'])));
+		$this->ci_admin_model->log_admin_action('hr_payroll_wps', 'Made WPS file for ' . $run['month'] . ': ' . (count($lines) - 1) . ' people' . ($skipped ? ', ' . $skipped . ' left out (details missing)' : ''), 'SUCCESS');
+		header('Content-Type: text/plain; charset=utf-8');
+		header('Content-Disposition: attachment; filename="' . $set['mol_establishment_id'] . date('ymdHis', $now) . '.SIF"');
+		echo implode("\r\n", $lines) . "\r\n";
+		exit;
+	}
+
+	/** One payslip, ready to print or save as PDF. HR with Payroll access, or the employee once the payroll is approved. */
+	public function payslip($id = 0)
+	{
+		$this->_pay_tables();
+		$s = $this->db->query('SELECT S.*, R.month, R.status AS run_status FROM ci_hr_payslips S JOIN ci_hr_pay_runs R ON R.id = S.run_id WHERE S.id = ?', array((int)$id))->row_array();
+		$own = $s && (int)$s['user_id'] === $this->cur_uid && in_array($s['run_status'], array('Approved', 'Paid'), true);
+		$hr = $this->is_admin || crm_can('hr_payroll', 'read');
+		if (!$s || (!$own && !$hr)) {
+			$this->session->set_flashdata('error_message', 'Payslip not found.');
+			redirect($hr ? 'manager/hr/payroll' : 'manager/hr/my_pay');
+		}
+		$data = array('s' => $s, 'i' => json_decode($s['info'], true), 'e' => json_decode($s['earnings'], true), 'd' => json_decode($s['deductions'], true), 'set' => $this->_hr_settings(),
+			'back' => $hr && !$own ? 'manager/hr/payroll_run/' . $s['run_id'] : 'manager/hr/my_pay');
+		$this->load->view('manager/hr/payslip', $data);
+	}
+
+	/* ---------- Loans and salary advances ---------- */
+
+	private function _loan_rows($where = '', $args = array())
+	{
+		return $this->db->query("SELECT L.*, U.name, U.emp_id,
+			COALESCE((SELECT SUM(P.amount) FROM ci_hr_loan_pay P LEFT JOIN ci_hr_pay_runs R ON R.id = P.run_id WHERE P.loan_id = L.id AND (R.status IN ('Approved','Paid') OR P.settlement_id IS NOT NULL)), 0) AS repaid
+			FROM ci_hr_loans L LEFT JOIN ci_user U ON U.id = L.user_id " . $where . " ORDER BY FIELD(L.status, 'Active') DESC, L.id DESC", $args)->result_array();
+	}
+
+	public function loans()
+	{
+		$this->_pay_tables();
+		$data = array();
+		$data['info'] = array('title' => 'Loans & Advances - HR', 'page_heading' => 'Loans & Advances');
+		$data['loans'] = $this->_loan_rows();
+		$data['people'] = $this->_people();
+		$data['set'] = $this->_hr_settings();
+		$data['can_edit'] = $this->_can_edit_pay();
+		$this->load->view('manager/hr/loans', $data);
+	}
+
+	public function loan_save()
+	{
+		$this->_pay_tables();
+		$this->_post_only('manager/hr/loans');
+		$uid = (int)$this->input->post('user_id');
+		$kind = $this->input->post('kind') === 'Advance' ? 'Advance' : 'Loan';
+		$amount = round((float)str_replace(',', '', (string)$this->input->post('amount')), 2);
+		$monthly = round((float)str_replace(',', '', (string)$this->input->post('monthly')), 2);
+		$start = (string)$this->input->post('start_month');
+		if ($kind === 'Advance' && $monthly <= 0) $monthly = $amount;
+		$u = $uid ? $this->db->select('name')->where('id', $uid)->get('ci_user')->row_array() : array();
+		$this->_need($u && $amount > 0 && $monthly > 0 && $monthly <= $amount && preg_match('/^\d{4}-\d{2}$/', $start), 'Choose the employee, the amount, a monthly repayment (not more than the amount) and the first month.', 'manager/hr/loans');
+		$this->db->insert('ci_hr_loans', array('user_id' => $uid, 'kind' => $kind, 'amount' => $amount, 'monthly' => $monthly, 'start_month' => $start,
+			'reason' => mb_substr(trim((string)$this->input->post('reason')), 0, 255), 'status' => 'Active', 'created_by' => $this->cur_uid, 'created_at' => date('Y-m-d H:i:s')));
+		$this->ci_admin_model->log_admin_action('hr_loan_add', $kind . ' of ' . number_format($amount, 2) . ' for ' . $u['name'] . ', ' . number_format($monthly, 2) . ' a month from ' . $start, 'SUCCESS');
+		$this->session->set_flashdata('message', $kind . ' added for ' . $u['name'] . '. It is taken from salary from ' . date('F Y', strtotime($start . '-01')) . '.');
+		redirect('manager/hr/loans');
+	}
+
+	/** Stop repayments (written off or settled outside payroll). */
+	public function loan_close($id = 0)
+	{
+		$this->_pay_tables();
+		$this->_post_only('manager/hr/loans');
+		$l = $this->db->where('id', (int)$id)->get('ci_hr_loans')->row_array();
+		$this->_need($l && $l['status'] === 'Active', 'Loan not found or already closed.', 'manager/hr/loans');
+		$note = mb_substr(trim((string)$this->input->post('note')), 0, 255);
+		$this->db->where('id', $l['id'])->update('ci_hr_loans', array('status' => 'Closed', 'closed_by' => $this->cur_uid, 'closed_at' => date('Y-m-d H:i:s'), 'close_note' => $note));
+		$this->ci_admin_model->log_admin_action('hr_loan_close', 'Closed ' . $l['kind'] . ' #' . $l['id'] . ' of user ID #' . $l['user_id'] . ($note !== '' ? ': ' . $note : ''), 'SUCCESS');
+		$this->session->set_flashdata('message', $l['kind'] . ' closed. No more repayments will be taken.');
+		redirect('manager/hr/loans');
+	}
+
+	/* ---------- Gratuity and final settlement (UAE) ---------- */
+
+	/**
+	 * End-of-service gratuity (UAE Labour Law): nothing under one year; 21 days of basic pay for each of the first 5 years,
+	 * 30 days for each year after; parts of a year count pro rata; unpaid leave is not service; at most 2 years of pay.
+	 */
+	private function _gratuity($basic, $doj, $last_day, $unpaid_days, $set)
+	{
+		$out = array('days' => 0, 'years' => 0.0, 'amount' => 0.0, 'daily' => round((float)$basic / 30, 4));
+		if (!$doj || !strtotime($doj) || (float)$basic <= 0) return $out;
+		$days = (int)round((strtotime($last_day) - strtotime(date('Y-m-d', strtotime($doj)))) / 86400) + 1 - (int)round($unpaid_days);
+		if ($days <= 0) return $out;
+		$years = $days / 365;
+		$out['days'] = $days;
+		$out['years'] = $years;
+		if ($years < 1) return $out;
+		$d1 = (float)$set['gratuity_days_first5'];
+		$d2 = (float)$set['gratuity_days_after5'];
+		$gdays = min($years, 5) * $d1 + max(0, $years - 5) * $d2;
+		$out['amount'] = round(min($gdays * $basic / 30, 24 * $basic), 2);
+		return $out;
+	}
+
+	/** Unpaid leave days taken (approved) between two dates. */
+	private function _unpaid_days($uid, $from, $to)
+	{
+		$names = array();
+		foreach ($this->_leave_types(true) as $n => $t) if ($t['pay'] === 'unpaid') $names[] = $n;
+		if (!$names) return 0.0;
+		$r = $this->db->select('COALESCE(SUM(total_days),0) AS d', false)->where('user_id', (int)$uid)->where('status', 'Approved')->where_in('leave_type', $names)
+			->where('from_date >=', $from)->where('to_date <=', $to)->get('ci_leaves')->row_array();
+		return (float)$r['d'];
+	}
+
+	/** Gratuity owed today to everyone (the company's end-of-service liability), and the settlements. */
 	public function taxation()
 	{
+		$this->_pay_tables();
+		$set = $this->_hr_settings();
+		$people = $this->_people();
+		$today = date('Y-m-d');
+		$sal = $this->_salaries_on($people, $today);
+		$rows = array();
+		$total = 0.0;
+		foreach ($people as $p) {
+			$uid = (int)$p['id'];
+			$basic = isset($sal[$uid]) ? (float)$sal[$uid]['basic'] : 0.0;
+			$doj = !empty($p['c_doj']) && strtotime($p['c_doj']) ? date('Y-m-d', strtotime($p['c_doj'])) : '';
+			$g = $this->_gratuity($basic, $doj, $today, $doj ? $this->_unpaid_days($uid, $doj, $today) : 0, $set);
+			$total += $g['amount'];
+			$rows[] = array('id' => $uid, 'name' => $p['name'], 'emp_id' => $p['emp_id'], 'department' => $p['department'], 'doj' => $doj, 'basic' => $basic, 'source' => isset($sal[$uid]) ? $sal[$uid]['source'] : '', 'g' => $g);
+		}
 		$data = array();
-		$data['info'] = array(
-			'title' => 'Taxation & Benefits - HR',
-			'page_heading' => 'Taxation & Statutory Benefits'
-		);
-		$data['active_tab'] = 'taxation';
+		$data['info'] = array('title' => 'Gratuity & Settlement - HR', 'page_heading' => 'Gratuity & Settlement');
+		$data['rows'] = $rows;
+		$data['total'] = round($total, 2);
+		$data['set'] = $set;
+		$data['settlements'] = $this->db->query('SELECT S.*, U.name, U.emp_id FROM ci_hr_settlements S LEFT JOIN ci_user U ON U.id = S.user_id ORDER BY S.id DESC LIMIT 200')->result_array();
+		$data['all_people'] = $this->_people(true);
+		$data['can_edit'] = $this->_can_edit_pay();
+		$this->load->view('manager/hr/gratuity', $data);
+	}
 
-		$stat_row = $this->db->select('COUNT(*) as total_records, SUM(gross_salary) as total_gross, SUM(tax_deduction + other_deductions) as total_deductions, SUM(net_salary) as total_net')->get('ci_hr_payroll')->row_array();
+	/** Final settlement: new for a person (user id, ?last_day=), or an existing one (?id=). */
+	public function settlement($uid = 0)
+	{
+		$this->_pay_tables();
+		$set = $this->_hr_settings();
+		$sid = (int)$this->input->get('id');
+		$st = $sid ? $this->db->where('id', $sid)->get('ci_hr_settlements')->row_array() : array();
+		if ($st) $uid = (int)$st['user_id'];
+		$u = (int)$uid ? $this->db->select('id, name, emp_id, department, c_doj, gender, iban, bank')->where('id', (int)$uid)->get('ci_user')->row_array() : array();
+		if (!$u) { $this->session->set_flashdata('error_message', 'Choose the employee.'); redirect('manager/hr/taxation'); }
+		$uid = (int)$u['id'];
+		$exit = $this->db->table_exists('ci_user_exit') ? $this->db->where('user_id', $uid)->get('ci_user_exit')->row_array() : array();
+		$last = $st ? $st['last_day'] : $this->_ymd($this->input->get('last_day'));
+		if ($last === '') $last = $exit ? $exit['left_on'] : date('Y-m-d');
+		$doj = !empty($u['c_doj']) && strtotime($u['c_doj']) ? date('Y-m-d', strtotime($u['c_doj'])) : '';
+		$sal = $this->_salaries_on(array($u), $last);
+		$s = isset($sal[$uid]) ? $sal[$uid] : null;
+		$basic = $s ? (float)$s['basic'] : 0.0;
+		$gross = $s ? (float)$s['total'] : 0.0;
+		$unpaid = $doj ? $this->_unpaid_days($uid, $doj, $last) : 0.0;
+		$g = $this->_gratuity($basic, $doj, $last, $unpaid, $set);
+		// suggestions for a new settlement
+		$bal = $this->_leave_balances(array($u), (int)substr($last, 0, 4));
+		$leave_left = 0.0;
+		foreach ($this->_leave_types() as $n => $t) if ($t['accrual'] === 'uae_annual' && isset($bal[$uid][$n])) { $b = $bal[$uid][$n]; $leave_left = max(0, (float)$b['entitled'] + (float)$b['adjust'] - (float)$b['taken']); }
+		$m = substr($last, 0, 7);
+		$paid_month = (int)$this->db->query("SELECT COUNT(*) AS n FROM ci_hr_payslips S JOIN ci_hr_pay_runs R ON R.id = S.run_id WHERE S.user_id = ? AND R.month = ? AND R.status IN ('Approved','Paid')", array($uid, $m))->row()->n;
+		$salary_days = $paid_month ? 0 : (int)date('j', strtotime($last));
+		$loans = 0.0;
+		foreach ($this->_loan_rows('WHERE L.user_id = ? AND L.status = \'Active\'', array($uid)) as $l) $loans += max(0, (float)$l['amount'] - (float)$l['repaid']);
+		$data = array();
+		$data['info'] = array('title' => 'Final Settlement - ' . $u['name'], 'page_heading' => 'Final Settlement');
+		$data['u'] = $u;
+		$data['st'] = $st;
+		$data['exit'] = $exit;
+		$data['last'] = $last;
+		$data['doj'] = $doj;
+		$data['basic'] = $basic;
+		$data['gross'] = $gross;
+		$data['has_salary'] = (bool)$s;
+		$data['unpaid'] = $unpaid;
+		$data['g'] = $g;
+		$data['suggest'] = array('leave_days' => round($leave_left * 2) / 2, 'salary_days' => $salary_days, 'loans' => round($loans, 2), 'paid_month' => $paid_month);
+		$data['set'] = $set;
+		$data['reasons'] = self::settlement_reasons();
+		$data['can_edit'] = $this->_can_edit_pay() && (!$st || $st['status'] === 'Draft');
+		$data['can_approve'] = $this->_can_approve_pay();
+		if ($st && !empty($st['approved_by'])) { $w = $this->db->select('name')->where('id', (int)$st['approved_by'])->get('ci_user')->row_array(); $data['approved_name'] = $w ? $w['name'] : ''; }
+		$this->load->view('manager/hr/settlement', $data);
+	}
 
-		$data['payroll_stats'] = array(
-			'total_records' => (int)($stat_row['total_records'] ?? 0),
-			'total_gross' => floatval($stat_row['total_gross'] ?? 0),
-			'total_deductions' => floatval($stat_row['total_deductions'] ?? 0),
-			'total_net' => floatval($stat_row['total_net'] ?? 0)
-		);
+	public function settlement_save()
+	{
+		$this->_pay_tables();
+		$this->_post_only('manager/hr/taxation');
+		$sid = (int)$this->input->post('id');
+		$uid = (int)$this->input->post('user_id');
+		$st = $sid ? $this->db->where('id', $sid)->get('ci_hr_settlements')->row_array() : array();
+		if ($st) $uid = (int)$st['user_id'];
+		$back = 'manager/hr/settlement/' . $uid . ($sid ? '?id=' . $sid : '');
+		$this->_need(!$st || $st['status'] === 'Draft', 'This settlement is ' . strtolower($st ? $st['status'] : '') . ' and cannot be changed.', $back);
+		$u = $uid ? $this->db->select('id, name, c_doj')->where('id', $uid)->get('ci_user')->row_array() : array();
+		$last = $this->_ymd($this->input->post('last_day'));
+		$this->_need($u && $last !== '', 'Choose the last working day.', $back);
+		$set = $this->_hr_settings();
+		$sal = $this->_salaries_on(array($u), $last);
+		$s = isset($sal[$uid]) ? $sal[$uid] : null;
+		$this->_need((bool)$s, 'This person has no salary in the HR file, so nothing can be worked out.', $back);
+		$basic = (float)$s['basic'];
+		$gross = (float)$s['total'];
+		$doj = !empty($u['c_doj']) && strtotime($u['c_doj']) ? date('Y-m-d', strtotime($u['c_doj'])) : '';
+		$unpaid = $doj ? $this->_unpaid_days($uid, $doj, $last) : 0.0;
+		$g = $this->_gratuity($basic, $doj, $last, $unpaid, $set);
+		$num = function ($k) { return round((float)str_replace(',', '', (string)$this->input->post($k)), 2); };
+		$leave_days = max(0, round($num('leave_days') * 2) / 2);
+		$salary_days = max(0, min(31, round($num('salary_days') * 2) / 2));
+		$gratuity = $this->input->post('gratuity_override') !== null && $this->input->post('gratuity_override') !== '' ? max(0, $num('gratuity_override')) : $g['amount'];
+		$leave_pay = round($leave_days * $basic / 30, 2);
+		$salary_pay = round($salary_days * $gross / 30, 2);
+		$notice = $num('notice_pay');
+		$loans = max(0, $num('loans'));
+		$lines = array();
+		$ln = (array)$this->input->post('line_label');
+		$la = (array)$this->input->post('line_amount');
+		$extra = 0.0;
+		foreach ($ln as $i => $l) {
+			$l = mb_substr(trim((string)$l), 0, 100);
+			$a = isset($la[$i]) ? round((float)str_replace(',', '', (string)$la[$i]), 2) : 0;
+			if ($l !== '' && $a != 0) { $lines[] = array($l, $a); $extra += $a; }
+		}
+		$total = round($gratuity + $leave_pay + $salary_pay + $notice - $loans + $extra, 2);
+		$reasons = self::settlement_reasons();
+		$row = array('user_id' => $uid, 'last_day' => $last, 'reason' => in_array($this->input->post('reason'), $reasons, true) ? $this->input->post('reason') : 'Other',
+			'basic' => $basic, 'gross' => $gross, 'service_days' => $g['days'], 'unpaid_days' => $unpaid, 'gratuity' => $gratuity,
+			'leave_days' => $leave_days, 'leave_pay' => $leave_pay, 'salary_days' => $salary_days, 'salary_pay' => $salary_pay,
+			'notice_pay' => $notice, 'loans' => $loans, 'extra_lines' => $lines ? json_encode($lines) : null, 'total' => $total,
+			'note' => mb_substr(trim((string)$this->input->post('note')), 0, 500));
+		if ($st) $this->db->where('id', $sid)->update('ci_hr_settlements', $row);
+		else { $this->db->insert('ci_hr_settlements', $row + array('status' => 'Draft', 'created_by' => $this->cur_uid, 'created_at' => date('Y-m-d H:i:s'))); $sid = (int)$this->db->insert_id(); }
+		$this->ci_admin_model->log_admin_action('hr_settlement_save', 'Final settlement #' . $sid . ' for ' . $u['name'] . ': ' . number_format($total, 2), 'SUCCESS');
+		$this->session->set_flashdata('message', 'Final settlement saved as a draft: ' . $set['currency'] . ' ' . number_format($total, 2) . '.');
+		redirect('manager/hr/settlement/' . $uid . '?id=' . $sid);
+	}
 
-		$data['employees'] = $this->db->select('id, name, email, c_salary')->where($this->_active_sql(), NULL, FALSE)->order_by('name', 'ASC')->get('ci_user')->result_array();
-
-		$this->load->view('manager/hr/index', $data);
+	/** approve (Approve Payroll right) / paid / draft (reopen) / delete (draft only). */
+	public function settlement_step($id = 0, $step = '')
+	{
+		$this->_pay_tables();
+		$st = $this->db->where('id', (int)$id)->get('ci_hr_settlements')->row_array();
+		if (!$st) redirect('manager/hr/taxation');
+		$back = 'manager/hr/settlement/' . $st['user_id'] . '?id=' . $st['id'];
+		$this->_post_only($back);
+		$now = date('Y-m-d H:i:s');
+		if ($step === 'approve') {
+			$this->_need($this->_can_approve_pay() && $st['status'] === 'Draft', 'You cannot approve this settlement.', $back);
+			$this->db->where('id', $st['id'])->update('ci_hr_settlements', array('status' => 'Approved', 'approved_by' => $this->cur_uid, 'approved_at' => $now));
+			$msg = 'Final settlement approved.';
+		} elseif ($step === 'draft') {
+			$this->_need($this->_can_approve_pay() && $st['status'] === 'Approved', 'Only an approved (not paid) settlement can be reopened.', $back);
+			$this->db->where('id', $st['id'])->update('ci_hr_settlements', array('status' => 'Draft', 'approved_by' => null, 'approved_at' => null));
+			$msg = 'Settlement reopened as a draft.';
+		} elseif ($step === 'paid') {
+			$this->_need($this->_can_edit_pay() && $st['status'] === 'Approved', 'Approve the settlement first.', $back);
+			$this->db->where('id', $st['id'])->update('ci_hr_settlements', array('status' => 'Paid', 'paid_at' => $now));
+			// what is left of loans is recovered in the settlement
+			$left = (float)$st['loans'];
+			foreach ($this->_loan_rows('WHERE L.user_id = ? AND L.status = \'Active\'', array((int)$st['user_id'])) as $l) {
+				$a = round(min($left, max(0, (float)$l['amount'] - (float)$l['repaid'])), 2);
+				if ($a > 0) { $this->db->insert('ci_hr_loan_pay', array('loan_id' => $l['id'], 'user_id' => $st['user_id'], 'settlement_id' => $st['id'], 'month' => substr($st['last_day'], 0, 7), 'amount' => $a)); $left -= $a; }
+				$this->db->where('id', $l['id'])->update('ci_hr_loans', array('status' => $a >= (float)$l['amount'] - (float)$l['repaid'] - 0.001 ? 'Repaid' : 'Closed', 'closed_at' => $now, 'close_note' => 'Final settlement #' . $st['id']));
+			}
+			$msg = 'Final settlement marked as paid.';
+		} elseif ($step === 'delete') {
+			$this->_need($this->_can_edit_pay() && $st['status'] === 'Draft', 'Only a draft can be deleted.', $back);
+			$this->db->where('id', $st['id'])->delete('ci_hr_settlements');
+			$this->session->set_flashdata('message', 'Draft settlement deleted.');
+			redirect('manager/hr/taxation');
+		} else {
+			redirect($back);
+		}
+		$this->ci_admin_model->log_admin_action('hr_settlement_' . $step, $msg . ' #' . $st['id'] . ' (user ID #' . $st['user_id'] . ')', 'SUCCESS');
+		$this->session->set_flashdata('message', $msg);
+		redirect($back);
 	}
 
 	public function appraisals()
@@ -1515,6 +2274,7 @@ class Ci_admin_hr extends CI_Controller {
 			'employer_bank_name' => '', 'employer_routing_code' => '', 'currency' => 'AED', 'salary_day' => '28',
 			'weekend' => 'Sat,Sun', 'work_hours' => '8',
 			'probation_months' => '6', 'notice_days' => '30', 'annual_leave_days' => '30', 'doc_alert_days' => '60',
+			'ot_rate' => '1.25', 'ot_rest_rate' => '1.5', 'deduct_absence' => '0', 'gratuity_days_first5' => '21', 'gratuity_days_after5' => '30',
 		);
 	}
 
@@ -1642,6 +2402,11 @@ class Ci_admin_hr extends CI_Controller {
 			'notice_days' => $num($p('notice_days'), 0, 180, $def['notice_days']),
 			'annual_leave_days' => $num($p('annual_leave_days'), 0, 60, $def['annual_leave_days']),
 			'doc_alert_days' => $num($p('doc_alert_days'), 1, 365, $def['doc_alert_days']),
+			'ot_rate' => $num($p('ot_rate'), 1, 5, $def['ot_rate']),
+			'ot_rest_rate' => $num($p('ot_rest_rate'), 1, 5, $def['ot_rest_rate']),
+			'deduct_absence' => $this->input->post('deduct_absence') ? '1' : '0',
+			'gratuity_days_first5' => $num($p('gratuity_days_first5'), 0, 60, $def['gratuity_days_first5']),
+			'gratuity_days_after5' => $num($p('gratuity_days_after5'), 0, 60, $def['gratuity_days_after5']),
 		);
 		$changed = array();
 		foreach ($new as $k => $v) {
