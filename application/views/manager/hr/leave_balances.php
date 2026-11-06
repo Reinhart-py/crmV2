@@ -99,4 +99,6 @@ $(function () {
   $(document).on('click', '.lbAdj', function () { $('#lb1').val($(this).data('u')); $('#lbModal').modal('show'); });
 });
 </script>
+<script src="<?php echo base_url(); ?>assets/dist/js/crm-pager.js?v=20261106_2"></script>
+<script>crmPager('#lbTable');</script>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

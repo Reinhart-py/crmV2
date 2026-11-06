@@ -87,4 +87,6 @@ $(function () {
   $('#grNewF').on('submit', function () { var id = $('#gr1').val(); if (!id) return false; this.action = '<?php echo base_url(); ?>manager/hr/settlement/' + id; if (!$('#gr2').val()) $('#gr2').prop('disabled', true); });
 });
 </script>
+<script src="<?php echo base_url(); ?>assets/dist/js/crm-pager.js?v=20261106_2"></script>
+<script>crmPager('#grTable');</script>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

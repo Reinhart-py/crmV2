@@ -208,4 +208,6 @@ $(function () {
   });
 });
 </script>
+<script src="<?php echo base_url(); ?>assets/dist/js/crm-pager.js?v=20261106_2"></script>
+<script>crmPager('#atTable');</script>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

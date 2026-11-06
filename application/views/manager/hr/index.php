@@ -1556,4 +1556,6 @@ $(function() {
 });
 </script>
 
+<script src="<?php echo base_url(); ?>assets/dist/js/crm-pager.js?v=20261106_2"></script>
+<script>(function(){var q=document.querySelector('.js-lc-q');if(q)crmPager(q.closest('.hrx-card').querySelector('table'));})();</script>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

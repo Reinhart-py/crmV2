@@ -131,4 +131,6 @@ $base = base_url() . 'manager/hr/employees/';
   run();
 })();
 </script>
+<script src="<?php echo base_url(); ?>assets/dist/js/crm-pager.js?v=20261106_2"></script>
+<script>crmPager('#emTable');</script>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>
