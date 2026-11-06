@@ -112,7 +112,6 @@ if (!function_exists('crm_perm_catalog')) {
 				'items' => array(
 					'lead_review' => array('tab' => 'bo_approvals', 'label' => 'Pending Leads Approval', 'desc' => 'Approve database records as leads', 'fallback' => 'back_office', 'nav' => array(array('leads/review_leads', 'Pending Leads Approval', 'fa-check-square-o')), 'pages' => array('leads/review_leads', 'back-office', 'back_office')),
 					'orders_pending' => array('tab' => 'bo_approvals', 'label' => 'Pending Order Process', 'desc' => 'Orders waiting to be processed', 'fallback' => 'back_office', 'nav' => array(array('orders/pending_process', 'Pending Order Process', 'fa-hourglass-half')), 'pages' => array('orders/pending_process')),
-					'orders_pending_sales' => array('tab' => 'bo_approvals', 'label' => 'View Sales Approvals', 'desc' => 'Orders sent for sales approval', 'fallback' => 'back_office', 'nav' => array(array('orders/view_sales_approvals', 'View Sales Approvals', 'fa-eye')), 'pages' => array('orders/view_sales_approvals')),
 					'kam_onboard' => array('tab' => 'bo_approvals', 'label' => 'Onboard Client', 'desc' => 'Turn a sale into a KAM client', 'fallback' => 'kam', 'nav' => array(array('kam/onboard', 'Onboard Client', 'fa-user-plus')), 'pages' => array('kam/onboard')),
 					'orders_open' => array('tab' => 'bo_orders', 'label' => 'Open Orders', 'desc' => 'Orders in progress', 'fallback' => 'back_office', 'nav' => array(array('orders/open', 'Open Orders', 'fa-folder-open-o')), 'pages' => array('orders/open')),
 					'orders_followups' => array('tab' => 'bo_orders', 'label' => 'Orders Follow-up', 'desc' => 'Follow-ups on orders', 'fallback' => 'back_office', 'nav' => array(array('orders/followups', 'Orders Follow-up', 'fa-calendar-check-o')), 'pages' => array('orders/followups')),
@@ -339,6 +338,14 @@ if (!function_exists('crm_can')) {
 	}
 }
 
+/** Only KAM (Pending Sales Approval, Full) or Admin approves an order as a sale; Back Office can only request it. */
+if (!function_exists('crm_can_approve_sales')) {
+	function crm_can_approve_sales()
+	{
+		return crm_can('kam_sales_approval', 'write');
+	}
+}
+
 if (!function_exists('crm_is_full_admin')) {
 	function crm_is_full_admin($user_id = null)
 	{
@@ -452,7 +459,6 @@ if (!function_exists('crm_tab_groups')) {
 			'bo_approvals' => array('label' => 'Approvals', 'icon' => 'fa-check-square-o', 'tabs' => array(
 				array('lead_review', 'leads/review_leads', 'Leads', 'fa-check-square-o'),
 				array('orders_pending', 'orders/pending_process', 'Order Process', 'fa-hourglass-half'),
-				array('orders_pending_sales', 'orders/view_sales_approvals', 'Sales Approvals', 'fa-check-circle'),
 				array('kam_onboard', 'kam/onboard', 'Onboard Client', 'fa-user-plus'),
 			)),
 			'bo_orders' => array('label' => 'Orders', 'icon' => 'fa-shopping-cart', 'tabs' => array(

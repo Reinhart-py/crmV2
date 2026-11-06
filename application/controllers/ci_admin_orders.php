@@ -143,7 +143,6 @@ class Ci_admin_orders extends CI_Controller {
 				'title' => 'View All Orders - Back Office',
 				'page_heading' => 'View All Orders'
 			);
-			$this->db->where(crm_order_open_sql('O'), NULL, FALSE);
 			$can_edit_orders = true;
 			$reset_url = base_url('manager/orders');
 		}
@@ -440,6 +439,11 @@ class Ci_admin_orders extends CI_Controller {
 		$data['approval_history'] = !empty($order['approval_history']) ? json_decode($order['approval_history'], true) : array();
 		$data['activity_logs'] = $this->db->where('order_id', $id)->order_by('id', 'DESC')->get('ci_order_history')->result_array();
 		$data['can_approve'] = $can_approve;
+		// Sales: only KAM approves; Back Office requests it from the order
+		$ov_is_sale = ($order['status'] === 'Sales' || !empty($order['sales_ref_no']));
+		$ov_waiting = ($order['status'] === 'Pending Sales Approval' || $order['approval_status'] === 'pending_approval');
+		$data['can_approve_sales'] = crm_can_approve_sales();
+		$data['can_request_sales'] = $is_backoffice && !$ov_is_sale && !$ov_waiting && !in_array($order['status'], array('Cancelled', 'Rejected', 'Lost', 'Closed'), true);
 		$data['can_edit'] = $can_edit;
 		$data['can_assign_operation'] = $can_assign_operation;
 		$data['staff_list'] = $this->db->select('id, name, department')->where('status', 1)->order_by('name', 'ASC')->get('ci_user')->result_array();
@@ -474,6 +478,11 @@ class Ci_admin_orders extends CI_Controller {
 
 		// waiting for Sales Approval: approve it the same way as the Pending Sales Approval list (it becomes a Sale)
 		if ($order['status'] === 'Pending Sales Approval' || $order['approval_status'] === 'pending_approval') {
+			if (!crm_can_approve_sales()) {
+				$this->session->set_flashdata('error_message', 'Only KAM can approve sales. Back Office can request sales approval from the order.');
+				redirect('manager/orders/view/' . $id);
+				return;
+			}
 			if ($remarks !== '') {
 				$this->db->insert('ci_order_history', array(
 					'order_id' => $id,
@@ -555,7 +564,7 @@ class Ci_admin_orders extends CI_Controller {
 
 		$this->db->where('id', $id)->update('ci_orders', array(
 			'approval_status' => 'rejected',
-			'status' => 'Draft',
+			'status' => 'Rejected',
 			'approval_remarks' => $remarks,
 			'approval_history' => json_encode($history),
 			'updated_at' => $now
@@ -570,6 +579,9 @@ class Ci_admin_orders extends CI_Controller {
 			'created_at' => $now
 		));
 
+		if (!empty($order['lead_id'])) {
+			$this->db->where('lead_id', (int)$order['lead_id'])->where('order_request_status', 'pending_sales_approval')->update('ci_pipeline', array('order_request_status' => 'rejected', 'updated_at' => $now));
+		}
 		$this->session->set_flashdata('message', "Order #{$order['order_no']} has been marked rejected.");
 		redirect('manager/orders/view/' . $id);
 	}
@@ -602,7 +614,7 @@ class Ci_admin_orders extends CI_Controller {
 		// Same choices as the Update Status list. Sales and Pending Sales Approval come only from the Approve / Convert to Sales buttons
 		// (they also set the Sales number and move the record); a Sale can only be closed.
 		$is_sale = ($order['status'] === 'Sales' || !empty($order['sales_ref_no']));
-		$allowed = $is_sale ? array('Completed', 'Fulfilled', 'Cancelled') : array('Open', 'In Progress', 'Follow Up', 'Under Review', 'Completed', 'Fulfilled', 'Cancelled', 'Rejected', 'Draft', 'Submitted', 'Approved');
+		$allowed = $is_sale ? array('Completed', 'Fulfilled', 'Cancelled') : array('Open', 'In Progress', 'Follow Up', 'Under Review', 'Completed', 'Fulfilled', 'Cancelled', 'Rejected', 'Lost', 'Draft', 'Submitted', 'Approved');
 		if ($status === $order['status']) {
 			if ($notes === '') {
 				$this->session->set_flashdata('message', 'Status is unchanged.');
@@ -838,8 +850,8 @@ class Ci_admin_orders extends CI_Controller {
 		$cur_name = (string)$this->session->userdata('manager_name');
 
 		$is_backoffice = ($cur_role === 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
-		if (!$is_backoffice) {
-			$this->session->set_flashdata('error_message', 'Only authorized KAM, Back Office staff, or Admin can convert an Order to Sales.');
+		if (!crm_can_approve_sales()) {
+			$this->session->set_flashdata('error_message', 'Only KAM can approve sales. Back Office can request sales approval from the order.');
 			redirect('manager/orders/view/' . $id);
 			return;
 		}
@@ -1314,7 +1326,7 @@ class Ci_admin_orders extends CI_Controller {
 						);
 					}
 					$this->session->set_flashdata('message', "Order #{$order_no} sent for Sales Approval successfully!");
-					redirect('manager/orders/pending_sales_approval');
+					redirect(crm_can('kam_sales_approval') ? 'manager/orders/pending_sales_approval' : 'manager/orders/open');
 					return;
 				}
 
@@ -1378,51 +1390,74 @@ class Ci_admin_orders extends CI_Controller {
 	}
 
 
-	public function view_sales_approvals()
+	/** Back Office: send an order to KAM for sales approval (only KAM approves sales). POST. */
+	public function request_sales_approval($id = 0)
 	{
 		$this->if_not_login();
-		$cur_role = (int)$this->session->userdata('manager_role');
-		$cur_uid  = (int)$this->session->userdata('manager_id');
-		$is_backoffice = ($cur_role === 1 || has_section_perm('back_office', 'write') || $cur_uid === 1 || has_section_perm('back_office'));
-		if (!$is_backoffice) {
-			$this->session->set_flashdata('error_message', 'Access denied.');
-			redirect('manager/dashboard');
+		$id = (int)$id;
+		if ($this->input->server('REQUEST_METHOD') !== 'POST') {
+			redirect('manager/orders/view/' . $id);
 			return;
 		}
-
-		$data = array();
-		$data['info'] = array(
-			'title' => 'View Sales Approvals',
-			'page_heading' => 'View Sales Approvals'
-		);
-
-		$search = trim((string)$this->input->get('search'));
-		$d1 = trim((string)$this->input->get('d1'));
-		$d2 = trim((string)$this->input->get('d2'));
-
-		$this->db->select("O.*, U.name as created_by_name, A.name as assigned_to_name, L.customer as company_name, L.poc, L.contact1, L.email");
-		$this->db->from('ci_orders O');
-		$this->db->join('ci_user U', 'O.created_by = U.id', 'left');
-		$this->db->join('ci_user A', 'O.assigned_to = A.id', 'left');
-		$this->db->join('ci_leads L', 'O.lead_id = L.id', 'left');
-		$this->db->where("(O.status = 'Pending Sales Approval' OR O.approval_status = 'pending_approval' OR O.status = 'pending_sales_approval')", null, false);
-
-		if (!empty($search)) {
-			$clean = $this->db->escape_like_str($search);
-			$this->db->where("(O.order_no LIKE '%$clean%' OR O.client_name LIKE '%$clean%' OR L.customer LIKE '%$clean%')", null, false);
+		$cur_uid = (int)$this->session->userdata('manager_id');
+		$cur_role = (int)$this->session->userdata('manager_role');
+		$cur_name = (string)$this->session->userdata('manager_name');
+		$is_backoffice = ($cur_role === 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
+		$back = trim((string)$this->input->post('return_to'));
+		$back = in_array($back, array('manager/orders', 'manager/orders/open', 'manager/orders/followups', 'manager/orders?status=completed'), true) ? $back : 'manager/orders/view/' . $id;
+		if (!$is_backoffice) {
+			$this->session->set_flashdata('error_message', 'Access denied.');
+			redirect('manager/orders/view/' . $id);
+			return;
 		}
-		$d1_ts = ($d1 !== '') ? strtotime($d1) : false;
-		$d2_ts = ($d2 !== '') ? strtotime($d2) : false;
-		if ($d1_ts) {
-			$this->db->where('O.created_at >=', date('Y-m-d 00:00:00', $d1_ts));
+		$order = $this->db->where('id', $id)->get('ci_orders')->row_array();
+		if (empty($order)) {
+			$this->session->set_flashdata('error_message', 'Order not found.');
+			redirect('manager/orders');
+			return;
 		}
-		if ($d2_ts) {
-			$this->db->where('O.created_at <=', date('Y-m-d 23:59:59', $d2_ts));
+		if ($order['status'] === 'Sales' || !empty($order['sales_ref_no'])) {
+			$this->session->set_flashdata('error_message', "Order #{$order['order_no']} is already a sale.");
+			redirect($back);
+			return;
 		}
-		$this->db->order_by('O.id', 'DESC');
-		$data['orders'] = $this->db->get()->result_array();
+		if ($order['status'] === 'Pending Sales Approval' || $order['approval_status'] === 'pending_approval') {
+			$this->session->set_flashdata('message', "Order #{$order['order_no']} is already waiting for sales approval.");
+			redirect($back);
+			return;
+		}
+		if (in_array($order['status'], array('Cancelled', 'Rejected', 'Lost', 'Closed'), true)) {
+			$this->session->set_flashdata('error_message', "Order #{$order['order_no']} is {$order['status']}.");
+			redirect($back);
+			return;
+		}
+		$note = trim((string)$this->input->post('remarks'));
+		$now = date('Y-m-d H:i:s');
+		$this->db->where('id', $id)->update('ci_orders', array(
+			'status' => 'Pending Sales Approval',
+			'approval_status' => 'pending_approval',
+			'updated_at' => $now
+		));
+		if (!empty($order['lead_id'])) {
+			$this->db->where('lead_id', (int)$order['lead_id'])->update('ci_pipeline', array('order_request_status' => 'pending_sales_approval', 'updated_at' => $now));
+		}
+		$this->db->insert('ci_order_history', array(
+			'order_id' => $id,
+			'action' => 'order_sent_for_sales_approval',
+			'notes' => "Order #{$order['order_no']} sent to KAM for Sales Approval." . ($note !== '' ? " Note: {$note}" : ''),
+			'action_by' => $cur_uid,
+			'action_by_name' => $cur_name,
+			'created_at' => $now
+		));
+		$this->ci_admin_model->log_admin_action('send_for_approval', "Order #{$order['order_no']} sent for Sales Approval", 'SUCCESS', $cur_uid, $cur_name);
+		$this->session->set_flashdata('message', "Order #{$order['order_no']} sent to KAM for sales approval.");
+		redirect($back);
+	}
 
-		$this->load->view('manager/orders/pending_sales_approval', $data);
+	public function view_sales_approvals()
+	{
+		// sales are approved in KAM only
+		redirect('manager/orders/pending_sales_approval');
 	}
 
 	public function pending_sales_approval()
@@ -1430,16 +1465,16 @@ class Ci_admin_orders extends CI_Controller {
 		$this->if_not_login();
 		$cur_uid = (int)$this->session->userdata('manager_id');
 		$cur_role = (int)$this->session->userdata('manager_role');
-		$is_backoffice = ($cur_role === 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || $cur_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'));
-		if (!$is_backoffice) {
+		if (!crm_can('kam_sales_approval')) {
 			$this->session->set_flashdata('error_message', 'Access denied.');
 			redirect('manager/dashboard');
 			return;
 		}
 
 		$data = array();
+		$data['can_approve_sales'] = crm_can_approve_sales();
 		$data['info'] = array(
-			'title' => 'Back Office - Pending Sales Approval',
+			'title' => 'KAM - Pending Sales Approval',
 			'page_heading' => 'Pending Sales Approval'
 		);
 
@@ -1479,9 +1514,9 @@ class Ci_admin_orders extends CI_Controller {
 		// same right as the Pending Sales Approval page (the link could be opened by anyone)
 		$chk_role = (int)$this->session->userdata('manager_role');
 		$chk_uid = (int)$this->session->userdata('manager_id');
-		if (!($chk_role === 1 || has_section_perm('back_office', 'write') || crm_can('all_data') || $chk_uid === 1 || has_section_perm('kam', 'write') || has_section_perm('back_office'))) {
-			$this->session->set_flashdata('error_message', 'Access denied.');
-			redirect('manager/dashboard');
+		if (!crm_can_approve_sales()) {
+			$this->session->set_flashdata('error_message', 'Only KAM can approve sales.');
+			redirect('manager/orders/view/' . (int)$id);
 			return;
 		}
 		$id = (int)$id;
@@ -1499,6 +1534,11 @@ class Ci_admin_orders extends CI_Controller {
 		if (!empty($order['sales_ref_no']) && $order['status'] === 'Sales') {
 			$this->session->set_flashdata('message', "Order #{$order['order_no']} is already approved as Sales #{$order['sales_ref_no']}.");
 			redirect('manager/kam/onboard?order_id=' . $id . '&lead_id=' . (int)$order['lead_id']);
+			return;
+		}
+		if ($order['status'] !== 'Pending Sales Approval' && $order['approval_status'] !== 'pending_approval') {
+			$this->session->set_flashdata('error_message', "Order #{$order['order_no']} has not been sent for sales approval.");
+			redirect('manager/orders/view/' . $id);
 			return;
 		}
 
@@ -1826,8 +1866,8 @@ class Ci_admin_orders extends CI_Controller {
 		$cur_dept = (string)$this->session->userdata('manager_dept');
 		$cur_name = (string)$this->session->userdata('manager_name');
 		$is_backoffice = ($cur_role === 1 || has_section_perm('back_office', 'write') || $cur_uid === 1 || strcasecmp($cur_dept, 'Back Office') === 0 || has_section_perm('orders_management', 'write'));
-		if (!$is_backoffice) {
-			$this->session->set_flashdata('error_message', 'Permission denied.');
+		if (!crm_can_approve_sales()) {
+			$this->session->set_flashdata('error_message', 'Only KAM can approve sales. Back Office can request sales approval from the order.');
 			redirect('manager/orders?status=completed');
 			return;
 		}

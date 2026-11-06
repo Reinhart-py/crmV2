@@ -74,7 +74,21 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php $fu_return = !empty($scope_filter) && $scope_filter === 'my' ? 'manager/orders/my' : ((isset($status_filter) && in_array($status_filter, array('open', 'followups'), true)) ? 'manager/orders/' . $status_filter : 'manager/orders'); ?>
+                                    <?php
+                                    // Back Office asks KAM to approve an order as a sale (only KAM approves)
+                                    $req_ret = (isset($status_filter) && $status_filter === 'completed') ? 'manager/orders?status=completed' : ((isset($status_filter) && in_array($status_filter, array('open', 'followups'), true)) ? 'manager/orders/' . $status_filter : 'manager/orders');
+                                    $req_ok = !empty($can_edit_orders) || (isset($status_filter) && $status_filter === 'followups');
+                                    $req_sales = function ($o) use ($req_ret, $req_ok) {
+                                        if (!$req_ok) return '';
+                                        if ($o['status'] === 'Sales' || !empty($o['sales_ref_no']) || $o['status'] === 'Pending Sales Approval' || $o['approval_status'] === 'pending_approval' || in_array($o['status'], array('Cancelled', 'Rejected', 'Lost', 'Closed'), true)) return '';
+                                        $ci =& get_instance();
+                                        return '<li><form method="post" action="' . base_url() . 'manager/orders/request_sales_approval/' . (int)$o['id'] . '" style="margin:0" onsubmit="return confirm(\'Send this order to KAM for sales approval?\');">'
+                                            . '<input type="hidden" name="' . $ci->security->get_csrf_token_name() . '" value="' . $ci->security->get_csrf_hash() . '">'
+                                            . '<input type="hidden" name="return_to" value="' . htmlspecialchars($req_ret) . '">'
+                                            . '<button type="submit" class="btn btn-link" style="display:block;width:100%;text-align:left;padding:7px 10px;font-size:13px;font-weight:600;color:inherit;text-decoration:none;">Request Sales Approval</button></form></li>';
+                                    };
+                                    ?>
+                                    <?php $fu_return =!empty($scope_filter) && $scope_filter === 'my' ? 'manager/orders/my' : ((isset($status_filter) && in_array($status_filter, array('open', 'followups'), true)) ? 'manager/orders/' . $status_filter : 'manager/orders'); ?>
                                     <?php foreach($orders_list as $ord){ ?>
                                     <tr>
                                         <td><a href="<?php echo base_url(); ?>manager/orders/view/<?php echo $ord['id']; ?>" style="color: #000000; font-weight: 700; font-family: monospace;"><strong><?php echo !empty($ord['order_no']) ? htmlspecialchars($ord['order_no']) : ('O' . str_pad($ord['id'], 10, '0', STR_PAD_LEFT)); ?></strong></a></td>
@@ -120,8 +134,8 @@
                                                     </button>
                                                     <ul class="dropdown-menu dropdown-menu-right" role="menu" style="border: 1px solid #cbd5e1; border-radius: 4px; box-shadow: 0 4px 14px rgba(0,0,0,0.12);">
                                                         <li><a href="<?php echo base_url(); ?>manager/orders/view/<?php echo $ord['id']; ?>" style="font-weight: 600;">Preview</a></li>
-                                                        <li><a href="<?php echo base_url(); ?>manager/orders/edit_pending/<?php echo $ord['id']; ?>" style="font-weight: 600;">Edit</a></li>
                                                         <li><a href="<?php echo base_url(); ?>manager/orders/add_followup/<?php echo $ord['id']; ?>?return=<?php echo urlencode($fu_return); ?>">Add Follow-Up</a></li>
+                                                        <?php echo $req_sales($ord); ?>
                                                     </ul>
                                                 </div>
                                             <?php elseif (!empty($can_edit_orders)): ?>
@@ -134,10 +148,7 @@
                                                     <ul class="dropdown-menu dropdown-menu-right" role="menu" style="border: 1px solid #000000; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
                                                         <li><a href="<?php echo base_url(); ?>manager/orders/view/<?php echo $ord['id']; ?>" data-toggle="tooltip" title="View" style="font-weight: 600;">View</a></li>
                                                         <li><a href="<?php echo base_url(); ?>manager/orders/add_followup/<?php echo $ord['id']; ?>?return=<?php echo urlencode($fu_return); ?>">Add Follow-Up</a></li>
-                                                        <li><a href="<?php echo base_url(); ?>manager/orders/edit_pending/<?php echo $ord['id']; ?>" data-toggle="tooltip" title="Edit" style="font-weight: 600;">Edit</a></li>
-                                                        <?php if ($ord['status'] === 'Fulfilled' || $ord['status'] === 'Completed'): ?>
-                                                            <li><a href="<?php echo base_url(); ?>manager/orders/mark_closed_sold/<?php echo $ord['id']; ?>" onclick="return confirm('Mark this completed order as Closed / Sold?');" data-toggle="tooltip" title="Mark as Closed / Sold" style="font-weight: 600;">Mark as Closed / Sold</a></li>
-                                                        <?php endif; ?>
+                                                        <?php echo $req_sales($ord); ?>
                                                         <?php if (($status_filter === 'closed' || $ord['status'] === 'Closed' || $ord['status'] === 'Sales') && ($this->session->userdata('manager_role') == 1 || $this->session->userdata('manager_id') == 1)): ?>
                                                             <li><a href="javascript:void(0);" class="btn-open-assign-order" data-order-id="<?php echo $ord['id']; ?>" data-order-no="<?php echo htmlspecialchars($ord['order_no']); ?>" data-assigned-to="<?php echo (int)($ord['assigned_to'] ?? 0); ?>" data-assigned-dept="<?php echo htmlspecialchars($ord['assigned_dept'] ?? 'Operations'); ?>" style="font-weight: 600;">Assign Order</a></li>
                                                         <?php endif; ?>

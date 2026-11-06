@@ -705,7 +705,7 @@
               <option value="In Progress">In Progress (Open Orders)</option>
               <option value="Follow Up">Follow Up (Orders Follow-up)</option>
               <option value="Completed">Completed (Completed Orders)</option>
-              <option value="Pending Sales Approval">Pending Sales Approval (KAM Approval)</option>
+              <option value="Pending Sales Approval">Request Sales Approval (KAM)</option>
               <option value="Cancelled">Cancelled (Rejected / Lost)</option>
             </select>
             <button type="submit" name="action_type" value="save_order" class="btn btn-primary" style="background: #1e3a8a; border-color: #1e3a8a; color: #ffffff; font-weight: 700; padding: 8px 24px; border-radius: 4px; height: 38px;">

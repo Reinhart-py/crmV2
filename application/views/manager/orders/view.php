@@ -113,7 +113,7 @@
               <?php
               // A Sale can only be closed; Sales and Pending Sales Approval come from the Approve / Convert to Sales buttons
               $os_is_sale = ($order['status'] === 'Sales' || !empty($order['sales_ref_no']));
-              $os_opts = $os_is_sale ? array('Completed', 'Fulfilled', 'Cancelled') : array('Open', 'In Progress', 'Follow Up', 'Under Review', 'Completed', 'Fulfilled', 'Cancelled', 'Rejected');
+              $os_opts = $os_is_sale ? array('Completed', 'Fulfilled', 'Cancelled') : array('Open', 'In Progress', 'Follow Up', 'Under Review', 'Completed', 'Fulfilled', 'Cancelled', 'Rejected', 'Lost');
               if (!in_array($order['status'], $os_opts)) { ?><option value="<?php echo htmlspecialchars($order['status']); ?>" selected><?php echo htmlspecialchars($order['status']); ?> (current)</option><?php }
               foreach ($os_opts as $os_o) { ?>
               <option value="<?php echo $os_o; ?>" <?php echo ($order['status'] === $os_o) ? 'selected' : ''; ?>><?php echo $os_o; ?></option>
@@ -219,6 +219,32 @@
   </div>
 </div>
 
+<?php if (!empty($can_request_sales)) { ?>
+<div class="modal fade" id="requestSalesModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document" style="max-width: 480px;">
+    <div class="modal-content" style="border-radius: 6px; overflow: hidden;">
+      <form action="<?php echo base_url(); ?>manager/orders/request_sales_approval/<?php echo (int)$order['id']; ?>" method="post">
+        <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
+        <div class="modal-header" style="background: #1e3a8a; color: #ffffff; padding: 14px 18px;">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: #ffffff; opacity: 0.8;"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" style="font-size: 16px; font-weight: 700; color: #ffffff; margin: 0;">Request Sales Approval</h4>
+        </div>
+        <div class="modal-body" style="padding: 20px; background: #ffffff;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #475569;">Note for KAM</label>
+            <textarea name="remarks" class="form-control" rows="3" style="border: 1px solid #cbd5e1; border-radius: 4px; resize: vertical;"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer" style="padding: 12px 18px; background: #f8fafc; border-top: 1px solid #e2e8f0;">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="background:#1e3a8a; border-color:#1e3a8a;">Send to KAM</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<?php } ?>
+
 <div class="modal fade" id="convertToSalesModal" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog" role="document" style="max-width: 480px;">
     <div class="modal-content" style="border-radius: 6px; overflow: hidden;">
@@ -232,7 +258,7 @@
           <p style="font-size: 13px; color: #475569; margin-bottom: 14px;">Confirm conversion of this order into a completed Sales record? A unique Sales Reference Number will be generated.</p>
           <div class="form-group" style="margin-bottom: 0;">
             <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #475569;">Sales Completion Notes (Optional)</label>
-            <textarea name="remarks" class="form-control" rows="3" placeholder="Enter completion notes..." style="border: 1px solid #cbd5e1; border-radius: 4px; resize: vertical;"></textarea>
+            <textarea name="notes" class="form-control" rows="3" placeholder="Enter completion notes..." style="border: 1px solid #cbd5e1; border-radius: 4px; resize: vertical;"></textarea>
           </div>
         </div>
         <div class="modal-footer" style="padding: 12px 18px; background: #f8fafc; border-top: 1px solid #e2e8f0;">

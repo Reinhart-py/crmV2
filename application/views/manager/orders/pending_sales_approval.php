@@ -68,7 +68,7 @@
                                 <div class="btn-group">
                                     <button type="button" class="btn btn-sm btn-warning dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Action <span class="caret"></span></button>
                                     <ul class="dropdown-menu dropdown-menu-right" role="menu">
-                                        <li><a href="<?php echo base_url(); ?>manager/orders/approve_sales_order/<?php echo (int)$ord['id']; ?>"><i class="fa fa-check text-success"></i> Approve &amp; Onboard</a></li>
+                                        <?php if (!empty($can_approve_sales)) { ?><li><a href="<?php echo base_url(); ?>manager/orders/approve_sales_order/<?php echo (int)$ord['id']; ?>"><i class="fa fa-check text-success"></i> Approve &amp; Onboard</a></li><?php } ?>
                                         <li><a href="<?php echo base_url(); ?>manager/orders/view/<?php echo (int)$ord['id']; ?>"><i class="fa fa-eye"></i> View Order</a></li>
                                     </ul>
                                 </div>
