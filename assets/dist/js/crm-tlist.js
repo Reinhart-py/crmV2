@@ -25,7 +25,9 @@ jQuery(function ($) {
     return '';
   }
   function textNode(td) { var n = null; $.each(td.childNodes, function () { if (this.nodeType === 3 && $.trim(this.nodeValue) !== '') { n = this; return false; } }); return n; }
-  $(dt.rows().nodes()).each(function () {
+  // rows are styled as they are drawn (big lists only build the rows on screen)
+  function deco() {
+    if (this.__tl) return; this.__tl = 1;
     $(this).children('td').each(function (i) {
       $(this).attr('data-l', heads[i] || '');
       var n;
@@ -40,5 +42,7 @@ jQuery(function ($) {
         $(n).replaceWith($('<span class="tl-own">').append($('<i aria-hidden="true">').css('background', color(o)).text(ini), document.createTextNode(o)));
       }
     });
-  });
+  }
+  $(dt.rows({ page: 'current' }).nodes()).each(deco);
+  dt.on('draw', function () { $(dt.rows({ page: 'current' }).nodes()).each(deco); });
 });

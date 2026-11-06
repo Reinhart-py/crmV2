@@ -803,3 +803,26 @@ if (!function_exists('crm_landing_url')) {
 		return 'manager/profile';
 	}
 }
+/** Big lists: turn the rows a view printed (<tr><td>...</td></tr>) into DataTables data, one array of cell HTML per row.
+    The table then builds only the rows on screen; cells, search, sorting and filters stay the same. */
+if (!function_exists('crm_dt_rows')) {
+	function crm_dt_rows($html)
+	{
+		$rows = array();
+		if (!preg_match_all('~<tr\b[^>]*>(.*?)</tr>~s', (string)$html, $trs)) return $rows;
+		foreach ($trs[1] as $tr) {
+			preg_match_all('~<td\b[^>]*>(.*?)</td>~s', $tr, $tds);
+			$rows[] = array_map(function ($c) { return trim(preg_replace('~\s{2,}~', ' ', $c)); }, $tds[1]);
+		}
+		return $rows;
+	}
+}
+
+/** JSON for a <script> block (safe against </script> in the data). */
+if (!function_exists('crm_dt_json')) {
+	function crm_dt_json($rows)
+	{
+		$j = json_encode($rows, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+		return $j === false ? '[]' : $j;
+	}
+}

@@ -46,13 +46,9 @@
   });
 })(window.jQuery);
 </script>
-<script src="<?php echo base_url(); ?>assets/plugins/countdown/countdown-timer.js"></script>
 <script src="<?php echo base_url(); ?>assets/dist/js/app.min.js"></script>
-<script src="https://cdn.ckeditor.com/4.5.7/standard/ckeditor.js"></script>
 <script src="<?php echo base_url(); ?>assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js"></script>
 <script src="<?php echo base_url(); ?>assets/plugins/jquery.geocomplete.js"></script> 
-<script src="<?php echo base_url(); ?>assets/plugins/uploadify/js/jquery.dm-uploader.js"></script>
-<script src="<?php echo base_url(); ?>assets/plugins/uploadify/demo-ui.js"></script>
  <script src="https://lipis.github.io/bootstrap-sweetalert/dist/sweetalert.js"></script>
     <link rel="stylesheet" href="https://lipis.github.io/bootstrap-sweetalert/dist/sweetalert.css" />
 <?php if (!empty($load_map)) { ?>

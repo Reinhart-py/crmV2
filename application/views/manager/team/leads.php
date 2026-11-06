@@ -147,8 +147,8 @@
                    
                   </tr>
                 </tfoot>
-                <tbody>
-                  <?php foreach($product_list as $k=>$li){ ?>
+                <tbody></tbody>
+                  <?php ob_start(); foreach($product_list as $k=>$li){ ?>
                   <tr>
                                        
                     <td><a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>/tm"><strong><?php echo $li['lead_id']; ?></strong></a></td>
@@ -192,8 +192,7 @@
              
                     </td>
                   </tr>
-                  <?php } ?>
-                </tbody>
+                  <?php } $tl_rows = crm_dt_rows(ob_get_clean()); ?>
               </table>
               <?php if (isset($links)) {  echo $links; } ?>
             </div>
@@ -310,6 +309,8 @@ function ajax_get_state()
 
      $(document).ready(function() {
     $('#example_lead').DataTable( {
+      data: <?php echo crm_dt_json(isset($tl_rows) ? $tl_rows : array()); ?>,
+      deferRender: true,
       "pageLength":50,
       responsive: window.innerWidth >= 768, // phones: each record is a card (crm-tlist.css)
         initComplete: function () {
@@ -343,5 +344,5 @@ function ajax_get_state()
   </script>
 
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-tlist.css?v=20261106_4">
-<script src="<?php echo base_url(); ?>assets/dist/js/crm-tlist.js?v=20261106_3"></script>
+<script src="<?php echo base_url(); ?>assets/dist/js/crm-tlist.js?v=20261106_4"></script>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>
