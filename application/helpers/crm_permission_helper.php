@@ -421,6 +421,9 @@ if (!function_exists('crm_tab_groups')) {
 				array('hr_attendance', 'hr/attendance', 'Attendance', 'fa-map-marker'),
 				array('hr_shifts', 'hr/shifts', 'Shifts', 'fa-clock-o'),
 				array('hr_leaves', 'hr/leaves', 'Leave Requests', 'fa-calendar-check-o'),
+				array('hr_leaves', 'hr/leave_balances', 'Leave Balances', 'fa-pie-chart'),
+				array('hr_leaves', 'hr/leave_calendar', 'Leave Calendar', 'fa-calendar'),
+				array('hr_leaves', 'hr/leave_types', 'Leave Types', 'fa-list-ul'),
 			)),
 			'hr_pay' => array('label' => 'Payroll', 'icon' => 'fa-money', 'tabs' => array(
 				array('hr_payroll', 'hr/payroll', 'Payroll', 'fa-money'),
