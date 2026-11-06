@@ -2,6 +2,43 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [V3.3] - 2026-11-06
+- **Timestamp**: `2026-11-06 +0400`
+- **Author**: Reinhart-py
+- **Summary**: Version 3.3, a saved point to build on (git tag `V3.3`, archive `crmV2-V3.3.zip`). It covers the 74 changes made after v1.82.0: a new HR & Payroll module, the Staff area, the System pages, security fixes, Live Presentation, reports, and a clearer layout for the Database pages.
+- **Highlights**:
+  - **HR & Payroll (new module, UAE rules first, configurable)**:
+    - Part 1: employees and documents.
+    - Part 2: attendance, leave (types, balances, calendar).
+    - Part 3: payroll runs (Draft → Approved → Paid), payslips, WPS SIF file, loans and advances, gratuity and final settlement.
+    - Part 4: My HR self-service page for every user, HR letters, performance reviews (self → manager → acknowledged), onboarding and exit checklists.
+    - HR Overview, Targets and Shifts tables keep each row's details together.
+  - **Staff (formerly Users)**:
+    - Add, Edit and View Staff redesigned: compact form with labels beside the boxes and mandatory fields.
+    - Designation (job title), WhatsApp number and staff documents with expiry alerts.
+    - Mark as Left, change history, bulk actions.
+  - **Security and access**:
+    - Sessions are kept on the server, and AJAX calls check access.
+    - Cron and WhatsApp links are locked.
+    - Roles are departments under Admin; each System page follows its own right.
+    - Reports follow the hierarchy.
+  - **System**:
+    - Pages redesigned, with tabs, and they work on phones.
+    - Export Database with filters.
+    - Import Database: the file is checked first, and each import is a batch that can be undone.
+  - **Database**:
+    - Add Database and Edit Lead now use the Add Staff layout: labels beside boxes, similar fields grouped, a Save bar that is always in view, and a summary at the top of Edit Lead.
+    - View Database has a new list: header with the record count, a tidy filter panel, status chips, Preview / Edit buttons, and cards on phones.
+    - Follow-ups, Meetings and Review use the same list view.
+  - **Live, Dashboard, Profile and Support**:
+    - Live Presentation with real data, a New sale celebration and fitted slides.
+    - Dashboard donuts and phone layout improved.
+    - My Profile tabs, Holiday Request, Self Training, Events & Festivals.
+    - Help & Support, and Chatbot Open / Closed chats.
+- **Not in the archive**:
+  - Local secret files (`application/config/crm_secret.php`, `application/config/3cx_config.local.json`).
+  - The database. The SMTP password stays only in the database.
+
 ### [v1.82.0] - 2026-11-05
 - **Timestamp**: `2026-11-05 15:40:00 +0530`
 - **Author**: Reinhart-py
