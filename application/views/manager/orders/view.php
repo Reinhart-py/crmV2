@@ -10,182 +10,75 @@
       <?php require(APPPATH . 'views/manager/orders/view_head.php'); ?>
 
       <div class="my-profile">
+        <?php
+        $ov_h = function ($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); };
+        $ov_dt = function ($d, $f = 'd-m-Y') { return (!empty($d) && strpos((string)$d, '0000') !== 0) ? date($f, strtotime($d)) : ''; };
+        $ov_fu = $ov_dt($order['followup_date']);
+        if ($ov_fu !== '' && !empty($order['followup_time'])) $ov_fu .= ' ' . $order['followup_time'];
+        $ov_groups = array(
+          'Order' => array(
+            array('Order No.', $order['order_no']),
+            array('Sales No.', $order['sales_ref_no'] ?? ''),
+            array('Database No.', $order['db_ref_no']),
+            array('Lead No.', $order['lead_ref_no'], !empty($order['lead_id']) ? base_url() . 'manager/leads/view/' . base64_encode($order['lead_id']) : ''),
+            array('Service', $order['service_title']),
+            array('Vertical', $order['vertical_code'] ?: 'General'),
+            array('MRR', 'AED ' . number_format((float)($order['mrr'] ?: $order['pricing_amount']), 2)),
+            array('Contract value', (float)$order['pricing_amount'] > 0 ? 'AED ' . number_format((float)$order['pricing_amount'], 2) : ''),
+          ),
+          'Assignment & contact' => array(
+            array('Assigned to', $order['staff_name']),
+            array('Department', $order['assigned_dept']),
+            array('Phone', $order['lead_contact']),
+            array('Email', $order['lead_email']),
+            array('Next follow-up', $ov_fu),
+            array('Created', $ov_dt($order['created_at'], 'd-m-Y H:i')),
+            array('Updated', $ov_dt($order['updated_at'], 'd-m-Y H:i')),
+          ),
+        );
+        ?>
         <div class="box box-default">
-          <div class="box-header">
-            <div class="col-sm-12">
-              <h3 class="box-title" style="text-transform:capitalize">
-                <b><?php echo htmlspecialchars($order['client_name'] ?: ($order['lead_customer'] ?: 'Client #'.$order['client_id'])); ?></b>
-                <?php 
-                  $st = $order['status'];
-                  $badge_bg = '#1e3a8a';
-                  if (in_array($st, array('Completed', 'Fulfilled', 'Approved'))) $badge_bg = '#0f172a';
-                  elseif (in_array($st, array('Sales'))) $badge_bg = '#0f172a';
-                  elseif (in_array($st, array('Pending Sales Approval'))) $badge_bg = '#475569';
-                  elseif (in_array($st, array('Cancelled', 'Rejected', 'Lost'))) $badge_bg = '#dc2626';
-                ?>
-                <span class="label" style="background:<?php echo $badge_bg; ?>; color:#ffffff; font-weight:700; padding:2px 8px; border-radius:3px; font-size:12px; margin-left:6px; letter-spacing:0.5px;">
-                  <?php echo htmlspecialchars($st); ?>
-                </span>
-                <?php if(!empty($order['vertical_code'])){ ?>
-                  <span class="label label-default" style="font-weight:600; font-size:11px; margin-left:4px;">
-                    <?php echo htmlspecialchars(strtoupper($order['vertical_code'])); ?>
-                  </span>
+          <div class="box-body svd">
+            <?php foreach ($ov_groups as $gt => $fs) { ?>
+            <div class="svd-g">
+              <h4><?php echo $ov_h($gt); ?></h4>
+              <div class="svd-grid">
+                <?php foreach ($fs as $f) { $v = trim((string)$f[1]); ?>
+                <div class="svd-f<?php echo $v === '' ? ' is-empty' : ''; ?>">
+                  <span class="svd-l"><?php echo $ov_h($f[0]); ?></span>
+                  <span class="svd-v"><?php if ($v === '') { echo '&mdash;'; } elseif (!empty($f[2])) { ?><a href="<?php echo $f[2]; ?>"><?php echo $ov_h($v); ?></a><?php } else { echo $ov_h($v); } ?></span>
+                </div>
                 <?php } ?>
-              </h3>
-            </div>
-          </div>
-
-          <div class="box-body">
-            <div class="row">
-              <div class="col-md-6">
-                <div class="table-responsive border">
-                  <table class="table">
-                    <tr>
-                      <th scope="col" style="width:40%;">Order No.</th>
-                      <td><strong><?php echo htmlspecialchars($order['order_no']); ?></strong></td>
-                    </tr>
-                    <tr>
-                      <th scope="col">Database No.</th>
-                      <td><?php echo htmlspecialchars($order['db_ref_no'] ?: '-'); ?></td>
-                    </tr>
-                    <?php if (!empty($order['lead_ref_no'])) { ?>
-                    <tr>
-                      <th scope="col">Lead No.</th>
-                      <td>
-                        <?php echo htmlspecialchars($order['lead_ref_no']); ?>
-                        <?php if(!empty($order['lead_id'])){ ?>
-                          <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($order['lead_id']); ?>" target="_blank" style="margin-left:6px; font-size:12px;">
-                            <i class="fa fa-external-link"></i> View Lead
-                          </a>
-                        <?php } ?>
-                      </td>
-                    </tr>
-                    <?php } ?>
-                    <tr>
-                      <th scope="col">Service Title</th>
-                      <td><?php echo htmlspecialchars($order['service_title'] ?: '-'); ?></td>
-                    </tr>
-                    <tr>
-                      <th scope="col">Vertical / Category</th>
-                      <td><?php echo htmlspecialchars($order['vertical_code'] ?: 'General'); ?></td>
-                    </tr>
-                    <tr>
-                      <th scope="col">Monthly Recurring Revenue</th>
-                      <td><strong style="color:#0f172a;">AED <?php echo number_format((float)($order['mrr'] ?: $order['pricing_amount']), 2); ?></strong></td>
-                    </tr>
-                    <tr>
-                      <th scope="col">Order Status</th>
-                      <td>
-                        <span class="label" style="background:<?php echo $badge_bg; ?>; color:#ffffff; font-weight:600; font-size:11px;">
-                          <?php echo htmlspecialchars($order['status']); ?>
-                        </span>
-                      </td>
-                    </tr>
-                  </table>
-                </div>
-              </div>
-
-              <div class="col-md-6">
-                <div class="table-responsive border">
-                  <table class="table">
-                    <tr>
-                      <th scope="col" style="width:40%;">Assigned Staff</th>
-                      <td><?php echo htmlspecialchars($order['staff_name'] ?: '-'); ?></td>
-                    </tr>
-                    <tr>
-                      <th scope="col">Assigned Department</th>
-                      <td><?php echo htmlspecialchars($order['assigned_dept'] ?: '-'); ?></td>
-                    </tr>
-                    <tr>
-                      <th scope="col">Contact Number</th>
-                      <td><?php echo htmlspecialchars($order['lead_contact'] ?: '-'); ?></td>
-                    </tr>
-                    <tr>
-                      <th scope="col">Email</th>
-                      <td><?php echo htmlspecialchars($order['lead_email'] ?: '-'); ?></td>
-                    </tr>
-                    <tr>
-                      <th scope="col">Next Follow-Up Date</th>
-                      <td>
-                        <?php if(!empty($order['followup_date'])){ ?>
-                          <strong><?php echo date('d-m-Y', strtotime($order['followup_date'])); ?></strong>
-                          <?php if(!empty($order['followup_time'])){ echo ' ' . htmlspecialchars($order['followup_time']); } ?>
-                        <?php } else { echo '-'; } ?>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th scope="col">Created Date</th>
-                      <td><?php echo !empty($order['created_at']) ? date('d-m-Y H:i', strtotime($order['created_at'])) : '-'; ?></td>
-                    </tr>
-                    <tr>
-                      <th scope="col">Last Updated</th>
-                      <td><?php echo !empty($order['updated_at']) ? date('d-m-Y H:i', strtotime($order['updated_at'])) : '-'; ?></td>
-                    </tr>
-                  </table>
-                </div>
               </div>
             </div>
+            <?php } ?>
+            <?php if (!empty($order['service_scope']) || !empty($order['operational_instructions'])) { ?>
+            <div class="svd-g">
+              <h4>Scope &amp; instructions</h4>
+              <div class="svd-grid">
+                <?php if (!empty($order['service_scope'])) { ?><div class="svd-f is-wide"><span class="svd-l">Scope of work</span><span class="svd-v" style="font-weight:500"><?php echo nl2br($ov_h($order['service_scope'])); ?></span></div><?php } ?>
+                <?php if (!empty($order['operational_instructions'])) { ?><div class="svd-f is-wide"><span class="svd-l">Instructions</span><span class="svd-v" style="font-weight:500"><?php echo nl2br($ov_h($order['operational_instructions'])); ?></span></div><?php } ?>
+              </div>
+            </div>
+            <?php } ?>
           </div>
         </div>
 
-        <?php if(!empty($order['service_scope']) || !empty($order['operational_instructions'])){ ?>
-        <div class="box box-default">
-          <div class="box-header">
-            <h3 class="box-title">Order Instructions &amp; Service Scope</h3>
-          </div>
-          <div class="box-body">
-            <div class="row">
-              <?php if(!empty($order['service_scope'])){ ?>
-              <div class="col-md-6">
-                <label style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase;">Service Scope</label>
-                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; padding:12px; font-size:13px; color:#1e293b; min-height:80px;">
-                  <?php echo nl2br(htmlspecialchars($order['service_scope'])); ?>
-                </div>
-              </div>
-              <?php } ?>
-              <?php if(!empty($order['operational_instructions'])){ ?>
-              <div class="col-md-6">
-                <label style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase;">Operational Instructions / Remarks</label>
-                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; padding:12px; font-size:13px; color:#1e293b; min-height:80px;">
-                  <?php echo nl2br(htmlspecialchars($order['operational_instructions'])); ?>
-                </div>
-              </div>
-              <?php } ?>
-            </div>
-          </div>
-        </div>
-        <?php } ?>
-
-        <div class="box box-default">
-          <div class="box-header">
-            <h3 class="box-title">Order Activity &amp; History</h3>
-          </div>
-          <div class="box-body">
-            <?php if(!empty($activity_logs)){ ?>
-              <div class="table-responsive">
-                <table class="table table-striped table-bordered" style="font-size:13px;">
-                  <thead>
-                    <tr>
-                      <th style="width:18%;">Date &amp; Time</th>
-                      <th style="width:20%;">Action</th>
-                      <th style="width:18%;">Action By</th>
-                      <th>Notes / Remarks</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <?php foreach($activity_logs as $log){ ?>
-                      <tr>
-                        <td><?php echo !empty($log['created_at']) ? date('d-m-Y H:i', strtotime($log['created_at'])) : '-'; ?></td>
-                        <td><span class="label label-info"><?php echo htmlspecialchars(ucwords(str_replace('_', ' ', $log['action']))); ?></span></td>
-                        <td><?php echo htmlspecialchars($log['action_by_name'] ?: 'User #'.$log['action_by']); ?></td>
-                        <td><?php echo nl2br(htmlspecialchars($log['notes'] ?: '-')); ?></td>
-                      </tr>
-                    <?php } ?>
-                  </tbody>
-                </table>
-              </div>
+        <div class="box box-default rec-card">
+          <div class="box-header"><h3 class="box-title">History</h3></div>
+          <div class="box-body" style="padding:6px 14px 10px;">
+            <?php if (!empty($activity_logs)) { ?>
+              <ul class="ov-log">
+                <?php foreach ($activity_logs as $log) { ?>
+                  <li>
+                    <span class="ov-when"><?php echo $ov_h($ov_dt($log['created_at'], 'd M Y, H:i')); ?></span>
+                    <span class="ov-what"><b><?php echo $ov_h(ucwords(str_replace('_', ' ', $log['action']))); ?></b> · <?php echo $ov_h($log['action_by_name'] ?: 'User #' . $log['action_by']); ?>
+                      <?php if (!empty($log['notes'])) { ?><small><?php echo nl2br($ov_h($log['notes'])); ?></small><?php } ?></span>
+                  </li>
+                <?php } ?>
+              </ul>
             <?php } else { ?>
-              <div class="alert alert-info" style="margin-bottom:0;">No activity history recorded for this order yet.</div>
+              <p class="text-muted" style="margin:6px 0;">No history yet.</p>
             <?php } ?>
           </div>
         </div>
@@ -193,6 +86,15 @@
     </div>
   </section>
 </div>
+<style>
+  .ov-log { list-style: none; margin: 0; padding: 0; }
+  .ov-log li { display: flex; gap: 14px; padding: 7px 0; border-bottom: 1px solid var(--crm-line-soft, #eef2f7); font-size: 13px; }
+  .ov-log li:last-child { border-bottom: 0; }
+  .ov-when { flex: 0 0 130px; color: var(--crm-muted, #64748b); font-size: 12.5px; white-space: nowrap; }
+  .ov-what { min-width: 0; color: var(--crm-ink, #0f172a); }
+  .ov-what small { display: block; margin-top: 2px; font-size: 12.5px; color: var(--crm-ink-2, #475569); overflow-wrap: anywhere; }
+  @media (max-width: 575px) { .ov-log li { flex-direction: column; gap: 2px; } .ov-when { flex-basis: auto; } }
+</style>
 
 <!-- Modals -->
 <div class="modal fade" id="updateStatusModal" tabindex="-1" role="dialog" aria-hidden="true">
@@ -285,7 +187,7 @@
 <div class="modal fade" id="assignOperationModal" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog" role="document" style="max-width: 480px;">
     <div class="modal-content" style="border-radius: 6px; overflow: hidden;">
-      <form action="<?php echo base_url(); ?>manager/orders/assign_operation/<?php echo $order['id']; ?>" method="post">
+      <form action="<?php echo base_url(); ?>manager/orders/assign_to_operation/<?php echo $order['id']; ?>" method="post">
         <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
         <div class="modal-header" style="background: #1e3a8a; color: #ffffff; padding: 14px 18px;">
           <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: #ffffff; opacity: 0.8;"><span aria-hidden="true">&times;</span></button>
@@ -304,8 +206,8 @@
             </select>
           </div>
           <div class="form-group" style="margin-bottom: 0;">
-            <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #475569;">Handover Notes (Optional)</label>
-            <textarea name="remarks" class="form-control" rows="3" placeholder="Enter instructions for assigned staff..." style="border: 1px solid #cbd5e1; border-radius: 4px; resize: vertical;"></textarea>
+            <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #475569;">Instructions</label>
+            <textarea name="operational_instructions" class="form-control" rows="3" style="border: 1px solid #cbd5e1; border-radius: 4px; resize: vertical;"><?php echo htmlspecialchars((string)($order['operational_instructions'] ?? '')); ?></textarea>
           </div>
         </div>
         <div class="modal-footer" style="padding: 12px 18px; background: #f8fafc; border-top: 1px solid #e2e8f0;">
