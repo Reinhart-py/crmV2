@@ -2,7 +2,11 @@
 
 
 <div class="container">
-<div class="content-wrapper">
+<div class="content-wrapper ldb">
+  <section class="content-header">
+    <h1>Edit Lead</h1>
+    <ol class="breadcrumb"><li><a href="<?php echo base_url(); ?>manager/dashboard"><i class="fa fa-dashboard"></i> Home</a></li><li><a href="<?php echo base_url(); ?>manager/leads">Database</a></li><li class="active">Edit Lead</li></ol>
+  </section>
   
   
   
@@ -13,74 +17,18 @@
    
      <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?> <?php echo get_message($this->session->flashdata('message'),'message'); ?>
      
-     <div class="my-profile">
-<div class="box box-default">
-      <div class="box-header">
-		<div class="col-sm-12">
-        <h3 class="box-title" style="text-transform:capitalize"><b>
-          <?php if((isset($slist['customer']))&&(!empty($slist['customer']))){echo $slist['customer'];}else echo ""; ?>
-          </b></h3>    
-          </div>
-          </div>
-<div class="box-body" >
-      
-        <div class="row">
-  <div class="col-md-6">
-      <div class="table-responsive border">
-          <table class="table">
-              <tr>
-                <th scope="col">Database No.</th>
-                <td><?php echo !empty($slist['db_ref_no']) ? htmlspecialchars($slist['db_ref_no']) : ('D' . str_pad($slist['id'], 10, '0', STR_PAD_LEFT)); ?></td>
-              </tr>
-              <?php if (!empty($slist['lead_ref_no']) || (isset($slist['pipeline_stage']) && $slist['pipeline_stage'] === 'lead')) { ?>
-              <tr>
-                <th scope="col">Lead No.</th>
-                <td><?php echo !empty($slist['lead_ref_no']) ? htmlspecialchars($slist['lead_ref_no']) : htmlspecialchars($slist['lead_id']); ?></td>
-              </tr>
-              <?php } ?>
-     <tr>
-              <th scope="col">Lead Assigned To   </th>
-              <td scope="col"><?php echo $slist['assigned_name']; ?></td>              
-            
-              </tr>
-            
-
-          </table>
-      </div>
- </div>
-
-  <div class="col-md-6">
-      <div class="table-responsive border">
-          <table class="table">
-          
-				
-              <tr>
-              <th scope="col">Created By </th>
-              <td scope="col"><?php echo $slist['created_name']; ?></td>              
-            
-              </tr>
-
-        
-              <tr>
-              <th scope="col"> Created At  </th>
-              <td scope="col"><?php echo $slist['created']; ?></td>              
-            
-              </tr>
-
-
-
-
-
-
-          </table>
-      </div>
-  </div>
-
-</div>
-</div>
-</div>
-</div>
-     
+     <div class="ldb-sum">
+       <div class="ldb-sum-name"><?php echo (isset($slist['customer']) && !empty($slist['customer'])) ? htmlspecialchars($slist['customer']) : ''; ?></div>
+       <dl>
+         <div><dt>Database No.</dt><dd><?php echo !empty($slist['db_ref_no']) ? htmlspecialchars($slist['db_ref_no']) : ('D' . str_pad($slist['id'], 10, '0', STR_PAD_LEFT)); ?></dd></div>
+         <?php if (!empty($slist['lead_ref_no']) || (isset($slist['pipeline_stage']) && $slist['pipeline_stage'] === 'lead')) { ?>
+         <div><dt>Lead No.</dt><dd><?php echo !empty($slist['lead_ref_no']) ? htmlspecialchars($slist['lead_ref_no']) : htmlspecialchars($slist['lead_id']); ?></dd></div>
+         <?php } ?>
+         <div><dt>Lead Assigned To</dt><dd><?php echo $slist['assigned_name']; ?></dd></div>
+         <div><dt>Created By</dt><dd><?php echo $slist['created_name']; ?></dd></div>
+         <div><dt>Created At</dt><dd><?php echo $slist['created']; ?></dd></div>
+       </dl>
+     </div>
       <form role="form" action="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($list['id']); ?>/<?php echo $action; ?>" method="post" name="add_form">
       
        <div class="box box-default">
@@ -1588,4 +1536,5 @@ $(document).ready(function() {
 </script>
 <script src="<?php echo base_url(); ?>assets/dist/js/crm-lead-form.js?v=20261105_1"></script>
 <script>jQuery(function(){ crmCompactLeadForm('form[name="add_form"]'); });</script>
+<?php require(APPPATH . 'views/manager/leads/lead_form_layout.php'); ?>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>
