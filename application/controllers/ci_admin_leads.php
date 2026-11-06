@@ -372,6 +372,11 @@ function __construct()
 			redirect('manager/leads/view/' . base64_encode($lead_id));
 			return;
 		}
+		if (!empty($lead['pipeline_stage']) && $lead['pipeline_stage'] === 'kam') {
+			$this->session->set_flashdata('error_message', 'This record is a KAM account, so it cannot be converted to a Lead.');
+			redirect('manager/leads/view/' . base64_encode($lead_id));
+			return;
+		}
 
 		$lead_owner = !empty($lead['lead_assign']) ? (int)$lead['lead_assign'] : (int)$lead['created_by'];
 		$team_members = $this->ci_admin_model->fetchTeamList($cur_uid, '');
@@ -487,6 +492,11 @@ function __construct()
 
 		if (!empty($lead['pipeline_stage']) && $lead['pipeline_stage'] === 'lead') {
 			$this->session->set_flashdata('error_message', 'This record is already a Lead.');
+			redirect('manager/leads/view/' . base64_encode($lead_id));
+			return;
+		}
+		if (!empty($lead['pipeline_stage']) && $lead['pipeline_stage'] === 'kam') {
+			$this->session->set_flashdata('error_message', 'This record is a KAM account, so it cannot be converted to a Lead.');
 			redirect('manager/leads/view/' . base64_encode($lead_id));
 			return;
 		}

@@ -1,9 +1,6 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
 <div class="content-wrapper">
-  <section class="content-header">
-    <h1> <?php echo $info['page_heading']; ?> </h1>
-  </section>
   <section class="content ">
     <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?>
     <?php echo get_message($this->session->flashdata('message'),'message'); ?>
@@ -17,142 +14,8 @@
 
         
 
-<div class="row">
-<div class="box box-default">
-      <div class="box-header">
-<div class="col-sm-12">
-     
-          <?php $return_url= urldecode($this->session->userdata('manager_return_string')); ?>
-          <div class="pull-left">
-            <a href="<?php echo base_url(); ?>manager/<?php echo $return_url; ?>" class="btn btn-info">Back</a>
-          </div>
-
-        
-          <div class="pull-right">
-            <?php if(!empty($m_list)){ if($m_list['a1']==$this->session->userdata('manager_id') || $m_list['a2']==$this->session->userdata('manager_id') || $m_list['a3']==$this->session->userdata('manager_id')){ ?>
-        	 <a href="<?php echo base_url(); ?>manager/leads/editLimited/<?php echo base64_encode($p_info['id']); ?>/tm" class="btn btn-warning">Update Status</a>
-       
-       <?php } } ?>
-          <?php if (!empty($is_already_lead)) { ?>
-            <span class="btn btn-default" style="cursor:default; background:#f8fafc; color:#065f46; border:1px solid #e2e8f0; font-weight:600; margin-right:5px;">
-              <i class="fa fa-check-circle" style="color:#0f172a;"></i> Converted to Lead
-            </span>
-            <?php if (!empty($sales_ref_no)) { ?>
-              <span class="btn btn-default" style="cursor:default; background:#f8fafc; color:#0f172a; border:1px solid #86efac; font-weight:600; margin-right:5px;">
-                <i class="fa fa-trophy" style="color:#0f172a;"></i> Converted to Sales (<?php echo htmlspecialchars($sales_ref_no); ?>)
-              </span>
-              <?php if (!empty($order_info['id'])) { ?>
-              <a href="<?php echo base_url(); ?>manager/orders/view/<?php echo $order_info['id']; ?>" class="btn btn-default" style="background:#f8fafc; color:#1e3a8a; border:1px solid #cbd5e1; font-weight:600; margin-right:5px;">
-                <i class="fa fa-shopping-cart"></i> View Order (<?php echo htmlspecialchars($order_ref_no); ?>)
-              </a>
-              <?php } ?>
-            <?php } elseif (!empty($order_ref_no) || (!empty($p_info['order_request_status']) && in_array($p_info['order_request_status'], array('pending', 'approved', 'processed', 'ordered')))) { ?>
-              <span class="btn btn-default" style="cursor:default; background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; font-weight:600; margin-right:5px;">
-                <i class="fa fa-hourglass-half" style="color:#1e3a8a;"></i> Order <?php echo !empty($order_ref_no) ? htmlspecialchars($order_ref_no) : 'Pending Process'; ?>
-              </span>
-              <?php if (!empty($order_info['id'])) { ?>
-              <a href="<?php echo base_url(); ?>manager/orders/view/<?php echo $order_info['id']; ?>" class="btn btn-default" style="background:#f8fafc; color:#1e3a8a; border:1px solid #cbd5e1; font-weight:600; margin-right:5px;">
-                <i class="fa fa-shopping-cart"></i> View Order (<?php echo htmlspecialchars($order_ref_no); ?>)
-              </a>
-              <?php } ?>
-            <?php } else { ?>
-              <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#requestOrderModal" style="background:#475569; border-color:#475569; color:#ffffff; font-weight:600; margin-right:5px;">
-                <i class="fa fa-shopping-cart"></i> Request Order
-              </button>
-            <?php } ?>
-          <?php } elseif (!empty($is_pending_review)) { ?>
-            <span class="btn btn-default" style="cursor:default; background:#f8fafc; color:#334155; border:1px solid #e2e8f0; font-weight:600; margin-right:5px;">
-              <i class="fa fa-clock-o" style="color:#475569;"></i> Conversion Request Pending
-            </span>
-            <?php if (!empty($can_review_conversion)) { ?>
-              <button type="button" class="btn btn-success" data-toggle="modal" data-target="#convertLeadModal" style="background:#0f172a; border-color:#0f172a; font-weight:600; margin-right:5px;">
-                <i class="fa fa-check-circle"></i> Approve &amp; Convert
-              </button>
-              <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#rejectLeadModal" style="background:#dc2626; border-color:#b91c1c; font-weight:600; margin-right:5px;">
-                <i class="fa fa-times-circle"></i> Reject
-              </button>
-            <?php } ?>
-          <?php } else { ?>
-            <?php if (!empty($can_convert_to_lead)) { ?>
-              <button type="button" class="btn btn-success" data-toggle="modal" data-target="#convertLeadModal" style="background:#0f172a; border-color:#0f172a; font-weight:600; margin-right:5px;">
-                <i class="fa fa-check-circle"></i> Convert to Lead
-              </button>
-            <?php } ?>
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#requestLeadModal" style="background:#1e3a8a; border-color:#1e3a8a; font-weight:600; margin-right:5px;">
-              <i class="fa fa-paper-plane"></i> Request Conversion
-            </button>
-          <?php } ?>
-          <?php 
-          $cur_user = (int)$this->session->userdata('manager_id');
-          $cur_r = (int)$this->session->userdata('manager_role');
-          $lead_owner_id = !empty($p_info['lead_assign']) ? (int)$p_info['lead_assign'] : (int)$p_info['created_by'];
-          $is_agent_collab = (!empty($p_info['agents']) && in_array($cur_user, array_map('intval', explode(',', $p_info['agents']))));
-          $is_locked_for_user = (!empty($is_locked) && $cur_r !== 1 && $cur_r !== 4);
-          $can_edit = (!$is_locked_for_user) && ($cur_r == 1 || $cur_r == 4 || $cur_user === $lead_owner_id || $is_agent_collab);
-          if($can_edit){ ?>
-           <?php if($action=='tm'){ ?>
-             <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($p_info['id']); ?>/tm" class="btn btn-danger">Edit Lead</a>
-           <?php }else{ ?>
-             <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($p_info['id']); ?>" class="btn btn-danger">Edit Lead</a>
-           <?php } ?>
-          <?php } ?>
-          </div>
-
-           </div>
-           </div>
-</div>
-
-<?php if (!empty($is_locked_for_user)) { ?>
-<div class="alert alert-warning" style="background:#f8fafc; border:1px solid #e2e8f0; color:#334155; font-weight:600; padding:12px 16px; margin-bottom:15px; border-radius:6px;">
-  <i class="fa fa-lock" style="font-size:16px; margin-right:8px; color:#475569;"></i>
-  This Lead is currently locked because an Order conversion process is active. Editing is restricted to Back Office administrators.
-</div>
-<?php } ?>
-
-<div class="box box-default" style="border-radius:6px; margin-bottom:15px; border-top:3px solid #1e3a8a;">
-  <div class="box-body" style="padding:12px 18px;">
-    <div class="row text-center">
-      <div class="col-xs-6 col-sm-3" style="border-right:1px solid #e2e8f0;">
-        <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Database Ref</div>
-        <div style="font-size:15px; font-weight:700; color:#0f172a; margin-top:3px;">
-          <span class="label" style="background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; font-size:13px; font-weight:700;"><?php echo htmlspecialchars($db_ref_no); ?></span>
-        </div>
-      </div>
-      <div class="col-xs-6 col-sm-3" style="border-right:1px solid #e2e8f0;">
-        <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Lead Ref</div>
-        <div style="font-size:15px; font-weight:700; color:#0f172a; margin-top:3px;">
-          <?php if (!empty($lead_ref_no)) { ?>
-            <span class="label" style="background:#f8fafc; color:#065f46; border:1px solid #e2e8f0; font-size:13px; font-weight:700;"><?php echo htmlspecialchars($lead_ref_no); ?></span>
-          <?php } else { ?>
-            <span style="color:#94a3b8; font-size:13px;">—</span>
-          <?php } ?>
-        </div>
-      </div>
-      <div class="col-xs-6 col-sm-3" style="border-right:1px solid #e2e8f0;">
-        <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Order Ref</div>
-        <div style="font-size:15px; font-weight:700; color:#0f172a; margin-top:3px;">
-          <?php if (!empty($order_ref_no)) { ?>
-            <span class="label" style="background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; font-size:13px; font-weight:700;"><?php echo htmlspecialchars($order_ref_no); ?></span>
-          <?php } elseif (!empty($p_info['order_request_status'])) { ?>
-            <span class="label label-warning" style="font-size:11px;">Pending Process</span>
-          <?php } else { ?>
-            <span style="color:#94a3b8; font-size:13px;">—</span>
-          <?php } ?>
-        </div>
-      </div>
-      <div class="col-xs-6 col-sm-3">
-        <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Sales Ref</div>
-        <div style="font-size:15px; font-weight:700; color:#0f172a; margin-top:3px;">
-          <?php if (!empty($sales_ref_no)) { ?>
-            <span class="label" style="background:#f8fafc; color:#0f172a; border:1px solid #86efac; font-size:13px; font-weight:700;"><?php echo htmlspecialchars($sales_ref_no); ?></span>
-          <?php } else { ?>
-            <span style="color:#94a3b8; font-size:13px;">—</span>
-          <?php } ?>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+<div class="row"><?php /* stays open: wraps the details below, as before */ ?>
+<?php require(APPPATH . 'views/manager/leads/single_view_head.php'); ?>
 <div class="my-profile">
 <div class="box box-default">
       <div class="box-header">
@@ -488,7 +351,7 @@
 
               <tr>
               <th scope="col">Status</th>
-                <td scope="col"><?php echo $p_info['status']; ?></td>
+                <td scope="col"><?php $sv_st_row = is_numeric($p_info['status']) ? $this->db->select('status')->get_where('ci_status', array('id' => (int)$p_info['status']))->row_array() : null; echo htmlspecialchars(!empty($sv_st_row['status']) ? $sv_st_row['status'] : (string)$p_info['status']); ?></td>
               </tr>
               <tr>
               <th scope="col">Status Category</th>
