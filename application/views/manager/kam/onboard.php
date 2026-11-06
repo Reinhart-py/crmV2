@@ -37,6 +37,7 @@ $ob_cancel = $ob_ap ? base_url('manager/orders/view/' . (int)$ap_order['id']) : 
       <input type="hidden" name="lead_id" value="<?php echo htmlspecialchars($lead_id ?? ''); ?>">
       <?php if ($ob_ap) { ?><input type="hidden" name="approve" value="1"><?php } ?>
 
+      <div class="ob-card">
       <div class="box box-default">
         <div class="box-header with-border">
           <h3 class="box-title">Client and Group Details</h3>
@@ -921,11 +922,13 @@ $ob_cancel = $ob_ap ? base_url('manager/orders/view/' . (int)$ap_order['id']) : 
             <div class="col-md-5">
               <div class="form-group remark-group">
                 <label>Meeting Remark</label>
-                <textarea class="form-control" name="m_remark" rows="4" placeholder="Meeting / Visit notes..."></textarea>
+                <textarea class="form-control" name="m_remark" rows="2" placeholder="Meeting / Visit notes..."></textarea>
               </div>
             </div>
           </div>
         </div>
+      </div>
+
       </div>
 
       <div class="box-footer ureg-footer">
@@ -942,19 +945,32 @@ $ob_cancel = $ob_ap ? base_url('manager/orders/view/' . (int)$ap_order['id']) : 
   
 </div>
 <style>
-  /* fields flow into as many columns as the screen fits */
+  /* one card, sections divided by headings, labels above fields */
   .ob .content { padding: 8px 12px 0; }
-  .ob .box-body > .row:not(.remark_row), .ob .remark_row > [class*="col-"] > .row { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); column-gap: 4px; }
-  .ob .box-body > .row:not(.remark_row) > [class*="col-"], .ob .remark_row > [class*="col-"] > .row > [class*="col-"] { width: auto !important; float: none; min-width: 0; padding: 0 6px; }
+  .ob .ob-card { border: 1px solid var(--crm-line, #e2e8f0); border-radius: 10px; background: var(--crm-surface, #fff); margin-bottom: 8px; }
+  .ob .ob-card > .box { border: 0 !important; border-radius: 0 !important; margin: 0 !important; background: none; box-shadow: none; }
+  .ob .ob-card > .box + .box { border-top: 1px solid var(--crm-line, #e2e8f0) !important; }
+  .ob .ob-card > .box > .box-header.with-border { border: 0 !important; border-radius: 0; padding: 10px 14px 2px !important; }
+  .ob .ob-card > .box > .box-header .box-title { font-size: 12px; font-weight: 700; letter-spacing: .06em; color: var(--crm-ocean, #1e3a8a); }
+  .ob .ob-card > .box > .box-body { padding: 4px 8px 6px !important; }
+  .ob .box-body > .row, .ob .remark_row > [class*="col-"] > .row { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); column-gap: 4px; margin: 0; }
+  .ob .box-body > .row > [class*="col-"], .ob .remark_row > [class*="col-"] > .row > [class*="col-"] { width: auto !important; float: none; min-width: 0; padding: 0 6px; }
   .ob .box-body > .row::before, .ob .box-body > .row::after, .ob .remark_row .row::before, .ob .remark_row .row::after { display: none; }
-  .ob .remark_row { display: grid !important; grid-template-columns: minmax(0, 7fr) minmax(280px, 5fr); }
-  .ob .remark_row > [class*="col-"] { width: auto !important; float: none; padding: 0; min-width: 0; }
-  .ob .remark_row > [class*="col-"] > .row { margin: 0; }
-  .ob .form-group { grid-template-columns: 124px minmax(0, 1fr); }
-  .ob .form-group > label { line-height: 1.15; }
-  .ob .form-group > div[style*="justify-content:space-between"] { grid-column: 1 / -1; display: grid !important; grid-template-columns: 124px minmax(0, 1fr); column-gap: 8px; margin: 0 0 2px !important; }
-  .ob .form-group > div[style*="justify-content:space-between"] > label { text-align: right; font-size: 12.5px; font-weight: 500; color: var(--crm-ink-2, #475569); }
-  .ob .form-group > div[style*="justify-content:space-between"] > a { justify-self: end; font-size: 11.5px !important; }
+  .ob .ob-card > .box:first-child .box-body > .row > [class*="col-"]:first-child { grid-column: span 2; }
+  .ob .remark_row > .col-md-7, .ob .remark_row > .col-md-7 > .row { display: contents !important; }
+  .ob .remark_row > [class*="col-"] { width: auto !important; float: none; padding: 0; }
+  .ob .remark_row > .col-md-5 { padding: 0 6px; grid-column: 1 / -1; }
+  .ob .remark_row textarea { width: 100% !important; min-height: 56px; resize: vertical; }
+  .ob .form-group { display: block; margin-bottom: 8px !important; }
+  .ob .form-group > label, .ob .form-group > div[style*="justify-content:space-between"] > label { display: block; text-align: left; margin: 0 0 3px !important; font-size: 12px !important; font-weight: 600 !important; line-height: 1.3; color: var(--crm-ink-2, #334155) !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ob .form-group > label span { color: #dc2626; }
+  .ob .form-group > div[style*="justify-content:space-between"] { display: flex !important; align-items: baseline; gap: 6px; margin: 0 0 3px !important; }
+  .ob .form-group > div[style*="justify-content:space-between"] > label { margin: 0 !important; min-width: 0; }
+  .ob .form-group > div[style*="justify-content:space-between"] > a { flex: 0 0 auto; font-size: 11.5px !important; font-weight: 600; }
+  .ob .form-control, .ob .select2-container .select2-selection--single { height: 32px; font-size: 13.5px !important; color: var(--crm-ink, #0f172a); }
+  .ob .select2-container .select2-selection--single .select2-selection__rendered { line-height: 30px; color: var(--crm-ink, #0f172a); }
+  .ob .form-control::placeholder, .ob .select2-selection__placeholder { color: var(--crm-muted, #94a3b8) !important; font-size: 13px; }
+  .ob .form-control[readonly], .ob .form-control[disabled] { background: var(--crm-canvas, #f8fafc); color: var(--crm-ink-2, #475569); }
   .ob .ureg-footer { align-items: center; }
   .ob .ob-note { max-width: 360px; flex: 1 1 220px; margin-right: auto; }
   .ob-head { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 16px; margin: 10px 12px 6px; padding: 10px 14px; border: 1px solid var(--crm-line, #e2e8f0); border-radius: 12px; background: var(--crm-surface, #fff); }
@@ -972,13 +988,11 @@ $ob_cancel = $ob_ap ? base_url('manager/orders/view/' . (int)$ap_order['id']) : 
   .ob-steps b { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--crm-line, #e2e8f0); color: var(--crm-ink-2, #475569); font-size: 11px; }
   .ob-steps .is-now { color: var(--crm-ink, #0f172a); font-weight: 600; }
   .ob-steps .is-now b { background: var(--crm-ocean, #1e3a8a); color: #fff; }
-  @media (max-width: 991px) { .ob .remark_row { grid-template-columns: 1fr; } }
   @media (max-width: 575px) {
-    .ob .box-body > .row:not(.remark_row), .ob .remark_row > [class*="col-"] > .row { grid-template-columns: 1fr; }
-    .ob .form-group, .ob .form-group > div[style*="justify-content:space-between"] { grid-template-columns: 1fr; }
-    .ob .form-group > div[style*="justify-content:space-between"] > label { text-align: left; }
+    .ob .box-body > .row, .ob .remark_row > [class*="col-"] > .row { grid-template-columns: 1fr 1fr; }
     .ob .ob-note { max-width: none; flex-basis: 100%; }
   }
+  @media (max-width: 400px) { .ob .ob-card > .box:first-child .box-body > .row > [class*="col-"]:first-child { grid-column: auto; } .ob .box-body > .row, .ob .remark_row > [class*="col-"] > .row { grid-template-columns: 1fr; } }
 </style>
 
 
