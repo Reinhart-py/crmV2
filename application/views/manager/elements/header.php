@@ -278,6 +278,12 @@
             </a>
           </li>
           <li>
+            <a href="<?php echo base_url(); ?>manager/hr/me" class="google-profile-item">
+              <i class="fa fa-briefcase"></i>
+              <span>My HR</span>
+            </a>
+          </li>
+          <li>
             <a href="<?php echo base_url(); ?>manager/password" class="google-profile-item">
               <i class="fa fa-key"></i>
               <span>Change Password</span>

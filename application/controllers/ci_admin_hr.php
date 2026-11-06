@@ -27,7 +27,11 @@ class Ci_admin_hr extends CI_Controller {
 			'events_plans' => 'events_view',
 			'training' => 'self_training',
 			'search_topics' => 'hr_topics',
-			'payslip' => 'hr_payroll'
+			'payslip' => 'hr_payroll',
+			'me' => 'hr', 'my_pay' => 'hr', 'my_doc' => 'hr',
+			'letter_request' => 'hr_letters', 'letter' => 'hr_letters',
+			'review' => 'hr_appraisals', 'review_save' => 'hr_appraisals',
+			'checklist_tick' => 'hr_lifecycle'
 		);
 		if (isset($self_service[$method])) {
 			$this->is_hr = ($this->is_admin || crm_can($self_service[$method], 'write'));
@@ -46,7 +50,9 @@ class Ci_admin_hr extends CI_Controller {
 			'payroll_step' => 'hr_payroll', 'payroll_csv' => 'hr_payroll', 'payroll_sif' => 'hr_payroll',
 			'loans' => 'hr_payroll', 'loan_save' => 'hr_payroll', 'loan_close' => 'hr_payroll',
 			'taxation' => 'hr_taxation', 'settlement' => 'hr_taxation', 'settlement_save' => 'hr_taxation', 'settlement_step' => 'hr_taxation',
-			'appraisals' => 'hr_appraisals', 'add_appraisal' => 'hr_appraisals',
+			'appraisals' => 'hr_appraisals', 'add_appraisal' => 'hr_appraisals', 'review_cycle_close' => 'hr_appraisals',
+			'letters' => 'hr_letters', 'letter_new' => 'hr_letters', 'letter_save' => 'hr_letters',
+			'checklists' => 'hr_lifecycle', 'checklist' => 'hr_lifecycle', 'checklist_new' => 'hr_lifecycle', 'checklist_item_add' => 'hr_lifecycle', 'checklist_delete' => 'hr_lifecycle', 'checklist_template_save' => 'hr_lifecycle',
 			'documents' => 'hr_documents', 'add_document' => 'hr_documents',
 			'employees' => 'hr_employees', 'employee_save' => 'hr_employees', 'salary_add' => 'hr_employees', 'salary_delete' => 'hr_employees',
 			'settings' => 'hr_settings', 'settings_save' => 'hr_settings',
@@ -55,7 +61,7 @@ class Ci_admin_hr extends CI_Controller {
 		$key = isset($page_keys[$method]) ? $page_keys[$method] : 'hr';
 		// The HR file's save actions check their own right (Employees or Salary & Bank Details, Full) inside the method
 		$own_check = in_array($method, array('employee_save', 'salary_add', 'salary_delete', 'payroll_step', 'settlement_step'), true);
-		$changes = !$own_check && (($this->input->server('REQUEST_METHOD') === 'POST') || preg_match('/^(add_|delete_|update_|generate_|assign_|leave_adjust|leave_type_save|attendance_save|payroll_status|payroll_recalc|payroll_item_|loan_save|loan_close|settlement_save|topic_)/', $method));
+		$changes = !$own_check && (($this->input->server('REQUEST_METHOD') === 'POST') || preg_match('/^(add_|delete_|update_|generate_|assign_|leave_adjust|leave_type_save|attendance_save|payroll_status|payroll_recalc|payroll_item_|loan_save|loan_close|settlement_save|letter_new|letter_save|review_cycle_|checklist_new|checklist_item_|checklist_delete|checklist_template_|topic_)/', $method));
 		$this->is_hr = ($this->is_admin || crm_can($key, $changes ? 'write' : 'read'));
 		if ($method !== 'ajax_clock' && !$this->is_hr) {
 			$this->session->set_flashdata('error_message', 'You do not have ' . ($changes ? 'Full' : 'View') . ' access to this HR page. Ask your administrator if you need it.');
@@ -2180,91 +2186,571 @@ class Ci_admin_hr extends CI_Controller {
 		redirect($back);
 	}
 
-	public function appraisals()
+	/* ======================= Self-service, reviews, letters, checklists (HR part 4) ======================= */
+
+	public static function review_criteria()
 	{
-		$data = array();
-		$data['info'] = array(
-			'title' => 'Performance & Appraisals - HR',
-			'page_heading' => 'Performance Appraisals'
-		);
-		$data['active_tab'] = 'appraisals';
-
-		$raw_app = $this->db->select('A.*, U.name as employee_name, Reviewer.name as reviewer_name')
-			->from('ci_hr_appraisals A')
-			->join('ci_user U', 'U.id = A.user_id', 'left')
-			->join('ci_user Reviewer', 'Reviewer.id = A.reviewer_id', 'left')
-			->order_by('A.id', 'DESC')
-			->get()
-			->result_array();
-
-		foreach ($raw_app as &$ap) {
-			$ap['score'] = floatval($ap['kpi_score']);
-			$ap['appraisal_cycle'] = $ap['cycle_name'];
-			$ap['review_date'] = substr($ap['created_at'], 0, 10);
-		}
-		unset($ap);
-
-		$data['appraisals'] = $raw_app;
-		$data['employees'] = $this->db->select('id, name, email')->where($this->_active_sql(), NULL, FALSE)->order_by('name', 'ASC')->get('ci_user')->result_array();
-
-		$this->load->view('manager/hr/index', $data);
+		return array('Quality of work', 'Productivity', 'Job knowledge', 'Teamwork', 'Communication', 'Initiative', 'Attendance and punctuality');
 	}
 
+	public static function letter_types()
+	{
+		return array('salary' => 'Salary certificate', 'employment' => 'Employment letter', 'noc' => 'No objection certificate (NOC)', 'experience' => 'Experience letter');
+	}
+
+	public static function checklist_owners()
+	{
+		return array('HR', 'Manager', 'IT', 'Finance', 'Employee');
+	}
+
+	/** Default steps: title, who does it, days from the joining date / last working day. */
+	public static function checklist_defaults()
+	{
+		return array(
+			'onboarding' => array(
+				array('Offer letter signed', 'HR', -7), array('Contract signed and registered with MOHRE', 'HR', 0), array('Entry permit or work permit applied', 'HR', 0),
+				array('Medical test and Emirates ID biometrics', 'Employee', 14), array('Health insurance added', 'HR', 7), array('Bank account and IBAN collected for WPS', 'Finance', 7),
+				array('Laptop, email and phone ready', 'IT', 0), array('CRM login created with the right role', 'IT', 0), array('Welcome and team introduction', 'Manager', 0),
+				array('Company policies read and accepted', 'Employee', 3), array('Probation goals agreed', 'Manager', 7), array('Probation review', 'Manager', 170),
+			),
+			'offboarding' => array(
+				array('Resignation or termination letter on file', 'HR', -30), array('Last working day and notice agreed', 'HR', -30), array('Work handed over', 'Manager', -3),
+				array('Exit interview', 'HR', -2), array('Laptop, phone, access card and keys returned', 'IT', 0), array('CRM, email and system access removed', 'IT', 0),
+				array('Health insurance cancelled', 'HR', 7), array('Work permit cancelled with MOHRE', 'HR', 14), array('Visa cancelled', 'HR', 14),
+				array('Final settlement paid', 'Finance', 14), array('Experience letter issued', 'HR', 14),
+			),
+		);
+	}
+
+	private function _ss_tables()
+	{
+		static $done = false;
+		if ($done) return;
+		$done = true;
+		$this->_pay_tables();
+		$this->db->query("CREATE TABLE IF NOT EXISTS ci_hr_review_cycles (
+			id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100) NOT NULL,
+			period_from DATE NULL, period_to DATE NULL, due_date DATE NULL, status VARCHAR(10) NOT NULL DEFAULT 'Open',
+			created_by INT NULL, created_at DATETIME NULL
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		$cols = array();
+		foreach ($this->db->query('SHOW COLUMNS FROM ci_hr_appraisals')->result_array() as $c) $cols[$c['Field']] = 1;
+		if (!isset($cols['cycle_id'])) {
+			$this->db->query("ALTER TABLE ci_hr_appraisals ADD cycle_id INT NULL, ADD stage VARCHAR(20) NULL, ADD self_text TEXT NULL, ADD self_rating DECIMAL(3,1) NULL,
+				ADD scores TEXT NULL, ADD goals TEXT NULL, ADD self_at DATETIME NULL, ADD manager_at DATETIME NULL, ADD ack_at DATETIME NULL, ADD ack_note VARCHAR(500) NULL, ADD KEY cycle_id (cycle_id)");
+		}
+		$this->db->query("CREATE TABLE IF NOT EXISTS ci_hr_letters (
+			id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL, type VARCHAR(20) NOT NULL,
+			addressed_to VARCHAR(150) NOT NULL DEFAULT '', purpose VARCHAR(255) NOT NULL DEFAULT '',
+			status VARCHAR(12) NOT NULL DEFAULT 'Requested', ref_no VARCHAR(30) NOT NULL DEFAULT '', body TEXT NULL, note VARCHAR(255) NOT NULL DEFAULT '',
+			requested_by INT NULL, created_at DATETIME NULL, issued_by INT NULL, issued_at DATETIME NULL,
+			KEY user_id (user_id)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		$this->db->query("CREATE TABLE IF NOT EXISTS ci_hr_checklists (
+			id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL, kind VARCHAR(12) NOT NULL, start_date DATE NOT NULL,
+			status VARCHAR(8) NOT NULL DEFAULT 'Open', created_by INT NULL, created_at DATETIME NULL, done_at DATETIME NULL, KEY user_id (user_id)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		$this->db->query("CREATE TABLE IF NOT EXISTS ci_hr_checklist_items (
+			id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, checklist_id INT NOT NULL, title VARCHAR(150) NOT NULL, owner VARCHAR(12) NOT NULL DEFAULT 'HR',
+			due_date DATE NULL, done_by INT NULL, done_at DATETIME NULL, sort INT NOT NULL DEFAULT 0, KEY checklist_id (checklist_id)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		$this->db->query("CREATE TABLE IF NOT EXISTS ci_hr_checklist_templates (
+			id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, kind VARCHAR(12) NOT NULL, title VARCHAR(150) NOT NULL, owner VARCHAR(12) NOT NULL DEFAULT 'HR',
+			days_offset INT NOT NULL DEFAULT 0, sort INT NOT NULL DEFAULT 0
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		if (!$this->db->count_all_results('ci_hr_checklist_templates')) {
+			foreach (self::checklist_defaults() as $kind => $rows) foreach ($rows as $i => $r)
+				$this->db->insert('ci_hr_checklist_templates', array('kind' => $kind, 'title' => $r[0], 'owner' => $r[1], 'days_offset' => $r[2], 'sort' => $i + 1));
+		}
+		$this->db->data_cache = array();
+	}
+
+	private function _name($uid)
+	{
+		$r = (int)$uid ? $this->db->select('name')->where('id', (int)$uid)->get('ci_user')->row_array() : array();
+		return $r ? $r['name'] : '';
+	}
+
+	/* ---------- My HR (every signed-in person, own data only) ---------- */
+
+	public function me()
+	{
+		$this->_ss_tables();
+		$uid = $this->cur_uid;
+		$u = $this->db->select('U.*, M.name AS manager_name')->from('ci_user U')->join('ci_user M', 'M.id = U.manager', 'left')->where('U.id', $uid)->get()->row_array();
+		$set = $this->_hr_settings();
+		$data = array();
+		$data['info'] = array('title' => 'My HR', 'page_heading' => 'My HR');
+		$data['u'] = $u;
+		$data['set'] = $set;
+		$des = $this->db->where('user_id', $uid)->get('ci_user_designation')->row_array();
+		$data['designation'] = $des ? $des['designation'] : '';
+		$data['emp'] = $this->db->where('user_id', $uid)->get('ci_hr_employee')->row_array();
+		$data['life'] = $this->db->table_exists('ci_hr_lifecycle') ? $this->db->where('user_id', $uid)->get('ci_hr_lifecycle')->row_array() : array();
+		// identity documents and their expiry
+		$alert = (int)$set['doc_alert_days'];
+		$ids = array();
+		foreach (array(array('Passport', 'p_no', 'p_exdate'), array('Residence visa', 'visa_no', 'visa_expiry'), array('Emirates ID', 'eid_no', 'eid_expiry')) as $d) {
+			$left = $this->_days_left($u[$d[2]]);
+			$ids[] = array('label' => $d[0], 'no' => $u[$d[1]], 'expiry' => $u[$d[2]], 'left' => $left, 'state' => $this->_doc_state($left, $alert));
+		}
+		if (!empty($data['emp']['labour_card_expiry'])) { $left = $this->_days_left($data['emp']['labour_card_expiry']); $ids[] = array('label' => 'Labour card', 'no' => $data['emp']['labour_card_no'], 'expiry' => $data['emp']['labour_card_expiry'], 'left' => $left, 'state' => $this->_doc_state($left, $alert)); }
+		if (!empty($data['emp']['insurance_expiry'])) { $left = $this->_days_left($data['emp']['insurance_expiry']); $ids[] = array('label' => 'Health insurance', 'no' => $data['emp']['insurance_no'], 'expiry' => $data['emp']['insurance_expiry'], 'left' => $left, 'state' => $this->_doc_state($left, $alert)); }
+		$data['ids'] = $ids;
+		$data['files'] = $this->db->table_exists('ci_user_docs') ? $this->db->where('user_id', $uid)->order_by('uploaded_at', 'DESC')->get('ci_user_docs')->result_array() : array();
+		// leave
+		$bal = $this->_leave_balances(array($u), (int)date('Y'));
+		$data['bal'] = isset($bal[$uid]) ? $bal[$uid] : array();
+		$data['leaves'] = $this->db->where('user_id', $uid)->order_by('from_date', 'DESC')->limit(5)->get('ci_leaves')->result_array();
+		// attendance this month
+		$from = date('Y-m-01');
+		$att = array('Present' => 0, 'Late' => 0, 'Absent' => 0, 'Half Day' => 0, 'Work From Home' => 0, 'On Leave' => 0);
+		foreach ($this->db->select('status, COUNT(*) AS n', false)->where('user_id', $uid)->where('attendance_date >=', $from)->group_by('status')->get('ci_attendance')->result_array() as $r) $att[$r['status']] = (int)$r['n'];
+		$data['att'] = $att;
+		$data['today'] = $this->db->where('user_id', $uid)->where('attendance_date', date('Y-m-d'))->get('ci_attendance')->row_array();
+		// pay
+		$data['slips'] = $this->db->query("SELECT S.id, S.net, S.gross, R.month, R.status FROM ci_hr_payslips S JOIN ci_hr_pay_runs R ON R.id = S.run_id WHERE S.user_id = ? AND R.status IN ('Approved','Paid') ORDER BY R.month DESC LIMIT 24", array($uid))->result_array();
+		$data['loans'] = $this->_loan_rows("WHERE L.user_id = ? AND L.status = 'Active'", array($uid));
+		// letters, reviews, checklist
+		$data['letters'] = $this->db->where('user_id', $uid)->order_by('id', 'DESC')->limit(20)->get('ci_hr_letters')->result_array();
+		$data['letter_types'] = self::letter_types();
+		$data['reviews'] = $this->db->query("SELECT A.*, C.name AS cname, C.due_date, R.name AS reviewer_name FROM ci_hr_appraisals A LEFT JOIN ci_hr_review_cycles C ON C.id = A.cycle_id LEFT JOIN ci_user R ON R.id = A.reviewer_id WHERE A.user_id = ? ORDER BY A.id DESC", array($uid))->result_array();
+		$data['team_reviews'] = $this->db->query("SELECT A.*, U.name, C.due_date FROM ci_hr_appraisals A JOIN ci_user U ON U.id = A.user_id LEFT JOIN ci_hr_review_cycles C ON C.id = A.cycle_id WHERE A.reviewer_id = ? AND A.user_id <> ? AND A.stage IN ('Self review','Manager review') ORDER BY C.due_date", array($uid, $uid))->result_array();
+		$cl = $this->db->where('user_id', $uid)->where('status', 'Open')->order_by('id', 'DESC')->get('ci_hr_checklists')->row_array();
+		$data['checklist'] = $cl;
+		$data['cl_items'] = $cl ? $this->db->where('checklist_id', $cl['id'])->order_by('sort, id')->get('ci_hr_checklist_items')->result_array() : array();
+		$this->load->view('manager/hr/me', $data);
+	}
+
+	public function my_pay()
+	{
+		redirect('manager/hr/me#pay');
+	}
+
+	/** Own file from the HR file (passport copy, contract...). */
+	public function my_doc($id = 0)
+	{
+		$d = $this->db->where('id', (int)$id)->where('user_id', $this->cur_uid)->get('ci_user_docs')->row_array();
+		if (!$d) show_404();
+		$path = APPPATH . 'uploads/staff_docs/' . (int)$d['user_id'] . '/' . basename($d['file_name']);
+		if (!is_file($path)) show_404();
+		while (ob_get_level()) ob_end_clean();
+		header('Content-Type: ' . $d['mime']);
+		header('Content-Length: ' . filesize($path));
+		header('Content-Disposition: ' . ($this->input->get('dl') ? 'attachment' : 'inline') . '; filename="' . preg_replace('/[^\w.\-]+/', '_', $d['doc_type']) . '.' . pathinfo($d['file_name'], PATHINFO_EXTENSION) . '"');
+		header('X-Content-Type-Options: nosniff');
+		header('Cache-Control: private, no-store');
+		readfile($path);
+		exit;
+	}
+
+	/* ---------- Letters ---------- */
+
+	/** Employee asks for a letter (POST type, addressed_to, purpose). */
+	public function letter_request()
+	{
+		$this->_ss_tables();
+		$this->_post_only('manager/hr/me');
+		$types = self::letter_types();
+		$type = (string)$this->input->post('type');
+		$this->_need(isset($types[$type]), 'Choose the letter you need.', 'manager/hr/me#letters');
+		$open = $this->db->where('user_id', $this->cur_uid)->where('type', $type)->where('status', 'Requested')->count_all_results('ci_hr_letters');
+		$this->_need(!$open, 'You already asked for a ' . strtolower($types[$type]) . '; HR will issue it soon.', 'manager/hr/me#letters');
+		$this->db->insert('ci_hr_letters', array('user_id' => $this->cur_uid, 'type' => $type, 'addressed_to' => mb_substr(trim((string)$this->input->post('addressed_to')), 0, 150),
+			'purpose' => mb_substr(trim((string)$this->input->post('purpose')), 0, 255), 'status' => 'Requested', 'requested_by' => $this->cur_uid, 'created_at' => date('Y-m-d H:i:s')));
+		$id = (int)$this->db->insert_id();
+		$me = $this->_name($this->cur_uid);
+		$this->ci_admin_model->notify_role(array(1, 7), 'letter_request', 'Letter requested', $me . ' asked for a ' . strtolower($types[$type]) . '.', base_url('manager/hr/letter/' . $id), 'fa fa-envelope-o', '#0072f0');
+		$this->session->set_flashdata('message', 'Request sent to HR. You will be told when the letter is ready.');
+		redirect('manager/hr/me#letters');
+	}
+
+	public function letters()
+	{
+		$this->_ss_tables();
+		$data = array();
+		$data['info'] = array('title' => 'Letters - HR', 'page_heading' => 'Letters');
+		$data['rows'] = $this->db->query('SELECT L.*, U.name, U.emp_id, I.name AS issued_name FROM ci_hr_letters L LEFT JOIN ci_user U ON U.id = L.user_id LEFT JOIN ci_user I ON I.id = L.issued_by ORDER BY FIELD(L.status, \'Requested\') DESC, L.id DESC LIMIT 500')->result_array();
+		$data['types'] = self::letter_types();
+		$data['people'] = $this->_people(true);
+		$data['can_edit'] = $this->is_admin || crm_can('hr_letters', 'write');
+		$this->load->view('manager/hr/letters', $data);
+	}
+
+	/** HR starts a letter for someone, then edits and issues it. */
+	public function letter_new()
+	{
+		$this->_ss_tables();
+		$this->_post_only('manager/hr/letters');
+		$types = self::letter_types();
+		$uid = (int)$this->input->post('user_id');
+		$type = (string)$this->input->post('type');
+		$this->_need($uid > 0 && isset($types[$type]) && $this->_name($uid) !== '', 'Choose the employee and the letter.', 'manager/hr/letters');
+		$this->db->insert('ci_hr_letters', array('user_id' => $uid, 'type' => $type, 'addressed_to' => mb_substr(trim((string)$this->input->post('addressed_to')), 0, 150),
+			'purpose' => mb_substr(trim((string)$this->input->post('purpose')), 0, 255), 'status' => 'Requested', 'requested_by' => $this->cur_uid, 'created_at' => date('Y-m-d H:i:s')));
+		redirect('manager/hr/letter/' . (int)$this->db->insert_id());
+	}
+
+	/** The letter text made from the person's HR file. */
+	private function _letter_text($l)
+	{
+		$set = $this->_hr_settings();
+		$uid = (int)$l['user_id'];
+		$u = $this->db->where('id', $uid)->get('ci_user')->row_array();
+		$des = $this->db->where('user_id', $uid)->get('ci_user_designation')->row_array();
+		$life = $this->db->table_exists('ci_hr_lifecycle') ? $this->db->where('user_id', $uid)->get('ci_hr_lifecycle')->row_array() : array();
+		$exit = $this->db->table_exists('ci_user_exit') ? $this->db->where('user_id', $uid)->get('ci_user_exit')->row_array() : array();
+		$company = $set['company_name'] !== '' ? $set['company_name'] : 'the company';
+		$name = $u['name'];
+		$role = $des && $des['designation'] !== '' ? $des['designation'] : ($u['department'] ? 'a member of the ' . $u['department'] . ' team' : 'an employee');
+		$doj = !empty($u['c_doj']) && strtotime($u['c_doj']) ? date('d F Y', strtotime($u['c_doj'])) : '[joining date]';
+		$pp = trim((string)$u['p_no']) !== '' ? ', ' . (trim((string)$u['national']) !== '' ? trim($u['national']) . ' national, ' : '') . 'passport number ' . trim($u['p_no']) : '';
+		$purpose = trim((string)$l['purpose']);
+		$for = $purpose !== '' ? ' for the purpose of ' . rtrim($purpose, '.') : '';
+		$t = '';
+		switch ($l['type']) {
+			case 'salary':
+				$sal = $this->_salaries_on(array($u), date('Y-m-d'));
+				$s = isset($sal[$uid]) ? $sal[$uid] : null;
+				$t = "This is to certify that {$name}{$pp}, has been working with {$company} as {$role} since {$doj}.\n\n";
+				if ($s) {
+					$t .= 'The current monthly salary is ' . $set['currency'] . ' ' . number_format((float)$s['total'], 2) . ", made up as follows:\n";
+					foreach (self::_salary_lines($s) as $line) $t .= '  ' . $line[0] . ': ' . $set['currency'] . ' ' . number_format($line[1], 2) . "\n";
+					$t .= "\n";
+				} else {
+					$t .= "The current monthly salary is " . $set['currency'] . " [amount].\n\n";
+				}
+				$t .= "This certificate is issued at the employee's request{$for}, without any liability on the part of the company.";
+				break;
+			case 'employment':
+				$ct = $life && !empty($life['contract_type']) ? ' on a ' . strtolower($life['contract_type']) . ' contract' : '';
+				$t = "This is to confirm that {$name}{$pp}, is employed with {$company} as {$role}{$ct} since {$doj}, and is still in our employment.\n\nThis letter is issued at the employee's request{$for}, without any liability on the part of the company.";
+				break;
+			case 'noc':
+				$t = "{$company} has no objection to {$name}{$pp}, working with us as {$role} since {$doj}, " . ($purpose !== '' ? rtrim($purpose, '.') : '[what the employee is allowed to do, e.g. travelling to ... from ... to ...]') . ".\n\nThe employee remains in our employment and will return to duty as agreed. This certificate is issued at the employee's request, without any liability on the part of the company.";
+				break;
+			case 'experience':
+				$to = $exit ? date('d F Y', strtotime($exit['left_on'])) : 'date';
+				$t = "This is to certify that {$name}{$pp}, worked with {$company} as {$role} from {$doj} " . ($exit ? "to {$to}" : 'to date') . ".\n\nDuring this time {$name} carried out their duties with dedication and professionalism. We thank them for their work and wish them every success in the future.";
+				break;
+		}
+		return $t;
+	}
+
+	/** One letter: HR edits and issues it; the employee sees it once issued (print / save as PDF). */
+	public function letter($id = 0)
+	{
+		$this->_ss_tables();
+		$l = $this->db->where('id', (int)$id)->get('ci_hr_letters')->row_array();
+		$hr = $this->is_admin || crm_can('hr_letters', 'read');
+		$own = $l && (int)$l['user_id'] === $this->cur_uid;
+		if (!$l || (!$hr && !($own && $l['status'] === 'Issued'))) {
+			$this->session->set_flashdata('error_message', 'Letter not found.');
+			redirect($hr ? 'manager/hr/letters' : 'manager/hr/me#letters');
+		}
+		$data = array('l' => $l, 'set' => $this->_hr_settings(), 'types' => self::letter_types(), 'u' => $this->db->select('id, name, emp_id, department')->where('id', (int)$l['user_id'])->get('ci_user')->row_array(),
+			'can_edit' => ($this->is_admin || crm_can('hr_letters', 'write')) && $l['status'] === 'Requested', 'back' => $hr && !$own ? 'manager/hr/letters' : 'manager/hr/me#letters');
+		$data['body'] = $l['status'] === 'Issued' ? $l['body'] : ($l['body'] ? $l['body'] : $this->_letter_text($l));
+		$data['issued_name'] = $this->_name($l['issued_by']);
+		$data['info'] = array('title' => $data['types'][$l['type']] . ' - ' . $data['u']['name'], 'page_heading' => 'Letter');
+		$this->load->view('manager/hr/letter', $data);
+	}
+
+	/** issue (with the edited text) or reject (with a reason). */
+	public function letter_save($id = 0)
+	{
+		$this->_ss_tables();
+		$this->_post_only('manager/hr/letters');
+		$l = $this->db->where('id', (int)$id)->get('ci_hr_letters')->row_array();
+		$back = 'manager/hr/letter/' . (int)$id;
+		$this->_need($l && $l['status'] === 'Requested', 'This letter was already ' . strtolower($l ? $l['status'] : 'removed') . '.', 'manager/hr/letters');
+		$types = self::letter_types();
+		$act = (string)$this->input->post('act');
+		$note = mb_substr(trim((string)$this->input->post('note')), 0, 255);
+		if ($act === 'reject') {
+			$this->_need($note !== '', 'Give a reason so the employee knows why.', $back);
+			$this->db->where('id', $l['id'])->update('ci_hr_letters', array('status' => 'Rejected', 'note' => $note, 'issued_by' => $this->cur_uid, 'issued_at' => date('Y-m-d H:i:s')));
+			$this->ci_admin_model->add_notification((int)$l['user_id'], 'letter', 'Letter request declined', 'Your request for a ' . strtolower($types[$l['type']]) . ' was declined: ' . $note, base_url('manager/hr/me#letters'), 'fa fa-times-circle', '#dc2626');
+			$this->session->set_flashdata('message', 'Request declined.');
+			redirect('manager/hr/letters');
+		}
+		$body = trim((string)$this->input->post('body'));
+		$this->_need($body !== '', 'The letter is empty.', $back);
+		$ref = 'HR/' . date('Y') . '/' . str_pad((string)$l['id'], 4, '0', STR_PAD_LEFT);
+		$this->db->where('id', $l['id'])->update('ci_hr_letters', array('status' => 'Issued', 'body' => mb_substr($body, 0, 20000), 'addressed_to' => mb_substr(trim((string)$this->input->post('addressed_to')), 0, 150),
+			'ref_no' => $ref, 'issued_by' => $this->cur_uid, 'issued_at' => date('Y-m-d H:i:s')));
+		$this->ci_admin_model->add_notification((int)$l['user_id'], 'letter', 'Letter ready', 'Your ' . strtolower($types[$l['type']]) . ' is ready to download.', base_url('manager/hr/letter/' . $l['id']), 'fa fa-envelope-o', '#16a34a');
+		$this->ci_admin_model->log_admin_action('hr_letter_issue', 'Issued ' . $types[$l['type']] . ' ' . $ref . ' for user ID #' . $l['user_id'], 'SUCCESS');
+		$this->session->set_flashdata('message', 'Letter issued (' . $ref . '). The employee can download it from My HR.');
+		redirect($back);
+	}
+
+	/* ---------- Performance reviews ---------- */
+
+	/** Review cycles and every review (HR). */
+	public function appraisals()
+	{
+		$this->_ss_tables();
+		$data = array();
+		$data['info'] = array('title' => 'Performance Reviews - HR', 'page_heading' => 'Performance Reviews');
+		$data['cycles'] = $this->db->query("SELECT C.*, COUNT(A.id) AS n, SUM(A.stage = 'Completed') AS done FROM ci_hr_review_cycles C LEFT JOIN ci_hr_appraisals A ON A.cycle_id = C.id GROUP BY C.id ORDER BY C.id DESC")->result_array();
+		$data['rows'] = $this->db->query('SELECT A.*, U.name, U.department, R.name AS reviewer_name, C.name AS cname, C.due_date FROM ci_hr_appraisals A LEFT JOIN ci_user U ON U.id = A.user_id LEFT JOIN ci_user R ON R.id = A.reviewer_id LEFT JOIN ci_hr_review_cycles C ON C.id = A.cycle_id ORDER BY A.id DESC LIMIT 1000')->result_array();
+		$data['people'] = $this->_people();
+		$data['depts'] = array_values(array_unique(array_filter(array_map(function ($u) { return trim((string)$u['department']); }, $data['people']))));
+		sort($data['depts']);
+		$data['can_edit'] = $this->is_admin || crm_can('hr_appraisals', 'write');
+		$this->load->view('manager/hr/appraisals', $data);
+	}
+
+	/** Start a review cycle for the chosen people (POST name, period, due date, user_ids[] or department). */
 	public function add_appraisal()
 	{
-		if ($this->input->server('REQUEST_METHOD') !== 'POST') {
-			redirect('manager/hr/appraisals');
-			return;
+		$this->_ss_tables();
+		$this->_post_only('manager/hr/appraisals');
+		$name = mb_substr(trim((string)($this->input->post('name') ?: $this->input->post('cycle_name'))), 0, 100);
+		$from = $this->_ymd($this->input->post('period_from'));
+		$to = $this->_ymd($this->input->post('period_to'));
+		$due = $this->_ymd($this->input->post('due_date'));
+		$ids = array_filter(array_map('intval', (array)$this->input->post('user_ids')));
+		$dept = trim((string)$this->input->post('department'));
+		$people = $this->_people();
+		if ($this->input->post('who') === 'all' || ($this->input->post('who') === 'dept' && $dept !== '')) {
+			$ids = array();
+			foreach ($people as $p) if ($this->input->post('who') === 'all' || strcasecmp(trim((string)$p['department']), $dept) === 0) $ids[] = (int)$p['id'];
 		}
-
-		$user_id = (int)$this->input->post('user_id');
-		$reviewer_id = (int)$this->session->userdata('manager_id');
-		$cycle = trim((string)$this->input->post('cycle_name'));
-		if (empty($cycle)) {
-			$cycle = trim((string)$this->input->post('appraisal_cycle')) ?: 'Q4 Review';
+		$this->_need($name !== '' && $ids, 'Give the review a name and choose who is reviewed.', 'manager/hr/appraisals');
+		$this->db->insert('ci_hr_review_cycles', array('name' => $name, 'period_from' => $from ?: null, 'period_to' => $to ?: null, 'due_date' => $due ?: null, 'status' => 'Open', 'created_by' => $this->cur_uid, 'created_at' => date('Y-m-d H:i:s')));
+		$cid = (int)$this->db->insert_id();
+		$mgr = array();
+		foreach ($people as $p) $mgr[(int)$p['id']] = (int)$p['manager'];
+		$n = 0;
+		foreach (array_unique($ids) as $uid) {
+			if (!isset($mgr[$uid])) continue;
+			$rev = $mgr[$uid] && $mgr[$uid] !== $uid ? $mgr[$uid] : $this->cur_uid;
+			$this->db->insert('ci_hr_appraisals', array('user_id' => $uid, 'reviewer_id' => $rev, 'cycle_name' => $name, 'cycle_id' => $cid, 'stage' => 'Self review', 'status' => 'Open', 'rating' => 0, 'kpi_score' => 0, 'created_at' => date('Y-m-d H:i:s')));
+			$this->ci_admin_model->add_notification($uid, 'review', 'Performance review: ' . $name, 'Please fill in your self review' . ($due ? ' by ' . date('d M Y', strtotime($due)) : '') . '.', base_url('manager/hr/review/' . $this->db->insert_id()), 'fa fa-star-o', '#0072f0');
+			$n++;
 		}
-
-		$rating = floatval($this->input->post('rating'));
-		$kpi = floatval($this->input->post('kpi_score'));
-		if ($kpi <= 0) {
-			$kpi = floatval($this->input->post('score'));
-		}
-		$feedback = trim((string)$this->input->post('feedback'));
-
-		if ($user_id > 0) {
-			$this->db->insert('ci_hr_appraisals', array(
-				'user_id' => $user_id,
-				'reviewer_id' => $reviewer_id,
-				'cycle_name' => $cycle,
-				'rating' => $rating,
-				'kpi_score' => $kpi,
-				'feedback' => $feedback,
-				'status' => 'Completed',
-				'created_at' => date('Y-m-d H:i:s')
-			));
-
-			$this->ci_admin_model->add_notification(
-				$user_id,
-				'appraisal_submitted',
-				'Performance Appraisal Completed',
-				"Your appraisal for {$cycle} has been submitted with a rating of {$rating}/5.0.",
-				base_url('manager/hr/appraisals'),
-				'fa fa-star',
-				'#16a34a'
-			);
-
-			$this->session->set_flashdata('message', 'Performance appraisal submitted.');
-		}
+		$this->ci_admin_model->log_admin_action('hr_review_cycle', 'Started review "' . $name . '" for ' . $n . ' people', 'SUCCESS');
+		$this->session->set_flashdata('message', 'Review "' . $name . '" started for ' . $n . ' people. Each one is asked for a self review first, then their manager reviews.');
 		redirect('manager/hr/appraisals');
 	}
 
-	/* ------------------------------------------------------------------
-	 * People: company HR settings, employee list, each employee's HR file
-	 * and the documents & expiry list.
-	 * Personal details stay in the staff profile (ci_user); the HR file adds
-	 * job & contract (shared with Employee Lifecycle), identity documents,
-	 * salary structure history and bank / salary transfer (WPS) details.
-	 * ------------------------------------------------------------------ */
+	/** Close a cycle: reviews not finished stay as they are but nobody is reminded any more. */
+	public function review_cycle_close($id = 0)
+	{
+		$this->_ss_tables();
+		$this->_post_only('manager/hr/appraisals');
+		$this->db->where('id', (int)$id)->update('ci_hr_review_cycles', array('status' => 'Closed'));
+		$this->session->set_flashdata('message', 'Review closed.');
+		redirect('manager/hr/appraisals');
+	}
+
+	private function _review_access($a)
+	{
+		$hr_read = $this->is_admin || crm_can('hr_appraisals', 'read');
+		$hr_write = $this->is_admin || crm_can('hr_appraisals', 'write');
+		$own = (int)$a['user_id'] === $this->cur_uid;
+		$reviewer = (int)$a['reviewer_id'] === $this->cur_uid && !$own;
+		return array('see' => $own || $reviewer || $hr_read, 'own' => $own, 'reviewer' => $reviewer || ($hr_write && !$own), 'hr' => $hr_write);
+	}
+
+	public function review($id = 0)
+	{
+		$this->_ss_tables();
+		$a = $this->db->query('SELECT A.*, U.name, U.department, U.c_doj, R.name AS reviewer_name, C.name AS cname, C.period_from, C.period_to, C.due_date FROM ci_hr_appraisals A LEFT JOIN ci_user U ON U.id = A.user_id LEFT JOIN ci_user R ON R.id = A.reviewer_id LEFT JOIN ci_hr_review_cycles C ON C.id = A.cycle_id WHERE A.id = ?', array((int)$id))->row_array();
+		$acc = $a ? $this->_review_access($a) : array('see' => false);
+		if (!$a || !$acc['see']) { $this->session->set_flashdata('error_message', 'Review not found.'); redirect('manager/hr/me#reviews'); }
+		if (empty($a['stage'])) $a['stage'] = 'Completed';
+		$data = array('a' => $a, 'acc' => $acc, 'criteria' => self::review_criteria(), 'scores' => (array)json_decode((string)$a['scores'], true));
+		$des = $this->db->where('user_id', (int)$a['user_id'])->get('ci_user_designation')->row_array();
+		$data['designation'] = $des ? $des['designation'] : '';
+		$data['info'] = array('title' => 'Review - ' . $a['name'], 'page_heading' => 'Performance Review');
+		$this->load->view('manager/hr/review', $data);
+	}
+
+	/** act: self_save, self_submit, mgr_save, mgr_submit, ack, reopen (HR). */
+	public function review_save($id = 0)
+	{
+		$this->_ss_tables();
+		$back = 'manager/hr/review/' . (int)$id;
+		$this->_post_only($back);
+		$a = $this->db->where('id', (int)$id)->get('ci_hr_appraisals')->row_array();
+		$acc = $a ? $this->_review_access($a) : array('see' => false);
+		$this->_need($a && $acc['see'], 'Review not found.', 'manager/hr/me');
+		$act = (string)$this->input->post('act');
+		$now = date('Y-m-d H:i:s');
+		$txt = function ($k, $n = 5000) { return mb_substr(trim((string)$this->input->post($k)), 0, $n); };
+		$rate = function ($v) { $v = round((float)$v * 2) / 2; return ($v >= 1 && $v <= 5) ? $v : null; };
+		$name = $this->_name($a['user_id']);
+		if ($act === 'self_save' || $act === 'self_submit') {
+			$this->_need($acc['own'] && $a['stage'] === 'Self review', 'The self review cannot be changed now.', $back);
+			$up = array('self_text' => $txt('self_text'), 'self_rating' => $rate($this->input->post('self_rating')));
+			if ($act === 'self_submit') {
+				$this->_need($up['self_text'] !== '' && $up['self_rating'] !== null, 'Write your self review and give yourself a rating before sending.', $back);
+				$up += array('stage' => 'Manager review', 'self_at' => $now);
+				$this->ci_admin_model->add_notification((int)$a['reviewer_id'], 'review', 'Review to do: ' . $name, $name . ' finished their self review for ' . $a['cycle_name'] . '. Your review is next.', base_url($back), 'fa fa-star-o', '#0072f0');
+			}
+			$this->db->where('id', $a['id'])->update('ci_hr_appraisals', $up);
+			$msg = $act === 'self_submit' ? 'Self review sent to your manager.' : 'Saved. Send it when you are ready.';
+		} elseif ($act === 'mgr_save' || $act === 'mgr_submit' || $act === 'skip_self') {
+			$this->_need($acc['reviewer'] && $a['stage'] !== 'Completed', 'You cannot review this now.', $back);
+			if ($act === 'skip_self') {
+				$this->_need($acc['hr'] && $a['stage'] === 'Self review', 'Only HR can skip the self review.', $back);
+				$this->db->where('id', $a['id'])->update('ci_hr_appraisals', array('stage' => 'Manager review'));
+				$this->session->set_flashdata('message', 'Self review skipped; the manager can review now.');
+				redirect($back);
+			}
+			$this->_need($a['stage'] === 'Manager review' || $acc['hr'], 'Wait for the self review first.', $back);
+			$scores = array();
+			$in = (array)$this->input->post('score');
+			foreach (self::review_criteria() as $i => $c) { $v = isset($in[$i]) ? $rate($in[$i]) : null; if ($v !== null) $scores[$c] = $v; }
+			$overall = $rate($this->input->post('rating'));
+			if ($overall === null && $scores) $overall = round(array_sum($scores) / count($scores) * 2) / 2;
+			$up = array('scores' => $scores ? json_encode($scores) : null, 'rating' => $overall !== null ? $overall : 0, 'kpi_score' => min(100, max(0, (float)$this->input->post('kpi_score'))),
+				'strengths' => $txt('strengths'), 'improvements' => $txt('improvements'), 'goals' => $txt('goals'), 'feedback' => $txt('feedback'));
+			if ($act === 'mgr_submit') {
+				$this->_need($overall !== null && $up['feedback'] !== '', 'Give the scores (or an overall rating) and a summary before finishing.', $back);
+				$up += array('stage' => 'Completed', 'status' => 'Completed', 'manager_at' => $now);
+				if ($a['stage'] === 'Self review') $up['self_at'] = null;
+				$this->ci_admin_model->add_notification((int)$a['user_id'], 'review', 'Your review is ready', 'Your ' . $a['cycle_name'] . ' review is complete (' . $overall . ' / 5). Read it and confirm you have seen it.', base_url($back), 'fa fa-star', '#16a34a');
+			}
+			$this->db->where('id', $a['id'])->update('ci_hr_appraisals', $up);
+			$msg = $act === 'mgr_submit' ? 'Review finished and shared with ' . $name . '.' : 'Saved.';
+		} elseif ($act === 'ack') {
+			$this->_need($acc['own'] && $a['stage'] === 'Completed' && empty($a['ack_at']), 'Nothing to confirm.', $back);
+			$this->db->where('id', $a['id'])->update('ci_hr_appraisals', array('ack_at' => $now, 'ack_note' => $txt('ack_note', 500)));
+			$msg = 'Thank you. Your manager and HR can see that you have read your review.';
+		} elseif ($act === 'reopen') {
+			$this->_need($acc['hr'] && $a['stage'] === 'Completed', 'Only HR can reopen a finished review.', $back);
+			$this->db->where('id', $a['id'])->update('ci_hr_appraisals', array('stage' => 'Manager review', 'status' => 'Open', 'manager_at' => null, 'ack_at' => null));
+			$msg = 'Review reopened for the manager.';
+		} else {
+			redirect($back);
+		}
+		$this->session->set_flashdata('message', $msg);
+		redirect($back);
+	}
+
+	/* ---------- Onboarding and exit checklists ---------- */
+
+	public function checklists()
+	{
+		$this->_ss_tables();
+		$data = array();
+		$data['info'] = array('title' => 'Onboarding & Exit - HR', 'page_heading' => 'Onboarding & Exit');
+		$data['lists'] = $this->db->query("SELECT C.*, U.name, U.department, COUNT(I.id) AS n, SUM(I.done_at IS NOT NULL) AS done, SUM(I.done_at IS NULL AND I.due_date < CURDATE()) AS late
+			FROM ci_hr_checklists C LEFT JOIN ci_user U ON U.id = C.user_id LEFT JOIN ci_hr_checklist_items I ON I.checklist_id = C.id GROUP BY C.id ORDER BY C.status = 'Open' DESC, C.start_date DESC LIMIT 300")->result_array();
+		$data['templates'] = array('onboarding' => array(), 'offboarding' => array());
+		foreach ($this->db->order_by('kind, sort, id')->get('ci_hr_checklist_templates')->result_array() as $t) $data['templates'][$t['kind']][] = $t;
+		$data['people'] = $this->_people(true);
+		$data['owners'] = self::checklist_owners();
+		$data['can_edit'] = $this->is_admin || crm_can('hr_lifecycle', 'write');
+		$this->load->view('manager/hr/checklists', $data);
+	}
+
+	public function checklist_new()
+	{
+		$this->_ss_tables();
+		$this->_post_only('manager/hr/checklists');
+		$uid = (int)$this->input->post('user_id');
+		$kind = $this->input->post('kind') === 'offboarding' ? 'offboarding' : 'onboarding';
+		$start = $this->_ymd($this->input->post('start_date'));
+		$u = $uid ? $this->db->select('id, name, c_doj')->where('id', $uid)->get('ci_user')->row_array() : array();
+		if ($u && $start === '') {
+			if ($kind === 'onboarding' && !empty($u['c_doj']) && strtotime($u['c_doj'])) $start = date('Y-m-d', strtotime($u['c_doj']));
+			if ($kind === 'offboarding' && $this->db->table_exists('ci_user_exit') && ($e = $this->db->where('user_id', $uid)->get('ci_user_exit')->row_array())) $start = $e['left_on'];
+		}
+		$this->_need($u && $start !== '', 'Choose the employee and the ' . ($kind === 'onboarding' ? 'joining date' : 'last working day') . '.', 'manager/hr/checklists');
+		$open = $this->db->where('user_id', $uid)->where('kind', $kind)->where('status', 'Open')->get('ci_hr_checklists')->row_array();
+		if ($open) redirect('manager/hr/checklist/' . $open['id']);
+		$this->db->insert('ci_hr_checklists', array('user_id' => $uid, 'kind' => $kind, 'start_date' => $start, 'status' => 'Open', 'created_by' => $this->cur_uid, 'created_at' => date('Y-m-d H:i:s')));
+		$cid = (int)$this->db->insert_id();
+		foreach ($this->db->where('kind', $kind)->order_by('sort, id')->get('ci_hr_checklist_templates')->result_array() as $i => $t)
+			$this->db->insert('ci_hr_checklist_items', array('checklist_id' => $cid, 'title' => $t['title'], 'owner' => $t['owner'], 'due_date' => date('Y-m-d', strtotime($start . ' ' . ((int)$t['days_offset'] >= 0 ? '+' : '') . (int)$t['days_offset'] . ' days')), 'sort' => $i + 1));
+		$this->ci_admin_model->log_admin_action('hr_checklist_new', ucfirst($kind) . ' checklist for ' . $u['name'], 'SUCCESS');
+		$this->session->set_flashdata('message', ($kind === 'onboarding' ? 'Onboarding' : 'Exit') . ' checklist started for ' . $u['name'] . '.');
+		redirect('manager/hr/checklist/' . $cid);
+	}
+
+	public function checklist($id = 0)
+	{
+		$this->_ss_tables();
+		$c = $this->db->query('SELECT C.*, U.name, U.department, U.c_doj FROM ci_hr_checklists C LEFT JOIN ci_user U ON U.id = C.user_id WHERE C.id = ?', array((int)$id))->row_array();
+		if (!$c) { $this->session->set_flashdata('error_message', 'Checklist not found.'); redirect('manager/hr/checklists'); }
+		$data = array('c' => $c, 'owners' => self::checklist_owners(), 'can_edit' => $this->is_admin || crm_can('hr_lifecycle', 'write'));
+		$data['items'] = $this->db->query('SELECT I.*, D.name AS done_name FROM ci_hr_checklist_items I LEFT JOIN ci_user D ON D.id = I.done_by WHERE I.checklist_id = ? ORDER BY I.sort, I.id', array((int)$c['id']))->result_array();
+		$data['info'] = array('title' => ($c['kind'] === 'onboarding' ? 'Onboarding' : 'Exit') . ' - ' . $c['name'], 'page_heading' => 'Checklist');
+		$this->load->view('manager/hr/checklist', $data);
+	}
+
+	/** Tick or untick a step (JSON). HR for every step; the employee for their own "Employee" steps. */
+	public function checklist_tick()
+	{
+		$this->_ss_tables();
+		$it = $this->db->query('SELECT I.*, C.user_id, C.status AS cstatus FROM ci_hr_checklist_items I JOIN ci_hr_checklists C ON C.id = I.checklist_id WHERE I.id = ?', array((int)$this->input->post('id')))->row_array();
+		$hr = $this->is_admin || crm_can('hr_lifecycle', 'write');
+		$ok = $it && $this->input->server('REQUEST_METHOD') === 'POST' && ($hr || ((int)$it['user_id'] === $this->cur_uid && $it['owner'] === 'Employee'));
+		header('Content-Type: application/json');
+		if (!$ok) { echo json_encode(array('ok' => false, 'message' => 'You cannot change this step.')); return; }
+		$done = (int)$this->input->post('done') === 1;
+		$this->db->where('id', $it['id'])->update('ci_hr_checklist_items', $done ? array('done_by' => $this->cur_uid, 'done_at' => date('Y-m-d H:i:s')) : array('done_by' => null, 'done_at' => null));
+		$left = (int)$this->db->where('checklist_id', $it['checklist_id'])->where('done_at IS NULL', null, false)->count_all_results('ci_hr_checklist_items');
+		$this->db->where('id', $it['checklist_id'])->update('ci_hr_checklists', $left ? array('status' => 'Open', 'done_at' => null) : array('status' => 'Done', 'done_at' => date('Y-m-d H:i:s')));
+		echo json_encode(array('ok' => true, 'left' => $left, 'by' => $done ? $this->_name($this->cur_uid) : '', 'at' => $done ? date('d M Y') : ''));
+	}
+
+	/** Add a step to one checklist (POST id, title, owner, due_date) or remove one (POST remove). */
+	public function checklist_item_add($id = 0)
+	{
+		$this->_ss_tables();
+		$back = 'manager/hr/checklist/' . (int)$id;
+		$this->_post_only($back);
+		if ((int)$this->input->post('remove') > 0) {
+			$this->db->where('id', (int)$this->input->post('remove'))->where('checklist_id', (int)$id)->delete('ci_hr_checklist_items');
+			redirect($back);
+		}
+		$title = mb_substr(trim((string)$this->input->post('title')), 0, 150);
+		$owner = in_array($this->input->post('owner'), self::checklist_owners(), true) ? $this->input->post('owner') : 'HR';
+		$this->_need($title !== '', 'Write the step.', $back);
+		$max = $this->db->select_max('sort')->where('checklist_id', (int)$id)->get('ci_hr_checklist_items')->row_array();
+		$this->db->insert('ci_hr_checklist_items', array('checklist_id' => (int)$id, 'title' => $title, 'owner' => $owner, 'due_date' => $this->_ymd($this->input->post('due_date')) ?: null, 'sort' => (int)$max['sort'] + 1));
+		$this->db->where('id', (int)$id)->update('ci_hr_checklists', array('status' => 'Open', 'done_at' => null));
+		redirect($back);
+	}
+
+	public function checklist_delete($id = 0)
+	{
+		$this->_ss_tables();
+		$this->_post_only('manager/hr/checklists');
+		$this->db->where('checklist_id', (int)$id)->delete('ci_hr_checklist_items');
+		$this->db->where('id', (int)$id)->delete('ci_hr_checklists');
+		$this->session->set_flashdata('message', 'Checklist deleted.');
+		redirect('manager/hr/checklists');
+	}
+
+	/** Replace the default steps of one kind (POST kind, title[], owner[], days[]). */
+	public function checklist_template_save()
+	{
+		$this->_ss_tables();
+		$this->_post_only('manager/hr/checklists');
+		$kind = $this->input->post('kind') === 'offboarding' ? 'offboarding' : 'onboarding';
+		$titles = (array)$this->input->post('title');
+		$owners = (array)$this->input->post('owner');
+		$days = (array)$this->input->post('days');
+		$rows = array();
+		foreach ($titles as $i => $t) {
+			$t = mb_substr(trim((string)$t), 0, 150);
+			if ($t === '') continue;
+			$rows[] = array('kind' => $kind, 'title' => $t, 'owner' => isset($owners[$i]) && in_array($owners[$i], self::checklist_owners(), true) ? $owners[$i] : 'HR', 'days_offset' => isset($days[$i]) ? max(-365, min(365, (int)$days[$i])) : 0, 'sort' => count($rows) + 1);
+		}
+		$this->_need(count($rows) > 0, 'Keep at least one step.', 'manager/hr/checklists');
+		$this->db->where('kind', $kind)->delete('ci_hr_checklist_templates');
+		$this->db->insert_batch('ci_hr_checklist_templates', $rows);
+		$this->ci_admin_model->log_admin_action('hr_checklist_template', 'Changed the default ' . $kind . ' steps (' . count($rows) . ')', 'SUCCESS');
+		$this->session->set_flashdata('message', 'Default ' . ($kind === 'onboarding' ? 'onboarding' : 'exit') . ' steps saved. New checklists use them.');
+		redirect('manager/hr/checklists');
+	}
 
 	/** Company HR settings with their defaults (UAE). */
 	public static function hr_setting_defaults()
