@@ -325,8 +325,9 @@ class Ci_admin_calls extends CI_Controller
 		$campaign_id = (int)$this->input->get('campaign_id');
 		if ($campaign_id > 0) {
 			$campaign = $this->dialer_campaign_model->get_campaign($campaign_id, $manager_id, $role);
-			if (empty($campaign) || $campaign['status'] !== 'Active') {
-				echo json_encode(array('status' => false, 'message' => 'Campaign is not available or not active', 'leads' => array()));
+			if (empty($campaign) || !$this->dialer_campaign_model->is_dialable($campaign)) {
+				$phase = !empty($campaign) ? $this->dialer_campaign_model->display_status($campaign) : '';
+				echo json_encode(array('status' => false, 'message' => $phase === 'Scheduled' ? 'This campaign has not started yet' : ($phase === 'Ended' ? 'This campaign has ended' : 'Campaign is not available or not active'), 'leads' => array()));
 				return;
 			}
 		}
@@ -464,6 +465,9 @@ class Ci_admin_calls extends CI_Controller
 		}
 		$this->db->limit($limit_val);
 		$leads = $this->db->get()->result_array();
+		if (!empty($campaign)) {
+			$leads = $this->_campaign_rules($campaign, $leads);
+		}
 
 		foreach ($leads as &$l_item) {
 			$extracted = $this->_extract_lead_phones($l_item);
@@ -480,6 +484,27 @@ class Ci_admin_calls extends CI_Controller
 			'count' => count($leads),
 			'leads' => $leads
 		));
+	}
+
+	/** Records a campaign must not call now: tried max_attempts times, or called within retry_hours. lead id => true */
+	private function _campaign_blocked($campaign)
+	{
+		$max = (int)$campaign['max_attempts'];
+		$wait = (int)$campaign['retry_hours'];
+		if ($max <= 0 && $wait <= 0) return array();
+		$since = date('Y-m-d H:i:s', time() - $wait * 3600);
+		$out = array();
+		foreach ($this->dialer_campaign_model->attempts_map($campaign['id']) as $lid => $a) {
+			if (($max > 0 && $a[0] >= $max) || ($wait > 0 && $a[1] > $since)) $out[$lid] = true;
+		}
+		return $out;
+	}
+
+	private function _campaign_rules($campaign, $leads)
+	{
+		$blocked = $this->_campaign_blocked($campaign);
+		if (!$blocked) return $leads;
+		return array_values(array_filter($leads, function ($l) use ($blocked) { return !isset($blocked[(int)$l['id']]); }));
 	}
 
 	private function _campaign_from_post()
@@ -538,10 +563,16 @@ class Ci_admin_calls extends CI_Controller
 
 		$leads = array();
 		$skipped = 0;
+		$rested = 0;
+		$blocked = !empty($campaign) ? $this->_campaign_blocked($campaign) : array();
 		for ($i = $range_from - 1; $i < $range_to && $i < $total; $i++) {
 			$item = $rows[$i];
 			if (isset($called_ids[(int)$item['id']])) {
 				$skipped++;
+				continue;
+			}
+			if (isset($blocked[(int)$item['id']])) {
+				$rested++;
 				continue;
 			}
 			$extracted = $this->_extract_lead_phones($item);
@@ -563,6 +594,7 @@ class Ci_admin_calls extends CI_Controller
 			'range_from' => $total > 0 ? $range_from : 0,
 			'range_to' => $range_to,
 			'skipped_called' => $skipped,
+			'skipped_rules' => $rested,
 			'queue_key' => $queue_key,
 			'resume_position' => (int)$progress['last_position'],
 			'resume_updated_at' => $progress['updated_at'],
@@ -596,6 +628,7 @@ class Ci_admin_calls extends CI_Controller
 		}
 		foreach ($list as &$cmp) {
 			$cmp['stats'] = $this->dialer_campaign_model->stats($cmp);
+			$cmp['phase'] = $this->dialer_campaign_model->display_status($cmp);
 			$cmp['can_manage'] = $this->dialer_campaign_model->can_manage($cmp, $manager_id, $role);
 			$names = array();
 			foreach ($this->dialer_campaign_model->participant_ids($cmp) as $pid) {

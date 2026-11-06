@@ -1,5 +1,5 @@
 <?php require_once(APPPATH . "views/manager/elements/header.php"); ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-dialer.css?v=20261106_4">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-dialer.css?v=20261106_5">
 
 <style>
 html, body {
@@ -1514,6 +1514,7 @@ html, body {
                 <option value="Paused">Paused</option>
                 <option value="Completed">Completed</option>
               </select>
+              <a class="btn btn-default btn-sm" href="<?php echo base_url(); ?>manager/campaigns">Manage</a>
               <button type="button" class="btn btn-primary btn-sm" onclick="openCampaignView('create')">Create campaign</button>
             </div>
           </div>
@@ -1610,6 +1611,11 @@ html, body {
         <div id="dialerSuggestions" class="dialer-suggestions-popover" style="display:none;"></div>
       </div>
       <div class="dialer-status-sub" id="dialerStatusSubtitle" data-state="idle">Ready to call</div>
+    </div>
+
+    <div class="dl-script" id="dlScript" style="display:none;">
+      <button type="button" class="dl-script-h" onclick="toggleCampaignScript()" aria-expanded="true"><i class="fa fa-file-text-o"></i> <b>Script</b><span id="dlScriptName"></span><i class="fa fa-chevron-up dl-script-caret"></i></button>
+      <div class="dl-script-b" id="dlScriptBody"></div>
     </div>
 
     <div class="dl-wrap" id="dlWrap" style="display:none;">
@@ -2327,6 +2333,8 @@ function campaignEscape(v) {
 }
 
 function openCampaignView(view) {
+  // Creating and editing campaigns happens on the Campaigns page
+  if (view === 'create') { location.href = '<?php echo base_url(); ?>manager/campaigns/new'; return; }
   closeAllMobileFlyouts();
   $('.crm-dock-btn').removeClass('active');
   $('#dockBtnCampaign').addClass('active');
@@ -2421,6 +2429,8 @@ function saveCampaign() {
 }
 
 function editCampaign(id) {
+  location.href = '<?php echo base_url(); ?>manager/campaigns/edit/' + parseInt(id, 10);
+  return;
   $.getJSON('<?php echo base_url(); ?>manager/calls/ajax_get_campaign', { id: id }, function(res) {
     if (!res || !res.status) {
       showToast(res && res.message ? res.message : 'Campaign not found');
@@ -2494,11 +2504,12 @@ function renderCampaignList() {
         '<div class="cmp-bar"><span style="width:' + (s.progress || 0) + '%"></span></div>' +
         '<div class="cmp-meta">' + (s.calls || 0) + ' calls &middot; ' + (s.connected || 0) + ' connected &middot; ' + (s.calls_today || 0) + ' today' + (parseInt(c.daily_target, 10) > 0 ? ' / ' + c.daily_target + ' target' : '') + '</div>' +
       '</div>' +
-      '<div class="cmp-status cmp-status-' + String(c.status).toLowerCase() + '">' + campaignEscape(c.status) + '</div>' +
+      '<div class="cmp-status cmp-status-' + String(c.phase || c.status).toLowerCase() + '">' + campaignEscape(c.phase || c.status) + '</div>' +
       '<div class="cmp-actions">' +
         '<button type="button" class="btn btn-default btn-sm" onclick="toggleCampaignDetails(' + c.id + ')">Details</button>' +
         (c.can_manage ? '<button type="button" class="btn btn-default btn-sm" onclick="editCampaign(' + c.id + ')">Edit</button>' : '') +
-        (c.status === 'Active' ? '<button type="button" class="btn btn-primary btn-sm" onclick="startCampaignDialing(' + c.id + ')">Dial</button>' : '') +
+        '<a class="btn btn-default btn-sm" href="<?php echo base_url(); ?>manager/campaigns/view/' + c.id + '">Results</a>' +
+        ((c.phase || c.status) === 'Active' ? '<button type="button" class="btn btn-primary btn-sm" onclick="startCampaignDialing(' + c.id + ')">Dial</button>' : '') +
       '</div>' +
       '<div class="cmp-details" id="cmpDetails' + c.id + '" style="display:none;">' + renderCampaignDetails(c) + '</div>' +
     '</div>';
@@ -2525,7 +2536,12 @@ function startCampaignDialing(id) {
   var c = null;
   campaignCache.forEach(function(item) { if (parseInt(item.id, 10) === parseInt(id, 10)) { c = item; } });
   if (!c) { return; }
-  activeCampaign = { id: parseInt(c.id, 10), name: c.name };
+  if (c.phase && c.phase !== 'Active') {
+    alert(c.phase === 'Scheduled' ? 'This campaign starts on ' + c.start_date + '.' : 'This campaign is ' + c.phase.toLowerCase() + '.');
+    return;
+  }
+  activeCampaign = { id: parseInt(c.id, 10), name: c.name, script: c.script || '' };
+  renderCampaignScript();
   $('#dialerRangeFrom').val('');
   $('#dialerRangeTo').val('');
   if (c.pipeline_type === 'lead') {
@@ -2538,9 +2554,49 @@ function startCampaignDialing(id) {
 
 function exitCampaignDialing() {
   activeCampaign = null;
+  renderCampaignScript();
   updateCampaignBanner();
   updateAutoDialerQueueCount();
 }
+
+var DIALER_AGENT = <?php echo json_encode((string)strtok((string)$manager_name, ' ')); ?>;
+
+// Campaign script in the phone panel, with {contact} {customer} {agent} filled in for the current record
+function renderCampaignScript() {
+  var box = $('#dlScript');
+  if (!activeCampaign || !activeCampaign.script) { box.hide(); return; }
+  var l = activeLead || {};
+  var text = String(activeCampaign.script)
+    .replace(/\{contact\}/gi, l.poc || 'there')
+    .replace(/\{customer\}/gi, l.customer || 'your company')
+    .replace(/\{agent\}/gi, DIALER_AGENT || '');
+  $('#dlScriptName').text(activeCampaign.name);
+  $('#dlScriptBody').text(text);
+  var shut = false;
+  try { shut = localStorage.getItem('dlScriptShut') === '1'; } catch (e) {}
+  box.toggleClass('is-shut', shut).find('.dl-script-h').attr('aria-expanded', shut ? 'false' : 'true');
+  box.show();
+}
+
+function toggleCampaignScript() {
+  var box = $('#dlScript').toggleClass('is-shut'), shut = box.hasClass('is-shut');
+  box.find('.dl-script-h').attr('aria-expanded', shut ? 'false' : 'true');
+  try { localStorage.setItem('dlScriptShut', shut ? '1' : '0'); } catch (e) {}
+}
+
+// Opened from the Campaigns page: manager/calls?campaign=ID starts dialing that campaign
+$(function () {
+  var m = location.search.match(/[?&]campaign=(\d+)/);
+  if (!m) return;
+  try { history.replaceState(null, '', location.pathname); } catch (e) {}
+  setTimeout(function () {
+    $.getJSON('<?php echo base_url(); ?>manager/calls/ajax_campaigns', function (res) {
+      campaignCache = (res && res.campaigns) ? res.campaigns : [];
+      var found = campaignCache.some(function (c) { return parseInt(c.id, 10) === parseInt(m[1], 10); });
+      if (found) startCampaignDialing(m[1]); else openCampaignView('list');
+    });
+  }, 0);
+});
 
 function updateCampaignBanner() {
   if (activeCampaign) {
@@ -2605,6 +2661,9 @@ function updateAutoDialerQueueCount() {
         }
         if (res.skipped_called > 0) {
           summary += ', ' + res.skipped_called + ' already called skipped';
+        }
+        if (res.skipped_rules > 0) {
+          summary += ', ' + res.skipped_rules + ' waiting (campaign retry rules)';
         }
         $('#autoDialerQueueCount').text(summary);
         var canResume = dialerResumePosition > 0 && dialerResumePosition < total;
@@ -3087,6 +3146,7 @@ function applyLeadToDialer(lead, idx) {
   $('#dialerInput').val(p1);
 
   populateDetailsForm(lead);
+  if (activeCampaign) renderCampaignScript();
 }
 
 function populateDetailsForm(l) {

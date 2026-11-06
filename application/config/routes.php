@@ -304,6 +304,12 @@ $route['manager/live/ajax_get_data'] = 'ci_admin_live/ajax_get_data';
 $route['manager/live/(:any)'] = 'ci_admin_live/$1';
 
 $route['manager/data-creation'] = 'ci_admin_data_creation/index';
+$route['manager/campaigns'] = 'ci_admin_campaigns/index';
+$route['manager/campaigns/new'] = 'ci_admin_campaigns/form';
+$route['manager/campaigns/edit/(:num)'] = 'ci_admin_campaigns/form/$1';
+$route['manager/campaigns/view/(:num)'] = 'ci_admin_campaigns/view/$1';
+$route['manager/campaigns/export/(:num)'] = 'ci_admin_campaigns/export/$1';
+$route['manager/campaigns/(:any)'] = 'ci_admin_campaigns/$1';
 $route['manager/events'] = 'ci_admin_events/index';
 $route['manager/events/(:any)'] = 'ci_admin_events/$1';
 $route['manager/awards'] = 'ci_admin_events/index';
