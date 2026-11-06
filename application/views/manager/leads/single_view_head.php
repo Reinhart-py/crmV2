@@ -45,7 +45,7 @@ $sv_steps = array(
 );
 $sv_order = array('database' => 0, 'lead' => 1, 'order' => 2, 'sale' => 3);
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-record.css?v=20261106_21">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-record.css?v=20261106_30">
 <div class="svh svh-<?php echo $sv_stage; ?>">
   <div class="svh-top">
     <a href="<?php echo base_url(); ?>manager/<?php echo $return_url; ?>" class="svh-back" title="Back" aria-label="Back"><i class="fa fa-arrow-left"></i></a>
@@ -112,4 +112,4 @@ $sv_order = array('database' => 0, 'lead' => 1, 'order' => 2, 'sale' => 3);
   <div class="svh-note"><i class="fa fa-lock"></i> Locked while the order is in progress. Only Back Office can edit it.</div>
   <?php } ?>
 </div>
-<script defer src="<?php echo base_url(); ?>assets/dist/js/crm-record.js?v=20261106_21"></script>
+<script defer src="<?php echo base_url(); ?>assets/dist/js/crm-record.js?v=20261106_30"></script>

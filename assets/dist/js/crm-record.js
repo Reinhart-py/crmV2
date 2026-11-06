@@ -209,6 +209,17 @@
     try { var s = sessionStorage.getItem(KEY); if (s) $tabs.children().each(function (i) { if ($(this).attr('data-name') === s) start = i; }); } catch (e) {}
     show(start);
     $w.addClass('rv-ready');
+    // laptops and wider: the frame fills the screen and stays put; the summary and each tab scroll inside it
+    function frame() {
+      var on = window.innerWidth >= 1024 && window.innerHeight >= 560;
+      $('body').toggleClass('rv-fixed', on);
+      if (!on) { $rv[0].style.removeProperty('--rv-h'); return; }
+      var top = $rv[0].getBoundingClientRect().top + window.pageYOffset;
+      $rv[0].style.setProperty('--rv-h', Math.max(380, window.innerHeight - top - 12) + 'px');
+    }
+    frame();
+    $(window).on('resize orientationchange', frame);
+    $(window).on('load', frame);
 
     // 3. Admin: one-page A4 print (Print button, or Ctrl+P)
     var $btn = $('.rec-print');

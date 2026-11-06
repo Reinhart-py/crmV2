@@ -220,3 +220,42 @@
 }
 @media (max-width:420px){.rv-facts{grid-template-columns:minmax(0,1fr)}.rv-fact{grid-template-columns:110px minmax(0,1fr);gap:10px;border-bottom:1px solid var(--crm-line-soft,#eef2f7)}.rv-fact.is-full{grid-template-columns:1fr}}
 .crm-rec .rv .my-profile > .box:first-child > .box-header:first-child{display:none}
+
+/* ===== Compact header and fixed frame ===== */
+.crm-rec .svh{margin:2px 0 10px}
+.crm-rec .svh-top{padding:8px 12px 6px;gap:10px}
+.crm-rec .svh-back{width:30px;height:30px}
+.crm-rec .svh-id h1{font-size:17px}
+.crm-rec .svh-kind{font-size:10.5px}
+.crm-rec .svh-acts .btn{height:32px;padding:0 12px}
+.crm-rec .svh-steps{padding:6px 12px 8px}
+.crm-rec .svh-dot{width:22px;height:22px;font-size:11px}
+.crm-rec .svh-st b{font-size:12.5px}
+.crm-rec .svh-st small{font-size:11.5px}
+.crm-rec .svh-note{margin:0 12px 8px;padding:6px 10px;font-size:12.5px}
+.rv{gap:10px;margin-bottom:10px}
+.rv-sum{padding:10px 14px}
+.rv-fact{padding:6px 0}
+.rv-money > div{padding:5px 8px}
+.rv-money b{font-size:14px}
+.rv-remark{padding:8px 10px}
+.rv-tab{height:40px}
+.rv .svd-g{padding:10px 0 4px}
+.rv .svd-f{padding:5px 0}
+.crm-rec .rv .rec-card > .box-body{padding:0 !important}
+.crm-rec .rv .rec-card .table > thead > tr > th,.crm-rec .rv .rec-card .table > tbody > tr:first-child > th{position:sticky;top:0;z-index:1}
+.crm-rec .rv .rec-card .table > * > tr > *:first-child{padding-left:16px !important}
+.crm-rec .rv .rec-card .table > * > tr > *:last-child{padding-right:16px !important}
+.crm-rec .rv .rec-card > .box-body > .row{margin:0}
+.crm-rec .rv .rec-card > .box-body > .row > [class*="col-"]{padding:0}
+.rv-panels,.rv-side{scrollbar-width:thin;scrollbar-color:#cbd5e1 transparent}
+@media (min-width:1024px){
+  body.rv-fixed .crm-rec .rv{height:var(--rv-h,auto);margin-bottom:0}
+  body.rv-fixed .crm-rec .rv-side{position:static;height:100%;display:flex;flex-direction:column;min-height:0}
+  body.rv-fixed .crm-rec .rv-sum{max-height:100%;overflow-y:auto}
+  body.rv-fixed .crm-rec .rv-main{height:100%;display:flex;flex-direction:column;overflow:hidden}
+  body.rv-fixed .crm-rec .rv-tabs{flex:none}
+  body.rv-fixed .crm-rec .rv-panels{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+  body.rv-fixed .crm-rec .rv .rec-card .table-responsive{overflow:visible}
+  body.rv-fixed .crm-rec > section.content{padding-bottom:0 !important}
+}

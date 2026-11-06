@@ -15,12 +15,12 @@ if (!function_exists('crm_list_request_btn')) {
         $name = htmlspecialchars(isset($li['customer']) ? $li['customer'] : '', ENT_QUOTES);
         if ($stage === '' || $stage === 'database') {
             if ($conv === 'pending') {
-                return '<span class="lrq-sent" title="Lead conversion requested, waiting for review"><i class="fa fa-clock-o"></i><span> Requested</span></span>';
+                return '<span class="lrq-sent" title="Lead conversion requested, waiting for review">' . '<svg class="ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>' . '</span>';
             }
-            return '<button type="button" class="btn btn-default btn-sm lrq-btn" data-lrq="lead" data-id="' . (int)$li['id'] . '" data-name="' . $name . '" title="Request Lead conversion" aria-label="Request Lead conversion"><i class="fa fa-paper-plane"></i><span> Request</span></button>';
+            return '<button type="button" class="btn btn-default btn-sm lrq-btn" data-lrq="lead" data-id="' . (int)$li['id'] . '" data-name="' . $name . '" title="Request Lead conversion" aria-label="Request Lead conversion">' . '<svg class="ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>' . '</button>';
         }
         if ($stage === 'lead' && ($ors === '' || $ors === 'none')) {
-            return '<button type="button" class="btn btn-default btn-sm lrq-btn" data-lrq="order" data-id="' . (int)$li['id'] . '" data-name="' . $name . '" title="Request Order" aria-label="Request Order"><i class="fa fa-shopping-cart"></i><span> Request Order</span></button>';
+            return '<button type="button" class="btn btn-default btn-sm lrq-btn" data-lrq="order" data-id="' . (int)$li['id'] . '" data-name="' . $name . '" title="Request Order" aria-label="Request Order">' . '<svg class="ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>' . '</button>';
         }
         return '';
     }
@@ -58,8 +58,9 @@ if (!empty($crm_list_request_modal)) {
   </div>
 </div>
 <style>
-.lrq-btn i{margin-right:0}
-.lrq-sent{display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 10px;border-radius:7px;background:#fef3c7;color:#92400e;font-size:12.5px;font-weight:600;white-space:nowrap}
+.lrq-btn,.lrq-sent{width:30px;height:30px;padding:0 !important;display:inline-flex;align-items:center;justify-content:center;border-radius:7px}
+.ico{display:block;flex:none}
+.lrq-sent{background:#fef3c7;color:#92400e;cursor:help}
 .lrq-btn:hover{border-color:var(--crm-ocean,#1e3a8a)!important;color:var(--crm-ocean,#1e3a8a)!important}
 .lrq-box{border-radius:12px;border:1px solid var(--crm-line,#e2e8f0);font-family:"Plus Jakarta Sans","Inter",-apple-system,"Segoe UI",sans-serif}
 .lrq-box .modal-header{border-bottom:1px solid var(--crm-line,#e2e8f0);padding:14px 18px}
@@ -70,7 +71,6 @@ if (!empty($crm_list_request_modal)) {
 .lrq-box .modal-footer{border-top:1px solid var(--crm-line,#e2e8f0);padding:12px 18px}
 .lrq-box .btn{border-radius:8px;font-weight:600}
 .lrq-box .lrq-send{background:var(--crm-ocean,#1e3a8a);border-color:var(--crm-ocean,#1e3a8a)}
-@media (max-width:1280px){.lrq-sent > span{display:none}}
 </style>
 <script>
 jQuery(function ($) {

@@ -297,8 +297,8 @@ foreach($st_list as $cli){
                                             <td><span class="label label-warning" style="background:#475569; color:#ffffff; font-weight:600; font-size:11px;">Pending Review</span></td>
                                             <td>
                                                                                                 <div class="ldv-act">
-                                                <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>" class="btn btn-default btn-sm" title="Preview" aria-label="Preview"><i class="fa fa-eye"></i><span> Preview</span></a>
-                                                <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($li['id']); ?>" class="btn btn-default btn-sm" title="Edit" aria-label="Edit"><i class="fa fa-pencil"></i><span> Edit</span></a>
+                                                <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>" class="btn btn-default btn-sm" title="Preview" aria-label="Preview"><svg class="ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></a>
+                                                <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($li['id']); ?>" class="btn btn-default btn-sm" title="Edit" aria-label="Edit"><svg class="ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></a>
                                                 </div>
                                             </td>
                                         <?php } else { ?>
@@ -316,8 +316,8 @@ foreach($st_list as $cli){
                                             </td>
                                             <td>
                                                 <div class="ldv-act">
-                                                    <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>" class="btn btn-default btn-sm" title="Preview" aria-label="Preview"><i class="fa fa-eye"></i><span> Preview</span></a>
-                                                    <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($li['id']); ?>" class="btn btn-default btn-sm" title="Edit" aria-label="Edit"><i class="fa fa-pencil"></i><span> Edit</span></a>
+                                                    <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>" class="btn btn-default btn-sm" title="Preview" aria-label="Preview"><svg class="ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></a>
+                                                    <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($li['id']); ?>" class="btn btn-default btn-sm" title="Edit" aria-label="Edit"><svg class="ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></a>
                                                     <?php if (isset($stage) && $stage === 'database') echo crm_list_request_btn($li); ?>
                                                 </div>
                                             </td>
@@ -557,7 +557,7 @@ $(document).ready(function() {
 .ldv .ldv-act{display:flex;gap:6px;white-space:nowrap}
 .ldv .ldv-act .btn{border-radius:7px;font-weight:600;font-size:12.5px}
 .ldv .ldv-act .btn:hover{border-color:var(--crm-ocean,#1e3a8a);color:var(--crm-ocean,#1e3a8a)}
-@media (max-width:1280px){.ldv .ldv-act .btn span{display:none}}
+.ldv .ldv-act .btn,.ldv .ldv-act .lrq-sent{width:30px;height:30px;padding:0;display:inline-flex;align-items:center;justify-content:center}
 /* Phones: filters fold away, each record is a card with labelled values */
 @media (max-width:767px){
   .ldv .ldv-head{padding:10px 2px 6px}
@@ -588,8 +588,7 @@ $(document).ready(function() {
   .ldv #example_lead > tbody > tr > td:last-child{padding-top:8px !important}
   .ldv #example_lead > tbody > tr > td:last-child::before{display:none}
   .ldv #example_lead > tbody > tr > td:last-child .ldv-act{width:100%}
-  .ldv #example_lead > tbody > tr > td:last-child .ldv-act .btn{flex:1 1 0}
-  .ldv #example_lead > tbody > tr > td:last-child .ldv-act .btn span{display:inline}
+  .ldv #example_lead > tbody > tr > td:last-child .ldv-act .btn{flex:1 1 0;width:auto;height:34px}
   .ldv #example_lead > tbody > tr > td .no_show{display:none}
 }
 </style>
