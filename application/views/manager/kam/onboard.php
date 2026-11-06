@@ -1270,4 +1270,16 @@ $(document).ready(function() {
 
 </script>
 
+<script>
+// each label names the field in its group (click focuses it; screen readers read it)
+(function () {
+  document.querySelectorAll('form[name=onboard_client_form] .form-group').forEach(function (g) {
+    var l = g.querySelector('label:not([for])'), f = g.querySelector('input:not([type=hidden]), select, textarea');
+    if (!l || !f || l.contains(f)) return;
+    if (!f.id) f.id = 'ob_' + (f.name || 'f').replace(/[^a-z0-9_]/gi, '_');
+    if (document.querySelectorAll('[id="' + f.id + '"]').length > 1) return;
+    l.htmlFor = f.id;
+  });
+})();
+</script>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

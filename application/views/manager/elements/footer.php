@@ -176,7 +176,9 @@ $('.datepicker2').datepicker({
  });
   
   $(function () {
-    $("#example1").DataTable({
+    // a list with no records shows one row across all columns; DataTables cannot read it, so leave it as it is
+    function crmDtOk(sel) { var $t = $(sel); return $t.length && !$.fn.DataTable.isDataTable(sel) && $t.find('tbody tr').length && !$t.find('tbody td[colspan]').length; }
+    if (crmDtOk('#example1')) $("#example1").DataTable({
       "pageLength": 50,
       rowReorder: {
             selector: 'td:nth-child(2)'
@@ -191,7 +193,7 @@ $('.datepicker2').datepicker({
       "info": true,
       "autoWidth": false
     });
-    if ($("#example_lead").length && !$.fn.DataTable.isDataTable('#example_lead')) {
+    if (crmDtOk('#example_lead')) {
       $('#example_lead').DataTable({
         "pageLength": 50,
         responsive: true
@@ -419,21 +421,49 @@ $(document).ready(function() {
         initUniversalPasswordToggles();
     });
 
-    var crmIdleSecs = 0;
-    var crmMaxIdleSecs = 300;
-    $(document).on('mousemove keydown scroll click touchstart', function() {
-        crmIdleSecs = 0;
-    });
-    setInterval(function() {
-        crmIdleSecs += 5;
-        // Live Support inbox sets crmIdleExempt while the agent is marked Available.
-        if (crmIdleSecs >= crmMaxIdleSecs && !window.crmIdleExempt) {
-            window.location.href = '<?php echo base_url(); ?>manager/logout?timeout=1';
+    // Sign out after 5 minutes without activity. Activity in any open CRM tab counts (shared through localStorage);
+    // a warning shows for the last 60 seconds. Live Support sets crmIdleExempt while the agent is on duty,
+    // which keeps every tab signed in.
+    (function () {
+        var MAX = 300000, WARN = 60000, KEY = 'crmLastAct', last = Date.now(), wrote = 0, bar = null, gone = false;
+        function shared() { try { return parseInt(localStorage.getItem(KEY), 10) || 0; } catch (e) { return 0; } }
+        function mark(force) {
+            last = Date.now();
+            if (force || last - wrote > 5000) { wrote = last; try { localStorage.setItem(KEY, String(last)); } catch (e) {} }
+            if (bar) { bar.remove(); bar = null; }
         }
-    }, 5000);
+        mark(true);
+        $(document).on('mousemove keydown scroll click touchstart', function () { mark(false); });
+        function warn(left) {
+            if (!bar) {
+                bar = document.createElement('div');
+                bar.className = 'crm-idle';
+                bar.setAttribute('role', 'alertdialog');
+                bar.setAttribute('aria-live', 'assertive');
+                bar.innerHTML = '<span>You will be signed out in <b></b> for inactivity.</span><button type="button" class="btn btn-primary btn-sm">Stay signed in</button>';
+                bar.querySelector('button').addEventListener('click', function () { mark(true); });
+                document.body.appendChild(bar);
+            }
+            bar.querySelector('b').textContent = Math.ceil(left / 1000) + ' s';
+        }
+        setInterval(function () {
+            if (gone) return;
+            if (window.crmIdleExempt) { mark(true); return; }
+            var idle = Date.now() - Math.max(last, shared());
+            if (idle >= MAX) {
+                gone = true;
+                window.location.href = '<?php echo base_url(); ?>manager/logout?timeout=1';
+            } else if (idle >= MAX - WARN) {
+                warn(MAX - idle);
+            } else if (bar) {
+                bar.remove(); bar = null; // another tab was used
+            }
+        }, 1000);
+    })();
 
 });
 </script>
 
+<style>.crm-idle{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:3000;display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;max-width:calc(100% - 32px);padding:10px 14px;border-radius:10px;background:#0f172a;color:#fff;font-size:13.5px;box-shadow:0 10px 30px rgba(15,23,42,.3)}.crm-idle b{font-variant-numeric:tabular-nums}</style>
 </body>
 </html>

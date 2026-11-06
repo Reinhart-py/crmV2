@@ -2,6 +2,7 @@
 
 <div class="content-wrapper px-4">
 <?php echo crm_mz_tabbar(); ?>
+    <section class="content-header"><h1>Database Transfer</h1></section>
     <section class="content">
         <div class="row">
             <div class="col-xs-12">
@@ -72,11 +73,11 @@
                         <h3 class="box-title" style="margin:0; font-size:16px; font-weight:600;">Database Records</h3>
                         <form method="post" action="<?php echo base_url(); ?>manager/leads/bulk-transfer" id="formBulkTransfer" class="form-inline" style="margin:0;">
                             <div id="inlineTransferLeadInputs"></div>
-                            <div style="display:inline-flex; align-items:center; gap:8px;">
+                            <div style="display:inline-flex; align-items:center; gap:8px; flex-wrap:wrap; max-width:100%;">
                                 <span id="selectedCountText" class="label label-default" style="font-size:12px; font-weight:600; padding:4px 8px;">0 selected</span>
                                 
-                                <div style="position:relative; display:inline-block;">
-                                    <div class="input-group input-group-sm" style="width:240px;">
+                                <div style="position:relative; display:inline-block; max-width:100%;">
+                                    <div class="input-group input-group-sm" style="width:240px; max-width:100%;">
                                         <input type="text" id="transfer_user_search" class="form-control" placeholder="Type 3+ letters to search..." autocomplete="off">
                                         <span class="input-group-btn">
                                             <button class="btn btn-default" type="button" id="btnClearTransferUser" title="Clear"><i class="fa fa-times"></i></button>

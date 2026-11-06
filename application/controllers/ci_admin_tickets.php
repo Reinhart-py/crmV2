@@ -77,7 +77,7 @@ class Ci_admin_tickets extends CI_Controller {
 		$data = array();
 		$data['info'] = array(
 			'title' => 'Manager - Tickets',
-			'page_heading' => 'View Ticket'
+			'page_heading' => ($this->uri->segment(2) === 'team' ? 'Team Tickets' : 'All Tickets')
 		);
 		$data['info2'] = $this->if_not_login();
 		$data['is_admin'] = ($role === 1);
