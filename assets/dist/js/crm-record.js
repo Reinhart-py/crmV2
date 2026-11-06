@@ -50,6 +50,7 @@
         if (f.empty) $v.text('—');
         if ($.trim($v.text()).length > 38) $f.addClass('is-wide');
         $f.append($v);
+        f.$el = $f;
         if (f.empty) nEmpty++;
         return $f;
       }
@@ -89,12 +90,125 @@
     var $cards = $('<div class="rec-cards">').appendTo($host);
     $w.find('.box').not($first).not('.modal .box').each(function () { $cards.append(this); });
     $host.children('[class*="col-"]').appendTo($cards).addClass('is-wide');
-    $cards.children('.box').addClass('rec-card').each(function () {
-      // wide tables take the full width; short ones sit two per row
-      var cols = $(this).find('table tr').first().children().length;
-      if (cols >= 5) $(this).addClass('is-wide');
-    });
+    $cards.children('.box').addClass('rec-card');
     $host.find('> .box, > [class*="col-"] > .box').addClass('rec-card');
+    $cards.children().each(function () { if ($(this).css('display') === 'none') $(this).attr('data-rv-off', '1'); });
+
+    // 3. Layout: a Summary card (key facts) beside tabs (Details, then one tab per section)
+    function V(k) { for (var i = 0; i < fields.length; i++) if (fields[i].key.indexOf(k) === 0) return fields[i].empty ? null : fields[i]; return null; }
+    function vEl(f) { return f && f.$el ? f.$el.children('.svd-v') : $(); }
+    function vt(f) { return $.trim(vEl(f).text()).replace(/\s+/g, ' '); }
+    function chipCls(t) { t = t.toLowerCase(); if (/lost|closed|reject|cancel|not interest|dead/.test(t)) return 'is-red'; if (/won|sale|approved|complete|fulfil|converted|active/.test(t)) return 'is-green'; if (/pending|hold|wait|follow/.test(t)) return 'is-amber'; return 'is-blue'; }
+    var $side = $('<aside class="rv-side">'), $sc = $('<div class="rv-card rv-sum">').appendTo($side);
+    $('<div class="rv-sum-h">').text('Summary').appendTo($sc);
+    var $facts = $('<dl class="rv-facts">').appendTo($sc);
+    function fact(label, icon, $val, cls) {
+      if (!$val || !$val.length || !$.trim($val.text())) return;
+      var $d = $('<div class="rv-fact">').addClass(cls || '');
+      $('<dt>').html('<i class="fa fa-' + icon + '" aria-hidden="true"></i>').append(document.createTextNode(label)).appendTo($d);
+      $('<dd>').append($val).appendTo($d);
+      $facts.append($d);
+    }
+    function copy(k) { var f = V(k); return f ? $('<span>').append(vEl(f).clone(true).contents()) : null; }
+    function chip(k) { var f = V(k); return f ? $('<span class="rv-chip">').addClass(chipCls(vt(f))).text(vt(f)) : null; }
+    function link(k, kind) {
+      var f = V(k); if (!f) return null;
+      var t = vt(f);
+      if (vEl(f).find('a').length || (kind === 'mail' && t.indexOf('@') < 0)) return copy(k);
+      return $('<a>').attr('href', kind === 'tel' ? 'tel:' + t.replace(/[^0-9+]/g, '') : 'mailto:' + t).text(t);
+    }
+    function join(keys, sep) { var p = []; $.each(keys, function (_, k) { var f = V(k); if (f) p.push(vt(f)); }); return p.length ? $('<span>').text(p.join(sep)) : null; }
+    function money(list) {
+      var $m = $('<div class="rv-money">'), n = 0;
+      $.each(list, function (_, k) { var f = V(k[0]); if (!f) return; n++; $('<div>').append($('<span>').text(k[1])).append($('<b>').text(vt(f))).appendTo($m); });
+      if (n) $facts.append($('<div class="rv-fact is-full">').append($('<dt>').html('<i class="fa fa-money" aria-hidden="true"></i>Value')).append($('<dd>').append($m)));
+    }
+    if (page === 'lead') {
+      fact('Status', 'flag', chip('status'));
+      fact('Next follow-up', 'calendar', join(['next follow up date', 'next follow up time'], ', '));
+      money([['mrc', 'MRC'], ['mrr', 'MRR'], ['revenue', 'Revenue']]);
+      fact('Owner', 'user', copy('lead assigned to'));
+      fact('Contact', 'male', join(['poc name'], ''));
+      fact('Phone', 'phone', link('poc contact number', 'tel'));
+      fact('Email', 'envelope-o', link('email', 'mail'));
+      fact('Location', 'map-marker', join(['location', 'state'], ', '));
+      fact('Expected close', 'flag-checkered', join(['exp. close date'], ''));
+      var rf = V('remarks');
+      if (rf) {
+        var $r = $('<div class="rv-remark">').appendTo($sc);
+        $('<div class="rv-remark-h">').html('<i class="fa fa-comment-o" aria-hidden="true"></i> Remarks').appendTo($r);
+        var $p = $('<p>').text(vt(rf)).appendTo($r);
+        if ($p.text().length > 200) {
+          $p.addClass('is-clamp');
+          $('<button type="button" class="rv-more" aria-expanded="false">').text('Show more').on('click', function () {
+            var c = $p.toggleClass('is-clamp').hasClass('is-clamp');
+            $(this).text(c ? 'Show more' : 'Show less').attr('aria-expanded', c ? 'false' : 'true');
+          }).appendTo($r);
+        }
+      }
+    } else {
+      fact('Status', 'flag', chip('order status'));
+      fact('Service', 'briefcase', join(['service title'], ''));
+      var vf = V('vertical / category'), sf = V('service title');
+      if (!sf || !vf || vt(vf).toLowerCase() !== vt(sf).toLowerCase()) fact('Vertical', 'th-large', join(['vertical / category'], ''));
+      money([['monthly recurring revenue', 'MRR']]);
+      fact('Assigned to', 'user', join(['assigned staff'], ''));
+      fact('Department', 'sitemap', join(['assigned department'], ''));
+      fact('Phone', 'phone', link('contact number', 'tel'));
+      fact('Email', 'envelope-o', link('email', 'mail'));
+      fact('Next follow-up', 'calendar', join(['next follow-up date'], ''));
+    }
+    var $rv = $('<div class="rv">'), $main = $('<div class="rv-main rv-card">');
+    if ($facts.children().length || $sc.find('.rv-remark').length) $side.appendTo($rv); else $rv.addClass('no-side');
+    var $tabs = $('<div class="rv-tabs" role="tablist" aria-label="Record sections">').appendTo($main);
+    var $panels = $('<div class="rv-panels">').appendTo($main);
+    var NAMES = [[/follow/i, 'Follow-ups', 'calendar-check-o'], [/meeting/i, 'Meetings', 'users'], [/call/i, 'Call logs', 'phone'], [/ownership|transfer/i, 'Ownership', 'exchange'], [/pipeline|conversion/i, 'History', 'history'], [/instruction|scope/i, 'Instructions', 'list-alt'], [/activity/i, 'Activity', 'history']];
+    var tabN = 0;
+    function addTab(name, icon, count, $content) {
+      var id = 'rvp' + (tabN++);
+      var $b = $('<button type="button" role="tab" class="rv-tab">').attr({ id: id + 't', 'aria-controls': id, 'data-name': name })
+        .html('<i class="fa fa-' + icon + '" aria-hidden="true"></i><span>' + $('<i>').text(name).html() + '</span>');
+      if (count !== null) $('<em class="rv-n">').text(count).toggleClass('is-zero', count === 0).appendTo($b);
+      $tabs.append($b);
+      $('<div role="tabpanel" class="rv-panel">').attr({ id: id, 'aria-labelledby': id + 't' }).append($content).appendTo($panels);
+    }
+    addTab('Details', 'list-ul', null, $first.closest('.my-profile'));
+    $cards.children().each(function () {
+      var $c = $(this);
+      if ($c.attr('data-rv-off')) { $c.appendTo($panels); return; } // hidden by the page: stays hidden
+      var title = $.trim($c.find('.box-title, .box-header h4').first().text()).replace(/\s+/g, ' ');
+      var name = title || 'More', icon = 'folder-o';
+      $.each(NAMES, function (_, n) { if (n[0].test(title)) { name = n[1]; icon = n[2]; return false; } });
+      var cnt = null;
+      if ($c.find('table').length && name !== 'Meetings') cnt = $c.find('table tr').filter(function () { return $(this).children('td').length > 1 && $.trim($(this).text()) !== ''; }).length;
+      var $hd = $c.children('.box-header');
+      if ($hd.length && !$hd.find('a, button, input, select').length) $hd.addClass('rv-hd-off'); // the tab already names it
+      addTab(name, icon, cnt, $c);
+    });
+    $cards.remove();
+    $main.appendTo($rv);
+    var $head = $host.children('.svh');
+    if ($head.length) $rv.insertAfter($head); else $rv.prependTo($host);
+    var KEY = 'rvTab:' + page;
+    function show(i) {
+      var $b = $tabs.children('.rv-tab');
+      if (i < 0 || i >= $b.length) i = 0;
+      $b.removeClass('is-on').attr({ 'aria-selected': 'false', tabindex: '-1' }).eq(i).addClass('is-on').attr({ 'aria-selected': 'true', tabindex: '0' });
+      $panels.children('.rv-panel').removeClass('is-on').eq(i).addClass('is-on');
+      var el = $b.get(i);
+      if (el && $tabs[0].scrollWidth > $tabs[0].clientWidth) $tabs.scrollLeft(el.offsetLeft - 16);
+      try { sessionStorage.setItem(KEY, $b.eq(i).attr('data-name')); } catch (e) {}
+    }
+    $tabs.on('click', '.rv-tab', function () { show($(this).index()); });
+    $tabs.on('keydown', '.rv-tab', function (e) {
+      var n = $tabs.children().length, i = $(this).index();
+      if (e.key === 'ArrowRight') i = (i + 1) % n; else if (e.key === 'ArrowLeft') i = (i - 1 + n) % n; else return;
+      e.preventDefault(); show(i); $tabs.children().eq(i).trigger('focus');
+    });
+    var start = 0;
+    try { var s = sessionStorage.getItem(KEY); if (s) $tabs.children().each(function (i) { if ($(this).attr('data-name') === s) start = i; }); } catch (e) {}
+    show(start);
+    $w.addClass('rv-ready');
 
     // 3. Admin: one-page A4 print (Print button, or Ctrl+P)
     var $btn = $('.rec-print');
@@ -130,9 +244,9 @@
         });
       });
       // other sections: title + latest rows of their table, or a short text
-      $host.find('.rec-cards').children().each(function () {
+      $panels.find('.rec-card').each(function () {
         var $card = $(this);
-        if ($card.is($first) || !$card.is(':visible')) return;
+        if ($card.is($first) || $card.attr('data-rv-off')) return;
         var title = txt($card.find('.box-title, h4').first());
         var $tb = $card.find('table').first();
         var $g = $('<section class="rs-g">');

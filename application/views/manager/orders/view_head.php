@@ -22,7 +22,7 @@ $ov_steps = array(
     array('Sale', $order['sales_ref_no'] ?: ($ov_sale ? '' : 'Pending'), $ov_sale ? 'is-now' : ''),
 );
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-record.css?v=20261106_9">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-record.css?v=20261106_21">
 <div class="svh">
   <div class="svh-top">
     <a href="<?php echo $back_url; ?>" class="svh-back" title="Back" aria-label="Back"><i class="fa fa-arrow-left"></i></a>
@@ -61,4 +61,4 @@ $ov_steps = array(
     <?php } ?>
   </ol>
 </div>
-<script defer src="<?php echo base_url(); ?>assets/dist/js/crm-record.js?v=20261106_10"></script>
+<script defer src="<?php echo base_url(); ?>assets/dist/js/crm-record.js?v=20261106_21"></script>
