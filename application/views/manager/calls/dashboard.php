@@ -1,5 +1,5 @@
 <?php require_once(APPPATH . "views/manager/elements/header.php"); ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-dialer.css?v=20261104_1">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-dialer.css?v=20261106_4">
 
 <style>
 html, body {
@@ -1002,6 +1002,42 @@ html, body {
 
     <div class="middle-body">
 
+      <div id="middleViewHome" class="dh" style="display:none;">
+        <div class="dh-kpis">
+          <div class="dh-kpi"><span>Calls</span><b id="dhCalls">0</b></div>
+          <div class="dh-kpi"><span>Connected</span><b id="dhConnected">0</b></div>
+          <div class="dh-kpi"><span>Talk time</span><b id="dhTalk">0m</b></div>
+          <div class="dh-kpi dh-kpi-link" onclick="openMenuQueue('followup', 'today', 'Today Follow-ups')"><span>Follow-ups due</span><b id="dhDue">0</b></div>
+        </div>
+
+        <div class="dh-actions">
+          <button type="button" class="dh-act dh-act-main" onclick="openAutoDialerMode()">
+            <i class="fa fa-play-circle"></i><span><b>Auto dialer</b><small>Call your database one after another</small></span>
+          </button>
+          <button type="button" class="dh-act" onclick="openMenuQueue('followup', 'today', 'Today Follow-ups')">
+            <i class="fa fa-calendar-check-o"></i><span><b>Today's follow-ups</b><small id="dhDueText">Calls you planned for today</small></span>
+          </button>
+          <button type="button" class="dh-act" onclick="openManualDialerMode()">
+            <i class="fa fa-keyboard-o"></i><span><b>Manual dialer</b><small>One record at a time, with its details</small></span>
+          </button>
+          <button type="button" class="dh-act" onclick="openCampaignView('list')">
+            <i class="fa fa-flag-o"></i><span><b>Campaigns</b><small>Shared calling lists and targets</small></span>
+          </button>
+        </div>
+
+        <div class="dh-sec">
+          <div class="dh-sec-h"><h4>Recent calls</h4><a href="javascript:void(0)" onclick="openMenuLogs()">All logs <i class="fa fa-angle-right"></i></a></div>
+          <div id="dhRecent" class="dh-recent"><div class="dh-empty">Loading...</div></div>
+        </div>
+
+        <div class="dh-keys">
+          <span><kbd>0-9</kbd> type a number</span>
+          <span><kbd>Enter</kbd> call / hang up</span>
+          <span><kbd>1-6</kbd> pick the call result</span>
+          <span><kbd>Esc</kbd> close menus</span>
+        </div>
+      </div>
+
       <div id="middleViewTeam" style="display:none;">
         <div class="middle-filter-bar">
           <input type="text" id="inputTeamSearch" class="dialer-search-input" placeholder="Type at least 3 letters to search colleague or department..." oninput="filterTeamCards()">
@@ -1573,7 +1609,14 @@ html, body {
         <input type="text" class="dialer-num-input" id="dialerInput" placeholder="Enter number or name" autocomplete="off" oninput="onDialerInputChange()" onkeyup="handleDialerInputKey(event)">
         <div id="dialerSuggestions" class="dialer-suggestions-popover" style="display:none;"></div>
       </div>
-      <div class="dialer-status-sub" id="dialerStatusSubtitle">Ready to call</div>
+      <div class="dialer-status-sub" id="dialerStatusSubtitle" data-state="idle">Ready to call</div>
+    </div>
+
+    <div class="dl-wrap" id="dlWrap" style="display:none;">
+      <div class="dl-wrap-h"><b>How did the call go?</b><span id="dlWrapInfo"></span></div>
+      <div class="dl-wrap-grid" id="dlWrapGrid"></div>
+      <input type="text" id="dlWrapNote" class="dl-wrap-note" maxlength="500" placeholder="Note (optional)" autocomplete="off">
+      <div class="dl-wrap-foot" id="dlWrapFoot"></div>
     </div>
 
     <div class="dialer-keypad-container">
@@ -1799,6 +1842,8 @@ var manualDialerIndex = 0;
 var manualQueueType = 'database';
 
 function hideAllMiddleViews() {
+  $('#middleViewHome').hide();
+  $('#btnCloseMiddleArea').show();
   $('#middleViewTeam').hide();
   $('#middleViewList').hide();
   $('#middleViewDetails').hide();
@@ -1973,7 +2018,7 @@ function handleDialerInputKey(e) {
       return;
     }
     $('#dialerSuggestions').hide().empty();
-    startDialing();
+    handleCallButtonClick();
   }
 }
 
@@ -1987,15 +2032,74 @@ function openDialerHome() {
   $('.crm-dock-btn').removeClass('active');
   $('#dockBtnCallHome').addClass('active');
   hideAllMiddleViews();
-  $('#middleContentArea').hide();
+  $('#middleAreaTitle').text('Today');
+  $('#btnCloseMiddleArea').hide();
+  $('#middleViewHome').show();
+  openMiddleArea();
   $('#subnavFollowup').hide();
   $('#subnavLogsPeriod').hide();
   $('#dialerSuggestions').hide();
-  $('#dialerInput').focus();
+  loadDialerHome();
   if (window.innerWidth <= 991) {
+    updateMobileWorkspaceTitle('Today');
     switchMobileDialerView('keypad');
+  } else {
+    $('#dialerInput').focus();
   }
 }
+
+// Today: counts, follow-ups due and the latest calls (own calls; all calls for Admin).
+function loadDialerHome() {
+  $.getJSON('<?php echo base_url(); ?>manager/calls/ajax_get_daily_logs', { period: 'day' }, function(res) {
+    if (!res || !res.status) return;
+    var s = res.stats || {};
+    var mins = Math.round((parseInt(s.total_duration, 10) || 0) / 60);
+    $('#dhCalls').text(parseInt(s.total_calls, 10) || 0);
+    $('#dhConnected').text(parseInt(s.connected_calls, 10) || 0);
+    $('#dhTalk').text(mins >= 60 ? (Math.floor(mins / 60) + 'h ' + (mins % 60) + 'm') : (mins + 'm'));
+    renderHomeRecent(res.logs || []);
+  });
+  $.getJSON('<?php echo base_url(); ?>manager/calls/ajax_get_queue', { type: 'followup', filter: 'today' }, function(res) {
+    var n = res && res.status ? (parseInt(res.count, 10) || (res.leads ? res.leads.length : 0)) : 0;
+    $('#dhDue').text(n);
+    $('#dhDueText').text(n > 0 ? (n + (n === 1 ? ' call' : ' calls') + ' planned for today') : 'Nothing due today');
+  });
+}
+
+function renderHomeRecent(logs) {
+  if (!logs.length) {
+    $('#dhRecent').html('<div class="dh-empty">No calls yet today.</div>');
+    return;
+  }
+  var html = '';
+  logs.slice(0, 8).forEach(function(l) {
+    var name = l.lead_customer || l.customer_name || l.phone_number || 'Unknown';
+    var dur = parseInt(l.duration, 10) || 0;
+    var t = (l.created_at || '').substr(11, 5);
+    var out = l.disposition || l.call_status || '';
+    var ok = /^(connected|answered)$/i.test(out) || (dur > 0 && !/busy|not |miss|no answer|unanswer|wrong|invalid|dnd|dncr/i.test(out));
+    html += '<div class="dh-row">' +
+      '<span class="dh-dot ' + (ok ? 'ok' : 'no') + '"></span>' +
+      '<div class="dh-row-main"><b>' + escapeHtml(name) + '</b><small>' + escapeHtml(l.phone_number || '') + ' &middot; ' + escapeHtml(out) + (dur ? ' &middot; ' + Math.floor(dur / 60) + ':' + ('0' + (dur % 60)).slice(-2) : '') + '</small></div>' +
+      '<span class="dh-time">' + escapeHtml(t) + '</span>' +
+      (l.phone_number ? '<button type="button" class="dh-redial" title="Call again" onclick="quickDialNumber(\'' + escapeJs(l.phone_number) + '\', 0)"><i class="fa fa-phone"></i></button>' : '') +
+      '</div>';
+  });
+  $('#dhRecent').html(html);
+}
+
+// Called after each saved call (was never defined before).
+function loadRecentManualCalls() {
+  if ($('#middleViewHome').is(':visible')) loadDialerHome();
+}
+
+// A hover menu closes once an item is picked, until the pointer leaves it.
+$(document).on('click', '.dock-flyout-item', function() {
+  $(this).closest('.dock-item-wrapper').addClass('fly-off');
+});
+$(document).on('mouseleave', '.dock-item-wrapper', function() {
+  $(this).removeClass('fly-off');
+});
 
 function openManualDialerMode() {
   $('.crm-dock-btn').removeClass('active');
@@ -2646,7 +2750,9 @@ function skipToNextAutoLead() {
     $('#autoDialCountdownWrap').hide();
   }
   if (callState === 'calling' || callState === 'connected') {
-    endActiveCall();
+    endActiveCall('noadvance');
+  } else if (pendingCall) {
+    finishCall(0, true);
   }
   autoDialerIndex++;
   dialCurrentAutoLead();
@@ -3192,10 +3298,148 @@ function renderRecentLogs(logs) {
 }
 
 function handleCallButtonClick() {
-  if (callState === 'idle') {
+  if (callState === 'idle' || callState === 'wrapup') {
     startDialing();
   } else if (callState === 'calling' || callState === 'connected') {
-    endActiveCall();
+    endActiveCall('wrap');
+  }
+}
+
+function setCallStatus(state, text) {
+  $('#dialerStatusSubtitle').attr('data-state', state).text(text);
+  $('.crm-dialer-panel').attr('data-call', state);
+  $('#btnToggleCall').attr('title', (state === 'calling' || state === 'connected') ? 'Hang up (Enter)' : 'Call (Enter)');
+}
+
+// Result of a call, picked after hanging up. status = lead stage it moves to (0 = keep).
+var CALL_OUTCOMES = [
+  { label: 'Connected', disposition: 'Connected', status: 0, cls: 'ok' },
+  { label: 'No answer', status: 45, cls: 'warn' },
+  { label: 'Call back', status: 47, cls: 'info', followup: true },
+  { label: 'Not interested', status: 49, cls: 'bad' },
+  { label: 'Wrong number', status: 50, cls: 'bad' },
+  { label: 'DNCR / DND', status: 46, cls: 'bad' }
+];
+var pendingCall = null;
+var wrapTimer = null;
+var wrapSeconds = 0;
+var WRAP_AUTOSAVE = 30;
+
+function snapshotCall() {
+  var isInternal = (activeLead && activeLead.is_internal) ? 1 : 0;
+  return {
+    call_log_id: activeCallLogId,
+    lead_id: activeLead ? (activeLead.id || 0) : 0,
+    customer_name: activeLead ? activeLead.customer : 'Direct Call',
+    phone: $('#dialerInput').val().trim(),
+    call_duration: callConnectedSeconds,
+    is_internal: isInternal,
+    call_category: isInternal ? 'internal' : (activeQueueType === 'followup' ? 'followup' : 'new_call'),
+    remarks: $('#editRemark').val() || $('#manualDialRemarks').val() || ''
+  };
+}
+
+function showWrapup(call) {
+  pendingCall = call;
+  callState = 'wrapup';
+  var d = call.call_duration;
+  setCallStatus('wrapup', 'Call ended ' + Math.floor(d / 60) + ':' + ('0' + (d % 60)).slice(-2));
+  var html = '';
+  CALL_OUTCOMES.forEach(function(o, i) {
+    html += '<button type="button" class="dl-out dl-out-' + o.cls + '" onclick="finishCall(' + i + ')"><kbd>' + (i + 1) + '</kbd>' + escapeHtml(o.label) + '</button>';
+  });
+  $('#dlWrapGrid').html(html);
+  $('#dlWrapNote').val('');
+  $('#dlWrapInfo').text(call.customer_name && call.customer_name !== 'Direct Call' ? call.customer_name : call.phone);
+  $('#dlWrap').show();
+  $('.dialer-keypad-container').hide();
+  wrapSeconds = WRAP_AUTOSAVE;
+  renderWrapFoot();
+  clearInterval(wrapTimer);
+  wrapTimer = setInterval(function() {
+    if ($('#dlWrapNote').is(':focus')) return;
+    wrapSeconds--;
+    renderWrapFoot();
+    if (wrapSeconds <= 0) finishCall(0);
+  }, 1000);
+}
+
+function renderWrapFoot() {
+  $('#dlWrapFoot').text('Saves as Connected in ' + Math.max(0, wrapSeconds) + 's');
+}
+
+function hideWrapup() {
+  clearInterval(wrapTimer);
+  wrapTimer = null;
+  $('#dlWrap').hide();
+  $('.dialer-keypad-container').show();
+}
+
+// Save the pending call with the chosen result. noAdvance: the caller moves the auto dialer itself.
+function finishCall(idx, noAdvance) {
+  if (!pendingCall) return;
+  var call = pendingCall;
+  pendingCall = null;
+  var note = $('#dlWrap').is(':visible') ? $.trim($('#dlWrapNote').val()) : '';
+  hideWrapup();
+  var o = CALL_OUTCOMES[idx] || CALL_OUTCOMES[0];
+  var data = $.extend({}, call, {
+    call_disposition: o.disposition || o.label,
+    status: o.status || 0,
+    remarks: note || call.remarks || o.label
+  });
+  if (o.followup) {
+    var t = new Date(Date.now() + 86400000);
+    data.next_followup = t.getFullYear() + '-' + ('0' + (t.getMonth() + 1)).slice(-2) + '-' + ('0' + t.getDate()).slice(-2);
+    data.next_followup_time = '11:00:00';
+  }
+  callState = 'idle';
+  setCallStatus('idle', 'Saved: ' + o.label);
+  postCallResult(data, noAdvance);
+}
+
+function postCallResult(data, noAdvance) {
+  $.ajax({
+    url: '<?php echo base_url(); ?>manager/calls/ajax_save_call',
+    type: 'POST',
+    data: data,
+    dataType: 'json',
+    success: function(res) {
+      showToast(res && res.status ? 'Call saved' : ((res && res.message) || 'Call not saved'));
+      loadRecentManualCalls();
+    },
+    error: function() { showToast('Call not saved - check your connection'); }
+  });
+
+  var useGroqAi = $('#autoDialGroqAi').is(':checked');
+  if (useGroqAi && data.call_duration > 0) {
+    $.ajax({
+      url: '<?php echo base_url(); ?>manager/calls/ajax_groq_quick_summary',
+      type: 'POST',
+      data: {
+        call_log_id: data.call_log_id,
+        lead_id: data.lead_id,
+        customer_name: data.customer_name,
+        phone: data.phone,
+        call_duration: data.call_duration,
+        call_disposition: data.call_disposition,
+        remarks: data.remarks
+      },
+      dataType: 'json',
+      success: function(res) {
+        if (res && res.status && res.summary) {
+          $('#autoDialAiBadge').html('<strong><i class="fa fa-magic" style="color:#1e3a8a;"></i> Groq AI Summary:</strong> ' + escapeHtml(res.summary) + '<br><small style="color:#475569;"><strong>Next Action:</strong> ' + escapeHtml(res.next_action) + '</small>').show();
+          if ($('#editRemark').length) {
+            $('#editRemark').val(res.summary);
+          }
+        }
+      }
+    });
+  }
+
+  if (!noAdvance && autoDialerActive && !autoDialerPaused && !isOnBreak) {
+    autoDialerIndex++;
+    startAutoDialCountdown();
   }
 }
 
@@ -3224,14 +3468,18 @@ function startDialing() {
     showToast('Please enter a phone number');
     return;
   }
+  // A previous call still waiting for its result is saved as Connected first.
+  if (pendingCall) finishCall(0, true);
   launch3cxCall(phone);
 
   callState = 'calling';
+  activeCallLogId = 0;
+  callConnectedSeconds = 0;
   if (window.innerWidth <= 991) {
     switchMobileDialerView('keypad');
   }
   $('#btnToggleCall').removeClass('btn-connected').addClass('btn-calling');
-  $('#dialerStatusSubtitle').text('Dialing ' + phone + '...');
+  setCallStatus('calling', 'Calling ' + phone + '...');
 
   var isInternal = (activeLead && activeLead.is_internal) ? 1 : 0;
   var category = isInternal ? 'internal' : (activeQueueType === 'followup' ? 'followup' : 'new_call');
@@ -3269,7 +3517,7 @@ function onCallConnected() {
   callState = 'connected';
   callConnectedSeconds = 0;
   $('#btnToggleCall').removeClass('btn-calling').addClass('btn-connected');
-  $('#dialerStatusSubtitle').text('Connected 00:00');
+  setCallStatus('connected', 'On call 00:00');
 
   clearInterval(callTimerInterval);
   callTimerInterval = setInterval(function() {
@@ -3277,74 +3525,25 @@ function onCallConnected() {
     var m = Math.floor(callConnectedSeconds / 60);
     var s = callConnectedSeconds % 60;
     var timeStr = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
-    $('#dialerStatusSubtitle').text('Connected ' + timeStr);
+    setCallStatus('connected', 'On call ' + timeStr);
     $('#editCallDuration').val(callConnectedSeconds);
   }, 1000);
 }
 
-function endActiveCall() {
+// mode 'wrap': the agent hung up, ask for the result. Otherwise save straight away as Connected
+// ('noadvance': the caller moves the auto dialer on itself).
+function endActiveCall(mode) {
+  if (callState !== 'calling' && callState !== 'connected') return;
   clearInterval(callTimerInterval);
-  callState = 'idle';
   $('#btnToggleCall').removeClass('btn-calling btn-connected');
-  $('#dialerStatusSubtitle').text('Call ended (' + callConnectedSeconds + 's)');
-
-  var leadId = activeLead ? activeLead.id : 0;
-  var phone = $('#dialerInput').val().trim();
-  var isInternal = (activeLead && activeLead.is_internal) ? 1 : 0;
-  var category = isInternal ? 'internal' : (activeQueueType === 'followup' ? 'followup' : 'new_call');
-  var remarks = $('#editRemark').val() || $('#manualDialRemarks').val() || '';
-
-  $.ajax({
-    url: '<?php echo base_url(); ?>manager/calls/ajax_save_call',
-    type: 'POST',
-    data: {
-      call_log_id: activeCallLogId,
-      lead_id: leadId,
-      customer_name: activeLead ? activeLead.customer : 'Direct Call',
-      phone: phone,
-      call_duration: callConnectedSeconds,
-      call_disposition: 'Connected',
-      is_internal: isInternal,
-      call_category: category,
-      remarks: remarks || 'Call completed'
-    },
-    dataType: 'json',
-    success: function() {
-      showToast('Call logged');
-      loadRecentManualCalls();
-    }
-  });
-
-  var useGroqAi = $('#autoDialGroqAi').is(':checked');
-  if (useGroqAi && callConnectedSeconds > 0) {
-    $.ajax({
-      url: '<?php echo base_url(); ?>manager/calls/ajax_groq_quick_summary',
-      type: 'POST',
-      data: {
-        call_log_id: activeCallLogId,
-        lead_id: leadId,
-        customer_name: activeLead ? activeLead.customer : '',
-        phone: phone,
-        call_duration: callConnectedSeconds,
-        call_disposition: 'Connected',
-        remarks: remarks
-      },
-      dataType: 'json',
-      success: function(res) {
-        if (res && res.status && res.summary) {
-          $('#autoDialAiBadge').html('<strong><i class="fa fa-magic" style="color:#1e3a8a;"></i> Groq AI Summary:</strong> ' + escapeHtml(res.summary) + '<br><small style="color:#475569;"><strong>Next Action:</strong> ' + escapeHtml(res.next_action) + '</small>').show();
-          if ($('#editRemark').length) {
-            $('#editRemark').val(res.summary);
-          }
-        }
-      }
-    });
+  var call = snapshotCall();
+  var manualView = $('#middleViewManualDialer').is(':visible');
+  if (mode === 'wrap' && !call.is_internal && !manualView) {
+    showWrapup(call);
+    return;
   }
-
-  if (autoDialerActive && !autoDialerPaused && !isOnBreak) {
-    autoDialerIndex++;
-    startAutoDialCountdown();
-  }
+  pendingCall = call;
+  finishCall(0, mode === 'noadvance');
 }
 
 function toggleManualDncrDateRow() {
@@ -3629,6 +3828,44 @@ function escapeJs(str) {
     .replace(/\n/g, '\\n')
     .replace(/\r/g, '');
 }
+
+// Keyboard: digits go to the phone, Enter calls / hangs up, 1-6 pick the call result, Esc closes menus.
+$(document).on('keydown', function(e) {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  var el = e.target;
+  var typing = el && (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || el.isContentEditable);
+  if (e.key === 'Escape') {
+    closeAllMobileFlyouts();
+    $('.dock-item-wrapper:hover').addClass('fly-off');
+    $('#dialerSuggestions').hide();
+    if (typing && el.id === 'dlWrapNote') el.blur();
+    return;
+  }
+  if (callState === 'wrapup') {
+    if (el && el.id === 'dlWrapNote') {
+      if (e.key === 'Enter') { e.preventDefault(); finishCall(0); }
+      return;
+    }
+    if (typing) return;
+    var n = parseInt(e.key, 10);
+    if (n >= 1 && n <= CALL_OUTCOMES.length) { e.preventDefault(); finishCall(n - 1); return; }
+    if (e.key === 'Enter' && !/^(BUTTON|A)$/.test(el.tagName)) { e.preventDefault(); finishCall(0); }
+    return;
+  }
+  if (typing || $('.modal.in').length) return;
+  if (/^[0-9*#+]$/.test(e.key)) {
+    e.preventDefault();
+    pressDialerKey(e.key);
+  } else if (e.key === 'Backspace') {
+    e.preventDefault();
+    dialerBackspace();
+  } else if (e.key === 'Enter') {
+    if (/^(BUTTON|A)$/.test(el.tagName)) return;
+    if (callState === 'idle' && !$('#dialerInput').val().trim()) return;
+    e.preventDefault();
+    handleCallButtonClick();
+  }
+});
 
 $(document).ready(function() {
   openDialerHome();

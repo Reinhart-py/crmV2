@@ -226,3 +226,145 @@
 #middleViewAutoDialer label,
 #middleViewAutoDialer label span { color: #334155 !important; }
 #middleViewAutoDialer .cbx-auto-stage { accent-color: #1e3a8a !important; }
+
+/* ---- Today home ---- */
+.dh { padding: 16px 20px 20px; display: flex; flex-direction: column; gap: 18px; }
+.dh-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.dh-kpi { border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px 14px; background: #fafafc; }
+.dh-kpi span { display: block; font-size: 11.5px; font-weight: 600; color: #64748b; }
+.dh-kpi b { display: block; font-size: 22px; font-weight: 700; color: #0f172a; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.dh-kpi-link { cursor: pointer; }
+.dh-kpi-link:hover { border-color: #93c5fd; }
+.dh-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.dh-act { display: flex; align-items: center; gap: 12px; text-align: left; padding: 14px; border: 1px solid #e5e7eb; border-radius: 12px; background: #ffffff; cursor: pointer; transition: border-color .12s, box-shadow .12s; }
+.dh-act:hover { border-color: #93c5fd; box-shadow: 0 2px 10px rgba(30, 58, 138, .08); }
+.dh-act > i { font-size: 20px; width: 38px; height: 38px; border-radius: 10px; background: #eff6ff; color: #1e3a8a; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.dh-act span { min-width: 0; }
+.dh-act b { display: block; font-size: 13.5px; color: #0f172a; }
+.dh-act small { display: block; font-size: 12px; color: #64748b; margin-top: 1px; }
+.dh-act-main { background: #1e3a8a; border-color: #1e3a8a; }
+.dh-act-main > i { background: rgba(255, 255, 255, .15); color: #ffffff; }
+.dh-act-main b, .dh-act-main small { color: #ffffff; }
+.dh-act-main small { opacity: .8; }
+.dh-act-main:hover { border-color: #1e3a8a; box-shadow: 0 4px 14px rgba(30, 58, 138, .3); }
+.dh-sec-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.dh-sec-h h4 { margin: 0; font-size: 13px; font-weight: 700; color: #0f172a; }
+.dh-sec-h a { font-size: 12px; font-weight: 600; color: #1e3a8a; }
+.dh-recent { border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
+.dh-row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-top: 1px solid #f1f5f9; }
+.dh-row:first-child { border-top: none; }
+.dh-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: #94a3b8; }
+.dh-dot.ok { background: #16a34a; }
+.dh-dot.no { background: #f59e0b; }
+.dh-row-main { flex: 1; min-width: 0; }
+.dh-row-main b, .dh-row-main small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dh-row-main b { font-size: 13px; color: #0f172a; }
+.dh-row-main small { font-size: 11.5px; color: #64748b; }
+.dh-time { font-size: 11.5px; color: #64748b; font-variant-numeric: tabular-nums; }
+.dh-redial { width: 30px; height: 30px; border-radius: 50%; border: none; background: #dcfce7; color: #15803d; flex-shrink: 0; cursor: pointer; }
+.dh-redial:hover { background: #16a34a; color: #ffffff; }
+.dh-empty { padding: 22px 12px; text-align: center; font-size: 12.5px; color: #94a3b8; }
+.dh-keys { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 11.5px; color: #64748b; }
+.dh kbd, .dl-out kbd { display: inline-block; min-width: 18px; padding: 1px 5px; border-radius: 4px; border: 1px solid #cbd5e1; border-bottom-width: 2px; background: #f8fafc; color: #334155; font-size: 10.5px; font-weight: 600; line-height: 1.4; text-align: center; box-shadow: none; }
+
+/* ---- Call status ---- */
+.dialer-status-sub { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 20px; }
+.dialer-status-sub[data-state="calling"] { background: #fff7ed; color: #c2410c; }
+.dialer-status-sub[data-state="connected"] { background: #dcfce7; color: #15803d; font-variant-numeric: tabular-nums; }
+.dialer-status-sub[data-state="wrapup"] { background: #eff6ff; color: #1e3a8a; }
+.dialer-status-sub[data-state="calling"]::before,
+.dialer-status-sub[data-state="connected"]::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; animation: dlPulse 1.2s ease-in-out infinite; }
+@keyframes dlPulse { 50% { opacity: .3; } }
+@media (prefers-reduced-motion: reduce) { .dialer-status-sub::before { animation: none !important; } }
+
+/* ---- After-call result ---- */
+.dl-wrap { padding: 4px 16px 12px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.dl-wrap-h { display: flex; flex-direction: column; gap: 1px; }
+.dl-wrap-h b { font-size: 13px; color: #0f172a; }
+.dl-wrap-h span { font-size: 11.5px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dl-wrap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.dl-out { display: flex; align-items: center; gap: 6px; padding: 8px; border-radius: 9px; border: 1px solid #e5e7eb; background: #ffffff; font-size: 12.5px; font-weight: 600; color: #0f172a; cursor: pointer; text-align: left; }
+.dl-out:hover { border-color: currentColor; }
+.dl-out-ok { color: #15803d; }
+.dl-out-warn { color: #b45309; }
+.dl-out-info { color: #1e3a8a; }
+.dl-out-bad { color: #b91c1c; }
+.dl-out kbd { color: inherit; }
+.dl-wrap-note { width: 100%; height: 34px; border: 1px solid #e5e7eb; border-radius: 8px; padding: 0 10px; font-size: 12.5px; outline: none; background: #ffffff; color: #0f172a; }
+.dl-wrap-note:focus { border-color: #93c5fd; }
+.dl-wrap-foot { font-size: 11.5px; color: #64748b; text-align: center; }
+
+@media (hover: none) { .dh-keys, .dl-out kbd { display: none; } }
+
+/* Hover menus close after a pick */
+.dock-item-wrapper.fly-off .dock-flyout-menu { display: none !important; }
+
+/* The middle area follows its own width (narrow windows, phone panel beside it) */
+#middleContentArea { container-type: inline-size; }
+@container (max-width: 760px) {
+  .cmp-row { grid-template-columns: 1fr; gap: 8px; }
+  .cmp-status { justify-self: start; }
+  .cmp-actions { justify-content: flex-start; }
+  #middleViewLogs > div:first-child { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+}
+@container (max-width: 560px) {
+  .dh-kpis, .dh-actions { grid-template-columns: 1fr 1fr; }
+  #middleViewLogs > div:first-child { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+@container (max-width: 380px) {
+  .dh-actions { grid-template-columns: 1fr; }
+  .dh { padding: 12px; }
+}
+
+/* ---- Dark mode ---- */
+[data-theme="dark"] body, [data-theme="dark"] .wrapper,
+[data-theme="dark"] .content-wrapper.glass-calling-wrapper { background: #0b0f17 !important; color: #e2e8f0; }
+[data-theme="dark"] .crm-dialer-dock, [data-theme="dark"] #middleContentArea, [data-theme="dark"] .crm-dialer-panel,
+[data-theme="dark"] .middle-header, [data-theme="dark"] .dialer-window-header, [data-theme="dark"] .dialer-top-display,
+[data-theme="dark"] .dialer-bottom-actions, [data-theme="dark"] .dock-flyout-menu, [data-theme="dark"] .dialer-mobile-nav-bar,
+[data-theme="dark"] .dialer-suggestions-popover, [data-theme="dark"] .md-card, [data-theme="dark"] .cmp-card,
+[data-theme="dark"] .dh-act, [data-theme="dark"] .dl-out, [data-theme="dark"] .dl-wrap-note, [data-theme="dark"] .cmp-table { background: #111827 !important; border-color: #1f2937 !important; }
+[data-theme="dark"] .middle-title, [data-theme="dark"] .dialer-num-input, [data-theme="dark"] .dialer-key-digit,
+[data-theme="dark"] .dh-kpi b, [data-theme="dark"] .dh-act b, [data-theme="dark"] .dh-sec-h h4, [data-theme="dark"] .dh-row-main b,
+[data-theme="dark"] .dl-wrap-h b, [data-theme="dark"] .dl-wrap-note, [data-theme="dark"] .cmp-name, [data-theme="dark"] .cmp-card-head h3,
+[data-theme="dark"] .dock-flyout-item, [data-theme="dark"] .queue-table td, [data-theme="dark"] .sheet-table td,
+[data-theme="dark"] .glass-calling-wrapper h3, [data-theme="dark"] .glass-calling-wrapper h4,
+[data-theme="dark"] .glass-calling-wrapper label, [data-theme="dark"] .dialer-window-header span { color: #f1f5f9 !important; }
+[data-theme="dark"] .dialer-key-btn, [data-theme="dark"] .btn-close-middle, [data-theme="dark"] .apple-segmented-group,
+[data-theme="dark"] .dh-kpi, [data-theme="dark"] .sheet-stat-card, [data-theme="dark"] .dh kbd { background: #1e293b !important; border-color: #334155 !important; }
+[data-theme="dark"] .dialer-key-btn:hover, [data-theme="dark"] .crm-dock-btn:hover, [data-theme="dark"] .dock-flyout-item:hover,
+[data-theme="dark"] .dialer-suggestion-row:hover, [data-theme="dark"] .keypad-tool-btn:hover { background: #273449 !important; color: #f1f5f9 !important; }
+[data-theme="dark"] .apple-segment-btn.active { background: #334155 !important; color: #f1f5f9 !important; }
+[data-theme="dark"] .crm-dock-btn, [data-theme="dark"] .apple-segment-btn, [data-theme="dark"] .dh-kpi span, [data-theme="dark"] .dh-act small,
+[data-theme="dark"] .dh-row-main small, [data-theme="dark"] .dh-time, [data-theme="dark"] .dh-keys, [data-theme="dark"] .dl-wrap-foot,
+[data-theme="dark"] .dl-wrap-h span { color: #94a3b8 !important; }
+[data-theme="dark"] .crm-dock-btn.active { color: #ffffff !important; }
+[data-theme="dark"] .dh-act-main { background: #1d4ed8 !important; border-color: #1d4ed8 !important; }
+[data-theme="dark"] .dh-act-main b, [data-theme="dark"] .dh-act-main small { color: #ffffff !important; }
+[data-theme="dark"] .dh-act > i { background: #1e3a8a; color: #bfdbfe; }
+[data-theme="dark"] .dh-recent, [data-theme="dark"] .dh-row, [data-theme="dark"] .middle-header { border-color: #1f2937 !important; }
+[data-theme="dark"] .queue-table th, [data-theme="dark"] .sheet-table th { background: #0f172a !important; color: #94a3b8 !important; border-color: #1f2937 !important; }
+[data-theme="dark"] .queue-table td, [data-theme="dark"] .sheet-table td { border-color: #1f2937 !important; }
+[data-theme="dark"] .glass-calling-wrapper .form-control, [data-theme="dark"] .dialer-search-input,
+[data-theme="dark"] .dialer-filter-select { background: #0f172a !important; border-color: #334155 !important; color: #f1f5f9 !important; }
+[data-theme="dark"] #middleContentArea [style*="background:#ffffff"], [data-theme="dark"] #middleContentArea [style*="background: #ffffff"] { background: #111827 !important; border-color: #1f2937 !important; }
+[data-theme="dark"] #middleContentArea [style*="background:#f8fafc"], [data-theme="dark"] #middleContentArea [style*="background:#f2f2f7"] { background: #0f172a !important; border-color: #1f2937 !important; }
+[data-theme="dark"] #middleContentArea [style*="color:#0f172a"], [data-theme="dark"] #middleContentArea [style*="color:#1d1d1f"],
+[data-theme="dark"] #middleContentArea [style*="color:#334155"] { color: #e2e8f0 !important; }
+[data-theme="dark"] #middleViewAutoDialer label, [data-theme="dark"] #middleViewAutoDialer label span { color: #cbd5e1 !important; }
+[data-theme="dark"] .dialer-status-sub[data-state="calling"] { background: rgba(234, 88, 12, .15); color: #fdba74; }
+[data-theme="dark"] .dialer-status-sub[data-state="connected"] { background: rgba(22, 163, 74, .15); color: #86efac; }
+[data-theme="dark"] .dialer-status-sub[data-state="wrapup"] { background: rgba(59, 130, 246, .15); color: #93c5fd; }
+[data-theme="dark"] .middle-body { background: #111827 !important; }
+[data-theme="dark"] .dh kbd { color: #e2e8f0 !important; }
+[data-theme="dark"] .cmp-status { background: #1e293b; border-color: #334155; color: #cbd5e1; }
+[data-theme="dark"] .cmp-status-active { background: rgba(59, 130, 246, .15); border-color: rgba(59, 130, 246, .4); color: #93c5fd; }
+[data-theme="dark"] .cmp-bar { background: #1e293b; }
+[data-theme="dark"] .cmp-bar span { background: #3b82f6; }
+[data-theme="dark"] .cmp-row, [data-theme="dark"] .cmp-card-head, [data-theme="dark"] .cmp-foot { border-color: #1f2937 !important; }
+[data-theme="dark"] .cmp-details { background: #0f172a; border-color: #1f2937; }
+[data-theme="dark"] .cmp-desc, [data-theme="dark"] .cmp-progress-top { color: #e2e8f0; }
+[data-theme="dark"] .dl-out-ok { color: #86efac; }
+[data-theme="dark"] .dl-out-warn { color: #fcd34d; }
+[data-theme="dark"] .dl-out-info { color: #93c5fd; }
+[data-theme="dark"] .dl-out-bad { color: #fca5a5; }
