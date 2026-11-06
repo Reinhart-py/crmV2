@@ -363,6 +363,21 @@ class Ci_admin_support extends CI_Controller {
 		return preg_match('/^\d{4}-\d{2}-\d{2}$/', $v) ? $v : '';
 	}
 
+	/** One background check for every page (header): notifications, the user's support replies and, with the Chatbot right, waiting chats.
+	    Replaces three separate timers. sup=0 / cb=0 leave a part out (the page shows it itself). */
+	public function pulse()
+	{
+		if (!$this->me()) return $this->json(array('ok' => false, 'signed_out' => true));
+		$this->ci_admin_model->check_auth_timeout();
+		$notifs = $this->ci_admin_model->get_user_notifications($this->uid, 15);
+		$unread = 0;
+		foreach ((array)$notifs as $n) if (isset($n['is_read']) && (int)$n['is_read'] === 0) $unread++;
+		$out = array('ok' => true, 'notif' => array('status' => true, 'unread_count' => $unread, 'notifications' => $notifs));
+		if ($this->input->get('sup') !== '0') $out['sup'] = (int)$this->support_model->user_unread($this->uid);
+		if ($this->input->get('cb') !== '0' && chatbot_can('access')) $out['cb'] = (int)array_sum($this->support_model->unread_counts($this->uid));
+		$this->json($out);
+	}
+
 	private function json($payload, $code = 200)
 	{
 		$this->output->set_status_header($code);

@@ -434,12 +434,24 @@ $(function() {
     }
   });
 
+  // One background check every 20 s: notifications, support replies and waiting chats (manager/pulse)
+  var pulseFirst = true, pulseTimer = null;
   function loadNotifications() {
+    var q = {};
+    if (/\/manager\/(my-support|help)\/?$/.test(location.pathname)) q.sup = 0; // the chat page marks replies read itself
+    if (!pulseFirst && /\/manager\/chatbot\/?$/.test(location.pathname)) q.cb = 0; // the chatbot page refreshes its own list
+    pulseFirst = false;
     $.ajax({
-      url: '<?php echo base_url(); ?>manager/ajax_get_notifications',
+      url: '<?php echo base_url(); ?>manager/pulse',
       type: 'GET',
+      data: q,
+      cache: false,
       dataType: 'json',
-      success: function(res) {
+      success: function(p) {
+        if (!p || !p.ok) { if (p && p.signed_out && pulseTimer) { clearInterval(pulseTimer); pulseTimer = null; } return; }
+        if (p.sup !== undefined && window.crmMySupBadge) window.crmMySupBadge(p.sup);
+        if (p.cb !== undefined && window.crmCbBadge) window.crmCbBadge(p.cb);
+        var res = p.notif;
         if (res && res.status) {
           var unread = parseInt(res.unread_count) || 0;
           if (unread > 0) {
@@ -497,7 +509,7 @@ $(function() {
   }
 
   loadNotifications();
-  setInterval(loadNotifications, 20000);
+  pulseTimer = setInterval(loadNotifications, 20000);
 
   function sendMarkNotifRead(notifId) {
     var csrfMatch = document.cookie.match(/(?:^|;\s*)csrf_cookie_name=([^;]+)/);
@@ -598,13 +610,7 @@ $(function() {
     n = parseInt(n, 10) || 0;
     $('.my-sup-unread').text(n > 99 ? '99+' : n).css('display', n > 0 ? 'inline-block' : 'none');
   };
-  if (/\/manager\/(my-support|help)\/?$/.test(location.pathname)) return; // the chat page marks replies read itself
-  function load() {
-    $.ajax({ url: '<?php echo base_url(); ?>manager/my-support/unread', dataType: 'json', cache: false,
-      success: function (r) { if (r && r.ok) window.crmMySupBadge(r.unread); } });
-  }
-  $(load);
-  setInterval(load, 20000);
+  // refreshed by the header's single background check (manager/pulse)
 })();
 </script>
 <?php if (function_exists('chatbot_can') && chatbot_can('access')) { ?>
@@ -615,12 +621,7 @@ $(function() {
     n = parseInt(n, 10) || 0;
     $('.cb-unread').not('#lsList .cb-unread').text(n > 99 ? '99+' : n).css('display', n > 0 ? 'inline-block' : 'none');
   };
-  function load() {
-    $.ajax({ url: '<?php echo base_url(); ?>manager/chatbot/unread', dataType: 'json', cache: false,
-      success: function (r) { if (r && r.ok) window.crmCbBadge(r.unread); } });
-  }
-  $(load);
-  if (!/\/manager\/chatbot\/?$/.test(location.pathname)) setInterval(load, 15000);
+  // refreshed by the header's single background check (manager/pulse)
 })();
 </script>
 <?php } ?><div class="clearfix"></div>

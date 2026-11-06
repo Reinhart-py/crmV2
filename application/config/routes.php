@@ -379,6 +379,7 @@ $route['manager/chatbot'] = 'ci_admin_support/index';
 $route['manager/help'] = 'ci_admin_support/help';
 $route['manager/self-training'] = 'ci_admin_training/index';
 $route['manager/self-training/(:any)'] = 'ci_admin_training/$1';
+$route['manager/pulse'] = 'ci_admin_support/pulse';
 $route['manager/my-support'] = 'ci_admin_support/my_support';
 $route['manager/my-support/(poll|send|unread)'] = 'ci_admin_support/my_support_$1';
 $route['manager/chatbot/(poll|unread|closed|availability|reply|close|settings)'] = 'ci_admin_support/$1';
