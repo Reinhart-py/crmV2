@@ -1,8 +1,9 @@
 <?php require_once(APPPATH . "views/manager/elements/header.php"); ?>
 
-<div class="content-wrapper px-4">
+<div class="content-wrapper px-4 tlv">
+<?php echo crm_mz_tabbar(); ?>
     <section class="content-header">
-        <h1> <?php echo $info['page_heading']; ?> </h1>
+        <h1><?php echo $info['page_heading']; ?><small><?php echo isset($reminders) ? count($reminders) : 0; ?> reminders</small></h1>
     </section>
 
     <section class="content">
@@ -13,18 +14,18 @@
                         <div class="x_col">
                             <form class="form-inline head_filter form-inline-mob" method="get">
                                 <div class="form-group">
-                                    <input type="text" class="input-md form-control" name="search" placeholder="Search Reminder..." value="<?php echo htmlspecialchars($this->input->get('search') ?? ''); ?>" autocomplete="off" />
+                                    <input type="text" class="input-md form-control" name="search" placeholder="Reminder or client" aria-label="Search" value="<?php echo htmlspecialchars($this->input->get('search') ?? ''); ?>" autocomplete="off" />
                                 </div>
                                 <div class="form-group">
                                     <div class="input-daterange input-group" id="datepicker" style="width: 100%;">
-                                        <input type="text" class="input-md form-control datepicker" name="d1" placeholder="From Date" value="<?php echo htmlspecialchars($this->input->get('d1') ?? ''); ?>" autocomplete="off" />
+                                        <input type="text" class="input-md form-control datepicker" name="d1" placeholder="Due from" aria-label="Due from" value="<?php echo htmlspecialchars($this->input->get('d1') ?? ''); ?>" autocomplete="off" />
                                         <span class="input-group-addon">To</span>
-                                        <input type="text" class="input-md form-control datepicker" name="d2" placeholder="To Date" value="<?php echo htmlspecialchars($this->input->get('d2') ?? ''); ?>" autocomplete="off" />
+                                        <input type="text" class="input-md form-control datepicker" name="d2" placeholder="Due to" aria-label="Due to" value="<?php echo htmlspecialchars($this->input->get('d2') ?? ''); ?>" autocomplete="off" />
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <button type="submit" class="btn btn-success">Search</button>
-                                    <a href="<?php echo htmlspecialchars($reset_url ?? base_url('manager/kam/reminders')); ?>" class="btn btn-danger"> Reset</a>
+                                    <button type="submit" class="btn btn-primary">Search</button>
+                                    <a href="<?php echo htmlspecialchars($reset_url ?? base_url('manager/kam/reminders')); ?>" class="btn btn-default">Reset</a>
                                 </div>
                             </form>
                         </div>
@@ -37,7 +38,7 @@
                         <?php echo get_message($this->session->flashdata('message'), 'message'); ?>
                         <?php if (isset($reminders) && !empty($reminders)) { ?>
                             <div class="table-responsive">
-                                <table class="table table-bordered table-striped" id="example_reminders">
+                                <table class="table table-hover table-bordered tl-t" id="example_reminders" style="width:100%;">
                                     <thead>
                                         <tr>
                                             <th>#</th>
@@ -61,7 +62,7 @@
                                 </table>
                             </div>
                         <?php } else { ?>
-                            <div class="alert alert-info"> No Data Found </div>
+                            <p class="text-muted" style="margin:6px 0;">Nothing found.</p>
                         <?php } ?>
                     </div>
                 </div>
@@ -69,5 +70,14 @@
         </div>
     </section>
 </div>
+
+<script>
+$(function () {
+    var $t = $('#example_reminders');
+    if ($t.length && !$.fn.DataTable.isDataTable($t)) $t.DataTable({ pageLength: 50, responsive: window.innerWidth >= 768 });
+});
+</script>
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-tlist.css?v=20261106_4">
+<script src="<?php echo base_url(); ?>assets/dist/js/crm-tlist.js?v=20261106_3"></script>
 
 <?php require_once(APPPATH . "views/manager/elements/footer.php"); ?>

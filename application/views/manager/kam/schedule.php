@@ -1,438 +1,313 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
-
-<div class="content-wrapper px-4">
+<?php
+$sc_h = function ($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); };
+$sc_tab = (isset($filter_tab) && $filter_tab === 'my') ? 'my' : 'all';
+$sc_n = isset($schedules) ? count($schedules) : 0;
+$sc_client = trim((string)$this->input->get('client'));
+$my_id = (int)$this->session->userdata('manager_id');
+$curYear = (int)date('Y');
+?>
+<div class="content-wrapper px-4 tlv ksc">
+<?php echo crm_mz_tabbar(); ?>
   <section class="content-header">
-    <h1><?php echo isset($info['page_heading']) ? $info['page_heading'] : 'Create Schedule'; ?></h1>
+    <h1><?php echo $sc_h($info['page_heading'] ?? 'Create Schedule'); ?><small><?php echo $sc_n; ?> schedules</small></h1>
   </section>
 
   <section class="content">
-    <?php echo get_message($this->session->flashdata('error_message'), 'error_message'); ?> 
+    <?php echo get_message($this->session->flashdata('error_message'), 'error_message'); ?>
     <?php echo get_message($this->session->flashdata('message'), 'message'); ?>
 
-    <form role="form" action="<?php echo base_url(); ?>manager/kam/schedule" method="post" id="kamScheduleForm">
-      
-      <div class="box box-default">
-        <div class="box-header with-border">
-          <h3 class="box-title">Client &amp; Schedule Details</h3>
+    <form role="form" action="<?php echo base_url(); ?>manager/kam/schedule" method="post" id="kamScheduleForm" class="ksc-form">
+      <div class="box ksc-box">
+        <div class="ksc-top">
+          <div class="ksc-f ksc-client">
+            <label for="client_select">Client<span>*</span></label>
+            <select class="form-control select2" name="client_name" id="client_select" required style="width:100%;">
+              <option value="">Select client</option>
+              <?php foreach ((array)($client_list ?? array()) as $cl) { ?>
+                <option value="<?php echo $sc_h($cl['client_name']); ?>"<?php echo $sc_client !== '' && $sc_client === $cl['client_name'] ? ' selected' : ''; ?>><?php echo $sc_h($cl['client_name']); ?></option>
+              <?php } ?>
+            </select>
+          </div>
+          <div class="ksc-f ksc-year">
+            <label for="sched_year">Year</label>
+            <select class="form-control" name="sched_year" id="sched_year">
+              <?php for ($y = $curYear - 1; $y <= $curYear + 2; $y++) { ?>
+                <option value="<?php echo $y; ?>"<?php echo $y === $curYear ? ' selected' : ''; ?>><?php echo $y; ?></option>
+              <?php } ?>
+            </select>
+          </div>
+          <div class="ksc-f ksc-who">
+            <label for="sched_assign">Assigned to<span>*</span></label>
+            <select class="form-control select2" name="assigned_to" id="sched_assign" required style="width:100%;">
+              <?php foreach ((array)($u_list ?? array()) as $u) { ?>
+                <option value="<?php echo (int)$u['id']; ?>"<?php echo (int)$u['id'] === $my_id ? ' selected' : ''; ?>><?php echo $sc_h($u['name']); ?></option>
+              <?php } ?>
+            </select>
+          </div>
         </div>
-        <div class="box-body">
-          <div class="row">
-            <div class="col-lg-5 col-sm-12">
-              <div class="form-group">
-                <label>Client / Company Name<span>*</span></label>
-                <select class="form-control select2" name="client_name" id="client_select" required style="width: 100%;">
-                  <option value="">Select Client / Company...</option>
-                  <?php if(isset($client_list) && !empty($client_list)){
-                    foreach($client_list as $cl){ ?>
-                      <option value="<?php echo htmlspecialchars($cl['client_name']); ?>" data-poc="<?php echo htmlspecialchars($cl['poc'] ?? ''); ?>" data-contact="<?php echo htmlspecialchars($cl['contact1'] ?? ''); ?>" data-email="<?php echo htmlspecialchars($cl['email'] ?? ''); ?>">
-                        <?php echo htmlspecialchars($cl['client_name']); ?>
-                      </option>
-                  <?php } } ?>
-                </select>
-              </div>
-            </div>
 
-            <div class="col-lg-3 col-sm-6">
-              <div class="form-group">
-                <label>Schedule Year<span>*</span></label>
-                <select class="form-control" name="sched_year" id="sched_year" style="width: 100%;">
-                  <?php 
-                    $curYear = (int)date('Y');
-                    for($y = $curYear - 1; $y <= $curYear + 2; $y++){ 
-                  ?>
-                    <option value="<?php echo $y; ?>" <?php echo ($y == $curYear) ? 'selected' : ''; ?>><?php echo $y; ?></option>
-                  <?php } ?>
-                </select>
-              </div>
-            </div>
-
-            <div class="col-lg-4 col-sm-6">
-              <div class="form-group">
-                <label>Assigned Executive<span>*</span></label>
-                <select class="form-control select2" name="assigned_to" style="width: 100%;" required>
-                  <?php 
-                    $my_id = (int)$this->session->userdata('manager_id');
-                    if(isset($u_list) && !empty($u_list)){
-                      foreach($u_list as $u){ ?>
-                        <option value="<?php echo $u['id']; ?>" <?php echo ($u['id'] == $my_id) ? 'selected' : ''; ?>>
-                          <?php echo htmlspecialchars($u['name']); ?> (<?php echo htmlspecialchars($u['email']); ?>)
-                        </option>
-                  <?php } } ?>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-xs-12">
-              <div class="form-group" style="margin-bottom:0;">
-                <label>Schedule Remarks &amp; Client Instructions</label>
-                <textarea class="form-control" name="remarks" rows="2" placeholder="Enter deliverables, preparation guidelines, or agenda notes..."></textarea>
-              </div>
-            </div>
-          </div>
+        <div class="ksc-bar">
+          <span class="ksc-bar-t">Tasks by month</span>
+          <span class="ksc-presets" role="group" aria-label="Load a task set">
+            <button type="button" class="btn btn-xs btn-default btn-apply-preset" data-preset="tax">Tax &amp; Accounting</button>
+            <button type="button" class="btn btn-xs btn-default btn-apply-preset" data-preset="corporate">Corporate</button>
+            <button type="button" class="btn btn-xs btn-default btn-apply-preset" data-preset="audit">Audit</button>
+          </span>
+          <button type="button" class="btn btn-xs btn-primary" id="btn_add_sched_row"><i class="fa fa-plus"></i> Add task</button>
+        </div>
+        <div class="table-responsive ksc-wrap">
+          <table class="table ksc-m" id="table_create_schedule">
+            <thead>
+              <tr>
+                <th class="ksc-name">Task</th>
+                <?php foreach (array('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec') as $m_name) { ?><th><?php echo $m_name; ?></th><?php } ?>
+                <th aria-label="Remove"></th>
+              </tr>
+            </thead>
+            <tbody id="sched_tbody"></tbody>
+          </table>
+        </div>
+        <div class="ksc-foot">
+          <a href="<?php echo base_url(); ?>manager/kam/my-client" class="btn btn-default">Cancel</a>
+          <button type="submit" class="btn btn-primary"><i class="fa fa-check"></i> Save schedule</button>
         </div>
       </div>
-
-      <div class="box box-default">
-        <div class="box-header with-border" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-          <h3 class="box-title" style="margin:0;"><i class="fa fa-calendar-check-o text-primary"></i> Client Schedule Matrix</h3>
-          <div class="box-tools" style="position:static; display:flex; gap:6px; flex-wrap:wrap;">
-            <button type="button" class="btn btn-xs btn-default btn-apply-preset" data-preset="tax"><i class="fa fa-calculator"></i> Tax & Accounting</button>
-            <button type="button" class="btn btn-xs btn-default btn-apply-preset" data-preset="corporate"><i class="fa fa-building"></i> Corporate Services</button>
-            <button type="button" class="btn btn-xs btn-default btn-apply-preset" data-preset="audit"><i class="fa fa-balance-scale"></i> Audit & Compliance</button>
-            <button type="button" class="btn btn-sm btn-primary" id="btn_add_sched_row"><i class="fa fa-plus"></i> Add Task Row</button>
-          </div>
-        </div>
-        <div class="box-body">
-          <div class="table-responsive">
-            <table class="table table-bordered table-striped" id="table_create_schedule" style="font-size:12px; margin-bottom:0;">
-              <thead>
-                <tr style="background:#f1f5f9; color:#1e293b;">
-                  <th style="min-width:180px; vertical-align:middle;">Schedule / Task Name</th>
-                  <?php 
-                    $sched_months = array('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec');
-                    foreach($sched_months as $m_name){ 
-                  ?>
-                    <th class="text-center" style="min-width:92px; vertical-align:middle;"><?php echo $m_name; ?></th>
-                  <?php } ?>
-                  <th class="text-center" style="width:45px; vertical-align:middle;">Action</th>
-                </tr>
-              </thead>
-              <tbody id="sched_tbody">
-                <?php 
-                  $default_scheds = array(
-                    'VAT Return Filing',
-                    'Corporate Tax Filing',
-                    'Monthly Bookkeeping',
-                    'Financial Statements & MIS',
-                    'Compliance Review & AML',
-                    'Audit & Year-End Verification'
-                  );
-                  foreach($default_scheds as $idx => $sname){
-                ?>
-                <tr class="sched-row" data-row-index="<?php echo $idx; ?>">
-                  <td style="vertical-align:middle;">
-                    <input type="text" class="form-control input-sm sched-name-input" name="sched_name[<?php echo $idx; ?>]" value="<?php echo htmlspecialchars($sname); ?>" required style="font-size:12px; height:28px;">
-                  </td>
-                  <?php foreach($sched_months as $m_name){ ?>
-                  <td class="text-center" style="padding:4px 3px; vertical-align:middle;">
-                    <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
-                      <select class="form-control input-sm" name="sched_status[<?php echo $idx; ?>][<?php echo $m_name; ?>]" style="font-size:11px; height:24px; padding:1px 3px; min-width:82px; width:100%;">
-                        <option value="Not Applicable" selected>Not Applicable</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Approved">Approved</option>
-                        <option value="Expired">Expired</option>
-                        <option value="Other">Other</option>
-                      </select>
-                      <label style="font-weight:normal; margin:0; cursor:pointer;" title="<?php echo $m_name; ?> Active">
-                        <input type="checkbox" name="sched_check[<?php echo $idx; ?>][<?php echo $m_name; ?>]" value="1" style="margin:0;">
-                      </label>
-                    </div>
-                  </td>
-                  <?php } ?>
-                  <td class="text-center" style="vertical-align:middle;">
-                    <button type="button" class="btn btn-xs btn-danger btn-remove-sched-row" title="Remove row"><i class="fa fa-times"></i></button>
-                  </td>
-                </tr>
-                <?php } ?>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="box-footer text-center" style="padding: 15px; background: transparent;">
-          <button type="submit" class="btn btn-danger btn-lg" style="min-width: 180px;"><i class="fa fa-calendar-check-o"></i> Save Schedule</button>
-          <a href="<?php echo base_url(); ?>manager/kam/my-client" class="btn btn-default btn-lg" style="margin-left: 10px;">Cancel</a>
-        </div>
-      </div>
-
     </form>
 
-    <div class="box box-default" style="margin-top: 25px;">
-      <div class="box-header with-border" style="padding-bottom:0;">
-        <ul class="nav nav-tabs" style="border-bottom:none; margin-bottom:-1px;">
-          <li class="<?php echo (!isset($filter_tab) || $filter_tab === 'all') ? 'active' : ''; ?>">
-            <a href="<?php echo base_url(); ?>manager/kam/schedule?tab=all" style="font-weight:600;"><i class="fa fa-list"></i> All Schedules</a>
-          </li>
-          <li class="<?php echo (isset($filter_tab) && $filter_tab === 'my') ? 'active' : ''; ?>">
-            <a href="<?php echo base_url(); ?>manager/kam/schedule?tab=my" style="font-weight:600;"><i class="fa fa-user"></i> My Assigned Schedules</a>
-          </li>
-        </ul>
+    <div class="box ksc-box">
+      <div class="ksc-lhead">
+        <nav class="ksc-seg" aria-label="Schedules">
+          <a href="<?php echo base_url(); ?>manager/kam/schedule?tab=all"<?php echo $sc_tab === 'all' ? ' class="is-on" aria-current="page"' : ''; ?>>All</a>
+          <a href="<?php echo base_url(); ?>manager/kam/schedule?tab=my"<?php echo $sc_tab === 'my' ? ' class="is-on" aria-current="page"' : ''; ?>>Assigned to me</a>
+        </nav>
       </div>
-      <div class="box-body" style="padding-top:15px;">
-        <?php if(isset($schedules) && !empty($schedules)){ ?>
-          <div class="table-responsive">
-            <table id="example_lead" class="table table-hover table-bordered table-striped" style="width: 100%;">
-              <thead>
+      <div class="box-body">
+        <?php if ($sc_n) { ?>
+          <table id="example_kam_sched" class="table table-hover table-bordered tl-t" style="width:100%;">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Client</th>
+                <th>Task</th>
+                <th>Year</th>
+                <th>Assigned To</th>
+                <th>Added</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php foreach ($schedules as $sch) { ?>
                 <tr>
-                  <th style="width:60px;">ID</th>
-                  <th>Client / Company</th>
-                  <th>Schedule Name</th>
-                  <th style="width:70px;">Year</th>
-                  <th>Assigned To</th>
-                  <th style="width:100px;">Status</th>
-                  <th style="width:90px;">Created</th>
-                  <th style="width:100px;" class="text-center">Action</th>
+                  <td>#<?php echo (int)$sch['id']; ?></td>
+                  <td><b><?php echo $sc_h($sch['client_name'] ?? ''); ?></b></td>
+                  <td><?php echo $sc_h($sch['title'] ?? ''); ?></td>
+                  <td><?php echo $sc_h($sch['sched_year'] ?? ''); ?></td>
+                  <td><?php echo $sc_h(!empty($sch['assigned_name']) ? $sch['assigned_name'] : 'Self'); ?></td>
+                  <td data-order="<?php echo !empty($sch['created_at']) ? date('Ymd', strtotime($sch['created_at'])) : '0'; ?>"><?php echo !empty($sch['created_at']) ? date('d-m-Y', strtotime($sch['created_at'])) : '—'; ?></td>
+                  <td><?php echo $sc_h($sch['status'] ?? ''); ?></td>
+                  <td class="text-nowrap">
+                    <button type="button" class="btn btn-xs btn-default btn-preview-matrix" data-client="<?php echo $sc_h($sch['client_name'] ?? ''); ?>" data-year="<?php echo $sc_h($sch['sched_year'] ?? $curYear); ?>" title="Preview year"><i class="fa fa-th"></i> Preview</button>
+                    <a href="<?php echo base_url(); ?>manager/kam/schedule/delete/<?php echo (int)$sch['id']; ?>" class="btn btn-xs btn-default text-danger" onclick="return confirm('Delete this schedule row?');" title="Delete" aria-label="Delete"><i class="fa fa-trash"></i></a>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                <?php foreach($schedules as $sch){ ?>
-                  <tr>
-                    <td><strong>#<?php echo $sch['id']; ?></strong></td>
-                    <td><strong><?php echo htmlspecialchars($sch['client_name'] ?? ''); ?></strong></td>
-                    <td><?php echo htmlspecialchars($sch['title'] ?? ''); ?></td>
-                    <td><span class="label label-default"><?php echo htmlspecialchars($sch['sched_year'] ?? '2026'); ?></span></td>
-                    <td><?php echo htmlspecialchars($sch['assigned_name'] ?? 'Self'); ?></td>
-                    <td>
-                      <?php 
-                      $badge = 'label-default';
-                      if($sch['status'] == 'Approved' || $sch['status'] == 'Completed' || $sch['status'] == 'Active') $badge = 'label-success';
-                      elseif($sch['status'] == 'Pending' || $sch['status'] == 'Scheduled' || $sch['status'] == 'In Progress') $badge = 'label-warning';
-                      elseif($sch['status'] == 'Expired' || $sch['status'] == 'Cancelled') $badge = 'label-danger';
-                      elseif($sch['status'] == 'Other') $badge = 'label-info';
-                      ?>
-                      <span class="label <?php echo $badge; ?>"><?php echo htmlspecialchars($sch['status']); ?></span>
-                    </td>
-                    <td><?php echo !empty($sch['created_at']) ? date('d-m-Y', strtotime($sch['created_at'])) : '-'; ?></td>
-                    <td class="text-center">
-                      <button type="button" class="btn btn-xs btn-primary btn-preview-matrix" data-client="<?php echo htmlspecialchars($sch['client_name'] ?? ''); ?>" data-year="<?php echo htmlspecialchars($sch['sched_year'] ?? '2026'); ?>" title="View Presentation Matrix"><i class="fa fa-th"></i></button>
-                      <a href="<?php echo base_url(); ?>manager/kam/schedule/delete/<?php echo $sch['id']; ?>" class="btn btn-xs btn-danger" onclick="return confirm('Delete this schedule row?');" title="Delete Schedule"><i class="fa fa-trash"></i></a>
-                    </td>
-                  </tr>
-                <?php } ?>
-              </tbody>
-            </table>
-          </div>
+              <?php } ?>
+            </tbody>
+          </table>
         <?php } else { ?>
-          <div class="alert alert-info" style="margin-top:10px;">No schedules recorded under this view. Create a schedule using the schedule matrix above.</div>
+          <p class="text-muted" style="margin:6px 0;">No schedules yet.</p>
         <?php } ?>
       </div>
     </div>
 
-    <div class="modal fade" id="modalMatrixPresentation" tabindex="-1" role="dialog">
-      <div class="modal-dialog modal-lg" style="width:90%; max-width:1100px;">
+    <div class="modal fade" id="modalMatrixPresentation" tabindex="-1" role="dialog" aria-labelledby="modalClientTitle">
+      <div class="modal-dialog modal-lg ksc-modal">
         <div class="modal-content">
           <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal">&times;</button>
-            <h4 class="modal-title"><i class="fa fa-calendar-check-o text-primary"></i> <span id="modalClientTitle">Client Presentation Matrix</span></h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
+            <h4 class="modal-title" id="modalClientTitle">Schedule</h4>
           </div>
-          <div class="modal-body" id="modalMatrixBody" style="padding:15px; overflow-x:auto;">
-            <div style="text-align:center; padding:20px; color:#64748b;">Loading schedule presentation...</div>
-          </div>
+          <div class="modal-body" id="modalMatrixBody"></div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary" onclick="window.print();"><i class="fa fa-print"></i> Print Matrix</button>
+            <button type="button" class="btn btn-default" id="ksc_edit_from_preview"><i class="fa fa-pencil"></i> Edit</button>
+            <button type="button" class="btn btn-default" onclick="window.print();"><i class="fa fa-print"></i> Print</button>
+            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
           </div>
         </div>
       </div>
     </div>
-
   </section>
 </div>
 
-<script>
-$(document).ready(function() {
-  if ($.fn.select2) {
-    $('.select2').select2();
-  }
+<style>
+  .ksc .ksc-box { border: 1px solid var(--crm-line, #e2e8f0); border-radius: 10px; box-shadow: none; margin-bottom: 12px; background: var(--crm-surface, #fff); }
+  .ksc .ksc-top { display: flex; flex-wrap: wrap; gap: 8px 14px; padding: 10px 12px 8px; border-bottom: 1px solid var(--crm-line-soft, #eef2f7); }
+  .ksc .ksc-f { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .ksc .ksc-f > label { margin: 0; font-size: 12.5px; font-weight: 500; color: var(--crm-ink-2, #475569); white-space: nowrap; }
+  .ksc .ksc-f > label span { color: #dc2626; font-weight: 700; }
+  .ksc .ksc-client { flex: 1 1 320px; }
+  .ksc .ksc-year { flex: 0 0 auto; }
+  .ksc .ksc-who { flex: 0 1 260px; }
+  .ksc .ksc-f .form-control, .ksc .ksc-f .select2-container .select2-selection--single { height: 30px !important; min-height: 30px; font-size: 13px; }
+  .ksc .ksc-f .select2-container { flex: 1 1 auto; min-width: 0; }
+  .ksc .ksc-f { position: relative; }
+  .ksc .ksc-f select.select2-hidden-accessible { position: absolute !important; width: 1px !important; height: 1px !important; overflow: hidden; }
+  .ksc .ksc-year .form-control { width: 86px; padding: 3px 6px; }
+  .ksc .ksc-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 8px 12px 4px; }
+  .ksc .ksc-bar-t { margin-right: auto; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--crm-ocean, #1e3a8a); }
+  .ksc .ksc-presets { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+  .ksc .ksc-wrap { margin: 0; border: 0; padding: 0 12px; }
+  .ksc .ksc-m { margin: 0; font-size: 12px; }
+  .ksc .ksc-m > thead > tr > th { padding: 4px 2px !important; font-size: 11px !important; font-weight: 600; text-align: center; color: var(--crm-muted, #64748b); background: none !important; border-bottom: 1px solid var(--crm-line, #e2e8f0) !important; text-transform: none; }
+  .ksc .ksc-m > thead > tr > th.ksc-name { text-align: left; padding-left: 0 !important; }
+  .ksc .ksc-m > tbody > tr > td { padding: 3px 2px !important; vertical-align: middle; border-top: 1px solid var(--crm-line-soft, #eef2f7) !important; }
+  .ksc .ksc-m > tbody > tr > td:first-child { padding-left: 0 !important; min-width: 170px; }
+  .ksc .ksc-m .sched-name-input { height: 28px; font-size: 12.5px; padding: 3px 7px; }
+  .ksc .ksc-cell { display: flex; align-items: center; gap: 2px; min-width: 86px; }
+  .ksc .ksc-cell select { flex: 1 1 auto; min-width: 0; height: 26px; padding: 0 2px; font-size: 11px; border: 1px solid var(--crm-line, #e2e8f0); border-radius: 4px; background: #fff; color: #94a3b8; }
+  .ksc .ksc-cell select.s-p { background: #fef3c7; border-color: #fcd34d; color: #92400e; font-weight: 600; }
+  .ksc .ksc-cell select.s-a { background: #dcfce7; border-color: #86efac; color: #166534; font-weight: 600; }
+  .ksc .ksc-cell select.s-e { background: #fee2e2; border-color: #fca5a5; color: #991b1b; font-weight: 600; }
+  .ksc .ksc-cell select.s-o { background: #e0e7ff; border-color: #a5b4fc; color: #3730a3; font-weight: 600; }
+  .ksc .ksc-cell input[type=checkbox] { margin: 0; flex: 0 0 auto; }
+  .ksc .btn-remove-sched-row { border: 0; background: none; color: #94a3b8; padding: 2px 6px; }
+  .ksc .btn-remove-sched-row:hover { color: #dc2626; }
+  .ksc .ksc-foot { position: sticky; bottom: 0; z-index: 5; display: flex; justify-content: flex-end; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--crm-line-soft, #eef2f7); background: var(--crm-surface, #fff); border-radius: 0 0 10px 10px; }
+  .ksc .ksc-foot .btn { min-width: 110px; height: 32px; font-weight: 600; }
+  .ksc .ksc-lhead { display: flex; align-items: center; padding: 8px 12px 0; }
+  .ksc .ksc-seg { display: inline-flex; gap: 2px; padding: 2px; border-radius: 8px; background: var(--crm-canvas, #f1f5f9); }
+  .ksc .ksc-seg a { padding: 4px 12px; border-radius: 6px; font-size: 12.5px; font-weight: 600; color: var(--crm-ink-2, #475569); }
+  .ksc .ksc-seg a.is-on { background: #fff; color: var(--crm-ocean, #1e3a8a); box-shadow: 0 1px 2px rgba(15,23,42,.12); }
+  .ksc-modal { width: auto; max-width: 1100px; margin: 30px auto; padding: 0 10px; }
+  .ksc-pv { width: 100%; min-width: 760px; table-layout: fixed; border-collapse: separate; border-spacing: 2px; font-size: 12px; }
+  .ksc-pv th:first-child { width: 190px; }
+  .ksc-pv th { padding: 4px; font-size: 11px; font-weight: 600; text-align: center; color: var(--crm-muted, #64748b); }
+  .ksc-pv th:first-child, .ksc-pv td:first-child { text-align: left; font-weight: 600; color: var(--crm-ink, #0f172a); padding-right: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ksc-pv td { padding: 5px 2px; text-align: center; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .ksc-pv td.s-n { color: #cbd5e1; }
+  .ksc-pv td.s-p { background: #fef3c7; color: #92400e; }
+  .ksc-pv td.s-a { background: #dcfce7; color: #166534; }
+  .ksc-pv td.s-e { background: #fee2e2; color: #991b1b; }
+  .ksc-pv td.s-o { background: #e0e7ff; color: #3730a3; }
+  .ksc-pv td i { margin-left: 2px; font-size: 10px; }
+  .ksc-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; font-size: 11.5px; color: var(--crm-muted, #64748b); }
+  .ksc-legend b { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+  @media (max-width: 767px) { .ksc .ksc-f { flex: 1 1 100%; } .ksc .ksc-f > label { min-width: 74px; } }
+</style>
 
-  if ($('#example_lead').length) {
-    $('#example_lead').DataTable({
-      "pageLength": 25,
-      responsive: true
-    });
-  }
+<script>
+$(function () {
+  if ($.fn.select2) { $('.ksc .select2').select2(); }
 
   var schedMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  // value => short label in the cells
+  var STATUS = [['Not Applicable', '—', 's-n'], ['Pending', 'Pending', 's-p'], ['Approved', 'Approved', 's-a'], ['Expired', 'Expired', 's-e'], ['Other', 'Other', 's-o']];
+  function cls(v) { for (var i = 0; i < STATUS.length; i++) if (STATUS[i][0] === v) return STATUS[i][2]; return 's-n'; }
+  function esc(s) { return $('<div>').text(s == null ? '' : s).html(); }
   var presetProfiles = {
-    tax: [
-      'VAT Return Filing',
-      'Corporate Tax Filing',
-      'Monthly Bookkeeping',
-      'Financial Statements & MIS',
-      'Document Col/Sub',
-      'Audit & Year-End Verification'
-    ],
-    corporate: [
-      'Trade License Renewal',
-      'Establishment Card Renewal',
-      'MoL & Immigration Quota',
-      'Tenancy Contract & Ejari',
-      'Corporate Bank KYC Update',
-      'AML Compliance Review'
-    ],
-    audit: [
-      'Interim Audit Review',
-      'Stock Taking & Verification',
-      'Final Audit Preparation',
-      'Draft Audit Report Submission',
-      'Management Representation Letter',
-      'FTA Regulatory Filing'
-    ]
+    tax: ['VAT Return Filing', 'Corporate Tax Filing', 'Monthly Bookkeeping', 'Financial Statements & MIS', 'Document Col/Sub', 'Audit & Year-End Verification'],
+    corporate: ['Trade License Renewal', 'Establishment Card Renewal', 'MoL & Immigration Quota', 'Tenancy Contract & Ejari', 'Corporate Bank KYC Update', 'AML Compliance Review'],
+    audit: ['Interim Audit Review', 'Stock Taking & Verification', 'Final Audit Preparation', 'Draft Audit Report Submission', 'Management Representation Letter', 'FTA Regulatory Filing']
   };
+  var defaultSchedules = ['VAT Return Filing', 'Corporate Tax Filing', 'Monthly Bookkeeping', 'Financial Statements & MIS', 'Compliance Review & AML', 'Audit & Year-End Verification'];
 
-  var defaultSchedules = presetProfiles.tax;
+  function rowHtml(idx, item) {
+    var h = '<tr class="sched-row" data-row-index="' + idx + '"><td><input type="text" class="form-control input-sm sched-name-input" name="sched_name[' + idx + ']" value="' + esc(item.name || item.title || '') + '" placeholder="Task name" required aria-label="Task name"></td>';
+    schedMonths.forEach(function (mn) {
+      var md = (item.months && item.months[mn]) ? item.months[mn] : null;
+      var st = md ? (md.status || 'Not Applicable') : 'Not Applicable';
+      var ck = md ? parseInt(md.checked, 10) === 1 : false;
+      h += '<td><div class="ksc-cell"><select name="sched_status[' + idx + '][' + mn + ']" class="' + cls(st) + '" aria-label="' + mn + ' status">';
+      STATUS.forEach(function (s) { h += '<option value="' + s[0] + '"' + (s[0] === st ? ' selected' : '') + '>' + s[1] + '</option>'; });
+      h += '</select><input type="checkbox" name="sched_check[' + idx + '][' + mn + ']" value="1"' + (ck ? ' checked' : '') + ' title="' + mn + ' done" aria-label="' + mn + ' done"></div></td>';
+    });
+    return h + '<td><button type="button" class="btn-remove-sched-row" title="Remove task" aria-label="Remove task"><i class="fa fa-times"></i></button></td></tr>';
+  }
+  function renderScheduleRows(list) {
+    if (!list || !list.length) list = defaultSchedules.map(function (n) { return { name: n, months: {} }; });
+    $('#sched_tbody').html(list.map(function (it, i) { return rowHtml(i, it); }).join(''));
+  }
+  renderScheduleRows([]);
 
-  function renderScheduleRows(schedulesList) {
-    var tbody = $('#sched_tbody');
-    tbody.empty();
+  $(document).on('change', '.ksc-cell select', function () { this.className = cls(this.value); });
 
-    if (!schedulesList || schedulesList.length === 0) {
-      schedulesList = defaultSchedules.map(function(name) {
-        return { name: name, months: {} };
-      });
-    }
+  $('.btn-apply-preset').on('click', function () {
+    var p = presetProfiles[$(this).data('preset')];
+    if (p) renderScheduleRows(p.map(function (n) { return { name: n, months: {} }; }));
+  });
 
-    schedulesList.forEach(function(item, idx) {
-      var rowHtml = '<tr class="sched-row" data-row-index="' + idx + '">';
-      rowHtml += '<td style="vertical-align:middle;">';
-      rowHtml += '<input type="text" class="form-control input-sm sched-name-input" name="sched_name[' + idx + ']" value="' + $('<div>').text(item.name || item.title || '').html() + '" required style="font-size:12px; height:28px;">';
-      rowHtml += '</td>';
+  $('#btn_add_sched_row').on('click', function (e) {
+    e.preventDefault();
+    // next free index (rows can be removed, so not the row count)
+    var next = 0;
+    $('#sched_tbody tr').each(function () { next = Math.max(next, parseInt($(this).data('row-index'), 10) + 1); });
+    $('#sched_tbody').append(rowHtml(next, { name: '', months: {} }));
+    $('#sched_tbody tr:last .sched-name-input').focus();
+  });
 
-      schedMonths.forEach(function(mn) {
-        var mData = (item.months && item.months[mn]) ? item.months[mn] : null;
-        var curStatus = mData ? (mData.status || 'Not Applicable') : 'Not Applicable';
-        var isChecked = mData ? (parseInt(mData.checked, 10) === 1) : false;
+  $(document).on('click', '.btn-remove-sched-row', function (e) {
+    e.preventDefault();
+    if ($('#sched_tbody tr').length > 1) $(this).closest('tr').remove();
+    else alert('At least one task is required.');
+  });
 
-        rowHtml += '<td class="text-center" style="padding:4px 3px; vertical-align:middle;">';
-        rowHtml += '<div style="display:flex; flex-direction:column; align-items:center; gap:2px;">';
-        rowHtml += '<select class="form-control input-sm" name="sched_status[' + idx + '][' + mn + ']" style="font-size:11px; height:24px; padding:1px 3px; min-width:82px; width:100%;">';
-        rowHtml += '<option value="Not Applicable"' + (curStatus === 'Not Applicable' ? ' selected' : '') + '>Not Applicable</option>';
-        rowHtml += '<option value="Pending"' + (curStatus === 'Pending' ? ' selected' : '') + '>Pending</option>';
-        rowHtml += '<option value="Approved"' + (curStatus === 'Approved' ? ' selected' : '') + '>Approved</option>';
-        rowHtml += '<option value="Expired"' + (curStatus === 'Expired' ? ' selected' : '') + '>Expired</option>';
-        rowHtml += '<option value="Other"' + (curStatus === 'Other' ? ' selected' : '') + '>Other</option>';
-        rowHtml += '</select>';
-        rowHtml += '<label style="font-weight:normal; margin:0; cursor:pointer;" title="' + mn + ' Active">';
-        rowHtml += '<input type="checkbox" name="sched_check[' + idx + '][' + mn + ']" value="1"' + (isChecked ? ' checked' : '') + ' style="margin:0;">';
-        rowHtml += '</label>';
-        rowHtml += '</div>';
-        rowHtml += '</td>';
-      });
-
-      rowHtml += '<td class="text-center" style="vertical-align:middle;">';
-      rowHtml += '<button type="button" class="btn btn-xs btn-danger btn-remove-sched-row" title="Remove row"><i class="fa fa-times"></i></button>';
-      rowHtml += '</td>';
-      rowHtml += '</tr>';
-
-      tbody.append(rowHtml);
+  function loadClient() {
+    var cname = $('#client_select').val();
+    if (!cname) return;
+    $.getJSON('<?php echo base_url(); ?>manager/kam/ajax_get_client_schedules', { client_name: cname, sched_year: $('#sched_year').val() }, function (resp) {
+      renderScheduleRows(resp && resp.status === 'success' ? resp.schedules : []);
     });
   }
+  $('#client_select, #sched_year').on('change', loadClient);
+  if ($('#client_select').val()) loadClient();
 
-  $('.btn-apply-preset').on('click', function() {
-    var pType = $(this).data('preset');
-    if (presetProfiles[pType]) {
-      var customList = presetProfiles[pType].map(function(sname) {
-        return { name: sname, months: {} };
-      });
-      renderScheduleRows(customList);
-    }
-  });
-
-  $(document).on('click', '.btn-preview-matrix', function() {
-    var client = $(this).data('client');
-    var year = $(this).data('year');
-    $('#modalClientTitle').text(client + ' - ' + year + ' Annual Presentation Matrix');
-    $('#modalMatrixBody').html('<div style="text-align:center; padding:20px; color:#64748b;"><i class="fa fa-spinner fa-spin"></i> Loading schedule data...</div>');
+  var pv = null;
+  $(document).on('click', '.btn-preview-matrix', function () {
+    pv = { client: $(this).data('client'), year: String($(this).data('year')) };
+    $('#modalClientTitle').text(pv.client + ' · ' + pv.year);
+    $('#modalMatrixBody').html('<p class="text-muted" style="margin:0;"><i class="fa fa-spinner fa-spin"></i> Loading…</p>');
     $('#modalMatrixPresentation').modal('show');
-
-    $.ajax({
-      url: '<?php echo base_url(); ?>manager/kam/ajax_get_client_schedules',
-      type: 'GET',
-      data: { client_name: client, sched_year: year },
-      dataType: 'json',
-      success: function(resp) {
-        if (resp && resp.status === 'success' && resp.schedules && resp.schedules.length > 0) {
-          var mHtml = '<div class="table-responsive"><table class="table table-bordered table-striped" style="font-size:12px; margin-bottom:0;">';
-          mHtml += '<thead><tr style="background:#0f172a; color:#ffffff;"><th style="min-width:180px;">Task / Service Deliverable</th>';
-          schedMonths.forEach(function(m) {
-            mHtml += '<th class="text-center" style="min-width:70px;">' + m + '</th>';
-          });
-          mHtml += '</tr></thead><tbody>';
-
-          resp.schedules.forEach(function(item) {
-            mHtml += '<tr><td style="font-weight:600; color:#1e293b;">' + $('<div>').text(item.name).html() + '</td>';
-            schedMonths.forEach(function(m) {
-              var mData = (item.months && item.months[m]) ? item.months[m] : null;
-              var st = mData ? (mData.status || 'Not Applicable') : 'Not Applicable';
-              var color = '#94a3b8';
-              var bg = '#f8fafc';
-              if (st === 'Approved') { color = '#0f172a'; bg = '#f1f5f9'; }
-              else if (st === 'Pending') { color = '#475569'; bg = '#f8fafc'; }
-              else if (st === 'Expired') { color = '#dc2626'; bg = '#fee2e2'; }
-              mHtml += '<td class="text-center" style="background:' + bg + '; color:' + color + '; font-weight:600; font-size:11px; padding:6px 2px;">' + st + '</td>';
-            });
-            mHtml += '</tr>';
-          });
-
-          mHtml += '</tbody></table></div>';
-          $('#modalMatrixBody').html(mHtml);
-        } else {
-          $('#modalMatrixBody').html('<div class="alert alert-warning" style="margin:0;">No detailed matrix rows found for this client schedule.</div>');
+    $.getJSON('<?php echo base_url(); ?>manager/kam/ajax_get_client_schedules', { client_name: pv.client, sched_year: pv.year })
+      .done(function (resp) {
+        if (!(resp && resp.status === 'success' && resp.schedules && resp.schedules.length)) {
+          $('#modalMatrixBody').html('<p class="text-muted" style="margin:0;">No tasks for this year.</p>');
+          return;
         }
-      },
-      error: function() {
-        $('#modalMatrixBody').html('<div class="alert alert-danger" style="margin:0;">Error retrieving schedule data.</div>');
-      }
-    });
+        var h = '<div class="table-responsive" style="border:0;margin:0;"><table class="ksc-pv"><thead><tr><th>Task</th>';
+        schedMonths.forEach(function (m) { h += '<th>' + m + '</th>'; });
+        h += '</tr></thead><tbody>';
+        resp.schedules.forEach(function (it) {
+          h += '<tr><td>' + esc(it.name) + '</td>';
+          schedMonths.forEach(function (m) {
+            var md = (it.months && it.months[m]) ? it.months[m] : null;
+            var st = md ? (md.status || 'Not Applicable') : 'Not Applicable';
+            var lab = st === 'Not Applicable' ? '—' : st;
+            h += '<td class="' + cls(st) + '" title="' + m + ': ' + esc(st) + '">' + esc(lab) + (md && parseInt(md.checked, 10) === 1 ? '<i class="fa fa-check" aria-label="done"></i>' : '') + '</td>';
+          });
+          h += '</tr>';
+        });
+        h += '</tbody></table></div><div class="ksc-legend"><span><b style="background:#fef3c7"></b>Pending</span><span><b style="background:#dcfce7"></b>Approved</span><span><b style="background:#fee2e2"></b>Expired</span><span><b style="background:#e0e7ff"></b>Other</span><span><i class="fa fa-check"></i> Done</span></div>';
+        $('#modalMatrixBody').html(h);
+      })
+      .fail(function () { $('#modalMatrixBody').html('<p class="text-danger" style="margin:0;">Could not load the schedule.</p>'); });
+  });
+  // open the previewed schedule in the form above
+  $('#ksc_edit_from_preview').on('click', function () {
+    if (!pv) return;
+    $('#modalMatrixPresentation').modal('hide');
+    $('#sched_year').val(pv.year);
+    $('#client_select').val(pv.client).trigger('change');
+    $('html, body').animate({ scrollTop: $('#kamScheduleForm').offset().top - 70 }, 200);
   });
 
-  $('#btn_add_sched_row').on('click', function(e) {
-    e.preventDefault();
-    var nextIdx = $('#sched_tbody tr').length;
-    var rowHtml = '<tr class="sched-row" data-row-index="' + nextIdx + '">';
-    rowHtml += '<td style="vertical-align:middle;"><input type="text" class="form-control input-sm sched-name-input" name="sched_name[' + nextIdx + ']" placeholder="Enter Schedule Name" required style="font-size:12px; height:28px;"></td>';
-    for (var m = 0; m < schedMonths.length; m++) {
-      var mn = schedMonths[m];
-      rowHtml += '<td class="text-center" style="padding:4px 3px; vertical-align:middle;">';
-      rowHtml += '<div style="display:flex; flex-direction:column; align-items:center; gap:2px;">';
-      rowHtml += '<select class="form-control input-sm" name="sched_status[' + nextIdx + '][' + mn + ']" style="font-size:11px; height:24px; padding:1px 3px; min-width:82px; width:100%;">';
-      rowHtml += '<option value="Not Applicable" selected>Not Applicable</option>';
-      rowHtml += '<option value="Pending">Pending</option>';
-      rowHtml += '<option value="Approved">Approved</option>';
-      rowHtml += '<option value="Expired">Expired</option>';
-      rowHtml += '<option value="Other">Other</option>';
-      rowHtml += '</select>';
-      rowHtml += '<label style="font-weight:normal; margin:0; cursor:pointer;" title="' + mn + ' Active">';
-      rowHtml += '<input type="checkbox" name="sched_check[' + nextIdx + '][' + mn + ']" value="1" style="margin:0;">';
-      rowHtml += '</label>';
-      rowHtml += '</div>';
-      rowHtml += '</td>';
-    }
-    rowHtml += '<td class="text-center" style="vertical-align:middle;"><button type="button" class="btn btn-xs btn-danger btn-remove-sched-row" title="Remove row"><i class="fa fa-times"></i></button></td>';
-    rowHtml += '</tr>';
-    $('#sched_tbody').append(rowHtml);
-  });
-
-  $(document).on('click', '.btn-remove-sched-row', function(e) {
-    e.preventDefault();
-    if ($('#sched_tbody tr').length > 1) {
-      $(this).closest('tr').remove();
-    } else {
-      alert('At least one schedule row is required.');
-    }
-  });
-
-  $('#client_select, #sched_year').on('change', function() {
-    var cname = $('#client_select').val();
-    var syear = $('#sched_year').val();
-    if (!cname) return;
-
-    $.ajax({
-      url: '<?php echo base_url(); ?>manager/kam/ajax_get_client_schedules',
-      type: 'GET',
-      data: { client_name: cname, sched_year: syear },
-      dataType: 'json',
-      success: function(resp) {
-        if (resp && resp.status === 'success' && resp.schedules && resp.schedules.length > 0) {
-          renderScheduleRows(resp.schedules);
-        } else {
-          renderScheduleRows([]);
-        }
-      }
-    });
-  });
+  var $t = $('#example_kam_sched');
+  if ($t.length && !$.fn.DataTable.isDataTable($t)) {
+    $t.DataTable({ pageLength: 25, order: [[0, 'desc']], columnDefs: [{ orderable: false, targets: [7] }], responsive: window.innerWidth >= 768 });
+  }
 });
 </script>
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-tlist.css?v=20261106_4">
+<script src="<?php echo base_url(); ?>assets/dist/js/crm-tlist.js?v=20261106_3"></script>
 
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

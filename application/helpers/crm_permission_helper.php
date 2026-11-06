@@ -127,12 +127,12 @@ if (!function_exists('crm_perm_catalog')) {
 				'title' => 'KAM', 'key' => 'kam', 'match' => array('kam'),
 				'icon' => '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>',
 				'items' => array(
-					'kam_clients' => array('label' => 'My Client', 'desc' => 'Key account clients assigned to you', 'fallback' => 'kam', 'nav' => array(array('kam/my-client', 'My Client', 'fa-user')), 'pages' => array('kam/my-client', 'kam/my_client', 'kam')),
-					'kam_schedule' => array('label' => 'Create Schedule', 'desc' => 'Plan client visits and pitches', 'fallback' => 'kam', 'nav' => array(array('kam/schedule', 'Create Schedule', 'fa-calendar')), 'pages' => array('kam/schedule', 'kam/pitch-schedule')),
-					'kam_sales_approval' => array('label' => 'Pending Sales Approval', 'desc' => 'Approve orders as sales', 'fallback' => 'kam', 'nav' => array(array('orders/pending_sales_approval', 'Pending Sales Approval', 'fa-check-circle')), 'pages' => array('orders/pending_sales_approval')),
-					'kam_task_followup' => array('label' => 'Task Follow-up', 'desc' => 'Client task follow-ups', 'fallback' => 'kam', 'nav' => array(array('kam/task-followup', 'Task Follow-up', 'fa-tasks')), 'pages' => array('kam/task-followup')),
-					'kam_reminders' => array('label' => 'Reminders', 'desc' => 'Client reminders', 'fallback' => 'kam', 'nav' => array(array('kam/reminders', 'Reminders', 'fa-bell-o')), 'pages' => array('kam/reminders')),
-					'kam_report' => array('label' => 'KAM Report', 'desc' => 'Report of KAM activity', 'fallback' => 'kam', 'nav' => array(array('kam/report', 'KAM Report', 'fa-bar-chart')), 'pages' => array('kam/report'), 'levels' => 'r'),
+					'kam_clients' => array('tab' => 'km_clients', 'label' => 'My Client', 'desc' => 'Key account clients assigned to you', 'fallback' => 'kam', 'nav' => array(array('kam/my-client', 'My Client', 'fa-user')), 'pages' => array('kam/my-client', 'kam/my_client', 'kam')),
+					'kam_schedule' => array('tab' => 'km_clients', 'label' => 'Create Schedule', 'desc' => 'Plan client visits and pitches', 'fallback' => 'kam', 'nav' => array(array('kam/schedule', 'Create Schedule', 'fa-calendar')), 'pages' => array('kam/schedule', 'kam/pitch-schedule')),
+					'kam_sales_approval' => array('tab' => 'km_sales', 'label' => 'Pending Sales Approval', 'desc' => 'Approve orders as sales', 'fallback' => 'kam', 'nav' => array(array('orders/pending_sales_approval', 'Pending Sales Approval', 'fa-check-circle')), 'pages' => array('orders/pending_sales_approval')),
+					'kam_task_followup' => array('tab' => 'km_follow', 'label' => 'Task Follow-up', 'desc' => 'Client task follow-ups', 'fallback' => 'kam', 'nav' => array(array('kam/task-followup', 'Task Follow-up', 'fa-tasks')), 'pages' => array('kam/task-followup')),
+					'kam_reminders' => array('tab' => 'km_follow', 'label' => 'Reminders', 'desc' => 'Client reminders', 'fallback' => 'kam', 'nav' => array(array('kam/reminders', 'Reminders', 'fa-bell-o')), 'pages' => array('kam/reminders')),
+					'kam_report' => array('tab' => 'km_clients', 'label' => 'KAM Report', 'desc' => 'Report of KAM activity', 'fallback' => 'kam', 'nav' => array(array('kam/report', 'KAM Report', 'fa-bar-chart')), 'pages' => array('kam/report'), 'levels' => 'r'),
 				),
 			),
 			'hr' => array(
@@ -473,6 +473,19 @@ if (!function_exists('crm_tab_groups')) {
 				array('orders_invoices', 'orders/invoices', 'Invoices', 'fa-file-text-o'),
 				array('orders_payments', 'orders/payments', 'Payments', 'fa-credit-card'),
 			)),
+			// KAM: clients, sales approval and follow-ups, each one menu link with tabs
+			'km_clients' => array('label' => 'Clients', 'icon' => 'fa-user', 'tabs' => array(
+				array('kam_clients', 'kam/my-client', 'My Clients', 'fa-user'),
+				array('kam_schedule', 'kam/schedule', 'Schedules', 'fa-calendar'),
+				array('kam_report', 'kam/report', 'Report', 'fa-bar-chart'),
+			)),
+			'km_sales' => array('label' => 'Sales Approval', 'icon' => 'fa-check-circle', 'tabs' => array(
+				array('kam_sales_approval', 'orders/pending_sales_approval', 'Pending Sales Approval', 'fa-check-circle'),
+			)),
+			'km_follow' => array('label' => 'Follow-ups', 'icon' => 'fa-tasks', 'tabs' => array(
+				array('kam_task_followup', 'kam/task-followup', 'Task Follow-up', 'fa-tasks'),
+				array('kam_reminders', 'kam/reminders', 'Reminders', 'fa-bell-o'),
+			)),
 			'database' => array('label' => 'Database', 'icon' => 'fa-database', 'tabs' => array(
 				array('leads_import', 'leads/import', 'Import', 'fa-upload'),
 				array('leads_export', 'leads/export', 'Export', 'fa-download'),
@@ -563,7 +576,8 @@ if (!function_exists('crm_mz_tabbar')) {
 		$path = preg_replace('~(/[0-9]+)+$~', '', $path); // list page number, e.g. leads/0
 		$alias = array('database' => 'leads', 'back-office' => 'leads/review_leads', 'back_office' => 'leads/review_leads',
 			'orders/completed' => 'orders?status=completed', 'orders/closed' => 'orders?status=closed', 'orders/rejected_lost' => 'orders?status=rejected_lost',
-			'invoices' => 'orders/invoices', 'payments' => 'orders/payments');
+			'invoices' => 'orders/invoices', 'payments' => 'orders/payments',
+			'kam' => 'kam/my-client', 'kam/my_client' => 'kam/my-client', 'kam/pitch-schedule' => 'kam/schedule');
 		if (isset($alias[$path])) $path = $alias[$path];
 		if ($path === 'orders') {
 			$st = (string)$CI->input->get('status');
@@ -571,7 +585,7 @@ if (!function_exists('crm_mz_tabbar')) {
 			elseif (in_array($st, array('open', 'followups'), true)) $path = 'orders/' . $st;
 		}
 		foreach (crm_tab_groups() as $gk => $g) {
-			if (strpos($gk, 'mz_') !== 0 && strpos($gk, 'tm_') !== 0 && strpos($gk, 'bo_') !== 0) continue;
+			if (!in_array(substr($gk, 0, 3), array('mz_', 'tm_', 'bo_', 'km_'), true)) continue;
 			foreach ($g['tabs'] as $t) {
 				if ($t[1] === $path || (strpos($gk, 'tm_') === 0 && strpos($path, $t[1] . '/') === 0)) {
 					$path = $t[1];
