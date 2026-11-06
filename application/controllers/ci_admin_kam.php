@@ -344,6 +344,26 @@ class Ci_admin_kam extends CI_Controller
 		$data['order_id'] = $order_id;
 		$data['lead_id'] = $lead_id;
 
+		// KAM approval: the client is onboarded here first, then the order is approved as a sale (Back Office onboarding never approves)
+		$approve_mode = ($order_id > 0 && (string)$this->input->get_post('approve') === '1');
+		$data['approve_mode'] = $approve_mode;
+		$data['ap_order'] = array();
+		if ($approve_mode) {
+			$ap_order = $this->db->where('id', $order_id)->get('ci_orders')->row_array();
+			if (!crm_can_approve_sales()) {
+				$this->session->set_flashdata('error_message', 'Only KAM can approve sales.');
+				redirect('manager/orders/view/' . $order_id);
+				return;
+			}
+			if (!$this->ci_admin_model->order_can_become_sale($ap_order)) {
+				$this->session->set_flashdata('error_message', empty($ap_order) ? 'Order not found.' : "Order #{$ap_order['order_no']} cannot be approved as a sale ({$ap_order['status']}).");
+				redirect(empty($ap_order) ? 'manager/orders/pending_sales_approval' : 'manager/orders/view/' . $order_id);
+				return;
+			}
+			$data['ap_order'] = $ap_order;
+			$data['info'] = array('title' => 'KAM - Approve as Sale', 'page_heading' => 'Approve as Sale');
+		}
+
 		$prefill_order = array();
 		if ($order_id > 0) {
 			$prefill_order = $this->db->where('id', $order_id)->get('ci_orders')->row_array();
@@ -404,7 +424,7 @@ class Ci_admin_kam extends CI_Controller
 
 			if (empty($client_name)) {
 				$this->session->set_flashdata('error_message', 'Assigned Client (Company Name) is required.');
-				redirect('manager/kam/onboard' . ($order_id > 0 ? '?order_id=' . $order_id : ''));
+				redirect('manager/kam/onboard' . ($order_id > 0 ? '?order_id=' . $order_id . ($approve_mode ? '&approve=1' : '') : ''));
 				return;
 			}
 
@@ -775,28 +795,55 @@ class Ci_admin_kam extends CI_Controller
 
 				if ($order_id > 0) {
 					$order_rec = $this->db->where('id', $order_id)->get('ci_orders')->row_array();
+					if (!empty($order_rec) && $approve_mode) {
+						// KAM: client onboarded, now the order is approved as a sale
+						$this->db->where('id', $order_id)->update('ci_orders', array(
+							'company_name' => $client_name,
+							'owner_name' => $owner_name,
+							'company_id' => (int)$inserted_lead_id,
+							'updated_at' => date('Y-m-d H:i:s')
+						));
+						$this->db->insert('ci_order_history', array(
+							'order_id' => $order_id,
+							'action' => 'kam_onboarding_completed',
+							'notes' => "Client '{$client_name}' onboarded by KAM for sales approval.",
+							'action_by' => $manager_id,
+							'action_by_name' => (string)$this->session->userdata('manager_name'),
+							'created_at' => date('Y-m-d H:i:s')
+						));
+						$sales_ref = $this->ci_admin_model->approve_order_as_sale($order_id, $manager_id, (string)$this->session->userdata('manager_name'), trim((string)$this->input->post('approval_note')));
+						if ($sales_ref !== '') {
+							$this->session->set_flashdata('message', "Client '{$client_name}' onboarded. Order #{$order_rec['order_no']} approved as Sales #{$sales_ref}.");
+						} else {
+							$this->session->set_flashdata('error_message', "Client '{$client_name}' was onboarded, but Order #{$order_rec['order_no']} could not be approved. Please try again.");
+						}
+						redirect('manager/orders/view/' . $order_id);
+						return;
+					}
 					if (!empty($order_rec)) {
-						// a Sale stays a Sale after onboarding; other orders move to Completed as before
+						// Back Office onboarding: a Sale stays a Sale and an order waiting for KAM keeps waiting; other orders move to Completed as before
 						$ob_is_sale = ($order_rec['status'] === 'Sales' || !empty($order_rec['sales_ref_no']));
+						$ob_waiting = ($order_rec['status'] === 'Pending Sales Approval' || $order_rec['approval_status'] === 'pending_approval');
 						$ob_update = array(
 							'company_name' => $client_name,
 							'owner_name' => $owner_name,
 							'company_id' => (int)$inserted_lead_id,
 							'updated_at' => date('Y-m-d H:i:s')
 						);
-						if (!$ob_is_sale) $ob_update['status'] = 'Completed';
+						if (!$ob_is_sale && !$ob_waiting) $ob_update['status'] = 'Completed';
+						$ob_where = $ob_is_sale ? 'stays in Sales.' : ($ob_waiting ? 'is still waiting for KAM sales approval.' : 'moved to Completed Orders.');
 						$this->db->where('id', $order_id)->update('ci_orders', $ob_update);
 						$this->db->insert('ci_order_history', array(
 							'order_id' => $order_id,
 							'action' => 'onboarding_completed',
-							'notes' => "Client onboarding completed for company '{$client_name}'. Order #{$order_rec['order_no']} " . ($ob_is_sale ? 'stays in Sales.' : 'moved to Completed Orders.'),
+							'notes' => "Client onboarding completed for company '{$client_name}'. Order #{$order_rec['order_no']} " . $ob_where,
 							'action_by' => $manager_id,
 							'action_by_name' => (string)$this->session->userdata('manager_name'),
 							'created_at' => date('Y-m-d H:i:s')
 						));
 						$this->ci_admin_model->log_admin_action('order_onboarded', "Order #{$order_rec['order_no']} onboarded for {$client_name}", 'SUCCESS', $manager_id, (string)$this->session->userdata('manager_name'));
-						$this->session->set_flashdata('message', "Client '{$client_name}' onboarded successfully. Order #{$order_rec['order_no']} " . ($ob_is_sale ? 'stays in Sales.' : 'moved to Completed Orders.'));
-						redirect($ob_is_sale ? 'manager/sales' : 'manager/orders?status=completed');
+						$this->session->set_flashdata('message', "Client '{$client_name}' onboarded successfully. Order #{$order_rec['order_no']} " . $ob_where);
+						redirect($ob_is_sale ? 'manager/sales' : ($ob_waiting ? 'manager/orders/view/' . $order_id : 'manager/orders?status=completed'));
 						return;
 					}
 				}
@@ -814,7 +861,7 @@ class Ci_admin_kam extends CI_Controller
 				return;
 			} else {
 				$this->session->set_flashdata('error_message', 'Failed to onboard client. Please try again.');
-				redirect('manager/kam/onboard' . ($order_id > 0 ? '?order_id=' . $order_id : ''));
+				redirect('manager/kam/onboard' . ($order_id > 0 ? '?order_id=' . $order_id . ($approve_mode ? '&approve=1' : '') : ''));
 				return;
 			}
 		}

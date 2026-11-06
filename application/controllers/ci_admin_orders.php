@@ -863,55 +863,8 @@ class Ci_admin_orders extends CI_Controller {
 			return;
 		}
 
-		if ($order['status'] === 'Sales') {
-			$this->session->set_flashdata('error_message', 'This Order is already converted to Sales.');
-			redirect('manager/orders/view/' . $id);
-			return;
-		}
-
-		$now = date('Y-m-d H:i:s');
-		$sales_ref_no = !empty($order['sales_ref_no']) ? $order['sales_ref_no'] : $this->ci_admin_model->generate_next_ref('sales');
-		$notes = trim((string)$this->input->post('notes'));
-
-		$this->db->where('id', $id)->update('ci_orders', array(
-			'status' => 'Sales',
-			'sales_ref_no' => $sales_ref_no,
-			'sales_converted_at' => $now,
-			'sales_converted_by' => $cur_uid,
-			'updated_at' => $now
-		));
-
-		$this->db->insert('ci_order_history', array(
-			'order_id' => $id,
-			'action' => 'converted_to_sales',
-			'notes' => "Order converted to Sales (#{$sales_ref_no}). " . (!empty($notes) ? "Note: {$notes}" : 'Customer won, payment & completion requirements verified.'),
-			'action_by' => $cur_uid,
-			'action_by_name' => $cur_name,
-			'created_at' => $now
-		));
-
-		if (!empty($order['lead_id'])) {
-			// the record follows the order, so its preview shows Sale (same as Approve Sales Order)
-			$this->db->where('lead_id', (int)$order['lead_id'])->update('ci_pipeline', array(
-				'order_request_status' => 'approved',
-				'sales_ref_no' => $sales_ref_no,
-				'updated_at' => $now
-			));
-			$this->db->insert('ci_pipeline_logs', array(
-				'lead_id' => (int)$order['lead_id'],
-				'action' => 'convert_to_sales',
-				'stage_from' => 'order',
-				'stage_to' => 'sales',
-				'action_by' => $cur_uid,
-				'action_by_name' => $cur_name,
-				'remarks' => "Converted to Sales #{$sales_ref_no}",
-				'created_at' => $now
-			));
-		}
-
-		$this->ci_admin_model->log_admin_action('convert_to_sales', "Order #{$order['order_no']} converted to Sales #{$sales_ref_no}", 'SUCCESS', $cur_uid, $cur_name);
-		$this->session->set_flashdata('message', "Order #{$order['order_no']} successfully converted to Sales ({$sales_ref_no}).");
-		redirect('manager/orders/view/' . $id);
+		// a sale needs the client onboarded by KAM first
+		$this->approve_sales_order($id);
 	}
 
 	public function quick_accept($id = 0)
@@ -1508,89 +1461,33 @@ class Ci_admin_orders extends CI_Controller {
 		$this->load->view('manager/orders/pending_sales_approval', $data);
 	}
 
+	/** KAM: approving an order as a sale starts with onboarding the client (kam/onboard, approve mode); the sale is approved when that form is saved. */
 	public function approve_sales_order($id = 0)
 	{
 		$this->if_not_login();
-		// same right as the Pending Sales Approval page (the link could be opened by anyone)
-		$chk_role = (int)$this->session->userdata('manager_role');
-		$chk_uid = (int)$this->session->userdata('manager_id');
+		$id = (int)$id;
 		if (!crm_can_approve_sales()) {
 			$this->session->set_flashdata('error_message', 'Only KAM can approve sales.');
-			redirect('manager/orders/view/' . (int)$id);
+			redirect('manager/orders/view/' . $id);
 			return;
 		}
-		$id = (int)$id;
-		$cur_uid = (int)$this->session->userdata('manager_id');
-		$cur_name = (string)$this->session->userdata('manager_name');
-		$now = date('Y-m-d H:i:s');
-
 		$order = $this->db->where('id', $id)->get('ci_orders')->row_array();
 		if (empty($order)) {
 			$this->session->set_flashdata('error_message', 'Order not found.');
 			redirect('manager/orders/pending_sales_approval');
 			return;
 		}
-
-		if (!empty($order['sales_ref_no']) && $order['status'] === 'Sales') {
-			$this->session->set_flashdata('message', "Order #{$order['order_no']} is already approved as Sales #{$order['sales_ref_no']}.");
-			redirect('manager/kam/onboard?order_id=' . $id . '&lead_id=' . (int)$order['lead_id']);
-			return;
-		}
-		if ($order['status'] !== 'Pending Sales Approval' && $order['approval_status'] !== 'pending_approval') {
-			$this->session->set_flashdata('error_message', "Order #{$order['order_no']} has not been sent for sales approval.");
+		if ($order['status'] === 'Sales' || !empty($order['sales_ref_no'])) {
+			$this->session->set_flashdata('message', "Order #{$order['order_no']} is already Sales #{$order['sales_ref_no']}.");
 			redirect('manager/orders/view/' . $id);
 			return;
 		}
-
-		$sales_ref = $this->ci_admin_model->generate_next_ref('sales');
-		$this->db->trans_start();
-		$this->db->where('id', $id)->update('ci_orders', array(
-			'status' => 'Sales',
-			'approval_status' => 'approved',
-			'sales_ref_no' => $sales_ref,
-			'approved_by' => $cur_uid,
-			'approved_at' => $now,
-			'updated_at' => $now
-		));
-
-		if (!empty($order['lead_id'])) {
-			$this->db->where('lead_id', (int)$order['lead_id'])->update('ci_pipeline', array(
-				'order_request_status' => 'approved',
-				'sales_ref_no' => $sales_ref,
-				'updated_at' => $now
-			));
-		}
-
-		$this->db->insert('ci_order_history', array(
-			'order_id' => $id,
-			'action' => 'sales_approval_granted',
-			'notes' => "Order #{$order['order_no']} approved for Sales. Sales Ref: #{$sales_ref}.",
-			'action_by' => $cur_uid,
-			'action_by_name' => $cur_name,
-			'created_at' => $now
-		));
-		$this->db->trans_complete();
-		if ($this->db->trans_status() === FALSE) {
-			$this->session->set_flashdata('error_message', "Order #{$order['order_no']} could not be approved. No changes were saved. Please try again.");
-			redirect('manager/orders/pending_sales_approval');
+		if (!$this->ci_admin_model->order_can_become_sale($order)) {
+			$this->session->set_flashdata('error_message', "Order #{$order['order_no']} is {$order['status']} and cannot be approved as a sale.");
+			redirect('manager/orders/view/' . $id);
 			return;
 		}
-
-		$this->ci_admin_model->log_admin_action('sales_approval_granted', "Approved Sales for Order #{$order['order_no']} (Sales #{$sales_ref})", 'SUCCESS', $cur_uid, $cur_name);
-		$ord_owner = !empty($order['created_by']) ? (int)$order['created_by'] : 0;
-		if ($ord_owner > 0) {
-			$this->ci_admin_model->add_notification(
-				$ord_owner,
-				'sales_approved',
-				'Order Approved - Sales Record Created',
-				"Order #{$order['order_no']} has been approved. Sales Ref: #{$sales_ref}.",
-				base_url('manager/orders/view/' . $id),
-				'fa fa-check-circle',
-				'#16a34a'
-			);
-		}
-		$this->session->set_flashdata('message', "Order #{$order['order_no']} approved as Sales #{$sales_ref}!");
-		redirect('manager/kam/onboard?order_id=' . $id . '&lead_id=' . (int)$order['lead_id']);
+		redirect('manager/kam/onboard?approve=1&order_id=' . $id . '&lead_id=' . (int)$order['lead_id']);
 	}
 
 	public function my()
@@ -1793,7 +1690,7 @@ class Ci_admin_orders extends CI_Controller {
 		if (!empty($followup_time)) {
 			$update_data['followup_time'] = $followup_time;
 		}
-		if (!empty($order_status) && in_array($order_status, array('Approved', 'In Progress', 'Under Review', 'Completed', 'Fulfilled', 'Sales', 'Rejected', 'Lost', 'Cancelled'))) {
+		if (!empty($order_status) && in_array($order_status, array('Approved', 'In Progress', 'Under Review', 'Completed', 'Fulfilled', 'Rejected', 'Lost', 'Cancelled'))) {
 			$update_data['status'] = $order_status;
 		}
 		if (!empty($remarks)) {
@@ -1880,26 +1777,8 @@ class Ci_admin_orders extends CI_Controller {
 			return;
 		}
 
-		$sales_ref_no = sprintf("S%010d", $id);
-		$now = date('Y-m-d H:i:s');
-		$this->db->where('id', $id)->update('ci_orders', array(
-			'status' => 'Closed',
-			'sales_ref_no' => $sales_ref_no,
-			'updated_at' => $now
-		));
-
-		$this->db->insert('ci_order_history', array(
-			'order_id' => $id,
-			'action' => 'marked_closed_sold',
-			'notes' => "Order marked as Closed / Sold with Sales Ref No: {$sales_ref_no}",
-			'action_by' => $cur_uid,
-			'action_by_name' => $cur_name,
-			'created_at' => $now
-		));
-
-		$this->ci_admin_model->log_admin_action('order_closed_sold', "Marked order #{$id} as Closed / Sold", 'SUCCESS', $cur_uid, $cur_name);
-		$this->session->set_flashdata('message', "Order #{$order['order_no']} successfully marked as Closed / Sold ({$sales_ref_no}).");
-		redirect('manager/orders?status=closed');
+		// closing as a sale goes through KAM onboarding and approval
+		$this->approve_sales_order($id);
 	}
 
 	public function assign_closed_order($id = 0)
@@ -1986,7 +1865,7 @@ class Ci_admin_orders extends CI_Controller {
 				'operational_instructions' => $f_remark,
 				'updated_at' => date('Y-m-d H:i:s')
 			);
-			if (!empty($f_status) && in_array($f_status, array('Approved', 'In Progress', 'Under Review', 'Completed', 'Fulfilled', 'Sales', 'Rejected', 'Lost', 'Cancelled', 'Follow Up', 'Onboarding', 'Pending Sales Approval'), true)) {
+			if (!empty($f_status) && in_array($f_status, array('Approved', 'In Progress', 'Under Review', 'Completed', 'Fulfilled', 'Rejected', 'Lost', 'Cancelled', 'Follow Up', 'Onboarding', 'Pending Sales Approval'), true)) {
 				$update_order['status'] = $f_status;
 			}
 			$this->db->where('id', $order_id)->update('ci_orders', $update_order);

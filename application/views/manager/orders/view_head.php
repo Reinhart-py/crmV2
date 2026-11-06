@@ -1,7 +1,7 @@
 <?php
 /*
  * Order / Sale preview: same compact header as the record preview (title by stage, Database → Lead → Order → Sale strip).
- * Same buttons, rights and modals as before (#approveOrderModal, #rejectOrderModal, #updateStatusModal, #assignOperationModal, #convertToSalesModal).
+ * Approve as Sale / Convert to Sales open KAM onboarding first (orders/approve_sales_order -> kam/onboard?approve=1).
  */
 $back_url = base_url('manager/orders');
 if (empty($can_edit)) {
@@ -48,10 +48,10 @@ $ov_steps = array(
       <?php } ?>
       <?php if (!empty($can_approve_sales) && ($order['approval_status'] === 'pending_approval' || $order['status'] === 'Pending Sales Approval')) { ?>
         <button type="button" class="btn btn-default svh-reject" data-toggle="modal" data-target="#rejectOrderModal"><i class="fa fa-times"></i> Reject</button>
-        <button type="button" class="btn btn-primary svh-next" data-toggle="modal" data-target="#approveOrderModal"><i class="fa fa-check"></i> Approve as Sale</button>
+        <a href="<?php echo base_url(); ?>manager/orders/approve_sales_order/<?php echo (int)$order['id']; ?>" class="btn btn-primary svh-next" title="Onboard the client, then the order is approved as a sale"><i class="fa fa-check"></i> Approve as Sale</a>
       <?php } ?>
-      <?php if (!empty($can_approve_sales) && !$ov_sale && $order['status'] !== 'Pending Sales Approval') { ?>
-        <button type="button" class="btn btn-primary svh-next" data-toggle="modal" data-target="#convertToSalesModal"><i class="fa fa-line-chart"></i> Convert to Sales</button>
+      <?php if (!empty($can_approve_sales) && !$ov_sale && $order['status'] !== 'Pending Sales Approval' && $order['approval_status'] !== 'pending_approval' && !in_array($order['status'], array('Cancelled', 'Rejected', 'Lost', 'Closed'), true)) { ?>
+        <a href="<?php echo base_url(); ?>manager/orders/approve_sales_order/<?php echo (int)$order['id']; ?>" class="btn btn-primary svh-next" title="Onboard the client, then the order is approved as a sale"><i class="fa fa-line-chart"></i> Convert to Sales</a>
       <?php } ?>
     </div>
   </div>

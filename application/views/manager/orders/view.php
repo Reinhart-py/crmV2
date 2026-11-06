@@ -134,31 +134,6 @@
   </div>
 </div>
 
-<div class="modal fade" id="approveOrderModal" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog" role="document" style="max-width: 480px;">
-    <div class="modal-content" style="border-radius: 6px; overflow: hidden;">
-      <form action="<?php echo base_url(); ?>manager/orders/approve/<?php echo $order['id']; ?>" method="post">
-        <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
-        <div class="modal-header" style="background: #0f172a; color: #ffffff; padding: 14px 18px;">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: #ffffff; opacity: 0.8;"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" style="font-size: 16px; font-weight: 700; color: #ffffff; margin: 0;">Approve Order</h4>
-        </div>
-        <div class="modal-body" style="padding: 20px; background: #ffffff;">
-          <p style="font-size: 13px; color: #475569; margin-bottom: 14px;">Approve this order? It becomes a Sale and gets a Sales number, the same as approving it from Pending Sales Approval.</p>
-          <div class="form-group" style="margin-bottom: 0;">
-            <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #475569;">Approval Notes (Optional)</label>
-            <textarea name="remarks" class="form-control" rows="3" placeholder="Enter approval remarks..." style="border: 1px solid #cbd5e1; border-radius: 4px; resize: vertical;"></textarea>
-          </div>
-        </div>
-        <div class="modal-footer" style="padding: 12px 18px; background: #f8fafc; border-top: 1px solid #e2e8f0;">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-success" style="background:#0f172a; border-color:#0f172a;">Confirm Approval</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
 <div class="modal fade" id="rejectOrderModal" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog" role="document" style="max-width: 480px;">
     <div class="modal-content" style="border-radius: 6px; overflow: hidden;">
@@ -244,30 +219,5 @@
   </div>
 </div>
 <?php } ?>
-
-<div class="modal fade" id="convertToSalesModal" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog" role="document" style="max-width: 480px;">
-    <div class="modal-content" style="border-radius: 6px; overflow: hidden;">
-      <form action="<?php echo base_url(); ?>manager/orders/convert_to_sales/<?php echo $order['id']; ?>" method="post">
-        <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
-        <div class="modal-header" style="background: #0f172a; color: #ffffff; padding: 14px 18px;">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: #ffffff; opacity: 0.8;"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" style="font-size: 16px; font-weight: 700; color: #ffffff; margin: 0;">Convert to Sales</h4>
-        </div>
-        <div class="modal-body" style="padding: 20px; background: #ffffff;">
-          <p style="font-size: 13px; color: #475569; margin-bottom: 14px;">Confirm conversion of this order into a completed Sales record? A unique Sales Reference Number will be generated.</p>
-          <div class="form-group" style="margin-bottom: 0;">
-            <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #475569;">Sales Completion Notes (Optional)</label>
-            <textarea name="notes" class="form-control" rows="3" placeholder="Enter completion notes..." style="border: 1px solid #cbd5e1; border-radius: 4px; resize: vertical;"></textarea>
-          </div>
-        </div>
-        <div class="modal-footer" style="padding: 12px 18px; background: #f8fafc; border-top: 1px solid #e2e8f0;">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-success" style="background:#0f172a; border-color:#0f172a;">Confirm Sales</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
 
 <?php require_once(APPPATH . "views/manager/elements/footer.php"); ?>

@@ -1,18 +1,31 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-ureg.css?v=20261106_4">
-<div class="container">
-<div class="content-wrapper ureg ureg-bo"> 
-<?php echo crm_mz_tabbar(); ?>
-  
+<?php
+$ob_h = function ($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); };
+$ob_ap = !empty($approve_mode) && !empty($ap_order);
+$ob_cancel = $ob_ap ? base_url('manager/orders/view/' . (int)$ap_order['id']) : base_url('manager/kam/my-client');
+?>
+<div class="content-wrapper ureg ureg-bo ob<?php echo $ob_ap ? ' ob-ap' : ''; ?>">
+<?php if ($ob_ap) { ?>
+  <div class="ob-head">
+    <a href="<?php echo $ob_cancel; ?>" class="ob-back" title="Back to the order" aria-label="Back to the order"><i class="fa fa-arrow-left"></i></a>
+    <div class="ob-id">
+      <span class="ob-kind">KAM · Approve as Sale</span>
+      <h1><?php echo $ob_h($ap_order['client_name'] ?: ($prefill_company ?? '')); ?> <span class="ob-tag">Order <?php echo $ob_h($ap_order['order_no']); ?></span></h1>
+    </div>
+    <dl class="ob-facts">
+      <div><dt>Service</dt><dd><?php echo $ob_h($ap_order['service_title'] ?: '—'); ?></dd></div>
+      <div><dt>MRR</dt><dd>AED <?php echo number_format((float)($ap_order['mrr'] ?: $ap_order['pricing_amount']), 2); ?></dd></div>
+      <div><dt>Status</dt><dd><?php echo $ob_h($ap_order['status']); ?></dd></div>
+    </dl>
+  </div>
+  <ol class="ob-steps" aria-label="Steps"><li class="is-now"><b>1</b> Onboard client</li><li><b>2</b> Approved as sale</li></ol>
+<?php } else { echo crm_mz_tabbar(); ?>
   <section class="content-header">
-    <h1> Onboard Client </h1>
-    <ol class="breadcrumb">
-      <li><a href="<?php echo base_url(); ?>manager/dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
-      <li><a href="<?php echo base_url(); ?>manager/kam/my-client">KAM</a></li>
-      <li class="active">Onboard Client</li>
-    </ol>
+    <h1><?php echo $ob_h($info['page_heading'] ?? 'Onboard Client'); ?></h1>
   </section>
+<?php } ?>
   
   <section class="content"> 
     
@@ -22,6 +35,7 @@
     <form role="form" action="<?php echo base_url(); ?>manager/kam/onboard" method="post" name="onboard_client_form">
       <input type="hidden" name="order_id" value="<?php echo htmlspecialchars($order_id ?? ''); ?>">
       <input type="hidden" name="lead_id" value="<?php echo htmlspecialchars($lead_id ?? ''); ?>">
+      <?php if ($ob_ap) { ?><input type="hidden" name="approve" value="1"><?php } ?>
 
       <div class="box box-default">
         <div class="box-header with-border">
@@ -915,8 +929,11 @@
       </div>
 
       <div class="box-footer ureg-footer">
-        <a href="<?php echo base_url(); ?>manager/kam/my-client" class="btn btn-default">Cancel</a>
-        <button type="submit" class="btn btn-primary"><i class="fa fa-user-plus"></i> Onboard Client</button>
+        <?php if ($ob_ap) { ?>
+        <input type="text" class="form-control ob-note" name="approval_note" placeholder="Approval note (optional)" aria-label="Approval note" maxlength="500">
+        <?php } ?>
+        <a href="<?php echo $ob_cancel; ?>" class="btn btn-default">Cancel</a>
+        <button type="submit" class="btn btn-primary"><i class="fa fa-<?php echo $ob_ap ? 'check' : 'user-plus'; ?>"></i> <?php echo $ob_ap ? 'Onboard &amp; Approve as Sale' : 'Onboard Client'; ?></button>
       </div>
 
     </form>
@@ -924,7 +941,46 @@
   </section>
   
 </div>
-</div>
+<style>
+  /* fields flow into as many columns as the screen fits */
+  .ob .content { padding: 8px 12px 0; }
+  .ob .box-body > .row:not(.remark_row), .ob .remark_row > [class*="col-"] > .row { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); column-gap: 4px; }
+  .ob .box-body > .row:not(.remark_row) > [class*="col-"], .ob .remark_row > [class*="col-"] > .row > [class*="col-"] { width: auto !important; float: none; min-width: 0; padding: 0 6px; }
+  .ob .box-body > .row::before, .ob .box-body > .row::after, .ob .remark_row .row::before, .ob .remark_row .row::after { display: none; }
+  .ob .remark_row { display: grid !important; grid-template-columns: minmax(0, 7fr) minmax(280px, 5fr); }
+  .ob .remark_row > [class*="col-"] { width: auto !important; float: none; padding: 0; min-width: 0; }
+  .ob .remark_row > [class*="col-"] > .row { margin: 0; }
+  .ob .form-group { grid-template-columns: 124px minmax(0, 1fr); }
+  .ob .form-group > label { line-height: 1.15; }
+  .ob .form-group > div[style*="justify-content:space-between"] { grid-column: 1 / -1; display: grid !important; grid-template-columns: 124px minmax(0, 1fr); column-gap: 8px; margin: 0 0 2px !important; }
+  .ob .form-group > div[style*="justify-content:space-between"] > label { text-align: right; font-size: 12.5px; font-weight: 500; color: var(--crm-ink-2, #475569); }
+  .ob .form-group > div[style*="justify-content:space-between"] > a { justify-self: end; font-size: 11.5px !important; }
+  .ob .ureg-footer { align-items: center; }
+  .ob .ob-note { max-width: 360px; flex: 1 1 220px; margin-right: auto; }
+  .ob-head { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 16px; margin: 10px 12px 6px; padding: 10px 14px; border: 1px solid var(--crm-line, #e2e8f0); border-radius: 12px; background: var(--crm-surface, #fff); }
+  .ob-back { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--crm-line, #e2e8f0); color: var(--crm-ink, #0f172a); }
+  .ob-id { flex: 1 1 260px; min-width: 0; }
+  .ob-kind { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--crm-ocean, #1e3a8a); }
+  .ob-id h1 { margin: 2px 0 0; font-size: 19px; font-weight: 700; color: var(--crm-ink, #0f172a); overflow-wrap: anywhere; }
+  .ob-tag { display: inline-block; margin-left: 6px; padding: 2px 8px; border-radius: 999px; background: #fef3c7; color: #92400e; font-size: 11.5px; font-weight: 600; vertical-align: 3px; }
+  .ob-facts { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 0; }
+  .ob-facts dt { font-size: 11px; font-weight: 500; color: var(--crm-muted, #64748b); }
+  .ob-facts dd { margin: 0; font-size: 13.5px; font-weight: 600; color: var(--crm-ink, #0f172a); }
+  .ob-steps { display: flex; gap: 6px; list-style: none; margin: 0 12px 8px; padding: 0; font-size: 12.5px; color: var(--crm-muted, #64748b); }
+  .ob-steps li { display: flex; align-items: center; gap: 6px; }
+  .ob-steps li + li::before { content: ""; width: 26px; height: 1px; background: var(--crm-line, #cbd5e1); }
+  .ob-steps b { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--crm-line, #e2e8f0); color: var(--crm-ink-2, #475569); font-size: 11px; }
+  .ob-steps .is-now { color: var(--crm-ink, #0f172a); font-weight: 600; }
+  .ob-steps .is-now b { background: var(--crm-ocean, #1e3a8a); color: #fff; }
+  @media (max-width: 991px) { .ob .remark_row { grid-template-columns: 1fr; } }
+  @media (max-width: 575px) {
+    .ob .box-body > .row:not(.remark_row), .ob .remark_row > [class*="col-"] > .row { grid-template-columns: 1fr; }
+    .ob .form-group, .ob .form-group > div[style*="justify-content:space-between"] { grid-template-columns: 1fr; }
+    .ob .form-group > div[style*="justify-content:space-between"] > label { text-align: left; }
+    .ob .ob-note { max-width: none; flex-basis: 100%; }
+  }
+</style>
+
 
 <script>
 $(document).ready(function() {

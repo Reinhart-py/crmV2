@@ -3255,6 +3255,57 @@ public function dashboard_MyPro($table='ci_leads'){
 		);
 	}
 
+	/** Orders KAM may approve as a sale: not a sale yet and not closed out. */
+	public function order_can_become_sale($order)
+	{
+		return !empty($order) && $order['status'] !== 'Sales' && empty($order['sales_ref_no'])
+			&& !in_array($order['status'], array('Cancelled', 'Rejected', 'Lost', 'Closed'), true);
+	}
+
+	/**
+	 * KAM approves an order as a sale. Called only after KAM onboarding of the client is saved (kam/onboard, approve mode).
+	 * Returns the Sales number, or '' when nothing was changed.
+	 */
+	public function approve_order_as_sale($order_id, $uid, $name, $note = '')
+	{
+		$order = $this->db->where('id', (int)$order_id)->get('ci_orders')->row_array();
+		if (!$this->order_can_become_sale($order)) return '';
+		$now = date('Y-m-d H:i:s');
+		$sales_ref = $this->generate_next_ref('sales');
+		$this->db->trans_start();
+		$this->db->where('id', (int)$order_id)->update('ci_orders', array(
+			'status' => 'Sales',
+			'approval_status' => 'approved',
+			'sales_ref_no' => $sales_ref,
+			'approved_by' => (int)$uid,
+			'approved_at' => $now,
+			'updated_at' => $now
+		));
+		if (!empty($order['lead_id'])) {
+			$this->db->where('lead_id', (int)$order['lead_id'])->update('ci_pipeline', array(
+				'order_request_status' => 'approved',
+				'sales_ref_no' => $sales_ref,
+				'updated_at' => $now
+			));
+		}
+		$this->db->insert('ci_order_history', array(
+			'order_id' => (int)$order_id,
+			'action' => 'sales_approval_granted',
+			'notes' => "Client onboarded by KAM. Order #{$order['order_no']} approved as Sales #{$sales_ref}." . ($note !== '' ? " Note: {$note}" : ''),
+			'action_by' => (int)$uid,
+			'action_by_name' => (string)$name,
+			'created_at' => $now
+		));
+		$this->db->trans_complete();
+		if ($this->db->trans_status() === FALSE) return '';
+		$this->log_admin_action('sales_approval_granted', "Approved Sales for Order #{$order['order_no']} (Sales #{$sales_ref}) after KAM onboarding", 'SUCCESS', (int)$uid, (string)$name);
+		if (!empty($order['created_by'])) {
+			$this->add_notification((int)$order['created_by'], 'sales_approved', 'Order Approved - Sales Record Created',
+				"Order #{$order['order_no']} has been approved. Sales Ref: #{$sales_ref}.", base_url('manager/orders/view/' . (int)$order_id), 'fa fa-check-circle', '#16a34a');
+		}
+		return $sales_ref;
+	}
+
 	public function generate_next_ref($type = 'database')
 	{
 		$prefix_map = array(

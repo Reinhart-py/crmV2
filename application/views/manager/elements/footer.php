@@ -71,7 +71,7 @@
          this.value = this.value.replace(/[^A-Za-z ]/g, "");   
 
     });
-    $(".select2").select2();
+    $("select.select2").select2(); // selects only: a page's own select2 wrappers also have the class
     $("#datemask").inputmask("dd/mm/yyyy", {"placeholder": "dd/mm/yyyy"});
     $("#datemask2").inputmask("mm/dd/yyyy", {"placeholder": "mm/dd/yyyy"});
     $("[data-mask]").inputmask();
