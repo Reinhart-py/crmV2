@@ -2,10 +2,10 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
-### [V3.3] - 2026-11-06
+### [v1.83.0] - 2026-11-06
 - **Timestamp**: `2026-11-06 +0400`
 - **Author**: Reinhart-py
-- **Summary**: Version 3.3, a saved point to build on (git tag `V3.3`, archive `crmV2-V3.3.zip`). It covers the 74 changes made after v1.82.0: a new HR & Payroll module, the Staff area, the System pages, security fixes, Live Presentation, reports, and a clearer layout for the Database pages.
+- **Summary**: Saved as the zip `crmV2-V3.3.zip`. It covers the 74 changes made after v1.82.0: a new HR & Payroll module, the Staff area, the System pages, security fixes, Live Presentation, reports, and a clearer layout for the Database pages.
 - **Highlights**:
   - **HR & Payroll (new module, UAE rules first, configurable)**:
     - Part 1: employees and documents.
