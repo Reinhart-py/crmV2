@@ -92,18 +92,18 @@ if (!function_exists('crm_perm_catalog')) {
 				'title' => 'Team', 'key' => 'team', 'match' => array('team'),
 				'icon' => '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>',
 				'items' => array(
-					'team_members' => array('label' => 'Members', 'desc' => 'People in your team', 'fallback' => 'team', 'nav' => array(array('team/members', 'Members', 'fa-users')), 'pages' => array('team/members')),
-					'team_chart' => array('label' => 'Team Chart', 'desc' => 'Reporting structure', 'fallback' => 'team', 'nav' => array(array('team/chart', 'Chart', 'fa-sitemap')), 'pages' => array('team/chart')),
-					'team_database' => array('label' => 'Team Database', 'desc' => 'Database records of the team', 'fallback' => 'team', 'nav' => array(array('team/database', 'Database', 'fa-database')), 'pages' => array('team/database')),
-					'team_leads' => array('label' => 'Team Leads', 'desc' => 'Leads of the team', 'fallback' => 'team', 'nav' => array(array('team/leads', 'Leads', 'fa-list')), 'pages' => array('team/leads')),
-					'team_orders' => array('label' => 'Team Orders', 'desc' => 'Orders of the team', 'fallback' => 'team', 'nav' => array(array('team/orders', 'Orders', 'fa-shopping-cart')), 'pages' => array('team/orders', 'orders/team')),
-					'team_verticals' => array('label' => 'Team Verticals', 'desc' => 'Verticals of the team', 'fallback' => 'team', 'nav' => array(array('team/verticals', 'Verticals', 'fa-list')), 'pages' => array('team/verticals')),
-					'team_followups' => array('label' => 'Team Follow-up', 'desc' => 'Follow-ups of the team', 'fallback' => 'team', 'nav' => array(array('team/followups', 'Follow up', 'fa-clock-o')), 'pages' => array('team/followups')),
-					'team_meetings' => array('label' => 'Team Meetings', 'desc' => 'Meetings of the team', 'fallback' => 'team', 'nav' => array(array('team/meetings', 'Meetings', 'fa-calendar')), 'pages' => array('team/meetings')),
-					'team_assignmeetings' => array('label' => 'Assigned Meetings', 'desc' => 'Meetings assigned to team members', 'fallback' => 'team', 'nav' => array(array('team/assignmeetings', 'Assigned Meetings', 'fa-calendar-check-o')), 'pages' => array('team/assignmeetings')),
-					'team_assignleads' => array('label' => 'Assign Database', 'desc' => 'Give database records to team members', 'fallback' => 'team', 'nav' => array(array('team/assignleads', 'Assign Database', 'fa-tasks')), 'pages' => array('team/assignleads')),
-					'team_tasks' => array('label' => 'Team Tasks', 'desc' => 'All tasks of the team', 'fallback' => 'team', 'nav' => array(array('tasks', 'Task', 'fa-tasks')), 'pages' => array('tasks'), 'write' => array('tasks/add')),
-					'team_tickets' => array('label' => 'Team Tickets', 'desc' => 'Tickets of the team', 'fallback' => 'team', 'nav' => array(array('team/tickets', 'Tickets', 'fa-ticket')), 'pages' => array('team/tickets')),
+					'team_database' => array('tab' => 'tm_pipeline', 'label' => 'Team Database', 'desc' => 'Database records of the team', 'fallback' => 'team', 'nav' => array(array('team/database', 'Database', 'fa-database')), 'pages' => array('team/database')),
+					'team_leads' => array('tab' => 'tm_pipeline', 'label' => 'Team Leads', 'desc' => 'Leads of the team', 'fallback' => 'team', 'nav' => array(array('team/leads', 'Leads', 'fa-list')), 'pages' => array('team/leads')),
+					'team_orders' => array('tab' => 'tm_pipeline', 'label' => 'Team Orders', 'desc' => 'Orders of the team', 'fallback' => 'team', 'nav' => array(array('team/orders', 'Orders', 'fa-shopping-cart')), 'pages' => array('team/orders', 'orders/team')),
+					'team_followups' => array('tab' => 'tm_activity', 'label' => 'Team Follow-up', 'desc' => 'Follow-ups of the team', 'fallback' => 'team', 'nav' => array(array('team/followups', 'Follow up', 'fa-clock-o')), 'pages' => array('team/followups')),
+					'team_meetings' => array('tab' => 'tm_activity', 'label' => 'Team Meetings', 'desc' => 'Meetings of the team', 'fallback' => 'team', 'nav' => array(array('team/meetings', 'Meetings', 'fa-calendar')), 'pages' => array('team/meetings')),
+					'team_assignmeetings' => array('tab' => 'tm_activity', 'label' => 'Assigned Meetings', 'desc' => 'Meetings assigned to team members', 'fallback' => 'team', 'nav' => array(array('team/assignmeetings', 'Assigned Meetings', 'fa-calendar-check-o')), 'pages' => array('team/assignmeetings')),
+					'team_assignleads' => array('tab' => 'tm_pipeline', 'label' => 'Assign Database', 'desc' => 'Give database records to team members', 'fallback' => 'team', 'nav' => array(array('team/assignleads', 'Assign Database', 'fa-tasks')), 'pages' => array('team/assignleads')),
+					'team_verticals' => array('tab' => 'tm_verticals', 'label' => 'Team Verticals', 'desc' => 'Verticals of the team', 'fallback' => 'team', 'nav' => array(array('team/verticals', 'Verticals', 'fa-list')), 'pages' => array('team/verticals')),
+					'team_members' => array('tab' => 'tm_people', 'label' => 'Members', 'desc' => 'People in your team', 'fallback' => 'team', 'nav' => array(array('team/members', 'Members', 'fa-users')), 'pages' => array('team/members')),
+					'team_chart' => array('tab' => 'tm_people', 'label' => 'Team Chart', 'desc' => 'Reporting structure', 'fallback' => 'team', 'nav' => array(array('team/chart', 'Chart', 'fa-sitemap')), 'pages' => array('team/chart')),
+					'team_tasks' => array('label' => 'Team Tasks', 'desc' => 'All tasks of the team', 'fallback' => 'team', 'nav' => array(array('tasks', 'Tasks', 'fa-tasks')), 'pages' => array('tasks'), 'write' => array('tasks/add')),
+					'team_tickets' => array('tab' => 'tm_tickets', 'label' => 'Team Tickets', 'desc' => 'Tickets of the team', 'fallback' => 'team', 'nav' => array(array('team/tickets', 'Tickets', 'fa-ticket')), 'pages' => array('team/tickets')),
 				),
 			),
 			'back_office' => array(
@@ -420,6 +420,28 @@ if (!function_exists('crm_tab_groups')) {
 				array('tickets', 'tickets', 'All tickets', 'fa-ticket'),
 				array('tickets', 'tickets/open', 'Open', 'fa-folder-open-o'),
 			)),
+			// Team: same one-link-per-group menu and tab bar as My Zone
+			'tm_pipeline' => array('label' => 'Team Pipeline', 'icon' => 'fa-database', 'tabs' => array(
+				array('team_database', 'team/database', 'Database', 'fa-database'),
+				array('team_leads', 'team/leads', 'Leads', 'fa-bullseye'),
+				array('team_orders', 'orders/team', 'Orders', 'fa-shopping-cart'),
+				array('team_assignleads', 'team/assignleads', 'Assign Database', 'fa-tasks'),
+			)),
+			'tm_activity' => array('label' => 'Follow-ups & Meetings', 'icon' => 'fa-clock-o', 'tabs' => array(
+				array('team_followups', 'team/followups', 'Follow-ups', 'fa-clock-o'),
+				array('team_meetings', 'team/meetings', 'Meetings', 'fa-calendar'),
+				array('team_assignmeetings', 'team/assignmeetings', 'Assigned Meetings', 'fa-calendar-check-o'),
+			)),
+			'tm_people' => array('label' => 'Members & Chart', 'icon' => 'fa-users', 'tabs' => array(
+				array('team_members', 'team/members', 'Members', 'fa-users'),
+				array('team_chart', 'team/chart', 'Chart', 'fa-sitemap'),
+			)),
+			'tm_verticals' => array('label' => 'Verticals', 'icon' => 'fa-list', 'tabs' => array(
+				array('team_verticals', 'team/verticals', 'Verticals', 'fa-list'),
+			)),
+			'tm_tickets' => array('label' => 'Tickets', 'icon' => 'fa-ticket', 'tabs' => array(
+				array('team_tickets', 'team/tickets', 'Tickets', 'fa-ticket'),
+			)),
 			'database' => array('label' => 'Database', 'icon' => 'fa-database', 'tabs' => array(
 				array('leads_import', 'leads/import', 'Import', 'fa-upload'),
 				array('leads_export', 'leads/export', 'Export', 'fa-download'),
@@ -510,9 +532,10 @@ if (!function_exists('crm_mz_tabbar')) {
 		$alias = array('database' => 'leads');
 		if (isset($alias[$path])) $path = $alias[$path];
 		foreach (crm_tab_groups() as $gk => $g) {
-			if (strpos($gk, 'mz_') !== 0) continue;
+			if (strpos($gk, 'mz_') !== 0 && strpos($gk, 'tm_') !== 0) continue;
 			foreach ($g['tabs'] as $t) {
-				if ($t[1] === $path) {
+				if ($t[1] === $path || (strpos($gk, 'tm_') === 0 && strpos($path, $t[1] . '/') === 0)) {
+					$path = $t[1];
 					// One compact bar: tabs (or the page title when only one tab is allowed) and, on the right, count, Filters and the page's buttons (assets/dist/js/crm-mz.js)
 					$bar = crm_tabbar($gk, $path);
 					$v = '20261106_11';

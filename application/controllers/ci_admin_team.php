@@ -64,6 +64,15 @@ class Ci_admin_team extends CI_Controller {
 			'page_heading' => 'My Team Members'
 		);
 		$data['info2'] = $this->if_not_login();
+		// only someone in your own team (Admin and "All company data": anyone)
+		$me = (int)$this->session->userdata('manager_id');
+		$id = (int)$id;
+		$mine = $this->ci_admin_model->fetchTeamList($me, '');
+		if (!((int)$this->session->userdata('manager_role') === 1 || $me === 1 || crm_can('all_data') || $id === $me || in_array($id, array_map('intval', (array)$mine)))) {
+			$this->session->set_flashdata('error_message', 'You can only see the teams of people in your own team.');
+			redirect('manager/team/members');
+			return;
+		}
 		$data['product_list'] = $this->ci_admin_model->get_teamMember($id);
 		$this->load->view('manager/team/members', $data);
 	}

@@ -64,14 +64,14 @@ class Ci_admin_orders extends CI_Controller {
 			);
 			$can_edit_orders = false;
 			$reset_url = base_url('manager/team/orders');
-			$team_members = $this->ci_admin_model->fetchTeamList($cur_uid, '');
+			$team_members = $this->ci_admin_model->team_page_ids($cur_uid); // Admin: everyone
 			if (!is_array($team_members)) {
 				$team_members = array();
 			}
 			$team_members = array_unique(array_filter(array_map('intval', $team_members)));
 			if (!empty($team_members)) {
 				$team_str = implode(',', $team_members);
-				$this->db->where("(FIND_IN_SET(O.created_by, '{$team_str}') > 0 OR FIND_IN_SET(O.assigned_to, '{$team_str}') > 0)");
+				$this->db->where("(FIND_IN_SET(O.created_by, '{$team_str}') > 0 OR FIND_IN_SET(O.assigned_to, '{$team_str}') > 0 OR FIND_IN_SET(A.lead_assign, '{$team_str}') > 0)");
 				$this->db->where(crm_order_open_sql('O'), NULL, FALSE);
 			} else {
 				$this->db->where('1 = 0', NULL, FALSE);

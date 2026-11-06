@@ -2,6 +2,7 @@
 
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper px-4"> <!-- Content Header (Page header) -->
+<?php echo crm_mz_tabbar(); ?>
   <section class="content-header">
     <h1> <?php echo $info['page_heading']; ?> </h1>
   </section>

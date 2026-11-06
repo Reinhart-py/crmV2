@@ -1638,7 +1638,7 @@ public function dashboard_MyPro($table='ci_leads'){
 	  {			 
 		$manager_id = (int)$this->session->userdata('manager_id');
 		$user_role = (int)$this->session->userdata('user_role');
-		$team_array = $this->fetchTeamList($manager_id, '');
+		$team_array = $this->team_page_ids($manager_id);
 		if (!is_array($team_array)) {
 			$team_array = array();
 		}
@@ -1903,7 +1903,7 @@ public function dashboard_MyPro($table='ci_leads'){
 	  
 	  public function getTeamFollowups($d1='', $d2='', $mrr1='', $mrr2='', $limit_per_page='', $page_index='', $order_by='',$sort_by='', $search='', $status='', $category='',$type='', $lCat='',$user_name='',$country='',$state='')
 	  {			 
-		$team_array= $this->fetchTeamList($this->session->userdata('manager_id'),'');
+		$team_array= $this->team_page_ids($this->session->userdata('manager_id'));
 		$team_str= implode(',',$team_array);
 
 				  $date1=date("Y-m-d",strtotime($d1) );
@@ -2026,7 +2026,7 @@ public function dashboard_MyPro($table='ci_leads'){
 
 	 public function getTeamLeadsMeetings($d1='', $d2='', $mrr1='', $mrr2='', $limit_per_page='', $page_index='', $order_by='',$sort_by='', $search='', $status='', $category='',$type='', $lCat='',$user_name='',$country='',$state='')
 	 {
-				$team_array= $this->fetchTeamList($this->session->userdata('manager_id'),'');
+				$team_array= $this->team_page_ids($this->session->userdata('manager_id'));
 				$team_str= implode(',',$team_array);
 
 	   			$result=array();
@@ -2561,6 +2561,25 @@ public function dashboard_MyPro($table='ci_leads'){
 		}	
 
 	private static $_team_list_cache = array();
+	/**
+	 * People whose records the Team pages show for $uid: the people under them in the hierarchy.
+	 * Admin and "All company data" see everyone (the signed-in user's own Team pages only).
+	 */
+	public function team_page_ids($uid) {
+		$uid = (int)$uid;
+		$me = (int)$this->session->userdata('manager_id');
+		$role = (int)$this->session->userdata('manager_role');
+		if ($uid === $me && ($role === 1 || $me === 1 || crm_can('all_data'))) {
+			$ids = array();
+			// plain query (not the query builder): callers may be half-way through building another query
+			foreach ($this->db->query('SELECT id FROM ci_user WHERE id != ' . $me)->result_array() as $r) {
+				$ids[] = (int)$r['id'];
+			}
+			return $ids;
+		}
+		return $this->fetchTeamList($uid, '');
+	}
+
 	public function fetchTeamList($parent = 0, $user_tree_array = '') {
 		$parent = (int)$parent;
 		if (!is_array($user_tree_array)) {
@@ -2626,7 +2645,7 @@ public function dashboard_MyPro($table='ci_leads'){
 		$this->db->join('ci_user as C','A.manager=C.id','LEFT');
 		$this->db->join('countries as D','A.country=D.id','LEFT');
 		$this->db->join('states as E','A.state=E.id','LEFT');
-		$team_array = $this->fetchTeamList($id, '');
+		$team_array = $this->team_page_ids($id);
 		if (!is_array($team_array)) { $team_array = array(); }
 		$team_clean = array_filter(array_map('intval', $team_array));
 		if (!empty($team_clean)) {

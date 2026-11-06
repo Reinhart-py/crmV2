@@ -290,6 +290,7 @@
 </style>
 
 <div class="content-wrapper px-4">
+<?php echo crm_mz_tabbar(); ?>
     <section class="content-header" style="padding-bottom: 8px;">
         <h1 style="margin:0; font-size:22px; font-weight:600; color:#0f172a;">
             <?php echo htmlspecialchars($info['page_heading']); ?>
