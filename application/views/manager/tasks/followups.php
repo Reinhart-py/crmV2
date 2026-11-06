@@ -50,17 +50,17 @@
 
                                 <div class="form-group">
                                     <button type="submit" class="btn btn-success">Search</button>
-                                    <a href="<?php echo base_url(); ?>manager/tasks/followups" class="btn btn-danger">Reset</a>
+                                    <a href="<?php echo base_url() . $tk_base; ?>followups" class="btn btn-danger">Reset</a>
                                 </div>
                             </form>
                         </div>
                         <div class="x_col-sm-auto text-center pt-4 pt-md-0">
                             <div>
-                                <a href="<?php echo base_url(); ?>manager/tasks/followups?type=1" class="btn btn-danger btn-sm">All Missed</a>
-                                <a href="<?php echo base_url(); ?>manager/tasks/followups?type=2" class="btn btn-warning btn-sm">Last 7 Days</a>
-                                <a href="<?php echo base_url(); ?>manager/tasks/followups?type=3" class="btn btn-primary btn-sm">Today</a>
-                                <a href="<?php echo base_url(); ?>manager/tasks/followups?type=4" class="btn btn-info btn-sm">Next 7 Days</a>
-                                <a href="<?php echo base_url(); ?>manager/tasks/followups?type=5" class="btn btn-default btn-sm">All Future</a>
+                                <a href="<?php echo base_url() . $tk_base; ?>followups?type=1" class="btn btn-danger btn-sm">All Missed</a>
+                                <a href="<?php echo base_url() . $tk_base; ?>followups?type=2" class="btn btn-warning btn-sm">Last 7 Days</a>
+                                <a href="<?php echo base_url() . $tk_base; ?>followups?type=3" class="btn btn-primary btn-sm">Today</a>
+                                <a href="<?php echo base_url() . $tk_base; ?>followups?type=4" class="btn btn-info btn-sm">Next 7 Days</a>
+                                <a href="<?php echo base_url() . $tk_base; ?>followups?type=5" class="btn btn-default btn-sm">All Future</a>
                             </div>
                         </div>
                     </div>

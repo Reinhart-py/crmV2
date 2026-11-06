@@ -231,6 +231,17 @@ class Ci_admin_tasks extends CI_Controller {
 		redirect('manager/tasks/internal');
 	}
 
+	/** Team > Tasks: the same lists, showing your tasks and those of the people in your team. */
+	public function team()
+	{
+		redirect('manager/team/tasks/internal');
+	}
+
+	private function is_team_page()
+	{
+		return $this->uri->segment(2) === 'team';
+	}
+
 	public function internal()
 	{
 		$this->if_not_login();
@@ -250,7 +261,7 @@ class Ci_admin_tasks extends CI_Controller {
 		$data['st_list'] = $this->comman_model->getAll(array('active' => 1), '', 'ci_status');
 		$data['u_list'] = $this->comman_model->getAll('', array('name', 'ASC'), 'ci_user');
 
-		$team = (int)$this->input->get('team');
+		$team = $this->is_team_page() ? 1 : (int)$this->input->get('team');
 		$d1 = trim($this->input->get('d1'));
 		$d2 = trim($this->input->get('d2'));
 		$status = trim($this->input->get('status'));
@@ -334,6 +345,11 @@ class Ci_admin_tasks extends CI_Controller {
 		$this->db->order_by('t.id', 'DESC');
 		$data['list'] = $this->db->get()->result_array();
 		$data['team'] = $team;
+		$data['tk_base'] = $this->is_team_page() ? 'manager/team/tasks/' : 'manager/tasks/';
+		if ($this->is_team_page()) {
+			$data['info']['page_heading'] = 'Team ' . $data['info']['page_heading'];
+			$data['info']['title'] = str_replace('Manager - ', 'Manager - Team ', $data['info']['title']);
+		}
 		$data['current_tab'] = 'internal';
 
 		$this->load->view('manager/tasks/internal', $data);
@@ -367,7 +383,7 @@ class Ci_admin_tasks extends CI_Controller {
 		$this->db->order_by('customer', 'ASC');
 		$data['clients'] = $this->db->get()->result_array();
 
-		$team = (int)$this->input->get('team');
+		$team = $this->is_team_page() ? 1 : (int)$this->input->get('team');
 		$d1 = trim($this->input->get('d1'));
 		$d2 = trim($this->input->get('d2'));
 		$status = trim($this->input->get('status'));
@@ -445,6 +461,11 @@ class Ci_admin_tasks extends CI_Controller {
 		$this->db->order_by('t.id', 'DESC');
 		$data['list'] = $this->db->get()->result_array();
 		$data['team'] = $team;
+		$data['tk_base'] = $this->is_team_page() ? 'manager/team/tasks/' : 'manager/tasks/';
+		if ($this->is_team_page()) {
+			$data['info']['page_heading'] = 'Team ' . $data['info']['page_heading'];
+			$data['info']['title'] = str_replace('Manager - ', 'Manager - Team ', $data['info']['title']);
+		}
 		$data['current_tab'] = 'external';
 
 		$this->load->view('manager/tasks/external', $data);
@@ -1030,7 +1051,7 @@ class Ci_admin_tasks extends CI_Controller {
 		$role = (int)$this->session->userdata('manager_role');
 		$manager_id = (int)$this->session->userdata('manager_id');
 		$type = (int)$this->input->get('type');
-		$team = (int)$this->input->get('team');
+		$team = $this->is_team_page() ? 1 : (int)$this->input->get('team');
 		$d1 = trim($this->input->get('d1'));
 		$d2 = trim($this->input->get('d2'));
 		$status = trim($this->input->get('status'));
@@ -1118,6 +1139,11 @@ class Ci_admin_tasks extends CI_Controller {
 		$this->db->order_by('t.followup_date', 'ASC');
 		$data['list'] = $this->db->get()->result_array();
 		$data['team'] = $team;
+		$data['tk_base'] = $this->is_team_page() ? 'manager/team/tasks/' : 'manager/tasks/';
+		if ($this->is_team_page()) {
+			$data['info']['page_heading'] = 'Team ' . $data['info']['page_heading'];
+			$data['info']['title'] = str_replace('Manager - ', 'Manager - Team ', $data['info']['title']);
+		}
 		$data['type'] = $type;
 
 		$this->load->view('manager/tasks/followups', $data);

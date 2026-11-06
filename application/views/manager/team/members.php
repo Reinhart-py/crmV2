@@ -4,11 +4,6 @@
 <?php echo crm_mz_tabbar(); ?>
   <section class="content-header" style="display:flex; justify-content:space-between; align-items:center;">
     <h1 style="margin:0;"> <?php echo $info['page_heading']; ?> </h1>
-    <div>
-      <a href="<?php echo base_url(); ?>manager/team/chart" class="btn btn-default" style="border-radius:8px; font-weight:600; padding:6px 14px; border:1px solid #cbd5e1; color:#0f172a; text-decoration:none;">
-        <i class="fa fa-sitemap" style="margin-right:6px; color:#1e3a8a;"></i> Back to Chart View
-      </a>
-    </div>
   </section>
   <section class="content">
     <div class="row">

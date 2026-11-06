@@ -2156,14 +2156,19 @@ public function dashboard_MyPro($table='ci_leads'){
 
 			
 	   			$result=array();
+				$me = (int)$this->session->userdata('manager_id');
+				$ids = array_filter(array_map('intval', (array)$this->team_page_ids($me)));
+				$ids[] = $me;
+				$ids_str = implode(',', array_unique($ids));
 				$this->db->select(array('Z.a1','A.*','B.name as owner_name','C.status as lead_status','B.user_level','E.title as servicecat'));
+				$this->db->select("(SELECT GROUP_CONCAT(AU.name ORDER BY AU.name SEPARATOR ', ') FROM ci_user AU WHERE AU.id IN (Z.a1, Z.a2, Z.a3)) as assigned_names", FALSE);
 				$this->db->from('ci_meetings as Z');
 				$this->db->join('ci_leads as A','A.id=Z.lead_id','LEFT');
 				$this->db->join('ci_user as B','A.created_by=B.id','LEFT');
 				$this->db->join('ci_status as C','A.status=C.id','LEFT');	
 				$this->db->join('ci_terms as E','A.s_cat=E.id','LEFT');	 
 				
-				$where="A.status NOT IN (42,43,44) AND Z.a1=".$this->session->userdata('manager_id')." AND A.m_date!=''";				
+				$where="A.status NOT IN (42,43,44) AND (FIND_IN_SET(Z.a1,'$ids_str')>0 OR FIND_IN_SET(Z.a2,'$ids_str')>0 OR FIND_IN_SET(Z.a3,'$ids_str')>0) AND A.m_date!=''";				
 				
 					$today = date('Y-m-d');
 					$last_date= date('Y-m-d', strtotime("-7 day"));
@@ -2191,6 +2196,7 @@ public function dashboard_MyPro($table='ci_leads'){
 
 				   if(!empty($d1) && !empty($d2))
 				   {
+					 $date1 = date('Y-m-d', strtotime($d1)) . ' 00:00:00'; $date2 = date('Y-m-d', strtotime($d2)) . ' 23:59:59';
 					 $where = '(A.created BETWEEN "'.$date1.'" AND "'.$date2.'")';	
 					$this->db->where($where);
 				   }	

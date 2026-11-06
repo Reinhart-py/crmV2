@@ -140,7 +140,8 @@ foreach($lc_list as $cli){
                     <th>Contact Number</th>
                     <th>Next FU date</th>  
                     <th>Date</th>                   
-                    <th>Created</th>
+                    <th>Owner</th>
+                    <th>Assigned to</th>
                     <th>Status</th>                                    
                     <th width="150">Action</th>          
                    
@@ -158,6 +159,7 @@ foreach($lc_list as $cli){
                     <th></th>
                     <th></th>
                     <th></th>                                    
+                    <th></th>
                     <th></th>
                    
                     
@@ -177,6 +179,7 @@ foreach($lc_list as $cli){
                       <td><span class="no_show"><?php echo date('Ymd',strtotime($li['followup_date'])); ?></span><?php echo simple_date($li['followup_date']); ?></td>
                       <td><span class="no_show"><?php echo date('Ymd',strtotime($li['created'])); ?></span><?php echo simple_date($li['created']); ?></td>                  
                       <td><?php echo $li['owner_name']; ?></td>
+                      <td><?php echo htmlspecialchars((string)$li['assigned_names']); ?></td>
                    <td><?php echo $li['lead_status']; ?></td>                                  
                     
                   
@@ -260,7 +263,7 @@ return false;
       "pageLength":50,
       responsive: true,
         initComplete: function () {
-            this.api().columns([3,8,9]).every( function () {
+            this.api().columns([3,8,9,10]).every( function () {
               
                 var column = this;
                 var select = $('<select><option value="">Select </option></select>')
@@ -281,7 +284,7 @@ return false;
             } );
         },
         columnDefs: [
-        	{ targets: [6,7,10], className:"dt-nowrap",}       
+        	{ targets: [6,7,11], className:"dt-nowrap",}       
     	]
     } );
 } );

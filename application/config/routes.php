@@ -181,6 +181,13 @@ $route['manager/tasks/view/(:any)'] = "ci_admin_tasks/view/$1";
 $route['manager/tasks/edit/(:any)'] = "ci_admin_tasks/edit/$1";
 $route['manager/tasks/ajax_preview_recurrence'] = "ci_admin_tasks/ajax_preview_recurrence";
 $route['manager/tasks/followups'] = "ci_admin_tasks/followups";
+// Team Tasks: the same lists, for you and the people in your team
+$route['manager/team/tasks'] = "ci_admin_tasks/team";
+$route['manager/team/tasks/internal'] = "ci_admin_tasks/internal";
+$route['manager/team/tasks/internal/(:num)'] = "ci_admin_tasks/internal/$1";
+$route['manager/team/tasks/external'] = "ci_admin_tasks/external";
+$route['manager/team/tasks/external/(:num)'] = "ci_admin_tasks/external/$1";
+$route['manager/team/tasks/followups'] = "ci_admin_tasks/followups";
 
 $route['manager/kam'] = "ci_admin_kam/index";
 $route['manager/kam/my-client'] = "ci_admin_kam/my_client";

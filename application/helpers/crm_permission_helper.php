@@ -102,7 +102,7 @@ if (!function_exists('crm_perm_catalog')) {
 					'team_verticals' => array('tab' => 'tm_verticals', 'label' => 'Team Verticals', 'desc' => 'Verticals of the team', 'fallback' => 'team', 'nav' => array(array('team/verticals', 'Verticals', 'fa-list')), 'pages' => array('team/verticals')),
 					'team_members' => array('tab' => 'tm_people', 'label' => 'Members', 'desc' => 'People in your team', 'fallback' => 'team', 'nav' => array(array('team/members', 'Members', 'fa-users')), 'pages' => array('team/members')),
 					'team_chart' => array('tab' => 'tm_people', 'label' => 'Team Chart', 'desc' => 'Reporting structure', 'fallback' => 'team', 'nav' => array(array('team/chart', 'Chart', 'fa-sitemap')), 'pages' => array('team/chart')),
-					'team_tasks' => array('label' => 'Team Tasks', 'desc' => 'All tasks of the team', 'fallback' => 'team', 'nav' => array(array('tasks', 'Tasks', 'fa-tasks')), 'pages' => array('tasks'), 'write' => array('tasks/add')),
+					'team_tasks' => array('tab' => 'tm_tasks', 'label' => 'Team Tasks', 'desc' => 'All tasks of the team', 'fallback' => 'team', 'nav' => array(array('team/tasks/internal', 'Tasks', 'fa-tasks')), 'pages' => array('tasks', 'team/tasks', 'team/tasks/internal', 'team/tasks/external', 'team/tasks/followups'), 'write' => array('tasks/add')),
 					'team_tickets' => array('tab' => 'tm_tickets', 'label' => 'Team Tickets', 'desc' => 'Tickets of the team', 'fallback' => 'team', 'nav' => array(array('team/tickets', 'Tickets', 'fa-ticket')), 'pages' => array('team/tickets')),
 				),
 			),
@@ -438,6 +438,11 @@ if (!function_exists('crm_tab_groups')) {
 			)),
 			'tm_verticals' => array('label' => 'Verticals', 'icon' => 'fa-list', 'tabs' => array(
 				array('team_verticals', 'team/verticals', 'Verticals', 'fa-list'),
+			)),
+			'tm_tasks' => array('label' => 'Tasks', 'icon' => 'fa-tasks', 'tabs' => array(
+				array('team_tasks', 'team/tasks/internal', 'Internal', 'fa-building-o'),
+				array('team_tasks', 'team/tasks/external', 'External', 'fa-briefcase'),
+				array('team_tasks', 'team/tasks/followups', 'Follow-up', 'fa-check-square-o'),
 			)),
 			'tm_tickets' => array('label' => 'Tickets', 'icon' => 'fa-ticket', 'tabs' => array(
 				array('team_tickets', 'team/tickets', 'Tickets', 'fa-ticket'),

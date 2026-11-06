@@ -75,7 +75,7 @@
 
                                 <div class="form-group">
                                     <button type="submit" class="btn btn-primary" style="background:#1e3a8a; border-color:#1e3a8a;">Search</button>
-                                    <a href="<?php echo base_url(); ?>manager/tasks/internal" class="btn btn-default">Reset</a>
+                                    <a href="<?php echo base_url() . $tk_base; ?>internal" class="btn btn-default">Reset</a>
                                 </div>
                             </form>
                         </div>
