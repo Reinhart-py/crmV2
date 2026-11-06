@@ -1,7 +1,7 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
 <!-- Content Wrapper. Contains page content -->
-<div class="content-wrapper px-4"> <!-- Content Header (Page header) -->
+<div class="content-wrapper px-4 tlv"> <!-- Content Header (Page header) -->
 <?php echo crm_mz_tabbar(); ?>
   <section class="content-header">
     <h1> <?php echo $info['page_heading']; ?> </h1>
@@ -82,7 +82,6 @@
                 <tfoot>
                   <tr>
                     <th></th>
-                    <th></th>                    
                     <th></th>
                     <th></th>
                     <th></th>
@@ -90,11 +89,7 @@
                     <th></th>
                     <th></th>
                     <th></th>
-                    <th></th>                                    
                     <th></th>
-                   
-                    
-                   
                   </tr>
                 </tfoot>
                 <tbody>
@@ -248,9 +243,9 @@ $(".remove").click(function(){
     $(document).ready(function() {
     $('#example_lead').DataTable( {
       "pageLength":50,
-      responsive: true,
+      responsive: window.innerWidth >= 768, // phones: each record is a card (crm-tlist.css)
         initComplete: function () {
-            this.api().columns([5,6,9]).every( function () {
+            this.api().columns([7]).every( function () {
               
                 var column = this;
                 var select = $('<select><option value="">Select </option></select>')
@@ -278,6 +273,8 @@ $(".remove").click(function(){
 
   </script>
 
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-tlist.css?v=20261106_2">
+<script src="<?php echo base_url(); ?>assets/dist/js/crm-tlist.js?v=20261106_2"></script>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>
 
  

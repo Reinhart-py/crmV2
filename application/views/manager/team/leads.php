@@ -1,7 +1,7 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
 <!-- Content Wrapper. Contains page content -->
-<div class="content-wrapper px-4"> <!-- Content Header (Page header) -->
+<div class="content-wrapper px-4 tlv"> <!-- Content Header (Page header) -->
 <?php echo crm_mz_tabbar(); ?>
   <section class="content-header">
     <h1> <?php echo $info['page_heading']; ?> </h1>
@@ -311,7 +311,7 @@ function ajax_get_state()
      $(document).ready(function() {
     $('#example_lead').DataTable( {
       "pageLength":50,
-      responsive: true,
+      responsive: window.innerWidth >= 768, // phones: each record is a card (crm-tlist.css)
         initComplete: function () {
             this.api().columns([3,8,9]).every( function () {
               
@@ -342,4 +342,6 @@ function ajax_get_state()
  
   </script>
 
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-tlist.css?v=20261106_2">
+<script src="<?php echo base_url(); ?>assets/dist/js/crm-tlist.js?v=20261106_2"></script>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

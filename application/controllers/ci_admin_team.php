@@ -48,11 +48,12 @@ class Ci_admin_team extends CI_Controller {
 	{
 		$data = array();
 		$data['info'] = array(
-			'title' => 'Users',
-			'page_heading' => 'My Team Members'
+			'title' => 'Manager - Team Members',
+			'page_heading' => 'Team Members'
 		);
 		$data['info2'] = $this->if_not_login();
-		$data['product_list'] = $this->ci_admin_model->get_teamMember($this->session->userdata('manager_id'));
+		$data['product_list'] = $this->member_stats($this->ci_admin_model->get_teamMember($this->session->userdata('manager_id')));
+		$data['viewing'] = null;
 		$this->load->view('manager/team/members', $data);
 	}
 
@@ -60,8 +61,8 @@ class Ci_admin_team extends CI_Controller {
 	{
 		$data = array();
 		$data['info'] = array(
-			'title' => 'Users',
-			'page_heading' => 'My Team Members'
+			'title' => 'Manager - Team Members',
+			'page_heading' => 'Team Members'
 		);
 		$data['info2'] = $this->if_not_login();
 		// only someone in your own team (Admin and "All company data": anyone)
@@ -73,10 +74,38 @@ class Ci_admin_team extends CI_Controller {
 			redirect('manager/team/members');
 			return;
 		}
-		$data['product_list'] = $this->ci_admin_model->get_teamMember($id);
+		$data['viewing'] = $this->db->query('SELECT id, name FROM ci_user WHERE id = ' . $id)->row_array();
+		if (!empty($data['viewing'])) $data['info']['page_heading'] = 'Team of ' . $data['viewing']['name'];
+		$data['product_list'] = $this->member_stats($this->ci_admin_model->get_teamMember($id));
 		$this->load->view('manager/team/members', $data);
 	}
-	
+
+	/** Adds direct reports, whole-team size and online state to each member row. */
+	private function member_stats($list)
+	{
+		$list = (array)$list;
+		$kids = array();
+		foreach ($this->db->query('SELECT id, manager FROM ci_user WHERE status = 1')->result_array() as $r) {
+			$m = (int)$r['manager']; $i = (int)$r['id'];
+			if ($m > 0 && $m !== $i) $kids[$m][] = $i;
+		}
+		$size = function ($id, $seen = array()) use (&$size, $kids) {
+			if (empty($kids[$id]) || isset($seen[$id])) return 0;
+			$seen[$id] = 1; $n = 0;
+			foreach ($kids[$id] as $k) $n += 1 + $size($k, $seen);
+			return $n;
+		};
+		foreach ($list as &$li) {
+			$id = (int)$li['id'];
+			$li['direct_n'] = isset($kids[$id]) ? count($kids[$id]) : 0;
+			$li['team_n'] = $size($id);
+			$li['online_now'] = ((int)$li['is_online'] === 1 && !empty($li['last_active_at']) && strtotime($li['last_active_at']) > time() - 600) ? 1 : 0;
+			$li['avatar_url'] = (!empty($li['avatar']) && is_file(FCPATH . $li['avatar'])) ? base_url() . $li['avatar'] : '';
+		}
+		unset($li);
+		return $list;
+	}
+
 
 	public function database()
 	{
@@ -556,113 +585,68 @@ class Ci_admin_team extends CI_Controller {
 	{
 		$data = array();
 		$data['info'] = array(
-			'title' => 'Users',
-			'page_heading' => 'My Team Members Chart'
+			'title' => 'Manager - Team Chart',
+			'page_heading' => 'Team Chart'
 		);
 		$data['info2'] = $this->if_not_login();
 
-		$logged_in_id = (int)$this->session->userdata('manager_id');
-		$logged_in_role = (int)$this->session->userdata('manager_role');
-		$is_admin = ($logged_in_role === 1 || $logged_in_id === 1);
+		$me = (int)$this->session->userdata('manager_id');
+		$role = (int)$this->session->userdata('manager_role');
+		$see_all = ($role === 1 || $me === 1 || crm_can('all_data'));
 
-		$logged_in_user = $this->db->select('id, name, manager, department, office, avatar, user_type')->where('id', $logged_in_id)->get('ci_user')->row_array();
-		$top_manager_id = (!empty($logged_in_user['manager']) && (int)$logged_in_user['manager'] !== $logged_in_id) ? (int)$logged_in_user['manager'] : 0;
+		// Who is on the chart: Admin / "All company data" see the whole company; everyone else sees
+		// themselves, the people under them, and (for context only) the person they report to.
+		$rows = $this->db->query('SELECT U.id, U.name, U.manager, U.department, U.office, U.avatar, U.email, U.mobile, U.is_online, U.last_active_at, R.title AS role'
+			. ' FROM ci_user U LEFT JOIN ci_roles R ON R.id = U.user_type WHERE U.status = 1 ORDER BY U.name ASC')->result_array();
+		$by_id = array();
+		foreach ($rows as $r) $by_id[(int)$r['id']] = $r;
 
-		$req_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-		if ($req_id === 0) {
-			$req_id = $logged_in_id;
-		}
-
-		$is_subordinate = function($parent_id, $child_id) use (&$is_subordinate) {
-			if ($parent_id === $child_id) return true;
-			$directs = $this->db->select('id')->from('ci_user')->where('manager', (int)$parent_id)->where('status', 1)->get()->result_array();
-			foreach ($directs as $d) {
-				$sub_id = (int)$d['id'];
-				if ($sub_id === (int)$child_id) return true;
-				if ($is_subordinate($sub_id, $child_id)) return true;
-			}
-			return false;
-		};
-
-		if (!$is_admin && $req_id !== $logged_in_id && $req_id !== $top_manager_id) {
-			if (!$is_subordinate($logged_in_id, $req_id)) {
-				$req_id = $logged_in_id;
-			}
-		}
-
-		$target_user = $this->comman_model->getpostdata2(array('id' => $req_id), '', 'ci_user');
-		if (empty($target_user)) {
-			$target_user = $logged_in_user;
-			$req_id = $logged_in_id;
-		}
-
-		$data['main_user'] = $target_user;
-		$main_user_id = (int)$target_user['id'];
-		$data['logged_in_id'] = $logged_in_id;
-		$data['is_viewing_self'] = ($main_user_id === $logged_in_id);
-		$data['is_viewing_manager'] = ($main_user_id === $top_manager_id && $top_manager_id > 0);
-
-		$manager_node = null;
-		$manager_nav_id = 0;
-
-		if ($main_user_id === $logged_in_id) {
-			if ($top_manager_id > 0) {
-				$manager_node = $this->db->select('id, name, department, office, avatar, user_type')->where('id', $top_manager_id)->get('ci_user')->row_array();
-				$manager_nav_id = $top_manager_id;
-			}
-		} elseif ($main_user_id === $top_manager_id) {
-			$manager_node = null;
-			$manager_nav_id = 0;
+		$ctx = 0;
+		if ($see_all) {
+			$keep = array_keys($by_id);
 		} else {
-			$t_mgr_id = !empty($target_user['manager']) ? (int)$target_user['manager'] : 0;
-			if ($t_mgr_id > 0) {
-				$manager_node = $this->db->select('id, name, department, office, avatar, user_type')->where('id', $t_mgr_id)->get('ci_user')->row_array();
-				$manager_nav_id = ($t_mgr_id === $logged_in_id) ? 0 : $t_mgr_id;
+			$keep = array_map('intval', (array)$this->ci_admin_model->fetchTeamList($me, ''));
+			$keep[] = $me;
+			if (isset($by_id[$me])) {
+				$m = (int)$by_id[$me]['manager'];
+				if ($m > 0 && $m !== $me && isset($by_id[$m]) && !in_array($m, $keep, true)) {
+					$keep[] = $m;
+					$ctx = $m;
+				}
 			}
 		}
+		$keep = array_flip(array_unique($keep));
 
-		$data['manager_node'] = $manager_node;
-		$data['manager_nav_id'] = $manager_nav_id;
-
-		$tree_builder = function($user_id, $depth = 0, $max_depth = 5) use (&$tree_builder) {
-			if ($depth > $max_depth || empty($user_id)) {
-				return array();
-			}
-			$subs = $this->db->select('id, name, manager, department, office, avatar, user_level, user_type')
-				->from('ci_user')
-				->where('manager', (int)$user_id)
-				->where('id !=', (int)$user_id)
-				->where('status', 1)
-				->order_by('name', 'ASC')
-				->get()
-				->result_array();
-			$nodes = array();
-			foreach ($subs as $sub) {
-				$sub['children'] = $tree_builder($sub['id'], $depth + 1, $max_depth);
-				$nodes[] = $sub;
-			}
-			return $nodes;
-		};
-
-		if ($main_user_id === $top_manager_id && !$is_admin) {
-			$logged_in_node = $logged_in_user;
-			$logged_in_node['children'] = $tree_builder($logged_in_id, 0, 5);
-			$children_list = array($logged_in_node);
-		} else {
-			$children_list = $tree_builder($main_user_id, 0, 5);
+		$people = array();
+		foreach ($by_id as $id => $r) {
+			if (!isset($keep[$id])) continue;
+			$mgr = (int)$r['manager'];
+			if ($mgr === $id || !isset($keep[$mgr])) $mgr = 0; // top of the visible chart
+			$avatar = '';
+			if (!empty($r['avatar']) && is_file(FCPATH . $r['avatar'])) $avatar = base_url() . $r['avatar'];
+			$online = ((int)$r['is_online'] === 1 && !empty($r['last_active_at']) && strtotime($r['last_active_at']) > time() - 600);
+			$people[] = array(
+				'id' => $id,
+				'm' => $mgr,
+				'n' => (string)$r['name'],
+				'r' => (string)$r['role'],
+				'd' => (string)$r['department'],
+				'o' => (string)$r['office'],
+				'e' => (string)$r['email'],
+				'p' => (string)$r['mobile'],
+				'a' => $avatar,
+				'on' => $online ? 1 : 0,
+				'ctx' => ($id === $ctx) ? 1 : 0,
+			);
 		}
 
-		$data['team_tree'] = array(
-			'id' => $main_user_id,
-			'name' => isset($target_user['name']) ? $target_user['name'] : '',
-			'manager' => isset($target_user['manager']) ? (int)$target_user['manager'] : 0,
-			'department' => isset($target_user['department']) ? $target_user['department'] : '',
-			'office' => isset($target_user['office']) ? $target_user['office'] : '',
-			'avatar' => isset($target_user['avatar']) ? $target_user['avatar'] : '',
-			'user_type' => isset($target_user['user_type']) ? $target_user['user_type'] : '',
-			'children' => $children_list
-		);
+		$focus = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+		if (!isset($keep[$focus])) $focus = 0;
 
+		$data['people'] = $people;
+		$data['me'] = $me;
+		$data['focus'] = $focus;
+		$data['see_all'] = $see_all;
 		$this->load->view('manager/team/chart', $data);
 	}
 
