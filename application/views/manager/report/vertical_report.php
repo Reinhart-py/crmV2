@@ -31,9 +31,9 @@
              <div class="form-group col-md-6">
         <label> Lead Date </label>
         <div class="input-daterange input-group" id="datepicker" style="width: 100%;" >
-    <input type="text" class="input-md form-control" name="d1" placeholder="From Date" value="<?php if(isset($_GET['d1'])&&(!empty($_GET['d1']))){ echo $_GET['d1'];}?>" autocomplete="off"/>
+    <input type="text" class="input-md form-control" name="d1" placeholder="From Date" value="<?php if(isset($_GET['d1'])&&(!empty($_GET['d1']))){ echo htmlspecialchars($_GET['d1'], ENT_QUOTES, 'UTF-8');}?>" autocomplete="off"/>
     <span class="input-group-addon">To</span>
-    <input type="text" class="input-md form-control" name="d2" placeholder="To Date" value="<?php if(isset($_GET['d2'])&&(!empty($_GET['d2']))){ echo $_GET['d2'];}?>" autocomplete="off"/>
+    <input type="text" class="input-md form-control" name="d2" placeholder="To Date" value="<?php if(isset($_GET['d2'])&&(!empty($_GET['d2']))){ echo htmlspecialchars($_GET['d2'], ENT_QUOTES, 'UTF-8');}?>" autocomplete="off"/>
 
       </div>
      </div>   
@@ -42,9 +42,9 @@
          <div class="form-group col-md-6">
         <label> Followup Date </label>
         <div class="input-daterange input-group" id="datepicker" style="width: 100%;" >
-    <input type="text" class="input-md form-control" name="f1" placeholder="From Date" value="<?php if(isset($_GET['f1'])&&(!empty($_GET['f1']))){ echo $_GET['f1'];}?>" autocomplete="off"/>
+    <input type="text" class="input-md form-control" name="f1" placeholder="From Date" value="<?php if(isset($_GET['f1'])&&(!empty($_GET['f1']))){ echo htmlspecialchars($_GET['f1'], ENT_QUOTES, 'UTF-8');}?>" autocomplete="off"/>
     <span class="input-group-addon">To</span>
-    <input type="text" class="input-md form-control" name="f2" placeholder="To Date" value="<?php if(isset($_GET['f2'])&&(!empty($_GET['f2']))){ echo $_GET['f2'];}?>" autocomplete="off"/>
+    <input type="text" class="input-md form-control" name="f2" placeholder="To Date" value="<?php if(isset($_GET['f2'])&&(!empty($_GET['f2']))){ echo htmlspecialchars($_GET['f2'], ENT_QUOTES, 'UTF-8');}?>" autocomplete="off"/>
 
       </div>
      </div> 

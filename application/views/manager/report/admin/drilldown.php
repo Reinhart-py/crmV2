@@ -146,7 +146,11 @@
                         <td>
                             <?php 
                             if ($f == 'action' || $f == 'status' || $f == 'status_name' || (isset($r[$f]) && strpos($r[$f], '<') !== false)) {
-                                echo isset($r[$f]) ? $r[$f] : '';
+                                // badges and links built by the report: keep simple formatting tags only, no scripts or event handlers
+                                $cell_html = isset($r[$f]) ? strip_tags((string)$r[$f], '<span><a><i><b><strong><small><br><em>') : '';
+                                $cell_html = preg_replace('~\s+on[a-z]+\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)~i', '', $cell_html);
+                                $cell_html = preg_replace('~(href|src)\s*=\s*(["\']?)\s*javascript:~i', '$1=$2#', $cell_html);
+                                echo $cell_html;
                             } else {
                                 echo isset($r[$f]) ? htmlspecialchars($r[$f]) : '-';
                             }

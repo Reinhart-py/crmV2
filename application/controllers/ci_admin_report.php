@@ -227,6 +227,88 @@ class Ci_admin_report extends CI_Controller {
 		$this->load->view('manager/report/performance_individual', $data);
 	}
 
+	/** Report Centre filters from the address bar, with who the signed-in person may see (admin: everyone; others: self + team). */
+	private function _report_filters($manager_id, $is_admin_or_support)
+	{
+		$period = $this->input->get('period');
+		$d1 = '';
+		$d2 = '';
+	
+		if ($period == 'daily' || $period == 'today') {
+			$d1 = date('Y-m-d');
+			$d2 = date('Y-m-d');
+		} else if ($period == 'weekly' || $period == '7days') {
+			$d1 = date('Y-m-d', strtotime('-7 days'));
+			$d2 = date('Y-m-d');
+		} else if ($period == 'monthly' || $period == 'month') {
+			$d1 = date('Y-m-01');
+			$d2 = date('Y-m-t');
+		} else if ($period == 'yearly' || $period == 'year') {
+			$d1 = date('Y-01-01');
+			$d2 = date('Y-12-31');
+		} else if ($period == 'all') {
+			$d1 = '';
+			$d2 = '';
+		} else {
+			if ($this->input->get('d1') && $this->input->get('d2')) {
+				$d1 = date('Y-m-d', strtotime($this->input->get('d1')));
+				$d2 = date('Y-m-d', strtotime($this->input->get('d2')));
+			}
+		}
+	
+		$user_team_ids = array($manager_id);
+		if (!$is_admin_or_support) {
+			$subordinates = $this->ci_admin_model->fetchTeamList($manager_id);
+			if (!empty($subordinates) && is_array($subordinates)) {
+				$user_team_ids = array_unique(array_merge($user_team_ids, $subordinates));
+			}
+			$direct_reports = $this->db->select('id')->where('manager', $manager_id)->get('ci_user')->result_array();
+			if (!empty($direct_reports)) {
+				foreach ($direct_reports as $dr) {
+					$user_team_ids[] = (int)$dr['id'];
+				}
+				$user_team_ids = array_unique($user_team_ids);
+			}
+		}
+	
+		$emp = '';
+		if ($is_admin_or_support) {
+			$emp = $this->input->get('employee_id');
+			$emp_multi = $this->input->get('employee_ids');
+			if (!empty($emp_multi)) {
+				$emp = $emp_multi;
+			}
+		} else {
+			$selected_emp = $this->input->get('employee_id');
+			if (!empty($selected_emp) && in_array((int)$selected_emp, $user_team_ids)) {
+				$emp = (int)$selected_emp;
+			} else {
+				$emp = $user_team_ids;
+			}
+		}
+	
+		$filters = array(
+			'period' => $period,
+			'd1' => $d1,
+			'd2' => $d2,
+			'employee_id' => $emp,
+			'employee_ids' => is_array($emp) ? $emp : array($emp),
+			'status' => $this->input->get('status'),
+			'search' => $this->input->get('search'),
+			'expiry' => $this->input->get('expiry'),
+			'category' => $this->input->get('category'),
+			'department' => $this->input->get('department'),
+			'tl_emirate' => $this->input->get('tl_emirate'),
+			'tl_zone' => $this->input->get('tl_zone'),
+			'tl_authority' => $this->input->get('tl_authority'),
+			'columns' => $this->input->get('columns'),
+			'manager_id' => $manager_id,
+			'user_team_ids' => $user_team_ids,
+			'is_admin_or_support' => $is_admin_or_support
+		);
+		return $filters;
+	}
+
 	public function downloadReport($dept = '', $report = '')
 	{
 		$data = array();
@@ -380,82 +462,8 @@ class Ci_admin_report extends CI_Controller {
 			return;
 		}
 
-		$period = $this->input->get('period');
-		$d1 = '';
-		$d2 = '';
-
-		if ($period == 'daily' || $period == 'today') {
-			$d1 = date('Y-m-d');
-			$d2 = date('Y-m-d');
-		} else if ($period == 'weekly' || $period == '7days') {
-			$d1 = date('Y-m-d', strtotime('-7 days'));
-			$d2 = date('Y-m-d');
-		} else if ($period == 'monthly' || $period == 'month') {
-			$d1 = date('Y-m-01');
-			$d2 = date('Y-m-t');
-		} else if ($period == 'yearly' || $period == 'year') {
-			$d1 = date('Y-01-01');
-			$d2 = date('Y-12-31');
-		} else if ($period == 'all') {
-			$d1 = '';
-			$d2 = '';
-		} else {
-			if ($this->input->get('d1') && $this->input->get('d2')) {
-				$d1 = date('Y-m-d', strtotime($this->input->get('d1')));
-				$d2 = date('Y-m-d', strtotime($this->input->get('d2')));
-			}
-		}
-
-		$user_team_ids = array($manager_id);
-		if (!$is_admin_or_support) {
-			$subordinates = $this->ci_admin_model->fetchTeamList($manager_id);
-			if (!empty($subordinates) && is_array($subordinates)) {
-				$user_team_ids = array_unique(array_merge($user_team_ids, $subordinates));
-			}
-			$direct_reports = $this->db->select('id')->where('manager', $manager_id)->get('ci_user')->result_array();
-			if (!empty($direct_reports)) {
-				foreach ($direct_reports as $dr) {
-					$user_team_ids[] = (int)$dr['id'];
-				}
-				$user_team_ids = array_unique($user_team_ids);
-			}
-		}
-
-		$emp = '';
-		if ($is_admin_or_support) {
-			$emp = $this->input->get('employee_id');
-			$emp_multi = $this->input->get('employee_ids');
-			if (!empty($emp_multi)) {
-				$emp = $emp_multi;
-			}
-		} else {
-			$selected_emp = $this->input->get('employee_id');
-			if (!empty($selected_emp) && in_array((int)$selected_emp, $user_team_ids)) {
-				$emp = (int)$selected_emp;
-			} else {
-				$emp = $user_team_ids;
-			}
-		}
-
-		$filters = array(
-			'period' => $period,
-			'd1' => $d1,
-			'd2' => $d2,
-			'employee_id' => $emp,
-			'employee_ids' => is_array($emp) ? $emp : array($emp),
-			'status' => $this->input->get('status'),
-			'search' => $this->input->get('search'),
-			'expiry' => $this->input->get('expiry'),
-			'category' => $this->input->get('category'),
-			'department' => $this->input->get('department'),
-			'tl_emirate' => $this->input->get('tl_emirate'),
-			'tl_zone' => $this->input->get('tl_zone'),
-			'tl_authority' => $this->input->get('tl_authority'),
-			'columns' => $this->input->get('columns'),
-			'manager_id' => $manager_id,
-			'user_team_ids' => $user_team_ids,
-			'is_admin_or_support' => $is_admin_or_support
-		);
+		$filters = $this->_report_filters($manager_id, $is_admin_or_support);
+		$user_team_ids = $filters['user_team_ids'];
 
 		$report_data = $this->admin_reports_model->getReportData($dept, $report, $filters);
 
@@ -666,7 +674,44 @@ class Ci_admin_report extends CI_Controller {
 		$d2 = $this->input->get('d2');
 
 		$this->load->model('admin_reports_model');
-		$drilldown_data = $this->admin_reports_model->getDrilldownRecords($dept, $report, $metric, $uid, $auth, $window, $cat, $sub, $d1, $d2, $manager_id, $is_admin_or_support);
+		$dept = strtolower(trim((string)$dept));
+		$report = strtolower(trim((string)$report));
+
+		// Same access as the report pages: Sales for everyone, other departments for admin or the person's own department.
+		if (!$is_admin_or_support && $dept !== 'sales') {
+			$role_depts = array(5 => 'operations', 2 => 'support', 4 => 'support', 7 => 'hr', 6 => 'it', 3 => 'sales');
+			$own = isset($role_depts[$m_role]) ? $role_depts[$m_role] : '';
+			$ud = strtolower(trim((string)(isset($user_row['department']) ? $user_row['department'] : '')));
+			if ($own === '') {
+				if (strpos($ud, 'operat') !== false) $own = 'operations';
+				elseif (strpos($ud, 'support') !== false || strpos($ud, 'back') !== false) $own = 'support';
+				elseif ($ud === 'hr' || strpos($ud, 'human') !== false) $own = 'hr';
+				elseif ($ud === 'it') $own = 'it';
+			}
+			if ($dept !== $own) {
+				redirect('manager/download-report');
+				return;
+			}
+		}
+
+		$filters = $this->_report_filters($manager_id, $is_admin_or_support);
+		$by_cell = ($dept !== 'sales' || in_array($report, array('lead', 'lost', 'quote', 'tax-registration', 'trade-license', 'database', 'custom'), true));
+		if ($by_cell) {
+			$meta = $this->admin_reports_model->getDepartmentReportsMeta($dept);
+			if (empty($meta['reports'][$report])) {
+				redirect('manager/download-report');
+				return;
+			}
+			// the records behind the clicked number, built the same way as the number itself
+			$drilldown_data = $this->admin_reports_model->getDrilldownByCell($dept, $report, $filters, $_GET);
+		} else {
+			// Sales Performance: only yourself or your team unless admin
+			if (!$is_admin_or_support) {
+				if ($uid > 0 && !in_array($uid, array_map('intval', $filters['user_team_ids']), true)) $uid = $manager_id;
+				if ($this->input->get('uid') === 'all') $uid = $manager_id;
+			}
+			$drilldown_data = $this->admin_reports_model->getDrilldownRecords($dept, $report, $metric, $uid, $auth, $window, $cat, $sub, $d1, $d2, $manager_id, $is_admin_or_support);
+		}
 
 		if ($this->input->get('export')) {
 			if (!$is_admin_or_support) {

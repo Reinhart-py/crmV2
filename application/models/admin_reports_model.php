@@ -2684,6 +2684,15 @@ class Admin_reports_model extends CI_Model {
 		return false;
 	}
 
+	private $_name_rows = array();
+	/** ci_user name row, looked up once per request. */
+	private function _userNameRow($id)
+	{
+		$id = (int)$id;
+		if (!array_key_exists($id, $this->_name_rows)) $this->_name_rows[$id] = $this->db->select('name')->where('id', $id)->get('ci_user')->row_array();
+		return $this->_name_rows[$id];
+	}
+
 	private function _buildPivotData($dept, $report, $filters, $report_res)
 	{
 		$rows = isset($report_res['rows']) ? $report_res['rows'] : array();
@@ -2940,7 +2949,7 @@ class Admin_reports_model extends CI_Model {
 			$current_user_id = isset($filters['manager_id']) ? (int)$filters['manager_id'] : 0;
 			$current_user_name = 'My Report';
 			if ($current_user_id > 0) {
-				$u_row = $this->db->select('name')->where('id', $current_user_id)->get('ci_user')->row_array();
+				$u_row = $this->_userNameRow($current_user_id);
 				if (!empty($u_row['name'])) {
 					$current_user_name = $u_row['name'];
 				}
@@ -3224,7 +3233,7 @@ class Admin_reports_model extends CI_Model {
 			$current_user_id = isset($filters['manager_id']) ? (int)$filters['manager_id'] : 0;
 			$current_user_name = 'My Report';
 			if ($current_user_id > 0) {
-				$u_row = $this->db->select('name')->where('id', $current_user_id)->get('ci_user')->row_array();
+				$u_row = $this->_userNameRow($current_user_id);
 				if (!empty($u_row['name'])) {
 					$current_user_name = $u_row['name'];
 				}
@@ -3754,6 +3763,87 @@ class Admin_reports_model extends CI_Model {
 				'',
 				array('val' => number_format($grand_total_count), 'url' => base_url().'manager/download-report/drilldown?dept='.$dept.'&report='.$report.'&cat=All&sub=All&metric=count&d1='.$d1.'&d2='.$d2)
 			)
+		);
+	}
+
+	/** Address-bar keys that identify one number in a report summary. */
+	private function _cellParams($q)
+	{
+		$keys = array('dept', 'report', 'metric', 'cat', 'sub', 'scope', 'emp', 'auth', 'window', 'uid', 'lost_cat', 'tax', 'd1', 'd2');
+		$out = array();
+		foreach ($keys as $k) {
+			$v = isset($q[$k]) && !is_array($q[$k]) ? trim((string)$q[$k]) : '';
+			if ($v !== '') $out[$k] = $v;
+		}
+		return $out;
+	}
+
+	/** True when the summary built from one record has a non-zero number (or a label) linking to $want. */
+	private function _pivotHasCell($pivot, $want)
+	{
+		// lines of cells; a label (text) cell only counts when a number on its line is not zero
+		$lines = array();
+		if (!empty($pivot['groups'])) {
+			foreach ($pivot['groups'] as $g) {
+				$glines = array_merge(isset($g['rows']) ? $g['rows'] : array(), isset($g['subtotal']) ? array($g['subtotal']) : array());
+				foreach ($glines as $line) $lines[] = (array)$line;
+				if (!empty($g['category_url'])) {
+					$lines[] = array(array('val' => 'x', 'url' => $g['category_url']), array('val' => !empty($glines) ? '1' : '0'));
+				}
+			}
+		}
+		if (!empty($pivot['grand_total'])) $lines[] = (array)$pivot['grand_total'];
+		$num = function ($c) {
+			$v = trim(strip_tags((string)(is_array($c) ? (isset($c['val']) ? $c['val'] : '') : $c)));
+			$n = str_replace(array('AED', ',', ' ', '%'), '', $v);
+			return is_numeric($n) ? (float)$n : null;
+		};
+		foreach ($lines as $line) {
+			$has_value = false;
+			foreach ($line as $c) { $n = $num($c); if ($n !== null && $n != 0) { $has_value = true; break; } }
+			foreach ($line as $c) {
+				if (!is_array($c) || empty($c['url'])) continue;
+				$qs = parse_url(html_entity_decode($c['url']), PHP_URL_QUERY);
+				$p = array();
+				parse_str((string)$qs, $p);
+				if ($this->_cellParams($p) != $want) continue;
+				$n = $num($c);
+				if ($n === null ? $has_value : $n != 0) return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Records behind one number in a Sales report summary: the report's own rows (same filters and visibility
+	 * as the report page), kept when that record adds to the clicked number. So the list always matches the count.
+	 */
+	public function getDrilldownByCell($dept, $report, $filters, $query)
+	{
+		$res = $this->getReportData($dept, $report, $filters);
+		$rows = isset($res['rows']) ? $res['rows'] : array();
+		$want = $this->_cellParams($query);
+		$out = array();
+		foreach ($rows as $r) {
+			$one = $res;
+			$one['rows'] = array($r);
+			unset($one['pivot_data']);
+			if ($this->_pivotHasCell($this->_buildPivotData($dept, $report, $filters, $one), $want)) {
+				if (!isset($r['raw_id'])) $r['raw_id'] = isset($r['id']) ? $r['id'] : 0;
+				$out[] = $r;
+			}
+		}
+		$bits = array();
+		foreach (array('emp', 'cat', 'sub', 'auth', 'window', 'metric') as $k) {
+			if (!empty($want[$k]) && !in_array(strtolower($want[$k]), array('all', 'count'), true)) $bits[] = $want[$k];
+		}
+		if (!empty($want['scope']) && $want['scope'] === 'my') array_unshift($bits, 'My records');
+		return array(
+			'title' => (!empty($res['title']) ? $res['title'] : 'Report') . ($bits ? ' – ' . implode(' / ', $bits) : ''),
+			'headers' => isset($res['headers']) ? $res['headers'] : array(),
+			'fields' => isset($res['fields']) ? $res['fields'] : array(),
+			'rows' => $out,
+			'count' => count($out)
 		);
 	}
 

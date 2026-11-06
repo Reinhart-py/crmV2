@@ -17,7 +17,7 @@
 <meta name="twitter:image" content="<?php echo base_url(); ?>assets/logo.png">
 
     
-<title><?php echo $info['title']; ?></title>
+<title><?php echo htmlspecialchars((string)$info['title'], ENT_QUOTES, 'UTF-8', false); ?></title>
 
 <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     

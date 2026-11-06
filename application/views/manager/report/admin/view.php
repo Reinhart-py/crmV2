@@ -457,6 +457,14 @@
         </div>
         <?php } ?>
 
+        <?php
+        // number links keep this page's filters, so the list behind a number is built from the same records
+        $dd_keep = array();
+        foreach (array('employee_id', 'employee_ids', 'status', 'search', 'expiry', 'category', 'department', 'tl_emirate', 'tl_zone', 'tl_authority', 'columns') as $k) {
+            if (isset($_GET[$k]) && $_GET[$k] !== '' && $_GET[$k] !== array()) $dd_keep[$k] = $_GET[$k];
+        }
+        $dd_url = function ($u) use ($dd_keep) { return $dd_keep ? $u . (strpos($u, '?') === false ? '?' : '&') . http_build_query($dd_keep) : $u; };
+        ?>
         <?php if (!$rc_records && !empty($report_data['pivot_data']) && !empty($report_data['pivot_data']['groups'])) { ?>
         <div class="pivot-table-wrap protected-crm-data">
             <table class="pivot-table">
@@ -503,7 +511,7 @@
                         ?>
                         <td style="text-align: <?php echo $align; ?>; <?php echo $indent; ?>">
                             <?php if (!empty($cell_url) && $is_numeric) { ?>
-                            <a href="<?php echo $cell_url; ?>" style="color: #1e3a8a; font-weight: 700; text-decoration: underline;">
+                            <a href="<?php echo htmlspecialchars($dd_url($cell_url)); ?>" style="color: #1e3a8a; font-weight: 700; text-decoration: underline;">
                                 <?php echo htmlspecialchars($cell_val); ?>
                             </a>
                             <?php } else { ?>
@@ -534,7 +542,7 @@
                         ?>
                         <td style="text-align: <?php echo $align; ?>;">
                             <?php if (!empty($cell_url) && $is_numeric) { ?>
-                            <a href="<?php echo $cell_url; ?>" style="color: #1e3a8a; font-weight: 700; text-decoration: underline;">
+                            <a href="<?php echo htmlspecialchars($dd_url($cell_url)); ?>" style="color: #1e3a8a; font-weight: 700; text-decoration: underline;">
                                 <?php echo htmlspecialchars($cell_val); ?>
                             </a>
                             <?php } else { ?>
@@ -561,7 +569,7 @@
                         ?>
                         <td style="text-align: <?php echo $align; ?>;">
                             <?php if (!empty($cell_url) && $is_numeric) { ?>
-                            <a href="<?php echo $cell_url; ?>" style="color: #1e3a8a; font-weight: 800; text-decoration: underline;">
+                            <a href="<?php echo htmlspecialchars($dd_url($cell_url)); ?>" style="color: #1e3a8a; font-weight: 800; text-decoration: underline;">
                                 <?php echo htmlspecialchars($cell_val); ?>
                             </a>
                             <?php } else { ?>
