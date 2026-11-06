@@ -1,5 +1,5 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-ureg.css?v=20261106_3">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-ureg.css?v=20261106_4">
 <?php
 $h = function ($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); };
 $back = urldecode((string)$this->session->userdata('manager_return_string'));
@@ -21,7 +21,7 @@ if (!empty($st_list)) foreach ($st_list as $cli) {
 </style>
 <div class="content-wrapper ureg">
   <section class="content-header vf-head">
-    <h1>Add Vertical<small>A referral partner who brings clients</small></h1>
+    <h1>Add Vertical</h1>
   </section>
 
   <section class="content">

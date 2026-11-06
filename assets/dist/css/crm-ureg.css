@@ -69,3 +69,18 @@
 /* Validation message: under the field, not on top of its label */
 .ureg .form-group > label.error{position:static !important;grid-column:2;text-align:left !important;color:#dc2626 !important;font-size:11.5px !important;font-weight:500 !important;margin:2px 0 0 !important}
 @media (max-width:575px){.ureg .form-group > label.error{grid-column:1}}
+/* Back Office forms (Process Order, Onboard Client): older markup with inline styles, same compact look */
+.ureg-bo .breadcrumb { display: none; }
+.ureg-bo .box { border: 1px solid var(--crm-line, #e2e8f0) !important; border-radius: 8px !important; margin-bottom: 8px !important; }
+.ureg-bo .box-header.with-border { background: none !important; text-align: left !important; min-height: 0 !important; padding: 7px 12px !important; }
+.ureg-bo .box-header .box-title { float: none !important; display: inline !important; margin: 0 !important; font-size: 12.5px !important; font-weight: 700 !important; line-height: 1.4 !important; text-transform: uppercase; letter-spacing: .06em; color: var(--crm-ink, #0f172a) !important; }
+.ureg-bo .box-body { padding: 8px 6px 2px !important; }
+.ureg-bo .form-group > label { text-transform: none !important; }
+.ureg-bo .form-control { border-radius: 5px !important; }
+.ureg-bo textarea.form-control { min-height: 54px !important; }
+.ureg-bo .ureg-footer.box-footer { padding: 10px 12px !important; }
+.ureg-bo .ureg-footer .form-control { height: 34px !important; }
+.ureg-bo .ureg-footer .btn { height: 34px !important; padding-top: 0 !important; padding-bottom: 0 !important; }
+/* a label row with a link beside it (e.g. "Add New Company") */
+.ureg-bo .form-group > div:first-child:has(> label) { grid-column: 1 / -1; display: flex !important; justify-content: space-between; margin-bottom: 2px !important; }
+.ureg-bo .form-group > div:first-child:has(> label) + * { grid-column: 1 / -1; }

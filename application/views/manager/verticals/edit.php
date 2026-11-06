@@ -1,5 +1,5 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-ureg.css?v=20261106_3">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-ureg.css?v=20261106_4">
 <?php
 $h = function ($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); };
 $sel = function ($a, $b) { return ((string)$a === (string)$b && (string)$a !== '') ? ' selected' : ''; };

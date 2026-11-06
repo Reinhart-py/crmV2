@@ -1231,6 +1231,14 @@ class Ci_admin_orders extends CI_Controller {
 				if (empty($chosen_status)) {
 					$chosen_status = ($action_type === 'send_for_approval') ? 'Pending Sales Approval' : 'In Progress';
 				}
+				// the status picked on the form (it was ignored before: every order became Onboarding)
+				if ($action_type === 'send_for_approval') {
+					$new_status = 'Pending Sales Approval';
+				} else {
+					$new_status = in_array($chosen_status, array('Onboarding', 'In Progress', 'Follow Up', 'Completed', 'Pending Sales Approval', 'Cancelled'), true) ? $chosen_status : 'Onboarding';
+				}
+				$needs_approval = ($new_status === 'Pending Sales Approval');
+				if ($needs_approval) $action_type = 'send_for_approval'; // same steps as Send for Sales Approval
 				$order_data = array(
 					'order_no' => $order_no,
 					'client_id' => $id,
@@ -1249,10 +1257,13 @@ class Ci_admin_orders extends CI_Controller {
 					'billing_type' => 'monthly',
 					'assigned_to' => ($assigned_to > 0) ? $assigned_to : $cur_uid,
 					'assigned_dept' => $assigned_dept ?: 'Back Office',
-					'status' => ($action_type === 'send_for_approval') ? 'Pending Sales Approval' : 'Onboarding',
-					'approval_status' => ($action_type === 'send_for_approval') ? 'pending_approval' : 'approved',
-					'approved_by' => ($action_type === 'send_for_approval') ? 0 : $cur_uid,
-					'approved_at' => ($action_type === 'send_for_approval') ? null : $now,
+					'status' => $new_status,
+					'approval_status' => $needs_approval ? 'pending_approval' : 'approved',
+					'approved_by' => $needs_approval ? 0 : $cur_uid,
+					'approved_at' => $needs_approval ? null : $now,
+					// Follow Up: the order shows on Orders Follow-up from the follow-up date given (else today)
+					'followup_date' => $new_status === 'Follow Up' ? (!empty($fu_date) ? db_date($fu_date) : date('Y-m-d')) : null,
+					'followup_time' => ($new_status === 'Follow Up' && !empty($fu_time)) ? $fu_time : null,
 					'salesperson_original_data' => $orig_snapshot,
 					'created_by' => !empty($lead['order_requested_by']) ? (int)$lead['order_requested_by'] : $cur_uid,
 					'created_at' => $now,

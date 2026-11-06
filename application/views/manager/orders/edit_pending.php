@@ -1,7 +1,8 @@
 <?php require_once(APPPATH . "views/manager/elements/header.php"); ?>
 
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-ureg.css?v=20261106_4">
 <div class="container">
-<div class="content-wrapper">
+<div class="content-wrapper ureg ureg-bo">
 
   <section class="content-header">
     <h1> <?php echo isset($info['page_heading']) ? $info['page_heading'] : 'Process Order Conversion'; ?> </h1>
@@ -110,7 +111,7 @@
       <div class="box box-default" style="border: 1px solid #1e3a8a; border-radius: 6px; margin-bottom: 16px;">
         <div class="box-header with-border" style="background: #eff6ff; padding: 12px 18px;">
           <h3 class="box-title" style="color: #1e3a8a; font-weight: 700; font-size: 15px; margin: 0;">
-            Assign Order Onboard Client
+            Client &amp; onboarding manager
           </h3>
         </div>
         <div class="box-body" style="padding: 18px;">
@@ -147,7 +148,7 @@
 
       <div class="box box-default">
         <div class="box-header with-border" style="position: relative; text-align: center; padding: 14px 15px; min-height: 48px;">
-          <h3 class="box-title" style="float: none; display: inline-block; font-weight: 600; font-size: 18px; margin: 0; line-height: 24px;">Initial Category Fields</h3>
+          <h3 class="box-title" style="float: none; display: inline-block; font-weight: 600; font-size: 18px; margin: 0; line-height: 24px;">Company</h3>
         </div>
 
         <div class="box-body">
@@ -379,7 +380,7 @@
 
       <div class="box box-default">
         <div class="box-header with-border" style="position: relative; text-align: center; padding: 14px 15px; min-height: 48px;">
-          <h3 class="box-title" style="float: none; display: inline-block; font-weight: 600; font-size: 18px; margin: 0; line-height: 24px;">Service &amp; Quotation Details</h3>
+          <h3 class="box-title" style="float: none; display: inline-block; font-weight: 600; font-size: 18px; margin: 0; line-height: 24px;">Service &amp; Quotation</h3>
         </div>
 
         <div class="box-body">
@@ -519,7 +520,7 @@
       <!-- Followup Field -->
       <div class="box box-default">
         <div class="box-header with-border" style="position: relative; text-align: center; padding: 14px 15px; min-height: 48px;">
-          <h3 class="box-title" style="float: none; display: inline-block; font-weight: 600; font-size: 18px; margin: 0; line-height: 24px;">Followup Field</h3>
+          <h3 class="box-title" style="float: none; display: inline-block; font-weight: 600; font-size: 18px; margin: 0; line-height: 24px;">Follow-up</h3>
         </div>
         <div class="box-body">
           <div class="row">
@@ -554,7 +555,7 @@
       <!-- Meeting Field -->
       <div class="box box-default">
         <div class="box-header with-border" style="position: relative; text-align: center; padding: 14px 15px; min-height: 48px;">
-          <h3 class="box-title" style="float: none; display: inline-block; font-weight: 600; font-size: 18px; margin: 0; line-height: 24px;">Meeting Field</h3>
+          <h3 class="box-title" style="float: none; display: inline-block; font-weight: 600; font-size: 18px; margin: 0; line-height: 24px;">Meeting</h3>
         </div>
         <div class="box-body">
           <div class="row">
@@ -696,10 +697,11 @@
           </div>
         </div>
 
-        <div class="box-footer" style="background: #f8fafc; padding: 16px 20px; border-top: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+        <div class="box-footer ureg-footer" style="background: #f8fafc; padding: 16px 20px; border-top: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
           <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
             <label style="margin: 0; font-size: 13px; font-weight: 700; color: #0f172a;">Order Status:</label>
             <select name="order_status" id="select_order_status" class="form-control" style="width: auto; min-width: 220px; font-weight: 600; border-radius: 4px; border: 1px solid #cbd5e1; height: 38px;">
+              <option value="Onboarding" selected>Onboarding</option>
               <option value="In Progress">In Progress (Open Orders)</option>
               <option value="Follow Up">Follow Up (Orders Follow-up)</option>
               <option value="Completed">Completed (Completed Orders)</option>

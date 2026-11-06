@@ -1,7 +1,9 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-ureg.css?v=20261106_4">
 <div class="container">
-<div class="content-wrapper"> 
+<div class="content-wrapper ureg ureg-bo"> 
+<?php echo crm_mz_tabbar(); ?>
   
   <section class="content-header">
     <h1> Onboard Client </h1>
@@ -912,9 +914,9 @@
         </div>
       </div>
 
-      <div class="box-footer text-center" style="padding: 20px 15px; background: transparent;">
-        <button type="submit" class="btn btn-danger btn-lg" style="min-width: 180px;"><i class="fa fa-user-plus"></i> Onboard Client</button>
-        <a href="<?php echo base_url(); ?>manager/kam/my-client" class="btn btn-default btn-lg" style="margin-left: 10px;">Cancel</a>
+      <div class="box-footer ureg-footer">
+        <a href="<?php echo base_url(); ?>manager/kam/my-client" class="btn btn-default">Cancel</a>
+        <button type="submit" class="btn btn-primary"><i class="fa fa-user-plus"></i> Onboard Client</button>
       </div>
 
     </form>

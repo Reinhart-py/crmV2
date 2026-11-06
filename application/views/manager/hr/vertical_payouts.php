@@ -22,7 +22,7 @@ foreach ($verticals as $v) if ((int)$v['id'] === (int)$vf) $vname = $v['company_
 <div class="content-wrapper sx">
   <?php echo crm_tabbar('hr_pay', 'hr/vertical_payouts'); ?>
   <section class="sx-head">
-    <h1>Vertical Payouts<small>Money paid to verticals (referral partners) for the clients they bring</small></h1>
+    <h1>Vertical Payouts</h1>
   </section>
   <section class="content">
     <?php echo get_message($this->session->flashdata('error_message'), 'error_message'); ?>
@@ -110,7 +110,6 @@ foreach ($verticals as $v) if ((int)$v['id'] === (int)$vf) $vname = $v['company_
       </div>
       <?php } ?>
     </div>
-    <p class="sx-help"><i class="fa fa-info-circle"></i> The agreed amount is the <b>Amount to Pay</b> set under <b>Vertical Selection</b> on each client's record. Payouts are recorded here by HR and show on the vertical's page.</p>
   </section>
 </div>
 <?php if ($can_edit) { ?>
