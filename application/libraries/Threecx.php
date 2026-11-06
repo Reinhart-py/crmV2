@@ -46,6 +46,18 @@ class Threecx
 		return $this->config;
 	}
 
+	/** Key 3CX must send with the webhooks; made once and kept in the git-ignored local config file. */
+	public function webhook_key($renew = false)
+	{
+		if (!$renew && !empty($this->config['webhook_key'])) return (string)$this->config['webhook_key'];
+		$key = bin2hex(random_bytes(24));
+		$cfg = $this->config;
+		$cfg['webhook_key'] = $key;
+		if (@file_put_contents($this->local_file, json_encode($cfg, JSON_PRETTY_PRINT)) === false) return '';
+		$this->config = $cfg;
+		return $key;
+	}
+
 	public function save_config($data)
 	{
 		$clean_fqdn = isset($data['pbx_fqdn']) ? trim($data['pbx_fqdn']) : '';
@@ -64,6 +76,7 @@ class Threecx
 			'multiple_lines' => isset($data['multiple_lines']) ? trim($data['multiple_lines']) : '',
 			'auto_open_webclient' => !empty($data['auto_open_webclient']) ? true : false,
 			'autodialer_seconds' => $seconds,
+			'webhook_key' => isset($this->config['webhook_key']) ? (string)$this->config['webhook_key'] : '',
 			'updated_at' => date('Y-m-d H:i:s')
 		);
 

@@ -14,7 +14,12 @@ class Ci_admin_calls extends CI_Controller
 		$this->load->model('dialer_campaign_model');
 		$this->dialer_campaign_model->ensure_schema();
 		$this->load->helper(array('form', 'url', 'text', 'date'));
-		$this->if_not_login();
+		// 3CX posts the two webhooks without a CRM login; they need the webhook key instead.
+		if (in_array($this->router->fetch_method(), array('cdr_webhook', 'recording_webhook'), true)) {
+			$this->_check_webhook_key();
+		} else {
+			$this->if_not_login();
+		}
 	}
 
 	public function if_not_login()
@@ -22,6 +27,70 @@ class Ci_admin_calls extends CI_Controller
 		if ($this->session->userdata('manager_id') == '') {
 			redirect('/manager/login');
 		}
+	}
+
+	/** Webhook key from the X-Webhook-Key header or ?key=; refused (403) when missing or wrong. */
+	private function _check_webhook_key()
+	{
+		$cfg = $this->threecx->get_config();
+		$want = isset($cfg['webhook_key']) ? (string)$cfg['webhook_key'] : '';
+		$got = isset($_SERVER['HTTP_X_WEBHOOK_KEY']) ? (string)$_SERVER['HTTP_X_WEBHOOK_KEY'] : (isset($_GET['key']) ? (string)$_GET['key'] : '');
+		if ($want === '' || $got === '' || !hash_equals($want, $got)) {
+			http_response_code(403);
+			header('Content-Type: application/json; charset=utf-8');
+			echo json_encode(array('status' => false, 'message' => 'Invalid webhook key'));
+			exit;
+		}
+	}
+
+	/** Admin, user #1 or "All company data": every record. */
+	private function _sees_all()
+	{
+		$me = (int)$this->session->userdata('manager_id');
+		return ((int)$this->session->userdata('manager_role') === 1 || $me === 1 || crm_can('all_data'));
+	}
+
+	/** May the signed-in user work on this lead? Owner in self + team, or listed as an agent. */
+	private function _can_use_lead($lead_id)
+	{
+		$lead_id = (int)$lead_id;
+		if ($lead_id <= 0) return false;
+		$row = $this->db->query("SELECT lead_assign, created_by, agents FROM ci_leads WHERE id = {$lead_id} LIMIT 1")->row_array();
+		if (empty($row)) return false;
+		if ($this->_sees_all()) return true;
+		$me = (int)$this->session->userdata('manager_id');
+		if (!empty($row['agents']) && in_array($me, array_map('intval', explode(',', $row['agents'])), true)) return true;
+		$owner = (int)$row['lead_assign'] > 0 ? (int)$row['lead_assign'] : (int)$row['created_by'];
+		if ($owner === $me) return true;
+		$team = $this->ci_admin_model->fetchTeamList($me, '');
+		return is_array($team) && in_array($owner, array_map('intval', $team), true);
+	}
+
+	/** May the signed-in user change this call log? Own calls only (Admin / all data: any). */
+	private function _can_use_call_log($call_log_id)
+	{
+		$call_log_id = (int)$call_log_id;
+		if ($call_log_id <= 0) return false;
+		$row = $this->db->query("SELECT user_id FROM ci_call_logs WHERE id = {$call_log_id} LIMIT 1")->row_array();
+		if (empty($row)) return false;
+		return $this->_sees_all() || (int)$row['user_id'] === (int)$this->session->userdata('manager_id');
+	}
+
+	/** Recording links are accepted only from the 3CX server (https). */
+	private function _safe_recording_url($url)
+	{
+		$url = trim((string)$url);
+		if ($url === '') return '';
+		$cfg = $this->threecx->get_config();
+		$pbx = strtolower(preg_replace('~:\d+$~', '', (string)$cfg['pbx_fqdn']));
+		$p = parse_url($url);
+		if (empty($p['scheme']) || strtolower($p['scheme']) !== 'https' || empty($p['host']) || $pbx === '' || strtolower($p['host']) !== $pbx) return '';
+		return $url;
+	}
+
+	private function _deny($msg = 'You cannot change this record.')
+	{
+		echo json_encode(array('status' => false, 'message' => $msg));
 	}
 
 	private function _apply_lead_filters($status_filter = 'all')
@@ -787,6 +856,15 @@ class Ci_admin_calls extends CI_Controller
 		$next_time = trim($this->input->post('next_followup_time'));
 		$duration = (int)$this->input->post('call_duration');
 
+		if ($lead_id > 0 && !$this->_can_use_lead($lead_id)) {
+			$this->_deny('This record is not in your database.');
+			return;
+		}
+		if ($call_log_id > 0 && !$this->_can_use_call_log($call_log_id)) {
+			$this->_deny('This call is not yours.');
+			return;
+		}
+
 		if ($call_log_id > 0) {
 			$this->db->where('id', $call_log_id);
 			$this->db->update('ci_call_logs', array(
@@ -1049,6 +1127,14 @@ class Ci_admin_calls extends CI_Controller
 			echo json_encode(array('status' => false, 'message' => 'Invalid Record ID'));
 			return;
 		}
+		if (!$this->_can_use_lead($lead_id)) {
+			$this->_deny('This record is not in your database.');
+			return;
+		}
+		if ($call_log_id > 0 && !$this->_can_use_call_log($call_log_id)) {
+			$this->_deny('This call is not yours.');
+			return;
+		}
 
 		$lead_update = array(
 			'edited_by' => $manager_id,
@@ -1301,6 +1387,24 @@ class Ci_admin_calls extends CI_Controller
 		echo json_encode($result);
 	}
 
+	public function ajax_renew_webhook_key()
+	{
+		if (!crm_can('calling_api', 'write')) {
+			echo json_encode(array('status' => false, 'message' => 'You need Full access to Calling API.'));
+			return;
+		}
+		$key = $this->threecx->webhook_key(true);
+		if ($key === '') {
+			echo json_encode(array('status' => false, 'message' => 'Could not save the new key.'));
+			return;
+		}
+		echo json_encode(array(
+			'status' => true,
+			'cdr_url' => base_url() . 'api/calls/cdr_webhook?key=' . $key,
+			'recording_url' => base_url() . 'api/calls/recording_webhook?key=' . $key
+		));
+	}
+
 	public function calling_api()
 	{
 		$role = (int)$this->session->userdata('manager_role');
@@ -1316,6 +1420,7 @@ class Ci_admin_calls extends CI_Controller
 		unset($cfg['client_secret']);
 		$data['threecx_config'] = $cfg;
 		$data['can_edit'] = crm_can('calling_api', 'write');
+		$data['webhook_key'] = $data['can_edit'] ? $this->threecx->webhook_key() : '';
 		$data['manager_role'] = $role;
 		$data['manager_name'] = $this->session->userdata('manager_name');
 
@@ -1337,6 +1442,7 @@ class Ci_admin_calls extends CI_Controller
 		$call_type = isset($payload['type']) ? trim($payload['type']) : 'Inbound 3CX';
 		$call_id = isset($payload['call_id']) ? trim($payload['call_id']) : (isset($payload['CallId']) ? trim($payload['CallId']) : (isset($payload['callid']) ? trim($payload['callid']) : ''));
 		$recording_url = isset($payload['recording_url']) ? trim($payload['recording_url']) : (isset($payload['RecordingUrl']) ? trim($payload['RecordingUrl']) : (isset($payload['recording']) ? trim($payload['recording']) : ''));
+		$recording_url = $this->_safe_recording_url($recording_url);
 
 		$phone = !empty($caller) ? $caller : $callee;
 		$lead = null;
@@ -1404,9 +1510,10 @@ class Ci_admin_calls extends CI_Controller
 
 		$call_id = isset($payload['call_id']) ? trim($payload['call_id']) : (isset($payload['CallId']) ? trim($payload['CallId']) : '');
 		$recording_url = isset($payload['recording_url']) ? trim($payload['recording_url']) : (isset($payload['RecordingUrl']) ? trim($payload['RecordingUrl']) : '');
+		$recording_url = $this->_safe_recording_url($recording_url);
 
-		if (empty($call_id) && empty($recording_url)) {
-			echo json_encode(array('status' => false, 'message' => 'Missing call_id and recording_url'));
+		if (empty($call_id) || empty($recording_url)) {
+			echo json_encode(array('status' => false, 'message' => 'Missing call_id or a recording link from the 3CX server'));
 			return;
 		}
 
@@ -1432,6 +1539,10 @@ class Ci_admin_calls extends CI_Controller
 		$call_log_id = (int)$this->input->post('call_log_id');
 		if ($call_log_id <= 0) {
 			echo json_encode(array('status' => false, 'message' => 'Invalid call log ID'));
+			return;
+		}
+		if (!$this->_can_use_call_log($call_log_id)) {
+			$this->_deny('This call is not yours.');
 			return;
 		}
 
@@ -1842,6 +1953,15 @@ class Ci_admin_calls extends CI_Controller
 		$call_duration = (int)$this->input->post('call_duration');
 		$call_disposition = trim($this->input->post('call_disposition'));
 		$remarks = trim($this->input->post('remarks'));
+
+		if ($lead_id > 0 && !$this->_can_use_lead($lead_id)) {
+			$this->_deny('This record is not in your database.');
+			return;
+		}
+		if ($call_log_id > 0 && !$this->_can_use_call_log($call_log_id)) {
+			$this->_deny('This call is not yours.');
+			return;
+		}
 
 		if (empty($customer_name)) {
 			$customer_name = 'Direct Contact';

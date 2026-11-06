@@ -325,11 +325,12 @@ class Groq_service {
 
 		$parsed = parse_url($remote_url);
 		$scheme = isset($parsed['scheme']) ? strtolower($parsed['scheme']) : '';
-		if ($scheme !== 'https' && $scheme !== 'http') {
-			if (file_exists($remote_url)) {
-				return array('status' => true, 'local_path' => $remote_url);
-			}
-			return array('status' => false, 'message' => 'Invalid recording URL scheme: ' . $scheme);
+		// Only https links on the 3CX server: never a server file path or another host.
+		$cfg = $this->ci->threecx->get_config();
+		$pbx = strtolower(preg_replace('~:\d+$~', '', (string)$cfg['pbx_fqdn']));
+		$host = isset($parsed['host']) ? strtolower($parsed['host']) : '';
+		if ($scheme !== 'https' || $pbx === '' || $host !== $pbx) {
+			return array('status' => false, 'message' => 'Recording link is not on the 3CX server');
 		}
 
 		$ext = pathinfo($parsed['path'] ?? '', PATHINFO_EXTENSION);

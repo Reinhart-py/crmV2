@@ -83,6 +83,26 @@ $configured = $v('pbx_fqdn') !== '' && $v('client_id') !== '' && $has_secret;
         </form>
       </div>
       <p class="sx-help"><i class="fa fa-shield"></i> The client secret is stored on the server only and is never shown again after saving.</p>
+
+      <?php if ($can_edit && !empty($webhook_key)) { ?>
+      <div class="sx-card">
+        <div class="sx-card-h"><h3><i class="fa fa-exchange"></i> 3CX webhooks</h3></div>
+        <div class="sx-card-b">
+          <div class="form-group">
+            <label for="whCdr">Call report (CDR)</label>
+            <input type="text" id="whCdr" class="form-control mono" readonly value="<?php echo $h(base_url() . 'api/calls/cdr_webhook?key=' . $webhook_key); ?>" onclick="this.select()" />
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label for="whRec">Recording</label>
+            <input type="text" id="whRec" class="form-control mono" readonly value="<?php echo $h(base_url() . 'api/calls/recording_webhook?key=' . $webhook_key); ?>" onclick="this.select()" />
+          </div>
+          <p class="sx-help" style="margin-top:8px;">Keep these links private. Recordings are accepted only from the 3CX address above.</p>
+        </div>
+        <div class="sx-card-f">
+          <button type="button" class="btn btn-default" id="btnNewWebhookKey"><i class="fa fa-refresh"></i> New key</button>
+        </div>
+      </div>
+      <?php } ?>
     </div>
   </section>
 </div>
@@ -118,6 +138,16 @@ $(function () {
       error: function () { say(false, 'The server could not save the settings.'); },
       complete: function () { btn.prop('disabled', false).html('<i class="fa fa-save"></i> Save settings'); }
     });
+  });
+
+  $('#btnNewWebhookKey').on('click', function () {
+    if (!confirm('Make a new key? The old webhook links stop working until 3CX is updated.')) return;
+    $.post('<?php echo base_url(); ?>manager/calls/ajax_renew_webhook_key', {}, function (res) {
+      if (res && res.status) {
+        $('#whCdr').val(res.cdr_url);
+        $('#whRec').val(res.recording_url);
+      } else alert((res && res.message) || 'Could not make a new key.');
+    }, 'json');
   });
 });
 </script>
