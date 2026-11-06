@@ -60,7 +60,7 @@ foreach ($groups as $fs) foreach ($fs as $f) if (trim((string)$f[1]) === '') $n_
           <h1><?php echo $kv_h($company); ?> <span class="svh-tag is-green"><?php echo $kv_h($status); ?></span></h1>
         </div>
         <div class="svh-acts">
-          <a href="<?php echo base_url('manager/kam/schedule?client=' . urlencode($company)); ?>" class="btn btn-default"><i class="fa fa-calendar"></i> Schedule</a>
+          <a href="<?php echo base_url('manager/kam/schedule?client=' . urlencode($company)); ?>" class="btn btn-default"><i class="fa fa-calendar"></i> Tasks</a>
           <a href="<?php echo base_url('manager/kam/task-followup?search=' . urlencode($company)); ?>" class="btn btn-primary svh-next"><i class="fa fa-tasks"></i> Task Follow-up</a>
         </div>
       </div>
@@ -90,7 +90,7 @@ foreach ($groups as $fs) foreach ($fs as $f) if (trim((string)$f[1]) === '') $n_
 
     <div class="box box-default kv-card">
       <div class="box-header kv-head">
-        <h3 class="box-title">Upcoming schedule</h3>
+        <h3 class="box-title">Upcoming tasks</h3>
         <a href="<?php echo base_url('manager/kam/task-followup?search=' . urlencode($company)); ?>">Task Follow-up</a>
       </div>
       <div class="box-body" style="padding:4px 14px 10px;">
@@ -113,7 +113,7 @@ foreach ($groups as $fs) foreach ($fs as $f) if (trim((string)$f[1]) === '') $n_
           </table>
         </div>
         <?php } else { ?>
-        <p class="text-muted" style="margin:6px 0;">Nothing scheduled.</p>
+        <p class="text-muted" style="margin:6px 0;">No upcoming tasks.</p>
         <?php } ?>
       </div>
     </div>

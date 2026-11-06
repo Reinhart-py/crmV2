@@ -128,7 +128,7 @@ if (!function_exists('crm_perm_catalog')) {
 				'icon' => '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>',
 				'items' => array(
 					'kam_clients' => array('tab' => 'km_clients', 'label' => 'My Client', 'desc' => 'Key account clients assigned to you', 'fallback' => 'kam', 'nav' => array(array('kam/my-client', 'My Client', 'fa-user')), 'pages' => array('kam/my-client', 'kam/my_client', 'kam')),
-					'kam_schedule' => array('tab' => 'km_clients', 'label' => 'Create Schedule', 'desc' => 'Plan client visits and pitches', 'fallback' => 'kam', 'nav' => array(array('kam/schedule', 'Create Schedule', 'fa-calendar')), 'pages' => array('kam/schedule', 'kam/pitch-schedule')),
+					'kam_schedule' => array('tab' => 'km_clients', 'label' => 'Client Tasks', 'desc' => 'Monthly client tasks', 'fallback' => 'kam', 'nav' => array(array('kam/schedule', 'Client Tasks', 'fa-calendar')), 'pages' => array('kam/schedule', 'kam/pitch-schedule')),
 					'kam_sales_approval' => array('tab' => 'km_sales', 'label' => 'Pending Sales Approval', 'desc' => 'Approve orders as sales', 'fallback' => 'kam', 'nav' => array(array('orders/pending_sales_approval', 'Pending Sales Approval', 'fa-check-circle')), 'pages' => array('orders/pending_sales_approval', 'kam/onboard?approve=1')),
 					'kam_task_followup' => array('tab' => 'km_follow', 'label' => 'Task Follow-up', 'desc' => 'Client task follow-ups', 'fallback' => 'kam', 'nav' => array(array('kam/task-followup', 'Task Follow-up', 'fa-tasks')), 'pages' => array('kam/task-followup')),
 					'kam_reminders' => array('tab' => 'km_follow', 'label' => 'Reminders', 'desc' => 'Client reminders', 'fallback' => 'kam', 'nav' => array(array('kam/reminders', 'Reminders', 'fa-bell-o')), 'pages' => array('kam/reminders')),
@@ -476,7 +476,7 @@ if (!function_exists('crm_tab_groups')) {
 			// KAM: clients, sales approval and follow-ups, each one menu link with tabs
 			'km_clients' => array('label' => 'Clients', 'icon' => 'fa-user', 'tabs' => array(
 				array('kam_clients', 'kam/my-client', 'My Clients', 'fa-user'),
-				array('kam_schedule', 'kam/schedule', 'Schedules', 'fa-calendar'),
+				array('kam_schedule', 'kam/schedule', 'Tasks', 'fa-calendar'),
 				array('kam_report', 'kam/report', 'Report', 'fa-bar-chart'),
 			)),
 			'km_sales' => array('label' => 'Sales Approval', 'icon' => 'fa-check-circle', 'tabs' => array(

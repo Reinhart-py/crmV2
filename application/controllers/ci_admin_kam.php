@@ -875,8 +875,8 @@ class Ci_admin_kam extends CI_Controller
 
 		$data = array();
 		$data['info'] = array(
-			'title' => 'KAM - Create Schedule',
-			'page_heading' => 'Create Schedule'
+			'title' => 'KAM - Client Tasks',
+			'page_heading' => 'Client Tasks'
 		);
 
 		$manager_id = (int)$this->session->userdata('manager_id');
@@ -915,68 +915,66 @@ class Ci_admin_kam extends CI_Controller
 			$sched_check = $this->input->post('sched_check');
 
 			if (empty($sched_name) || !is_array($sched_name)) {
-				$this->session->set_flashdata('error_message', 'Please provide at least one schedule row.');
+				$this->session->set_flashdata('error_message', 'Please add at least one task.');
 				redirect('manager/kam/schedule');
 				return;
 			}
 
-			$sched_months = array('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec');
+			// cells come keyed "YYYY-Mon" (the last 12 months); each year is kept in its own row as before
 			$all_schedules_data = array();
-
 			foreach ($sched_name as $s_idx => $s_title) {
 				$s_title = trim($s_title);
 				if ($s_title === '') continue;
 
-				$months_data = array();
-				$primary_status = 'Not Applicable';
-				foreach ($sched_months as $sm) {
-					$st = isset($sched_status[$s_idx][$sm]) ? $sched_status[$s_idx][$sm] : 'Not Applicable';
-					$ck = !empty($sched_check[$s_idx][$sm]) ? 1 : 0;
-					$months_data[$sm] = array('status' => $st, 'checked' => $ck);
-					if ($st !== 'Not Applicable') {
-						if ($primary_status === 'Not Applicable') {
-							$primary_status = $st;
-						} elseif ($st === 'Approved') {
-							$primary_status = 'Approved';
-						} elseif ($st === 'Pending' && $primary_status !== 'Approved') {
-							$primary_status = 'Pending';
-						}
+				$by_year = array();
+				$cells = isset($sched_status[$s_idx]) && is_array($sched_status[$s_idx]) ? $sched_status[$s_idx] : array();
+				foreach ($cells as $key => $st) {
+					if (!preg_match('~^(\d{4})-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)$~', (string)$key, $mm)) continue;
+					$st = in_array($st, array('Not Applicable', 'Pending', 'Approved', 'Expired', 'Other'), true) ? $st : 'Not Applicable';
+					$by_year[(int)$mm[1]][$mm[2]] = array('status' => $st, 'checked' => !empty($sched_check[$s_idx][$key]) ? 1 : 0);
+				}
+				$window_months = array();
+				foreach ($by_year as $y => $cells_y) {
+					foreach ($cells_y as $m => $c) $window_months[$y . '-' . $m] = $c;
+					$existing = $this->db->get_where('ci_kam_schedules', array('client_name' => $client_name, 'title' => $s_title, 'sched_year' => $y))->row_array();
+					// months outside the window keep what was saved before
+					$months_data = array();
+					if (!empty($existing)) {
+						$old = json_decode(!empty($existing['matrix_data']) ? $existing['matrix_data'] : $existing['remarks'], true);
+						if (is_array($old)) $months_data = $old;
+					}
+					foreach ($cells_y as $m => $c) $months_data[$m] = $c;
+					$primary_status = 'Not Applicable';
+					foreach ($months_data as $c) {
+						$st = is_array($c) && isset($c['status']) ? $c['status'] : 'Not Applicable';
+						if ($st === 'Not Applicable') continue;
+						if ($primary_status === 'Not Applicable') $primary_status = $st;
+						elseif ($st === 'Approved') $primary_status = 'Approved';
+						elseif ($st === 'Pending' && $primary_status !== 'Approved') $primary_status = 'Pending';
+					}
+					if (empty($existing) && $primary_status === 'Not Applicable' && $y !== (int)date('Y')) continue; // an earlier year with nothing set: no empty row
+					$record = array(
+						'client_id' => $client_id,
+						'client_name' => $client_name,
+						'title' => $s_title,
+						'service_type' => 'Annual Schedule',
+						'frequency' => 'Monthly',
+						'sched_year' => $y,
+						'assigned_to' => $assigned_to,
+						'assigned_name' => $assigned_name,
+						'remarks' => json_encode($months_data),
+						'matrix_data' => json_encode($months_data),
+						'status' => $primary_status
+					);
+					if (!empty($existing)) {
+						$this->db->where('id', $existing['id'])->update('ci_kam_schedules', $record);
+					} else {
+						$record['created_by'] = $manager_id;
+						$record['created_at'] = date('Y-m-d H:i:s');
+						$this->db->insert('ci_kam_schedules', $record);
 					}
 				}
-
-				$all_schedules_data[] = array(
-					'title' => $s_title,
-					'months' => $months_data,
-					'status' => $primary_status
-				);
-
-				$existing = $this->db->get_where('ci_kam_schedules', array(
-					'client_name' => $client_name,
-					'title' => $s_title,
-					'sched_year' => $sched_year
-				))->row_array();
-
-				$record = array(
-					'client_id' => $client_id,
-					'client_name' => $client_name,
-					'title' => $s_title,
-					'service_type' => 'Annual Schedule',
-					'frequency' => 'Monthly',
-					'sched_year' => $sched_year,
-					'assigned_to' => $assigned_to,
-					'assigned_name' => $assigned_name,
-					'remarks' => json_encode($months_data),
-					'matrix_data' => json_encode($months_data),
-					'status' => $primary_status
-				);
-
-				if (!empty($existing)) {
-					$this->db->where('id', $existing['id'])->update('ci_kam_schedules', $record);
-				} else {
-					$record['created_by'] = $manager_id;
-					$record['created_at'] = date('Y-m-d H:i:s');
-					$this->db->insert('ci_kam_schedules', $record);
-				}
+				$all_schedules_data[] = array('title' => $s_title, 'months' => $window_months);
 			}
 
 			$client_detail = $this->db->get_where('ci_kam_client_details', array('client_name' => $client_name))->row_array();
@@ -986,12 +984,13 @@ class Ci_admin_kam extends CI_Controller
 				));
 			}
 
-			$this->ci_admin_model->log_admin_action('kam_schedule_save', 'Saved 12-month schedule for ' . $client_name . ' (' . $sched_year . ')', 'SUCCESS', $manager_id, $this->session->userdata('manager_name'));
-			$this->session->set_flashdata('message', 'Schedules for ' . htmlspecialchars($client_name) . ' saved successfully.');
-			redirect('manager/kam/schedule');
+			$this->ci_admin_model->log_admin_action('kam_schedule_save', 'Saved tasks (last 12 months) for ' . $client_name, 'SUCCESS', $manager_id, $this->session->userdata('manager_name'));
+			$this->session->set_flashdata('message', 'Tasks for ' . htmlspecialchars($client_name) . ' saved.');
+			redirect('manager/kam/schedule?client=' . urlencode($client_name));
 			return;
 		}
 
+		$data['task_window'] = $this->_task_window();
 		$data['u_list'] = $this->comman_model->getAll(array('status' => 1), array('name', 'ASC'), 'ci_user');
 		$data['p_cat'] = $this->comman_model->getAll(array('parent_id' => 0, 'status' => 1, 'cat_type' => 'p_cat'), '', 'ci_terms');
 
@@ -1019,6 +1018,18 @@ class Ci_admin_kam extends CI_Controller
 		$this->load->view('manager/kam/schedule', $data);
 	}
 
+	/** The last 12 months, oldest first, ending with the current month: key "YYYY-Mon", year, month, label. */
+	private function _task_window()
+	{
+		$out = array();
+		$base = strtotime(date('Y-m-01'));
+		for ($i = 11; $i >= 0; $i--) {
+			$t = strtotime('-' . $i . ' month', $base);
+			$out[] = array('key' => date('Y', $t) . '-' . date('M', $t), 'y' => (int)date('Y', $t), 'm' => date('M', $t), 'label' => date('M', $t), 'yr' => date('y', $t));
+		}
+		return $out;
+	}
+
 	public function ajax_get_client_schedules()
 	{
 		$this->ci_admin_model->check_permission('kam', 'read', true);
@@ -1026,35 +1037,24 @@ class Ci_admin_kam extends CI_Controller
 		if (empty($client_name)) {
 			$client_name = trim($this->input->get_post('customer'));
 		}
-		$sched_year = (int)$this->input->get_post('sched_year');
-		if ($sched_year < 2000) {
-			$sched_year = (int)date('Y');
-		}
-
-		$result = array('status' => 'empty', 'schedules' => array());
+		$window = $this->_task_window();
+		$result = array('status' => 'empty', 'schedules' => array(), 'window' => $window);
 
 		if (!empty($client_name)) {
-			$this->db->select('*');
-			$this->db->from('ci_kam_schedules');
-			$this->db->where('client_name', $client_name);
-			$this->db->where('sched_year', $sched_year);
-			$this->db->order_by('id', 'ASC');
-			$rows = $this->db->get()->result_array();
-
-			if (!empty($rows)) {
-				$schedules = array();
-				foreach ($rows as $r) {
-					$raw = !empty($r['matrix_data']) ? $r['matrix_data'] : $r['remarks'];
-					$decoded = json_decode($raw, true);
-					$schedules[] = array(
-						'id' => $r['id'],
-						'name' => $r['title'],
-						'status' => $r['status'],
-						'months' => is_array($decoded) ? $decoded : array()
-					);
+			$years = array_values(array_unique(array_map(function ($w) { return $w['y']; }, $window)));
+			$rows = $this->db->from('ci_kam_schedules')->where('client_name', $client_name)->where_in('sched_year', $years)->order_by('id', 'ASC')->get()->result_array();
+			// one task per title, its months across the window keyed "YYYY-Mon"
+			$tasks = array();
+			foreach ($rows as $r) {
+				$decoded = json_decode(!empty($r['matrix_data']) ? $r['matrix_data'] : $r['remarks'], true);
+				if (!isset($tasks[$r['title']])) $tasks[$r['title']] = array('id' => $r['id'], 'name' => $r['title'], 'months' => array());
+				if (is_array($decoded)) {
+					foreach ($decoded as $m => $c) $tasks[$r['title']]['months'][$r['sched_year'] . '-' . $m] = $c;
 				}
+			}
+			if ($tasks) {
 				$result['status'] = 'success';
-				$result['schedules'] = $schedules;
+				$result['schedules'] = array_values($tasks);
 			}
 		}
 

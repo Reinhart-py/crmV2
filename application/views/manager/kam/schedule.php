@@ -6,11 +6,14 @@ $sc_n = isset($schedules) ? count($schedules) : 0;
 $sc_client = trim((string)$this->input->get('client'));
 $my_id = (int)$this->session->userdata('manager_id');
 $curYear = (int)date('Y');
+$tw = isset($task_window) ? $task_window : array();
+// month heading: the year shows on the first column and on January
+$tw_head = function ($w, $i) { return $w['label'] . (($i === 0 || $w['m'] === 'Jan') ? '<small>' . $w['y'] . '</small>' : ''); };
 ?>
 <div class="content-wrapper px-4 tlv ksc">
 <?php echo crm_mz_tabbar(); ?>
   <section class="content-header">
-    <h1><?php echo $sc_h($info['page_heading'] ?? 'Create Schedule'); ?><small><?php echo $sc_n; ?> schedules</small></h1>
+    <h1><?php echo $sc_h($info['page_heading'] ?? 'Client Tasks'); ?><small><?php echo $sc_n; ?> tasks</small></h1>
   </section>
 
   <section class="content">
@@ -29,14 +32,6 @@ $curYear = (int)date('Y');
               <?php } ?>
             </select>
           </div>
-          <div class="ksc-f ksc-year">
-            <label for="sched_year">Year</label>
-            <select class="form-control" name="sched_year" id="sched_year">
-              <?php for ($y = $curYear - 1; $y <= $curYear + 2; $y++) { ?>
-                <option value="<?php echo $y; ?>"<?php echo $y === $curYear ? ' selected' : ''; ?>><?php echo $y; ?></option>
-              <?php } ?>
-            </select>
-          </div>
           <div class="ksc-f ksc-who">
             <label for="sched_assign">Assigned to<span>*</span></label>
             <select class="form-control select2" name="assigned_to" id="sched_assign" required style="width:100%;">
@@ -48,7 +43,7 @@ $curYear = (int)date('Y');
         </div>
 
         <div class="ksc-bar">
-          <span class="ksc-bar-t">Tasks by month</span>
+          <span class="ksc-bar-t">Last 12 months</span>
           <span class="ksc-presets" role="group" aria-label="Load a task set">
             <button type="button" class="btn btn-xs btn-default btn-apply-preset" data-preset="tax">Tax &amp; Accounting</button>
             <button type="button" class="btn btn-xs btn-default btn-apply-preset" data-preset="corporate">Corporate</button>
@@ -61,7 +56,7 @@ $curYear = (int)date('Y');
             <thead>
               <tr>
                 <th class="ksc-name">Task</th>
-                <?php foreach (array('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec') as $m_name) { ?><th><?php echo $m_name; ?></th><?php } ?>
+                <?php foreach ($tw as $i => $w) { ?><th<?php echo $i === count($tw) - 1 ? ' class="is-now"' : ''; ?>><?php echo $tw_head($w, $i); ?></th><?php } ?>
                 <th aria-label="Remove"></th>
               </tr>
             </thead>
@@ -70,14 +65,14 @@ $curYear = (int)date('Y');
         </div>
         <div class="ksc-foot">
           <a href="<?php echo base_url(); ?>manager/kam/my-client" class="btn btn-default">Cancel</a>
-          <button type="submit" class="btn btn-primary"><i class="fa fa-check"></i> Save schedule</button>
+          <button type="submit" class="btn btn-primary"><i class="fa fa-check"></i> Save tasks</button>
         </div>
       </div>
     </form>
 
     <div class="box ksc-box">
       <div class="ksc-lhead">
-        <nav class="ksc-seg" aria-label="Schedules">
+        <nav class="ksc-seg" aria-label="Tasks">
           <a href="<?php echo base_url(); ?>manager/kam/schedule?tab=all"<?php echo $sc_tab === 'all' ? ' class="is-on" aria-current="page"' : ''; ?>>All</a>
           <a href="<?php echo base_url(); ?>manager/kam/schedule?tab=my"<?php echo $sc_tab === 'my' ? ' class="is-on" aria-current="page"' : ''; ?>>Assigned to me</a>
         </nav>
@@ -108,7 +103,7 @@ $curYear = (int)date('Y');
                   <td data-order="<?php echo !empty($sch['created_at']) ? date('Ymd', strtotime($sch['created_at'])) : '0'; ?>"><?php echo !empty($sch['created_at']) ? date('d-m-Y', strtotime($sch['created_at'])) : '—'; ?></td>
                   <td><?php echo $sc_h($sch['status'] ?? ''); ?></td>
                   <td class="text-nowrap">
-                    <button type="button" class="btn btn-xs btn-default btn-preview-matrix" data-client="<?php echo $sc_h($sch['client_name'] ?? ''); ?>" data-year="<?php echo $sc_h($sch['sched_year'] ?? $curYear); ?>" title="Preview year"><i class="fa fa-th"></i> Preview</button>
+                    <button type="button" class="btn btn-xs btn-default btn-preview-matrix" data-client="<?php echo $sc_h($sch['client_name'] ?? ''); ?>" title="Preview the last 12 months"><i class="fa fa-th"></i> Preview</button>
                     <a href="<?php echo base_url(); ?>manager/kam/schedule/delete/<?php echo (int)$sch['id']; ?>" class="btn btn-xs btn-default text-danger" onclick="return confirm('Delete this schedule row?');" title="Delete" aria-label="Delete"><i class="fa fa-trash"></i></a>
                   </td>
                 </tr>
@@ -116,7 +111,7 @@ $curYear = (int)date('Y');
             </tbody>
           </table>
         <?php } else { ?>
-          <p class="text-muted" style="margin:6px 0;">No schedules yet.</p>
+          <p class="text-muted" style="margin:6px 0;">No tasks yet.</p>
         <?php } ?>
       </div>
     </div>
@@ -126,7 +121,7 @@ $curYear = (int)date('Y');
         <div class="modal-content">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
-            <h4 class="modal-title" id="modalClientTitle">Schedule</h4>
+            <h4 class="modal-title" id="modalClientTitle">Tasks</h4>
           </div>
           <div class="modal-body" id="modalMatrixBody"></div>
           <div class="modal-footer">
@@ -147,20 +142,21 @@ $curYear = (int)date('Y');
   .ksc .ksc-f > label { margin: 0; font-size: 12.5px; font-weight: 500; color: var(--crm-ink-2, #475569); white-space: nowrap; }
   .ksc .ksc-f > label span { color: #dc2626; font-weight: 700; }
   .ksc .ksc-client { flex: 1 1 320px; }
-  .ksc .ksc-year { flex: 0 0 auto; }
   .ksc .ksc-who { flex: 0 1 260px; }
   .ksc .ksc-f .form-control, .ksc .ksc-f .select2-container .select2-selection--single { height: 30px !important; min-height: 30px; font-size: 13px; }
   .ksc .ksc-f .select2-container { flex: 1 1 auto; min-width: 0; }
   .ksc .ksc-f { position: relative; }
   .ksc .ksc-f select.select2-hidden-accessible { position: absolute !important; width: 1px !important; height: 1px !important; overflow: hidden; }
-  .ksc .ksc-year .form-control { width: 86px; padding: 3px 6px; }
   .ksc .ksc-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 8px 12px 4px; }
   .ksc .ksc-bar-t { margin-right: auto; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--crm-ocean, #1e3a8a); }
   .ksc .ksc-presets { display: inline-flex; gap: 4px; flex-wrap: wrap; }
   .ksc .ksc-wrap { margin: 0; border: 0; padding: 0 12px; }
   .ksc .ksc-m { margin: 0; font-size: 12px; }
   .ksc .ksc-m > thead > tr > th { padding: 4px 2px !important; font-size: 11px !important; font-weight: 600; text-align: center; color: var(--crm-muted, #64748b); background: none !important; border-bottom: 1px solid var(--crm-line, #e2e8f0) !important; text-transform: none; }
-  .ksc .ksc-m > thead > tr > th.ksc-name { text-align: left; padding-left: 0 !important; }
+  .ksc .ksc-m > thead > tr > th.ksc-name { text-align: center; }
+  .ksc .ksc-m > thead > tr > th small, .ksc-pv th small { display: block; font-size: 10px; font-weight: 500; opacity: .8; line-height: 1.1; }
+  .ksc .ksc-m > thead > tr > th.is-now { box-shadow: inset 0 -3px 0 #f59e0b; }
+  .ksc-pv th.is-now { color: var(--crm-ocean, #1e3a8a); }
   .ksc .ksc-m > tbody > tr > td { padding: 3px 2px !important; vertical-align: middle; border-top: 1px solid var(--crm-line-soft, #eef2f7) !important; }
   .ksc .ksc-m > tbody > tr > td:first-child { padding-left: 0 !important; min-width: 170px; }
   .ksc .ksc-m .sched-name-input { height: 28px; font-size: 12.5px; padding: 3px 7px; }
@@ -184,6 +180,7 @@ $curYear = (int)date('Y');
   .ksc-pv th:first-child { width: 190px; }
   .ksc-pv th { padding: 4px; font-size: 11px; font-weight: 600; text-align: center; color: var(--crm-muted, #64748b); }
   .ksc-pv th:first-child, .ksc-pv td:first-child { text-align: left; font-weight: 600; color: var(--crm-ink, #0f172a); padding-right: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ksc-pv th:first-child { text-align: center; }
   .ksc-pv td { padding: 5px 2px; text-align: center; border-radius: 4px; font-size: 11px; font-weight: 600; }
   .ksc-pv td.s-n { color: #cbd5e1; }
   .ksc-pv td.s-p { background: #fef3c7; color: #92400e; }
@@ -200,7 +197,11 @@ $curYear = (int)date('Y');
 $(function () {
   if ($.fn.select2) { $('.ksc .select2').select2(); }
 
-  var schedMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  // the last 12 months, oldest first; cells are keyed "YYYY-Mon"
+  var TW = <?php echo json_encode(array_values($tw)); ?>;
+  var schedMonths = TW.map(function (w) { return w.key; });
+  function mLabel(k) { for (var i = 0; i < TW.length; i++) if (TW[i].key === k) return TW[i].label + ' ' + TW[i].y; return k; }
+  function mHead(i) { var w = TW[i]; return w.label + ((i === 0 || w.m === 'Jan') ? '<small>' + w.y + '</small>' : ''); }
   // value => short label in the cells
   var STATUS = [['Not Applicable', '—', 's-n'], ['Pending', 'Pending', 's-p'], ['Approved', 'Approved', 's-a'], ['Expired', 'Expired', 's-e'], ['Other', 'Other', 's-o']];
   function cls(v) { for (var i = 0; i < STATUS.length; i++) if (STATUS[i][0] === v) return STATUS[i][2]; return 's-n'; }
@@ -218,9 +219,9 @@ $(function () {
       var md = (item.months && item.months[mn]) ? item.months[mn] : null;
       var st = md ? (md.status || 'Not Applicable') : 'Not Applicable';
       var ck = md ? parseInt(md.checked, 10) === 1 : false;
-      h += '<td><div class="ksc-cell"><select name="sched_status[' + idx + '][' + mn + ']" class="' + cls(st) + '" aria-label="' + mn + ' status">';
+      h += '<td><div class="ksc-cell"><select name="sched_status[' + idx + '][' + mn + ']" class="' + cls(st) + '" aria-label="' + mLabel(mn) + ' status">';
       STATUS.forEach(function (s) { h += '<option value="' + s[0] + '"' + (s[0] === st ? ' selected' : '') + '>' + s[1] + '</option>'; });
-      h += '</select><input type="checkbox" name="sched_check[' + idx + '][' + mn + ']" value="1"' + (ck ? ' checked' : '') + ' title="' + mn + ' done" aria-label="' + mn + ' done"></div></td>';
+      h += '</select><input type="checkbox" name="sched_check[' + idx + '][' + mn + ']" value="1"' + (ck ? ' checked' : '') + ' title="' + mLabel(mn) + ' done" aria-label="' + mLabel(mn) + ' done"></div></td>';
     });
     return h + '<td><button type="button" class="btn-remove-sched-row" title="Remove task" aria-label="Remove task"><i class="fa fa-times"></i></button></td></tr>';
   }
@@ -255,27 +256,27 @@ $(function () {
   function loadClient() {
     var cname = $('#client_select').val();
     if (!cname) return;
-    $.getJSON('<?php echo base_url(); ?>manager/kam/ajax_get_client_schedules', { client_name: cname, sched_year: $('#sched_year').val() }, function (resp) {
+    $.getJSON('<?php echo base_url(); ?>manager/kam/ajax_get_client_schedules', { client_name: cname }, function (resp) {
       renderScheduleRows(resp && resp.status === 'success' ? resp.schedules : []);
     });
   }
-  $('#client_select, #sched_year').on('change', loadClient);
+  $('#client_select').on('change', loadClient);
   if ($('#client_select').val()) loadClient();
 
   var pv = null;
   $(document).on('click', '.btn-preview-matrix', function () {
-    pv = { client: $(this).data('client'), year: String($(this).data('year')) };
-    $('#modalClientTitle').text(pv.client + ' · ' + pv.year);
+    pv = { client: $(this).data('client') };
+    $('#modalClientTitle').text(pv.client + ' · ' + mLabel(schedMonths[0]) + ' – ' + mLabel(schedMonths[schedMonths.length - 1]));
     $('#modalMatrixBody').html('<p class="text-muted" style="margin:0;"><i class="fa fa-spinner fa-spin"></i> Loading…</p>');
     $('#modalMatrixPresentation').modal('show');
-    $.getJSON('<?php echo base_url(); ?>manager/kam/ajax_get_client_schedules', { client_name: pv.client, sched_year: pv.year })
+    $.getJSON('<?php echo base_url(); ?>manager/kam/ajax_get_client_schedules', { client_name: pv.client })
       .done(function (resp) {
         if (!(resp && resp.status === 'success' && resp.schedules && resp.schedules.length)) {
           $('#modalMatrixBody').html('<p class="text-muted" style="margin:0;">No tasks for this year.</p>');
           return;
         }
         var h = '<div class="table-responsive" style="border:0;margin:0;"><table class="ksc-pv"><thead><tr><th>Task</th>';
-        schedMonths.forEach(function (m) { h += '<th>' + m + '</th>'; });
+        schedMonths.forEach(function (m, i) { h += '<th' + (i === schedMonths.length - 1 ? ' class="is-now"' : '') + '>' + mHead(i) + '</th>'; });
         h += '</tr></thead><tbody>';
         resp.schedules.forEach(function (it) {
           h += '<tr><td>' + esc(it.name) + '</td>';
@@ -283,7 +284,7 @@ $(function () {
             var md = (it.months && it.months[m]) ? it.months[m] : null;
             var st = md ? (md.status || 'Not Applicable') : 'Not Applicable';
             var lab = st === 'Not Applicable' ? '—' : st;
-            h += '<td class="' + cls(st) + '" title="' + m + ': ' + esc(st) + '">' + esc(lab) + (md && parseInt(md.checked, 10) === 1 ? '<i class="fa fa-check" aria-label="done"></i>' : '') + '</td>';
+            h += '<td class="' + cls(st) + '" title="' + mLabel(m) + ': ' + esc(st) + '">' + esc(lab) + (md && parseInt(md.checked, 10) === 1 ? '<i class="fa fa-check" aria-label="done"></i>' : '') + '</td>';
           });
           h += '</tr>';
         });
@@ -296,7 +297,6 @@ $(function () {
   $('#ksc_edit_from_preview').on('click', function () {
     if (!pv) return;
     $('#modalMatrixPresentation').modal('hide');
-    $('#sched_year').val(pv.year);
     $('#client_select').val(pv.client).trigger('change');
     $('html, body').animate({ scrollTop: $('#kamScheduleForm').offset().top - 70 }, 200);
   });
