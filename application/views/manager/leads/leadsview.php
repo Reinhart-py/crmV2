@@ -1,20 +1,34 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
 
-<div class="content-wrapper px-4">
-    
-    <section class="content-header">
-        <h1> <?php echo $info['page_heading']; ?> </h1>
+<?php
+$ldv_seg = $this->uri->segment(3);
+$ldv_title = (isset($stage) && $stage === 'database' && $info['page_heading'] === 'All Leads') ? 'Database' : $info['page_heading'];
+$ldv_add = !($ldv_seg == 'followups' || $ldv_seg == 'meetings' || $ldv_seg == 'review_leads' || (isset($stage) && $stage === 'review_leads'));
+$ldv_n = (isset($product_list) && is_array($product_list)) ? count($product_list) : 0;
+$ldv_on = 0;
+foreach (array('d1', 'd2', 'mrr1', 'mrr2', 'category', 'lCat', 'status', 'user_name', 'country', 'state', 'type') as $ldv_k) {
+    if (isset($_GET[$ldv_k]) && $_GET[$ldv_k] !== '' && $_GET[$ldv_k] !== array() && $_GET[$ldv_k] !== array('')) $ldv_on++;
+}
+?>
+<div class="content-wrapper px-4 ldv">
+
+    <section class="ldv-head">
+        <h1><?php echo htmlspecialchars($ldv_title); ?><small><?php echo $ldv_n; ?> <?php echo $ldv_n === 1 ? 'record' : 'records'; ?><?php echo $ldv_on ? ' &middot; ' . $ldv_on . ' filter' . ($ldv_on === 1 ? '' : 's') . ' on' : ''; ?></small></h1>
+        <div class="ldv-head-btns">
+            <button type="button" class="btn btn-default ldv-fbtn" id="ldvFilterBtn" aria-controls="ldvFilters" aria-expanded="false"><i class="fa fa-filter"></i> Filters<?php if ($ldv_on) { ?> <span class="ldv-badge"><?php echo $ldv_on; ?></span><?php } ?></button>
+            <?php if ($ldv_add) { ?><a href="<?php echo base_url(); ?>manager/leads/add" class="btn btn-primary"><i class="fa fa-plus"></i> Add New</a><?php } ?>
+        </div>
     </section>
-    
+
     <section class="content">
-        
+
         <div class="row">
-            
+
             <div class="col-xs-12">
 
 
-                <div class="box  p-4">
+                <div class="box  p-4 ldv-card ldv-filters" id="ldvFilters">
                     <div class="x_row">
 
                     <div class="x_col">
@@ -174,7 +188,7 @@ foreach($st_list as $cli){
 <?php  ?>
 
 <div class="form-group">
-    <button type="submit" class="btn btn-success">Search</button>
+        <button type="submit" class="btn btn-success"><i class="fa fa-search"></i> Search</button>
     <a href="<?php echo base_url(); ?>manager/leads<?php if($this->uri->segment(3)=='followups'){ echo '/followups'; }elseif($this->uri->segment(3)=='meetings'){ echo '/meetings'; } ?>"
         class="btn btn-danger"> Reset</a>
 </div>
@@ -212,7 +226,7 @@ foreach($st_list as $cli){
                 </div>
 
 
-                <div class="box">
+                                <div class="box ldv-card ldv-list">
 
 
                     <div class="box-body">
@@ -280,8 +294,10 @@ foreach($st_list as $cli){
                                             <td><span title="<?php echo htmlspecialchars($li['conversion_reason'] ?? ''); ?>"><?php echo htmlspecialchars(mb_strimwidth($li['conversion_reason'] ?? '-', 0, 35, '...')); ?></span></td>
                                             <td><span class="label label-warning" style="background:#475569; color:#ffffff; font-weight:600; font-size:11px;">Pending Review</span></td>
                                             <td>
-                                                <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>" class="btn btn-xs btn-default" style="margin-right:4px;">Preview</a>
-                                                <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($li['id']); ?>" class="btn btn-xs btn-primary" style="background:#1e3a8a; border-color:#1e3a8a;">Edit</a>
+                                                                                                <div class="ldv-act">
+                                                <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>" class="btn btn-default btn-sm" title="Preview" aria-label="Preview"><i class="fa fa-eye"></i><span> Preview</span></a>
+                                                <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($li['id']); ?>" class="btn btn-default btn-sm" title="Edit" aria-label="Edit"><i class="fa fa-pencil"></i><span> Edit</span></a>
+                                                </div>
                                             </td>
                                         <?php } else { ?>
                                             <td><?php echo $li['poc']; ?></td>
@@ -297,19 +313,9 @@ foreach($st_list as $cli){
                                                 <?php endif; ?>
                                             </td>
                                             <td>
-                                                <div class="btn-group" style="min-width: 85px;">
-                                                    <button type="button" class="btn btn-sm btn-warning">Action</button>
-                                                    <button type="button" class="btn btn-sm btn-warning dropdown-toggle"
-                                                        data-toggle="dropdown" aria-expanded="false">
-                                                        <span class="caret"></span>
-                                                        <span class="sr-only">Toggle Dropdown</span>
-                                                    </button>
-                                                    <ul class="dropdown-menu" role="menu">
-                                                        <li> <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>"
-                                                                data-toggle="tooltip" title="View">Preview</a> </li>
-                                                        <li> <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($li['id']); ?>"
-                                                                data-toggle="tooltip" title="Edit">Edit</a> </li>
-                                                    </ul>
+                                                                                                <div class="ldv-act">
+                                                    <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>" class="btn btn-default btn-sm" title="Preview" aria-label="Preview"><i class="fa fa-eye"></i><span> Preview</span></a>
+                                                    <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($li['id']); ?>" class="btn btn-default btn-sm" title="Edit" aria-label="Edit"><i class="fa fa-pencil"></i><span> Edit</span></a>
                                                 </div>
                                             </td>
                                         <?php } ?>
@@ -462,8 +468,8 @@ $(".remove").click(function() {
 
 $(document).ready(function() {
     $('#example_lead').DataTable({
-        "pageLength": 50,
-        responsive: true,
+                "pageLength": 50,
+        responsive: window.innerWidth >= 768,
 
         initComplete: function() {
             this.api().columns([2, 8]).every(function() {
@@ -493,4 +499,131 @@ $(document).ready(function() {
 });
 </script>
 
+<style>
+/* Database list: clearer look (same filters, table, sorting, paging and links) */
+.ldv, .ldv .btn, .ldv .form-control, .ldv table{font-family:"Plus Jakarta Sans","Inter",-apple-system,"Segoe UI",sans-serif}
+.ldv .ldv-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:14px 15px 8px}
+.ldv .ldv-head h1{margin:0;font-size:22px;font-weight:700;letter-spacing:-.02em;color:var(--crm-ink,#0f172a);text-align:left}
+.ldv .ldv-head h1 small{display:block;margin-top:2px;font-size:13px;font-weight:500;color:var(--crm-muted,#64748b);letter-spacing:0}
+.ldv .ldv-head-btns{display:flex;gap:8px;align-items:center}
+.ldv .ldv-head-btns .btn{height:36px;font-weight:600;border-radius:8px;display:inline-flex;align-items:center;gap:6px}
+.ldv .ldv-head-btns .btn-primary{background:var(--crm-ocean,#1e3a8a);border-color:var(--crm-ocean,#1e3a8a)}
+.ldv .ldv-fbtn{display:none !important}
+.ldv .ldv-badge{display:inline-block;min-width:18px;height:18px;line-height:18px;padding:0 5px;border-radius:9px;background:var(--crm-ocean,#1e3a8a);color:#fff;font-size:11px;text-align:center}
+.ldv .content{padding-top:4px}
+.ldv .ldv-card{border:1px solid var(--crm-line,#e2e8f0);border-radius:10px;box-shadow:none;background:var(--crm-surface,#fff);margin-bottom:12px}
+.ldv .x_col-sm-auto{display:none}
+/* Filters: tidy grid, same fields */
+.ldv .ldv-filters{padding:12px !important}
+.ldv .ldv-filters .x_row,.ldv .ldv-filters .x_col{display:block;width:100%;margin:0;padding:0}
+.ldv .head_filter{display:grid !important;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;align-items:center}
+.ldv .head_filter > .form-group{margin:0 !important;width:auto !important;display:block;min-width:0}
+.ldv .head_filter > .form-group *{max-width:100%}
+.ldv .head_filter .multiselect-native-select{position:relative}
+.ldv .head_filter .multiselect-native-select > select{left:0 !important;width:100% !important;max-width:100% !important}
+.ldv .head_filter .input-group > .form-control,.ldv .head_filter .input-group > .input-group-addon{max-width:none}
+.ldv .head_filter > .form-group:nth-child(1),.ldv .head_filter > .form-group:nth-child(2){grid-column:span 2}
+.ldv .head_filter > .form-group:last-child{display:flex;gap:8px}
+.ldv .head_filter .form-control{max-width:none !important}
+.ldv .head_filter .form-control,.ldv .head_filter .btn,.ldv .head_filter .select2-container .select2-selection--single{height:34px !important;border-radius:7px;font-size:13px}
+.ldv .head_filter .input-group{display:flex !important;width:100% !important}
+.ldv .head_filter .input-group .form-control{flex:1 1 0;min-width:0;max-width:none !important;width:auto !important;border-radius:7px 0 0 7px}
+.ldv .head_filter .input-group .form-control:last-child{border-radius:0 7px 7px 0}
+.ldv .head_filter .input-group-addon{display:flex;align-items:center;width:auto;padding:0 8px;font-size:12px;color:var(--crm-muted,#64748b);background:var(--crm-canvas,#f8fafc)}
+.ldv .head_filter .btn-group,.ldv .head_filter .multiselect-native-select,.ldv .head_filter .multiselect-native-select > .btn-group{display:block;width:100% !important}
+.ldv .head_filter .btn-group > .multiselect{width:100% !important;text-align:left;display:flex;align-items:center;justify-content:space-between;overflow:hidden;background:var(--crm-surface,#fff);font-weight:500}
+.ldv .head_filter .select2-container{width:100% !important}
+.ldv .head_filter > .form-group:last-child .btn{flex:1 1 0;font-weight:600}
+.ldv .head_filter .btn-success{background:var(--crm-ocean,#1e3a8a);border-color:var(--crm-ocean,#1e3a8a)}
+/* Table */
+.ldv .ldv-list > .box-body{padding:12px !important}
+.ldv #example_lead_wrapper .dataTables_length select,.ldv #example_lead_wrapper .dataTables_filter input{height:32px;border-radius:7px;border:1px solid var(--crm-line,#cbd5e1)}
+.ldv #example_lead{border:0 !important;border-collapse:separate;border-spacing:0}
+.ldv #example_lead > thead > tr > th{text-align:left !important;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:9px 10px !important;white-space:nowrap;vertical-align:middle}
+.ldv #example_lead > tfoot > tr > th{padding:6px 10px !important;border:0 !important;background:var(--crm-canvas,#f8fafc)}
+.ldv #example_lead > tfoot select{width:100%;max-width:170px;height:28px;border-radius:6px;border:1px solid var(--crm-line,#cbd5e1);font-size:12px;padding:0 6px}
+.ldv #example_lead > tbody > tr > td{text-align:left !important;font-size:13.5px;padding:9px 10px !important;vertical-align:middle !important;border-left:0 !important;border-right:0 !important;border-color:var(--crm-line-soft,#eef2f7) !important}
+.ldv #example_lead > tbody > tr > td:first-child a{font-weight:700;white-space:nowrap}
+.ldv #example_lead > tbody > tr > td:nth-child(2) a{font-weight:600;color:var(--crm-ink,#0f172a)}
+.ldv #example_lead > tbody > tr:hover > td{background:var(--crm-ocean-soft,rgba(30,58,138,.05)) !important}
+.ldv .ldv-st{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;background:#e0e7ff;color:#1e3a8a;white-space:nowrap}
+.ldv .ldv-st.s-ok{background:#dcfce7;color:#166534}
+.ldv .ldv-st.s-x{background:#fee2e2;color:#991b1b}
+.ldv .ldv-st.s-w{background:#fef3c7;color:#92400e}
+.ldv .ldv-st.s-na{background:#f1f5f9;color:#475569}
+.ldv .ldv-act{display:flex;gap:6px;white-space:nowrap}
+.ldv .ldv-act .btn{border-radius:7px;font-weight:600;font-size:12.5px}
+.ldv .ldv-act .btn:hover{border-color:var(--crm-ocean,#1e3a8a);color:var(--crm-ocean,#1e3a8a)}
+@media (max-width:1280px){.ldv .ldv-act .btn span{display:none}}
+/* Phones: filters fold away, each record is a card with labelled values */
+@media (max-width:767px){
+  .ldv .ldv-head{padding:10px 2px 6px}
+  .ldv .ldv-head h1{font-size:19px}
+  .ldv .ldv-fbtn{display:inline-flex !important}
+  .ldv .ldv-filters:not(.is-open){display:none}
+  .ldv .head_filter{grid-template-columns:minmax(0,1fr)}
+  .ldv .head_filter > .form-group:nth-child(1),.ldv .head_filter > .form-group:nth-child(2){grid-column:auto}
+  .ldv .content{padding-left:0;padding-right:0}
+  .ldv .ldv-list > .box-body{padding:8px !important}
+  .ldv #example_lead_wrapper .row{margin:0}
+  .ldv #example_lead_wrapper .col-sm-6,.ldv #example_lead_wrapper .col-sm-5,.ldv #example_lead_wrapper .col-sm-7,.ldv #example_lead_wrapper .col-sm-12{padding:0;width:100%;float:none;text-align:left}
+  .ldv #example_lead_wrapper .dataTables_filter,.ldv #example_lead_wrapper .dataTables_filter label,.ldv #example_lead_wrapper .dataTables_filter input{width:100%;text-align:left;margin:0}
+  .ldv #example_lead_wrapper .dataTables_length{margin-bottom:6px}
+  .ldv #example_lead_wrapper .dataTables_paginate{text-align:center;margin-top:8px}
+  .ldv #example_lead,.ldv #example_lead > tbody,.ldv #example_lead > tbody > tr,.ldv #example_lead > tbody > tr > td{display:block;width:100% !important}
+  .ldv #example_lead > thead{display:none}
+  .ldv #example_lead > tfoot{display:block;margin-bottom:8px}
+  .ldv #example_lead > tfoot > tr{display:flex;gap:8px}
+  .ldv #example_lead > tfoot > tr > th{display:none}
+  .ldv #example_lead > tfoot > tr > th.ldv-has{display:block;flex:1 1 0;padding:0 !important;background:none}
+  .ldv #example_lead > tfoot select{max-width:none;height:32px}
+  .ldv #example_lead > tbody > tr{border:1px solid var(--crm-line,#e2e8f0);border-radius:10px;margin-bottom:10px;padding:8px 12px;background:var(--crm-surface,#fff) !important}
+  .ldv #example_lead > tbody > tr > td{display:flex;gap:10px;align-items:baseline;padding:3px 0 !important;border:0 !important;background:none !important;word-break:break-word}
+  .ldv #example_lead > tbody > tr > td::before{content:attr(data-l);flex:0 0 105px;font-size:12px;font-weight:500;color:var(--crm-muted,#64748b)}
+  .ldv #example_lead > tbody > tr > td:first-child::before,.ldv #example_lead > tbody > tr > td:nth-child(2)::before{display:none}
+  .ldv #example_lead > tbody > tr > td:nth-child(2){font-size:15px;padding-bottom:5px !important}
+  .ldv #example_lead > tbody > tr > td:last-child{padding-top:8px !important}
+  .ldv #example_lead > tbody > tr > td:last-child::before{display:none}
+  .ldv #example_lead > tbody > tr > td:last-child .ldv-act{width:100%}
+  .ldv #example_lead > tbody > tr > td:last-child .ldv-act .btn{flex:1 1 0}
+  .ldv #example_lead > tbody > tr > td:last-child .ldv-act .btn span{display:inline}
+  .ldv #example_lead > tbody > tr > td .no_show{display:none}
+}
+</style>
+<script>
+jQuery(function ($) {
+  // Filters button (phones)
+  $('#ldvFilterBtn').on('click', function () {
+    var open = !$('#ldvFilters').hasClass('is-open');
+    $('#ldvFilters').toggleClass('is-open', open);
+    $(this).attr('aria-expanded', open ? 'true' : 'false');
+  });
+  var $t = $('#example_lead');
+  if (!$t.length || !$.fn.dataTable || !$.fn.dataTable.isDataTable($t)) return;
+  var dt = $t.DataTable();
+  var heads = $t.find('thead th').map(function () { return $.trim($(this).text()); }).get();
+  var stCol = heads.lastIndexOf('Status');
+  // Column filters (Service Type, Status) stay visible on phones
+  $t.find('tfoot th').each(function (i) { var $sel = $(this).find('select'); if ($sel.length) { $(this).addClass('ldv-has'); $sel.attr('aria-label', heads[i] || 'Filter').find('option').first().text((heads[i] || 'All') + ': all'); } });
+  function chip(txt) {
+    var t = txt.toLowerCase();
+    if (/won|closed won|converted|approved|active|completed/.test(t)) return 's-ok';
+    if (/lost|reject|dead|cancel|dncr|not interested/.test(t)) return 's-x';
+    if (/pending|review|expected|follow|progress|hold/.test(t)) return 's-w';
+    if (/database|new/.test(t)) return 's-na';
+    return '';
+  }
+  // Labels for the phone cards and a status chip (display only; sorting, search and the filters use the original values)
+  $(dt.rows().nodes()).each(function () {
+    $(this).children('td').each(function (i) {
+      $(this).attr('data-l', heads[i] || '');
+      if (i === stCol && !$(this).find('.ldv-st').length) {
+        var node = null;
+        $.each(this.childNodes, function () { if (this.nodeType === 3 && $.trim(this.nodeValue) !== '') { node = this; return false; } });
+        if (node) { var v = $.trim(node.nodeValue); $(node).replaceWith($('<span class="ldv-st">').addClass(chip(v)).text(v)); }
+      }
+    });
+  });
+});
+</script>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>
