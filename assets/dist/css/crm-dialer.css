@@ -381,3 +381,52 @@ a.dh-act, a.dh-act:hover, a.dh-act:focus { text-decoration: none; color: inherit
 [data-theme="dark"] .dl-script { background: #111c33; border-color: #1e3a8a; }
 [data-theme="dark"] .dl-script-h { color: #93c5fd; }
 [data-theme="dark"] .dl-script-b { color: #e2e8f0; }
+
+/* AI Agent module in the dialer */
+.aip .cmp-card { margin-bottom: 12px; }
+.aip-off, .aip-on { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 9px 12px; border-radius: 10px; margin-bottom: 10px; font-size: 13px; }
+.aip-off { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+.aip-off .btn { margin-left: auto; }
+.aip-on { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+.aip-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 10px; }
+.aip-stats > div { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; }
+.aip-stats b { display: block; font-size: 20px; font-weight: 700; color: #0f172a; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.aip-stats span { font-size: 11.5px; color: #64748b; }
+.aip-agent { border-top: 1px solid #f1f5f9; padding: 12px 0; }
+.aip-agent:first-of-type { border-top: 0; }
+.aip-ah { display: grid; grid-template-columns: minmax(0, 1.3fr) auto auto; gap: 8px 14px; align-items: center; }
+.aip-nums { display: flex; gap: 12px; font-size: 12px; color: #64748b; }
+.aip-nums b { display: block; font-size: 15px; color: #0f172a; font-variant-numeric: tabular-nums; }
+.aip-chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 99px; background: #f1f5f9; color: #475569; vertical-align: middle; }
+.aip-chip.aip-st-Active, .aip-chip.aip-hot { background: #dcfce7; color: #15803d; }
+.aip-chip.aip-st-Paused { background: #fef3c7; color: #b45309; }
+.aip-live { color: #15803d; font-weight: 600; }
+.aip-camps { margin-top: 8px; padding: 8px 10px; background: #f8fafc; border: 1px solid #eef2f7; border-radius: 9px; }
+.aip-camp { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; padding: 5px 0; font-size: 13px; color: #0f172a; }
+.aip-camp + .aip-camp { border-top: 1px solid #eef2f7; }
+.aip-camp .cmp-actions { align-items: center; }
+.aip-n { width: auto !important; height: 30px !important; }
+.aip-assign { display: flex; gap: 6px; margin-top: 8px; }
+.aip-assign select { flex: 1; min-width: 0; height: 30px; }
+.aip-msg { font-size: 12.5px; color: #475569; }
+.aip-msg:empty { display: none; }
+.aip-lead { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; align-items: center; padding: 10px 0; border-top: 1px solid #f1f5f9; }
+.aip-lead:first-of-type { border-top: 0; }
+.aip-sum { font-size: 12.5px; color: #334155; margin-top: 3px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+@media (max-width: 767px) {
+  .aip-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .aip-ah, .aip-lead { grid-template-columns: 1fr; }
+  .aip .cmp-actions { justify-content: flex-start; }
+  .aip .cmp-card-head { flex-wrap: wrap; gap: 8px; }
+}
+[data-theme="dark"] .aip-stats > div { background: #111827; border-color: #1f2937; }
+[data-theme="dark"] .aip-stats b, [data-theme="dark"] .aip-nums b, [data-theme="dark"] .aip-camp { color: #e2e8f0; }
+[data-theme="dark"] .aip-camps { background: #0f172a; border-color: #1f2937; }
+[data-theme="dark"] .aip-camp + .aip-camp, [data-theme="dark"] .aip-agent, [data-theme="dark"] .aip-lead { border-color: #1f2937; }
+[data-theme="dark"] .aip-chip { background: #1e293b; color: #cbd5e1; }
+[data-theme="dark"] .aip-chip.aip-st-Active, [data-theme="dark"] .aip-chip.aip-hot { background: rgba(34, 197, 94, .15); color: #4ade80; }
+[data-theme="dark"] .aip-chip.aip-st-Paused { background: rgba(245, 158, 11, .15); color: #fbbf24; }
+[data-theme="dark"] .aip-off { background: rgba(245, 158, 11, .1); border-color: rgba(245, 158, 11, .3); color: #fcd34d; }
+[data-theme="dark"] .aip-on { background: rgba(34, 197, 94, .1); border-color: rgba(34, 197, 94, .3); color: #86efac; }
+[data-theme="dark"] .aip-sum, [data-theme="dark"] .aip-msg { color: #cbd5e1; }
+[data-theme="dark"] .aip-live { color: #4ade80; }

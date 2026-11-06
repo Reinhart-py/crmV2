@@ -314,6 +314,63 @@ class Ci_admin_ai_agents extends CI_Controller
 		$this->_json(array('status' => true, 'started' => $started, 'sum' => $this->ai_agent_model->summary($this->ai_agent_model->scope_sql($this->uid, $this->role))));
 	}
 
+	/** Everything the AI Agent module in the dialer shows. */
+	public function ajax_panel()
+	{
+		$A = $this->ai_agent_model;
+		$M = $this->dialer_campaign_model;
+		$scope = $A->scope_sql($this->uid, $this->role);
+		$hot = "'" . implode("','", Ai_agent_model::$hot) . "'";
+		$s = $A->settings();
+		$can_write = $this->_can_write();
+		$camps = array();
+		foreach ($M->get_campaigns($this->uid, $this->role) as $c) {
+			if ($c['status'] === 'Completed') continue;
+			$camps[] = array('id' => (int)$c['id'], 'name' => $c['name'], 'phase' => $M->display_status($c), 'ai_agent_id' => (int)$c['ai_agent_id'],
+				'can_manage' => $can_write && $M->can_manage($c, $this->uid, $this->role));
+		}
+		$queued = array();
+		foreach ($this->db->query("SELECT campaign_id, SUM(status = 'Queued') q, SUM(status = 'Calling') c FROM ci_ai_calls WHERE is_test = 0 AND status IN ('Queued', 'Calling') GROUP BY campaign_id")->result_array() as $r) {
+			$queued[(int)$r['campaign_id']] = (int)$r['q'] + (int)$r['c'];
+		}
+		$agents = array();
+		foreach ($A->agents() as $a) {
+			$mine = array();
+			foreach ($camps as $c) if ($c['ai_agent_id'] === (int)$a['id']) $mine[] = $c + array('queued' => isset($queued[$c['id']]) ? $queued[$c['id']] : 0);
+			$agents[] = array('id' => (int)$a['id'], 'name' => $a['name'], 'status' => $a['status'],
+				'goal' => isset(Ai_agent_model::$goals[$a['goal']]) ? Ai_agent_model::$goals[$a['goal']] : $a['goal'],
+				'language' => isset(Ai_agent_model::$languages[$a['language']]) ? Ai_agent_model::$languages[$a['language']] : $a['language'],
+				'hours' => $a['call_from'] . '–' . $a['call_to'], 'in_hours' => $A->in_hours($a),
+				'calls7' => $a['calls7'], 'talked7' => $a['talked7'], 'hot7' => $a['hot7'], 'queued' => $a['queued'], 'campaigns' => $mine);
+		}
+		$inbox = array();
+		foreach ($A->calls("Q.is_test = 0 AND Q.outcome IN ({$hot}) AND Q.handled_by = 0 AND {$scope}", 30) as $r) {
+			$inbox[] = array('id' => (int)$r['id'], 'lead_id' => (int)$r['lead_id'], 'customer' => $r['customer'], 'contact' => $r['contact'], 'phone' => $r['phone'],
+				'outcome' => $r['outcome'], 'summary' => (string)$r['summary'], 'owner' => (string)$r['owner_name'], 'campaign' => (string)$r['campaign_name'],
+				'when' => $r['ended_at'] ? date('d M H:i', strtotime($r['ended_at'])) : '', 'followup_date' => $r['followup_date'] ? date('d M', strtotime($r['followup_date'])) : '');
+		}
+		$this->_json(array(
+			'status' => true, 'provider' => Ai_agent_model::$providers[$s['provider']], 'not_ready' => $A->not_ready_reason($s),
+			'can_write' => $can_write, 'can_settings' => $this->_can_settings(), 'sum' => $A->summary($scope),
+			'agents' => $agents, 'campaigns' => $camps, 'inbox' => $inbox
+		));
+	}
+
+	/** Assigns a campaign to an agent (agent_id 0 removes it; queued calls of the old agent are removed). */
+	public function ajax_assign()
+	{
+		if (!$this->_can_write()) return $this->_json(array('status' => false, 'message' => 'You do not have Full access to AI agents.'));
+		$M = $this->dialer_campaign_model;
+		$c = $M->get_campaign((int)$this->input->post('campaign_id'), $this->uid, $this->role);
+		if (!$c || !$M->can_manage($c, $this->uid, $this->role)) return $this->_json(array('status' => false, 'message' => 'You cannot manage this campaign.'));
+		$aid = (int)$this->input->post('agent_id');
+		if ($aid && !$this->ai_agent_model->agent($aid)) return $this->_json(array('status' => false, 'message' => 'Agent not found'));
+		if ((int)$c['ai_agent_id'] && (int)$c['ai_agent_id'] !== $aid) $this->ai_agent_model->cancel_queue(array('campaign_id' => (int)$c['id'], 'agent_id' => (int)$c['ai_agent_id']));
+		$M->save_campaign(array('ai_agent_id' => $aid), (int)$c['id']);
+		$this->ci_admin_model->log_admin_action('ai_assign', 'Campaign #' . (int)$c['id'] . ($aid ? ' assigned to AI agent #' . $aid : ' removed from its AI agent'), 'SUCCESS');
+		$this->_json(array('status' => true));
+	}
+
 	/* ---------- settings ---------- */
 
 	public function settings()
@@ -334,7 +391,9 @@ class Ci_admin_ai_agents extends CI_Controller
 			'webhook_url' => base_url() . 'api/ai-calls/webhook?key=' . $key,
 			'cron_url' => base_url() . 'api/ai-calls/cron?key=' . $key,
 			'not_ready' => $this->ai_agent_model->not_ready_reason($s),
-			'groq' => $this->groq_service->is_configured()
+			'groq' => $this->groq_service->is_configured(),
+			'has_sa' => $s['google_sa'] !== '',
+			'google_locations' => Ai_agent_model::$google_locations
 		));
 	}
 
@@ -343,10 +402,16 @@ class Ci_admin_ai_agents extends CI_Controller
 		if (!$this->_can_settings()) return $this->_json(array('status' => false, 'message' => 'No access to AI calling settings.'));
 		$in = $this->input;
 		$data = array();
-		foreach (array('provider', 'phone_number_id', 'from_number', 'country_code', 'company', 'timezone', 'concurrency', 'model', 'endpoint') as $k) $data[$k] = trim((string)$in->post($k, true));
+		foreach (array('provider', 'phone_number_id', 'from_number', 'country_code', 'company', 'timezone', 'concurrency', 'model', 'endpoint', 'google_project', 'google_location', 'google_agent_id', 'google_language') as $k) $data[$k] = trim((string)$in->post($k, true));
 		$data['enabled'] = (bool)$in->post('enabled');
 		if ($data['endpoint'] !== '' && !preg_match('~^https://~i', $data['endpoint'])) return $this->_json(array('status' => false, 'message' => 'The endpoint must start with https://'));
-		$this->ai_agent_model->save_settings($data, trim((string)$in->post('api_key')));
+		$sa = trim((string)$in->post('google_sa'));
+		if ($sa !== '') {
+			$j = json_decode($sa, true);
+			if (empty($j['client_email']) || empty($j['private_key'])) return $this->_json(array('status' => false, 'message' => 'The service account key must be the JSON file from Google Cloud (with client_email and private_key).'));
+			$sa = json_encode(array('type' => 'service_account', 'project_id' => isset($j['project_id']) ? $j['project_id'] : '', 'client_email' => $j['client_email'], 'private_key' => $j['private_key']));
+		}
+		$this->ai_agent_model->save_settings($data, trim((string)$in->post('api_key')), $sa);
 		$this->ci_admin_model->log_admin_action('ai_settings', 'AI calling settings saved (' . ($data['provider'] ?: 'none') . ')', 'SUCCESS');
 		$why = $this->ai_agent_model->not_ready_reason();
 		$this->_json(array('status' => true, 'message' => $why === '' ? 'Saved. AI calling is on.' : 'Saved. ' . $why));
@@ -374,6 +439,12 @@ class Ci_admin_ai_agents extends CI_Controller
 		$raw = file_get_contents('php://input');
 		$p = json_decode((string)$raw, true);
 		if (!is_array($p)) $p = $this->input->post();
+		if (isset($p['sessionInfo']) || isset($p['fulfillmentInfo'])) {
+			// Google agent (Dialogflow CX webhook): answer with a WebhookResponse
+			$this->_json($this->ai_agent_model->dialogflow_webhook($p));
+			$this->ai_agent_model->dispatch(3);
+			return;
+		}
 		$parsed = $this->ai_agent_model->parse_webhook($p);
 		if (!$parsed) return $this->_json(array('status' => true, 'ignored' => true));
 		list($row, $f) = $parsed;

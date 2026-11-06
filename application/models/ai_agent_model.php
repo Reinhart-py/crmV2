@@ -18,7 +18,9 @@ class Ai_agent_model extends CI_Model
 		'offer' => 'Send an offer / quote',
 		'survey' => 'Survey / feedback'
 	);
-	public static $providers = array('' => 'Not connected', 'vapi' => 'Vapi', 'bland' => 'Bland AI', 'custom' => 'Custom endpoint (n8n, Make, own server)');
+	public static $providers = array('' => 'Not connected', 'google' => 'Google AI agent (Conversational Agents / Dialogflow CX)', 'vapi' => 'Vapi', 'bland' => 'Bland AI', 'custom' => 'Custom endpoint (n8n, Make, own server)');
+	/** Google agent regions (Conversational Agents / Dialogflow CX). */
+	public static $google_locations = array('global' => 'Global', 'europe-west1' => 'Europe West 1 (Belgium)', 'europe-west2' => 'Europe West 2 (London)', 'me-central1' => 'Middle East (Doha)', 'me-central2' => 'Middle East (Dammam)', 'me-west1' => 'Middle East (Tel Aviv)', 'asia-south1' => 'Asia South (Mumbai)', 'us-central1' => 'US Central');
 	public static $outcomes = array('Meeting booked', 'Interested', 'Call back', 'Not interested', 'No answer', 'Voicemail', 'Wrong number', 'Do not call', 'Failed');
 	/** Outcomes that come back to people as follow-ups. */
 	public static $hot = array('Meeting booked', 'Interested', 'Call back');
@@ -107,10 +109,13 @@ class Ai_agent_model extends CI_Model
 		if (!is_array($cfg)) $cfg = array();
 		$s = array_merge(array(
 			'provider' => '', 'phone_number_id' => '', 'from_number' => '', 'country_code' => '971', 'company' => '7 Strokes',
-			'timezone' => 'Asia/Dubai', 'concurrency' => 3, 'webhook_key' => '', 'model' => 'gpt-4o-mini'
+			'timezone' => 'Asia/Dubai', 'concurrency' => 3, 'webhook_key' => '', 'model' => 'gpt-4o-mini',
+			'google_project' => '', 'google_location' => 'global', 'google_agent_id' => '', 'google_language' => 'en'
 		), $cfg);
 		$s['enabled'] = !empty($row['status']);
 		$s['api_key'] = !empty($row['api_key']) ? $row['api_key'] : '';
+		// Google service account key (JSON); only used server side to check the agent
+		$s['google_sa'] = !empty($row['api_secret']) ? $row['api_secret'] : '';
 		$s['endpoint'] = !empty($row['endpoint']) ? $row['endpoint'] : '';
 		$s['exists'] = !empty($row);
 		return $this->settings_cache = $s;
@@ -122,15 +127,21 @@ class Ai_agent_model extends CI_Model
 		$s = $s ?: $this->settings();
 		if ($s['provider'] === '') return 'No voice provider is connected.';
 		if (!$s['enabled']) return 'AI calling is switched off in Settings.';
+		if ($s['provider'] === 'google') {
+			if ($s['google_project'] === '' || $s['google_agent_id'] === '') return 'The Google project ID and agent ID are missing.';
+			if (!preg_match('~^https://~i', $s['endpoint'])) return 'The Google calling bridge must be an https:// address.';
+			return '';
+		}
 		if ($s['provider'] !== 'custom' && $s['api_key'] === '') return 'The provider API key is missing.';
 		if ($s['provider'] === 'vapi' && $s['phone_number_id'] === '') return 'The Vapi phone number ID is missing.';
 		if ($s['provider'] === 'custom' && !preg_match('~^https://~i', $s['endpoint'])) return 'The custom endpoint must be an https:// address.';
 		return '';
 	}
 
-	public function save_settings($in, $api_key)
+	public function save_settings($in, $api_key, $google_sa = '')
 	{
 		$old = $this->settings();
+		$in = array_merge(array('google_project' => $old['google_project'], 'google_location' => $old['google_location'], 'google_agent_id' => $old['google_agent_id'], 'google_language' => $old['google_language']), $in);
 		$cfg = array(
 			'provider' => isset(self::$providers[$in['provider']]) ? $in['provider'] : '',
 			'phone_number_id' => substr(trim($in['phone_number_id']), 0, 100),
@@ -140,7 +151,11 @@ class Ai_agent_model extends CI_Model
 			'timezone' => in_array($in['timezone'], timezone_identifiers_list(), true) ? $in['timezone'] : 'Asia/Dubai',
 			'concurrency' => max(1, min(20, (int)$in['concurrency'])),
 			'model' => preg_match('~^[\w.\-]{2,60}$~', $in['model']) ? $in['model'] : 'gpt-4o-mini',
-			'webhook_key' => $old['webhook_key'] !== '' ? $old['webhook_key'] : bin2hex(random_bytes(16))
+			'webhook_key' => $old['webhook_key'] !== '' ? $old['webhook_key'] : bin2hex(random_bytes(16)),
+			'google_project' => preg_match('~^[a-z][a-z0-9\-]{4,62}$~', trim($in['google_project'])) ? trim($in['google_project']) : '',
+			'google_location' => isset(self::$google_locations[$in['google_location']]) ? $in['google_location'] : 'global',
+			'google_agent_id' => preg_match('~^[\w\-]{8,64}$~', trim($in['google_agent_id'])) ? trim($in['google_agent_id']) : '',
+			'google_language' => preg_match('~^[a-z]{2}(-[A-Z]{2})?$~', trim($in['google_language'])) ? trim($in['google_language']) : 'en'
 		);
 		if ($in['from_number'] === '') $cfg['from_number'] = '';
 		$row = array(
@@ -150,6 +165,7 @@ class Ai_agent_model extends CI_Model
 			'updated_at' => date('Y-m-d H:i:s')
 		);
 		if ($api_key !== '') $row['api_key'] = $api_key;
+		if ($google_sa !== '') $row['api_secret'] = $google_sa;
 		if ($old['exists']) {
 			$this->db->where('service_name', 'ai_voice')->update('ci_integration_settings', $row);
 		} else {
@@ -459,6 +475,23 @@ class Ai_agent_model extends CI_Model
 			$body['voice'] = $a['voice_id'] !== '' ? $a['voice_id'] : ($a['voice'] === 'male' ? 'josh' : 'maya');
 			if ($s['from_number'] !== '') $body['from'] = $s['from_number'];
 			if ($a['transfer_number'] !== '') $body['transfer_phone_number'] = $this->e164($a['transfer_number'], $s['country_code']);
+		} elseif ($s['provider'] === 'google') {
+			// Google agents answer calls but do not dial out: the calling bridge (3CX SIP / telephony partner / Cloud Run)
+			// places the call and connects it to the agent with this session id and these parameters.
+			$url = $s['endpoint'];
+			if ($s['api_key'] !== '') $headers[] = 'Authorization: Bearer ' . $s['api_key'];
+			$agent_path = 'projects/' . $s['google_project'] . '/locations/' . $s['google_location'] . '/agents/' . $s['google_agent_id'];
+			$body = array(
+				'event' => 'start_call', 'crm_call_id' => (int)$call['id'], 'phone' => $call['phone'],
+				'google' => array(
+					'agent' => $agent_path,
+					'session' => $agent_path . '/sessions/crm-' . (int)$call['id'],
+					'language_code' => $this->google_lang($a, $s),
+					'webhook_url' => $hook
+				),
+				'parameters' => $this->google_params($a, $call),
+				'prompt' => $prompt, 'first_message' => $first, 'webhook_url' => $hook, 'metadata' => $meta
+			);
 		} else {
 			$url = $s['endpoint'];
 			if ($s['api_key'] !== '') $headers[] = 'Authorization: Bearer ' . $s['api_key'];
@@ -474,7 +507,7 @@ class Ai_agent_model extends CI_Model
 		if (is_array($res)) {
 			foreach (array('id', 'call_id', 'callId') as $k) if (!empty($res[$k]) && is_scalar($res[$k])) { $id = (string)$res[$k]; break; }
 		}
-		if ($code >= 200 && $code < 300 && ($id !== '' || $s['provider'] === 'custom')) {
+		if ($code >= 200 && $code < 300 && ($id !== '' || in_array($s['provider'], array('custom', 'google'), true))) {
 			$this->db->where('id', (int)$call['id'])->update('ci_ai_calls', array('provider_call_id' => substr($id, 0, 100)));
 			return array(true, '');
 		}
@@ -483,9 +516,21 @@ class Ai_agent_model extends CI_Model
 		return array(false, $msg);
 	}
 
+	/** Certificate bundle for HTTPS checks when PHP has none configured (e.g. XAMPP under Apache). */
+	private function ca_opts()
+	{
+		$ini = ini_get('curl.cainfo');
+		if ($ini && is_file($ini)) return array();
+		foreach (array(dirname(PHP_BINARY) . '/../apache/bin/curl-ca-bundle.crt', 'C:/xampp/apache/bin/curl-ca-bundle.crt', '/etc/ssl/certs/ca-certificates.crt', '/etc/pki/tls/certs/ca-bundle.crt') as $p) {
+			if (is_file($p)) return array(CURLOPT_CAINFO => $p);
+		}
+		return array();
+	}
+
 	private function http($url, $headers, $body = null, $method = 'POST')
 	{
 		$ch = curl_init($url);
+		curl_setopt_array($ch, $this->ca_opts());
 		curl_setopt_array($ch, array(CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 20, CURLOPT_CONNECTTIMEOUT => 8, CURLOPT_HTTPHEADER => $headers, CURLOPT_CUSTOMREQUEST => $method));
 		if ($body !== null) curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($body));
 		$raw = curl_exec($ch);
@@ -512,8 +557,115 @@ class Ai_agent_model extends CI_Model
 			list($code, $res, $err) = $this->http('https://api.bland.ai/v1/me', array('authorization: ' . $s['api_key']), null, 'GET');
 			return $code === 200 ? array(true, 'Connected to Bland AI.') : array(false, $err ?: 'Bland AI refused the key (HTTP ' . $code . ').');
 		}
+		if ($s['provider'] === 'google') {
+			if ($s['google_sa'] === '') return array(false, 'Add the service account key to check the Google agent.');
+			list($token, $err) = $this->google_token($s['google_sa']);
+			if (!$token) return array(false, $err);
+			$host = $s['google_location'] === 'global' ? 'dialogflow.googleapis.com' : $s['google_location'] . '-dialogflow.googleapis.com';
+			$url = 'https://' . $host . '/v3/projects/' . rawurlencode($s['google_project']) . '/locations/' . rawurlencode($s['google_location']) . '/agents/' . rawurlencode($s['google_agent_id']);
+			list($code, $res, $err) = $this->http($url, array('Authorization: Bearer ' . $token), null, 'GET');
+			if ($code === 200 && !empty($res['displayName'])) return array(true, 'Connected to the Google agent "' . $res['displayName'] . '". Calls go through the calling bridge.');
+			$msg = isset($res['error']['message']) ? $res['error']['message'] : ($err ?: 'HTTP ' . $code);
+			return array(false, 'Google: ' . $msg);
+		}
 		if ($s['provider'] === 'custom') return array(true, 'Custom endpoints are not checked. Place a test call to try it.');
 		return array(false, 'Choose a provider first.');
+	}
+
+	/* ---------- Google AI agent ---------- */
+
+	private function google_lang($a, $s)
+	{
+		$map = array('en' => 'en', 'ar' => 'ar', 'hi' => 'hi', 'ur' => 'ur', 'multi' => $s['google_language']);
+		return isset($map[$a['language']]) ? $map[$a['language']] : $s['google_language'];
+	}
+
+	/** Session parameters the Google agent can use in its flows ($session.params.contact etc.). */
+	public function google_params($a, $call)
+	{
+		$s = $this->settings();
+		return array(
+			'crm_call_id' => (int)$call['id'], 'contact' => (string)$call['contact'], 'customer' => (string)$call['customer'],
+			'agent_name' => $a['name'], 'company' => $s['company'], 'goal' => isset(self::$goals[$a['goal']]) ? self::$goals[$a['goal']] : $a['goal'],
+			'opening' => $this->first_message($a, $call), 'pitch' => (string)$a['pitch'], 'questions' => (string)$a['questions'],
+			'objections' => (string)$a['objections'], 'closing' => (string)$a['closing'], 'disclose_ai' => (bool)$a['disclose_ai'],
+			'transfer_number' => $a['transfer_number'] !== '' ? $this->e164($a['transfer_number'], $s['country_code']) : '',
+			'max_minutes' => (int)$a['max_minutes'], 'instructions' => $this->build_prompt($a, $call)
+		);
+	}
+
+	/** OAuth access token from a service account key (JWT bearer flow). Returns array(token, error). */
+	private function google_token($sa_json)
+	{
+		$sa = json_decode($sa_json, true);
+		if (empty($sa['client_email']) || empty($sa['private_key'])) return array('', 'The service account key is not valid JSON from Google Cloud.');
+		$b64 = function ($d) { return rtrim(strtr(base64_encode($d), '+/', '-_'), '='); };
+		$now = time();
+		$head = $b64(json_encode(array('alg' => 'RS256', 'typ' => 'JWT')));
+		$claim = $b64(json_encode(array('iss' => $sa['client_email'], 'scope' => 'https://www.googleapis.com/auth/dialogflow', 'aud' => 'https://oauth2.googleapis.com/token', 'iat' => $now, 'exp' => $now + 3600)));
+		$sig = '';
+		if (!openssl_sign($head . '.' . $claim, $sig, $sa['private_key'], 'sha256WithRSAEncryption')) return array('', 'The service account private key could not be read.');
+		$ch = curl_init('https://oauth2.googleapis.com/token');
+		curl_setopt_array($ch, $this->ca_opts());
+		curl_setopt_array($ch, array(CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 15, CURLOPT_POST => true,
+			CURLOPT_POSTFIELDS => http_build_query(array('grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer', 'assertion' => $head . '.' . $claim . '.' . $b64($sig)))));
+		$res = json_decode((string)curl_exec($ch), true);
+		$err = curl_error($ch);
+		curl_close($ch);
+		if (!empty($res['access_token'])) return array($res['access_token'], '');
+		return array('', 'Google refused the service account: ' . (isset($res['error_description']) ? $res['error_description'] : ($err ?: 'no token')));
+	}
+
+	/** Free-text result from an agent ("customer agreed to a meeting") to one of our outcomes. */
+	public function map_outcome($t)
+	{
+		$t = strtolower(trim((string)$t));
+		if ($t === '') return '';
+		foreach (self::$outcomes as $o) if ($t === strtolower($o)) return $o;
+		$rules = array(
+			'Do not call' => '~do.?not.?call|dnc|dnd|stop calling|remove~', 'Wrong number' => '~wrong~', 'Voicemail' => '~voice.?mail|machine~',
+			'No answer' => '~no.?answer|busy|unreachable|not reachable~', 'Not interested' => '~not.?interest|declin|reject|no need~',
+			'Meeting booked' => '~meeting|appointment|demo|visit~', 'Call back' => '~call.?back|later|follow~', 'Interested' => '~interest|quote|offer|yes~',
+			'Failed' => '~fail|error~'
+		);
+		foreach ($rules as $o => $re) if (preg_match($re, $t)) return $o;
+		return '';
+	}
+
+	/**
+	 * Webhook from a Google agent (Dialogflow CX WebhookRequest). Tags:
+	 *  crm_context - returns the customer and pitch as session parameters
+	 *  call_end    - saves outcome / summary / transcript / duration / recording_url from the session parameters
+	 * Always returns a valid WebhookResponse.
+	 */
+	public function dialogflow_webhook($p)
+	{
+		$empty = array('fulfillmentResponse' => array('messages' => array()));
+		$tag = isset($p['fulfillmentInfo']['tag']) ? (string)$p['fulfillmentInfo']['tag'] : '';
+		$prm = isset($p['sessionInfo']['parameters']) && is_array($p['sessionInfo']['parameters']) ? $p['sessionInfo']['parameters'] : array();
+		$session = isset($p['sessionInfo']['session']) ? (string)$p['sessionInfo']['session'] : '';
+		$id = !empty($prm['crm_call_id']) ? (int)$prm['crm_call_id'] : (preg_match('~/sessions/crm-(\d+)$~', $session, $m) ? (int)$m[1] : 0);
+		if ($id <= 0) return $empty;
+		$row = $this->db->where('id', $id)->get('ci_ai_calls')->row_array();
+		// only calls placed through Google, and the session must belong to that call
+		if (!$row || $row['provider'] !== 'google' || ($session !== '' && !preg_match('~/sessions/crm-' . $id . '$~', $session))) return $empty;
+		$a = $this->agent($row['agent_id']);
+		if ($tag === 'crm_context' && $a) {
+			return array('sessionInfo' => array('parameters' => $this->google_params($a, $row)), 'fulfillmentResponse' => array('messages' => array()));
+		}
+		if (in_array($tag, array('call_end', 'end_call', 'crm_result'), true)) {
+			$tr = isset($prm['transcript']) ? $prm['transcript'] : '';
+			$f = array(
+				'status' => 'Completed', 'duration' => isset($prm['duration']) ? (int)$prm['duration'] : ($row['started_at'] ? max(0, time() - strtotime($row['started_at'])) : 0),
+				'transcript' => is_array($tr) ? json_encode($tr) : (string)$tr, 'summary' => isset($prm['summary']) ? (string)$prm['summary'] : '',
+				'recording_url' => isset($prm['recording_url']) ? (string)$prm['recording_url'] : '',
+				'outcome' => $this->map_outcome(isset($prm['outcome']) ? $prm['outcome'] : ''), 'error' => ''
+			);
+			if ($f['outcome'] === 'Failed') { $f['status'] = 'Failed'; $f['error'] = 'Reported by the Google agent'; }
+			if (!empty($prm['followup_date']) && strtotime($prm['followup_date'])) $f['followup_date'] = date('Y-m-d', strtotime($prm['followup_date']));
+			$this->finish_call($row, $f);
+		}
+		return $empty;
 	}
 
 	/* ---------- results from the provider ---------- */
@@ -587,6 +739,7 @@ class Ai_agent_model extends CI_Model
 			'recording_url' => preg_match('~^https://~i', $f['recording_url']) ? mb_substr($f['recording_url'], 0, 500) : '', 'error' => $f['error'], 'ended_at' => $now
 		);
 		if (isset($f['provider_call_id'])) $upd['provider_call_id'] = $f['provider_call_id'];
+		if (!empty($f['followup_date'])) $upd['followup_date'] = $f['followup_date'];
 		$outcome = $f['outcome'];
 		$t = strtolower((string)$f['transcript']);
 		if ($outcome === '' && preg_match("~(do not|don't|dont|stop) call|remove (my|this) number|not call (me|again)|take me off~", $t)) $outcome = 'Do not call';

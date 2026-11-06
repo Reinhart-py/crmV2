@@ -1,5 +1,5 @@
 <?php require_once(APPPATH . "views/manager/elements/header.php"); ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-dialer.css?v=20261107_1">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-dialer.css?v=20261107_2">
 
 <style>
 html, body {
@@ -950,6 +950,14 @@ html, body {
               <a href="javascript:void(0)" class="dock-flyout-item" onclick="openCampaignView('list')"><span>View Campaign</span></a>
             </div>
           </div>
+    <?php if (crm_can('ai_agents', 'read')) { ?>
+    <div class="dock-item-wrapper">
+      <button type="button" class="crm-dock-btn" id="dockBtnAi" title="AI Agent" onclick="openAiAgentView()">
+        <i class="fa fa-microphone"></i>
+        <span class="dock-lbl">AI Agent</span>
+      </button>
+    </div>
+    <?php } ?>
     <div class="dock-item-wrapper">
       <button type="button" class="crm-dock-btn" id="dockBtnLogs" title="Logs" onclick="openMenuLogs()">
         <i class="fa fa-list-alt"></i>
@@ -1024,9 +1032,9 @@ html, body {
             <i class="fa fa-flag-o"></i><span><b>Campaigns</b><small>Shared calling lists and targets</small></span>
           </button>
           <?php if (crm_can('ai_agents', 'read')) { ?>
-          <a class="dh-act" href="<?php echo base_url(); ?>manager/ai-agents">
+          <button type="button" class="dh-act" onclick="openAiAgentView()">
             <i class="fa fa-microphone"></i><span><b>AI agents</b><small>AI cold calls and interested customers to follow up</small></span>
-          </a>
+          </button>
           <?php } ?>
         </div>
 
@@ -1526,6 +1534,11 @@ html, body {
           <div id="campaignListBody"></div>
         </div>
       </div>
+      <?php if (crm_can('ai_agents', 'read')) { ?>
+      <div id="middleViewAiAgent" class="cmp-view aip" style="display:none;">
+        <div id="aipBody"><div class="cmp-empty">Loading…</div></div>
+      </div>
+      <?php } ?>
       <div id="middleViewLogs" style="display:none;">
         <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:12px; margin-bottom:18px;">
           <div class="sheet-stat-card">
@@ -1863,6 +1876,7 @@ function hideAllMiddleViews() {
   $('#middleViewManualDialer').hide();
   $('#middleViewCampaignForm').hide();
   $('#middleViewCampaignList').hide();
+  $('#middleViewAiAgent').hide();
 }
 
 var audioCtx = null;
@@ -2335,6 +2349,130 @@ var campaignCache = [];
 
 function campaignEscape(v) {
   return $('<div>').text(v == null ? '' : String(v)).html();
+}
+
+// ---------- AI Agent module: agents, campaign assignment, queueing, interested customers ----------
+var aipData = null, AIP_BASE = '<?php echo base_url(); ?>manager/ai-agents/';
+function openAiAgentView() {
+  closeAllMobileFlyouts();
+  $('.crm-dock-btn').removeClass('active');
+  $('#dockBtnAi').addClass('active');
+  $('#subnavFollowup').hide();
+  $('#subnavLogsPeriod').hide();
+  hideAllMiddleViews();
+  $('#middleAreaTitle').text('AI Agent');
+  $('#middleViewAiAgent').show();
+  openMiddleArea();
+  if (window.innerWidth <= 991) {
+    updateMobileWorkspaceTitle('AI Agent');
+    switchMobileDialerView('workspace');
+  }
+  loadAiPanel();
+}
+function loadAiPanel() {
+  $.getJSON(AIP_BASE + 'ajax_panel', function (r) {
+    if (!r || !r.status) { $('#aipBody').html('<div class="cmp-empty">' + campaignEscape((r && r.message) || 'Unable to load AI agents') + '</div>'); return; }
+    aipData = r;
+    renderAiPanel();
+  }).fail(function () { $('#aipBody').html('<div class="cmp-empty">Unable to load AI agents</div>'); });
+}
+function aipOutcomeCls(o) { return /Meeting|Interested|Call back/.test(o) ? 'aip-hot' : ''; }
+function renderAiPanel() {
+  var r = aipData, e = campaignEscape, h = '';
+  if (r.not_ready) {
+    h += '<div class="aip-off"><i class="fa fa-plug"></i><span><b>AI calls are off.</b> ' + e(r.not_ready) + '</span>' +
+      (r.can_settings ? '<a class="btn btn-default btn-sm" href="' + AIP_BASE + 'settings">Connect</a>' : '') + '</div>';
+  } else {
+    h += '<div class="aip-on"><i class="fa fa-check-circle"></i> AI calling is on: ' + e(r.provider) + '</div>';
+  }
+  var s = r.sum || {};
+  h += '<div class="aip-stats">' +
+    '<div><b>' + (s.today || 0) + '</b><span>AI calls today</span></div>' +
+    '<div><b>' + (s.week ? Math.round((s.talked || 0) * 100 / s.week) : 0) + '%</b><span>Answered, 7 days</span></div>' +
+    '<div><b>' + (s.open_hot || 0) + '</b><span>To follow up</span></div>' +
+    '<div><b>' + ((s.queued || 0) + (s.calling || 0)) + '</b><span>Queued / calling</span></div></div>';
+
+  h += '<div class="cmp-card"><div class="cmp-card-head"><h3>AI agents</h3><div class="cmp-head-actions">' +
+    '<a class="btn btn-default btn-sm" href="' + AIP_BASE.replace(/\/$/, '') + '">All results</a>' +
+    (r.can_settings ? '<a class="btn btn-default btn-sm" href="' + AIP_BASE + 'settings" title="Settings"><i class="fa fa-cog"></i></a>' : '') +
+    (r.can_write ? '<a class="btn btn-primary btn-sm" href="' + AIP_BASE + 'new">New agent</a>' : '') + '</div></div>';
+  if (!r.agents.length) {
+    h += '<div class="cmp-empty">No AI agents yet.' + (r.can_write ? ' Create one, then assign a campaign to it here.' : '') + '</div>';
+  }
+  r.agents.forEach(function (a) {
+    h += '<div class="aip-agent" data-agent="' + a.id + '"><div class="aip-ah">' +
+      '<div><div class="cmp-name">' + e(a.name) + ' <span class="aip-chip aip-st-' + e(a.status) + '">' + e(a.status) + '</span></div>' +
+      '<div class="cmp-meta">' + e(a.goal) + ' · ' + e(a.language) + ' · ' + e(a.hours) + (a.status === 'Active' ? (a.in_hours ? ' · <span class="aip-live">calling hours now</span>' : ' · outside calling hours') : '') + '</div></div>' +
+      '<div class="aip-nums"><span><b>' + a.calls7 + '</b>calls</span><span><b>' + a.talked7 + '</b>answered</span><span><b>' + a.hot7 + '</b>interested</span><span><b>' + a.queued + '</b>queued</span></div>' +
+      '<div class="cmp-actions">' + (r.can_write ? '<button type="button" class="btn btn-default btn-sm" onclick="aiAgentStatus(' + a.id + ',\'' + (a.status === 'Active' ? 'Paused' : 'Active') + '\')">' + (a.status === 'Active' ? '<i class="fa fa-pause"></i> Pause' : '<i class="fa fa-play"></i> Activate') + '</button>' +
+        '<a class="btn btn-default btn-sm" href="' + AIP_BASE + 'edit/' + a.id + '">Edit</a>' : '') +
+        '<a class="btn btn-default btn-sm" href="' + AIP_BASE + 'view/' + a.id + '">Results</a></div></div>';
+    h += '<div class="aip-camps">';
+    if (!a.campaigns.length) h += '<div class="cmp-meta">No campaign assigned.</div>';
+    a.campaigns.forEach(function (c) {
+      var live = c.phase === 'Active';
+      h += '<div class="aip-camp"><div><b>' + e(c.name) + '</b> <span class="aip-chip">' + e(live ? 'Running' : c.phase) + '</span>' + (c.queued ? ' <span class="cmp-meta">' + c.queued + ' queued</span>' : '') + '</div>' +
+        (c.can_manage ? '<div class="cmp-actions">' + (live && a.status === 'Active' ? '<select class="form-control input-sm aip-n" aria-label="Records to queue"><option>25</option><option selected>50</option><option>100</option><option>250</option></select>' +
+          '<button type="button" class="btn btn-primary btn-sm" onclick="aiQueue(' + c.id + ', this)"><i class="fa fa-play"></i> Queue</button>' : '') +
+          '<button type="button" class="btn btn-default btn-sm" onclick="aiAssign(' + c.id + ', 0)" title="Remove from this agent"><i class="fa fa-times"></i></button></div>' : '') + '</div>';
+    });
+    var free = r.campaigns.filter(function (c) { return c.can_manage && c.ai_agent_id !== a.id; });
+    if (r.can_write && free.length) {
+      h += '<div class="aip-assign"><select class="form-control input-sm" aria-label="Campaign to assign"><option value="">Assign a campaign…</option>' +
+        free.map(function (c) { return '<option value="' + c.id + '">' + e(c.name) + (c.ai_agent_id ? ' (moves from another agent)' : '') + '</option>'; }).join('') +
+        '</select><button type="button" class="btn btn-default btn-sm" onclick="aiAssignPick(' + a.id + ', this)">Assign</button></div>';
+    }
+    h += '</div></div>';
+  });
+  h += '<div class="aip-msg" id="aipMsg" role="status"></div></div>';
+
+  h += '<div class="cmp-card"><div class="cmp-card-head"><h3>Interested customers to call <span class="aip-chip">' + r.inbox.length + '</span></h3></div>';
+  if (!r.inbox.length) h += '<div class="cmp-empty">Nothing to follow up. Customers who want a meeting or a call back show here.</div>';
+  r.inbox.forEach(function (c) {
+    h += '<div class="aip-lead" data-call="' + c.id + '"><div>' +
+      '<div class="cmp-name">' + e(c.customer || c.phone) + ' <span class="aip-chip ' + aipOutcomeCls(c.outcome) + '">' + e(c.outcome) + '</span></div>' +
+      '<div class="cmp-meta">' + e([c.contact, c.phone].filter(Boolean).join(' · ')) + '</div>' +
+      (c.summary ? '<div class="aip-sum">' + e(c.summary) + '</div>' : '') +
+      '<div class="cmp-meta">' + e([c.when, c.owner, c.campaign, c.followup_date ? 'follow up ' + c.followup_date : ''].filter(Boolean).join(' · ')) + '</div></div>' +
+      '<div class="cmp-actions">' + (c.lead_id ? '<button type="button" class="btn btn-primary btn-sm" onclick="aiCallLead(' + c.lead_id + ')"><i class="fa fa-phone"></i> Call</button>' : '') +
+      '<button type="button" class="btn btn-default btn-sm" onclick="aiDone(' + c.id + ')" title="A person has taken this over"><i class="fa fa-check"></i> Done</button></div></div>';
+  });
+  h += '</div>';
+  $('#aipBody').html(h);
+}
+function aiMsg(t) { $('#aipMsg').text(t || ''); }
+function aiAssignPick(agentId, btn) {
+  var v = $(btn).prev('select').val();
+  if (!v) { $(btn).prev('select').focus(); return; }
+  aiAssign(v, agentId);
+}
+function aiAssign(campaignId, agentId) {
+  if (!agentId && !confirm('Remove this campaign from the AI agent? Its queued AI calls are removed.')) return;
+  $.post(AIP_BASE + 'ajax_assign', { campaign_id: campaignId, agent_id: agentId }, function (r) {
+    if (r && r.status) loadAiPanel(); else alert((r && r.message) || 'Not saved');
+  }, 'json');
+}
+function aiQueue(campaignId, btn) {
+  var n = $(btn).prev('select').val() || 50;
+  $(btn).prop('disabled', true);
+  aiMsg('Adding records…');
+  $.post(AIP_BASE + 'ajax_queue_campaign', { campaign_id: campaignId, limit: n }, function (r) {
+    loadAiPanel();
+    setTimeout(function () { aiMsg((r && r.message) || 'Not queued'); }, 300);
+  }, 'json').fail(function () { $(btn).prop('disabled', false); aiMsg('The server did not respond.'); });
+}
+function aiAgentStatus(id, st) {
+  $.post(AIP_BASE + 'ajax_status', { id: id, status: st }, function (r) {
+    if (r && r.status) loadAiPanel(); else alert((r && r.message) || 'Not saved');
+  }, 'json');
+}
+function aiCallLead(leadId) {
+  viewLeadDetailsById(leadId);
+}
+function aiDone(id) {
+  $.post(AIP_BASE + 'ajax_handled', { id: id }, function (r) {
+    if (r && r.status) loadAiPanel(); else alert((r && r.message) || 'Not saved');
+  }, 'json');
 }
 
 function openCampaignView(view) {

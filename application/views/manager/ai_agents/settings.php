@@ -30,6 +30,30 @@ if (!in_array($s['timezone'], $zones, true)) $zones[] = $s['timezone'];
               <div class="form-group">
                 <label class="tog" style="margin-top:26px"><input type="checkbox" name="enabled" value="1"<?php echo $s['enabled'] ? ' checked' : ''; ?>><span>AI calling is on<small>Off: nothing is dialled; queued calls wait.</small></span></label>
               </div>
+              <div class="form-group pv-google">
+                <label for="fGProj">Google Cloud project ID</label>
+                <input type="text" id="fGProj" name="google_project" class="form-control" maxlength="63" value="<?php echo $h($s['google_project']); ?>" placeholder="e.g. strokes-sales-ai">
+              </div>
+              <div class="form-group pv-google">
+                <label for="fGLoc">Agent region</label>
+                <select id="fGLoc" name="google_location" class="form-control">
+                  <?php foreach ($google_locations as $k => $lbl) { ?><option value="<?php echo $k; ?>"<?php echo $sel($s['google_location'], $k); ?>><?php echo $h($lbl); ?></option><?php } ?>
+                </select>
+              </div>
+              <div class="form-group pv-google">
+                <label for="fGAgent">Agent ID</label>
+                <input type="text" id="fGAgent" name="google_agent_id" class="form-control" maxlength="64" value="<?php echo $h($s['google_agent_id']); ?>" placeholder="From the agent's URL in the Google console">
+              </div>
+              <div class="form-group pv-google">
+                <label for="fGLang">Default language code</label>
+                <input type="text" id="fGLang" name="google_language" class="form-control" maxlength="5" value="<?php echo $h($s['google_language']); ?>" placeholder="en">
+                <span class="hint">Used for agents set to English + Arabic.</span>
+              </div>
+              <div class="form-group wide pv-google">
+                <label for="fGSa">Service account key (JSON)</label>
+                <textarea id="fGSa" name="google_sa" class="form-control" rows="3" autocomplete="off" spellcheck="false" placeholder="<?php echo $has_sa ? 'Saved. Leave empty to keep it' : 'Paste the JSON key of a service account with the Dialogflow API Client role'; ?>"></textarea>
+                <span class="hint">Only used to check the agent. Stored in the CRM database only and never shown again.</span>
+              </div>
               <div class="form-group wide pv-key">
                 <label for="fKey">API key</label>
                 <input type="password" id="fKey" name="api_key" class="form-control" autocomplete="new-password" placeholder="<?php echo $has_key ? 'Saved. Leave empty to keep it' : 'Paste the private API key'; ?>">
@@ -53,7 +77,8 @@ if (!in_array($s['timezone'], $zones, true)) $zones[] = $s['timezone'];
               <div class="form-group wide pv-custom">
                 <label for="fEnd">Endpoint</label>
                 <input type="url" id="fEnd" name="endpoint" class="form-control" maxlength="255" value="<?php echo $h($s['endpoint']); ?>" placeholder="https://…">
-                <span class="hint">The CRM posts each call as JSON (phone, contact, prompt, first_message, webhook_url, crm_call_id). Your flow places the call and posts the result to the webhook below. The API key, if set, is sent as a Bearer token.</span>
+                <span class="hint pv-google">Google agents answer calls but do not dial out. The calling bridge (a Cloud Run service, telephony partner, or 3CX SIP trunk into Google) receives each call as JSON (phone, google.session, parameters, webhook_url), dials the customer and connects the agent. In the agent, add a webhook to the results link below with tag <code>crm_context</code> at the start and <code>call_end</code> at the end, setting session parameters outcome, summary, transcript and followup_date.</span>
+                <span class="hint pv-nogoogle">The CRM posts each call as JSON (phone, contact, prompt, first_message, webhook_url, crm_call_id). Your flow places the call and posts the result to the webhook below. The API key, if set, is sent as a Bearer token.</span>
               </div>
             </div>
           </div>
@@ -121,9 +146,12 @@ $(function () {
     var p = $('#fProv').val();
     $('.pv-vapi').toggle(p === 'vapi');
     $('.pv-bland').toggle(p === 'bland');
-    $('.pv-custom').toggle(p === 'custom');
+    $('.pv-google').toggle(p === 'google');
+    $('.pv-nogoogle').toggle(p !== 'google');
+    $('.pv-custom').toggle(p === 'custom' || p === 'google');
     $('.pv-key').toggle(p !== '');
-    $('#fKey').closest('.form-group').find('label').text(p === 'custom' ? 'Bearer token (optional)' : 'API key');
+    $('#fKey').closest('.form-group').find('label').text(p === 'custom' ? 'Bearer token (optional)' : (p === 'google' ? 'Calling bridge token (optional)' : 'API key'));
+    $('#fEnd').closest('.form-group').find('label').text(p === 'google' ? 'Calling bridge URL' : 'Endpoint');
   }
   $('#fProv').on('change', prov);
   prov();
@@ -133,7 +161,7 @@ $(function () {
     $('#saveMsg').text('Saving…');
     $.post(base + 'ai-agents/ajax_save_settings', $(this).serialize(), function (r) {
       $('#saveMsg').text((r && r.message) || 'Not saved');
-      if (r && r.status) $('#fKey').val('');
+      if (r && r.status) $('#fKey, #fGSa').val('');
       b.prop('disabled', false);
     }, 'json').fail(function () { $('#saveMsg').text('The server could not save.'); b.prop('disabled', false); });
   });
