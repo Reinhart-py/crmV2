@@ -75,9 +75,10 @@
                       <td><?php echo !empty($r['mrr']) ? htmlspecialchars($r['mrr']) : (!empty($r['r_amount']) ? htmlspecialchars($r['r_amount']) : '—'); ?></td>
                       <td><?php echo htmlspecialchars(date('d M Y', strtotime($r['created_at']))); ?></td>
                       <td>
-                        <a href="<?php echo base_url(); ?>manager/kam/view/<?php echo (int)$r['lead_id']; ?>" class="btn btn-xs btn-default">
-                          <i class="fa fa-eye"></i> View
-                        </a>
+                        <?php $r_mgr = !empty($r['executive_id']) ? (int)$r['executive_id'] : (int)($r['lead_assign'] ?? 0);
+                        if ($r_mgr === (int)$this->session->userdata('manager_id')) { /* only the account manager opens the client */ ?>
+                        <a href="<?php echo base_url(); ?>manager/kam/view/<?php echo (int)$r['lead_id']; ?>" class="btn btn-xs btn-default"><i class="fa fa-eye"></i> View</a>
+                        <?php } ?>
                       </td>
                     </tr>
                   <?php } ?>

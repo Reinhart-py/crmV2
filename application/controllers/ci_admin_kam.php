@@ -116,9 +116,8 @@ class Ci_admin_kam extends CI_Controller
 		$this->db->join('ci_terms as E', 'A.s_cat = E.id', 'left');
 		$this->db->where('(A.company_status IS NULL OR LOWER(A.company_status) != "closed")');
 
-		// own clients and the team's (Admin and All company data: everyone)
-		$scope_in = implode(',', array_map('intval', array_merge(array($manager_id), $this->ci_admin_model->team_page_ids($manager_id))));
-		$this->db->where("(A.lead_assign IN ($scope_in) OR K.executive_id IN ($scope_in) OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET($manager_id, A.agents) > 0))", NULL, FALSE);
+		// only the account manager sees a client here (the executive set at onboarding, else the lead owner) - Admin too
+		$this->db->where("((K.executive_id > 0 AND K.executive_id = $manager_id) OR ((K.executive_id IS NULL OR K.executive_id = 0) AND A.lead_assign = $manager_id))", NULL, FALSE);
 
 		if (!empty($d1) && !empty($d2)) {
 			$this->db->where('A.created >=', date('Y-m-d', strtotime($d1)));
@@ -1093,7 +1092,7 @@ class Ci_admin_kam extends CI_Controller
 		$d1 = trim($this->input->get('d1'));
 		$d2 = trim($this->input->get('d2'));
 
-		$this->db->select('K.*, L.customer, L.contact1, L.email, L.category, L.mrr, L.r_amount, L.status as lead_status, U.name as account_manager');
+		$this->db->select('K.*, L.customer, L.contact1, L.email, L.category, L.mrr, L.r_amount, L.lead_assign, L.status as lead_status, U.name as account_manager');
 		$this->db->from('ci_kam_client_details K');
 		$this->db->join('ci_leads L', 'L.id = K.lead_id', 'left');
 		$this->db->join('ci_user U', 'U.id = K.executive_id', 'left');
@@ -1196,6 +1195,13 @@ class Ci_admin_kam extends CI_Controller
 		$kam = $this->db->where('lead_id', $id)->get('ci_kam_client_details')->row_array();
 		if (empty($kam)) {
 			$kam = $this->db->where('client_name', $lead['customer'])->get('ci_kam_client_details')->row_array();
+		}
+		// same rule as My Clients: only the account manager opens the client (Admin too)
+		$acct_mgr = !empty($kam['executive_id']) ? (int)$kam['executive_id'] : (int)$lead['lead_assign'];
+		if (empty($kam) || $acct_mgr !== (int)$this->session->userdata('manager_id')) {
+			$this->session->set_flashdata('error_message', 'Only the client\'s account manager can open this client.');
+			redirect('manager/kam/my-client');
+			return;
 		}
 
 		$data = array();
