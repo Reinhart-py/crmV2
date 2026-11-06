@@ -1,6 +1,7 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
 <div class="content-wrapper px-4">
+<?php echo crm_mz_tabbar(); ?>
     <section class="content-header" style="padding: 15px 15px 5px 15px;">
         <h1 style="font-size: 22px; font-weight: 800; color: #000000; margin: 0; letter-spacing: -0.02em;"> <?php echo $info['page_heading']; ?> </h1>
     </section>

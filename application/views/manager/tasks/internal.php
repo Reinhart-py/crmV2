@@ -1,6 +1,7 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
 <div class="content-wrapper px-4">
+<?php echo crm_mz_tabbar(); ?>
     <section class="content-header">
         <h1><?php echo htmlspecialchars($info['page_heading']); ?></h1>
     </section>

@@ -2,8 +2,10 @@
 
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper px-4"> <!-- Content Header (Page header) -->
-  <section class="content-header">
+<?php echo crm_mz_tabbar(); ?>
+  <section class="content-header" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
     <h1> <?php echo $info['page_heading']; ?> </h1>
+    <?php if ($this->uri->segment(3) !== 'followups' && crm_can('verticals', 'write')) { ?><a href="<?php echo base_url(); ?>manager/verticals/add" class="btn btn-primary" style="background:#1e3a8a;border-color:#1e3a8a;font-weight:600;border-radius:8px;"><i class="fa fa-plus"></i> Add Vertical</a><?php } ?>
   </section>
   <!-- Main content -->
   <section class="content"> <!-- /.row -->

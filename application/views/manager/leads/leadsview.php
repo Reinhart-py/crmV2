@@ -4,7 +4,7 @@
 <?php
 $ldv_seg = $this->uri->segment(3);
 $ldv_title = (isset($stage) && $stage === 'database' && $info['page_heading'] === 'All Leads') ? 'Database' : $info['page_heading'];
-$ldv_add = !($ldv_seg == 'followups' || $ldv_seg == 'meetings' || $ldv_seg == 'review_leads' || (isset($stage) && $stage === 'review_leads'));
+$ldv_add = crm_can('database', 'write') && !($ldv_seg == 'followups' || $ldv_seg == 'meetings' || $ldv_seg == 'review_leads' || (isset($stage) && $stage === 'review_leads'));
 $ldv_n = (isset($product_list) && is_array($product_list)) ? count($product_list) : 0;
 $ldv_on = 0;
 foreach (array('d1', 'd2', 'mrr1', 'mrr2', 'category', 'lCat', 'status', 'user_name', 'country', 'state', 'type') as $ldv_k) {
@@ -12,6 +12,7 @@ foreach (array('d1', 'd2', 'mrr1', 'mrr2', 'category', 'lCat', 'status', 'user_n
 }
 ?>
 <div class="content-wrapper px-4 ldv">
+<?php echo crm_mz_tabbar(); ?>
 
     <section class="ldv-head">
         <h1><?php echo htmlspecialchars($ldv_title); ?><small><?php echo $ldv_n; ?> <?php echo $ldv_n === 1 ? 'record' : 'records'; ?><?php echo $ldv_on ? ' &middot; ' . $ldv_on . ' filter' . ($ldv_on === 1 ? '' : 's') . ' on' : ''; ?></small></h1>

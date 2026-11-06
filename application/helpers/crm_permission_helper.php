@@ -57,34 +57,34 @@ if (!function_exists('crm_perm_catalog')) {
 				'title' => 'My Zone', 'key' => 'my_zone', 'match' => array('leads', 'verticals', 'database-transfer', 'sales', 'tasks', 'tickets', 'database'),
 				'icon' => '<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>',
 				'items' => array(
-					'database' => array('label' => 'Database', 'desc' => 'View own database records; Full can add and edit records',
+					'database' => array('tab' => 'mz_pipeline', 'label' => 'Database', 'desc' => 'View own database records; Full can add and edit records',
 						'nav' => array(array('leads/add', 'Add Database', 'fa-plus', 'write'), array('leads', 'View Database', 'fa-database', 'read')),
 						'pages' => array('leads', 'database'), 'write' => array('leads/add', 'database/add')),
-					'leads' => array('label' => 'Leads', 'desc' => 'Records approved as leads', 'fallback' => 'database',
+					'leads' => array('tab' => 'mz_pipeline', 'label' => 'Leads', 'desc' => 'Records approved as leads', 'fallback' => 'database',
 						'nav' => array(array('leads/view_leads', 'View Leads', 'fa-bullseye')), 'pages' => array('leads/view_leads')),
-					'orders' => array('label' => 'My Orders', 'desc' => 'Orders created from own leads', 'fallback' => 'database',
+					'orders' => array('tab' => 'mz_pipeline', 'label' => 'My Orders', 'desc' => 'Orders created from own leads', 'fallback' => 'database',
 						'nav' => array(array('orders/my', 'View Orders', 'fa-shopping-cart')), 'pages' => array('orders/my')),
-					'sales' => array('label' => 'My Sales', 'desc' => 'Orders that became sales', 'fallback' => 'database',
+					'sales' => array('tab' => 'mz_pipeline', 'label' => 'My Sales', 'desc' => 'Orders that became sales', 'fallback' => 'database',
 						'nav' => array(array('sales', 'View Sales', 'fa-line-chart')), 'pages' => array('sales', 'orders/sales')),
-					'followups' => array('label' => 'My Follow-Up', 'desc' => 'Follow-up reminders on own records', 'fallback' => 'database',
+					'followups' => array('tab' => 'mz_activity', 'label' => 'My Follow-Up', 'desc' => 'Follow-up reminders on own records', 'fallback' => 'database',
 						'nav' => array(array('leads/followups', 'My Follow-Up', 'fa-clock-o')), 'pages' => array('leads/followups')),
-					'meetings' => array('label' => 'My Meetings', 'desc' => 'Meetings booked on own records', 'fallback' => 'database',
+					'meetings' => array('tab' => 'mz_activity', 'label' => 'My Meetings', 'desc' => 'Meetings booked on own records', 'fallback' => 'database',
 						'nav' => array(array('leads/meetings', 'My Meetings', 'fa-calendar')), 'pages' => array('leads/meetings', 'meetings'), 'write' => array('meetings/add')),
-					'verticals' => array('label' => 'Verticals', 'desc' => 'Vertical records; Full can add them', 'fallback' => 'database',
+					'verticals' => array('tab' => 'mz_verticals', 'label' => 'Verticals', 'desc' => 'Vertical records; Full can add them', 'fallback' => 'database',
 						'nav' => array(array('verticals/add', 'Add Vertical', 'fa-plus', 'write'), array('verticals', 'View Vertical', 'fa-list', 'read')),
 						'pages' => array('verticals'), 'write' => array('verticals/add')),
-					'vertical_followups' => array('label' => 'Vertical Follow-up', 'desc' => 'Follow-ups on verticals', 'fallback' => 'database',
+					'vertical_followups' => array('tab' => 'mz_verticals', 'label' => 'Vertical Follow-up', 'desc' => 'Follow-ups on verticals', 'fallback' => 'database',
 						'nav' => array(array('verticals/followups', 'Vertical Follow-up', 'fa-clock-o')), 'pages' => array('verticals/followups')),
-					'internal_tasks' => array('label' => 'Internal Tasks', 'desc' => 'Tasks between colleagues', 'fallback' => 'tasks',
+					'internal_tasks' => array('tab' => 'mz_tasks', 'label' => 'Internal Tasks', 'desc' => 'Tasks between colleagues', 'fallback' => 'tasks',
 						'nav' => array(array('tasks/internal', 'View Internal Task', 'fa-building-o')), 'pages' => array('tasks/internal')),
-					'external_tasks' => array('label' => 'External Tasks', 'desc' => 'Tasks for clients', 'fallback' => 'tasks',
+					'external_tasks' => array('tab' => 'mz_tasks', 'label' => 'External Tasks', 'desc' => 'Tasks for clients', 'fallback' => 'tasks',
 						'nav' => array(array('tasks/external', 'View External Task', 'fa-briefcase')), 'pages' => array('tasks/external')),
-					'task_followups' => array('label' => 'Task Follow-up', 'desc' => 'Follow-up list for tasks', 'fallback' => 'internal_tasks',
+					'task_followups' => array('tab' => 'mz_tasks', 'label' => 'Task Follow-up', 'desc' => 'Follow-up list for tasks', 'fallback' => 'internal_tasks',
 						'nav' => array(array('tasks/followups', 'Task Follow-up', 'fa-check-square-o')), 'pages' => array('tasks/followups')),
-					'tickets' => array('label' => 'Tickets', 'desc' => 'Support tickets: raise, open and follow up', 'fallback' => 'team_tickets',
+					'tickets' => array('tab' => 'mz_tickets', 'label' => 'Tickets', 'desc' => 'Support tickets: raise, open and follow up', 'fallback' => 'team_tickets',
 						'nav' => array(array('tickets', 'Tickets', 'fa-ticket'), array('tickets/open', 'Open Tickets', 'fa-folder-open-o')),
 						'pages' => array('tickets', 'tickets/open', 'tickets/followups'), 'write' => array('tickets/add')),
-					'database_transfer' => array('label' => 'Database Transfer', 'desc' => 'Move records between users', 'fallback' => 'database',
+					'database_transfer' => array('tab' => 'mz_pipeline', 'label' => 'Database Transfer', 'desc' => 'Move records between users', 'fallback' => 'database',
 						'nav' => array(array('database-transfer', 'Database Transfer', 'fa-exchange')), 'pages' => array('database-transfer')),
 				),
 			),
@@ -395,6 +395,31 @@ if (!function_exists('crm_tab_groups')) {
 	function crm_tab_groups()
 	{
 		return array(
+			// My Zone: one menu link per group, related pages as tabs
+			'mz_pipeline' => array('label' => 'Sales Pipeline', 'icon' => 'fa-database', 'tabs' => array(
+				array('database', 'leads', 'Database', 'fa-database'),
+				array('leads', 'leads/view_leads', 'Leads', 'fa-bullseye'),
+				array('orders', 'orders/my', 'Orders', 'fa-shopping-cart'),
+				array('sales', 'sales', 'Sales', 'fa-line-chart'),
+				array('database_transfer', 'database-transfer', 'Transfer', 'fa-exchange'),
+			)),
+			'mz_activity' => array('label' => 'Follow-ups & Meetings', 'icon' => 'fa-clock-o', 'tabs' => array(
+				array('followups', 'leads/followups', 'Follow-ups', 'fa-clock-o'),
+				array('meetings', 'leads/meetings', 'Meetings', 'fa-calendar'),
+			)),
+			'mz_verticals' => array('label' => 'Verticals', 'icon' => 'fa-list', 'tabs' => array(
+				array('verticals', 'verticals', 'Verticals', 'fa-list'),
+				array('vertical_followups', 'verticals/followups', 'Follow-ups', 'fa-clock-o'),
+			)),
+			'mz_tasks' => array('label' => 'Tasks', 'icon' => 'fa-tasks', 'tabs' => array(
+				array('internal_tasks', 'tasks/internal', 'Internal', 'fa-building-o'),
+				array('external_tasks', 'tasks/external', 'External', 'fa-briefcase'),
+				array('task_followups', 'tasks/followups', 'Follow-up', 'fa-check-square-o'),
+			)),
+			'mz_tickets' => array('label' => 'Tickets', 'icon' => 'fa-ticket', 'tabs' => array(
+				array('tickets', 'tickets', 'All tickets', 'fa-ticket'),
+				array('tickets', 'tickets/open', 'Open', 'fa-folder-open-o'),
+			)),
 			'database' => array('label' => 'Database', 'icon' => 'fa-database', 'tabs' => array(
 				array('leads_import', 'leads/import', 'Import', 'fa-upload'),
 				array('leads_export', 'leads/export', 'Export', 'fa-download'),
@@ -474,6 +499,27 @@ if (!function_exists('crm_tabbar')) {
 	}
 }
 
+/** My Zone: tab row for the current page (found from its address), or '' when the page is not part of a My Zone group. */
+if (!function_exists('crm_mz_tabbar')) {
+	function crm_mz_tabbar()
+	{
+		$CI =& get_instance();
+		$path = trim(preg_replace('~^manager/?~', '', $CI->uri->uri_string()), '/');
+		$alias = array('database' => 'leads');
+		if (isset($alias[$path])) $path = $alias[$path];
+		foreach (crm_tab_groups() as $gk => $g) {
+			if (strpos($gk, 'mz_') !== 0) continue;
+			foreach ($g['tabs'] as $t) {
+				if ($t[1] === $path) {
+					$bar = crm_tabbar($gk, $path);
+					if ($bar === '') return '';
+					return '<link rel="stylesheet" href="' . base_url() . 'assets/dist/css/crm-sys.css?v=20261106_7"><div class="sx crm-mz-tabs">' . $bar . '</div>';
+				}
+			}
+		}
+		return '';
+	}
+}
 /** Key of the menu group for the current page: an exact link match wins, else the group owning the first URL part. */
 if (!function_exists('crm_nav_active_group')) {
 	function crm_nav_active_group($menu, $path, $query)
