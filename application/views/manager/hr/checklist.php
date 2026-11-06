@@ -6,7 +6,7 @@ foreach ($items as $it) if (!$it['done_at']) $left++;
 $today = date('Y-m-d');
 $base = base_url() . 'manager/hr/';
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_8">
 <style>
   .ck-list { list-style: none; margin: 0; padding: 0; }
   .ck-list li { display: grid; grid-template-columns: 28px 1fr auto auto; gap: 10px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--crm-line-soft, #eef2f7); }
@@ -18,7 +18,7 @@ $base = base_url() . 'manager/hr/';
   .ck-list li > .chip { justify-self: start; }
   @media (max-width: 600px) { .ck-list li { grid-template-columns: 28px 1fr; } .ck-list li > :nth-child(n+3) { grid-column: 2; } }
 </style>
-<div class="content-wrapper sx">
+<div class="content-wrapper sx sx-hr">
   <?php echo crm_tabbar('hr_people', 'hr/checklists'); ?>
   <section class="sx-head">
     <h1><a href="<?php echo $base; ?>checklists" class="text-muted" aria-label="Back" style="margin-right:6px;"><i class="fa fa-angle-left"></i></a><?php echo $c['kind'] === 'onboarding' ? 'Onboarding' : 'Exit'; ?>: <?php echo $h($c['name']); ?> <?php if ($c['status'] === 'Done') { ?><span class="chip ok" style="vertical-align:middle;">Done</span><?php } ?>

@@ -145,3 +145,21 @@
   .sx table.sx-cards td:empty { display: none; }
   .sx table.sx-cards .acts { flex-wrap: wrap; }
 }
+
+/* HR & Payroll: compact top section (title row and figures) */
+.sx.sx-hr .sx-head { padding: 8px 15px 6px; }
+.sx.sx-hr .sx-head h1 { font-size: 20px; }
+.sx.sx-hr .sx-head h1 small { display: inline; margin: 0 0 0 8px; font-size: 13px; }
+.sx.sx-hr .sx-head .btn { height: 30px; }
+.sx.sx-hr > .content { padding-top: 0; }
+.sx.sx-hr .sx-kpis { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 8px; }
+.sx.sx-hr .sx-kpi { flex: 1 1 auto; width: auto; gap: 8px; padding: 6px 12px; border-radius: 8px; min-width: 0; }
+.sx.sx-hr .sx-kpi .ic { width: 26px; height: 26px; border-radius: 7px; font-size: 12px; }
+.sx.sx-hr .sx-kpi > div { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.sx.sx-hr .sx-kpi b { font-size: 17px; }
+.sx.sx-hr .sx-kpi span { margin: 0; font-size: 12px; line-height: 1.25; white-space: nowrap; }
+@media (max-width: 767px) {
+  .sx.sx-hr .sx-kpi { flex: 1 1 45%; }
+  .sx.sx-hr .sx-kpi span { white-space: normal; }
+  .sx.sx-hr .sx-kpi .ic { display: none; }
+}

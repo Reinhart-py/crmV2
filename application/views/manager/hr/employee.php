@@ -48,7 +48,7 @@ if (!empty($staff_full)) $tabs['files'] = array('fa-paperclip', 'Files');
 $tabs['history'] = array('fa-history', 'History');
 $initials = strtoupper(implode('', array_map(function ($w) { return mb_substr($w, 0, 1); }, array_slice(preg_split('/\s+/', trim($u['name'])), 0, 2))));
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_8">
 <style>
   .hf-top { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
   .hf-av { width: 58px; height: 58px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; background: var(--crm-ocean-soft, rgba(30, 58, 138, .1)); color: var(--crm-ocean, #1e3a8a); flex: 0 0 auto; }
@@ -73,7 +73,7 @@ $initials = strtoupper(implode('', array_map(function ($w) { return mb_substr($w
   .sx .sx-grid .help-block { font-size: 12px; margin: 4px 0 0; color: var(--crm-muted, #64748b); }
   @media (max-width: 767px) { .hf-x { grid-template-columns: 1fr 110px 36px; } }
 </style>
-<div class="content-wrapper sx">
+<div class="content-wrapper sx sx-hr">
   <?php echo crm_tabbar('hr_people', 'hr/employees'); ?>
   <section class="sx-head">
     <h1>HR file<small><a href="<?php echo base_url(); ?>manager/hr/employees"><i class="fa fa-angle-left"></i> All employees</a></small></h1>

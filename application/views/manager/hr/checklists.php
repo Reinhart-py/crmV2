@@ -5,7 +5,7 @@ $kname = array('onboarding' => 'Onboarding', 'offboarding' => 'Exit');
 $open = 0;
 foreach ($lists as $l) if ($l['status'] === 'Open') $open++;
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_8">
 <style>
   .ck-bar { height: 6px; border-radius: 3px; background: var(--crm-line, #e2e8f0); overflow: hidden; margin-top: 5px; max-width: 180px; }
   .ck-bar i { display: block; height: 100%; background: #16a34a; }
@@ -13,10 +13,10 @@ foreach ($lists as $l) if ($l['status'] === 'Open') $open++;
   .ck-t { display: grid; grid-template-columns: 1fr 120px 90px 36px; gap: 6px; margin-bottom: 6px; }
   @media (max-width: 600px) { .ck-t { grid-template-columns: 1fr 1fr; } .ck-t input:first-child { grid-column: 1 / -1; } }
 </style>
-<div class="content-wrapper sx">
+<div class="content-wrapper sx sx-hr">
   <?php echo crm_tabbar('hr_people', 'hr/checklists'); ?>
   <section class="sx-head">
-    <h1>Onboarding &amp; Exit<small>Step-by-step checklists for people joining and leaving, with who does each step and by when</small></h1>
+    <h1>Onboarding &amp; Exit</h1>
     <?php if ($can_edit) { ?><div class="sx-btns"><button type="button" class="btn btn-default" data-toggle="modal" data-target="#ckTpl"><i class="fa fa-list-ul"></i> Default steps</button><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#ckNew"><i class="fa fa-plus"></i> Start checklist</button></div><?php } ?>
   </section>
   <section class="content">

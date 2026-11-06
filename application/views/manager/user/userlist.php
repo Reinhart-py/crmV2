@@ -221,9 +221,18 @@ $filters = array('mgr' => 'Manager', 'cat' => 'Role', 'des' => 'Designation', 's
   .ulist .acts{display:grid;grid-template-columns:repeat(3,28px);gap:3px}
   .ulist .acts a{width:28px;height:28px;font-size:13px}
 }
+/* HR > Staff: compact figures */
+.ulist.ul-hr .content-header{padding-top:8px;padding-bottom:6px}
+.ulist.ul-hr .ul-kpis{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.ulist.ul-hr .ul-kpi{flex:1 1 auto;width:auto;gap:8px;padding:6px 12px;border-radius:8px}
+.ulist.ul-hr .ul-kpi .ic{width:26px;height:26px;border-radius:7px;font-size:12px}
+.ulist.ul-hr .ul-kpi > div:last-child{display:flex;align-items:baseline;gap:6px}
+.ulist.ul-hr .ul-kpi b{font-size:17px}
+.ulist.ul-hr .ul-kpi span{margin:0;font-size:12px;white-space:nowrap}
+@media (max-width:767px){.ulist.ul-hr .ul-kpi{flex:1 1 45%}.ulist.ul-hr .ul-kpi .ic{display:none}.ulist.ul-hr .ul-kpi span{white-space:normal}}
 </style>
-<div class="content-wrapper ulist">
-  <?php if ($is_hr) { $ul_tabs = crm_tabbar('hr_people', 'hr/staff'); if ($ul_tabs) { ?><link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7"><div class="sx ul-tabs"><?php echo $ul_tabs; ?></div><?php } } ?>
+<div class="content-wrapper ulist<?php echo !empty($is_hr) ? " ul-hr" : ""; ?>">
+  <?php if ($is_hr) { $ul_tabs = crm_tabbar('hr_people', 'hr/staff'); if ($ul_tabs) { ?><link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_8"><div class="sx ul-tabs"><?php echo $ul_tabs; ?></div><?php } } ?>
   <section class="content-header">
     <h1>Staff</h1>
     <div class="hd-btns">

@@ -9,16 +9,16 @@ foreach ($types as $n => $t) {
   foreach ($bal as $b) if (!empty($b[$n]['taken']) || !empty($b[$n]['pending'])) { $cols[] = $n; break; }
 }
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_8">
 <style>
   .lb-c b { font-size: 14px; }
   .lb-c small { display: block; font-size: 11.5px; color: var(--crm-muted, #64748b); white-space: nowrap; }
   .lb-c.neg b { color: #b91c1c; }
 </style>
-<div class="content-wrapper sx">
+<div class="content-wrapper sx sx-hr">
   <?php echo crm_tabbar('hr_time', 'hr/leave_balances'); ?>
   <section class="sx-head">
-    <h1>Leave Balances<small>Days left for <?php echo (int)$year; ?>: entitlement plus adjustments, minus leave taken and waiting for approval</small></h1>
+    <h1>Leave Balances<small><?php echo (int)$year; ?></small></h1>
     <div class="sx-btns">
       <form method="get" class="at-pick" style="display:flex;gap:6px;"><select name="year" class="form-control" onchange="this.form.submit()" aria-label="Year"><?php for ($y = (int)date('Y') + 1; $y >= (int)date('Y') - 3; $y--) { ?><option<?php echo $y === (int)$year ? ' selected' : ''; ?>><?php echo $y; ?></option><?php } ?></select></form>
       <?php if ($can_edit) { ?><button type="button" class="btn btn-primary" id="lbAdd"><i class="fa fa-plus"></i> Adjust balance</button><?php } ?>

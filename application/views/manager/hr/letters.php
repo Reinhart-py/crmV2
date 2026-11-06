@@ -5,11 +5,11 @@ $chip = array('Requested' => 'w', 'Issued' => 'ok', 'Rejected' => 'x');
 $n_req = 0;
 foreach ($rows as $r) if ($r['status'] === 'Requested') $n_req++;
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
-<div class="content-wrapper sx">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_8">
+<div class="content-wrapper sx sx-hr">
   <?php echo crm_tabbar('hr_people', 'hr/letters'); ?>
   <section class="sx-head">
-    <h1>Letters<small>Salary certificates, employment letters, NOCs and experience letters, made from the HR file</small></h1>
+    <h1>Letters</h1>
     <?php if ($can_edit) { ?><div class="sx-btns"><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#ltNew"><i class="fa fa-plus"></i> New letter</button></div><?php } ?>
   </section>
   <section class="content">

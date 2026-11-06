@@ -18,7 +18,7 @@ $edit_mgr = $acc['reviewer'] && $stage !== 'Completed';
 $back = $acc['hr'] || (!$acc['own'] && !$acc['reviewer']) ? base_url() . 'manager/hr/appraisals' : base_url() . 'manager/hr/me#reviews';
 $stars = function ($r) { $s = (int)round((float)$r); return '<span style="color:#f59e0b;letter-spacing:1px;">' . str_repeat('&#9733;', $s) . '<span style="color:#cbd5e1">' . str_repeat('&#9733;', 5 - $s) . '</span></span>'; };
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_8">
 <style>
   .rv-steps { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
   .rv-steps span { padding: 6px 12px; border-radius: 999px; font-size: 13px; border: 1px solid var(--crm-line, #e2e8f0); color: var(--crm-muted, #64748b); background: var(--crm-surface, #fff); }
@@ -29,7 +29,7 @@ $stars = function ($r) { $s = (int)round((float)$r); return '<span style="color:
   .rv-crit label { margin: 0; font-weight: 500; }
   @media (max-width: 600px) { .rv-crit { grid-template-columns: 1fr; } }
 </style>
-<div class="content-wrapper sx">
+<div class="content-wrapper sx sx-hr">
   <section class="sx-head">
     <h1><a href="<?php echo $back; ?>" class="text-muted" aria-label="Back" style="margin-right:6px;"><i class="fa fa-angle-left"></i></a><?php echo $h($a['name']); ?> <span class="chip <?php echo $chip[$stage]; ?>" style="vertical-align:middle;"><?php echo $h($stage); ?></span>
       <small><?php echo $h($a['cycle_name']); ?><?php echo $a['period_from'] ? ' · ' . $h(date('d M Y', strtotime($a['period_from'])) . ' to ' . date('d M Y', strtotime($a['period_to']))) : ''; ?><?php echo $designation ? ' · ' . $h($designation) : ''; ?> · Reviewer: <?php echo $h($a['reviewer_name'] ?: '-'); ?><?php echo $a['due_date'] && $stage !== 'Completed' ? ' · Finish by ' . $h(date('d M Y', strtotime($a['due_date']))) : ''; ?></small></h1>

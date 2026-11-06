@@ -4,7 +4,7 @@ $h = function ($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 $base = base_url() . 'manager/hr/leave_calendar';
 $max_off = $off ? max($off) : 0;
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_8">
 <style>
   .lc-grid { border-collapse: separate; border-spacing: 0; font-size: 12px; }
   .lc-grid th, .lc-grid td { padding: 4px 2px !important; text-align: center !important; border-bottom: 1px solid var(--crm-line-soft, #eef2f7); min-width: 26px; }
@@ -23,10 +23,10 @@ $max_off = $off ? max($off) : 0;
   .lc-legend { display: flex; flex-wrap: wrap; gap: 14px; padding: 10px 14px; font-size: 12.5px; color: var(--crm-muted, #64748b); align-items: center; }
   .lc-legend i.sw { display: inline-block; width: 18px; height: 12px; border-radius: 3px; vertical-align: middle; margin-right: 4px; }
 </style>
-<div class="content-wrapper sx">
+<div class="content-wrapper sx sx-hr">
   <?php echo crm_tabbar('hr_time', 'hr/leave_calendar'); ?>
   <section class="sx-head">
-    <h1>Leave Calendar<small>Who is away in <?php echo $h(date('F Y', strtotime($month . '-01'))); ?></small></h1>
+    <h1>Leave Calendar<small><?php echo $h(date('F Y', strtotime($month . '-01'))); ?></small></h1>
     <div class="sx-btns" style="align-items:center;">
       <a class="btn btn-default" href="<?php echo $base; ?>?month=<?php echo date('Y-m', strtotime($month . '-01 -1 month')); ?>" aria-label="Previous month"><i class="fa fa-angle-left"></i></a>
       <form method="get" style="margin:0;"><input type="month" name="month" class="form-control" style="height:34px;" value="<?php echo $h($month); ?>" onchange="this.form.submit()" aria-label="Month"></form>

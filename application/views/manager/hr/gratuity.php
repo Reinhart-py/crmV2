@@ -8,12 +8,12 @@ $svc = function ($days) { if ($days <= 0) return '-'; $y = floor($days / 365); $
 $no_doj = 0; $no_sal = 0;
 foreach ($rows as $r) { if (!$r['doj']) $no_doj++; if ($r['basic'] <= 0) $no_sal++; }
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_8">
 <style>.gr-sub { display: block; font-size: 12px; color: var(--crm-muted, #64748b); }</style>
-<div class="content-wrapper sx">
+<div class="content-wrapper sx sx-hr">
   <?php echo crm_tabbar('hr_pay', 'hr/taxation'); ?>
   <section class="sx-head">
-    <h1>Gratuity &amp; Settlement<small>End-of-service gratuity earned so far by each person (UAE law), and final settlements for people who leave</small></h1>
+    <h1>Gratuity &amp; Settlement</h1>
     <?php if ($can_edit) { ?><div class="sx-btns"><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#grNew"><i class="fa fa-file-text-o"></i> Final settlement</button></div><?php } ?>
   </section>
   <section class="content">

@@ -12,7 +12,7 @@ $step = function ($label, $icon, $cls, $confirm) use ($base, $rid) {
   return '<form method="post" action="' . $base . 'payroll_step/' . $rid . '/' . $label . '" style="display:inline;" onsubmit="return confirm(' . htmlspecialchars(json_encode($confirm), ENT_QUOTES) . ');"><button type="submit" class="btn ' . $cls . '">' . $icon . '</button></form>';
 };
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_8">
 <style>
   .pr-steps { display: flex; gap: 0; margin: 0 0 14px; flex-wrap: wrap; }
   .pr-steps div { flex: 1 1 160px; padding: 10px 14px; border: 1px solid var(--crm-line, #e2e8f0); background: var(--crm-surface, #fff); font-size: 13px; color: var(--crm-muted, #64748b); }
@@ -36,7 +36,7 @@ $step = function ($label, $icon, $cls, $confirm) use ($base, $rid) {
     .pr-lines.open { display: block; }
   }
 </style>
-<div class="content-wrapper sx">
+<div class="content-wrapper sx sx-hr">
   <?php echo crm_tabbar('hr_pay', 'hr/payroll'); ?>
   <section class="sx-head">
     <h1><a href="<?php echo $base; ?>payroll" class="text-muted" aria-label="Back to payroll" style="margin-right:6px;"><i class="fa fa-angle-left"></i></a>Payroll <?php echo $h($mname); ?> <span class="chip <?php echo $chip[$run['status']]; ?>" style="vertical-align:middle;"><?php echo $h($run['status']); ?></span>

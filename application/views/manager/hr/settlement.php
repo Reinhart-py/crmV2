@@ -23,7 +23,7 @@ $step = function ($s, $label, $cls, $confirm) use ($base, $sid) {
   return '<form method="post" action="' . $base . 'settlement_step/' . $sid . '/' . $s . '" style="display:inline;" onsubmit="return confirm(' . htmlspecialchars(json_encode($confirm), ENT_QUOTES) . ');"><button type="submit" class="btn ' . $cls . '">' . $label . '</button></form>';
 };
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_8">
 <style>
   .fs-sum td { padding: 7px 0 !important; border-bottom: 1px solid var(--crm-line-soft, #eef2f7); }
   .fs-sum td.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -39,7 +39,7 @@ $step = function ($s, $label, $cls, $confirm) use ($base, $sid) {
     #fsPrint .no-print { display: none; }
   }
 </style>
-<div class="content-wrapper sx">
+<div class="content-wrapper sx sx-hr">
   <?php echo crm_tabbar('hr_pay', 'hr/taxation'); ?>
   <section class="sx-head">
     <h1><a href="<?php echo $base; ?>taxation" class="text-muted" aria-label="Back" style="margin-right:6px;"><i class="fa fa-angle-left"></i></a>Final settlement: <?php echo $h($u['name']); ?><?php if ($st) { ?> <span class="chip <?php echo $chip[$st['status']]; ?>" style="vertical-align:middle;"><?php echo $h($st['status']); ?></span><?php } ?>

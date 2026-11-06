@@ -12,7 +12,7 @@ $bal_js = array();
 foreach ($my_bal as $n => $b) $bal_js[$n] = $b['left'];
 $start_filter = $pending_n ? 'Pending' : '';
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_8">
 <style>
   .lv-bal { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; }
   @media (max-width: 480px) { .lv-bal { grid-template-columns: 1fr 1fr; gap: 8px; } }
@@ -24,10 +24,10 @@ $start_filter = $pending_n ? 'Pending' : '';
   .lv-days { font-size: 14px; padding: 10px 12px; border-radius: 10px; background: var(--crm-ocean-soft, rgba(30, 58, 138, .06)); margin: 4px 0 12px; }
   .lv-days.bad { background: rgba(220, 38, 38, .08); color: #b91c1c; }
 </style>
-<div class="content-wrapper sx">
+<div class="content-wrapper sx sx-hr">
   <?php echo crm_tabbar('hr_time', 'hr/leaves'); ?>
   <section class="sx-head">
-    <h1><?php echo $see_all ? 'Leave Requests' : 'My Holiday Requests'; ?><small><?php echo $see_all ? 'Everyone\'s requests; approve or reject the pending ones' : ($has_team ? 'Your requests and your team\'s' : 'Request leave and follow your requests'); ?></small></h1>
+    <h1><?php echo $see_all ? 'Leave Requests' : 'My Holiday Requests'; ?></h1>
     <div class="sx-btns"><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#lvApply"><i class="fa fa-plus"></i> <?php echo $is_hr ? 'Request or record leave' : 'Request leave'; ?></button></div>
   </section>
   <section class="content">

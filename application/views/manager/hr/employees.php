@@ -10,7 +10,7 @@ $service = function ($doj) use ($today) {
 };
 $base = base_url() . 'manager/hr/employees/';
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_8">
 <style>
   .em-name { display: flex; align-items: center; gap: 10px; min-width: 0; }
   .em-av { width: 34px; height: 34px; border-radius: 50%; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; background: var(--crm-ocean-soft, rgba(30, 58, 138, .1)); color: var(--crm-ocean, #1e3a8a); }
@@ -19,10 +19,10 @@ $base = base_url() . 'manager/hr/employees/';
   .sx-kpis button.sx-kpi { cursor: pointer; }
   @media (max-width: 767px) { .em-av { display: none; } }
 </style>
-<div class="content-wrapper sx">
+<div class="content-wrapper sx sx-hr">
   <?php echo crm_tabbar('hr_people', 'hr/employees'); ?>
   <section class="sx-head">
-    <h1>Employees<small>Everyone's job, contract, documents<?php echo $see_pay ? ' and salary' : ''; ?> in one place</small></h1>
+    <h1>Employees</h1>
     <?php if (!empty($can_add)) { ?><div class="sx-btns"><a href="<?php echo base_url(); ?>manager/hr/staff/add" class="btn btn-primary"><i class="fa fa-user-plus"></i> Add employee</a></div><?php } ?>
   </section>
   <section class="content">

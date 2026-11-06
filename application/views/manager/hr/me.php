@@ -15,7 +15,7 @@ $letter_chip = array('Requested' => 'w', 'Issued' => 'ok', 'Rejected' => 'x');
 $doc_chip = array('expired' => array('x', 'Expired'), 'soon' => array('w', 'Renew soon'), 'valid' => array('ok', 'Valid'), 'none' => array('na', 'Not on file'));
 $base = base_url() . 'manager/hr/';
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_8">
 <style>
   .me-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 16px; align-items: start; }
   .me-grid > .sx-card { margin: 0; }
@@ -33,7 +33,7 @@ $base = base_url() . 'manager/hr/';
   .me-ck .done span { text-decoration: line-through; color: var(--crm-muted, #64748b); }
   @media (max-width: 480px) { .me-grid { grid-template-columns: 1fr; } .me-dl { grid-template-columns: 1fr; } }
 </style>
-<div class="content-wrapper sx">
+<div class="content-wrapper sx sx-hr">
   <section class="sx-head">
     <h1>My HR<small><?php echo $h(trim($u['name'] . ($designation ? ', ' . $designation : '') . ($u['department'] ? ' · ' . $u['department'] : ''))); ?></small></h1>
     <div class="sx-btns"><a class="btn btn-default" href="<?php echo $base; ?>leaves"><i class="fa fa-calendar-check-o"></i> Request leave</a><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#meLetter"><i class="fa fa-envelope-o"></i> Ask for a letter</button></div>

@@ -6,11 +6,11 @@ $money = function ($v) { return number_format((float)$v, 2); };
 $chip = array('Draft' => 'w', 'Approved' => 'on', 'Paid' => 'ok');
 $last = $runs ? $runs[0] : null;
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
-<div class="content-wrapper sx">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_8">
+<div class="content-wrapper sx sx-hr">
   <?php echo crm_tabbar('hr_pay', 'hr/payroll'); ?>
   <section class="sx-head">
-    <h1>Payroll<small>Each month: work out pay, add overtime and other items, approve, pay through WPS, and staff see their payslips</small></h1>
+    <h1>Payroll</h1>
     <?php if ($can_edit) { ?>
     <form class="sx-btns" method="post" action="<?php echo base_url(); ?>manager/hr/payroll/generate" style="align-items:center;">
       <input type="month" name="month_year" class="form-control" style="height:34px;width:auto;" value="<?php echo $h($next_month); ?>" required aria-label="Month">

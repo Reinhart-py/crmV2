@@ -4,7 +4,7 @@ $h = function ($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 $dis = empty($can_edit) ? ' disabled' : '';
 $weekend = array_filter(explode(',', $set['weekend']));
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_8">
 <style>
   .hs-days { display: flex; gap: 6px; flex-wrap: wrap; }
   .hs-days label { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border: 1px solid var(--crm-line, #e2e8f0); border-radius: 999px; cursor: pointer; margin: 0; font-weight: 600; }
@@ -12,10 +12,10 @@ $weekend = array_filter(explode(',', $set['weekend']));
   .hs-days input { position: absolute; opacity: 0; pointer-events: none; }
   .sx .sx-grid .help-block { font-size: 12px; margin: 4px 0 0; color: var(--crm-muted, #64748b); }
 </style>
-<div class="content-wrapper sx">
+<div class="content-wrapper sx sx-hr">
   <?php echo crm_tabbar('hr_people', 'hr/settings'); ?>
   <section class="sx-head">
-    <h1>HR Settings<small>Company details and HR policies used across HR &amp; Payroll</small></h1>
+    <h1>HR Settings</h1>
   </section>
   <section class="content">
     <?php echo get_message($this->session->flashdata('error_message'), 'error_message'); ?>

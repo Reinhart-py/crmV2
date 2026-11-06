@@ -7,16 +7,16 @@ $chip = array('Active' => 'on', 'Repaid' => 'ok', 'Closed' => 'na');
 $open = 0.0; $n_open = 0;
 foreach ($loans as $l) if ($l['status'] === 'Active') { $open += max(0, (float)$l['amount'] - (float)$l['repaid']); $n_open++; }
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_8">
 <style>
   .ln-bar { height: 6px; border-radius: 3px; background: var(--crm-line, #e2e8f0); overflow: hidden; margin-top: 5px; min-width: 90px; }
   .ln-bar i { display: block; height: 100%; background: #16a34a; }
   .ln-sub { display: block; font-size: 12px; color: var(--crm-muted, #64748b); }
 </style>
-<div class="content-wrapper sx">
+<div class="content-wrapper sx sx-hr">
   <?php echo crm_tabbar('hr_pay', 'hr/loans'); ?>
   <section class="sx-head">
-    <h1>Loans &amp; Advances<small>Money lent to staff, taken back from salary each month in payroll</small></h1>
+    <h1>Loans &amp; Advances</h1>
     <?php if ($can_edit) { ?><div class="sx-btns"><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#lnModal"><i class="fa fa-plus"></i> Add loan or advance</button></div><?php } ?>
   </section>
   <section class="content">

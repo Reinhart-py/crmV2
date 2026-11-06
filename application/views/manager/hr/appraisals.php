@@ -7,7 +7,7 @@ $cnt = array('Self review' => 0, 'Manager review' => 0, 'Completed' => 0);
 foreach ($rows as &$r) { $r['stage'] = $r['stage'] ?: 'Completed'; $cnt[$r['stage']]++; } unset($r);
 $q = date('n') <= 6 ? 'H1 ' . date('Y') : 'H2 ' . date('Y');
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_8">
 <style>
   .rv-stars { color: #f59e0b; letter-spacing: 1px; white-space: nowrap; }
   .rv-bar { height: 6px; border-radius: 3px; background: var(--crm-line, #e2e8f0); overflow: hidden; margin-top: 5px; max-width: 160px; }
@@ -16,10 +16,10 @@ $q = date('n') <= 6 ? 'H1 ' . date('Y') : 'H2 ' . date('Y');
   #rvPick { max-height: 220px; overflow: auto; border: 1px solid var(--crm-line, #e2e8f0); border-radius: 8px; padding: 6px 10px; }
   #rvPick label { display: block; font-weight: 500; margin: 3px 0; }
 </style>
-<div class="content-wrapper sx">
+<div class="content-wrapper sx sx-hr">
   <?php echo crm_tabbar('hr_perf', 'hr/appraisals'); ?>
   <section class="sx-head">
-    <h1>Performance Reviews<small>Each person writes a self review, then their manager reviews and rates them; the person reads it and confirms</small></h1>
+    <h1>Performance Reviews</h1>
     <?php if ($can_edit) { ?><div class="sx-btns"><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#rvNew"><i class="fa fa-play"></i> Start a review round</button></div><?php } ?>
   </section>
   <section class="content">

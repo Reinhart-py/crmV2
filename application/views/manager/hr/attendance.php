@@ -6,7 +6,7 @@ $chip = array('P' => 'ok', 'L' => 'w', 'H' => 'w', 'W' => 'on', 'A' => 'x', 'LV'
 $base = base_url() . 'manager/hr/attendance';
 $tr = $today_rec;
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_8">
 <style>
   .at-me { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
   .at-me b { font-size: 15px; }
@@ -28,7 +28,7 @@ $tr = $today_rec;
   .at-legend { display: flex; flex-wrap: wrap; gap: 10px; font-size: 12.5px; color: var(--crm-muted, #64748b); padding: 10px 14px; }
   .at-sub { display: block; font-size: 12px; color: var(--crm-muted, #64748b); }
 </style>
-<div class="content-wrapper sx">
+<div class="content-wrapper sx sx-hr">
   <?php echo crm_tabbar('hr_time', 'hr/attendance'); ?>
   <section class="sx-head">
     <h1>Attendance<small><?php echo $view === 'day' ? $h(date('l, d M Y', strtotime($date))) : $h(date('F Y', strtotime($month . '-01'))); ?></small></h1>

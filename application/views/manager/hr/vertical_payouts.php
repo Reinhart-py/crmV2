@@ -9,7 +9,7 @@ foreach ($verticals as $v) { $t_owed += (float)$v['owed']; $t_paid += (float)$v[
 $vname = '';
 foreach ($verticals as $v) if ((int)$v['id'] === (int)$vf) $vname = $v['company_name'];
 ?>
-<link rel="stylesheet" href="<?php echo $base; ?>assets/dist/css/crm-sys.css?v=20261106_7">
+<link rel="stylesheet" href="<?php echo $base; ?>assets/dist/css/crm-sys.css?v=20261106_8">
 <link rel="stylesheet" href="<?php echo $base; ?>assets/dist/css/crm-vertical.css?v=20261106_3">
 <style>
   .vp-sub { display: block; font-size: 12px; color: var(--crm-muted, #64748b); }
@@ -19,7 +19,7 @@ foreach ($verticals as $v) if ((int)$v['id'] === (int)$vf) $vname = $v['company_
   .vp-on td { background: var(--crm-ocean-soft, rgba(30,58,138,.06)); }
   .sx .vp-card-b { padding: 12px 16px; }
 </style>
-<div class="content-wrapper sx">
+<div class="content-wrapper sx sx-hr">
   <?php echo crm_tabbar('hr_pay', 'hr/vertical_payouts'); ?>
   <section class="sx-head">
     <h1>Vertical Payouts</h1>

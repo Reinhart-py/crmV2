@@ -9,7 +9,7 @@
   $hr_tab = isset($hr_tab_of[$active_tab ?? '']) ? $hr_tab_of[$active_tab] : null;
   $hr_bar = ($hr_tab && (!isset($is_hr) || !empty($is_hr))) ? crm_tabbar($hr_tab[0], $hr_tab[1]) : '';
   if ($hr_bar !== '') { ?>
-  <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
+  <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_8">
   <div class="sx" style="margin:0 -10px;"><?php echo $hr_bar; ?></div>
   <?php } ?>
 
@@ -477,7 +477,6 @@
             <input type="search" class="form-control js-lc-q" placeholder="Search name, Emp No, designation">
             <span class="hrx-count js-lc-count"></span>
           </div>
-          <div class="hrx-note"><i class="fa fa-info-circle"></i> Designation, department, joining date and contacts come from each person's staff profile - edit them there. To record someone leaving, use <b>Mark as left</b> on their profile.</div>
           <div class="table-responsive">
           <table class="table hrx-table">
             <thead><tr><th>Employee</th><th>Designation / Department</th><th>Stage</th><th>Joined</th><th>Contract / Probation</th><th></th></tr></thead>

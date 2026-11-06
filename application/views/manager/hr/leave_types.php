@@ -3,11 +3,11 @@
 $h = function ($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); };
 $fd = function ($d) { $d = (float)$d; return ((floor($d) == $d) ? (int)$d : rtrim(rtrim(number_format($d, 1), '0'), '.')); };
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
-<div class="content-wrapper sx">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_8">
+<div class="content-wrapper sx sx-hr">
   <?php echo crm_tabbar('hr_time', 'hr/leave_types'); ?>
   <section class="sx-head">
-    <h1>Leave Types<small>What leave people can take, how many days a year and how it is paid (UAE defaults)</small></h1>
+    <h1>Leave Types</h1>
     <?php if ($can_edit) { ?><div class="sx-btns"><button type="button" class="btn btn-primary" id="ltAdd"><i class="fa fa-plus"></i> Add leave type</button></div><?php } ?>
   </section>
   <section class="content">

@@ -12,11 +12,11 @@ $who = function ($uid, $name, $emp_id) use ($h, $hr_file) {
   return $n . ($emp_id !== '' ? '<span class="text-muted" style="display:block;font-size:12px;">#' . $h($emp_id) . '</span>' : '');
 };
 ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
-<div class="content-wrapper sx">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_8">
+<div class="content-wrapper sx sx-hr">
   <?php echo crm_tabbar('hr_people', 'hr/documents'); ?>
   <section class="sx-head">
-    <h1>Documents &amp; Expiry<small>Passport, visa, Emirates ID, labour card and insurance of everyone working</small></h1>
+    <h1>Documents &amp; Expiry</h1>
     <div class="sx-btns">
       <a href="<?php echo base_url(); ?>manager/hr/documents?csv=1" class="btn btn-default"><i class="fa fa-download"></i> Download CSV</a>
       <?php if (!empty($can_add)) { ?><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#docAdd"><i class="fa fa-plus"></i> Add document</button><?php } ?>
