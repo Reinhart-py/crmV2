@@ -10,7 +10,9 @@ class MY_Security extends CI_Security {
         'api/calls/recording_webhook',
         'api/calls/cdr_webhook',
         'api/calls/process_ai',
-        'api/whatsapp/webhook'
+        'api/whatsapp/webhook',
+        'api/ai-calls/webhook',
+        'api/ai-calls/cron'
     );
 
     public function csrf_verify()

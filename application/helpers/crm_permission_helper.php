@@ -55,7 +55,7 @@ if (!function_exists('crm_perm_catalog')) {
 				),
 			),
 			'my_zone' => array(
-				'title' => 'My Zone', 'key' => 'my_zone', 'match' => array('leads', 'verticals', 'database-transfer', 'sales', 'tasks', 'tickets', 'database', 'campaigns'),
+				'title' => 'My Zone', 'key' => 'my_zone', 'match' => array('leads', 'verticals', 'database-transfer', 'sales', 'tasks', 'tickets', 'database', 'campaigns', 'ai-agents'),
 				'icon' => '<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>',
 				'items' => array(
 					'database' => array('tab' => 'mz_pipeline', 'label' => 'Database', 'desc' => 'View own database records; Full can add and edit records',
@@ -89,6 +89,8 @@ if (!function_exists('crm_perm_catalog')) {
 						'nav' => array(array('database-transfer', 'Database Transfer', 'fa-exchange')), 'pages' => array('database-transfer')),
 					'campaigns' => array('label' => 'Calling Campaigns', 'desc' => 'Calling campaigns for the dialer; Full can create and edit them', 'fallback' => 'calls',
 						'nav' => array(array('campaigns', 'Campaigns', 'fa-flag-o')), 'pages' => array('campaigns'), 'write' => array('campaigns/new')),
+					'ai_agents' => array('label' => 'AI Calling Agents', 'desc' => 'AI voice agents that cold-call campaign records and hand interested ones back as follow-ups; Full can create agents and start AI calls',
+						'nav' => array(array('ai-agents', 'AI Agents', 'fa-microphone')), 'pages' => array('ai-agents'), 'write' => array('ai-agents/new')),
 				),
 			),
 			'team' => array(

@@ -12,7 +12,7 @@ if (!$c) $people = array((int)$me);
 $base = base_url() . 'manager/';
 ?>
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-campaigns.css?v=20261106_1">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-campaigns.css?v=20261107_2">
 <div class="content-wrapper sx cp">
   <section class="sx-head">
     <h1><?php echo $id ? 'Edit campaign' : 'New campaign'; ?><small><?php echo $id ? $h($v('name')) : 'Choose who to call, who calls, and how'; ?></small></h1>
@@ -196,6 +196,16 @@ $base = base_url() . 'manager/';
                 <span class="hint">A record called recently is skipped until then.</span>
               </div>
             </div>
+            <?php if ($can_ai) { ?>
+            <div class="form-group" style="margin-bottom:14px">
+              <label for="fAi">AI agent</label>
+              <select id="fAi" name="ai_agent_id" class="form-control">
+                <option value="0">None: people call this campaign</option>
+                <?php foreach ($ai_agents as $ag) { ?><option value="<?php echo (int)$ag['id']; ?>"<?php echo $sel($v('ai_agent_id', 0), $ag['id']); ?>><?php echo $h($ag['name'] . ($ag['status'] !== 'Active' ? ' (' . $ag['status'] . ')' : '')); ?></option><?php } ?>
+              </select>
+              <span class="hint">The AI agent calls the records first; interested customers come back to the record owner as follow-ups. People can still dial the campaign.</span>
+            </div>
+            <?php } ?>
             <div class="form-group">
               <label for="fScript">Call script</label>
               <textarea id="fScript" name="script" class="form-control script" placeholder="Hello {contact}, this is {agent} from 7 Strokes. I'm calling {customer} about…&#10;&#10;Key points:&#10;- …&#10;&#10;If they are interested: book a meeting / send the offer"><?php echo $h($v('script')); ?></textarea>

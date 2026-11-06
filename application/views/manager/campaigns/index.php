@@ -7,7 +7,7 @@ $base = base_url() . 'manager/';
 $flash = $this->session->flashdata('error_message');
 ?>
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-campaigns.css?v=20261106_1">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-campaigns.css?v=20261107_2">
 <div class="content-wrapper sx cp">
   <section class="sx-head">
     <h1>Campaigns<small>Plan calling campaigns, follow progress and start dialing</small></h1>
@@ -58,6 +58,7 @@ $flash = $this->session->flashdata('error_message');
               <span class="chip st-<?php echo $h($st); ?>"><?php echo $st === 'Active' ? 'Running' : $h($st); ?></span>
               <?php if ($c['priority'] !== 'Normal') { ?><span class="chip pr-<?php echo $h($c['priority']); ?>"><?php echo $h($c['priority']); ?> priority</span><?php } ?>
               <span class="chip s"><?php echo $h(isset($objectives[$c['objective']]) ? $objectives[$c['objective']] : $c['objective']); ?></span>
+              <?php if (!empty($c['ai_agent_id'])) { ?><span class="chip s" title="An AI agent calls this campaign"><i class="fa fa-microphone"></i> AI</span><?php } ?>
             </div>
             <div class="cp-meta">
               <span title="People"><i class="fa fa-users"></i><?php echo $people <= 2 ? $h(implode(', ', $c['people'])) : $h($c['people'][0]) . ' +' . ($people - 1); ?></span>

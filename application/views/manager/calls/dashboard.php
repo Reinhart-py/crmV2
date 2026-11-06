@@ -1,5 +1,5 @@
 <?php require_once(APPPATH . "views/manager/elements/header.php"); ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-dialer.css?v=20261106_5">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-dialer.css?v=20261107_1">
 
 <style>
 html, body {
@@ -1023,6 +1023,11 @@ html, body {
           <button type="button" class="dh-act" onclick="openCampaignView('list')">
             <i class="fa fa-flag-o"></i><span><b>Campaigns</b><small>Shared calling lists and targets</small></span>
           </button>
+          <?php if (crm_can('ai_agents', 'read')) { ?>
+          <a class="dh-act" href="<?php echo base_url(); ?>manager/ai-agents">
+            <i class="fa fa-microphone"></i><span><b>AI agents</b><small>AI cold calls and interested customers to follow up</small></span>
+          </a>
+          <?php } ?>
         </div>
 
         <div class="dh-sec">
@@ -2583,6 +2588,14 @@ function toggleCampaignScript() {
   box.find('.dl-script-h').attr('aria-expanded', shut ? 'false' : 'true');
   try { localStorage.setItem('dlScriptShut', shut ? '1' : '0'); } catch (e) {}
 }
+
+// Opened from AI agent results: manager/calls?lead=ID opens that record
+$(function () {
+  var m = location.search.match(/[?&]lead=(\d+)/);
+  if (!m) return;
+  try { history.replaceState(null, '', location.pathname); } catch (e) {}
+  setTimeout(function () { viewLeadDetailsById(m[1]); }, 0);
+});
 
 // Opened from the Campaigns page: manager/calls?campaign=ID starts dialing that campaign
 $(function () {

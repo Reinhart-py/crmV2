@@ -21,7 +21,7 @@ $filters = array_filter(array(
 ));
 ?>
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-campaigns.css?v=20261106_1">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-campaigns.css?v=20261107_2">
 <div class="content-wrapper sx cp">
   <section class="sx-head">
     <h1><?php echo $h($c['name']); ?>
@@ -58,6 +58,30 @@ $filters = array_filter(array(
       <span class="sx-help"><i class="fa fa-flag-checkered"></i>Goal: <?php echo $h($goal_types[$c['goal_type']]); ?></span>
       <div class="bar<?php echo $r['goal_pct'] >= 100 ? ' g' : ''; ?>"><i style="width:<?php echo (int)$r['goal_pct']; ?>%"></i></div>
       <b><?php echo $n($r['goal_done']); ?> / <?php echo $n($c['goal_target']); ?> · <?php echo (int)$r['goal_pct']; ?>%</b>
+    </div></div>
+    <?php } ?>
+
+    <?php if (!empty($ai)) { $as = $ai['stats']; ?>
+    <div class="sx-card" id="aiCard"><div class="sx-card-b ai-ai">
+      <span class="sx-help"><i class="fa fa-microphone"></i>AI agent: <a href="<?php echo $base; ?>ai-agents/view/<?php echo (int)$ai['agent']['id']; ?>"><?php echo $h($ai['agent']['name']); ?></a><?php if ($ai['agent']['status'] !== 'Active') { ?> <span class="chip st-<?php echo $h($ai['agent']['status']); ?>"><?php echo $h($ai['agent']['status']); ?></span><?php } ?></span>
+      <div class="nums">
+        <span><b><?php echo $n($as['queued'] + $as['calling']); ?></b>queued</span>
+        <span><b><?php echo $n($as['done']); ?></b>called</span>
+        <span><b><?php echo $n($as['talked']); ?></b>answered</span>
+        <span><b><?php echo $n($as['hot']); ?></b>interested</span>
+        <?php if ($as['dnd']) { ?><span><b><?php echo $n($as['dnd']); ?></b>asked not to call</span><?php } ?>
+      </div>
+      <?php if ($ai['can_queue'] && $st === 'Active') { ?>
+      <div class="cp-acts" style="margin-left:auto">
+        <select id="aiLimit" class="form-control" style="width:auto;height:32px;min-height:32px" aria-label="How many records">
+          <?php foreach (array(10, 25, 50, 100, 250, 500) as $q) { ?><option value="<?php echo $q; ?>"<?php echo $q === 50 ? ' selected' : ''; ?>><?php echo $q; ?> records</option><?php } ?>
+        </select>
+        <button type="button" class="btn btn-primary btn-sm" id="aiQueue"><i class="fa fa-play"></i> Queue for AI</button>
+        <?php if ($as['queued']) { ?><button type="button" class="btn btn-default btn-sm" id="aiStop"><i class="fa fa-stop"></i> Clear queue</button><?php } ?>
+      </div>
+      <?php } ?>
+      <?php if ($ai['not_ready']) { ?><span class="hint" style="width:100%;margin:0">AI calls are off: <?php echo $h($ai['not_ready']); ?></span><?php } ?>
+      <span class="hint" id="aiMsg" role="status" style="width:100%;margin:0"></span>
     </div></div>
     <?php } ?>
 
@@ -161,6 +185,29 @@ $(function () {
   $('[data-act]').on('click', function () {
     $.post('<?php echo $base; ?>campaigns/ajax_status', { id: <?php echo (int)$c['id']; ?>, status: $(this).data('act') }, function (r) {
       if (r && r.status) location.reload(); else alert((r && r.message) || 'Not saved');
+    }, 'json');
+  });
+});
+</script>
+<?php } ?>
+<?php if (!empty($ai) && $ai['can_queue']) { ?>
+<script>
+$(function () {
+  var cid = <?php echo (int)$c['id']; ?>, base = '<?php echo $base; ?>';
+  $('#aiQueue').on('click', function () {
+    var b = $(this).prop('disabled', true);
+    $('#aiMsg').text('Adding records…');
+    $.post(base + 'ai-agents/ajax_queue_campaign', { campaign_id: cid, limit: $('#aiLimit').val() }, function (r) {
+      $('#aiMsg').text((r && r.message) || 'Not queued');
+      b.prop('disabled', false);
+      if (r && r.status && r.added) setTimeout(function () { location.reload(); }, 2500);
+    }, 'json').fail(function () { $('#aiMsg').text('The server did not respond.'); b.prop('disabled', false); });
+  });
+  $('#aiStop').on('click', function () {
+    if (!confirm('Remove the queued AI calls of this campaign? Calls in progress finish normally.')) return;
+    $.post(base + 'ai-agents/ajax_cancel_queue', { campaign_id: cid }, function (r) {
+      $('#aiMsg').text((r && r.message) || 'Not done');
+      if (r && r.status) setTimeout(function () { location.reload(); }, 1200);
     }, 'json');
   });
 });

@@ -12,7 +12,7 @@ class Ci_admin_campaigns extends CI_Controller
 		$this->load->database();
 		$this->load->library('session');
 		$this->load->helper(array('form', 'url'));
-		$this->load->model(array('ci_admin_model', 'comman_model', 'dialer_campaign_model'));
+		$this->load->model(array('ci_admin_model', 'comman_model', 'dialer_campaign_model', 'ai_agent_model'));
 		header('Cache-Control: no-store, no-cache, must-revalidate');
 		$this->uid = (int)$this->session->userdata('manager_id');
 		$this->role = (int)$this->session->userdata('manager_role');
@@ -28,6 +28,7 @@ class Ci_admin_campaigns extends CI_Controller
 			exit;
 		}
 		$this->dialer_campaign_model->ensure_schema();
+		$this->ai_agent_model->ensure_schema();
 	}
 
 	private function _json($a)
@@ -126,7 +127,9 @@ class Ci_admin_campaigns extends CI_Controller
 			'objectives' => Dialer_campaign_model::$objectives,
 			'goal_types' => Dialer_campaign_model::$goal_types,
 			'priorities' => Dialer_campaign_model::$priorities,
-			'me' => $this->uid
+			'me' => $this->uid,
+			'can_ai' => crm_can('ai_agents', 'read'),
+			'ai_agents' => $this->db->select('id, name, status')->where('status !=', 'Draft')->order_by('name', 'ASC')->get('ci_ai_agents')->result_array()
 		);
 		$this->load->view('manager/campaigns/form', $data);
 	}
@@ -176,7 +179,14 @@ class Ci_admin_campaigns extends CI_Controller
 
 		$num = function ($v, $min, $max) { return max($min, min($max, (int)preg_replace('/\D/', '', (string)$v))); };
 
-		return array(array(
+		$extra = array();
+		// Only people who can see AI agents can link one; others keep what the campaign has
+		if (crm_can('ai_agents', 'read')) {
+			$aid = (int)$in->post('ai_agent_id');
+			$extra['ai_agent_id'] = ($aid > 0 && $this->ai_agent_model->agent($aid)) ? $aid : 0;
+		}
+
+		return array($extra + array(
 			'name' => $name,
 			'reference_no' => $ref,
 			'objective' => $objective,
@@ -293,9 +303,24 @@ class Ci_admin_campaigns extends CI_Controller
 			'c' => $c,
 			'r' => $M->report($c),
 			'objectives' => Dialer_campaign_model::$objectives,
-			'goal_types' => Dialer_campaign_model::$goal_types
+			'goal_types' => Dialer_campaign_model::$goal_types,
+			'ai' => $this->_ai_block($c)
 		);
 		$this->load->view('manager/campaigns/view', $data);
+	}
+
+	/** AI agent card on the campaign page, or null when no agent is linked / the user cannot see AI agents. */
+	private function _ai_block($c)
+	{
+		if (empty($c['ai_agent_id']) || !crm_can('ai_agents', 'read')) return null;
+		$a = $this->ai_agent_model->agent((int)$c['ai_agent_id']);
+		if (!$a) return null;
+		return array(
+			'agent' => $a,
+			'stats' => $this->ai_agent_model->campaign_ai_stats((int)$c['id']),
+			'can_queue' => $c['can_manage'] && crm_can('ai_agents', 'write'),
+			'not_ready' => $this->ai_agent_model->not_ready_reason()
+		);
 	}
 
 	/** CSV of every call made in the campaign. */
