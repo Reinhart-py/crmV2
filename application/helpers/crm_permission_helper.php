@@ -42,6 +42,7 @@ if (!function_exists('crm_perm_catalog')) {
 					'help_support' => array('label' => 'Help & Support', 'desc' => 'Help topics and chat with support (profile menu)', 'fallback' => 'dashboard', 'pages' => array('help'), 'levels' => 'r'),
 					'self_training' => array('label' => 'Self Training', 'desc' => 'Company training library: pitch scripts, step-by-step guides, documents and videos (profile menu); view only', 'fallback' => 'dashboard', 'pages' => array('self-training'), 'levels' => 'r'),
 					'events_view' => array('label' => 'Events & Festivals', 'desc' => 'View company holidays, festivals, events and awards (profile menu); view only', 'fallback' => 'dashboard', 'pages' => array('events'), 'levels' => 'r'),
+					'data_creation' => array('label' => 'Data Creation', 'desc' => 'Data Creation icon in the top bar', 'pages' => array('data-creation'), 'levels' => 'r'),
 				),
 			),
 			'powers' => array(

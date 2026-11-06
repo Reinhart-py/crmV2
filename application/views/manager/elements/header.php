@@ -224,6 +224,11 @@
       <i class="fa fa-phone"></i>
     </a>
     <?php } ?>
+    <?php if(!$is_presentation && crm_can('data_creation')){ ?>
+    <a href="<?php echo base_url();?>manager/data-creation" class="global-theme-btn" title="Data Creation" style="display:inline-flex; align-items:center; justify-content:center; text-decoration:none; margin-right:6px; color:#1e3a8a;">
+      <i class="fa fa-database"></i>
+    </a>
+    <?php } ?>
     <div class="notif-dropdown-wrap" style="position:relative; display:inline-block; margin-right:6px;">
       <button type="button" class="global-theme-btn" id="notifBellToggle" title="Notifications" style="position:relative; display:inline-flex; align-items:center; justify-content:center;">
         <i class="fa fa-bell-o"></i>

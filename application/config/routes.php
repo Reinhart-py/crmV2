@@ -303,6 +303,7 @@ $route['manager/live'] = 'ci_admin_live/index';
 $route['manager/live/ajax_get_data'] = 'ci_admin_live/ajax_get_data';
 $route['manager/live/(:any)'] = 'ci_admin_live/$1';
 
+$route['manager/data-creation'] = 'ci_admin_data_creation/index';
 $route['manager/events'] = 'ci_admin_events/index';
 $route['manager/events/(:any)'] = 'ci_admin_events/$1';
 $route['manager/awards'] = 'ci_admin_events/index';
