@@ -55,8 +55,17 @@ p {
 </head>
 <body>
 	<div id="container">
+<?php if (defined('ENVIRONMENT') && ENVIRONMENT === 'production') {
+	// live: the query and error go to the server log only, never to the screen
+	@error_log('CRM database error: ' . trim(preg_replace('~\s+~', ' ', strip_tags(str_replace('</p>', ' | ', $message)))) . ' | URL: ' . (isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : ''));
+?>
+		<h1>Something went wrong</h1>
+		<p>This page could not be loaded. Please go back and try again. If it keeps happening, tell the IT team the time and the page you were on.</p>
+		<p><a href="javascript:history.back()">Go back</a></p>
+<?php } else { ?>
 		<h1><?php echo $heading; ?></h1>
 		<?php echo $message; ?>
+<?php } ?>
 	</div>
 </body>
 </html>
