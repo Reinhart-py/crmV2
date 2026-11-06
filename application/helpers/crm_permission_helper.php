@@ -198,6 +198,7 @@ if (!function_exists('crm_perm_catalog')) {
 					'system_kam_clients' => array('label' => 'KAM Clients (all)', 'tab' => 'clients', 'desc' => 'Every KAM client in the company', 'fallback' => 'kam_clients', 'nav' => array(array('system/kam_clients', 'KAM Clients', 'fa-briefcase')), 'pages' => array('system/kam_clients', 'system/kam-clients')),
 					'calling_api' => array('label' => 'Calling API', 'tab' => 'integrations', 'desc' => 'Phone provider settings', 'nav' => array(array('system/calling-api', 'Calling API', 'fa-phone-square')), 'pages' => array('system/calling-api', 'system/calling_api')),
 					'integrations' => array('label' => 'Third-Party API', 'tab' => 'integrations', 'desc' => 'Email SMTP, helpdesk and other integrations', 'nav' => array(array('system/integrations', 'Third-Party API', 'fa-plug')), 'pages' => array('system/integrations', 'integrations')),
+					'marketing' => array('label' => 'Marketing', 'desc' => 'Leads from Meta, Google Ads and website forms, Facebook and Instagram posts, Meta Ads control and the Claude writing helper; Full can connect accounts, post and change ads', 'nav' => array(array('system/marketing', 'Marketing', 'fa-bullhorn')), 'pages' => array('system/marketing')),
 					'qc_panel' => array('label' => 'QC Panel', 'desc' => 'Quality check of the CRM pages', 'nav' => array(array('system/qc', 'QC Panel', 'fa-check-square-o')), 'pages' => array('system/qc', 'system/qoc')),
 				),
 			),
