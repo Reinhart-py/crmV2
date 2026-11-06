@@ -3746,6 +3746,7 @@ class Admin_reports_model extends CI_Model {
 		}
 
 		return array(
+			'generic' => true,
 			'headers' => array('Category', 'Subcategory', 'Record Count'),
 			'groups' => $groups,
 			'grand_total' => array(

@@ -62,24 +62,69 @@ class Ci_admin_report extends CI_Controller {
 		return $this->db->get('ci_user')->result_array();
 	}
 
+	/** A date from the address bar as Y-m-d ('' when missing or not a date). */
+	private function _ymd($key)
+	{
+		$v = $this->_q($key);
+		$t = $v !== '' ? strtotime($v) : false;
+		return $t ? date('Y-m-d', $t) : '';
+	}
+
+	/** From / to dates: this month when the page is first opened, else what was picked (both empty = all dates). */
+	private function _period($all_allowed = false)
+	{
+		if (!isset($_GET['d1']) && !isset($_GET['d2'])) return array(date('Y-m-01'), date('Y-m-d'));
+		$a = $this->_ymd('d1'); $b = $this->_ymd('d2');
+		if ($a === '' && $b === '') return $all_allowed ? array('', '') : array(date('Y-m-01'), date('Y-m-d'));
+		if ($a === '') $a = $b;
+		if ($b === '') $b = $a;
+		if ($a > $b) { $t = $a; $a = $b; $b = $t; }
+		return array($a, $b);
+	}
+
+	/** Sends rows as a CSV download and stops. $cols: header => function(row) or row key. */
+	private function _csv($name, $cols, $rows)
+	{
+		header('Content-Type: text/csv; charset=utf-8');
+		header('Content-Disposition: attachment; filename="' . $name . '-' . date('Y-m-d') . '.csv"');
+		$out = fopen('php://output', 'w');
+		fwrite($out, "\xEF\xBB\xBF");
+		fputcsv($out, array_keys($cols));
+		foreach ($rows as $r) {
+			$line = array();
+			foreach ($cols as $c) $line[] = is_callable($c) ? $c($r) : (isset($r[$c]) ? $r[$c] : '');
+			fputcsv($out, $line);
+		}
+		fclose($out);
+		exit;
+	}
+
 	public function users()
 	{
 		$data = array();
 		$data['info'] = array('title' => 'Users Report', 'page_heading' => 'Users Report');
 		$data['info2'] = $this->if_not_login();
-		$data['r_list'] = $this->comman_model->getAll(array('status' => 1), array('id', 'ASC'), 'ci_roles');
-		$data['c_list'] = $this->comman_model->getAll('', array('id', 'ASC'), 'countries');
-		$data['u_list'] = $this->_scope_users();
-		if ($this->input->get('search') == 'report') {
-			$data['list'] = $this->report_model->get_user_report($this->_q('d1'), $this->_q('d2'), $this->_q('role'), $this->_q('manager'), $this->_q('status'), $this->_q('department'), $this->_q('office'));
+		$f = array('role' => $this->_q('role'), 'manager' => $this->_q('manager'), 'status' => $this->_q('status'), 'office' => $this->_q('office'));
+		list($d1, $d2) = $this->_period(true);
+		if (!isset($_GET['d1'])) { $d1 = ''; $d2 = ''; } // users: all join dates until a range is picked
+		$f['d1'] = $d1; $f['d2'] = $d2;
+		$list = $this->report_model->get_user_report($d1, $d2, $f['role'], $f['manager'], $f['status'], '', $f['office']);
+		if ($this->input->get('export') === 'csv') {
+			$this->_csv('users-report', array(
+				'Name' => 'name', 'Employee ID' => 'emp_id', 'Email' => 'email', 'Role' => 'role_name', 'Center' => 'office', 'Manager' => 'manager_name',
+				'Joined' => function ($r) { return substr((string)$r['created'], 0, 10); },
+				'Login' => function ($r) { return (int)$r['admin_status'] === 1 ? 'Enabled' : 'Disabled'; },
+			), $list);
 		}
+		$data['list'] = $list;
+		$data['f'] = $f;
+		$data['r_list'] = $this->comman_model->getAll(array('status' => 1), array('title', 'ASC'), 'ci_roles');
+		$data['u_list'] = $this->_scope_users();
+		$offices = array();
+		foreach ($data['u_list'] as $u) if (trim((string)$u['office']) !== '') $offices[trim($u['office'])] = 1;
+		ksort($offices);
+		$data['offices'] = array_keys($offices);
 		$this->load->view('manager/report/user_report', $data);
-	}
-
-	/** Lead filters shared by the Leads and Follow-up reports. */
-	private function _lead_filters()
-	{
-		return array($this->_q('d1'), $this->_q('d2'), $this->_q('f1'), $this->_q('f2'), $this->_q('category'), $this->_q('created_by'), $this->_q('status'), $this->_q('s_cat'));
 	}
 
 	public function leads()
@@ -87,57 +132,98 @@ class Ci_admin_report extends CI_Controller {
 		$data = array();
 		$data['info'] = array('title' => 'Leads Report', 'page_heading' => 'Leads Report');
 		$data['info2'] = $this->if_not_login();
-		$data['st_list'] = $this->comman_model->getAll(array('active' => 1), '', 'ci_status');
-		$data['so_list'] = $this->comman_model->getAll(array('active' => 1), '', 'ci_sources');
-		$data['c_list'] = $this->comman_model->getAll('', array('id', 'ASC'), 'countries');
-		$data['u_list'] = $this->_scope_users();
-		if ($this->input->get('search') == 'report') {
-			list($d1, $d2, $f1, $f2, $category, $created_by, $status, $s_cat) = $this->_lead_filters();
-			$data['list'] = $this->report_model->get_lead_report($d1, $d2, $f1, $f2, $category, $created_by, $status, $s_cat);
+		list($d1, $d2) = $this->_period(true);
+		$f = array('d1' => $d1, 'd2' => $d2, 'f1' => $this->_ymd('f1'), 'f2' => $this->_ymd('f2'), 'status' => $this->_q('status'), 'owner' => $this->_q('owner'), 'category' => $this->_q('category'));
+		if ($f['f1'] !== '' && $f['f2'] === '') $f['f2'] = $f['f1'];
+		if ($f['f2'] !== '' && $f['f1'] === '') $f['f1'] = $f['f2'];
+		$scope = $this->report_model->scope_ids();
+		if ($f['owner'] !== '' && $scope !== null && !in_array((int)$f['owner'], $scope, true)) $f['owner'] = '';
+		$list = $this->report_model->get_lead_report($d1, $d2, $f['f1'], $f['f2'], $f['category'], '', $f['status'], '', $f['owner']);
+		if ($this->input->get('export') === 'csv') {
+			$this->_csv('leads-report', array(
+				'Lead ID' => 'lead_id', 'Customer' => 'customer', 'POC' => 'poc', 'Contact' => 'contact1', 'Type' => 'category',
+				'MRR' => 'mrr', 'Status' => 'status_name', 'Owner' => 'owner_name', 'Next follow-up' => function ($r) { return substr((string)$r['followup_date'], 0, 10); },
+				'Created' => function ($r) { return substr((string)$r['created'], 0, 10); },
+			), $list);
 		}
+		$data['list'] = $list;
+		$data['f'] = $f;
+		$data['st_list'] = $this->comman_model->getAll(array('active' => 1), '', 'ci_status');
+		$data['u_list'] = $this->_scope_users();
 		$this->load->view('manager/report/lead_report', $data);
 	}
 
 	public function followup()
 	{
 		$data = array();
-		$data['info'] = array('title' => 'Followup Report', 'page_heading' => 'Followup Report');
+		$data['info'] = array('title' => 'Follow-up Report', 'page_heading' => 'Follow-up Report');
 		$data['info2'] = $this->if_not_login();
-		if ($this->input->get('search') == 'report') {
-			list($d1, $d2, $f1, $f2, $category, $created_by, $status, $s_cat) = $this->_lead_filters();
-			$data['list'] = $this->report_model->get_followup_report($d1, $d2, $f1, $f2, $category, $created_by, $status, $s_cat);
+		list($d1, $d2) = $this->_period();
+		$person = (int)$this->_q('person');
+		$people = $this->report_model->insight_people();
+		if ($person > 0 && !isset($people[$person])) $person = 0;
+		$who = $person > 0 ? array($person => $people[$person]) : $people;
+		$result = $this->_q('result');
+		$list = $this->report_model->followup_log($who, $d1, $d2, $result);
+		if ($this->input->get('export') === 'csv') {
+			$this->_csv('follow-up-report', array(
+				'Date' => 'fdate', 'Time' => 'followup_time', 'Lead ID' => 'lead_ref', 'Customer' => 'customer', 'By' => 'by_name',
+				'Outcome' => 'followup_result', 'Lead status' => 'status_name', 'Remark' => 'followup_remark',
+			), $list);
 		}
+		$data['list'] = $list;
+		$data['f'] = array('d1' => $d1, 'd2' => $d2, 'person' => $person, 'result' => $result);
+		$data['people'] = $people;
+		$data['results'] = $this->report_model->followup_results();
 		$this->load->view('manager/report/followup_report', $data);
 	}
 
 	public function performanceReportDep()
 	{
 		$data = array();
-		$data['info'] = array('title' => 'Performance Report', 'page_heading' => 'Performance Report');
+		$data['info'] = array('title' => 'Department Performance', 'page_heading' => 'Department Performance');
 		$data['info2'] = $this->if_not_login();
-		if ($this->input->get('search') == 'report') {
-			$names = array(1 => 'Board of Director', 2 => 'Administration', 3 => 'Operations', 4 => 'IT', 5 => 'Human Resource',
-				6 => 'Back Office', 7 => 'Sales', 8 => 'Business Development', 9 => 'Field Staff', 10 => 'Other');
-			$dep = (int)$this->_q('department');
-			$department = isset($names[$dep]) ? $names[$dep] : '';
-			$data['list'] = $this->report_model->getPerformanceReportByDepartment($this->_q('d1'), $this->_q('d2'), $department, $this->report_model->scope_ids());
+		list($d1, $d2) = $this->_period();
+		$dept = (int)$this->_q('department');
+		$show_all = $this->_q('all') === '1';
+		$rows = $this->report_model->perf_rows($this->report_model->perf_people($dept), $d1, $d2);
+		if (!$show_all) $rows = array_values(array_filter($rows, function ($r) { return $r['active'] || $r['overdue'] > 0; }));
+		if ($this->input->get('export') === 'csv') {
+			$this->_csv('department-performance', array(
+				'Department' => 'dept', 'Name' => 'name', 'Leads added' => 'leads', 'Calls' => 'calls', 'Follow-ups' => 'followups', 'Meetings' => 'meetings',
+				'Meetings missed' => 'meetings_missed', 'Orders' => 'orders', 'Sales' => 'sales', 'Sales (AED)' => 'sales_aed', 'Overdue follow-ups' => 'overdue',
+			), $rows);
 		}
+		$data['rows'] = $rows;
+		$data['f'] = array('d1' => $d1, 'd2' => $d2, 'department' => $dept, 'all' => $show_all);
+		$data['departments'] = $this->report_model->perf_departments();
 		$this->load->view('manager/report/performance_report', $data);
 	}
 
 	public function performanceReportIndividual()
 	{
 		$data = array();
-		$data['info'] = array('title' => 'Performance Report', 'page_heading' => 'Performance Report');
+		$data['info'] = array('title' => 'Individual Performance', 'page_heading' => 'Individual Performance');
 		$data['info2'] = $this->if_not_login();
-		if ($this->input->get('search') == 'report') {
-			// Only yourself or someone under you (admin: anyone).
-			$me = (int)$this->session->userdata('manager_id');
-			$who = (int)$this->_q('manager_id');
-			$scope = $this->report_model->scope_ids();
-			if ($who <= 0 || ($scope !== null && !in_array($who, $scope, true))) $who = $me;
-			$data['list'] = $this->report_model->getPerformanceReportByIndividual($this->_q('d1'), $this->_q('d2'), $who);
+		list($d1, $d2) = $this->_period();
+		// Only yourself or someone under you (admin: anyone).
+		$me = (int)$this->session->userdata('manager_id');
+		$people = $this->report_model->perf_people();
+		$who = (int)$this->_q('manager_id');
+		if (!isset($people[$who])) $who = isset($people[$me]) ? $me : (int)key($people);
+		$one = $who > 0 && isset($people[$who]) ? array($who => $people[$who]) : array();
+		$sum = $one ? $this->report_model->perf_rows($one, $d1, $d2) : array();
+		$days = $who > 0 ? $this->report_model->perf_days($who, $d1, $d2) : array();
+		if ($this->input->get('export') === 'csv') {
+			$this->_csv('performance-' . preg_replace('~[^a-z0-9]+~i', '-', $one ? $people[$who]['name'] : 'person'), array(
+				'Date' => 'd', 'Leads added' => 'leads', 'Calls' => 'calls', 'Follow-ups' => 'followups', 'Meetings' => 'meetings', 'Orders' => 'orders', 'Sales' => 'sales', 'Sales (AED)' => 'sales_aed',
+			), $days);
 		}
+		$data['person'] = $one ? $people[$who] : null;
+		$data['sum'] = $sum ? $sum[0] : null;
+		$data['days'] = $days;
+		$data['people'] = $people;
+		$data['f'] = array('d1' => $d1, 'd2' => $d2, 'manager_id' => $who);
 		$this->load->view('manager/report/performance_individual', $data);
 	}
 
@@ -195,8 +281,8 @@ class Ci_admin_report extends CI_Controller {
 			$data['user_name'] = $user_name;
 			$data['manager_id'] = $manager_id;
 			$data['info'] = array(
-				'title' => 'Reports',
-				'page_heading' => 'Reports'
+				'title' => 'Report Centre',
+				'page_heading' => 'Report Centre'
 			);
 
 			$this->load->view('manager/report/download_report', $data);

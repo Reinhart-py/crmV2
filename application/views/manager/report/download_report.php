@@ -93,7 +93,7 @@
 <div class="content-wrapper px-4">
     <section class="content-header" style="margin-bottom: 20px; text-align: center; padding-top: 14px;">
         <h1 style="font-weight: 700; color: #111827; margin: 0; font-size: 26px; text-align: center;">
-            Reports
+            Report Centre
         </h1>
     </section>
 

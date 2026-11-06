@@ -1,235 +1,86 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
-<!-- Content Wrapper. Contains page content -->
-<div class="content-wrapper"> 
- 
-  <!-- Content Header (Page header) -->
-  
-  <section class="content-header">
-    <h1> <?php echo $info['page_heading']; ?> </h1>
-  </section>
-  
-  <!-- Main content -->
-  
-  <section class="content"> 
-  <div class="container">
-
-    <div class="row"> 
-    <div class="col-md-12">
-<form name="player_report_form" action="<?php echo base_url(); ?>manager/users/report" method="get" enctype="multipart/form-data" >
- <div class="box">
-            <div class="box-header">
-             
-              <!-- /.box-tools -->
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-          
-             <div class="col-sm-6">
-        <label> Join Date </label>
-        <div class="input-daterange input-group" id="datepicker" style="width: 100%;" >
-    <input type="text" class="input-md form-control" name="d1" placeholder="From Date" value="<?php if(isset($_GET['d1'])&&(!empty($_GET['d1']))){ echo $_GET['d1'];}?>" autocomplete="off"/>
-    <span class="input-group-addon">To</span>
-    <input type="text" class="input-md form-control" name="d2" placeholder="To Date" value="<?php if(isset($_GET['d2'])&&(!empty($_GET['d2']))){ echo $_GET['d2'];}?>" autocomplete="off"/>
-
-      </div>
-     </div>   
-        
-        
-        
-        <div class="form-group col-sm-3">
-  
-            <label>Role</label>
-
-            <select class="form-control" name="role" style="width: 100%;">
-			  <option value="">All</option>
-            <?php if(isset($r_list) && !empty($r_list))
-
-			{ 
-
-				foreach($r_list as $li){
-
-			?>
-
-              <option value="<?php echo $li['id']; ?>"  <?php if(!empty($_GET['role']) && ($_GET['role']==$li['id'])) { echo "selected"; } ?>><?php echo $li['title']; ?></option>
-
-          
-
-              <?php } } ?>
-
-            </select>
-
-          </div>
-		<div class="form-group col-sm-3">
-  
-            <label>Manager</label>
-
-            <select class="form-control" name="manager" style="width: 100%;">
-        <option value="">All</option>
-            <?php if(isset($u_list) && !empty($u_list))
-
-      { 
-
-        foreach($u_list as $li){
-
-      ?>
-
-              <option value="<?php echo $li['id']; ?>"  <?php if(!empty($_GET['manager']) && ($_GET['manager']==$li['id'])) { echo "selected"; } ?>><?php echo $li['name']; ?></option>
-
-          
-
-              <?php } } ?>
-
-            </select>
-
-          </div>
-         <div class="col-sm-3">
-         <div class="form-group">
-			 <label>Status</label>
-			 <select class="form-control" name="status" style="width: 100%;">
-				  <option value="">All</option>
-                <option value="1" <?php if(!empty($_GET['status']) && ($_GET['status']==1)) { echo "selected"; } ?>>Active</option>
-                  <option value="0" <?php if(isset($_GET['status']) && ($_GET['status']==0)) { echo "selected"; } ?>>Not Active </option>
-                </select>
-              </div>
-			</div>
-             <div class="col-sm-3">
-         <div class="form-group">
-       <label>Department</label>
-      <select class="form-control" style="width: 100%;" name="department">
-        <option value="">All</option>
-                  <option  <?php if(!empty($_GET['department']) && ($_GET['department']=="Board of Director")) { echo "selected"; } ?> value="Board of Director">Board of Director</option>
-                  <option <?php if(!empty($_GET['department']) && ($_GET['department']=="Administration")) { echo "selected"; } ?>value="Administration">Administration</option>
-                  <option <?php if(!empty($_GET['department']) && ($_GET['department']=="Operations")) { echo "selected"; } ?> value="Operations">Operations</option>
-                  <option <?php if(!empty($_GET['department']) && ($_GET['department']=="IT")) { echo "selected"; } ?> value="IT">IT</option>
-                  <option <?php if(!empty($_GET['department']) && ($_GET['department']=="Human Resource")) { echo "selected"; } ?> value="Human Resource">Human Resource</option>
-                  <option <?php if(!empty($_GET['department']) && ($_GET['department']=="Back Office")) { echo "selected"; } ?> value="Back Office">Back Office</option>
-                  <option <?php if(!empty($_GET['department']) && ($_GET['department']=="Sales")) { echo "selected"; } ?> value="Sales">Sales</option>
-                  <option <?php if(!empty($_GET['department']) && ($_GET['department']=="Business Development")) { echo "selected"; } ?> value="Business Development">Business Development</option>
-                  <option <?php if(!empty($_GET['department']) && ($_GET['department']=="Field Staff")) { echo "selected"; } ?> value="Field Staff">Field Staff</option>
-                  <option <?php if(!empty($_GET['department']) && ($_GET['department']=="Other")) { echo "selected"; } ?> value="Other">Other</option>
-                </select>
-              </div>
-      </div>
-            <div class="col-sm-3">
-         <div class="form-group">
-			 <label>Location/office</label>
-			<select class="form-control" style="width: 100%;" name="office">
-        <option value="">All</option>
-                  <option <?php if(!empty($_GET['office']) && ($_GET['office']=='01 - UAE-Dubai-SZR')){ echo "selected"; } ?> value="01 - UAE-Dubai-SZR">01 - UAE-Dubai-SZR</option>
-                  <option <?php if(!empty($_GET['office']) && ($_GET['office']=='07 - UAE-WFH')){ echo "selected"; } ?> value="07 - UAE-WFH">07 - UAE-WFH</option>
-                  <option <?php if(!empty($_GET['office']) && ($_GET['office']=='08 - UAE-Remote')){ echo "selected"; } ?> value="08 - UAE-Remote">08 - UAE-Remote</option>
-                  <option <?php if(!empty($_GET['office']) && ($_GET['office']=='09 - UAE-Other')){ echo "selected"; } ?> value="09 - UAE-Other">09 - UAE-Other</option>
-                   <option <?php if(!empty($_GET['office']) && ($_GET['office']=='11 - IN-Jaipur')){ echo "selected"; } ?> value="11 - IN-Jaipur">11 - IN-Jaipur</option>
-                    <option <?php if(!empty($_GET['office']) && ($_GET['office']=='12 - IN - Delhi')){ echo "selected"; } ?> value="12 - IN - Delhi">12 - IN - Delhi</option>
-                     <option <?php if(!empty($_GET['office']) && ($_GET['office']=='13 - IN-Indore')){ echo "selected"; } ?> value="13 - IN-Indore">13 - IN-Indore</option>
-                      <option <?php if(!empty($_GET['office']) && ($_GET['office']=='17 - IN-WFH')){ echo "selected"; } ?> value="17 - IN-WFH">17 - IN-WFH</option>
-                       <option <?php if(!empty($_GET['office']) && ($_GET['office']=='18 - IN-Remote')){ echo "selected"; } ?> value="18 - IN-Remote">18 - IN-Remote</option>
-                       <option <?php if(!empty($_GET['office']) && ($_GET['office']=='19 - IN-Other')){ echo "selected"; } ?> value="19 - IN-Other">19 - IN-Other</option>
-                </select>
-              </div>
-			</div>
-          
-       </div>
-        <div class="box-footer"> <div class="form-group col-md-12">
-
-            <button type="submit" class="btn btn-md btn-primary" name="search" value="report">Submit</button>
-
-            <button type="reset" class="btn btn-md btn-danger">Reset</button>
-
-           </div>
-
-         </div>
-        </div>
-  </form> 
- </div>
-        <div class="col-md-12"> 
-          <div class="box">
-            <div class="box-header">
-             <h4><?php echo $info['page_heading']; ?></h4>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body"> 
-        <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?> 
-		  <?php echo get_message($this->session->flashdata('message'),'message'); ?>
-        
-          <?php if(isset($list) && !empty($list))
-				{?>
-           <div class="table-responsive" style="padding:0px 15px">
-            <table class="table table-hover table-bordered">
-              <thead>
-        		 <tr>                 
-                 <th>Name</th>
-                 <th>Username</th>
-                 <th>Category</th>
-                 <th>Gender</th>
-                 <th>Depart</th>
-                 <th>Location</th>
-                 <th>Manager</th>
-               
-                </tr>
-              </thead>
-              <tbody>
-                <?php 
-				
-				foreach($list as $k=>$li){ ?>
-				
-                <tr>
-                <td><?php echo $li['name']; ?></td>
-              <td><?php echo $li['c_username']; ?></td>
-               <td><?php echo $li['role_name']; ?></td>
-               <td><?php echo $li['gender']; ?></td>
-                 <td><?php echo $li['department']; ?></td>
-                  <td><?php echo $li['office']; ?></td>
-                   <td><?php echo $li['manager_name']; ?></td>
-            
-               
-         </tr>
-                <?php
-					}
-				?>
-                  
-         
-              </tbody>
-            </table>
-           
-          </div>
-          <?php }
-			else
-			{
-			  ?>
-              <div class="alert alert-info">
-          No Result Found
-          </div>
+<?php require(APPPATH."views/manager/report/_rp.php"); ?>
 <?php
-			}?>
-          
-          <!-- /.box-body --> 
-          
+$enabled = 0; $roles = array();
+foreach ($list as $li) { if ((int)$li['admin_status'] === 1) $enabled++; if (!empty($li['role_name'])) $roles[$li['role_name']] = 1; }
+?>
+<div class="content-wrapper">
+  <div class="rp-head">
+    <h1><?php echo $e($info['page_heading']); ?></h1>
+    <?php if ($list) { ?><a class="btn btn-default btn-sm" href="<?php echo $e($csv_url()); ?>"><i class="fa fa-download"></i> Export CSV</a><?php } ?>
+  </div>
+  <section class="content" style="padding-top:0;">
+    <div class="rp-box">
+      <form class="rp-filter" method="get" action="<?php echo base_url(); ?>manager/users/report">
+        <div><label for="urD1">Joined from</label><input id="urD1" type="date" class="form-control" name="d1" value="<?php echo $e($f['d1']); ?>"></div>
+        <div><label for="urD2">Joined to</label><input id="urD2" type="date" class="form-control" name="d2" value="<?php echo $e($f['d2']); ?>"></div>
+        <div><label for="urRole">Role</label>
+          <select id="urRole" class="form-control" name="role">
+            <option value="">All</option>
+            <?php foreach ($r_list as $r) { ?><option value="<?php echo (int)$r['id']; ?>" <?php echo (string)$f['role'] === (string)$r['id'] ? 'selected' : ''; ?>><?php echo $e($r['title']); ?></option><?php } ?>
+          </select>
         </div>
-       
-    </div>
+        <?php if (count($u_list) > 1) { ?>
+        <div><label for="urMgr">Manager</label>
+          <select id="urMgr" class="form-control" name="manager">
+            <option value="">All</option>
+            <?php foreach ($u_list as $u) { ?><option value="<?php echo (int)$u['id']; ?>" <?php echo (string)$f['manager'] === (string)$u['id'] ? 'selected' : ''; ?>><?php echo $e($u['name']); ?></option><?php } ?>
+          </select>
         </div>
+        <?php } ?>
+        <?php if ($offices) { ?>
+        <div><label for="urOff">Center</label>
+          <select id="urOff" class="form-control" name="office">
+            <option value="">All</option>
+            <?php foreach ($offices as $o) { ?><option <?php echo $f['office'] === $o ? 'selected' : ''; ?>><?php echo $e($o); ?></option><?php } ?>
+          </select>
+        </div>
+        <?php } ?>
+        <div><label for="urSt">Login</label>
+          <select id="urSt" class="form-control" name="status">
+            <option value="">All</option>
+            <option value="1" <?php echo $f['status'] === '1' ? 'selected' : ''; ?>>Enabled</option>
+            <option value="0" <?php echo $f['status'] === '0' ? 'selected' : ''; ?>>Disabled</option>
+          </select>
+        </div>
+        <div class="rp-btns"><button type="submit" class="btn btn-primary">Show</button><a class="btn btn-default" href="<?php echo base_url(); ?>manager/users/report">Reset</a></div>
+      </form>
     </div>
+
+    <div class="rp-kpis">
+      <div class="rp-kpi"><span>Users</span><b><?php echo $num(count($list)); ?></b></div>
+      <div class="rp-kpi"><span>Login enabled</span><b><?php echo $num($enabled); ?></b></div>
+      <div class="rp-kpi"><span>Login disabled</span><b><?php echo $num(count($list) - $enabled); ?></b></div>
+      <div class="rp-kpi"><span>Roles</span><b><?php echo $num(count($roles)); ?></b></div>
+    </div>
+
+    <div class="rp-box">
+      <?php if (!$list) { ?>
+        <div class="alert alert-info rp-empty">No users for this selection.</div>
+      <?php } else { ?>
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped rp-table" id="urTable">
+          <thead><tr><th>Name</th><th>Employee ID</th><th>Email</th><th>Role</th><th>Center</th><th>Manager</th><th>Joined</th><th>Login</th></tr></thead>
+          <tbody>
+          <?php foreach ($list as $li) { ?>
+            <tr>
+              <td><a href="<?php echo base_url(); ?>manager/users/view/<?php echo (int)$li['id']; ?>"><?php echo $e($li['name']); ?></a></td>
+              <td class="nw"><?php echo $e($li['emp_id']); ?></td>
+              <td><?php echo $e($li['email']); ?></td>
+              <td><?php echo $e($li['role_name']); ?></td>
+              <td><?php echo $e($li['office']); ?></td>
+              <td><?php echo $e($li['manager_name']); ?></td>
+              <td class="nw"><?php echo $e($day($li['created'])); ?></td>
+              <td><?php echo (int)$li['admin_status'] === 1 ? 'Enabled' : '<span class="rp-muted">Disabled</span>'; ?></td>
+            </tr>
+          <?php } ?>
+          </tbody>
+        </table>
+      </div>
+      <?php } ?>
     </div>
   </section>
 </div>
-<script>
-
-				
-$(function(){
-$('.input-daterange').datepicker({
-    autoclose: true
-});
-}); 
- 
-$("table").tableExport({
-	formats: ["xlsx","xls", "csv", "txt"], 
-	fileName: "SRJ-User-report-<?php echo date('d-m-Y'); ?>",
-	bootstrap: true,                   // (Boolean), style buttons using bootstrap
-    position: "top" ,                // (top, bottom), position of the caption element relative to tabl
-    trimWhitespace: false 
-   });
- 
-</script>
-
+<script src="<?php echo base_url(); ?>assets/dist/js/crm-pager.js?v=20261106_2"></script>
+<script>crmPager('#urTable', 50);</script>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

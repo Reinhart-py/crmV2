@@ -65,6 +65,9 @@
     border-bottom: 2px solid #64748b;
     font-size: 13px;
 }
+.rc-records th, .rc-records th:first-child, .rc-records th:nth-child(2) { text-align: left; }
+.rc-records td.rc-long { white-space: normal; min-width: 260px; max-width: 420px; }
+.rc-count { font-size: 12px; color: var(--crm-text-muted); margin: 0 0 6px; }
 .pivot-toggle-btn {
     display: inline-block;
     width: 18px;
@@ -430,7 +433,31 @@
         </div>
         <?php } ?>
 
-        <?php if (!empty($report_data['pivot_data']) && !empty($report_data['pivot_data']['groups'])) { ?>
+        <?php
+        // Reports without a summary of their own show their records (the old view only counted them).
+        $rc_records = !empty($report_data['pivot_data']['generic']) && !empty($report_data['rows']) && !empty($report_data['fields']);
+        if ($rc_records) {
+            $rc_cols = array();
+            foreach ($report_data['fields'] as $i => $fld) {
+                if ($fld === 'action') continue;
+                $rc_cols[$fld] = isset($report_data['headers'][$i]) ? $report_data['headers'][$i] : $fld;
+            }
+            $rc_txt = function ($v) { return trim(preg_replace('~\s+~', ' ', html_entity_decode(strip_tags(str_replace('&nbsp;', ' ', (string)$v)), ENT_QUOTES, 'UTF-8'))); };
+        ?>
+        <div class="rc-count"><?php echo number_format(count($report_data['rows'])); ?> records</div>
+        <div class="pivot-table-wrap protected-crm-data">
+            <table class="pivot-table rc-records" id="rcRecords">
+                <thead><tr><?php foreach ($rc_cols as $hdr) { ?><th><?php echo htmlspecialchars($hdr); ?></th><?php } ?></tr></thead>
+                <tbody>
+                <?php foreach ($report_data['rows'] as $row) { ?>
+                    <tr><?php foreach ($rc_cols as $fld => $hdr) { $v = $rc_txt(isset($row[$fld]) ? $row[$fld] : ''); ?><td<?php echo strlen($v) > 60 ? ' class="rc-long"' : ''; ?>><?php echo $v === '' ? '<span style="color:#94a3b8">–</span>' : htmlspecialchars($v); ?></td><?php } ?></tr>
+                <?php } ?>
+                </tbody>
+            </table>
+        </div>
+        <?php } ?>
+
+        <?php if (!$rc_records && !empty($report_data['pivot_data']) && !empty($report_data['pivot_data']['groups'])) { ?>
         <div class="pivot-table-wrap protected-crm-data">
             <table class="pivot-table">
                 <thead>
@@ -550,7 +577,7 @@
             </table>
         </div>
         <?php } ?>
-        <?php if (empty($report_data['pivot_data']) || empty($report_data['pivot_data']['groups'])) { ?>
+        <?php if (!$rc_records && (empty($report_data['pivot_data']) || empty($report_data['pivot_data']['groups']))) { ?>
         <div style="background: #ffffff; border: 1px solid var(--crm-border); border-radius: 6px; padding: 36px 20px; text-align: center; color: var(--crm-text-muted); font-size: 13px;">
             <i class="fa fa-info-circle" style="font-size: 24px; color: #94a3b8; margin-bottom: 8px;"></i>
             <div style="font-weight: 600; color: #1e293b;">No records available for the selected filters.</div>
@@ -560,6 +587,8 @@
     </section>
 </div>
 
+<script src="<?php echo base_url(); ?>assets/dist/js/crm-pager.js?v=20261106_2"></script>
+<script>if (document.getElementById('rcRecords')) crmPager('#rcRecords', 50);</script>
 <script>
 
 function selectAllCols(check) {

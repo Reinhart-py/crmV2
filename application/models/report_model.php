@@ -180,13 +180,14 @@ class Report_model extends CI_model {
 	 * Leads report: a lead belongs to its current owner (after a transfer, the new owner).
 	 * Admin sees all; others see leads owned by themself or the people under them.
 	 */
-	public function get_lead_report($d1 = '', $d2 = '', $f1 = '', $f2 = '', $category = '', $created_by = '', $status = '', $s_cat = '')
+	public function get_lead_report($d1 = '', $d2 = '', $f1 = '', $f2 = '', $category = '', $created_by = '', $status = '', $s_cat = '', $owner = '')
 	{
 		$db = $this->db;
-		$db->select('A.*, B.name as lead_maker, C.status as status_name')
+		$db->select('A.*, B.name as lead_maker, C.status as status_name, (SELECT O.name FROM ci_user O WHERE O.id = ' . $this->owner_sql('A') . ') AS owner_name', false)
 			->from('ci_leads as A')
 			->join('ci_user as B', 'A.created_by = B.id', 'left')
 			->join('ci_status as C', 'A.status = C.id', 'left');
+		if ($owner !== '') $db->where($this->owner_sql('A') . ' = ' . (int)$owner, null, false);
 		$b = $this->_between('A.created', $d1, $d2);
 		if ($b !== '') $db->where($b, null, false);
 		$b = $this->_between('A.followup_date', $f1, $f2);
@@ -525,5 +526,126 @@ class Report_model extends CI_model {
 			ORDER BY LEFT(A.followup_date, 10) DESC LIMIT " . (int)$limit;
 		$r = $this->db->query($sql);
 		return ($r && is_object($r)) ? $r->result_array() : array();
+	}
+
+	/* ------------------------------------------------------------------
+	 * Performance and follow-up reports (same scope as above).
+	 * ------------------------------------------------------------------ */
+
+	/** People in scope with their department (role). $role: only that role; $only: only that person. */
+	public function perf_people($role = 0, $only = 0)
+	{
+		$scope = $this->scope_ids();
+		$this->db->select('U.id, U.name, U.user_type, R.title AS role_name')->from('ci_user U')
+			->join('ci_roles R', 'R.id = U.user_type', 'left')->where('U.status', 1);
+		$pres = function_exists('crm_presentation_role_id') ? crm_presentation_role_id() : 0;
+		if ($pres > 0) $this->db->where('U.user_type !=', $pres);
+		if ($scope !== null) $this->db->where_in('U.id', $scope ? $scope : array(-1));
+		if ((int)$role > 0) $this->db->where('U.user_type', (int)$role);
+		if ((int)$only > 0) $this->db->where('U.id', (int)$only);
+		$this->db->order_by('R.title', 'ASC')->order_by('U.name', 'ASC');
+		$out = array();
+		foreach ($this->db->get()->result_array() as $u) {
+			$dept = trim((string)$u['role_name']);
+			$out[(int)$u['id']] = array('id' => (int)$u['id'], 'name' => $u['name'], 'role' => (int)$u['user_type'], 'dept' => $dept !== '' ? $dept : 'No department');
+		}
+		return $out;
+	}
+
+	/** Departments (roles) that have people in scope, for the filter. */
+	public function perf_departments()
+	{
+		$out = array();
+		foreach ($this->perf_people() as $p) $out[$p['role']] = $p['dept'];
+		asort($out);
+		return $out;
+	}
+
+	/**
+	 * Activity per person between two dates: leads added (current owner), calls, follow-ups and meetings logged,
+	 * orders and sales (always the person who made them), and open leads with an overdue follow-up (today).
+	 */
+	public function perf_rows($people, $d1, $d2)
+	{
+		list($a, $b) = $this->_range($d1, $d2);
+		$rows = array();
+		foreach ($people as $id => $p) $rows[$id] = $p + array('leads' => 0, 'calls' => 0, 'followups' => 0, 'meetings' => 0, 'meetings_missed' => 0, 'orders' => 0, 'sales' => 0, 'sales_aed' => 0.0, 'overdue' => 0);
+		if (!$rows) return array();
+		$in = $this->_ids_sql(array_keys($rows));
+		$own = $this->owner_sql('A');
+		$ea = $this->db->escape($a); $eb = $this->db->escape($b);
+		$ta = $this->db->escape($a . ' 00:00:00'); $tb = $this->db->escape($b . ' 23:59:59');
+		$today = $this->db->escape(date('Y-m-d'));
+		$this->_merge($rows, "SELECT {$own} uid, COUNT(*) leads FROM ci_leads A WHERE LEFT(A.created, 10) BETWEEN {$ea} AND {$eb} AND {$own} IN ({$in}) GROUP BY uid");
+		$this->_merge($rows, "SELECT user_id uid, COUNT(*) calls FROM ci_call_logs WHERE created_at BETWEEN {$ta} AND {$tb} AND user_id IN ({$in}) GROUP BY user_id");
+		$this->_merge($rows, "SELECT user_id uid, COUNT(*) followups FROM ci_followup WHERE followup_remark != '' AND LEFT(followup_date, 10) BETWEEN {$ea} AND {$eb} AND user_id IN ({$in}) GROUP BY user_id");
+		$this->_merge($rows, "SELECT created_by uid, COUNT(*) meetings, SUM(LEFT(m_date, 10) < {$today} AND (m_remark IS NULL OR m_remark = '')) meetings_missed
+			FROM ci_meetings WHERE LEFT(m_date, 10) BETWEEN {$ea} AND {$eb} AND created_by IN ({$in}) GROUP BY created_by");
+		$amt = $this->_amount_sql('o'); $sale = $this->_is_sale_sql('o');
+		$this->_merge($rows, "SELECT o.created_by uid, COUNT(*) orders, SUM({$sale}) sales, COALESCE(SUM(CASE WHEN {$sale} THEN {$amt} ELSE 0 END), 0) sales_aed
+			FROM ci_orders o WHERE o.created_at BETWEEN {$ta} AND {$tb} AND o.created_by IN ({$in}) GROUP BY o.created_by");
+		$g = $this->insight_status_groups();
+		$closed = $this->_ids_sql(array_merge($g['ids']['won'], $g['ids']['lost'], $g['ids']['invalid']));
+		$this->_merge($rows, "SELECT {$own} uid, COUNT(*) overdue FROM ci_leads A WHERE A.followup_date IS NOT NULL AND A.followup_date != ''
+			AND LEFT(A.followup_date, 10) < {$today} AND (A.status IS NULL OR A.status NOT IN ({$closed})) AND {$own} IN ({$in}) GROUP BY uid");
+		foreach ($rows as &$r) $r['active'] = ($r['leads'] + $r['calls'] + $r['followups'] + $r['meetings'] + $r['orders']) > 0;
+		unset($r);
+		return array_values($rows);
+	}
+
+	/** One person's activity per day between two dates (days with nothing are left out), newest first. */
+	public function perf_days($uid, $d1, $d2)
+	{
+		list($a, $b) = $this->_range($d1, $d2);
+		$uid = (int)$uid;
+		$ea = $this->db->escape($a); $eb = $this->db->escape($b);
+		$ta = $this->db->escape($a . ' 00:00:00'); $tb = $this->db->escape($b . ' 23:59:59');
+		$own = $this->owner_sql('A');
+		$amt = $this->_amount_sql('o'); $sale = $this->_is_sale_sql('o');
+		$queries = array(
+			"SELECT LEFT(A.created, 10) d, COUNT(*) leads FROM ci_leads A WHERE LEFT(A.created, 10) BETWEEN {$ea} AND {$eb} AND {$own} = {$uid} GROUP BY d",
+			"SELECT DATE(created_at) d, COUNT(*) calls FROM ci_call_logs WHERE created_at BETWEEN {$ta} AND {$tb} AND user_id = {$uid} GROUP BY d",
+			"SELECT LEFT(followup_date, 10) d, COUNT(*) followups FROM ci_followup WHERE followup_remark != '' AND LEFT(followup_date, 10) BETWEEN {$ea} AND {$eb} AND user_id = {$uid} GROUP BY d",
+			"SELECT LEFT(m_date, 10) d, COUNT(*) meetings FROM ci_meetings WHERE LEFT(m_date, 10) BETWEEN {$ea} AND {$eb} AND created_by = {$uid} GROUP BY d",
+			"SELECT DATE(o.created_at) d, COUNT(*) orders, SUM({$sale}) sales, COALESCE(SUM(CASE WHEN {$sale} THEN {$amt} ELSE 0 END), 0) sales_aed FROM ci_orders o WHERE o.created_at BETWEEN {$ta} AND {$tb} AND o.created_by = {$uid} GROUP BY d",
+		);
+		$days = array();
+		foreach ($queries as $sql) {
+			$r = $this->db->query($sql);
+			if (!$r || !is_object($r)) continue;
+			foreach ($r->result_array() as $row) {
+				$d = $row['d'];
+				if (!isset($days[$d])) $days[$d] = array('d' => $d, 'leads' => 0, 'calls' => 0, 'followups' => 0, 'meetings' => 0, 'orders' => 0, 'sales' => 0, 'sales_aed' => 0.0);
+				foreach ($row as $k => $v) if ($k !== 'd') $days[$d][$k] = $v + 0;
+			}
+		}
+		krsort($days);
+		return array_values($days);
+	}
+
+	/** Follow-ups logged by people in scope between two dates, newest first. $result: only that outcome. */
+	public function followup_log($people, $d1, $d2, $result = '', $limit = 5000)
+	{
+		if (!$people) return array();
+		list($a, $b) = $this->_range($d1, $d2);
+		$this->db->select("F.id, LEFT(F.followup_date, 10) AS fdate, F.followup_time, F.followup_remark, F.followup_result, F.lead_type, F.lead_id, L.lead_id AS lead_ref, L.customer, L.poc, S.status AS status_name, U.name AS by_name", false)
+			->from('ci_followup F')
+			->join('ci_leads L', 'L.id = F.lead_id', 'left')
+			->join('ci_status S', 'S.id = L.status', 'left')
+			->join('ci_user U', 'U.id = F.user_id', 'left')
+			->where("F.followup_remark != ''", null, false)
+			->where('LEFT(F.followup_date, 10) BETWEEN ' . $this->db->escape($a) . ' AND ' . $this->db->escape($b), null, false)
+			->where_in('F.user_id', array_keys($people));
+		if ($result !== '') $this->db->where('F.followup_result', $result);
+		$this->db->order_by('F.followup_date', 'DESC')->order_by('F.id', 'DESC')->limit((int)$limit);
+		return $this->db->get()->result_array();
+	}
+
+	/** Outcomes used on follow-ups, for the filter. */
+	public function followup_results()
+	{
+		$out = array();
+		foreach ($this->db->query("SELECT DISTINCT followup_result r FROM ci_followup WHERE followup_result IS NOT NULL AND followup_result != '' ORDER BY r")->result_array() as $r) $out[] = $r['r'];
+		return $out;
 	}
 }
