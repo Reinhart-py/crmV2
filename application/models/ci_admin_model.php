@@ -169,6 +169,17 @@ class Ci_admin_model extends CI_model {
 		 * outside that range are added as one "Other statuses" row so the card total
 		 * always equals the stage count used everywhere else.
 		 */
+		/** Sort from the address bar: a plain column (A.name or name) only, else the newest first. */
+		private function _safe_sort_col($col){
+			$col = trim((string)$col);
+			if ($col === '') return $col;
+			return preg_match('~^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)?$~', $col) ? $col : 'A.id';
+		}
+		private function _safe_sort_dir($dir){
+			$d = strtoupper(trim((string)$dir));
+			return $d === '' ? '' : ($d === 'DESC' ? 'DESC' : 'ASC');
+		}
+
 		private function _append_other_status($sql, $min, $max, $data){
 			if (!preg_match('/\((SELECT COUNT\(DISTINCT l\.id\).*)\) as lead_count FROM ci_status/s', $sql, $m)) {
 				return $data;
@@ -1075,7 +1086,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			   	$this->db->where('A.user_type !=', 1);
 			   }
 
-		     $this->db->order_by($order_by,$sort_by);
+		     $this->db->order_by($this->_safe_sort_col($order_by), $this->_safe_sort_dir($sort_by));
 			  if(!empty($limit_per_page))
 			  {
 			   $this->db->limit($limit_per_page, $page_index);
@@ -1156,7 +1167,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			  }
 			  if((!empty($mrr1) OR  ($mrr1=='0')) && !empty($mrr2))
 			  {
-			    $where = '(A.mrr BETWEEN '.$mrr1.' AND '.$mrr2.')';	
+			    $where = '(A.mrr BETWEEN '.(float)$mrr1.' AND '.(float)$mrr2.')';	
                $this->db->where($where);
 			  }	
 
@@ -1197,7 +1208,8 @@ public function dashboard_MyPro($table='ci_leads'){
 			  }				  
 			   if(!empty($search))
 			  {
-			    $where = '(A.lead_id LIKE "%'.$search.'%" OR A.mrr LIKE "%'.$search.'%"  OR A.contact1 LIKE "%'.$search.'%" OR A.id LIKE "%'.$search.'%")';	
+			    $s_like = $this->db->escape_like_str($search);
+			    $where = '(A.lead_id LIKE "%'.$s_like.'%" OR A.mrr LIKE "%'.$s_like.'%"  OR A.contact1 LIKE "%'.$s_like.'%" OR A.id LIKE "%'.$s_like.'%")';	
                $this->db->where($where);
 			  }	
 			   if ($stage === 'database') {
@@ -1249,7 +1261,7 @@ public function dashboard_MyPro($table='ci_leads'){
 				   }
 			   }		
 			   if(!empty($order_by) && !empty($sort_by)){
-			     $this->db->order_by($order_by,$sort_by);
+			     $this->db->order_by($this->_safe_sort_col($order_by), $this->_safe_sort_dir($sort_by));
 			   }else{
 			     $this->db->order_by('A.id','DESC');
 			   }
@@ -1281,12 +1293,13 @@ public function dashboard_MyPro($table='ci_leads'){
 
 			   if(!empty($search))
 			  {
-			    $where = '(A.customer_name LIKE "%'.$search.'%" OR A.mrr LIKE "%'.$search.'%"  OR A.poc LIKE "%'.$search.'%" OR A.contact1 LIKE "%'.$search.'%")';	
+			    $s_like = $this->db->escape_like_str($search);
+			    $where = '(A.customer_name LIKE "%'.$s_like.'%" OR A.mrr LIKE "%'.$s_like.'%"  OR A.poc LIKE "%'.$s_like.'%" OR A.contact1 LIKE "%'.$s_like.'%")';	
                $this->db->where($where);
 			  }	
 			   $where1="B.id = ".$this->session->userdata('manager_id');	
 			   $this->db->where($where1);		
-		     $this->db->order_by($order_by,$sort_by);
+		     $this->db->order_by($this->_safe_sort_col($order_by), $this->_safe_sort_dir($sort_by));
 			  if(!empty($limit_per_page))
 			  {
 			   $this->db->limit($limit_per_page, $page_index);
@@ -1353,7 +1366,7 @@ public function dashboard_MyPro($table='ci_leads'){
 
 			  if((!empty($mrr1) OR  ($mrr1=='0')) && !empty($mrr2))
 			  {
-				$where = '(A.mrr BETWEEN '.$mrr1.' AND '.$mrr2.')';	
+				$where = '(A.mrr BETWEEN '.(float)$mrr1.' AND '.(float)$mrr2.')';	
 			   $this->db->where($where);
 			  }	 
 			  
@@ -1393,7 +1406,8 @@ public function dashboard_MyPro($table='ci_leads'){
 			  }				  
 			   if(!empty($search))
 			  {
-			    $where = '(A.lead_id LIKE "%'.$search.'%" OR A.mrr LIKE "%'.$search.'%"  OR A.contact1 LIKE "%'.$search.'%" OR A.id LIKE "%'.$search.'%")';	
+			    $s_like = $this->db->escape_like_str($search);
+			    $where = '(A.lead_id LIKE "%'.$s_like.'%" OR A.mrr LIKE "%'.$s_like.'%"  OR A.contact1 LIKE "%'.$s_like.'%" OR A.id LIKE "%'.$s_like.'%")';	
                $this->db->where($where);
 			  }	
 			   $uid_fu = (int)$this->session->userdata('manager_id');
@@ -1406,7 +1420,7 @@ public function dashboard_MyPro($table='ci_leads'){
 				   $this->db->where("(A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)");
 			   }		
 			   if(!empty($order_by) && !empty($sort_by)){
-			     $this->db->order_by($order_by,$sort_by);
+			     $this->db->order_by($this->_safe_sort_col($order_by), $this->_safe_sort_dir($sort_by));
 			   }else{
 			     $this->db->order_by('A.id','DESC');
 			   }
@@ -1439,7 +1453,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			 
 			  if((!empty($mrr1) OR  ($mrr1=='0')) && !empty($mrr2))
 			  {
-				$where = '(A.mrr BETWEEN '.$mrr1.' AND '.$mrr2.')';	
+				$where = '(A.mrr BETWEEN '.(float)$mrr1.' AND '.(float)$mrr2.')';	
 			   $this->db->where($where);
 			  } 
 
@@ -1519,7 +1533,8 @@ public function dashboard_MyPro($table='ci_leads'){
 			  }				  
 			   if(!empty($search))
 			  {
-			    $where = '(A.lead_id LIKE "%'.$search.'%" OR A.mrr LIKE "%'.$search.'%"  OR A.contact1 LIKE "%'.$search.'%" OR A.id LIKE "%'.$search.'%")';	
+			    $s_like = $this->db->escape_like_str($search);
+			    $where = '(A.lead_id LIKE "%'.$s_like.'%" OR A.mrr LIKE "%'.$s_like.'%"  OR A.contact1 LIKE "%'.$s_like.'%" OR A.id LIKE "%'.$s_like.'%")';	
                $this->db->where($where);
 			  }	
 			   $uid_mtg = (int)$this->session->userdata('manager_id');
@@ -1532,7 +1547,7 @@ public function dashboard_MyPro($table='ci_leads'){
 				   $this->db->where("(A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)");
 			   }	
 		   if(!empty($order_by) && !empty($sort_by)){
-		     $this->db->order_by($order_by,$sort_by);
+		     $this->db->order_by($this->_safe_sort_col($order_by), $this->_safe_sort_dir($sort_by));
 		   }else{
 		     $this->db->order_by('A.id','DESC');
 		   }
@@ -1618,7 +1633,7 @@ public function dashboard_MyPro($table='ci_leads'){
 		if (!in_array($order_by, array('A.id', 'A.created', 'A.customer', 'A.mrr', 'A.lead_id'), true)) $order_by = 'A.id';
 		$sort_by = strtoupper((string)$sort_by) === 'ASC' ? 'ASC' : 'DESC';
 		if (!empty($order_by) && !empty($sort_by)) {
-			$this->db->order_by($order_by, $sort_by);
+			$this->db->order_by($this->_safe_sort_col($order_by), $this->_safe_sort_dir($sort_by));
 		} else {
 			$this->db->order_by('A.id', 'DESC');
 		}
@@ -1693,7 +1708,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			  }
 			  if((!empty($mrr1) OR  ($mrr1=='0')) && !empty($mrr2))
 			  {
-				$where = '(A.mrr BETWEEN '.$mrr1.' AND '.$mrr2.')';	
+				$where = '(A.mrr BETWEEN '.(float)$mrr1.' AND '.(float)$mrr2.')';	
 			   $this->db->where($where);
 			  } 
 
@@ -1735,7 +1750,8 @@ public function dashboard_MyPro($table='ci_leads'){
 			   }				  
 				if(!empty($search))
 			   {
-				 $where = '(A.lead_id LIKE "%'.$search.'%" OR A.mrr LIKE "%'.$search.'%"  OR A.contact1 LIKE "%'.$search.'%" OR A.id LIKE "%'.$search.'%")';	
+				 $s_like = $this->db->escape_like_str($search);
+				 $where = '(A.lead_id LIKE "%'.$s_like.'%" OR A.mrr LIKE "%'.$s_like.'%"  OR A.contact1 LIKE "%'.$s_like.'%" OR A.id LIKE "%'.$s_like.'%")';	
 				$this->db->where($where);
 			   }	
 			   $team_clean = array_unique(array_filter(array_map('intval', $team_array)));
@@ -1748,7 +1764,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			   $this->db->where($where1);
 			 	
 				if(!empty($order_by) && !empty($sort_by)){
-				  $this->db->order_by($order_by,$sort_by);
+				  $this->db->order_by($this->_safe_sort_col($order_by), $this->_safe_sort_dir($sort_by));
 				}else{
 				  $this->db->order_by('A.id','DESC');
 				}
@@ -1792,7 +1808,7 @@ public function dashboard_MyPro($table='ci_leads'){
 
 			  if((!empty($mrr1) OR  ($mrr1=='0')) && !empty($mrr2))
 			  {
-				$where = '(A.mrr BETWEEN '.$mrr1.' AND '.$mrr2.')';	
+				$where = '(A.mrr BETWEEN '.(float)$mrr1.' AND '.(float)$mrr2.')';	
 			   $this->db->where($where);
 			  } 
 
@@ -1833,7 +1849,8 @@ public function dashboard_MyPro($table='ci_leads'){
 			   }				  
 				if(!empty($search))
 			   {
-				 $where = '(A.lead_id LIKE "%'.$search.'%" OR A.mrr LIKE "%'.$search.'%"  OR A.contact1 LIKE "%'.$search.'%" OR A.id LIKE "%'.$search.'%")';	
+				 $s_like = $this->db->escape_like_str($search);
+				 $where = '(A.lead_id LIKE "%'.$s_like.'%" OR A.mrr LIKE "%'.$s_like.'%"  OR A.contact1 LIKE "%'.$s_like.'%" OR A.id LIKE "%'.$s_like.'%")';	
 				$this->db->where($where);
 			   }	
 
@@ -1877,7 +1894,7 @@ public function dashboard_MyPro($table='ci_leads'){
 				}
 			 	
 				if(!empty($order_by) && !empty($sort_by)){
-				  $this->db->order_by($order_by,$sort_by);
+				  $this->db->order_by($this->_safe_sort_col($order_by), $this->_safe_sort_dir($sort_by));
 				}else{
 				  $this->db->order_by('A.id','DESC');
 				}
@@ -1950,7 +1967,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			   }	
 			   if((!empty($mrr1) OR  ($mrr1=='0')) && !empty($mrr2))
 			   {
-				 $where = '(A.mrr BETWEEN '.$mrr1.' AND '.$mrr2.')';	
+				 $where = '(A.mrr BETWEEN '.(float)$mrr1.' AND '.(float)$mrr2.')';	
 				$this->db->where($where);
 			   }
 			   			   			  			  
@@ -1992,7 +2009,8 @@ public function dashboard_MyPro($table='ci_leads'){
 			   }				  
 				if(!empty($search))
 			   {
-				 $where = '(A.lead_id LIKE "%'.$search.'%" OR A.mrr LIKE "%'.$search.'%"  OR A.contact1 LIKE "%'.$search.'%" OR A.id LIKE "%'.$search.'%")';	
+				 $s_like = $this->db->escape_like_str($search);
+				 $where = '(A.lead_id LIKE "%'.$s_like.'%" OR A.mrr LIKE "%'.$s_like.'%"  OR A.contact1 LIKE "%'.$s_like.'%" OR A.id LIKE "%'.$s_like.'%")';	
 				$this->db->where($where);
 			   }	
 			   
@@ -2001,7 +2019,7 @@ public function dashboard_MyPro($table='ci_leads'){
 				$this->db->where("(A.database_category != 'KAM Onboarded' OR A.database_category IS NULL)");
 			  
 				if(!empty($order_by) && !empty($sort_by)){
-				  $this->db->order_by($order_by,$sort_by);
+				  $this->db->order_by($this->_safe_sort_col($order_by), $this->_safe_sort_dir($sort_by));
 				}else{
 				  $this->db->order_by('A.id','DESC');
 				}
@@ -2076,7 +2094,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			  }	
 			  if((!empty($mrr1) OR  ($mrr1=='0')) && !empty($mrr2))
 			  {
-			    $where = '(A.mrr BETWEEN '.$mrr1.' AND '.$mrr2.')';	
+			    $where = '(A.mrr BETWEEN '.(float)$mrr1.' AND '.(float)$mrr2.')';	
                $this->db->where($where);
 			  }	
 
@@ -2119,7 +2137,8 @@ public function dashboard_MyPro($table='ci_leads'){
 			  }				  
 			   if(!empty($search))
 			  {
-			    $where = '(A.lead_id LIKE "%'.$search.'%" OR A.mrr LIKE "%'.$search.'%"  OR A.contact1 LIKE "%'.$search.'%" OR A.id LIKE "%'.$search.'%")';	
+			    $s_like = $this->db->escape_like_str($search);
+			    $where = '(A.lead_id LIKE "%'.$s_like.'%" OR A.mrr LIKE "%'.$s_like.'%"  OR A.contact1 LIKE "%'.$s_like.'%" OR A.id LIKE "%'.$s_like.'%")';	
                $this->db->where($where);
 			  }	
 			  
@@ -2127,7 +2146,7 @@ public function dashboard_MyPro($table='ci_leads'){
 			
 			  	
 				if(!empty($order_by) && !empty($sort_by)){
-					$this->db->order_by($order_by,$sort_by);
+					$this->db->order_by($this->_safe_sort_col($order_by), $this->_safe_sort_dir($sort_by));
 				}else{
 					$this->db->order_by('A.id','DESC');
 				}
@@ -2202,7 +2221,7 @@ public function dashboard_MyPro($table='ci_leads'){
 				   }	
 				   if((!empty($mrr1) OR  ($mrr1=='0')) && !empty($mrr2))
 				   {
-					 $where = '(A.mrr BETWEEN '.$mrr1.' AND '.$mrr2.')';	
+					 $where = '(A.mrr BETWEEN '.(float)$mrr1.' AND '.(float)$mrr2.')';	
 					$this->db->where($where);
 				   }			   
 				   
@@ -2255,7 +2274,7 @@ public function dashboard_MyPro($table='ci_leads'){
 				   }	
 					   
 					 if(!empty($order_by) && !empty($sort_by)){
-						 $this->db->order_by($order_by,$sort_by);
+						 $this->db->order_by($this->_safe_sort_col($order_by), $this->_safe_sort_dir($sort_by));
 					 }else{
 						 $this->db->order_by('A.id','DESC');
 					 }
@@ -2426,7 +2445,7 @@ public function dashboard_MyPro($table='ci_leads'){
 				   }	
 					   
 					 if(!empty($order_by) && !empty($sort_by)){
-						 $this->db->order_by($order_by,$sort_by);
+						 $this->db->order_by($this->_safe_sort_col($order_by), $this->_safe_sort_dir($sort_by));
 					 }else{
 						 $this->db->order_by('A.id','DESC');
 					 }
@@ -2512,14 +2531,15 @@ public function dashboard_MyPro($table='ci_leads'){
 				   }				  
 					if(!empty($search))
 				   {
-					 $where = '(A.lead_id LIKE "%'.$search.'%" OR A.mrr LIKE "%'.$search.'%"  OR A.contact1 LIKE "%'.$search.'%" OR A.id LIKE "%'.$search.'%")';	
+					 $s_like = $this->db->escape_like_str($search);
+					 $where = '(A.lead_id LIKE "%'.$s_like.'%" OR A.mrr LIKE "%'.$s_like.'%"  OR A.contact1 LIKE "%'.$s_like.'%" OR A.id LIKE "%'.$s_like.'%")';	
 					$this->db->where($where);
 				   }	
 				   
 				   
 					   
 					 if(!empty($order_by) && !empty($sort_by)){
-						 $this->db->order_by($order_by,$sort_by);
+						 $this->db->order_by($this->_safe_sort_col($order_by), $this->_safe_sort_dir($sort_by));
 					 }else{
 						 $this->db->order_by('A.id','DESC');
 					 }
@@ -3022,7 +3042,7 @@ public function dashboard_MyPro($table='ci_leads'){
 		}
 
 		if ((!empty($mrr1) || ($mrr1 == '0')) && !empty($mrr2)) {
-			$this->db->where('(A.mrr BETWEEN '.$mrr1.' AND '.$mrr2.')');
+			$this->db->where('(A.mrr BETWEEN '.(float)$mrr1.' AND '.(float)$mrr2.')');
 		}
 
 		if (!empty($category)) {
@@ -3038,12 +3058,13 @@ public function dashboard_MyPro($table='ci_leads'){
 		}
 
 		if (!empty($search)) {
-			$where = '(A.lead_id LIKE "%'.$search.'%" OR A.customer LIKE "%'.$search.'%" OR A.mrr LIKE "%'.$search.'%" OR A.contact1 LIKE "%'.$search.'%" OR A.id LIKE "%'.$search.'%")';
+			$s_like = $this->db->escape_like_str($search);
+			$where = '(A.lead_id LIKE "%'.$s_like.'%" OR A.customer LIKE "%'.$s_like.'%" OR A.mrr LIKE "%'.$s_like.'%" OR A.contact1 LIKE "%'.$s_like.'%" OR A.id LIKE "%'.$s_like.'%")';
 			$this->db->where($where);
 		}
 
 		if (!empty($order_by) && !empty($sort_by)) {
-			$this->db->order_by($order_by, $sort_by);
+			$this->db->order_by($this->_safe_sort_col($order_by), $this->_safe_sort_dir($sort_by));
 		} else {
 			$this->db->order_by('A.id', 'DESC');
 		}
