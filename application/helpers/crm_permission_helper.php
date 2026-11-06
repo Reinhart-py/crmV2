@@ -142,7 +142,7 @@ if (!function_exists('crm_perm_catalog')) {
 				'note' => 'Holiday requests stay open to every user from the profile menu for their own data; Self Training and Search Topics (Help & Support) are rights in Core Modules. The rights here add the HR menu and managing everyone.',
 				'items' => array(
 					'hr' => array('label' => 'HR Overview', 'desc' => 'HR dashboard', 'nav' => array(array('hr', 'Overview', 'fa-th-large')), 'pages' => array('hr')),
-					'hr_staff' => array('label' => 'Staff (Add / View)', 'desc' => 'Staff list and each person\'s profile; Full can add, edit, reset logins and enable or disable staff (never Admin accounts)', 'fallback' => 'users', 'nav' => array(array('hr/staff/add', 'Add Staff', 'fa-user-plus', 'write'), array('hr/staff', 'View Staff', 'fa-id-card-o', 'read')), 'pages' => array('hr/staff'), 'write' => array('hr/staff/add')),
+					'hr_staff' => array('label' => 'Staff (Add / View)', 'tab' => 'hr_people', 'desc' => 'Staff list and each person\'s profile; Full can add, edit, reset logins and enable or disable staff (never Admin accounts)', 'fallback' => 'users', 'nav' => array(array('hr/staff', 'Staff', 'fa-id-card-o', 'read')), 'pages' => array('hr/staff'), 'write' => array('hr/staff/add')),
 					'hr_employees' => array('label' => 'Employees (HR file)', 'tab' => 'hr_people', 'desc' => 'Employee list and each person\'s HR file: job, contract, identity documents and files; Full can edit them', 'fallback' => 'hr_staff', 'nav' => array(array('hr/employees', 'Employees', 'fa-users')), 'pages' => array('hr/employees')),
 					'hr_salary' => array('label' => 'Salary & Bank Details', 'desc' => 'See (View) or change (Full) salary structures, bank account and salary transfer (WPS) details in the HR file; only people given this right (and Admin) see salaries', 'levels' => 'rw'),
 					'hr_settings' => array('label' => 'Company HR Settings', 'tab' => 'hr_people', 'desc' => 'Company details for the salary file, working week and HR policies (probation, notice, leave, document alerts)', 'nav' => array(array('hr/settings', 'HR Settings', 'fa-cog')), 'pages' => array('hr/settings')),
@@ -180,7 +180,7 @@ if (!function_exists('crm_perm_catalog')) {
 				'title' => 'System', 'key' => 'system', 'match' => array('roles', 'terms', 'users', 'user', 'assigned-leads', 'admin-logs', 'system', 'categories', 'category-tree', 'integrations'),
 				'icon' => '<circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>',
 				'items' => array(
-					'users' => array('label' => 'Users', 'desc' => 'User list; Full can add and edit users', 'nav' => array(array('users/add', 'Add Staff', 'fa-user-plus', 'write'), array('users', 'View Staff', 'fa-id-card-o', 'read')), 'pages' => array('users'), 'write' => array('users/add', 'user/add')),
+					'users' => array('label' => 'Users', 'desc' => 'User list; Full can add and edit users', 'nav' => array(array('users', 'Staff', 'fa-id-card-o', 'read')), 'pages' => array('users'), 'write' => array('users/add', 'user/add')),
 					'roles' => array('label' => 'Roles & Permissions', 'desc' => 'This page. Full lets the person change roles and user rights', 'nav' => array(array('roles', 'Roles & Permissions', 'fa-shield')), 'pages' => array('roles'), 'write' => array('roles/add')),
 					'terms' => array('label' => 'Lists', 'desc' => 'Choices offered in forms: Industry, Products, Lead Temperature, Business Category...; Full can add, rename and disable', 'nav' => array(array('terms', 'Lists', 'fa-list')), 'pages' => array('terms', 'categories', 'category-tree'), 'write' => array('terms/add')),
 					'leads_import' => array('label' => 'Import Database', 'tab' => 'database', 'desc' => 'Upload records from a file', 'nav' => array(array('leads/import', 'Import Database', 'fa-upload')), 'pages' => array('leads/import'), 'levels' => 'r'),
@@ -439,6 +439,7 @@ if (!function_exists('crm_tab_groups')) {
 				array('integrations', 'system/integrations', 'Third-Party API', 'fa-plug'),
 			)),
 			'hr_people' => array('label' => 'People', 'icon' => 'fa-users', 'tabs' => array(
+				array('hr_staff', 'hr/staff', 'Staff', 'fa-id-card-o'),
 				array('hr_employees', 'hr/employees', 'Employees', 'fa-users'),
 				array('hr_documents', 'hr/documents', 'Documents & Expiry', 'fa-folder-open-o'),
 				array('hr_lifecycle', 'hr/lifecycle', 'Lifecycle', 'fa-users'),

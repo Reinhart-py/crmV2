@@ -120,8 +120,8 @@ class Ci_admin_user extends CI_Controller {
 		
         $data=array();
 		$data['info']=array(
-			'title'=>'View Staff',
-			'page_heading'=>'View Staff'
+			'title'=>'Staff',
+			'page_heading'=>'Staff'
 		);
 		
 		$data['info2']=$this->if_not_login();
@@ -212,7 +212,7 @@ public function view($id='')
 			 $data=array();
 				$data['info']=array(
 					'title'=>'Staff',
-					'page_heading'=>'View Staff'
+					'page_heading'=>'Staff'
 				);
 			$data['info2']=$this->if_not_login();
 			

@@ -223,8 +223,9 @@ $filters = array('mgr' => 'Manager', 'cat' => 'Role', 'des' => 'Designation', 's
 }
 </style>
 <div class="content-wrapper ulist">
+  <?php if ($is_hr) { $ul_tabs = crm_tabbar('hr_people', 'hr/staff'); if ($ul_tabs) { ?><link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7"><div class="sx ul-tabs"><?php echo $ul_tabs; ?></div><?php } } ?>
   <section class="content-header">
-    <h1>View Staff<small>Everyone working in the company, their details and documents</small></h1>
+    <h1>Staff</h1>
     <div class="hd-btns">
       <?php if (!empty($list)) { ?><button type="button" class="btn btn-default js-export" title="Download the list as it is filtered now (opens in Excel)"><i class="fa fa-file-excel-o"></i> Export</button><?php } ?>
       <?php if ($can_write) { ?><a href="<?php echo base_url().$base; ?>/add" class="btn btn-primary"><i class="fa fa-user-plus"></i> Add Staff</a><?php } ?>
