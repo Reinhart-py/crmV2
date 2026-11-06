@@ -1097,7 +1097,7 @@ public function dashboard_MyPro($table='ci_leads'){
 	 			$date1=date("Y-m-d",strtotime($d1) );
 	 			$date2=date("Y-m-d",strtotime($d2) );
 	   			$result=array();
-			  $this->db->select(array('A.*','B.name as owner_name','C.status as lead_status','B.user_level','E.title as servicecat','P.pipeline_stage','P.vertical_code','P.conversion_status','P.conversion_reason','P.conversion_requested_by','P.conversion_requested_at','P.conversion_reviewed_by','P.conversion_reviewed_at','P.bo_remarks','P.vertical_data','ReqU.name as requested_by_name'));
+			  $this->db->select(array('A.*','B.name as owner_name','C.status as lead_status','B.user_level','E.title as servicecat','P.pipeline_stage','P.vertical_code','P.conversion_status','P.conversion_reason','P.conversion_requested_by','P.conversion_requested_at','P.conversion_reviewed_by','P.conversion_reviewed_at','P.bo_remarks','P.vertical_data','P.order_request_status','ReqU.name as requested_by_name'));
 			  $this->db->from('ci_leads as A');
 			  $this->db->join('ci_pipeline as P','P.lead_id=A.id','LEFT');
 			  $this->db->join('ci_user as B','A.created_by=B.id','LEFT');

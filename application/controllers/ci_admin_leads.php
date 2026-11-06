@@ -537,6 +537,11 @@ function __construct()
 
 		$this->ci_admin_model->log_admin_action('request_conversion', "Requested conversion for record #$lead_id", 'SUCCESS', $cur_uid, $cur_name);
 		$this->session->set_flashdata('message', 'Conversion request has been submitted for review.');
+		// sent from a list row: go back to that list
+		if ($this->input->post('return_to') === 'list' && ($back = urldecode((string)$this->session->userdata('manager_return_string'))) !== '') {
+			redirect('manager/' . $back);
+			return;
+		}
 		redirect('manager/leads/view/' . base64_encode($lead_id));
 	}
 
@@ -693,6 +698,11 @@ function __construct()
 
 		$this->ci_admin_model->log_admin_action('request_order', "Submitted Lead #$lead_id for Order creation", 'SUCCESS', $cur_uid, $cur_name);
 		$this->session->set_flashdata('message', 'Lead has been submitted for Order processing. This Lead is now locked for editing.');
+		// sent from a list row: go back to that list
+		if ($this->input->post('return_to') === 'list' && ($back = urldecode((string)$this->session->userdata('manager_return_string'))) !== '') {
+			redirect('manager/' . $back);
+			return;
+		}
 		redirect('manager/leads/view/' . base64_encode($lead_id));
 	}
 

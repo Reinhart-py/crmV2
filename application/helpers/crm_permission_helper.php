@@ -505,6 +505,7 @@ if (!function_exists('crm_mz_tabbar')) {
 	{
 		$CI =& get_instance();
 		$path = trim(preg_replace('~^manager/?~', '', $CI->uri->uri_string()), '/');
+		$path = preg_replace('~(/[0-9]+)+$~', '', $path); // list page number, e.g. leads/0
 		$alias = array('database' => 'leads');
 		if (isset($alias[$path])) $path = $alias[$path];
 		foreach (crm_tab_groups() as $gk => $g) {

@@ -1,6 +1,7 @@
 <?php require_once(APPPATH."views/manager/elements/header.php"); ?>
 
 
+<?php require_once(APPPATH . 'views/manager/leads/list_request.php'); ?>
 <div class="content-wrapper px-4">
 <?php echo crm_mz_tabbar(); ?>
     
@@ -285,6 +286,8 @@ foreach($st_list as $cli){
                                             <?php endif; ?>
                                         </td>
                                         <td>
+                                            <div class="lrq-cell">
+                                            <?php echo crm_list_request_btn($li); ?>
                                             <div class="btn-group" style="min-width: 85px;">
                                                 <button type="button" class="btn btn-sm btn-warning">Action</button>
                                                 <button type="button" class="btn btn-sm btn-warning dropdown-toggle"
@@ -301,6 +304,7 @@ foreach($st_list as $cli){
                                                     <li> <a href="javascript:void(0);" onclick="transferToLead(<?php echo $li['id']; ?>, '<?php echo htmlspecialchars(addslashes($li['customer'])); ?>')">Transfer to Lead</a> </li>
                                                     <?php } ?>
                                                 </ul>
+                                            </div>
                                             </div>
 
 
@@ -485,4 +489,6 @@ $(document).ready(function() {
 });
 </script>
 
+<?php $crm_list_request_modal = true; require(APPPATH . 'views/manager/leads/list_request.php'); ?>
+<style>.lrq-cell{display:flex;gap:6px;align-items:center;justify-content:flex-start;white-space:nowrap}</style>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>

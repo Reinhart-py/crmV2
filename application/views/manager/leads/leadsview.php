@@ -11,6 +11,7 @@ foreach (array('d1', 'd2', 'mrr1', 'mrr2', 'category', 'lCat', 'status', 'user_n
     if (isset($_GET[$ldv_k]) && $_GET[$ldv_k] !== '' && $_GET[$ldv_k] !== array() && $_GET[$ldv_k] !== array('')) $ldv_on++;
 }
 ?>
+<?php require_once(APPPATH . 'views/manager/leads/list_request.php'); ?>
 <div class="content-wrapper px-4 ldv">
 <?php echo crm_mz_tabbar(); ?>
 
@@ -314,9 +315,10 @@ foreach($st_list as $cli){
                                                 <?php endif; ?>
                                             </td>
                                             <td>
-                                                                                                <div class="ldv-act">
+                                                <div class="ldv-act">
                                                     <a href="<?php echo base_url(); ?>manager/leads/view/<?php echo base64_encode($li['id']); ?>" class="btn btn-default btn-sm" title="Preview" aria-label="Preview"><i class="fa fa-eye"></i><span> Preview</span></a>
                                                     <a href="<?php echo base_url(); ?>manager/leads/edit/<?php echo base64_encode($li['id']); ?>" class="btn btn-default btn-sm" title="Edit" aria-label="Edit"><i class="fa fa-pencil"></i><span> Edit</span></a>
+                                                    <?php if (isset($stage) && $stage === 'database') echo crm_list_request_btn($li); ?>
                                                 </div>
                                             </td>
                                         <?php } ?>
@@ -627,4 +629,5 @@ jQuery(function ($) {
   });
 });
 </script>
+<?php if (isset($stage) && $stage === 'database') { $crm_list_request_modal = true; require(APPPATH . 'views/manager/leads/list_request.php'); } ?>
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>
