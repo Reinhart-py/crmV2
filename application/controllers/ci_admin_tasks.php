@@ -12,6 +12,9 @@ class Ci_admin_tasks extends CI_Controller {
 		header("Cache-Control: no-store, no-cache, must-revalidate"); 
 		header("Cache-Control: post-check=0, pre-check=0", false);
 		header("Pragma: no-cache");
+		if (!$this->db->field_exists('raised_by', 'ci_tasks')) {
+			$this->db->query("ALTER TABLE ci_tasks ADD COLUMN raised_by INT(11) NOT NULL DEFAULT 0 AFTER assigned_users");
+		}
 	}
 
 	public function if_not_login($url = '')
@@ -701,6 +704,7 @@ class Ci_admin_tasks extends CI_Controller {
 				'close_date'        => $c_date,
 				'remark'            => trim($this->input->post('remark')),
 				'assigned_to'       => (int)$this->input->post('assigned_to'),
+				'raised_by'         => (int)$this->input->post('raised_by'),
 				'followup_date'     => $f_date,
 				'followup_time'     => trim($this->input->post('followup_time')),
 				'is_recurring'      => $is_recurring,
@@ -1013,6 +1017,7 @@ class Ci_admin_tasks extends CI_Controller {
 				'close_date'        => $c_date,
 				'remark'            => trim($this->input->post('remark')),
 				'assigned_to'       => (int)$this->input->post('assigned_to'),
+				'raised_by'         => (int)$this->input->post('raised_by'),
 				'followup_date'     => $f_date,
 				'followup_time'     => trim($this->input->post('followup_time')),
 				'is_recurring'      => $is_recurring,
