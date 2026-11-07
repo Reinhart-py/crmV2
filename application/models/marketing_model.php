@@ -371,9 +371,9 @@ class Marketing_model extends CI_Model
 	 * Groq reuses the key the dialer already has (row 'groq'); only the marketing model is kept in the 'marketing' row.
 	 */
 	public static $ai_providers = array(
-		'anthropic' => array('label' => 'Claude (Anthropic)', 'row' => 'anthropic', 'model' => 'claude-opus-5-5', 'hint' => 'sk-ant-… from console.anthropic.com', 'key_re' => '/^sk-ant-[A-Za-z0-9_\-]{20,200}$/'),
-		'gemini' => array('label' => 'Gemini (Google)', 'row' => 'gemini', 'model' => 'gemini-2.5-flash', 'hint' => 'AIza… from aistudio.google.com', 'key_re' => '/^[A-Za-z0-9_\-]{30,100}$/'),
-		'openai' => array('label' => 'OpenAI (ChatGPT)', 'row' => 'openai', 'model' => 'gpt-5-mini', 'hint' => 'sk-… from platform.openai.com', 'key_re' => '/^sk-[A-Za-z0-9_\-]{20,250}$/'),
+		'anthropic' => array('label' => 'Claude (Anthropic)', 'row' => 'anthropic', 'model' => 'claude-opus-5-5', 'hint' => 'sk-ant-… from console.anthropic.com', 'key_re' => '/^sk-ant-[A-Za-z0-9_.\-]{20,250}$/'),
+		'gemini' => array('label' => 'Gemini (Google)', 'row' => 'gemini', 'model' => 'gemini-2.5-flash', 'hint' => 'AIza… from aistudio.google.com', 'key_re' => '/^[A-Za-z0-9_.\-]{20,300}$/'),
+		'openai' => array('label' => 'OpenAI (ChatGPT)', 'row' => 'openai', 'model' => 'gpt-5-mini', 'hint' => 'sk-… from platform.openai.com', 'key_re' => '/^sk-[A-Za-z0-9_.\-]{20,300}$/'),
 		'groq' => array('label' => 'Groq', 'row' => 'groq', 'model' => 'openai/gpt-oss-120b', 'hint' => 'Uses the Groq key from the dialer settings', 'key_re' => '')
 	);
 

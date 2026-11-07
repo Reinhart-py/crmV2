@@ -365,18 +365,24 @@ class Ci_admin_marketing extends CI_Controller
 		$keys = (array)$this->input->post('keys');
 		$clean = array();
 		foreach (array('anthropic', 'gemini', 'openai') as $p) {
-			$k = trim((string)($keys[$p] ?? ''));
+			// Copied keys often carry spaces, line breaks, quotes or invisible characters: drop them.
+			$k = preg_replace('/[\s\x{200B}-\x{200D}\x{2060}\x{FEFF}\x{00A0}"\'`]+/u', '', (string)($keys[$p] ?? ''));
 			if ($k === '') continue;
 			if (!preg_match(Marketing_model::$ai_providers[$p]['key_re'], $k)) { $this->_json(array('status' => false, 'message' => Marketing_model::$ai_providers[$p]['label'] . ': that does not look like an API key (' . Marketing_model::$ai_providers[$p]['hint'] . ').')); return; }
 			$clean[$p] = $k;
 		}
+		// The main AI has no key but a new key was pasted for another one: that one becomes the main AI.
+		if ($clean && !isset($clean[$prov]) && $M->ai($prov)['key'] === '') $prov = array_keys($clean)[0];
 		$M->save_ai(array(
 			'provider' => $prov, 'fallback' => (int)$this->input->post('fallback'), 'models' => (array)$this->input->post('models'),
 			'brand' => (string)$this->input->post('brand'), 'tone' => (string)$this->input->post('tone')
 		), $clean);
-		if ($M->ai($prov)['key'] === '') { $this->_json(array('status' => true, 'message' => 'Saved, but ' . Marketing_model::$ai_providers[$prov]['label'] . ' has no key yet' . ($M->ai_ready() ? ': the other AI with a key is used meanwhile.' : '.'))); $M->log('settings', 'AI settings saved', $this->uid); return; }
 		$M->log('settings', 'AI settings saved (main: ' . $prov . ')' . ($clean ? ' with new key for ' . implode(', ', array_keys($clean)) : ''), $this->uid);
-		$this->_json(array('status' => true, 'message' => 'Saved.'));
+		// A new key is tried straight away, so a wrong one shows now and not when writing.
+		$msg = array();
+		foreach (array_keys($clean) as $p) { list($ok, $r) = $M->list_models($p); $msg[] = $ok ? Marketing_model::$ai_providers[$p]['label'] . ': key works.' : $r; }
+		if ($M->ai($prov)['key'] === '') $msg[] = Marketing_model::$ai_providers[$prov]['label'] . ' has no key yet' . ($M->ai_ready() ? ': the other AI with a key is used meanwhile.' : '.');
+		$this->_json(array('status' => true, 'message' => 'Saved.' . ($msg ? ' ' . implode(' ', $msg) : '')));
 	}
 
 	public function ajax_save_claude()
