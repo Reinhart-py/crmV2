@@ -144,6 +144,10 @@ class Ci_admin extends CI_Controller {
 		}
 		$this->load->model('dashboard_model', 'dash');
 		$uid = (int)$this->session->userdata('manager_id');
+		// The user chose the Classic dashboard.
+		if ($this->dash->get_style($uid) === 'classic') {
+			return $this->dashboard_classic();
+		}
 		$role = (int)$this->session->userdata('manager_role');
 		$is_admin = crm_is_full_admin();
 		$all = $is_admin || crm_can('all_data');
@@ -160,6 +164,7 @@ class Ci_admin extends CI_Controller {
 		$ids = $only_me ? array($uid) : $team_ids;
 
 		$data['dkey'] = $key;
+		$data['dash_style'] = 'modern';
 		$data['is_admin'] = $is_admin;
 		$data['has_team'] = $has_team;
 		$data['only_me'] = $only_me;
@@ -207,6 +212,17 @@ class Ci_admin extends CI_Controller {
 		foreach ($d['followups'] as &$r) $r['enc'] = base64_encode($r['id']);
 		unset($r);
 		$this->output->set_output(json_encode(array('ok' => true) + $d));
+	}
+
+	/** Save the user's choice of Modern or Classic dashboard. */
+	public function dashboard_style()
+	{
+		$this->if_not_login();
+		if ($this->input->server('REQUEST_METHOD') === 'POST') {
+			$this->load->model('dashboard_model', 'dash');
+			$this->dash->set_style((int)$this->session->userdata('manager_id'), (string)$this->input->post('style'));
+		}
+		redirect('manager/dashboard');
 	}
 
 	public function dashboard_classic()
@@ -260,6 +276,7 @@ class Ci_admin extends CI_Controller {
 		$data['dashboard_pipeline'] = $this->ci_admin_model->dashboard_pipeline_summary();
 		$data['mylead_donut'] = $this->ci_admin_model->dashboard_mylead_donut_data();
 		$data['myorder_donut'] = $this->ci_admin_model->dashboard_myorder_donut_data();
+		$data['dash_style'] = 'classic';
 
 		$this->load->view('manager/dashboard',$data);
 	}

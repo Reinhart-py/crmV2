@@ -12,6 +12,23 @@ class Dashboard_model extends CI_Model {
 	{
 		parent::__construct();
 		$this->load->model('ci_admin_model');
+		// Each user's choice of dashboard: modern (default) or classic. Kept in its own table (ci_user is at its row-size limit).
+		if (!$this->db->table_exists('ci_user_prefs')) {
+			$this->db->query("CREATE TABLE IF NOT EXISTS ci_user_prefs (user_id INT(11) NOT NULL PRIMARY KEY, dash_style VARCHAR(10) NOT NULL DEFAULT 'modern', updated_at DATETIME NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		}
+	}
+
+	public function get_style($uid)
+	{
+		$r = $this->db->select('dash_style')->where('user_id', (int)$uid)->get('ci_user_prefs')->row_array();
+		return (!empty($r) && $r['dash_style'] === 'classic') ? 'classic' : 'modern';
+	}
+
+	public function set_style($uid, $style)
+	{
+		$style = $style === 'classic' ? 'classic' : 'modern';
+		$this->db->query('INSERT INTO ci_user_prefs (user_id, dash_style, updated_at) VALUES (?, ?, NOW()) ON DUPLICATE KEY UPDATE dash_style = VALUES(dash_style), updated_at = NOW()', array((int)$uid, $style));
+		return $style;
 	}
 
 	/** Which dashboard a role gets. */
