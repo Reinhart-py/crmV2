@@ -2215,7 +2215,6 @@ $c2_empty = array(
 
 @media (max-width: 767px) {
     .dash-c2 .c2-hide-btn span { display: none; }
-    .dash-c2 .c2-bar { margin-left: 4px; margin-right: 4px; }
 }
 
 /* Dark mode */
