@@ -3228,7 +3228,8 @@ $data['info2']=$this->if_not_login();
 
 		$this->db->where_in('id', $sanitized_ids);
 		if (!crm_can('all_data')) {
-			$this->db->where("(lead_assign = $manager_id OR (created_by = $manager_id AND (lead_assign = 0 OR lead_assign IS NULL)) OR (agents IS NOT NULL AND FIND_IN_SET($manager_id, agents) > 0))");
+			// Only the owner moves a record (the same records the page lists); co-agents cannot
+			$this->db->where("(lead_assign = $manager_id OR (created_by = $manager_id AND (lead_assign = 0 OR lead_assign IS NULL)))");
 			$this->db->where("(database_category != 'KAM Onboarded' OR database_category IS NULL)");
 		}
 		$leads_to_transfer = $this->db->get('ci_leads')->result_array();

@@ -86,7 +86,7 @@ if (!function_exists('crm_perm_catalog')) {
 						'nav' => array(array('tickets', 'Tickets', 'fa-ticket'), array('tickets/open', 'Open Tickets', 'fa-folder-open-o')),
 						'pages' => array('tickets', 'tickets/open', 'tickets/followups'), 'write' => array('tickets/add')),
 					'database_transfer' => array('tab' => 'mz_pipeline', 'label' => 'Database Transfer', 'desc' => 'Move records between users', 'fallback' => 'database',
-						'nav' => array(array('database-transfer', 'Database Transfer', 'fa-exchange')), 'pages' => array('database-transfer')),
+						'nav' => array(array('database-transfer', 'Database Transfer', 'fa-exchange')), 'pages' => array('database-transfer'), 'write' => array('leads/bulk-transfer')),
 					'campaigns' => array('label' => 'Calling Campaigns', 'desc' => 'Calling campaigns for the dialer; Full can create and edit them', 'fallback' => 'calls',
 						'nav' => array(array('campaigns', 'Campaigns', 'fa-flag-o')), 'pages' => array('campaigns'), 'write' => array('campaigns/new')),
 					'ai_agents' => array('label' => 'AI Calling Agents', 'desc' => 'AI voice agents that cold-call campaign records and hand interested ones back as follow-ups; Full can create agents and start AI calls',

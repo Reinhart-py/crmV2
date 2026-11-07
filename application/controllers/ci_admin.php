@@ -591,21 +591,9 @@ class Ci_admin extends CI_Controller {
 	public function sitemap_xml()
 	{
 		$base = base_url();
+		// Private CRM: only the sign-in page is listed (robots.txt also asks search engines to stay out)
 		$urls = array(
-			array('loc' => $base, 'priority' => '1.0', 'changefreq' => 'daily'),
-			array('loc' => $base . 'manager/login', 'priority' => '0.8', 'changefreq' => 'monthly'),
-			array('loc' => $base . 'manager/dashboard', 'priority' => '0.9', 'changefreq' => 'always'),
-			array('loc' => $base . 'manager/leads', 'priority' => '0.9', 'changefreq' => 'always'),
-			array('loc' => $base . 'manager/leads/view_leads', 'priority' => '0.9', 'changefreq' => 'always'),
-			array('loc' => $base . 'manager/orders/my', 'priority' => '0.8', 'changefreq' => 'daily'),
-			array('loc' => $base . 'manager/sales', 'priority' => '0.8', 'changefreq' => 'daily'),
-			array('loc' => $base . 'manager/calls', 'priority' => '0.8', 'changefreq' => 'daily'),
-			array('loc' => $base . 'manager/leads/followups', 'priority' => '0.7', 'changefreq' => 'daily'),
-			array('loc' => $base . 'manager/leads/meetings', 'priority' => '0.7', 'changefreq' => 'daily'),
-			array('loc' => $base . 'manager/tasks/internal', 'priority' => '0.6', 'changefreq' => 'daily'),
-			array('loc' => $base . 'manager/tasks/external', 'priority' => '0.6', 'changefreq' => 'daily'),
-			array('loc' => $base . 'manager/database-transfer', 'priority' => '0.5', 'changefreq' => 'weekly'),
-			array('loc' => $base . 'manager/sitemap', 'priority' => '0.5', 'changefreq' => 'weekly')
+			array('loc' => $base . 'manager/login', 'priority' => '1.0', 'changefreq' => 'monthly')
 		);
 
 		header('Content-Type: application/xml; charset=utf-8');

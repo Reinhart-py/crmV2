@@ -28,30 +28,21 @@
 
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/font-awesome.min.css">
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/ionicons.min.css">
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/skins/_all-skins.min.css">
 
 <script src="<?php echo base_url(); ?>assets/plugins/jQuery/jquery-2.2.3.min.js"></script>
 <script src="<?php echo base_url(); ?>assets/bootstrap/js/bootstrap.min.js"></script>
 <script src="<?php echo base_url();?>assets/plugins/jQueryUI/jquery-ui.js"></script>
 
 
-<link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/jQueryUI/jquery-ui.css?v=20261107">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/bootstrap/spacing.css">
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/plugins/datatables/dataTables.bootstrap.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/bootstrap/css/bootstrap.min.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/skins/_all-skins.min.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/skins/skin-yellow.min.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/select2/select2.min.css">
-<link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/daterangepicker/daterangepicker.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/AdminLTE.min.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/x_grid.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/datepicker/datepicker3.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/timepicker/bootstrap-timepicker.min.css">
-<link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/iCheck/all.css">
-<link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/iCheck/flat/blue.css">
-<link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/morris/morris.css">
-<link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/jvectormap/jquery-jvectormap-1.2.2.css">
-<link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/datatables/dataTables.bootstrap.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/rowreorder/1.2.7/css/rowReorder.dataTables.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.5/css/responsive.dataTables.min.css">
@@ -66,8 +57,6 @@
 <script src="<?php echo base_url();?>assets/plugins/table_export/js/tableexport.js"></script>
 <link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/jQueryUI/jquery-ui.css?v=20261107">
 <script src="<?php echo base_url();?>assets/bootstrap/js/jquery.validate.js"></script>
-<link rel="stylesheet" href="<?php echo base_url();?>assets/bootstrap/css/bootstrap-toggle.min.css">
-<script src="<?php echo base_url();?>assets/bootstrap/js/bootstrap-toggle.min.js"></script>
 <link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-theme.css?v=20261106_4">
 
 

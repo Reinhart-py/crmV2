@@ -2,19 +2,11 @@
 </footer>
 </div>
 </div>
-<script src="<?php echo base_url(); ?>assets/plugins/colorpicker/bootstrap-colorpicker.min.js"></script>
 <script src="<?php echo base_url(); ?>assets/plugins/fastclick/fastclick.js"></script>
-<script src="<?php echo base_url(); ?>assets/dist/js/demo.js"></script>
 <script src="<?php echo base_url(); ?>assets/plugins/select2/select2.full.min.js"></script>
-<script src="<?php echo base_url(); ?>assets/plugins/input-mask/jquery.inputmask.js"></script>
-<script src="<?php echo base_url(); ?>assets/plugins/input-mask/jquery.inputmask.date.extensions.js"></script>
-<script src="<?php echo base_url(); ?>assets/plugins/input-mask/jquery.inputmask.extensions.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.11.2/moment.min.js"></script>
-<script src="<?php echo base_url(); ?>assets/plugins/daterangepicker/daterangepicker.js"></script>
 <script src="<?php echo base_url(); ?>assets/plugins/datepicker/bootstrap-datepicker.js"></script>
 <script src="<?php echo base_url(); ?>assets/plugins/timepicker/bootstrap-timepicker.min.js"></script>
 <script src="<?php echo base_url(); ?>assets/plugins/slimScroll/jquery.slimscroll.min.js"></script>
-<script src="<?php echo base_url(); ?>assets/plugins/iCheck/icheck.min.js"></script>
 <script src="<?php echo base_url(); ?>assets/plugins/chartjs/Chart.min.js"></script>
 <script src="<?php echo base_url(); ?>assets/plugins/multiselect/multiselect-js.js"></script>
 
@@ -47,8 +39,6 @@
 })(window.jQuery);
 </script>
 <script src="<?php echo base_url(); ?>assets/dist/js/app.min.js"></script>
-<script src="<?php echo base_url(); ?>assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js"></script>
-<script src="<?php echo base_url(); ?>assets/plugins/jquery.geocomplete.js"></script> 
  <script src="https://lipis.github.io/bootstrap-sweetalert/dist/sweetalert.js"></script>
     <link rel="stylesheet" href="https://lipis.github.io/bootstrap-sweetalert/dist/sweetalert.css" />
 <?php if (!empty($load_map)) { ?>
@@ -68,29 +58,6 @@
 
     });
     $("select.select2").select2(); // selects only: a page's own select2 wrappers also have the class
-    $("#datemask").inputmask("dd/mm/yyyy", {"placeholder": "dd/mm/yyyy"});
-    $("#datemask2").inputmask("mm/dd/yyyy", {"placeholder": "mm/dd/yyyy"});
-    $("[data-mask]").inputmask();
-    $('#reservation').daterangepicker();
-    $('#reservationtime').daterangepicker({timePicker: true, timePickerIncrement: 30, format: 'MM/DD/YYYY h:mm A'});
-    $('#daterange-btn').daterangepicker(
-        {
-          ranges: {
-            'Today': [moment(), moment()],
-            'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-            'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-            'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-            'This Month': [moment().startOf('month'), moment().endOf('month')],
-            'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-          },
-          startDate: moment().subtract(29, 'days'),
-          endDate: moment()
-        },
-        function (start, end) {
-          $('#daterange-btn span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
-        }
-    );
-
    
     $('.multiselect-ui').multiselect({
         includeSelectAllOption: true
@@ -118,63 +85,10 @@ $('.datepicker2').datepicker({
      $(this).datepicker('hide');
 });
 
-    $('input[type="checkbox"].minimal, input[type="radio"].minimal').iCheck({
-      checkboxClass: 'icheckbox_minimal-blue',
-      radioClass: 'iradio_minimal-blue'
-    });
-    $('input[type="checkbox"].minimal-red, input[type="radio"].minimal-red').iCheck({
-      checkboxClass: 'icheckbox_minimal-red',
-      radioClass: 'iradio_minimal-red'
-    });
-    $('input[type="checkbox"].flat-red, input[type="radio"].flat-red').iCheck({
-      checkboxClass: 'icheckbox_flat-green',
-      radioClass: 'iradio_flat-green'
-    });
-    $(".my-colorpicker1").colorpicker();
-    $(".my-colorpicker2").colorpicker();
     $(".timepicker").timepicker({
       showInputs: false
     });
   });
- $(function(){
-	 var addreess_fg= $("#geocomplete").val();
-        $("#geocomplete").geocomplete({
-          	map: ".map_canvas",
-			location: addreess_fg,		
-          	details: "form",
-		  	types: ['establishment'],         
-		   	autoselect: true,
-          	blur: true,
-		 	markerOptions: {
-      			draggable: true
-    		},
-          geocodeAfterResult: true
-        });
-		
-		 $("#geocomplete").bind("geocode:dragged", function(event, latLng){
-			
-			
-          $("input[name=lat]").val(latLng.lat());
-          $("input[name=lng]").val(latLng.lng());
-		  $.ajax({ 
-		  url:'https://maps.googleapis.com/maps/api/geocode/json?latlng='+latLng.lat()+','+latLng.lng()+'&key=AIzaSyAY0iXbSmvQSxjus3PEJoKnJZreLXQuP1Y',
-         success: function(data){
-            $("input[name=address]").val(data.results[0].formatted_address);
-         }
-}); 
-		  
-          $("#reset").show();
-        });
-        
-        
-        $("#reset").click(function(){
-          $("#geocomplete").geocomplete("resetMarker");
-          $("#reset").hide();
-          return false;
-        });
-		
- });
-  
   $(function () {
     // a list with no records shows one row across all columns; DataTables cannot read it, so leave it as it is
     function crmDtOk(sel) { var $t = $(sel); return $t.length && !$.fn.DataTable.isDataTable(sel) && $t.find('tbody tr').length && !$t.find('tbody td[colspan]').length; }
@@ -202,30 +116,8 @@ $('.datepicker2').datepicker({
   });
   
  
-  $(function () {
-    $(".textarea").wysihtml5();
-  });
 </script>
 <script>
-  $(function () {
-    $('.mailbox-messages input[type="checkbox"]').iCheck({
-      checkboxClass: 'icheckbox_flat-blue',
-      radioClass: 'iradio_flat-blue'
-    });
-    $(".checkbox-toggle").click(function () {
-      var clicks = $(this).data('clicks');
-      if (clicks) {
-        $(".mailbox-messages input[type='checkbox']").iCheck("uncheck");
-        $(".fa", this).removeClass("fa-check-square-o").addClass('fa-square-o');
-      } else {
-        $(".mailbox-messages input[type='checkbox']").iCheck("check");
-        $(".fa", this).removeClass("fa-square-o").addClass('fa-check-square-o');
-      }
-      $(this).data("clicks", !clicks);
-    });
-   
-  });
-
 $(document).on("click", ".logout, a[href*='manager/logout']", function(e){       
     if (e) {
         e.preventDefault();
