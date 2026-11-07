@@ -1,0 +1,86 @@
+/* Fresh dashboard: the Modern dashboard (dash/index.php) with its own colours and finish.
+   Layout, charts and figures are the same; only colours, borders and spacing change. */
+.db.db-fresh {
+  --crm-ocean: #0f766e;
+  --fr-accent: #0f766e;
+  --fr-accent-soft: rgba(15, 118, 110, .1);
+  --fr-good: #059669;
+  --fr-bad: #dc2626;
+  --fr-warn: #d97706;
+  --fr-line: #e2e8ec;
+  --fr-soft: #f1f5f4;
+  background: #f4f7f6;
+}
+
+/* Title */
+.db-fresh .sx-head h1 { color: #0b3b38; }
+.db-fresh .sx-chips a.is-on, .db-fresh .sx-chips button.is-on { background: var(--fr-accent) !important; border-color: var(--fr-accent) !important; color: #fff !important; }
+
+/* Summary tiles: a coloured line on top shows the state */
+.db-fresh .sx-kpi { border-color: var(--fr-line); border-top: 3px solid var(--fr-accent); border-radius: 12px; box-shadow: 0 1px 2px rgba(16, 24, 40, .04); transition: box-shadow .15s, transform .15s; }
+.db-fresh .sx-kpi:hover { box-shadow: 0 4px 12px rgba(16, 24, 40, .08); transform: translateY(-1px); }
+.db-fresh .sx-kpi.g { border-top-color: var(--fr-good); }
+.db-fresh .sx-kpi.r { border-top-color: var(--fr-bad); }
+.db-fresh .sx-kpi.a { border-top-color: var(--fr-warn); }
+.db-fresh .sx-kpi .ic { background: var(--fr-accent-soft); color: var(--fr-accent); border-radius: 10px; }
+.db-fresh .sx-kpi.g .ic { background: rgba(5, 150, 105, .12); color: #047857; }
+
+/* Cards */
+.db-fresh .sx-card { border-color: var(--fr-line); border-radius: 14px; box-shadow: 0 1px 2px rgba(16, 24, 40, .04); }
+.db-fresh .sx-card-h { border-bottom-color: var(--fr-line); }
+.db-fresh .sx-card-h h3 { color: #0b3b38; }
+
+/* Tabs as filled pills */
+.db-fresh .db-tabs { gap: 4px; padding: 4px; border: 1px solid var(--fr-line); border-radius: 12px; background: #fff; }
+.db-fresh .db-tabs button { margin: 0; border: 0; border-radius: 8px; padding: 7px 14px; color: #475569; }
+.db-fresh .db-tabs button:hover { background: var(--fr-soft); color: #0f172a; }
+.db-fresh .db-tabs button.is-on { background: var(--fr-accent); color: #fff; }
+.db-fresh .db-tabs button.is-on .n { background: rgba(255, 255, 255, .22); color: #fff; }
+
+/* Target meter and bars */
+.db-fresh .db-meter i.a, .db-fresh .db-legend i.a { background: var(--fr-good); }
+.db-fresh .db-meter i.p, .db-fresh .db-legend i.p { background: rgba(15, 118, 110, .25); }
+.db-fresh .db-meter, .db-fresh .db-bar { background: #e6eeec; }
+.db-fresh .db-bar i { background: var(--fr-accent); }
+.db-fresh .db-bar i.ok { background: var(--fr-good); }
+.db-fresh .db-money > div { padding-left: 10px; border-left: 3px solid var(--fr-line); }
+.db-fresh .db-money > div:nth-child(2) { border-left-color: var(--fr-good); }
+.db-fresh .db-money > div:nth-child(3) { border-left-color: rgba(15, 118, 110, .45); }
+
+/* Pipeline and sales by day */
+.db-fresh .db-funnel a { border-color: var(--fr-line); background: var(--fr-soft); }
+.db-fresh .db-funnel a:hover { border-color: var(--fr-accent); background: #fff; }
+.db-fresh .db-funnel b { color: #0b3b38; }
+.db-fresh .db-days i { background: var(--fr-accent); opacity: .75; }
+.db-fresh .db-days i.today { background: var(--fr-warn); }
+
+/* Tables */
+.db-fresh table.sx-table thead th { background: var(--fr-soft); color: #475569; }
+.db-fresh table.sx-table tbody tr:hover td { background: #f8fbfa; }
+.db-fresh .av { background: var(--fr-accent-soft); color: var(--fr-accent); }
+.db-fresh .db-list a:hover span { color: var(--fr-accent); }
+
+/* Dark mode */
+[data-theme="dark"] .db.db-fresh {
+  --crm-ocean: #2dd4bf;
+  --fr-accent: #14b8a6;
+  --fr-accent-soft: rgba(45, 212, 191, .14);
+  --fr-good: #34d399;
+  --fr-bad: #f87171;
+  --fr-warn: #fbbf24;
+  --fr-line: rgba(148, 163, 184, .2);
+  --fr-soft: rgba(148, 163, 184, .08);
+  background: transparent;
+}
+[data-theme="dark"] .db-fresh .sx-head h1, [data-theme="dark"] .db-fresh .sx-card-h h3, [data-theme="dark"] .db-fresh .db-funnel b { color: #e2e8f0; }
+[data-theme="dark"] .db-fresh .sx-kpi, [data-theme="dark"] .db-fresh .sx-card { box-shadow: none; }
+[data-theme="dark"] .db-fresh .sx-kpi.g .ic { background: rgba(52, 211, 153, .14); color: #6ee7b7; }
+[data-theme="dark"] .db-fresh .db-tabs { background: transparent; }
+[data-theme="dark"] .db-fresh .db-tabs button { color: #cbd5e1; }
+[data-theme="dark"] .db-fresh .db-tabs button:hover { color: #fff; }
+[data-theme="dark"] .db-fresh .db-tabs button.is-on { background: #0f766e; color: #fff; }
+[data-theme="dark"] .db-fresh .db-meter, [data-theme="dark"] .db-fresh .db-bar { background: rgba(148, 163, 184, .18); }
+[data-theme="dark"] .db-fresh .db-funnel a:hover { background: transparent; }
+[data-theme="dark"] .db-fresh table.sx-table thead th { color: #cbd5e1; }
+[data-theme="dark"] .db-fresh table.sx-table tbody tr:hover td { background: rgba(148, 163, 184, .06); }
+[data-theme="dark"] .db-fresh .sx-chips a.is-on, [data-theme="dark"] .db-fresh .sx-chips button.is-on { background: #0f766e !important; border-color: #0f766e !important; }

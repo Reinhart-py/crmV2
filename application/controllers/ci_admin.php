@@ -144,8 +144,9 @@ class Ci_admin extends CI_Controller {
 		}
 		$this->load->model('dashboard_model', 'dash');
 		$uid = (int)$this->session->userdata('manager_id');
-		// The user chose the Classic dashboard.
-		if ($this->dash->get_style($uid) === 'classic') {
+		// The user's choice: Modern (default), Focus, Fresh or Classic.
+		$style = $this->dash->get_style($uid);
+		if ($style === 'classic') {
 			return $this->dashboard_classic();
 		}
 		$role = (int)$this->session->userdata('manager_role');
@@ -164,7 +165,7 @@ class Ci_admin extends CI_Controller {
 		$ids = $only_me ? array($uid) : $team_ids;
 
 		$data['dkey'] = $key;
-		$data['dash_style'] = 'modern';
+		$data['dash_style'] = $style;
 		// Figures are confidential: never kept in the browser cache or a proxy.
 		$this->output->set_header('Cache-Control: no-store, no-cache, must-revalidate, private');
 		$this->output->set_header('Pragma: no-cache');
@@ -195,7 +196,8 @@ class Ci_admin extends CI_Controller {
 		if ($key === 'kam') {
 			$data['kam_clients'] = $this->dash->kam_clients($uid, $is_admin);
 		}
-		$this->load->view('manager/dash/index', $data);
+		// Same figures for every style. Focus has its own layout; Fresh is the Modern layout with other colours.
+		$this->load->view($style === 'focus' ? 'manager/dash/focus' : 'manager/dash/index', $data);
 	}
 
 	/** One person's open work for the staff tracker (only people the viewer may see). */

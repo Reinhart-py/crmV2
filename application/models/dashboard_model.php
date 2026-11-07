@@ -21,12 +21,18 @@ class Dashboard_model extends CI_Model {
 	public function get_style($uid)
 	{
 		$r = $this->db->select('dash_style')->where('user_id', (int)$uid)->get('ci_user_prefs')->row_array();
-		return (!empty($r) && $r['dash_style'] === 'classic') ? 'classic' : 'modern';
+		return (!empty($r) && in_array($r['dash_style'], $this->styles(), true)) ? $r['dash_style'] : 'modern';
+	}
+
+	/** Dashboards a user can pick (modern is the default). */
+	public function styles()
+	{
+		return array('modern', 'focus', 'fresh', 'classic');
 	}
 
 	public function set_style($uid, $style)
 	{
-		$style = $style === 'classic' ? 'classic' : 'modern';
+		$style = in_array($style, $this->styles(), true) ? $style : 'modern';
 		$this->db->query('INSERT INTO ci_user_prefs (user_id, dash_style, updated_at) VALUES (?, ?, NOW()) ON DUPLICATE KEY UPDATE dash_style = VALUES(dash_style), updated_at = NOW()', array((int)$uid, $style));
 		return $style;
 	}
