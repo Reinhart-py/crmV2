@@ -370,6 +370,19 @@ if (!function_exists('crm_is_full_admin')) {
 	}
 }
 
+/** True when people report to the signed-in user (directly or further down), or the user sees all company data. */
+if (!function_exists('crm_has_team')) {
+	function crm_has_team()
+	{
+		$ci =& get_instance();
+		$uid = (int)$ci->session->userdata('manager_id');
+		if ($uid <= 0) return false;
+		if (crm_is_full_admin() || crm_can('all_data')) return true;
+		if (!isset($ci->ci_admin_model)) $ci->load->model('ci_admin_model');
+		return count($ci->ci_admin_model->fetchTeamList($uid, '')) > 0;
+	}
+}
+
 /** Menu groups with the links this user may see (empty groups removed). */
 if (!function_exists('crm_nav_menu')) {
 	function crm_nav_menu()
@@ -377,6 +390,8 @@ if (!function_exists('crm_nav_menu')) {
 		$menu = array();
 		foreach (crm_perm_catalog() as $gk => $g) {
 			if (isset($g['menu']) && $g['menu'] === false) continue;
+			// The Team menu only makes sense when someone reports to you (or you see all company data)
+			if ($gk === 'team' && !crm_has_team()) continue;
 			$links = array();
 			$tabs_done = array();
 			foreach ($g['items'] as $k => $it) {

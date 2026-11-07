@@ -58,6 +58,8 @@
 <link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/jQueryUI/jquery-ui.css?v=20261107">
 <script src="<?php echo base_url();?>assets/bootstrap/js/jquery.validate.js"></script>
 <link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-theme.css?v=20261106_4">
+<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-search.css?v=20261107_4">
+<script src="<?php echo base_url();?>assets/dist/js/crm-search.js?v=20261107_2" defer></script>
 
 
 
@@ -205,6 +207,19 @@
   </nav>
 
   <div class="header-quick-actions">
+    <?php if(!$is_presentation){ ?>
+    <div class="gs-wrap" id="gsWrap">
+      <button type="button" class="global-theme-btn" id="gsToggle" title="Search (press /)" aria-label="Search records" aria-expanded="false" style="margin-right:6px;"><i class="fa fa-search"></i></button>
+      <div class="gs-panel" id="gsPanel" role="dialog" aria-label="Search" hidden>
+        <div class="gs-bar">
+          <i class="fa fa-search" aria-hidden="true"></i>
+          <input type="search" id="gsInput" autocomplete="off" spellcheck="false" placeholder="Company, name, phone, e-mail or number" aria-label="Search" aria-controls="gsResults">
+          <kbd class="gs-kbd">Esc</kbd>
+        </div>
+        <div class="gs-results" id="gsResults" role="listbox"><div class="gs-hint">Type at least 2 letters. Finds Database &amp; Leads, Orders and Tickets you can open.</div></div>
+      </div>
+    </div>
+    <?php } ?>
     <?php if($is_admin || has_section_perm('live')){ ?>
     <a href="<?php echo base_url();?>manager/live" class="live-nav-badge <?php echo ($route1 === 'live') ? 'active' : ''; ?>" title="Live Operations Report" style="display:inline-flex; align-items:center; justify-content:center; text-decoration:none; margin-right:8px; padding:4px 12px; border-radius:6px; font-weight:700; font-size:12px; letter-spacing:0.06em; transition:all 0.2s ease;">LIVE</a>
     <?php } ?>

@@ -892,6 +892,61 @@ function __construct()
 		$this->load->view('manager/leads/leadsview',$data);
 	}
 
+	/**
+	 * Add Database: are this phone / e-mail / new company name already in the CRM?
+	 * Same matching as Import (last 9 phone digits, e-mail, company letters and digits).
+	 * Returns who owns each match; a link only when the person may open that record.
+	 */
+	public function ajax_check_duplicate()
+	{
+		header('Content-Type: application/json; charset=utf-8');
+		$uid = (int)$this->session->userdata('manager_id');
+		if ($uid <= 0 || (!crm_can('database', 'write') && !crm_can('leads', 'write'))) { echo json_encode(array('status' => 'ok', 'matches' => array())); return; }
+
+		$phones = array();
+		foreach ((array)$this->input->get('phone') as $p) { $p = self::_imp_phone($p); if ($p !== '') $phones[$p] = true; }
+		$email = strtolower(trim((string)$this->input->get('email')));
+		if ($email !== '' && strpos($email, '@') === false) $email = '';
+		$company = self::_imp_company($this->input->get('company'));
+
+		$or = array();
+		if ($phones) {
+			$in = implode(',', array_map(array($this->db, 'escape'), array_map('strval', array_keys($phones))));
+			foreach (array('contact1', 'contact2', 'alt_contact', 'mobile') as $c) $or[] = "RIGHT(REGEXP_REPLACE(IFNULL(A.$c,''), '[^0-9]', ''), 9) IN ($in)";
+		}
+		if ($email !== '') $or[] = 'LOWER(TRIM(A.email)) = ' . $this->db->escape($email);
+		if ($company !== '') $or[] = "LOWER(REGEXP_REPLACE(IFNULL(A.customer,''), '[^A-Za-z0-9]', '')) = " . $this->db->escape($company);
+		if (!$or) { echo json_encode(array('status' => 'ok', 'matches' => array())); return; }
+
+		$rows = $this->db->query("SELECT A.id, A.lead_id, A.customer, A.contact1, A.contact2, A.alt_contact, A.mobile, A.email, A.agents, P.pipeline_stage,
+				IF(A.lead_assign > 0, A.lead_assign, A.created_by) AS owner_id, U.name AS owner
+			FROM ci_leads A LEFT JOIN ci_pipeline P ON P.lead_id = A.id LEFT JOIN ci_user U ON U.id = IF(A.lead_assign > 0, A.lead_assign, A.created_by)
+			WHERE " . implode(' OR ', $or) . " ORDER BY A.id DESC LIMIT 6")->result_array();
+
+		$role = (int)$this->session->userdata('manager_role');
+		$see_all = ($role === 1 || $uid === 1 || crm_can('all_data') || has_section_perm('back_office') || has_section_perm('lead_review'));
+		$team = array_map('intval', (array)$this->ci_admin_model->fetchTeamList($uid, ''));
+		$out = array();
+		foreach ($rows as $r) {
+			$why = array();
+			foreach (array('contact1', 'contact2', 'alt_contact', 'mobile') as $c) { $p = self::_imp_phone($r[$c]); if ($p !== '' && isset($phones[$p])) { $why['phone'] = 'phone'; } }
+			if ($email !== '' && strtolower(trim((string)$r['email'])) === $email) $why['email'] = 'e-mail';
+			if ($company !== '' && self::_imp_company($r['customer']) === $company) $why['company'] = 'company name';
+			$owner = (int)$r['owner_id'];
+			$agents = array_map('intval', explode(',', (string)$r['agents']));
+			$can_open = ($see_all || $owner === $uid || in_array($owner, $team, true) || in_array($uid, $agents, true));
+			$out[] = array(
+				'company' => (string)$r['customer'],
+				'ref' => (string)$r['lead_id'],
+				'stage' => ($r['pipeline_stage'] === 'lead') ? 'Lead' : 'Database',
+				'owner' => $owner === $uid ? 'you' : ((string)$r['owner'] !== '' ? $r['owner'] : 'nobody'),
+				'same' => array_values($why),
+				'url' => $can_open ? base_url() . 'manager/leads/view/' . base64_encode($r['id']) : '',
+			);
+		}
+		echo json_encode(array('status' => 'ok', 'matches' => $out));
+	}
+
 	public function ajax_search_companies()
 	{
 		$term = trim((string)$this->input->get('term', true));

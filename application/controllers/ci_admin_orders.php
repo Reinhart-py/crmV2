@@ -391,9 +391,9 @@ class Ci_admin_orders extends CI_Controller {
 			}
 			if (!$has_ownership && !empty($order['lead_id'])) {
 				$lid = (int)$order['lead_id'];
-				$lead_row = $this->db->select('created_by, manager_id, agents, lead_assign')->where('id', $lid)->get('ci_leads')->row_array();
+				$lead_row = $this->db->select('created_by, agents, lead_assign')->where('id', $lid)->get('ci_leads')->row_array();
 				if (!empty($lead_row)) {
-					if ((int)$lead_row['created_by'] === $cur_uid || (int)$lead_row['manager_id'] === $cur_uid || (int)$lead_row['lead_assign'] === $cur_uid) {
+					if ((int)$lead_row['created_by'] === $cur_uid || (int)$lead_row['lead_assign'] === $cur_uid) {
 						$has_ownership = true;
 					} elseif (!empty($lead_row['agents']) && in_array((string)$cur_uid, explode(',', $lead_row['agents']))) {
 						$has_ownership = true;

@@ -1015,6 +1015,7 @@
     </div>
       
       <div class="box-footer text-center">
+        <div id="dupWarn" class="dup-warn" role="status" aria-live="polite" hidden></div>
         <button id="add_btn" type="submit" class="btn btn-primary" style="background:#1e3a8a; border-color:#1e3a8a; border-radius:4px; font-weight:600; padding:6px 18px;">Save</button>
         <button type="reset" class="btn btn-default">Cancel</button>
       </div>
@@ -1517,6 +1518,56 @@ $(document).ready(function() {
     $('#toggleCompanyModeBtn').html('<i class="fa fa-plus-circle"></i> Add New Company');
   });
 
+});
+</script>
+<script>
+/* Add Database: warn when the phone, e-mail or a new company name is already in the CRM */
+jQuery(function ($) {
+  var $form = $('form[name="add_form"]'), $box = $('#dupWarn'), last = '', matches = [], okd = false, xhr = null;
+  function esc(s) { return $('<div>').text(s == null ? '' : s).html(); }
+  function params() {
+    var p = [];
+    $form.find('[name="contact1"], [name="alt_contact"], [name="contact2"]').each(function () { var v = $.trim($(this).val()); if (v.replace(/\D/g, '').length >= 7) p.push('phone[]=' + encodeURIComponent(v)); });
+    var em = $.trim($form.find('[name="email"]').val() || ''); if (em.indexOf('@') > 0) p.push('email=' + encodeURIComponent(em));
+    var $nc = $('#company_customer_input'); if (!$nc.prop('disabled') && $.trim($nc.val()).length >= 3) p.push('company=' + encodeURIComponent($.trim($nc.val())));
+    return p.join('&');
+  }
+  function show(m) {
+    matches = m || [];
+    if (!matches.length) { $box.prop('hidden', true).empty(); return; }
+    var h = '<div class="dup-head"><i class="fa fa-exclamation-triangle"></i> Already in the CRM</div><ul>';
+    $.each(matches, function (i, r) {
+      var name = esc(r.company || ('Record ' + r.ref));
+      h += '<li>' + (r.url ? '<a href="' + esc(r.url) + '" target="_blank" rel="noopener">' + name + '</a>' : '<b>' + name + '</b>') +
+        ' <span class="dup-meta">' + esc(r.stage) + ' · ' + (r.owner === 'you' ? 'yours' : 'owner ' + esc(r.owner)) + ' · same ' + esc(r.same.join(', ')) + '</span></li>';
+    });
+    $box.html(h + '</ul><div class="dup-note">You can still save, but check first so the record is not entered twice.</div>').prop('hidden', false);
+  }
+  function check(force) {
+    var q = params();
+    if (!q) { last = ''; show([]); return $.Deferred().resolve([]).promise(); }
+    if (q === last && !force) return $.Deferred().resolve(matches).promise();
+    last = q; okd = false;
+    if (xhr) xhr.abort();
+    xhr = $.ajax({ url: '<?php echo base_url(); ?>manager/leads/ajax_check_duplicate?' + q, dataType: 'json', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+    return xhr.then(function (d) { show(d && d.matches); return matches; }, function () { return []; });
+  }
+  $form.on('change blur', '[name="contact1"], [name="alt_contact"], [name="contact2"], [name="email"], #company_customer_input', function () { check(false); });
+  $('#add_btn').on('click', function (e) {
+    if (okd) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    var btn = this;
+    check(false).then(function (m) {
+      if (m.length) {
+        var r = m[0], more = m.length > 1 ? ' (and ' + (m.length - 1) + ' more)' : '';
+        if (!window.confirm('This looks like a record already in the CRM:\n' + (r.company || r.ref) + ' — ' + r.stage + ', ' + (r.owner === 'you' ? 'yours' : 'owner ' + r.owner) + ', same ' + r.same.join(', ') + more + '.\n\nSave it anyway?')) {
+          $('html, body').animate({ scrollTop: $box.offset().top - 120 }, 200);
+          return;
+        }
+      }
+      setTimeout(function () { okd = true; btn.click(); okd = false; }, 0);
+    });
+  });
 });
 </script>
 <script src="<?php echo base_url(); ?>assets/dist/js/crm-lead-form.js?v=20261105_1"></script>
