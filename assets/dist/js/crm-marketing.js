@@ -85,7 +85,7 @@ $(function () {
     var f = $('#postForm')[0];
     if (!f) return;
     f.reset();
-    $(f).find('[name=id]').val(0);
+    $(f).find('[name=id]').val(0); $(f).find('[name=image_ref]').val(''); $('#pReuse').val('');
     $('#postForm h4').text('New post');
     $('#btnPostReset').attr('hidden', true);
     count(); preview();
@@ -94,7 +94,7 @@ $(function () {
   $(document).on('click', '[data-edit-post]', function () {
     var p = $(this).closest('li').data('post');
     var f = $('#postForm');
-    f.find('[name=id]').val(p.id);
+    f.find('[name=id]').val(p.id); f.find('[name=image_ref]').val(p.image_ref || '');
     f.find('[name="channels[]"]').each(function () { if (!this.disabled) this.checked = p.channels.indexOf(this.value) > -1; });
     $('#pMsg').val(p.message); $('#pImg').val(p.image_url); $('#pLink').val(p.link); $('#pWhen').val(p.scheduled_at);
     $('#postForm h4').text('Edit post');
@@ -313,6 +313,52 @@ $(function () {
       $('#apMsg').text(r.message || '');
       if (r.ok) setTimeout(function () { location.hash = w === 'ads' ? 'ads' : 'posts'; location.reload(); }, 1200);
     }, this, '#apMsg');
+  });
+
+  /* ---------- earlier creatives (page posts and ads) ---------- */
+  var past = null, pastWait = [];
+  function loadPast(cb) {
+    if (past) { cb(past); return; }
+    pastWait.push(cb);
+    if (pastWait.length > 1) return;
+    post('ajax_creatives', {}, function (r) {
+      past = { rows: r.rows || [], msg: r.message || '' };
+      pastWait.forEach(function (f) { f(past); }); pastWait = [];
+    }).fail(function () { past = null; pastWait = []; });
+  }
+  function fillPicker(sel, first) {
+    var s = $(sel);
+    if (s.data('done')) return;
+    s.html('<option value="">Loading earlier posts and ads…</option>');
+    loadPast(function (p) {
+      var h = '<option value="">' + esc(p.rows.length ? first : (p.msg || 'No earlier posts or ads found.')) + '</option>';
+      p.rows.forEach(function (c, i) { h += '<option value="' + i + '">' + esc(c.kind + (c.date ? ' · ' + c.date : '') + ' · ' + c.name) + (c.image_url || c.image_hash ? ' 🖼' : '') + '</option>'; });
+      s.html(h).data('done', 1);
+    });
+  }
+  $('#pReuse').one('focus mousedown', function () { fillPicker(this, 'Use an earlier post or ad…'); });
+  $('#pReuse').on('change', function () {
+    var c = past && past.rows[this.value];
+    if (!c) return;
+    if (c.text && (!$.trim($('#pMsg').val()) || confirm('Replace the text with the text of this earlier post?'))) $('#pMsg').val(c.text);
+    if (c.image_url) { $('#pImg').val(c.image_url); $('#postForm [name=image_ref]').val(c.ref); }
+    count(); preview();
+    $('#postMsg').text('Earlier ' + c.kind.toLowerCase() + ' loaded. Change the text so it is not a repeat.');
+  });
+  $('#pImg').on('input', function () { $('#postForm [name=image_ref]').val(''); });
+  $('#nReuse').one('focus mousedown', function () { fillPicker(this, 'None: write a new ad'); });
+  $('#nReuse').on('change', function () {
+    var c = past && past.rows[this.value];
+    $('#campForm [name=image_hash]').val(c && c.image_hash ? c.image_hash : '');
+    if (!c) return;
+    if (c.text) $('#nText').val(c.text);
+    if (c.headline) $('#nHead').val(c.headline.slice(0, 40));
+    if (c.image_url) $('#nImg').val(c.image_url);
+    $('#nReuseHint').text(c.image_hash ? 'The picture of this ad is reused as it is.' : 'The picture is copied from the post when the campaign is created.');
+  });
+  $('#nImg').on('input', function () { $('#campForm [name=image_hash]').val(''); });
+  $('#btnIg').on('click', function () {
+    post('ajax_detect_ig', { conn: editConn() }, function (r) { if (r.message) $('#igHint').text(r.message); }, this, '#metaMsg');
   });
 
   /* ---------- connections (accounts) ---------- */

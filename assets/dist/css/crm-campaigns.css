@@ -275,3 +275,4 @@
 .mk #repBody tfoot td { font-weight: 700; padding: 9px 10px; border-top: 2px solid var(--cp-line); font-variant-numeric: tabular-nums; }
 @media (max-width: 767px) { .mk .mk-acc { width: 100%; } .mk .mk-acc select.form-control { flex: 1; min-width: 0; } .mk .mk-lbl { flex: 1 1 45%; } .mk .mk-lbl .form-control { flex: 1; min-width: 0; } }
 .mk .mk-bulk .mk-all span { color: var(--cp-ink); }
+.mk .mk-reuse select.form-control { flex: 1 1 100%; width: 100% !important; }

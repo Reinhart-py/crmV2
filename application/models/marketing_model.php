@@ -104,6 +104,9 @@ class Marketing_model extends CI_Model
 		if (!$this->db->field_exists('connection_id', 'ci_mkt_posts')) {
 			$this->db->query("ALTER TABLE `ci_mkt_posts` ADD `connection_id` INT(11) NOT NULL DEFAULT 0 AFTER `id`, ADD `auto` TINYINT(1) NOT NULL DEFAULT 0 AFTER `status`");
 		}
+		if (!$this->db->field_exists('image_ref', 'ci_mkt_posts')) {
+			$this->db->query("ALTER TABLE `ci_mkt_posts` ADD `image_ref` VARCHAR(100) NOT NULL DEFAULT '' AFTER `image_url`");
+		}
 		if ((int)$this->db->count_all('ci_mkt_connections') === 0) $this->migrate_single_meta();
 	}
 
@@ -175,12 +178,12 @@ class Marketing_model extends CI_Model
 	public static $platforms = array('meta' => 'Meta (Facebook / Instagram)', 'google' => 'Google Ads', 'web' => 'Website / Zapier', 'other' => 'Other platform');
 
 	private static $defaults = array(
-		'app_id' => '', 'page_id' => '', 'page_name' => '', 'ig_id' => '', 'ig_name' => '', 'ad_account_id' => '', 'graph_version' => 'v23.0',
+		'app_id' => '', 'page_id' => '', 'page_name' => '', 'ig_id' => '', 'ig_name' => '', 'ig_ads_id' => '', 'ig_checked' => '', 'ad_account_id' => '', 'graph_version' => 'v23.0',
 		'route' => 'fixed', 'owner_id' => 0, 'rr_users' => array(), 'rr_next' => 0, 'agents' => array(),
 		'website' => '', 'privacy_url' => '', 'auto_pause' => 0, 'max_cpl' => 0, 'currency' => 'AED', 'last_sync' => '', 'last_rule' => '',
 		// Claude autopilot
 		'ap_posts' => 'off', 'ap_per_week' => 3, 'ap_time' => '10:00', 'ap_topics' => '', 'ap_images' => '', 'ap_channels' => array('fb'), 'ap_lang' => 'en',
-		'ap_img_next' => 0, 'ap_last_plan' => '', 'ap_ads' => 'off', 'ap_max_daily' => 0, 'ap_step' => 20, 'ap_min_spend' => 0, 'ap_last_ads' => '', 'ap_last_report' => ''
+		'ap_img_next' => 0, 'ap_reuse' => 1, 'ap_last_plan' => '', 'ap_ads' => 'off', 'ap_max_daily' => 0, 'ap_step' => 20, 'ap_min_spend' => 0, 'ap_last_ads' => '', 'ap_last_report' => ''
 	);
 	private static $row_fields = array('id', 'platform', 'name', 'source_name', 'ref_month', 'webhook_key', 'verify_token', 'secret_ref', 'token', 'app_secret', 'enabled', 'exists');
 
@@ -476,6 +479,70 @@ class Marketing_model extends CI_Model
 			$out['ad_accounts'][] = array('id' => $x['account_id'], 'name' => $x['name'], 'currency' => $x['currency'] ?? 'AED', 'active' => (int)($x['account_status'] ?? 0) === 1);
 		}
 		return array(true, $out);
+	}
+
+	/**
+	 * Finds the Instagram account of the current account's page and saves it: the linked Instagram business account
+	 * (posts and ads) and the page-backed Instagram account (ads only, when nothing is linked). Returns array(linked, message).
+	 */
+	public function detect_instagram($save = true)
+	{
+		$m = $this->meta();
+		if (!$m['exists'] || $m['platform'] !== 'meta' || $m['page_id'] === '' || $m['token'] === '') return array(false, 'Choose the Facebook page first.');
+		list($ok, $r, $err) = $this->graph('GET', $m['page_id'], array('fields' => 'instagram_business_account{id,username}'), 'page');
+		if (!$ok) return array(false, 'Instagram could not be checked: ' . $err);
+		$ig = !empty($r['instagram_business_account']['id']) ? $r['instagram_business_account'] : null;
+		list($ok2, $r2) = $this->graph('GET', $m['page_id'] . '/page_backed_instagram_accounts', array('fields' => 'id'), 'page');
+		$pb = $ok2 && !empty($r2['data'][0]['id']) ? (string)$r2['data'][0]['id'] : '';
+		$ch = array('ig_ads_id' => $pb, 'ig_checked' => date('Y-m-d H:i:s'), 'ig_id' => $ig ? (string)$ig['id'] : '', 'ig_name' => $ig ? (string)($ig['username'] ?? '') : '');
+		if ($ig && $ch['ig_name'] === '') {
+			list($ok3, $r3) = $this->graph('GET', $ch['ig_id'], array('fields' => 'username'), 'page');
+			if ($ok3 && !empty($r3['username'])) $ch['ig_name'] = (string)$r3['username'];
+		}
+		if ($save) $this->save_meta($ch);
+		if ($ig) return array(true, 'Instagram ' . ($ch['ig_name'] !== '' ? '@' . $ch['ig_name'] : $ch['ig_id']) . ' found and set: posts and ads go to Instagram too.');
+		return array(false, 'No Instagram business account is linked to the page "' . $m['page_name'] . '"' . ($pb !== '' ? '. Ads will still show on Instagram through the page; to post on Instagram, link the account in Meta Business Suite › Settings › Linked accounts.' : '. Link it in Meta Business Suite › Settings › Linked accounts.'));
+	}
+
+	/**
+	 * Earlier creatives of the current account: page posts with their text and picture, and ad creatives of the ad account.
+	 * Each: ref (post:ID / ad:ID), kind, name, text, headline, image_url, image_hash, date. Returns array(items, error text).
+	 */
+	public function past_creatives($limit = 30)
+	{
+		$m = $this->meta();
+		$out = array();
+		$errs = array();
+		if ($m['exists'] && $m['page_id'] !== '') {
+			list($ok, $r, $err) = $this->graph('GET', $m['page_id'] . '/published_posts', array('fields' => 'id,message,full_picture,created_time', 'limit' => (int)$limit), 'page');
+			if ($ok) foreach ($r['data'] ?? array() as $p) {
+				$text = trim((string)($p['message'] ?? ''));
+				if ($text === '' && empty($p['full_picture'])) continue;
+				$out[] = array('ref' => 'post:' . $p['id'], 'kind' => 'Page post', 'name' => $text !== '' ? mb_substr(preg_replace('/\s+/', ' ', $text), 0, 70) : 'Picture post',
+					'text' => $text, 'headline' => '', 'image_url' => (string)($p['full_picture'] ?? ''), 'image_hash' => '', 'date' => substr((string)($p['created_time'] ?? ''), 0, 10));
+			} else $errs[] = 'Page posts: ' . preg_replace('/^Meta: /', '', $err);
+		}
+		if ($m['exists'] && $this->act() !== '') {
+			list($ok, $r, $err) = $this->graph('GET', $this->act() . '/adcreatives', array('fields' => 'id,name,title,body,image_hash,image_url,thumbnail_url,object_story_spec', 'limit' => (int)$limit));
+			if ($ok) foreach ($r['data'] ?? array() as $c) {
+				$ld = $c['object_story_spec']['link_data'] ?? array();
+				$text = trim((string)($c['body'] ?? ($ld['message'] ?? '')));
+				$hash = (string)($c['image_hash'] ?? ($ld['image_hash'] ?? ''));
+				$url = (string)($c['image_url'] ?? ($ld['picture'] ?? ($c['thumbnail_url'] ?? '')));
+				if ($text === '' && $url === '' && $hash === '') continue;
+				$out[] = array('ref' => 'ad:' . $c['id'], 'kind' => 'Ad', 'name' => (string)($c['name'] ?? 'Ad creative'), 'text' => $text,
+					'headline' => trim((string)($c['title'] ?? ($ld['name'] ?? ''))), 'image_url' => $url, 'image_hash' => $hash, 'date' => '');
+			} else $errs[] = 'Ad creatives: ' . preg_replace('/^Meta: /', '', $err);
+		}
+		return array($out, implode(' ', $errs));
+	}
+
+	/** A fresh picture link for an earlier post or ad (post:ID / ad:ID); '' if it cannot be read. */
+	public function fresh_image($ref)
+	{
+		if (preg_match('/^post:([\d_]+)$/', $ref, $x)) { list($ok, $r) = $this->graph('GET', $x[1], array('fields' => 'full_picture'), 'page'); return $ok ? (string)($r['full_picture'] ?? '') : ''; }
+		if (preg_match('/^ad:(\d+)$/', $ref, $x)) { list($ok, $r) = $this->graph('GET', $x[1], array('fields' => 'image_url')); return $ok ? (string)($r['image_url'] ?? '') : ''; }
+		return '';
 	}
 
 	/** Lets the page send new leads to this app's webhook. */
@@ -829,6 +896,11 @@ class Marketing_model extends CI_Model
 			$this->db->where('id', (int)$p['id'])->update('ci_mkt_posts', array('status' => 'Failed', 'error' => 'The account was removed.'));
 			return array(false, 'The account was removed.');
 		}
+		// an earlier post or ad image: Meta image links expire, so fetch a fresh one now
+		if (!empty($p['image_ref'])) {
+			$u = $this->fresh_image($p['image_ref']);
+			if ($u !== '' && $u !== $p['image_url']) { $p['image_url'] = $u; $this->db->where('id', (int)$p['id'])->update('ci_mkt_posts', array('image_url' => substr($u, 0, 500))); }
+		}
 		$ch = explode(',', $p['channels']);
 		$errs = array();
 		$upd = array();
@@ -1025,7 +1097,8 @@ class Marketing_model extends CI_Model
 		list($ok, $s, $err) = $this->graph('POST', $act . '/adsets', $adset);
 		if (!$ok) { $undo(); return array(false, 'Ad set: ' . $err, ''); }
 		$made[] = $s['id'];
-		list($ok, $hash) = $this->ad_image($in['image_url']);
+		if (!empty($in['image_hash'])) { $ok = true; $hash = $in['image_hash']; } // image of an earlier ad
+		else list($ok, $hash) = $this->ad_image($in['image_url']);
 		if (!$ok) { $undo(); return array(false, $hash, ''); }
 		$link = array(
 			'message' => $in['text'], 'name' => $in['headline'], 'link' => $m['website'] !== '' ? $m['website'] : 'https://www.facebook.com/' . $m['page_id'],
@@ -1033,6 +1106,7 @@ class Marketing_model extends CI_Model
 		);
 		$spec = array('page_id' => $m['page_id'], 'link_data' => $link);
 		if ($m['ig_id'] !== '') $spec['instagram_user_id'] = $m['ig_id'];
+		elseif ($m['ig_ads_id'] !== '') $spec['instagram_user_id'] = $m['ig_ads_id']; // page-backed Instagram account: the ad still shows on Instagram
 		list($ok, $cr, $err) = $this->graph('POST', $act . '/adcreatives', array('name' => $in['name'] . ' – creative', 'object_story_spec' => $spec));
 		if (!$ok) { $undo(); return array(false, 'Ad creative: ' . $err, ''); }
 		list($ok, $ad, $err) = $this->graph('POST', $act . '/ads', array('name' => $in['name'] . ' – ad', 'adset_id' => $s['id'], 'creative' => array('creative_id' => $cr['id']), 'status' => 'PAUSED'));
@@ -1173,6 +1247,12 @@ class Marketing_model extends CI_Model
 		$slots = self::ap_slots($taken, $want - count($up), preg_match('/^\d{2}:\d{2}$/', $m['ap_time']) ? $m['ap_time'] : '10:00', $now);
 		if (!$slots) { $this->save_meta(array('ap_last_plan' => date('Y-m-d H:i:s'))); return array(0, 'The next 7 days already have posts.'); }
 		$recent = array_column($this->db->query("SELECT message FROM ci_mkt_posts WHERE connection_id = ? AND message <> '' ORDER BY id DESC LIMIT 8", array($m['id']))->result_array(), 'message');
+		// earlier page posts and ads: their text guides the style, their pictures are reused
+		$past = array();
+		if (!empty($m['ap_reuse'])) {
+			list($past) = $this->past_creatives(25);
+			foreach (array_slice($past, 0, 6) as $p) if ($p['text'] !== '') $recent[] = $p['text'];
+		}
 		$ch = array_values(array_intersect(array('fb', 'ig'), (array)$m['ap_channels'])) ?: array('fb');
 		$where = in_array('ig', $ch, true) ? (in_array('fb', $ch, true) ? 'Facebook and Instagram' : 'Instagram') : 'Facebook';
 		$lang = $m['ap_lang'] === 'ar' ? 'Arabic' : ($m['ap_lang'] === 'both' ? 'English, then the same text in Arabic' : 'English');
@@ -1180,7 +1260,7 @@ class Marketing_model extends CI_Model
 		$prompt = "Write {$n} different {$where} posts in {$lang} for the page \"{$m['page_name']}\". Goal: get people to send their details (call, message or fill the form" . ($m['website'] !== '' ? ', or visit ' . $m['website'] : '') . ").\n\n"
 			. "Topics to rotate through (one main topic per post):\n- " . implode("\n- ", $topics) . "\n\n"
 			. "Each post: up to 120 words, short paragraphs, 1-3 fitting emojis at most, one clear call to action, then 3-6 relevant hashtags on the last line."
-			. ($recent ? "\n\nDo not repeat these recent posts:\n---\n" . implode("\n---\n", array_map(function ($t) { return mb_substr($t, 0, 300); }, $recent)) : '');
+			. ($recent ? "\n\nEarlier posts and ads of this page. Keep a similar voice, but do not repeat them:\n---\n" . implode("\n---\n", array_map(function ($t) { return mb_substr($t, 0, 300); }, $recent)) : '');
 		$schema = array('type' => 'object', 'additionalProperties' => false, 'required' => array('posts'), 'properties' => array(
 			'posts' => array('type' => 'array', 'items' => array('type' => 'object', 'additionalProperties' => false, 'required' => array('topic', 'text'),
 				'properties' => array('topic' => array('type' => 'string'), 'text' => array('type' => 'string'))))));
@@ -1188,17 +1268,21 @@ class Marketing_model extends CI_Model
 		if (!$ok) { $this->log('ap_posts', $m['name'] . ': ' . $raw); return array(0, $raw); }
 		$j = json_decode($raw, true);
 		$posts = is_array($j) && isset($j['posts']) && is_array($j['posts']) ? $j['posts'] : array();
-		$imgs = $this->lines($m['ap_images'], true);
+		// pictures: your links first, then (when reuse is on) the pictures of earlier posts and ads
+		$imgs = array();
+		foreach ($this->lines($m['ap_images'], true) as $u) $imgs[] = array($u, '');
+		foreach ($past as $p) if ($p['image_url'] !== '') $imgs[] = array($p['image_url'], $p['ref']);
 		$ii = (int)$m['ap_img_next'];
 		$made = 0;
 		$st = $m['ap_posts'] === 'auto' ? 'Scheduled' : 'Review';
 		foreach ($slots as $k => $t) {
 			$text = trim((string)($posts[$k]['text'] ?? ''));
 			if ($text === '') continue;
-			$img = $imgs ? $imgs[$ii++ % count($imgs)] : '';
+			list($img, $iref) = $imgs ? $imgs[$ii++ % count($imgs)] : array('', '');
 			$pc = $img === '' ? array_values(array_diff($ch, array('ig'))) : $ch; // Instagram needs an image
+			if ($m['ig_id'] === '') $pc = array_values(array_diff($pc, array('ig')));
 			if (!$pc) continue;
-			$this->db->insert('ci_mkt_posts', array('connection_id' => $m['id'], 'channels' => implode(',', $pc), 'message' => mb_substr($text, 0, 5000), 'image_url' => $img,
+			$this->db->insert('ci_mkt_posts', array('connection_id' => $m['id'], 'channels' => implode(',', $pc), 'message' => mb_substr($text, 0, 5000), 'image_url' => substr($img, 0, 500), 'image_ref' => $iref,
 				'link' => $m['website'], 'status' => $st, 'auto' => 1, 'scheduled_at' => date('Y-m-d H:i:00', $t), 'created_by' => 0, 'created_at' => date('Y-m-d H:i:s')));
 			$made++;
 		}

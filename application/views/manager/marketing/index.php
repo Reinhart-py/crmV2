@@ -21,7 +21,7 @@ $e_tok = $e['token'] !== '';
 $acc_q = $m['exists'] ? '?acc=' . (int)$m['id'] : '';
 ?>
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-campaigns.css?v=20261107_8">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-campaigns.css?v=20261107_9">
 <div class="content-wrapper sx cp mk">
   <section class="sx-head">
     <h1>Marketing<small>Leads from all your Meta, Google Ads, website and other accounts in one place; posts, Meta Ads and the Claude autopilot</small></h1>
@@ -149,6 +149,10 @@ $acc_q = $m['exists'] ? '?acc=' . (int)$m['id'] : '';
               <label><input type="checkbox" name="channels[]" value="fb" checked<?php echo $dis; ?>><span><i class="fa fa-facebook-official"></i> Facebook<?php echo $m['page_name'] !== '' ? ' · ' . $h($m['page_name']) : ''; ?></span></label>
               <label><input type="checkbox" name="channels[]" value="ig"<?php echo $m['ig_id'] === '' ? ' disabled' : $dis; ?>><span><i class="fa fa-instagram"></i> Instagram<?php echo $m['ig_name'] !== '' ? ' · @' . $h($m['ig_name']) : ($m['ig_id'] === '' ? ' (not linked)' : ''); ?></span></label>
             </div>
+            <div class="mk-ai mk-reuse">
+              <select id="pReuse" class="form-control" aria-label="Earlier posts and ads"><option value="">Use an earlier post or ad…</option></select>
+            </div>
+            <input type="hidden" name="image_ref" value="">
             <div class="mk-ai">
               <input type="text" id="pTopic" class="form-control" maxlength="1500" placeholder="What is the post about? e.g. Free PRO services consultation this week">
               <select id="pLang" class="form-control" aria-label="Language"><option value="en">English</option><option value="ar">Arabic</option><option value="both">Both</option></select>
@@ -189,7 +193,7 @@ $acc_q = $m['exists'] ? '?acc=' . (int)$m['id'] : '';
             <?php if (!$posts) { ?><div class="sx-empty"><i class="fa fa-pencil-square-o"></i>No posts yet.</div><?php } else { ?>
             <ul class="ai-calls" id="postList">
               <?php foreach ($posts as $p) { ?>
-              <li class="ai-call mk-post" data-post='<?php echo $h(json_encode(array('id' => (int)$p['id'], 'channels' => explode(',', $p['channels']), 'message' => $p['message'], 'image_url' => $p['image_url'], 'link' => $p['link'], 'scheduled_at' => $p['scheduled_at'] ? date('Y-m-d\TH:i', strtotime($p['scheduled_at'])) : ''))); ?>'>
+              <li class="ai-call mk-post" data-post='<?php echo $h(json_encode(array('id' => (int)$p['id'], 'channels' => explode(',', $p['channels']), 'message' => $p['message'], 'image_url' => $p['image_url'], 'image_ref' => isset($p['image_ref']) ? $p['image_ref'] : '', 'link' => $p['link'], 'scheduled_at' => $p['scheduled_at'] ? date('Y-m-d\TH:i', strtotime($p['scheduled_at'])) : ''))); ?>'>
                 <?php if ($p['image_url'] !== '') { ?><img class="mk-thumb" src="<?php echo $h($p['image_url']); ?>" alt="" loading="lazy" referrerpolicy="no-referrer"><?php } else { ?><span class="mk-thumb"><i class="fa fa-align-left"></i></span><?php } ?>
                 <div>
                   <span class="chip <?php echo $pst[$p['status']] ?? 'st-Draft'; ?>"><?php echo $h($p['status'] === 'Review' ? 'Waiting for approval' : $p['status']); ?></span>
@@ -263,10 +267,11 @@ $acc_q = $m['exists'] ? '?acc=' . (int)$m['id'] : '';
                   <div class="form-group"><label for="apTime">Time of day</label><input type="time" id="apTime" name="ap_time" class="form-control" value="<?php echo $h($m['ap_time']); ?>"<?php echo $dis; ?>></div>
                   <div class="form-group"><label>Where</label>
                     <div class="pills"><label><input type="checkbox" name="ap_channels[]" value="fb"<?php echo $chk(in_array('fb', $apc, true)); echo $dis; ?>><span>Facebook</span></label>
-                    <label><input type="checkbox" name="ap_channels[]" value="ig"<?php echo $chk(in_array('ig', $apc, true)); echo $m['ig_id'] === '' ? ' disabled' : $dis; ?>><span>Instagram<?php echo $m['ig_id'] === '' ? ' (not linked)' : ''; ?></span></label></div></div>
+                    <label><input type="checkbox" name="ap_channels[]" value="ig"<?php echo $chk(in_array('ig', $apc, true)); echo $m['ig_id'] === '' ? ' disabled' : $dis; ?>><span>Instagram<?php echo $m['ig_id'] === '' ? ' (not linked)' : ' · @' . $h($m['ig_name']); ?></span></label></div></div>
                   <div class="form-group"><label for="apLang">Language</label><select id="apLang" name="ap_lang" class="form-control"<?php echo $dis; ?>><option value="en"<?php echo $sel($m['ap_lang'], 'en'); ?>>English</option><option value="ar"<?php echo $sel($m['ap_lang'], 'ar'); ?>>Arabic</option><option value="both"<?php echo $sel($m['ap_lang'], 'both'); ?>>Both</option></select></div>
                   <div class="form-group wide"><label for="apTopics">Topics, one a line</label><textarea id="apTopics" name="ap_topics" class="form-control" rows="4" maxlength="3000" placeholder="Mainland company setup in 7 days&#10;Golden visa for investors&#10;Corporate tax registration before the deadline"<?php echo $dis; ?>><?php echo $h($m['ap_topics']); ?></textarea></div>
                   <div class="form-group wide"><label for="apImgs">Image links, one a line (used in turn)</label><textarea id="apImgs" name="ap_images" class="form-control" rows="3" maxlength="5000" placeholder="https://…/post-1.jpg"<?php echo $dis; ?>><?php echo $h($m['ap_images']); ?></textarea><span class="hint">Instagram posts need an image. Without images the autopilot posts on Facebook only.</span></div>
+                  <div class="form-group wide"><label class="tog"><input type="checkbox" name="ap_reuse" value="1"<?php echo $chk(!empty($m['ap_reuse'])); echo $dis; ?>><span>Reuse earlier creatives<small>Pictures of earlier page posts and ads are used in turn with the links above, and Claude follows the voice of those posts without repeating them.</small></span></label></div>
                 </div>
                 <p class="hint" style="margin:0">Once a day Claude fills the next 7 days with posts (one a day at most) using the company details from the Claude settings, and avoids repeating recent posts. "I approve" puts them under Posts with an Approve button.</p>
               </div>
@@ -401,7 +406,8 @@ $acc_q = $m['exists'] ? '?acc=' . (int)$m['id'] : '';
                       <select id="mPage" class="form-control"<?php echo $dis; ?>>
                         <?php if ($e['page_id'] !== '') { ?><option value="<?php echo $h($e['page_id']); ?>" data-name="<?php echo $h($e['page_name']); ?>" data-ig="<?php echo $h($e['ig_id']); ?>" data-ign="<?php echo $h($e['ig_name']); ?>"><?php echo $h($e['page_name'] ?: $e['page_id']); ?></option><?php } else { ?><option value="">Press "Connect and find my pages"</option><?php } ?>
                       </select>
-                      <span class="hint" id="igHint"><?php echo $e['ig_id'] !== '' ? 'Instagram: @' . $h($e['ig_name']) : 'No Instagram account linked to this page.'; ?></span>
+                      <span class="hint" id="igHint"><?php echo $e['ig_id'] !== '' ? 'Instagram: @' . $h($e['ig_name']) . ' (found automatically)' : ($e['ig_ads_id'] !== '' ? 'No Instagram business account linked to this page. Ads still show on Instagram through the page.' : 'No Instagram account linked to this page.'); ?></span>
+                      <?php if ($e['id'] && $e['page_id'] !== '' && $e_tok && $can_write) { ?><button type="button" class="btn btn-link btn-sm" id="btnIg" style="padding-left:0">Check Instagram again</button><?php } ?>
                     </div>
                     <div class="form-group">
                       <label for="mAct">Ad account</label>
@@ -619,6 +625,10 @@ $acc_q = $m['exists'] ? '?acc=' . (int)$m['id'] : '';
           <div class="form-group wide"><button type="button" class="btn btn-default btn-sm" id="btnFormSave">Create form</button> <span class="sx-help" id="formMsg" role="status"></span></div>
         </div>
       </div>
+      <div class="form-group wide"><label for="nReuse">Start from an earlier creative</label>
+        <select id="nReuse" class="form-control"><option value="">None: write a new ad</option></select>
+        <input type="hidden" name="image_hash" value=""><span class="hint" id="nReuseHint">Fills the text, headline and picture from an earlier ad or page post. Change anything before creating.</span>
+      </div>
       <div class="form-group wide">
         <label>Ad text</label>
         <div class="mk-ai"><input type="text" id="nTopic" class="form-control" maxlength="1500" placeholder="Service and offer, e.g. Mainland company setup in 7 days"><select id="nLang" class="form-control" aria-label="Language"><option value="en">English</option><option value="ar">Arabic</option></select><button type="button" class="btn btn-default" id="btnWriteAd"<?php echo $has_claude ? '' : ' disabled title="Add the Claude API key in Connections"'; ?>><i class="fa fa-magic"></i> Write with Claude</button></div>
@@ -639,5 +649,5 @@ $acc_q = $m['exists'] ? '?acc=' . (int)$m['id'] : '';
 </div></div>
 
 <script>window.MK = { base: '<?php echo $base; ?>system/marketing/', page: '<?php echo $base; ?>system/marketing', acc: <?php echo (int)$m['id']; ?>, edit: <?php echo (int)$e['id']; ?>, cur: '<?php echo $h($m['currency']); ?>', canWrite: <?php echo $can_write ? 'true' : 'false'; ?>, hasAds: <?php echo $has_token && $m['ad_account_id'] !== '' ? 'true' : 'false'; ?> };</script>
-<script src="<?php echo base_url(); ?>assets/dist/js/crm-marketing.js?v=20261107_4"></script>
+<script src="<?php echo base_url(); ?>assets/dist/js/crm-marketing.js?v=20261107_5"></script>
 <?php require_once(APPPATH . "views/manager/elements/footer.php"); ?>

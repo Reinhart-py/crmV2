@@ -32,7 +32,7 @@ class Ci_admin_marketing extends CI_Controller
 			redirect(crm_landing_url());
 			exit;
 		}
-		if (strpos($method, 'ajax_') === 0 && !in_array($method, array('ajax_campaigns', 'ajax_adsets', 'ajax_forms', 'ajax_report'), true) && !crm_can('marketing', 'write')) {
+		if (strpos($method, 'ajax_') === 0 && !in_array($method, array('ajax_campaigns', 'ajax_adsets', 'ajax_forms', 'ajax_report', 'ajax_creatives'), true) && !crm_can('marketing', 'write')) {
 			$this->_json(array('status' => false, 'message' => 'You can view Marketing but not change it.'));
 			exit;
 		}
@@ -164,7 +164,9 @@ class Ci_admin_marketing extends CI_Controller
 		$M->save_meta($cfg, $token, $secret, (bool)$this->input->post('enabled'), $fields);
 		$M->ensure_source_term($fields['source_name']);
 		$M->log('settings', 'Account saved: ' . $fields['name'] . ($token !== '' ? ' (new token)' : ''), $this->uid);
-		$this->_json(array('status' => true, 'message' => 'Saved.', 'id' => $cid));
+		$msg = 'Saved.';
+		if ($platform === 'meta' && $M->meta()['page_id'] !== '' && $M->meta()['token'] !== '') { list(, $im) = $M->detect_instagram(); $msg .= ' ' . $im; }
+		$this->_json(array('status' => true, 'message' => $msg, 'id' => $cid));
 	}
 
 	/** Old name of the save call. */
@@ -229,6 +231,23 @@ class Ci_admin_marketing extends CI_Controller
 		$this->_json(array('status' => true) + $this->_hooks($M->meta()));
 	}
 
+	public function ajax_detect_ig()
+	{
+		if (!($c = $this->_conn_or_fail())) return;
+		list($ok, $msg) = $this->marketing_model->detect_instagram();
+		$this->marketing_model->log('settings', $c['name'] . ': Instagram ' . ($ok ? 'found' : 'not linked'), $this->uid);
+		$this->_json(array('status' => true, 'linked' => $ok, 'message' => $msg, 'reload' => true));
+	}
+
+	/** Earlier page posts and ad creatives to reuse. */
+	public function ajax_creatives()
+	{
+		$c = $this->marketing_model->meta();
+		if (!$c['exists'] || $c['token'] === '') { $this->_json(array('status' => false, 'rows' => array(), 'message' => 'Connect a Meta account first.')); return; }
+		list($rows, $err) = $this->marketing_model->past_creatives(40);
+		$this->_json(array('status' => true, 'rows' => $rows, 'message' => $rows ? '' : ($err !== '' ? $err : 'No earlier posts or ads found.'), 'note' => $err));
+	}
+
 	/* ---------- autopilot ---------- */
 
 	public function ajax_save_autopilot()
@@ -249,11 +268,12 @@ class Ci_admin_marketing extends CI_Controller
 			'ap_ads' => in_array($this->input->post('ap_ads'), array('off', 'suggest', 'auto'), true) ? $this->input->post('ap_ads') : 'off',
 			'ap_max_daily' => max(0, round((float)$this->input->post('ap_max_daily'), 2)),
 			'ap_step' => max(5, min(50, (int)$this->input->post('ap_step'))),
-			'ap_min_spend' => max(0, round((float)$this->input->post('ap_min_spend'), 2))
+			'ap_min_spend' => max(0, round((float)$this->input->post('ap_min_spend'), 2)),
+			'ap_reuse' => $this->input->post('ap_reuse') ? 1 : 0
 		);
 		if (!$cfg['ap_channels']) $cfg['ap_channels'] = array('fb');
 		if ($cfg['ap_posts'] !== 'off' && $cfg['ap_topics'] === '') { $this->_json(array('status' => false, 'message' => 'Add at least one topic for the posts.')); return; }
-		if ($cfg['ap_posts'] !== 'off' && in_array('ig', $cfg['ap_channels'], true) && $cfg['ap_images'] === '') { $this->_json(array('status' => false, 'message' => 'Instagram needs images: add image links or post on Facebook only.')); return; }
+		if ($cfg['ap_posts'] !== 'off' && in_array('ig', $cfg['ap_channels'], true) && $cfg['ap_images'] === '' && !$cfg['ap_reuse']) { $this->_json(array('status' => false, 'message' => 'Instagram needs images: add image links or post on Facebook only.')); return; }
 		if ($cfg['ap_ads'] === 'auto' && $cfg['ap_max_daily'] <= 0) { $this->_json(array('status' => false, 'message' => 'Set the most all running campaigns may spend a day before Claude can change budgets.')); return; }
 		if (($cfg['ap_posts'] !== 'off' || $cfg['ap_ads'] !== 'off') && $M->claude()['api_key'] === '') { $this->_json(array('status' => false, 'message' => 'Add the Claude API key in Connections first.')); return; }
 		$M->save_meta($cfg);
@@ -390,8 +410,10 @@ class Ci_admin_marketing extends CI_Controller
 			'channels' => implode(',', $ch),
 			'message' => substr(trim((string)$this->input->post('message')), 0, 5000),
 			'image_url' => $this->_p('image_url', 500),
-			'link' => $this->_p('link', 500)
+			'link' => $this->_p('link', 500),
+			'image_ref' => preg_match('/^(post:[\d_]+|ad:\d+)$/', $this->_p('image_ref', 100)) ? $this->_p('image_ref', 100) : ''
 		);
+		if ($row['image_url'] === '') $row['image_ref'] = '';
 		if (!$ch) { $this->_json(array('status' => false, 'message' => 'Choose Facebook, Instagram or both.')); return; }
 		if ($row['message'] === '' && $row['image_url'] === '') { $this->_json(array('status' => false, 'message' => 'Write the post text or add an image.')); return; }
 		foreach (array('image_url', 'link') as $k) if ($row[$k] !== '' && !preg_match('~^https://~i', $row[$k])) { $this->_json(array('status' => false, 'message' => 'Links must start with https://')); return; }
@@ -521,6 +543,7 @@ class Ci_admin_marketing extends CI_Controller
 			'countries' => $countries, 'age_min' => max(18, min(65, (int)$this->input->post('age_min'))), 'age_max' => max(18, min(65, (int)$this->input->post('age_max'))),
 			'form_id' => preg_replace('/\D/', '', (string)$this->input->post('form_id')), 'text' => substr(trim((string)$this->input->post('text')), 0, 2000),
 			'headline' => $this->_p('headline', 40), 'image_url' => $this->_p('image_url', 500),
+			'image_hash' => preg_match('/^[a-f0-9]{32}$/i', $this->_p('image_hash', 32)) ? $this->_p('image_hash', 32) : '',
 			'cta' => isset(Marketing_model::$ctas[$this->input->post('cta')]) ? (string)$this->input->post('cta') : 'SIGN_UP', 'start' => $this->_p('start', 20)
 		);
 		$err = '';
@@ -530,7 +553,7 @@ class Ci_admin_marketing extends CI_Controller
 		elseif ($in['age_min'] > $in['age_max']) $err = 'The age range is reversed.';
 		elseif ($in['form_id'] === '') $err = 'Choose a lead form.';
 		elseif ($in['text'] === '' || $in['headline'] === '') $err = 'Write the ad text and headline (Claude can help).';
-		elseif (!preg_match('~^https://~i', $in['image_url'])) $err = 'Add an https:// link to the ad image.';
+		elseif ($in['image_hash'] === '' && !preg_match('~^https://~i', $in['image_url'])) $err = 'Add an https:// link to the ad image, or pick an earlier creative.';
 		if ($err !== '') { $this->_json(array('status' => false, 'message' => $err)); return; }
 		list($ok, $msg, $cid) = $this->marketing_model->create_lead_campaign($in);
 		if ($ok) $this->marketing_model->log('campaign', 'Lead campaign created (paused): ' . $in['name'] . ', ' . number_format($in['daily_budget'], 2) . ' a day', $this->uid);
@@ -665,6 +688,7 @@ class Ci_admin_marketing extends CI_Controller
 				$M->save_meta(array('last_rule' => date('Y-m-d H:i:s')));
 				$out['paused'] = array_merge($out['paused'], $M->auto_pause());
 			}
+			if ($m['page_id'] !== '' && $m['ig_id'] === '' && ($m['ig_checked'] === '' || strtotime($m['ig_checked']) < time() - 6 * 3600)) $M->detect_instagram();
 			if ($m['ap_posts'] !== 'off') { list($n, $msg) = $M->ap_plan_posts(); if ($n) $out['autopilot'][] = $m['name'] . ': ' . $msg; }
 			if ($m['ap_ads'] !== 'off') { list($ok, $msg) = $M->ap_review_ads(); if ($ok) $out['autopilot'][] = $m['name'] . ': ' . $msg; }
 		}
