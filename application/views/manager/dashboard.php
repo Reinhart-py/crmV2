@@ -235,7 +235,9 @@
 
 <?php
 if (!function_exists('render_donut_chart_svg')) {
-    function render_donut_chart_svg($items, $w = 460, $h = 250, $cx = 230, $cy = 125, $r_out = 110, $r_in = 68, $type = 'Lead') {
+    function render_donut_chart_svg($items, $w = 460, $h = 250, $cx = 230, $cy = 125, $r_out = 110, $r_in = 68, $type = 'Lead', $frame = null) {
+        // $frame = array(half width, half height): draw in this space so several donuts come out the same size.
+        // The space this donut needs is kept in $GLOBALS['crm_donut_frame'].
         $total = 0;
         foreach ($items as $it) {
             $total += (float)$it['count'];
@@ -243,7 +245,9 @@ if (!function_exists('render_donut_chart_svg')) {
         if ($total <= 0) {
             // No data: blank grey ring, like the Operational Activity donuts.
             $pad = 12;
+            $GLOBALS['crm_donut_frame'] = array($r_out + $pad, $r_out + $pad);
             $vb = ($cx - $r_out - $pad) . ' ' . ($cy - $r_out - $pad) . ' ' . (2 * ($r_out + $pad)) . ' ' . (2 * ($r_out + $pad));
+            if ($frame) $vb = ($cx - $frame[0]) . ' ' . ($cy - $frame[1]) . ' ' . (2 * $frame[0]) . ' ' . (2 * $frame[1]);
             return '<svg viewBox="' . $vb . '" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="position:absolute; left:0; top:0; width:100%; height:100%; display:block;" aria-label="No ' . strtolower($type) . ' data yet"><circle cx="' . $cx . '" cy="' . $cy . '" r="' . (($r_out + $r_in) / 2) . '" fill="none" stroke="#e2e8f0" stroke-width="' . ($r_out - $r_in) . '" /></svg>';
         }
         $n = count($items);
@@ -347,6 +351,8 @@ if (!function_exists('render_donut_chart_svg')) {
         // Same space on both sides of the donut so it sits in the centre of the box; labels stay inside.
         $half_w = ceil(max($cx - $min_x, $max_x - $cx) + 4);
         $half_h = ceil(max($cy - $min_y, $max_y - $cy) + 2);
+        $GLOBALS['crm_donut_frame'] = array($half_w, $half_h);
+        if ($frame) { $half_w = max($half_w, $frame[0]); $half_h = max($half_h, $frame[1]); }
         $vb_x = $cx - $half_w;
         $vb_w = 2 * $half_w;
         $vb_y = $cy - $half_h;
@@ -416,6 +422,11 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
     array('label' => 'Sales', 'count' => 0, 'color' => '#00b4d8'),
     array('label' => 'Canceled', 'count' => 0, 'color' => '#ff5964')
 );
+// My Leads and My Orders share one drawing space (the larger of the two), so both rings are the same size.
+render_donut_chart_svg($lead_items, 480, 260, 240, 130, 120, 72, 'Lead');
+$donut_frame = $GLOBALS['crm_donut_frame'];
+render_donut_chart_svg($order_items, 480, 260, 240, 130, 120, 72, 'Order');
+$donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($donut_frame[1], $GLOBALS['crm_donut_frame'][1]));
 ?>
 
         <div class="row" style="margin-top: 4px; margin-bottom: 8px;">
@@ -558,7 +569,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                         </div>
                     </div>
                     <div style="width:100%; display:flex; align-items:center; justify-content:center; flex:1; overflow:visible; position:relative; min-height:0;">
-                        <?php echo render_donut_chart_svg($lead_items, 480, 260, 240, 130, 120, 72, 'Lead'); ?>
+                        <?php echo render_donut_chart_svg($lead_items, 480, 260, 240, 130, 120, 72, 'Lead', $donut_frame); ?>
                     </div>
                 </div>
 
@@ -570,7 +581,7 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
                         </div>
                     </div>
                     <div style="width:100%; display:flex; align-items:center; justify-content:center; flex:1; overflow:visible; position:relative; min-height:0;">
-                        <?php echo render_donut_chart_svg($order_items, 480, 260, 240, 130, 120, 72, 'Order'); ?>
+                        <?php echo render_donut_chart_svg($order_items, 480, 260, 240, 130, 120, 72, 'Order', $donut_frame); ?>
                     </div>
                 </div>
             </div>
