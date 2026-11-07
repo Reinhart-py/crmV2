@@ -121,14 +121,14 @@
 }
 .dash-top-chart-body {
     position: relative !important;
-    height: 184px !important;
-    max-height: 184px !important;
+    height: 172px !important;
+    max-height: 172px !important;
     padding: 0 !important;
     overflow: hidden !important;
 }
 .dash-top-chart-body canvas {
-    height: 184px !important;
-    max-height: 184px !important;
+    height: 172px !important;
+    max-height: 172px !important;
     width: 100% !important;
 }
 [data-theme="dark"] .dash-round-meta {
@@ -445,7 +445,7 @@ render_donut_chart_svg($order_items, 480, 260, 240, 130, 120, 72, 'Order');
 $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($donut_frame[1], $GLOBALS['crm_donut_frame'][1]));
 ?>
 
-        <div class="row" style="margin-top: 4px; margin-bottom: 8px;">
+        <div class="row c2-toprow" style="margin-top: 0; margin-bottom: 8px;">
             <div class="col-lg-8 col-md-7 col-xs-12" style="padding-left: 10px; padding-right: 6px;">
                 <div class="row" style="margin-left:-3px; margin-right:-3px;">
                     <div class="col-xs-3" style="padding-left:3px; padding-right:3px;">
@@ -545,7 +545,7 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
                     </div>
                 </div>
 
-                <div class="dash-top-chart-card" style="height: 222px; max-height: 222px; margin-bottom: 8px; padding: 6px 12px; border-radius: 8px; box-sizing: border-box;">
+                <div class="dash-top-chart-card" style="height: 210px; max-height: 210px; margin-bottom: 8px; padding: 6px 12px; border-radius: 8px; box-sizing: border-box;">
                     <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important; margin-bottom: 2px !important; padding:2px 0 !important; border-bottom:none !important;">
                         <h4 class="dash-chart-title" style="margin:0 !important; font-size:12.5px; font-weight:700;">
                             Target vs Achievement
@@ -555,12 +555,12 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
                             <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#16a34a; border-radius:50%;"></span> Achievement</span>
                         </div>
                     </div>
-                    <div class="dash-top-chart-body" style="height: 184px !important; max-height: 184px !important;">
-                        <canvas id="lineChartTargetAchieve" height="184"></canvas>
+                    <div class="dash-top-chart-body" style="height: 172px !important; max-height: 172px !important;">
+                        <canvas id="lineChartTargetAchieve" height="172"></canvas>
                     </div>
                 </div>
 
-                <div class="dash-top-chart-card" style="height: 222px; max-height: 222px; margin-bottom: 0px; padding: 6px 12px; border-radius: 8px; box-sizing: border-box;">
+                <div class="dash-top-chart-card" style="height: 210px; max-height: 210px; margin-bottom: 0px; padding: 6px 12px; border-radius: 8px; box-sizing: border-box;">
                     <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important; margin-bottom: 2px !important; padding:2px 0 !important; border-bottom:none !important;">
                         <h4 class="dash-chart-title" style="margin:0 !important; font-size:12.5px; font-weight:700;">
                             Target vs Projection
@@ -570,14 +570,14 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
                             <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#0072f0; border-radius:50%;"></span> Projection</span>
                         </div>
                     </div>
-                    <div class="dash-top-chart-body" style="height: 184px !important; max-height: 184px !important;">
-                        <canvas id="lineChartTargetProject" height="184"></canvas>
+                    <div class="dash-top-chart-body" style="height: 172px !important; max-height: 172px !important;">
+                        <canvas id="lineChartTargetProject" height="172"></canvas>
                     </div>
                 </div>
             </div>
 
             <div class="col-lg-4 col-md-5 col-xs-12" style="padding-left: 6px; padding-right: 10px;">
-                <div class="dash-round-card" style="width: 100%; min-height: 289px; margin-bottom: 8px; padding: 8px 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
+                <div class="dash-round-card" style="width: 100%; min-height: 277px; margin-bottom: 8px; padding: 8px 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
                     <div class="dash-round-title" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0; font-size:13px; font-weight:700;">
                         <span>My Leads</span>
                         <div class="dash-round-meta" style="display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; color:#64748b;">
@@ -589,7 +589,7 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
                     </div>
                 </div>
 
-                <div class="dash-round-card" style="width: 100%; min-height: 289px; margin-bottom: 0px; padding: 8px 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
+                <div class="dash-round-card" style="width: 100%; min-height: 277px; margin-bottom: 0px; padding: 8px 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
                     <div class="dash-round-title" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0; font-size:13px; font-weight:700;">
                         <span>My Orders</span>
                         <div class="dash-round-meta" style="display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; color:#64748b;">
@@ -2117,8 +2117,8 @@ $c2_empty = array(
 .dash-c2 .dash-kpi-col1:hover, .dash-c2 .dash-kpi-col2:hover { box-shadow: 0 8px 18px rgba(30, 58, 138, .35) !important; }
 .dash-c2 .dash-kpi-col3:hover, .dash-c2 .dash-kpi-col4:hover { box-shadow: 0 8px 18px rgba(15, 118, 110, .35) !important; }
 /* 2. Bigger labels and amounts. */
-.dash-c2 .dash-kpi-card { height: 66px; min-height: 66px; }
-.dash-c2 .dash-kpi-value { font-size: 20px; }
+.dash-c2 .dash-kpi-card { height: 60px; min-height: 60px; padding: 4px 12px !important; }
+.dash-c2 .dash-kpi-value { font-size: 19px; margin-bottom: 1px; }
 .dash-c2 .dash-kpi-label { font-size: 13px; }
 .dash-c2 .dash-kpi-sales { font-size: 11.5px; font-weight: 600; }
 
@@ -2148,16 +2148,16 @@ $c2_empty = array(
 .dash-c2 .col-md-6 > .crm-modern-stat-card .crm-modern-stat-chip.c2-zero .badge { color: #cbd5e1 !important; font-weight: 600 !important; }
 
 /* 8. Section bar (stays at the top while scrolling). */
-.dash-c2 .c2-bar { position: sticky; top: var(--c2-top, 0px); z-index: 20; display: flex; align-items: center; gap: 10px; margin: 2px 0 8px; padding: 5px 6px; background: rgba(255, 255, 255, .96); border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 1px 3px rgba(0, 0, 0, .04); }
+.dash-c2 .c2-bar { position: sticky; top: var(--c2-top, 0px); z-index: 20; display: flex; align-items: center; gap: 8px; margin: 0 0 3px; padding: 2px 4px; background: rgba(255, 255, 255, .96); border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 1px 3px rgba(0, 0, 0, .04); }
 .dash-c2 .c2-bar-links { display: flex; gap: 2px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
 .dash-c2 .c2-bar-links::-webkit-scrollbar { display: none; }
-.dash-c2 .c2-bar-links a { flex: none; padding: 5px 11px; border-radius: 6px; color: #334155; font-size: 13px; font-weight: 600; text-decoration: none; white-space: nowrap; }
+.dash-c2 .c2-bar-links a { flex: none; padding: 2px 10px; line-height: 18px; border-radius: 5px; color: #334155; font-size: 12.5px; font-weight: 600; text-decoration: none; white-space: nowrap; }
 .dash-c2 .c2-bar-links a:hover { background: #f1f5f9; color: #0f172a; }
 .dash-c2 .c2-bar-links a.is-on { background: #1e3a8a; color: #fff; }
 .dash-c2 .c2-anchor { height: 0; }
 .dash-c2 .c2-anchor, .dash-c2 .dash-section-divider { scroll-margin-top: calc(var(--c2-top, 0px) + 54px); }
 /* 9. Hide amounts. */
-.dash-c2 .c2-hide-btn { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 11px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; color: #334155; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.dash-c2 .c2-hide-btn { flex: none; display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 9px; border: 1px solid #cbd5e1; border-radius: 5px; background: #fff; color: #334155; font-size: 12px; font-weight: 600; cursor: pointer; }
 .dash-c2 .c2-hide-btn:hover { border-color: #1e3a8a; color: #1e3a8a; }
 .dash-c2 .c2-hide-btn[aria-pressed="true"] { background: #1e3a8a; border-color: #1e3a8a; color: #fff; }
 .dash-c2.c2-hidden .c2-amt { filter: blur(5px); user-select: none; }
