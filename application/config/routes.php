@@ -5,6 +5,7 @@ $route['default_controller'] = "ci_admin";
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 
+$route['manager'] = "ci_admin/index";
 $route['manager/login'] = "ci_admin/login";
 $route['manager/forgot'] = "ci_admin/forgot";
 $route['manager/bnr54dfdf/(:any)'] = 'ci_admin/reset/$1';

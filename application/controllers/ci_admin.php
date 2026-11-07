@@ -60,8 +60,12 @@ class Ci_admin extends CI_Controller {
 	}	
 	
 	public function index()
-	{	  
-		
+	{
+		// Site root and /manager: someone already signed in goes to their start page
+		if ((int)$this->session->userdata('manager_id') > 0) {
+			redirect(crm_landing_url());
+			return;
+		}
 	  $data=array();
 		$data['info']=array(
 			'title'=>'Manager Login'

@@ -35,7 +35,7 @@
 <script src="<?php echo base_url();?>assets/plugins/jQueryUI/jquery-ui.js"></script>
 
 
-<link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/jQueryUI/jquery-ui.css">
+<link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/jQueryUI/jquery-ui.css?v=20261107">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/bootstrap/spacing.css">
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/plugins/datatables/dataTables.bootstrap.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/bootstrap/css/bootstrap.min.css">
@@ -64,7 +64,7 @@
 <script src="<?php echo base_url();?>assets/plugins/table_export/Blob.min.js"></script>
 <script src="<?php echo base_url();?>assets/plugins/table_export/xls.core.min.js"></script>
 <script src="<?php echo base_url();?>assets/plugins/table_export/js/tableexport.js"></script>
-<link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/jQueryUI/jquery-ui.css">
+<link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/jQueryUI/jquery-ui.css?v=20261107">
 <script src="<?php echo base_url();?>assets/bootstrap/js/jquery.validate.js"></script>
 <link rel="stylesheet" href="<?php echo base_url();?>assets/bootstrap/css/bootstrap-toggle.min.css">
 <script src="<?php echo base_url();?>assets/bootstrap/js/bootstrap-toggle.min.js"></script>

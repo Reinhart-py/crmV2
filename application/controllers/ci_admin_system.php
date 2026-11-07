@@ -703,7 +703,7 @@ class Ci_admin_system extends CI_Controller {
 					array('title' => 'Add Target', 'key' => 'hr_targets_add', 'url' => 'manager/hr/targets/add'),
 					array('title' => 'Employee Lifecycle', 'key' => 'hr_lifecycle', 'url' => 'manager/hr/lifecycle'),
 					array('title' => 'Attendance & GPS Tracking', 'key' => 'hr_attendance', 'url' => 'manager/hr/attendance'),
-					array('title' => 'Daily Attendance', 'key' => 'hr_att_daily', 'url' => 'manager/attendance'),
+					array('title' => 'Daily Attendance', 'key' => 'hr_att_daily', 'url' => 'manager/hr/attendance?view=day'),
 					array('title' => 'Shift Management', 'key' => 'hr_shifts', 'url' => 'manager/hr/shifts'),
 					array('title' => 'Add Shift', 'key' => 'hr_shifts_add', 'url' => 'manager/hr/shifts/add'),
 					array('title' => 'Assign Shift', 'key' => 'hr_shifts_assign', 'url' => 'manager/hr/shifts/assign'),

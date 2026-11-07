@@ -966,8 +966,8 @@ $order_items = !empty($myorder_donut['items']) ? $myorder_donut['items'] : array
             <div class="crm-col-7 col-xs-12">
                 <div class="crm-modern-stat-card">
                     <div class="card-top">
-                        <h4 class="card-title"><a href="<?php echo base_url(); ?>manager/tasks?team=1" style="color:inherit; text-decoration:none;"><i class="fa fa-tasks"></i> Team Tasks</a></h4>
-                        <a href="<?php echo base_url(); ?>manager/tasks?team=1" class="card-total-pill" style="text-decoration:none;"><?php echo $total_team_tasks; ?> Total</a>
+                        <h4 class="card-title"><a href="<?php echo base_url(); ?>manager/team/tasks/internal" style="color:inherit; text-decoration:none;"><i class="fa fa-tasks"></i> Team Tasks</a></h4>
+                        <a href="<?php echo base_url(); ?>manager/team/tasks/internal" class="card-total-pill" style="text-decoration:none;"><?php echo $total_team_tasks; ?> Total</a>
                     </div>
                     <div style="display:flex; justify-content:center; align-items:center; min-height:100px; padding:6px 0;"><canvas id="pieCard_team_tasks" width="100" height="100" style="width:100px; height:100px;"></canvas></div>
                     <div class="crm-seg-bar">

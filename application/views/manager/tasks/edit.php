@@ -141,7 +141,7 @@ $is_external_task = ($task['task_scope'] === 'external');
                       <select class="form-control" name="p_cat" id="telecom_p_cat">
                         <option value="">-- Select Product --</option>
                         <?php if(!empty($telecom_cats)){ foreach($telecom_cats as $tc){ ?>
-                          <option value="<?php echo htmlspecialchars($tc['name']); ?>" <?php echo ($task['p_cat'] === $tc['name']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($tc['name']); ?></option>
+                          <option value="<?php echo htmlspecialchars($tc['title']); ?>" <?php echo ($task['p_cat'] === $tc['title']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($tc['title']); ?></option>
                         <?php }} else { ?>
                           <option value="Fixed" <?php echo ($task['p_cat'] === 'Fixed') ? 'selected' : ''; ?>>Fixed</option>
                           <option value="Mobile" <?php echo ($task['p_cat'] === 'Mobile') ? 'selected' : ''; ?>>Mobile</option>
@@ -206,7 +206,7 @@ $is_external_task = ($task['task_scope'] === 'external');
                 <select class="form-control" name="raised_by" id="raised_by_select">
                   <option value="">-- Select Employee --</option>
                   <?php if(!empty($u_list)){ foreach($u_list as $usr){ ?>
-                    <option value="<?php echo $usr['id']; ?>" <?php echo ((int)$usr['id'] === (int)$task['raised_by']) ? 'selected' : ''; ?>>
+                    <option value="<?php echo $usr['id']; ?>" <?php echo ((int)$usr['id'] === (int)(isset($task['raised_by']) ? $task['raised_by'] : 0)) ? 'selected' : ''; ?>>
                       <?php echo htmlspecialchars($usr['name']); ?>
                     </option>
                   <?php }} ?>
