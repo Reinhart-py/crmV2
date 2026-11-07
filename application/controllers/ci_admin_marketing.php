@@ -32,7 +32,7 @@ class Ci_admin_marketing extends CI_Controller
 			redirect(crm_landing_url());
 			exit;
 		}
-		if (strpos($method, 'ajax_') === 0 && !in_array($method, array('ajax_campaigns', 'ajax_adsets', 'ajax_forms', 'ajax_report', 'ajax_creatives'), true) && !crm_can('marketing', 'write')) {
+		if (strpos($method, 'ajax_') === 0 && !in_array($method, array('ajax_campaigns', 'ajax_adsets', 'ajax_forms', 'ajax_report', 'ajax_creatives', 'ajax_ai_models'), true) && !crm_can('marketing', 'write')) {
 			$this->_json(array('status' => false, 'message' => 'You can view Marketing but not change it.'));
 			exit;
 		}
@@ -98,7 +98,7 @@ class Ci_admin_marketing extends CI_Controller
 			'info' => array('title' => 'Marketing', 'page_heading' => 'Marketing'),
 			'm' => $m, 'c' => $c, 'e' => $e, 'conns' => $conns, 'metas' => $metas, 'counts' => $counts,
 			'platforms' => Marketing_model::$platforms, 'source_terms' => $M->source_terms(),
-			'has_token' => $m['token'] !== '', 'has_secret' => $m['app_secret'] !== '', 'has_claude' => $c['api_key'] !== '',
+			'has_token' => $m['token'] !== '', 'has_secret' => $m['app_secret'] !== '', 'has_claude' => $M->ai_ready(), 'ai' => array_map(array($M, 'ai'), array_combine(array_keys(Marketing_model::$ai_providers), array_keys(Marketing_model::$ai_providers))), 'ai_providers' => Marketing_model::$ai_providers,
 			'stats' => $M->lead_stats(),
 			'leads' => $M->leads('1=1', 500),
 			'posts' => $m['exists'] ? $M->posts(100) : array(),
@@ -275,7 +275,7 @@ class Ci_admin_marketing extends CI_Controller
 		if ($cfg['ap_posts'] !== 'off' && $cfg['ap_topics'] === '') { $this->_json(array('status' => false, 'message' => 'Add at least one topic for the posts.')); return; }
 		if ($cfg['ap_posts'] !== 'off' && in_array('ig', $cfg['ap_channels'], true) && $cfg['ap_images'] === '' && !$cfg['ap_reuse']) { $this->_json(array('status' => false, 'message' => 'Instagram needs images: add image links or post on Facebook only.')); return; }
 		if ($cfg['ap_ads'] === 'auto' && $cfg['ap_max_daily'] <= 0) { $this->_json(array('status' => false, 'message' => 'Set the most all running campaigns may spend a day before Claude can change budgets.')); return; }
-		if (($cfg['ap_posts'] !== 'off' || $cfg['ap_ads'] !== 'off') && $M->claude()['api_key'] === '') { $this->_json(array('status' => false, 'message' => 'Add the Claude API key in Connections first.')); return; }
+		if (($cfg['ap_posts'] !== 'off' || $cfg['ap_ads'] !== 'off') && !$M->ai_ready()) { $this->_json(array('status' => false, 'message' => 'Add an AI key (Claude, Gemini, OpenAI or Groq) in Connections first.')); return; }
 		$M->save_meta($cfg);
 		$M->log('settings', $c['name'] . ': autopilot posts ' . $cfg['ap_posts'] . ', ads ' . $cfg['ap_ads'], $this->uid);
 		$this->_json(array('status' => true, 'message' => 'Saved. The cron job runs it once a day.'));
@@ -356,19 +356,73 @@ class Ci_admin_marketing extends CI_Controller
 		$this->ci_admin_model->log_admin_action('marketing_report', 'Downloaded marketing leads report (' . $group . ', ' . $from . ' to ' . $to . ')', 'SUCCESS');
 	}
 
+	/** AI writer settings: main provider, fallback, keys and models, company details and tone. */
+	public function ajax_save_ai()
+	{
+		$M = $this->marketing_model;
+		$prov = (string)$this->input->post('provider');
+		if (!isset(Marketing_model::$ai_providers[$prov])) { $this->_json(array('status' => false, 'message' => 'Choose the main AI.')); return; }
+		$keys = (array)$this->input->post('keys');
+		$clean = array();
+		foreach (array('anthropic', 'gemini', 'openai') as $p) {
+			$k = trim((string)($keys[$p] ?? ''));
+			if ($k === '') continue;
+			if (!preg_match(Marketing_model::$ai_providers[$p]['key_re'], $k)) { $this->_json(array('status' => false, 'message' => Marketing_model::$ai_providers[$p]['label'] . ': that does not look like an API key (' . Marketing_model::$ai_providers[$p]['hint'] . ').')); return; }
+			$clean[$p] = $k;
+		}
+		$M->save_ai(array(
+			'provider' => $prov, 'fallback' => (int)$this->input->post('fallback'), 'models' => (array)$this->input->post('models'),
+			'brand' => (string)$this->input->post('brand'), 'tone' => (string)$this->input->post('tone')
+		), $clean);
+		if ($M->ai($prov)['key'] === '') { $this->_json(array('status' => true, 'message' => 'Saved, but ' . Marketing_model::$ai_providers[$prov]['label'] . ' has no key yet' . ($M->ai_ready() ? ': the other AI with a key is used meanwhile.' : '.'))); $M->log('settings', 'AI settings saved', $this->uid); return; }
+		$M->log('settings', 'AI settings saved (main: ' . $prov . ')' . ($clean ? ' with new key for ' . implode(', ', array_keys($clean)) : ''), $this->uid);
+		$this->_json(array('status' => true, 'message' => 'Saved.'));
+	}
+
 	public function ajax_save_claude()
 	{
-		$key = trim((string)$this->input->post('api_key'));
-		if ($key !== '' && !preg_match('/^sk-ant-[A-Za-z0-9_\-]{20,200}$/', $key)) { $this->_json(array('status' => false, 'message' => 'Claude API keys start with sk-ant-.')); return; }
-		$this->marketing_model->save_claude(array('model' => (string)$this->input->post('model'), 'brand' => (string)$this->input->post('brand'), 'tone' => (string)$this->input->post('tone')), $key);
-		$this->marketing_model->log('settings', 'Claude settings saved' . ($key !== '' ? ' (new key)' : ''), $this->uid);
-		$this->_json(array('status' => true, 'message' => 'Saved.'));
+		$this->ajax_save_ai();
+	}
+
+	public function ajax_test_ai()
+	{
+		list($ok, $msg) = $this->marketing_model->test_ai((string)$this->input->post('provider'));
+		$this->_json(array('status' => $ok, 'message' => $msg));
 	}
 
 	public function ajax_test_claude()
 	{
-		list($ok, $msg) = $this->marketing_model->test_claude();
-		$this->_json(array('status' => $ok, 'message' => $msg));
+		$this->ajax_test_ai();
+	}
+
+	/** The models a saved key can use (suggestions for the model box). */
+	public function ajax_ai_models()
+	{
+		$p = (string)$this->input->post('provider');
+		if (!isset(Marketing_model::$ai_providers[$p])) { $this->_json(array('status' => false, 'message' => 'Unknown provider.')); return; }
+		list($ok, $list) = $this->marketing_model->list_models($p);
+		$this->_json($ok ? array('status' => true, 'models' => $list, 'message' => count($list) . ' models found.') : array('status' => false, 'message' => $list));
+	}
+
+	public function ajax_remove_ai_key()
+	{
+		$p = (string)$this->input->post('provider');
+		if (!$this->marketing_model->remove_ai_key($p)) { $this->_json(array('status' => false, 'message' => 'This key cannot be removed here.')); return; }
+		$this->marketing_model->log('settings', 'AI key removed: ' . $p, $this->uid);
+		$this->_json(array('status' => true, 'message' => 'Key removed.', 'reload' => true));
+	}
+
+	/** One-click check of the Meta account, Instagram, ads, webhook, AI keys and cron job. */
+	public function ajax_health()
+	{
+		$M = $this->marketing_model;
+		if ((int)$this->input->post('conn') && !($c = $this->_conn_or_fail())) return;
+		@set_time_limit(180);
+		$rows = $M->health_check(!$this->input->post('no_ai'));
+		$bad = 0; $warn = 0;
+		foreach ($rows as $r) { if ($r['state'] === 'bad') $bad++; elseif ($r['state'] === 'warn') $warn++; }
+		$M->log('settings', 'Connection check' . (isset($c) ? ' (' . $c['name'] . ')' : '') . ': ' . $bad . ' problems, ' . $warn . ' warnings', $this->uid);
+		$this->_json(array('status' => true, 'rows' => $rows, 'message' => $bad ? $bad . ' problem(s) to fix.' : ($warn ? 'Working, with ' . $warn . ' thing(s) to look at.' : 'Everything works.')));
 	}
 
 	/* ---------- leads ---------- */
@@ -678,6 +732,7 @@ class Ci_admin_marketing extends CI_Controller
 		$got = $this->_got_key();
 		if ($got === '' || !hash_equals($M->cron_key(), $got)) { http_response_code(403); $this->_json(array('status' => false, 'message' => 'Invalid key')); return; }
 		@set_time_limit(600);
+		$M->global_cfg(array('last_cron' => date('Y-m-d H:i:s')));
 		$out = array('status' => true, 'posted' => $M->publish_due(), 'leads' => 0, 'paused' => array(), 'autopilot' => array());
 		foreach ($M->connections('meta') as $c) {
 			if (!$c['enabled'] || $c['token'] === '') continue;

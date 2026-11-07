@@ -120,7 +120,7 @@ $(function () {
     $(b).find('i').attr('class', 'fa fa-spinner fa-spin');
     post('ajax_ai_write', { kind: 'post', topic: topic, language: $('#pLang').val(), channels: ch }, function (r) {
       $(b).find('i').attr('class', 'fa fa-magic');
-      if (r.status) { $('#pMsg').val(r.text); count(); $('#postMsg').text('Claude wrote a draft. Check it before posting.'); }
+      if (r.status) { $('#pMsg').val(r.text); count(); $('#postMsg').text('The AI wrote a draft. Check it before posting.'); }
     }, b, '#postMsg').fail(function () { $(b).find('i').attr('class', 'fa fa-magic'); });
   });
 
@@ -201,10 +201,10 @@ $(function () {
   $('#btnAdsReview').on('click', function () {
     var b = this;
     $(b).find('i').attr('class', 'fa fa-spinner fa-spin');
-    $('#aiReview').removeAttr('hidden').html('<i class="fa fa-spinner fa-spin"></i> Claude is reading the last 7 days…');
+    $('#aiReview').removeAttr('hidden').html('<i class="fa fa-spinner fa-spin"></i> The AI is reading the last 7 days…');
     post('ajax_ai_review', {}, function (r) {
       $(b).find('i').attr('class', 'fa fa-magic');
-      $('#aiReview').html(r.status ? '<b><i class="fa fa-magic"></i> Claude’s review (last 7 days)</b><div class="tx">' + esc(r.text) + '</div><small>Advice only. Nothing was changed.</small>' : esc(r.message));
+      $('#aiReview').html(r.status ? '<b><i class="fa fa-magic"></i> AI review (last 7 days)</b><div class="tx">' + esc(r.text) + '</div><small>Advice only. Nothing was changed.</small>' : esc(r.message));
     }, b).fail(function () { $(b).find('i').attr('class', 'fa fa-magic'); });
   });
 
@@ -233,7 +233,7 @@ $(function () {
     $(b).find('i').attr('class', 'fa fa-spinner fa-spin');
     post('ajax_ai_write', { kind: 'ad', topic: topic, language: $('#nLang').val() }, function (r) {
       $(b).find('i').attr('class', 'fa fa-magic');
-      if (r.status) { $('#nText').val(r.primary || r.text); if (r.headline) $('#nHead').val(r.headline); $('#campMsg').text('Claude wrote the ad. Check it.'); }
+      if (r.status) { $('#nText').val(r.primary || r.text); if (r.headline) $('#nHead').val(r.headline); $('#campMsg').text('The AI wrote the ad. Check it.'); }
     }, b, '#campMsg').fail(function () { $(b).find('i').attr('class', 'fa fa-magic'); });
   });
   $('#btnCampSave').on('click', function () {
@@ -308,7 +308,7 @@ $(function () {
   });
   $('[data-ap-run]').on('click', function () {
     var w = $(this).data('ap-run');
-    if (!confirm(w === 'ads' ? 'Let Claude review the running campaigns now? With "Make the changes" on, it applies them within your limits.' : 'Let Claude write the missing posts for the next 7 days now?')) return;
+    if (!confirm(w === 'ads' ? 'Let the AI review the running campaigns now? With "Make the changes" on, it applies them within your limits.' : 'Let the AI write the missing posts for the next 7 days now?')) return;
     post('ajax_ap_run', { what: w }, function (r) {
       $('#apMsg').text(r.message || '');
       if (r.ok) setTimeout(function () { location.hash = w === 'ads' ? 'ads' : 'posts'; location.reload(); }, 1200);
@@ -413,9 +413,36 @@ $(function () {
   });
   $('#claudeForm').on('submit', function (e) {
     e.preventDefault();
-    post('ajax_save_claude', $(this).serialize(), function (r) { if (r.status) { $('#cKey').val(''); setTimeout(function () { location.hash = 'conn'; location.reload(); }, 600); } }, $(this).find('[type=submit]'), '#claudeMsg');
+    post('ajax_save_ai', $(this).serialize(), function (r) { if (r.status) { $('#claudeForm [name^="keys["]').val(''); setTimeout(function () { location.hash = 'conn'; location.reload(); }, 900); } }, $(this).find('[type=submit]'), '#claudeMsg');
   });
-  $('#btnTestClaude').on('click', function () { post('ajax_test_claude', {}, null, this, '#claudeMsg'); });
+  $('#btnTestClaude').on('click', function () { post('ajax_test_ai', { provider: $('#aiMain').val() }, null, this, '#claudeMsg'); });
+  $('[data-ai-test]').on('click', function () { post('ajax_test_ai', { provider: $(this).data('ai-test') }, null, this, '#claudeMsg'); });
+  $('[data-ai-models]').on('click', function () {
+    var p = $(this).data('ai-models');
+    post('ajax_ai_models', { provider: p }, function (r) {
+      if (!r.status) return;
+      var h = '';
+      r.models.forEach(function (m) { h += '<option value="' + esc(m) + '">'; });
+      $('#aiList_' + p).html(h);
+      $('#claudeForm [name="models[' + p + ']"]').trigger('focus');
+    }, this, '#claudeMsg');
+  });
+  $('[data-ai-del]').on('click', function () {
+    var p = $(this).data('ai-del');
+    if (!confirm('Remove this AI key from the CRM?')) return;
+    post('ajax_remove_ai_key', { provider: p }, function (r) { if (r.reload) setTimeout(function () { location.hash = 'conn'; location.reload(); }, 600); }, this, '#claudeMsg');
+  });
+
+  /* ---------- connection check ---------- */
+  $('#btnHealth').on('click', function () {
+    var box = $('#healthBox').removeAttr('hidden').html('<div class="sx-empty"><i class="fa fa-spinner fa-spin"></i>Checking the token, page, Instagram, ads, webhook, AI and cron job…</div>');
+    post('ajax_health', { conn: editConn() }, function (r) {
+      if (!r.status) { box.html('<div class="sx-empty"><i class="fa fa-exclamation-triangle"></i>' + esc(r.message || 'Not available.') + '</div>'); return; }
+      var ic = { ok: 'fa-check-circle', warn: 'fa-exclamation-circle', bad: 'fa-times-circle' }, h = '<ul class="mk-hl">';
+      r.rows.forEach(function (x) { h += '<li class="is-' + x.state + '"><i class="fa ' + ic[x.state] + '"></i><b>' + esc(x.area) + '</b><span>' + esc(x.text) + '</span></li>'; });
+      box.html(h + '</ul>');
+    }, this, '#metaMsg').fail(function () { box.html('<div class="sx-empty"><i class="fa fa-exclamation-triangle"></i>The server did not answer. Try again.</div>'); });
+  });
   $('#btnRenew').on('click', function () {
     if (!confirm('Make a new key for this account? Update its links in Meta, Google Ads, your website or Zapier afterwards.')) return;
     post('ajax_renew_keys', { conn: editConn() }, function (r) {

@@ -11,6 +11,7 @@ class Marketing_model extends CI_Model
 	private $cache = array();
 	private $page_token = null;
 
+	// Suggestions only; "Load models" in Connections lists what each key can use.
 	public static $claude_models = array(
 		'claude-opus-5-5' => 'Claude Opus 5.5 (best)',
 		'claude-sonnet-5-5' => 'Claude Sonnet 5.5 (faster, lower cost)',
@@ -363,6 +364,20 @@ class Marketing_model extends CI_Model
 		return str_replace('{month}', $mon, $ref);
 	}
 
+	/* ---------- AI providers (writing, ad reviews, autopilot) ---------- */
+
+	/**
+	 * Providers the marketing tools can write with. Keys live only in ci_integration_settings.
+	 * Groq reuses the key the dialer already has (row 'groq'); only the marketing model is kept in the 'marketing' row.
+	 */
+	public static $ai_providers = array(
+		'anthropic' => array('label' => 'Claude (Anthropic)', 'row' => 'anthropic', 'model' => 'claude-opus-5-5', 'hint' => 'sk-ant-… from console.anthropic.com', 'key_re' => '/^sk-ant-[A-Za-z0-9_\-]{20,200}$/'),
+		'gemini' => array('label' => 'Gemini (Google)', 'row' => 'gemini', 'model' => 'gemini-2.5-flash', 'hint' => 'AIza… from aistudio.google.com', 'key_re' => '/^[A-Za-z0-9_\-]{30,100}$/'),
+		'openai' => array('label' => 'OpenAI (ChatGPT)', 'row' => 'openai', 'model' => 'gpt-5-mini', 'hint' => 'sk-… from platform.openai.com', 'key_re' => '/^sk-[A-Za-z0-9_\-]{20,250}$/'),
+		'groq' => array('label' => 'Groq', 'row' => 'groq', 'model' => 'openai/gpt-oss-120b', 'hint' => 'Uses the Groq key from the dialer settings', 'key_re' => '')
+	);
+
+	/** Company details, tone, main provider and fallback. Brand and tone stay in the 'anthropic' row as before. */
 	public function claude()
 	{
 		if (isset($this->cache['claude'])) return $this->cache['claude'];
@@ -370,28 +385,93 @@ class Marketing_model extends CI_Model
 		$cfg = !empty($row['config_json']) ? json_decode($row['config_json'], true) : array();
 		if (!is_array($cfg)) $cfg = array();
 		$s = array_merge(array('model' => 'claude-opus-5-5', 'brand' => '', 'tone' => 'Professional and friendly'), $cfg);
-		if (!isset(self::$claude_models[$s['model']])) $s['model'] = 'claude-opus-5-5';
 		$s['api_key'] = !empty($row['api_key']) ? $row['api_key'] : '';
 		$s['exists'] = !empty($row);
+		$g = $this->global_cfg();
+		$s['provider'] = isset($g['ai_provider'], self::$ai_providers[$g['ai_provider']]) ? $g['ai_provider'] : 'anthropic';
+		$s['fallback'] = !isset($g['ai_fallback']) || !empty($g['ai_fallback']);
 		return $this->cache['claude'] = $s;
 	}
 
-	public function save_claude($cfg, $key = '')
+	/** One provider's key and model. */
+	public function ai($p)
 	{
-		$old = $this->claude();
-		$row = array('config_json' => json_encode(array(
-			'model' => isset(self::$claude_models[$cfg['model']]) ? $cfg['model'] : 'claude-opus-5-5',
-			'brand' => substr(trim($cfg['brand']), 0, 1500),
-			'tone' => substr(trim($cfg['tone']), 0, 100)
-		)), 'updated_at' => date('Y-m-d H:i:s'), 'status' => 1);
-		if ($key !== '') $row['api_key'] = $key;
-		if ($old['exists']) {
-			$this->db->where('service_name', 'anthropic')->update('ci_integration_settings', $row);
+		if (isset($this->cache['ai_' . $p])) return $this->cache['ai_' . $p];
+		$d = self::$ai_providers[$p];
+		$row = $this->row($d['row']);
+		$cfg = !empty($row['config_json']) ? json_decode($row['config_json'], true) : array();
+		if (!is_array($cfg)) $cfg = array();
+		$key = !empty($row['api_key']) ? $row['api_key'] : '';
+		if ($p === 'groq') {
+			// Same order as Groq_service: environment, then the DB row, then a constant.
+			$env = getenv('GROQ_API_KEY');
+			if (!empty($env)) $key = $env;
+			elseif ($key === '' && defined('GROQ_API_KEY')) $key = GROQ_API_KEY;
+			$g = $this->global_cfg();
+			$model = !empty($g['ai_groq_model']) ? $g['ai_groq_model'] : $d['model'];
 		} else {
-			$row += array('service_name' => 'anthropic', 'api_key' => '', 'api_secret' => '', 'endpoint' => 'https://api.anthropic.com/v1/messages', 'created_at' => $row['updated_at']);
-			$this->db->insert('ci_integration_settings', $row);
+			$model = !empty($cfg['model']) ? $cfg['model'] : $d['model'];
 		}
-		unset($this->cache['claude']);
+		return $this->cache['ai_' . $p] = array('provider' => $p, 'label' => $d['label'], 'key' => (string)$key, 'model' => (string)$model, 'exists' => !empty($row));
+	}
+
+	/** Providers to try: the main one first, then (with fallback on) the others that have a key. */
+	public function ai_order()
+	{
+		$c = $this->claude();
+		$out = array();
+		if ($this->ai($c['provider'])['key'] !== '') $out[] = $c['provider'];
+		foreach (array_keys(self::$ai_providers) as $p) if ($p !== $c['provider'] && $this->ai($p)['key'] !== '') $out[] = $p;
+		return $c['fallback'] ? $out : array_slice($out, 0, 1);
+	}
+
+	public function ai_ready()
+	{
+		return count($this->ai_order()) > 0;
+	}
+
+	/**
+	 * $cfg: brand, tone, provider, fallback, models[provider]. $keys[provider]: a new key ('' keeps the saved one).
+	 * The Groq key is never changed here: it belongs to the dialer settings.
+	 */
+	public function save_ai($cfg, $keys = array())
+	{
+		$now = date('Y-m-d H:i:s');
+		$models = isset($cfg['models']) && is_array($cfg['models']) ? $cfg['models'] : array();
+		$clean = function ($v, $def) { $v = trim((string)$v); return preg_match('/^[A-Za-z0-9][A-Za-z0-9_.:\/\-]{1,99}$/', $v) ? $v : $def; };
+		foreach (array('anthropic', 'gemini', 'openai') as $p) {
+			$d = self::$ai_providers[$p];
+			$row = $this->row($d['row']);
+			$old = !empty($row['config_json']) ? json_decode($row['config_json'], true) : array();
+			if (!is_array($old)) $old = array();
+			$new = $old;
+			$new['model'] = $clean($models[$p] ?? '', !empty($old['model']) ? $old['model'] : $d['model']);
+			if ($p === 'anthropic') {
+				$new['brand'] = substr(trim((string)($cfg['brand'] ?? '')), 0, 1500);
+				$new['tone'] = substr(trim((string)($cfg['tone'] ?? '')), 0, 100);
+			}
+			$key = trim((string)($keys[$p] ?? ''));
+			if (!$row && $key === '' && $p !== 'anthropic' && $new['model'] === $d['model']) continue;
+			$upd = array('config_json' => json_encode($new), 'updated_at' => $now, 'status' => 1);
+			if ($key !== '') $upd['api_key'] = $key;
+			if ($row) $this->db->where('service_name', $d['row'])->update('ci_integration_settings', $upd);
+			else $this->db->insert('ci_integration_settings', $upd + array('service_name' => $d['row'], 'api_key' => '', 'api_secret' => '', 'endpoint' => '', 'created_at' => $now));
+		}
+		$this->global_cfg(array(
+			'ai_provider' => isset(self::$ai_providers[$cfg['provider'] ?? '']) ? $cfg['provider'] : 'anthropic',
+			'ai_fallback' => !empty($cfg['fallback']) ? 1 : 0,
+			'ai_groq_model' => $clean($models['groq'] ?? '', $this->ai('groq')['model'])
+		));
+		$this->cache = array_diff_key($this->cache, array_flip(array('claude', 'ai_anthropic', 'ai_gemini', 'ai_openai', 'ai_groq')));
+	}
+
+	/** Remove one provider's key (not Groq's: the dialer uses it). */
+	public function remove_ai_key($p)
+	{
+		if (!in_array($p, array('anthropic', 'gemini', 'openai'), true)) return false;
+		$this->db->where('service_name', self::$ai_providers[$p]['row'])->update('ci_integration_settings', array('api_key' => '', 'updated_at' => date('Y-m-d H:i:s')));
+		$this->cache = array_diff_key($this->cache, array_flip(array('claude', 'ai_' . $p)));
+		return true;
 	}
 
 	/* ---------- HTTP ---------- */
@@ -1136,16 +1216,172 @@ class Marketing_model extends CI_Model
 		return $paused;
 	}
 
-	/* ---------- Claude ---------- */
+	/* ---------- AI requests ---------- */
+
+	public $ai_used = '';
 
 	/**
-	 * One Claude Messages API call. Returns array(ok, text or message).
-	 * Raw HTTP: this CodeIgniter 2 app has no Composer, so the PHP SDK is not available.
+	 * One writing request. The main provider answers; if it fails and fallback is on, the next provider with a key tries.
+	 * Returns array(ok, text or message). With $schema the text is JSON for that schema.
 	 */
+	public function ask_ai($system, $prompt, $max_tokens = 4000, $schema = null)
+	{
+		$order = $this->ai_order();
+		$this->ai_used = '';
+		if (!$order) return array(false, 'Add an AI key (Claude, Gemini, OpenAI or Groq) in Marketing > Connections first.');
+		$errs = array();
+		foreach ($order as $p) {
+			list($ok, $t) = $this->ask_one($p, $system, $prompt, $max_tokens, $schema);
+			if ($ok) { $this->ai_used = $p; return array(true, $t); }
+			$errs[] = $t;
+		}
+		return array(false, implode(' ', $errs));
+	}
+
+	/** Older name, same behaviour. */
 	public function ask_claude($system, $prompt, $max_tokens = 4000, $schema = null)
 	{
-		$c = $this->claude();
-		if ($c['api_key'] === '') return array(false, 'Add the Claude API key in Marketing > Connections first.');
+		return $this->ask_ai($system, $prompt, $max_tokens, $schema);
+	}
+
+	public function ask_one($p, $system, $prompt, $max_tokens = 4000, $schema = null)
+	{
+		$a = $this->ai($p);
+		if ($a['key'] === '') return array(false, $a['label'] . ': no key saved.');
+		if ($p === 'anthropic') return $this->ask_anthropic($a, $system, $prompt, $max_tokens, $schema);
+		if ($schema) $prompt .= "\n\nAnswer with one JSON object only, no other text, matching this JSON Schema:\n" . json_encode($schema);
+		if ($p === 'gemini') list($ok, $t) = $this->ask_gemini($a, $system, $prompt, $max_tokens, (bool)$schema);
+		else list($ok, $t) = $this->ask_openai_style($a, $system, $prompt, $max_tokens, (bool)$schema);
+		if ($ok && $schema) $t = self::json_only($t);
+		return array($ok, $t);
+	}
+
+	/** Strip ``` fences or text around a JSON object. */
+	public static function json_only($t)
+	{
+		$t = trim($t);
+		if (preg_match('/^```(?:json)?\s*(.*?)\s*```$/s', $t, $mm)) $t = $mm[1];
+		if (json_decode($t, true) === null) {
+			$a = strpos($t, '{'); $b = strrpos($t, '}');
+			if ($a !== false && $b > $a) $t = substr($t, $a, $b - $a + 1);
+		}
+		return $t;
+	}
+
+	private function ai_error($label, $code, $msg)
+	{
+		if ($code === 401 || $code === 403) return $label . ' refused the API key. Check it in Connections.';
+		if ($code === 429) return $label . ' is busy or out of credit (HTTP 429). Try again later.';
+		if ($code === 404) return $label . ': model not found. Choose another model in Connections.';
+		return $label . ': ' . ($msg !== '' ? $msg : 'error ' . $code);
+	}
+
+	/** Gemini generateContent (REST). */
+	private function ask_gemini($a, $system, $prompt, $max_tokens, $json)
+	{
+		$body = array(
+			'system_instruction' => array('parts' => array(array('text' => $system))),
+			'contents' => array(array('role' => 'user', 'parts' => array(array('text' => $prompt)))),
+			// Thinking models count their thinking against this limit, so leave room.
+			'generationConfig' => array('maxOutputTokens' => max(2048, (int)$max_tokens * 2))
+		);
+		if ($json) $body['generationConfig']['responseMimeType'] = 'application/json';
+		$url = 'https://generativelanguage.googleapis.com/v1beta/models/' . rawurlencode(preg_replace('#^models/#', '', $a['model'])) . ':generateContent';
+		list($code, $raw, $err) = $this->curl($url, 'POST', array('Content-Type: application/json', 'x-goog-api-key: ' . $a['key']), json_encode($body), 120);
+		if ($err !== '') return array(false, 'Could not reach Gemini: ' . $err);
+		$r = json_decode($raw, true);
+		if (!is_array($r)) return array(false, 'Gemini sent an empty answer (HTTP ' . $code . ').');
+		if (isset($r['error'])) {
+			$msg = (string)($r['error']['message'] ?? '');
+			if ($code === 400 && stripos($msg, 'API key') !== false) $code = 401;
+			return array(false, $this->ai_error('Gemini', $code, $msg));
+		}
+		$cand = $r['candidates'][0] ?? array();
+		$text = '';
+		foreach ((array)($cand['content']['parts'] ?? array()) as $part) if (isset($part['text']) && empty($part['thought'])) $text .= $part['text'];
+		$text = trim($text);
+		if ($text === '') {
+			$why = $cand['finishReason'] ?? ($r['promptFeedback']['blockReason'] ?? '');
+			return array(false, 'Gemini returned no text' . ($why !== '' ? ' (' . $why . ')' : '') . '.');
+		}
+		return array(true, $text);
+	}
+
+	/** OpenAI and Groq: the same chat completions format. */
+	private function ask_openai_style($a, $system, $prompt, $max_tokens, $json)
+	{
+		$groq = $a['provider'] === 'groq';
+		$url = $groq ? 'https://api.groq.com/openai/v1/chat/completions' : 'https://api.openai.com/v1/chat/completions';
+		$reasoning = (bool)preg_match('#^(gpt-5|o\d|openai/gpt-oss)#', $a['model']);
+		$body = array(
+			'model' => $a['model'],
+			'messages' => array(array('role' => 'system', 'content' => $system), array('role' => 'user', 'content' => $prompt)),
+			'max_completion_tokens' => $reasoning ? max(4000, (int)$max_tokens * 2) : (int)$max_tokens
+		);
+		if ($reasoning) $body['reasoning_effort'] = 'low';
+		if ($json) $body['response_format'] = array('type' => 'json_object');
+		list($code, $raw, $err) = $this->curl($url, 'POST', array('Content-Type: application/json', 'Authorization: Bearer ' . $a['key']), json_encode($body), 120);
+		if ($err !== '') return array(false, 'Could not reach ' . $a['label'] . ': ' . $err);
+		$r = json_decode($raw, true);
+		if (!is_array($r)) return array(false, $a['label'] . ' sent an empty answer (HTTP ' . $code . ').');
+		if (isset($r['error'])) return array(false, $this->ai_error($a['label'], $code, (string)(is_array($r['error']) ? ($r['error']['message'] ?? '') : $r['error'])));
+		$ch = $r['choices'][0] ?? array();
+		$text = trim((string)($ch['message']['content'] ?? ''));
+		if ($text === '') {
+			if (!empty($ch['message']['refusal'])) return array(false, $a['label'] . ' declined this request. Change the wording and try again.');
+			return array(false, $a['label'] . ' returned no text' . (!empty($ch['finish_reason']) ? ' (' . $ch['finish_reason'] . ')' : '') . '.');
+		}
+		return array(true, $text);
+	}
+
+	/** Models the saved key can use, for the model suggestions in Connections. Returns array(ok, list of ids or message). */
+	public function list_models($p)
+	{
+		$a = $this->ai($p);
+		if ($a['key'] === '') return array(false, 'Save the ' . $a['label'] . ' key first.');
+		if ($p === 'anthropic') { $url = 'https://api.anthropic.com/v1/models?limit=100'; $h = array('x-api-key: ' . $a['key'], 'anthropic-version: 2026-10-21'); }
+		elseif ($p === 'gemini') { $url = 'https://generativelanguage.googleapis.com/v1beta/models?pageSize=200'; $h = array('x-goog-api-key: ' . $a['key']); }
+		elseif ($p === 'openai') { $url = 'https://api.openai.com/v1/models'; $h = array('Authorization: Bearer ' . $a['key']); }
+		else { $url = 'https://api.groq.com/openai/v1/models'; $h = array('Authorization: Bearer ' . $a['key']); }
+		list($code, $raw, $err) = $this->curl($url, 'GET', $h, null, 20);
+		if ($err !== '') return array(false, 'Could not reach ' . $a['label'] . ': ' . $err);
+		$r = json_decode($raw, true);
+		if (!is_array($r) || isset($r['error'])) return array(false, $this->ai_error($a['label'], $code, is_array($r) && is_array($r['error'] ?? null) ? (string)($r['error']['message'] ?? '') : ''));
+		$out = array();
+		if ($p === 'gemini') {
+			foreach ((array)($r['models'] ?? array()) as $m) {
+				if (!in_array('generateContent', (array)($m['supportedGenerationMethods'] ?? array()), true)) continue;
+				$id = preg_replace('#^models/#', '', (string)$m['name']);
+				if (preg_match('/embed|aqa|imagen|veo|tts|image|audio|live|robotics|computer/i', $id)) continue;
+				$out[] = $id;
+			}
+		} else {
+			foreach ((array)($r['data'] ?? array()) as $m) {
+				$id = (string)($m['id'] ?? '');
+				if ($id === '') continue;
+				if ($p === 'openai' && (!preg_match('/^(gpt-|o\d|chatgpt)/', $id) || preg_match('/audio|realtime|transcribe|tts|image|search|instruct|codex/', $id))) continue;
+				if ($p === 'groq' && preg_match('/whisper|tts|guard|playai|orpheus/i', $id)) continue;
+				$out[] = $id;
+			}
+		}
+		if ($p !== 'anthropic') rsort($out, SORT_NATURAL);
+		return array(true, array_values(array_unique($out)));
+	}
+
+	/** Check one provider (or the main one). */
+	public function test_ai($p = '')
+	{
+		if ($p === '') $p = $this->claude()['provider'];
+		if (!isset(self::$ai_providers[$p])) return array(false, 'Unknown provider.');
+		$a = $this->ai($p);
+		list($ok, $t) = $this->ask_one($p, 'Reply with the single word OK.', 'Connection check', 1000);
+		return $ok ? array(true, $a['label'] . ' is connected (' . $a['model'] . ').') : array(false, $t);
+	}
+
+	/** One Claude Messages API call (raw HTTP: this CodeIgniter 2 app has no Composer, so the PHP SDK is not available). */
+	private function ask_anthropic($a, $system, $prompt, $max_tokens = 4000, $schema = null)
+	{
+		$c = array('api_key' => $a['key'], 'model' => $a['model']);
 		$body = array(
 			'model' => $c['model'],
 			'max_tokens' => (int)$max_tokens,
@@ -1153,7 +1389,7 @@ class Marketing_model extends CI_Model
 			'messages' => array(array('role' => 'user', 'content' => $prompt))
 		);
 		$headers = array('Content-Type: application/json', 'x-api-key: ' . $c['api_key'], 'anthropic-version: 2026-10-21');
-		if ($c['model'] !== 'claude-haiku-5-5') {
+		if (isset(self::$claude_models[$c['model']]) && $c['model'] !== 'claude-haiku-5-5') {
 			// Short marketing copy: keep thinking light; if a request is declined, retry on Anthropic's recommended model.
 			$body['output_config'] = array('effort' => 'low');
 			$body['fallbacks'] = 'default';
@@ -1192,8 +1428,89 @@ class Marketing_model extends CI_Model
 
 	public function test_claude()
 	{
-		list($ok, $t) = $this->ask_claude('Reply with the single word OK.', 'Connection check', 1000);
-		return $ok ? array(true, 'Claude is connected.') : array(false, $t);
+		return $this->test_ai();
+	}
+
+	/* ---------- connection check ---------- */
+
+	/**
+	 * Checks the current Meta account end to end, plus the AI providers and the cron job.
+	 * Returns a list of array(area, state ok|warn|bad, text). Saves a newly found Instagram account.
+	 */
+	public function health_check($ai = true)
+	{
+		$m = $this->meta();
+		$out = array();
+		$add = function ($area, $st, $t) use (&$out) { $out[] = array('area' => $area, 'state' => $st, 'text' => $t); };
+		if ($m['exists'] && $m['platform'] === 'meta') {
+			if (!$m['enabled']) $add('Account', 'warn', 'This account is switched off: no leads are taken in.');
+			if ($m['token'] === '') {
+				$add('Token', 'bad', 'No access token saved.');
+			} else {
+				list($ok, $d, $err) = $this->graph('GET', 'debug_token', array('input_token' => $m['token']));
+				$d = $ok ? ($d['data'] ?? array()) : array();
+				if (!$ok || empty($d['is_valid'])) {
+					$add('Token', 'bad', 'The token does not work' . ($err !== '' ? ': ' . preg_replace('/^Meta: /', '', $err) : (!empty($d['error']['message']) ? ': ' . $d['error']['message'] : '.')) . ' Make a new one and save it.');
+				} else {
+					$exp = (int)($d['expires_at'] ?? 0);
+					$type = ($d['type'] ?? '') === 'SYSTEM_USER' ? 'System user token' : (ucfirst(strtolower((string)($d['type'] ?? 'User'))) . ' token');
+					$app = !empty($d['application']) ? ' for the app "' . $d['application'] . '"' : '';
+					if ($exp === 0) $add('Token', 'ok', $type . $app . ', never expires.');
+					else {
+						$days = (int)floor(($exp - time()) / 86400);
+						$add('Token', $days < 14 ? 'bad' : 'warn', $type . $app . ', expires on ' . date('d M Y', $exp) . ' (' . $days . ' days). In Business Settings › System users, make a token with expiry "Never" and save it here.');
+					}
+					$need = array('pages_show_list', 'pages_read_engagement', 'pages_manage_metadata', 'pages_manage_posts', 'leads_retrieval', 'ads_management', 'ads_read', 'instagram_basic', 'instagram_content_publish', 'business_management');
+					$miss = array_values(array_diff($need, (array)($d['scopes'] ?? array())));
+					$add('Permissions', $miss ? 'warn' : 'ok', $miss ? 'Missing: ' . implode(', ', $miss) . '. Add them to the token, otherwise some parts do not work.' : 'All needed permissions are given.');
+				}
+			}
+			$add('App secret', $m['app_secret'] !== '' ? 'ok' : 'warn', $m['app_secret'] !== '' ? 'Saved: webhook calls are checked and API calls are signed.' : 'Not saved: webhook calls are not checked. Add it from the app’s Settings › Basic.');
+			if ($m['page_id'] === '') {
+				$add('Facebook page', 'bad', 'No page chosen. Press "Connect and find my pages".');
+			} elseif ($m['token'] !== '') {
+				list($ok, $p, $err) = $this->graph('GET', $m['page_id'], array('fields' => 'name,access_token'));
+				if (!$ok) $add('Facebook page', 'bad', 'The page "' . $m['page_name'] . '" cannot be reached: ' . preg_replace('/^Meta: /', '', $err));
+				else $add('Facebook page', !empty($p['access_token']) ? 'ok' : 'warn', '"' . ($p['name'] ?? $m['page_name']) . '"' . (!empty($p['access_token']) ? ', page access works.' : ': no page access token, so posting and lead forms fail. Give the system user full control of the page.'));
+				list($ig, $msg) = $this->detect_instagram();
+				$m = $this->meta();
+				$add('Instagram', $ig ? 'ok' : 'warn', $msg);
+				list($ok, $forms, $err) = $this->forms();
+				if (!$ok) $add('Lead forms', 'bad', 'Cannot read the lead forms: ' . preg_replace('/^Meta: /', '', $err));
+				else {
+					$active = 0; $leads = 0;
+					foreach ($forms as $f) { if (($f['status'] ?? '') === 'ACTIVE') $active++; $leads += (int)($f['leads_count'] ?? 0); }
+					$add('Lead forms', $forms ? 'ok' : 'warn', $forms ? count($forms) . ' forms (' . $active . ' active), ' . $leads . ' leads in Meta so far.' : 'No lead forms on this page yet. Create one in Meta Ads or Meta Business Suite.');
+				}
+				list($ok, $s, $err) = $this->graph('GET', $m['page_id'] . '/subscribed_apps', array(), 'page');
+				$sub = false;
+				if ($ok) foreach ((array)($s['data'] ?? array()) as $x) if (($m['app_id'] === '' || (string)($x['id'] ?? '') === (string)$m['app_id']) && in_array('leadgen', (array)($x['subscribed_fields'] ?? array()), true)) $sub = true;
+				$add('Lead webhook', $sub ? 'ok' : 'warn', !$ok ? 'Cannot read the page subscription: ' . preg_replace('/^Meta: /', '', $err) : ($sub ? 'The page sends new leads to the app straight away.' : 'The page is not subscribed for leads: press "Send page leads to the CRM". Until then leads come in with the 15-minute sync only.'));
+			}
+			if ($m['ad_account_id'] === '') {
+				list($ok, $a) = $m['token'] !== '' ? $this->graph('GET', 'me/adaccounts', array('fields' => 'account_id,name', 'limit' => 25)) : array(false, null);
+				$n = $ok ? count((array)($a['data'] ?? array())) : 0;
+				$add('Ad account', 'warn', $n ? $n . ' ad account(s) available: choose one in this account and save to run ads.' : 'The token reaches no ad account, so Meta Ads and the ads autopilot are off. Give the system user access to the ad account in Business Settings.');
+			} else {
+				list($ok, $a, $err) = $this->graph('GET', $this->act(), array('fields' => 'name,account_status,currency,amount_spent'));
+				if (!$ok) $add('Ad account', 'bad', 'The ad account cannot be reached: ' . preg_replace('/^Meta: /', '', $err));
+				else $add('Ad account', (int)($a['account_status'] ?? 0) === 1 ? 'ok' : 'warn', '"' . ($a['name'] ?? '') . '" · ' . ($a['currency'] ?? '') . ((int)($a['account_status'] ?? 0) === 1 ? ', active.' : ', not active (status ' . (int)($a['account_status'] ?? 0) . '). Check payment in Meta.'));
+			}
+			$add('Lead routing', $m['route'] === 'round' ? (count($m['rr_users']) ? 'ok' : 'bad') : ((int)$m['owner_id'] ? 'ok' : 'bad'), $m['route'] === 'round' ? count($m['rr_users']) . ' people in turn.' : ((int)$m['owner_id'] ? 'New leads go to one owner.' : 'No owner chosen: choose who gets the new leads.'));
+		}
+		if ($ai) {
+			$c = $this->claude();
+			$order = $this->ai_order();
+			if (!$order) $add('AI', 'warn', 'No AI key saved: writing help and the autopilot are off.');
+			foreach ($order as $p) {
+				list($ok, $t) = $this->test_ai($p);
+				$add('AI · ' . self::$ai_providers[$p]['label'], $ok ? 'ok' : 'bad', ($p === $c['provider'] ? 'Main. ' : 'Fallback. ') . $t);
+			}
+		}
+		$g = $this->global_cfg();
+		$last = !empty($g['last_cron']) ? strtotime($g['last_cron']) : 0;
+		$add('Cron job', $last && $last > time() - 1800 ? 'ok' : 'warn', $last ? 'Last run ' . date('d M Y H:i', $last) . ($last > time() - 1800 ? '.' : ': it has not run for a while. Check the cron job on the server.') : 'Has never run. Add the cron link below to the server, every 5 minutes.');
+		return $out;
 	}
 
 	/* ---------- Claude autopilot (per Meta account, run by the cron job) ---------- */
@@ -1238,7 +1555,7 @@ class Marketing_model extends CI_Model
 		if (!$force && $m['ap_last_plan'] !== '' && strtotime($m['ap_last_plan']) > time() - 20 * 3600) return array(0, 'Already planned today.');
 		$topics = $this->lines($m['ap_topics']);
 		if (!$topics) return array(0, 'Add topics for the autopilot first.');
-		if ($this->claude()['api_key'] === '') return array(0, 'Add the Claude API key first.');
+		if (!$this->ai_ready()) return array(0, 'Add an AI key in Connections first.');
 		$now = time();
 		$up = $this->db->query("SELECT scheduled_at FROM ci_mkt_posts WHERE connection_id = ? AND status IN ('Scheduled','Review') AND scheduled_at BETWEEN ? AND ?",
 			array($m['id'], date('Y-m-d H:i:s', $now), date('Y-m-d H:i:s', $now + 7 * 86400)))->result_array();
@@ -1344,7 +1661,7 @@ class Marketing_model extends CI_Model
 		$m = $this->meta();
 		if (!$m['exists'] || $m['platform'] !== 'meta' || $m['ap_ads'] === 'off') return array(false, 'Ads autopilot is off.');
 		if (!$force && $m['ap_last_ads'] !== '' && strtotime($m['ap_last_ads']) > time() - 20 * 3600) return array(false, 'Already reviewed today.');
-		if ($this->claude()['api_key'] === '') return array(false, 'Add the Claude API key first.');
+		if (!$this->ai_ready()) return array(false, 'Add an AI key in Connections first.');
 		list($ok, $rows, $err) = $this->campaigns('last_7d');
 		if (!$ok) return array(false, $err);
 		$this->save_meta(array('ap_last_ads' => date('Y-m-d H:i:s')));

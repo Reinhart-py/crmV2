@@ -21,10 +21,10 @@ $e_tok = $e['token'] !== '';
 $acc_q = $m['exists'] ? '?acc=' . (int)$m['id'] : '';
 ?>
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-campaigns.css?v=20261107_9">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-campaigns.css?v=20261107_10">
 <div class="content-wrapper sx cp mk">
   <section class="sx-head">
-    <h1>Marketing<small>Leads from all your Meta, Google Ads, website and other accounts in one place; posts, Meta Ads and the Claude autopilot</small></h1>
+    <h1>Marketing<small>Leads from all your Meta, Google Ads, website and other accounts in one place; posts, Meta Ads and the AI autopilot</small></h1>
     <div class="sx-btns">
       <?php if (count($metas) > 1) { ?>
         <label class="mk-acc"><span>Meta account</span>
@@ -140,7 +140,7 @@ $acc_q = $m['exists'] ? '?acc=' . (int)$m['id'] : '';
         <?php if (!$m['exists']) { ?>
           <div class="sx-empty"><i class="fa fa-facebook-square"></i>Add a Meta account in Connections to post on Facebook and Instagram.<br><button type="button" class="btn btn-default" style="margin-top:12px" data-go="conn">Open Connections</button></div>
         <?php } else { ?>
-        <div class="mk-rule"><i class="fa fa-facebook-square"></i>Account: <b><?php echo $h($m['name']); ?></b><?php echo $m['page_name'] !== '' ? ' · ' . $h($m['page_name']) : ''; ?><?php if ($m['ap_posts'] !== 'off') { ?> · Claude autopilot <?php echo $m['ap_posts'] === 'auto' ? 'schedules' : 'writes for your approval'; ?> <?php echo (int)$m['ap_per_week']; ?> posts a week<?php } ?></div>
+        <div class="mk-rule"><i class="fa fa-facebook-square"></i>Account: <b><?php echo $h($m['name']); ?></b><?php echo $m['page_name'] !== '' ? ' · ' . $h($m['page_name']) : ''; ?><?php if ($m['ap_posts'] !== 'off') { ?> · The autopilot <?php echo $m['ap_posts'] === 'auto' ? 'schedules' : 'writes for your approval'; ?> <?php echo (int)$m['ap_per_week']; ?> posts a week<?php } ?></div>
         <div class="mk-grid">
           <form id="postForm" class="mk-compose" autocomplete="off" novalidate>
             <input type="hidden" name="id" value="0">
@@ -156,7 +156,7 @@ $acc_q = $m['exists'] ? '?acc=' . (int)$m['id'] : '';
             <div class="mk-ai">
               <input type="text" id="pTopic" class="form-control" maxlength="1500" placeholder="What is the post about? e.g. Free PRO services consultation this week">
               <select id="pLang" class="form-control" aria-label="Language"><option value="en">English</option><option value="ar">Arabic</option><option value="both">Both</option></select>
-              <button type="button" class="btn btn-default" id="btnWritePost"<?php echo $has_claude ? '' : ' disabled title="Add the Claude API key in Connections"'; ?>><i class="fa fa-magic"></i> Write with Claude</button>
+              <button type="button" class="btn btn-default" id="btnWritePost"<?php echo $has_claude ? '' : ' disabled title="Add an AI key in Connections"'; ?>><i class="fa fa-magic"></i> Write with AI</button>
             </div>
             <div class="form-group">
               <label for="pMsg">Text</label>
@@ -230,14 +230,14 @@ $acc_q = $m['exists'] ? '?acc=' . (int)$m['id'] : '';
             <option value="today">Today</option><option value="yesterday">Yesterday</option><option value="last_7d" selected>Last 7 days</option><option value="last_30d">Last 30 days</option><option value="this_month">This month</option>
           </select>
           <button type="button" class="btn btn-default" id="btnAdsLoad"><i class="fa fa-refresh"></i> Refresh</button>
-          <button type="button" class="btn btn-default" id="btnAdsReview"<?php echo $has_claude ? '' : ' disabled title="Add the Claude API key in Connections"'; ?>><i class="fa fa-magic"></i> Review with Claude</button>
+          <button type="button" class="btn btn-default" id="btnAdsReview"<?php echo $has_claude ? '' : ' disabled title="Add an AI key in Connections"'; ?>><i class="fa fa-magic"></i> Review with AI</button>
           <?php if ($can_write) { ?><button type="button" class="btn btn-primary" id="btnNewCamp" style="margin-left:auto"><i class="fa fa-plus"></i> New lead campaign</button><?php } ?>
         </div>
         <div class="mk-rule"><i class="fa fa-shield"></i>
           <span><b><?php echo $h($m['name']); ?></b> · act_<?php echo $h($m['ad_account_id']); ?>.
           <?php if (!empty($m['auto_pause'])) { ?>Auto-pause is on: running campaigns that cost more than <b><?php echo $h($m['currency'] . ' ' . number_format((float)$m['max_cpl'], 2)); ?></b> a lead (last 7 days) are paused every hour.
           <?php } else { ?>Auto-pause is off.<?php } ?>
-          <?php if ($m['ap_ads'] !== 'off') { ?> Claude autopilot <?php echo $m['ap_ads'] === 'auto' ? 'adjusts' : 'suggests changes to'; ?> campaigns once a day.<?php } ?></span>
+          <?php if ($m['ap_ads'] !== 'off') { ?> The autopilot <?php echo $m['ap_ads'] === 'auto' ? 'adjusts' : 'suggests changes to'; ?> campaigns once a day.<?php } ?></span>
         </div>
         <?php if ($m['ap_last_report'] !== '') { ?><div class="mk-review"><b><i class="fa fa-magic"></i> Autopilot, last review</b><div class="tx"><?php echo $h($m['ap_last_report']); ?></div></div><?php } ?>
         <div id="aiReview" class="mk-review" hidden></div>
@@ -253,13 +253,13 @@ $acc_q = $m['exists'] ? '?acc=' . (int)$m['id'] : '';
         <form id="apForm" class="mk-conn" autocomplete="off" novalidate>
           <input type="hidden" name="conn" value="<?php echo (int)$m['id']; ?>">
           <div>
-            <?php if (!$has_claude) { ?><div class="ai-off" style="margin:0 0 14px"><i class="fa fa-key"></i><span>Add the Claude API key in Connections to switch the autopilot on.</span></div><?php } ?>
+            <?php if (!$has_claude) { ?><div class="ai-off" style="margin:0 0 14px"><i class="fa fa-key"></i><span>Add an AI key (Claude, Gemini, OpenAI or Groq) in Connections to switch the autopilot on.</span></div><?php } ?>
             <div class="sx-card">
               <div class="sx-card-h"><h3><i class="fa fa-pencil-square-o"></i> Posts on Facebook and Instagram · <?php echo $h($m['name']); ?></h3></div>
               <div class="sx-card-b">
                 <div class="seg" style="margin-bottom:12px">
                   <label><input type="radio" name="ap_posts" value="off"<?php echo $chk($m['ap_posts'] === 'off'); echo $dis; ?>><span>Off</span></label>
-                  <label><input type="radio" name="ap_posts" value="review"<?php echo $chk($m['ap_posts'] === 'review'); echo $dis; ?>><span>Claude writes, I approve</span></label>
+                  <label><input type="radio" name="ap_posts" value="review"<?php echo $chk($m['ap_posts'] === 'review'); echo $dis; ?>><span>AI writes, I approve</span></label>
                   <label><input type="radio" name="ap_posts" value="auto"<?php echo $chk($m['ap_posts'] === 'auto'); echo $dis; ?>><span>Fully automatic</span></label>
                 </div>
                 <div class="f2">
@@ -271,9 +271,9 @@ $acc_q = $m['exists'] ? '?acc=' . (int)$m['id'] : '';
                   <div class="form-group"><label for="apLang">Language</label><select id="apLang" name="ap_lang" class="form-control"<?php echo $dis; ?>><option value="en"<?php echo $sel($m['ap_lang'], 'en'); ?>>English</option><option value="ar"<?php echo $sel($m['ap_lang'], 'ar'); ?>>Arabic</option><option value="both"<?php echo $sel($m['ap_lang'], 'both'); ?>>Both</option></select></div>
                   <div class="form-group wide"><label for="apTopics">Topics, one a line</label><textarea id="apTopics" name="ap_topics" class="form-control" rows="4" maxlength="3000" placeholder="Mainland company setup in 7 days&#10;Golden visa for investors&#10;Corporate tax registration before the deadline"<?php echo $dis; ?>><?php echo $h($m['ap_topics']); ?></textarea></div>
                   <div class="form-group wide"><label for="apImgs">Image links, one a line (used in turn)</label><textarea id="apImgs" name="ap_images" class="form-control" rows="3" maxlength="5000" placeholder="https://…/post-1.jpg"<?php echo $dis; ?>><?php echo $h($m['ap_images']); ?></textarea><span class="hint">Instagram posts need an image. Without images the autopilot posts on Facebook only.</span></div>
-                  <div class="form-group wide"><label class="tog"><input type="checkbox" name="ap_reuse" value="1"<?php echo $chk(!empty($m['ap_reuse'])); echo $dis; ?>><span>Reuse earlier creatives<small>Pictures of earlier page posts and ads are used in turn with the links above, and Claude follows the voice of those posts without repeating them.</small></span></label></div>
+                  <div class="form-group wide"><label class="tog"><input type="checkbox" name="ap_reuse" value="1"<?php echo $chk(!empty($m['ap_reuse'])); echo $dis; ?>><span>Reuse earlier creatives<small>Pictures of earlier page posts and ads are used in turn with the links above, and The AI follows the voice of those posts without repeating them.</small></span></label></div>
                 </div>
-                <p class="hint" style="margin:0">Once a day Claude fills the next 7 days with posts (one a day at most) using the company details from the Claude settings, and avoids repeating recent posts. "I approve" puts them under Posts with an Approve button.</p>
+                <p class="hint" style="margin:0">Once a day the AI fills the next 7 days with posts (one a day at most) using the company details from the AI writer settings, and avoids repeating recent posts. "I approve" puts them under Posts with an Approve button.</p>
               </div>
             </div>
             <div class="sx-card">
@@ -289,7 +289,7 @@ $acc_q = $m['exists'] ? '?acc=' . (int)$m['id'] : '';
                   <div class="form-group"><label for="apStep">Biggest budget change a day (%)</label><input type="number" id="apStep" name="ap_step" class="form-control" min="5" max="50" value="<?php echo (int)$m['ap_step']; ?>"<?php echo $dis; ?>></div>
                   <div class="form-group"><label for="apMin">Judge a campaign after it spent (<?php echo $h($m['currency']); ?>, 7 days)</label><input type="number" id="apMin" name="ap_min_spend" class="form-control" min="0" step="1" value="<?php echo (float)$m['ap_min_spend'] ?: ''; ?>"<?php echo $dis; ?>></div>
                 </div>
-                <p class="hint" style="margin:0">Once a day Claude reads the last 7 days of running campaigns and pauses the ones wasting money or moves budgets towards the ones with the best cost per lead. Limits the CRM enforces: it never starts a paused campaign or makes new ones, each budget moves at most the % above, and raises stop at the daily total. The cost-per-lead target is the one in Connections. Every change is written in Recent changes.</p>
+                <p class="hint" style="margin:0">Once a day the AI reads the last 7 days of running campaigns and pauses the ones wasting money or moves budgets towards the ones with the best cost per lead. Limits the CRM enforces: it never starts a paused campaign or makes new ones, each budget moves at most the % above, and raises stop at the daily total. The cost-per-lead target is the one in Connections. Every change is written in Recent changes.</p>
               </div>
               <?php if ($can_write) { ?>
               <div class="sx-card-f">
@@ -486,30 +486,55 @@ $acc_q = $m['exists'] ? '?acc=' . (int)$m['id'] : '';
                 <div class="sx-card-f">
                   <button type="submit" class="btn btn-primary"><i class="fa fa-check"></i> Save</button>
                   <?php if ($is_meta) { ?><button type="button" class="btn btn-default" id="btnSubscribe"<?php echo $e['id'] && $e_tok && $e['page_id'] !== '' ? '' : ' disabled'; ?>><i class="fa fa-bolt"></i> Send page leads to the CRM</button><?php } ?>
+                  <?php if ($is_meta && $e['id'] && $e_tok) { ?><button type="button" class="btn btn-default" id="btnHealth"><i class="fa fa-stethoscope"></i> Check connection</button><?php } ?>
                   <?php if ($is_meta && $e_tok) { ?><button type="button" class="btn btn-link" id="btnDisconnect">Disconnect</button><?php } ?>
                   <?php if ($e['id']) { ?><button type="button" class="btn btn-link mk-err" id="btnDelConn">Remove account</button><?php } ?>
                   <span class="sx-help" id="metaMsg" role="status"></span>
                 </div>
                 <?php } ?>
+                <div class="mk-health" id="healthBox" hidden></div>
               </div>
             </form>
 
             <form id="claudeForm" autocomplete="off" novalidate>
               <div class="sx-card">
-                <div class="sx-card-h"><h3><i class="fa fa-magic"></i> Claude (writing, ad reviews, autopilot)<?php if ($has_claude) { ?> <span class="chip st-Active">Key saved</span><?php } ?></h3></div>
+                <div class="sx-card-h"><h3><i class="fa fa-magic"></i> AI writer (posts, ads, reviews, autopilot)<?php if ($has_claude) { ?> <span class="chip st-Active">Ready</span><?php } ?></h3></div>
                 <div class="sx-card-b">
                   <div class="f2">
                     <div class="form-group">
-                      <label for="cKey">Claude API key</label>
-                      <div class="mk-pw"><input type="password" id="cKey" name="api_key" class="form-control" autocomplete="new-password" placeholder="<?php echo $has_claude ? 'Saved. Leave empty to keep it' : 'sk-ant-… from console.anthropic.com'; ?>"<?php echo $dis; ?>></div>
+                      <label for="aiMain">Main AI</label>
+                      <select id="aiMain" name="provider" class="form-control"<?php echo $dis; ?>><?php foreach ($ai_providers as $k => $p) { ?><option value="<?php echo $k; ?>"<?php echo $sel($c['provider'], $k); ?>><?php echo $h($p['label']); ?><?php echo $ai[$k]['key'] !== '' ? '' : ' (no key)'; ?></option><?php } ?></select>
                     </div>
                     <div class="form-group">
-                      <label for="cModel">Model</label>
-                      <select id="cModel" name="model" class="form-control"<?php echo $dis; ?>><?php foreach ($claude_models as $k => $v) { ?><option value="<?php echo $k; ?>"<?php echo $sel($c['model'], $k); ?>><?php echo $h($v); ?></option><?php } ?></select>
+                      <label>Fallback</label>
+                      <label class="tog"><input type="checkbox" name="fallback" value="1"<?php echo $chk($c['fallback']); echo $dis; ?>><span>If it fails, try the other AIs that have a key</span></label>
                     </div>
+                  </div>
+                  <div class="mk-ais">
+                    <?php foreach ($ai_providers as $k => $p) { $a = $ai[$k]; ?>
+                    <div class="mk-ai-row" data-p="<?php echo $k; ?>">
+                      <div class="mk-ai-n"><b><?php echo $h($p['label']); ?></b><?php echo $a['key'] !== '' ? ' <span class="chip st-Active">Key saved</span>' : ''; ?></div>
+                      <?php if ($k === 'groq') { ?>
+                      <div class="mk-ai-k hint"><?php echo $a['key'] !== '' ? 'Uses the Groq key from the dialer settings.' : 'Add the Groq key in the dialer settings to use it here.'; ?></div>
+                      <?php } else { ?>
+                      <div class="mk-ai-k mk-pw"><input type="password" name="keys[<?php echo $k; ?>]" class="form-control" autocomplete="new-password" aria-label="<?php echo $h($p['label']); ?> API key" placeholder="<?php echo $a['key'] !== '' ? 'Saved. Leave empty to keep it' : $h($p['hint']); ?>"<?php echo $dis; ?>></div>
+                      <?php } ?>
+                      <div class="mk-ai-m"><input type="text" name="models[<?php echo $k; ?>]" class="form-control" list="aiList_<?php echo $k; ?>" value="<?php echo $h($a['model']); ?>" aria-label="<?php echo $h($p['label']); ?> model" maxlength="100"<?php echo $dis; ?>>
+                        <datalist id="aiList_<?php echo $k; ?>"><?php if ($k === 'anthropic') foreach ($claude_models as $mk => $mv) { ?><option value="<?php echo $mk; ?>"><?php echo $h($mv); ?></option><?php } ?></datalist></div>
+                      <?php if ($can_write) { ?>
+                      <div class="mk-ai-b">
+                        <button type="button" class="btn btn-link btn-sm" data-ai-models="<?php echo $k; ?>"<?php echo $a['key'] !== '' ? '' : ' disabled'; ?>>Load models</button>
+                        <button type="button" class="btn btn-link btn-sm" data-ai-test="<?php echo $k; ?>"<?php echo $a['key'] !== '' ? '' : ' disabled'; ?>>Check</button>
+                        <?php if ($k !== 'groq' && $a['key'] !== '') { ?><button type="button" class="btn btn-link btn-sm mk-err" data-ai-del="<?php echo $k; ?>">Remove key</button><?php } ?>
+                      </div>
+                      <?php } ?>
+                    </div>
+                    <?php } ?>
+                  </div>
+                  <div class="f2">
                     <div class="form-group wide">
                       <label for="cBrand">About the company</label>
-                      <textarea id="cBrand" name="brand" class="form-control" rows="3" maxlength="1500" placeholder="Services, areas served, what makes you different. Claude uses this in every text."<?php echo $dis; ?>><?php echo $h($c['brand']); ?></textarea>
+                      <textarea id="cBrand" name="brand" class="form-control" rows="3" maxlength="1500" placeholder="Services, areas served, what makes you different. The AI uses this in every text."<?php echo $dis; ?>><?php echo $h($c['brand']); ?></textarea>
                     </div>
                     <div class="form-group">
                       <label for="cTone">Tone</label>
@@ -520,7 +545,7 @@ $acc_q = $m['exists'] ? '?acc=' . (int)$m['id'] : '';
                 <?php if ($can_write) { ?>
                 <div class="sx-card-f">
                   <button type="submit" class="btn btn-primary"><i class="fa fa-check"></i> Save</button>
-                  <button type="button" class="btn btn-default" id="btnTestClaude"><i class="fa fa-plug"></i> Check</button>
+                  <button type="button" class="btn btn-default" id="btnTestClaude"><i class="fa fa-plug"></i> Check main AI</button>
                   <span class="sx-help" id="claudeMsg" role="status"></span>
                 </div>
                 <?php } ?>
@@ -546,7 +571,7 @@ $acc_q = $m['exists'] ? '?acc=' . (int)$m['id'] : '';
                 <?php } else { ?>
                   <p class="hint" style="margin:0">Save the account to get its links.</p>
                 <?php } ?>
-                <p class="hint" style="margin:14px 0 6px"><b>Cron job</b> every 5 minutes, for all accounts: scheduled posts, lead backup sync, ads rule and the Claude autopilot.</p>
+                <p class="hint" style="margin:14px 0 6px"><b>Cron job</b> every 5 minutes, for all accounts: scheduled posts, lead backup sync, ads rule and the AI autopilot.</p>
                 <div class="copy"><input type="text" class="form-control" id="hkCron" readonly value="<?php echo $h($cron_url); ?>"><button type="button" class="btn btn-default btn-sm" data-copy="#hkCron">Copy</button></div>
                 <?php if ($can_write) { ?><button type="button" class="btn btn-link btn-sm" id="btnRenewCron" style="padding-left:0;margin-top:4px">Renew the cron key</button><?php } ?>
               </div>
@@ -631,7 +656,7 @@ $acc_q = $m['exists'] ? '?acc=' . (int)$m['id'] : '';
       </div>
       <div class="form-group wide">
         <label>Ad text</label>
-        <div class="mk-ai"><input type="text" id="nTopic" class="form-control" maxlength="1500" placeholder="Service and offer, e.g. Mainland company setup in 7 days"><select id="nLang" class="form-control" aria-label="Language"><option value="en">English</option><option value="ar">Arabic</option></select><button type="button" class="btn btn-default" id="btnWriteAd"<?php echo $has_claude ? '' : ' disabled title="Add the Claude API key in Connections"'; ?>><i class="fa fa-magic"></i> Write with Claude</button></div>
+        <div class="mk-ai"><input type="text" id="nTopic" class="form-control" maxlength="1500" placeholder="Service and offer, e.g. Mainland company setup in 7 days"><select id="nLang" class="form-control" aria-label="Language"><option value="en">English</option><option value="ar">Arabic</option></select><button type="button" class="btn btn-default" id="btnWriteAd"<?php echo $has_claude ? '' : ' disabled title="Add an AI key in Connections"'; ?>><i class="fa fa-magic"></i> Write with AI</button></div>
         <textarea id="nText" name="text" class="form-control" rows="4" maxlength="2000" placeholder="Primary text"></textarea>
       </div>
       <div class="form-group"><label for="nHead">Headline</label><input type="text" id="nHead" name="headline" class="form-control" maxlength="40"></div>
@@ -649,5 +674,5 @@ $acc_q = $m['exists'] ? '?acc=' . (int)$m['id'] : '';
 </div></div>
 
 <script>window.MK = { base: '<?php echo $base; ?>system/marketing/', page: '<?php echo $base; ?>system/marketing', acc: <?php echo (int)$m['id']; ?>, edit: <?php echo (int)$e['id']; ?>, cur: '<?php echo $h($m['currency']); ?>', canWrite: <?php echo $can_write ? 'true' : 'false'; ?>, hasAds: <?php echo $has_token && $m['ad_account_id'] !== '' ? 'true' : 'false'; ?> };</script>
-<script src="<?php echo base_url(); ?>assets/dist/js/crm-marketing.js?v=20261107_5"></script>
+<script src="<?php echo base_url(); ?>assets/dist/js/crm-marketing.js?v=20261107_6"></script>
 <?php require_once(APPPATH . "views/manager/elements/footer.php"); ?>
