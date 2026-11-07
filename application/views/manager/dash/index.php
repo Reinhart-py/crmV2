@@ -61,7 +61,6 @@ $late_tasks = count(array_filter($my_tasks, function ($x) { return $x['_late']; 
         <span><?php echo $h(date('M Y', strtotime($win['start']))); ?></span>
         <a class="btn btn-default<?php echo $is_now ? ' disabled' : ''; ?>" href="<?php echo $h($q(array('m' => $next_m === date('Y-m') ? '' : $next_m))); ?>" title="Next month" aria-label="Next month"><i class="fa fa-angle-right"></i></a>
       </div>
-      <?php require(APPPATH . 'views/manager/dash/style_switch.php'); ?>
     </div>
   </section>
 

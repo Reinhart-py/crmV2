@@ -218,7 +218,7 @@
 
 <div class="content-wrapper full-screen-dash">
 
-    <div class="ds-bar"><span>Dashboard style</span><?php require(APPPATH . 'views/manager/dash/style_switch.php'); ?></div>
+    
 
     <div class="dash-content-body">
 

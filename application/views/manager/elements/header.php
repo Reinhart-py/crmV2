@@ -291,6 +291,9 @@
               <span>My HR</span>
             </a>
           </li>
+          <?php if (crm_can('dashboard')) { ?>
+          <li><?php require(APPPATH . 'views/manager/dash/style_switch.php'); ?></li>
+          <?php } ?>
           <li>
             <a href="<?php echo base_url(); ?>manager/password" class="google-profile-item">
               <i class="fa fa-key"></i>
