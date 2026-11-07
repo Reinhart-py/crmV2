@@ -607,24 +607,39 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
 (function () {
     var root = document.getElementById('c2Root'), row = root ? root.querySelector('.c2-toprow') : null;
     if (!row) return;
-    var MIN = 210, MAX = 460, rowTop = null;
+    var MIN = 170, MAX = 440, SPARE = 18, rowTop = null, cur = 0;
     function scrolled() { return (document.body.scrollTop || 0) + (window.pageYOffset || 0) > 0; }
-    function fit() {
-        var z = parseFloat(getComputedStyle(document.body).zoom) || 1;
-        if (rowTop === null || !scrolled()) rowTop = row.getBoundingClientRect().top / z;
-        if (!window.matchMedia('(min-width: 992px)').matches) {
-            root.style.removeProperty('--c2-card'); root.style.removeProperty('--c2-body'); root.style.removeProperty('--c2-ring');
-            return;
-        }
-        // Left column: two tile rows (60 + 8 + 60 + 8), chart, 8, chart. Right column: ring, 8, ring.
-        var avail = (window.innerHeight / z) - rowTop - 10;
-        var card = Math.max(MIN, Math.min(MAX, Math.floor((avail - 144) / 2)));
+    function clamp(v) { return Math.max(MIN, Math.min(MAX, v)); }
+    function apply(card) {
+        cur = card;
         root.style.setProperty('--c2-card', card + 'px');
         root.style.setProperty('--c2-body', (card - 38) + 'px');
         root.style.setProperty('--c2-ring', (card + 68) + 'px');
     }
+    function fit(redraw) {
+        var z = parseFloat(getComputedStyle(document.body).zoom) || 1, before = cur;
+        if (rowTop === null || !scrolled()) rowTop = row.getBoundingClientRect().top / z;
+        if (!window.matchMedia('(min-width: 992px)').matches) {
+            cur = 0;
+            root.style.removeProperty('--c2-card'); root.style.removeProperty('--c2-body'); root.style.removeProperty('--c2-ring');
+            return;
+        }
+        // Left column: two tile rows (60 + 8 + 60 + 8), chart, 8, chart. Right column: ring, 8, ring.
+        var avail = (window.innerHeight / z) - rowTop - SPARE;
+        apply(clamp(Math.floor((avail - 144) / 2)));
+        // Check against the real layout and shrink if anything still runs past the screen.
+        if (!scrolled()) {
+            var bottom = 0, kids = row.children;
+            for (var i = 0; i < kids.length; i++) bottom = Math.max(bottom, kids[i].getBoundingClientRect().bottom);
+            var over = (bottom - window.innerHeight) / z + SPARE;
+            if (over > 0) apply(clamp(cur - Math.ceil(over / 2)));
+        }
+        // Charts drawn before a late change need a redraw at the new height.
+        if (redraw === true && cur !== before) window.dispatchEvent(new Event('resize'));
+    }
     fit();
     $(window).on('resize orientationchange', fit);
+    $(window).on('load', function () { fit(true); setTimeout(function () { fit(true); }, 600); });
 })();
 </script>
 
