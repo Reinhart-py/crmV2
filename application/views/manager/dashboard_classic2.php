@@ -2160,6 +2160,9 @@ $c2_empty = array(
 .dash-c2 .dash-kpi-col2, .dash-c2 .dash-kpi-col4 { background-position: 0 0, 70% 60% !important; }
 .content-wrapper.dash-c2 { background: linear-gradient(rgba(248, 250, 252, .84), rgba(248, 250, 252, .84)), #f8fafc url("<?php echo base_url(); ?>assets/background-auth.jpg") center / cover no-repeat fixed !important; }
 [data-theme="dark"] .content-wrapper.dash-c2 { background: linear-gradient(rgba(11, 15, 25, .92), rgba(11, 15, 25, .92)), #0b0f19 url("<?php echo base_url(); ?>assets/background-auth.jpg") center / cover no-repeat fixed !important; }
+/* White cards: the same picture under a strong white wash, like the right side of the sign-in page. */
+.dash-c2 .dash-top-chart-card, .dash-c2 .dash-round-card, .dash-c2 .dash-chart-card, .dash-c2 .crm-modern-stat-card { background: linear-gradient(rgba(255, 255, 255, .91), rgba(255, 255, 255, .91)), #ffffff url("<?php echo base_url(); ?>assets/background-auth.jpg") center / cover no-repeat !important; }
+[data-theme="dark"] .dash-c2 .dash-top-chart-card, [data-theme="dark"] .dash-c2 .dash-round-card, [data-theme="dark"] .dash-c2 .dash-chart-card, [data-theme="dark"] .dash-c2 .crm-modern-stat-card { background: linear-gradient(rgba(17, 24, 39, .90), rgba(17, 24, 39, .90)), #111827 url("<?php echo base_url(); ?>assets/background-auth.jpg") center / cover no-repeat !important; }
 /* 2. Bigger labels and amounts. */
 .dash-c2 .dash-kpi-card { height: 60px; min-height: 60px; padding: 4px 12px !important; }
 .dash-c2 .dash-kpi-value { font-size: 19px; margin-bottom: 1px; }
@@ -2179,6 +2182,7 @@ $c2_empty = array(
 /* 4. Empty ring is smaller (drawn in PHP) and its text follows the theme. */
 [data-theme="dark"] .dash-c2 .c2-empty-text { fill: #94a3b8; }
 [data-theme="dark"] .dash-c2 .c2-empty-ring { stroke: #1f2937; }
+.dash-c2 .c2-empty-ring { stroke: #cfd8e3; }
 
 /* 5. Activity cards: titles shown in full. */
 .dash-c2 .crm-op-7col-row .crm-modern-stat-card .card-top { flex-wrap: wrap !important; align-items: flex-start !important; }
