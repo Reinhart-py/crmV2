@@ -121,14 +121,14 @@
 }
 .dash-top-chart-body {
     position: relative !important;
-    height: 172px !important;
-    max-height: 172px !important;
+    height: var(--c2-body, 172px) !important;
+    max-height: var(--c2-body, 172px) !important;
     padding: 0 !important;
     overflow: hidden !important;
 }
 .dash-top-chart-body canvas {
-    height: 172px !important;
-    max-height: 172px !important;
+    height: var(--c2-body, 172px) !important;
+    max-height: var(--c2-body, 172px) !important;
     width: 100% !important;
 }
 [data-theme="dark"] .dash-round-meta {
@@ -446,9 +446,9 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
 ?>
 
         <div class="row c2-toprow" style="margin-top: 0; margin-bottom: 8px;">
-            <div class="col-lg-8 col-md-7 col-xs-12" style="padding-left: 10px; padding-right: 6px;">
-                <div class="row" style="margin-left:-3px; margin-right:-3px;">
-                    <div class="col-xs-3" style="padding-left:3px; padding-right:3px;">
+            <div class="col-lg-8 col-md-7 col-xs-12" style="padding-left: 14px; padding-right: 4px;">
+                <div class="row" style="margin-left:-4px; margin-right:-4px;">
+                    <div class="col-xs-3" style="padding-left:4px; padding-right:4px;">
                         <a href="<?php echo base_url(); ?>manager/leads" class="dash-kpi-card dash-kpi-col1" id="cardMyDatabase">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                                 <div style="min-width:0; flex:1;">
@@ -459,7 +459,7 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
                             </div>
                         </a>
                     </div>
-                    <div class="col-xs-3" style="padding-left:3px; padding-right:3px;">
+                    <div class="col-xs-3" style="padding-left:4px; padding-right:4px;">
                         <a href="<?php echo base_url(); ?>manager/verticals" class="dash-kpi-card dash-kpi-col2" id="cardMyVerticals">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                                 <div style="min-width:0; flex:1;">
@@ -470,7 +470,7 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
                             </div>
                         </a>
                     </div>
-                    <div class="col-xs-3" style="padding-left:3px; padding-right:3px;">
+                    <div class="col-xs-3" style="padding-left:4px; padding-right:4px;">
                         <a href="<?php echo base_url(); ?>manager/team/members" class="dash-kpi-card dash-kpi-col3" id="cardTeamUsers">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                                 <div style="min-width:0; flex:1;">
@@ -481,7 +481,7 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
                             </div>
                         </a>
                     </div>
-                    <div class="col-xs-3" style="padding-left:3px; padding-right:3px;">
+                    <div class="col-xs-3" style="padding-left:4px; padding-right:4px;">
                         <a href="<?php echo base_url(); ?>manager/team/verticals" class="dash-kpi-card dash-kpi-col4" id="cardTeamVerticals">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                                 <div style="min-width:0; flex:1;">
@@ -494,8 +494,8 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
                     </div>
                 </div>
 
-                <div class="row" style="margin-left:-3px; margin-right:-3px;">
-                    <div class="col-xs-3" style="padding-left:3px; padding-right:3px;">
+                <div class="row" style="margin-left:-4px; margin-right:-4px;">
+                    <div class="col-xs-3" style="padding-left:4px; padding-right:4px;">
                         <a href="<?php echo base_url(); ?>manager/leads/view_leads" class="dash-kpi-card dash-kpi-col1" id="cardMyLeads">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                                 <div style="min-width:0; flex:1;">
@@ -507,7 +507,7 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
                             </div>
                         </a>
                     </div>
-                    <div class="col-xs-3" style="padding-left:3px; padding-right:3px;">
+                    <div class="col-xs-3" style="padding-left:4px; padding-right:4px;">
                         <a href="<?php echo base_url(); ?>manager/orders/my" class="dash-kpi-card dash-kpi-col2" id="cardMyOrders">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                                 <div style="min-width:0; flex:1;">
@@ -519,7 +519,7 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
                             </div>
                         </a>
                     </div>
-                    <div class="col-xs-3" style="padding-left:3px; padding-right:3px;">
+                    <div class="col-xs-3" style="padding-left:4px; padding-right:4px;">
                         <a href="<?php echo base_url(); ?>manager/team/leads" class="dash-kpi-card dash-kpi-col3" id="cardTeamLeads">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                                 <div style="min-width:0; flex:1;">
@@ -531,7 +531,7 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
                             </div>
                         </a>
                     </div>
-                    <div class="col-xs-3" style="padding-left:3px; padding-right:3px;">
+                    <div class="col-xs-3" style="padding-left:4px; padding-right:4px;">
                         <a href="<?php echo base_url(); ?>manager/team/orders" class="dash-kpi-card dash-kpi-col4" id="cardTeamOrders">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                                 <div style="min-width:0; flex:1;">
@@ -545,7 +545,7 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
                     </div>
                 </div>
 
-                <div class="dash-top-chart-card" style="height: 210px; max-height: 210px; margin-bottom: 8px; padding: 6px 12px; border-radius: 8px; box-sizing: border-box;">
+                <div class="dash-top-chart-card" style="height: var(--c2-card, 210px); max-height: var(--c2-card, 210px); margin-bottom: 8px; padding: 6px 12px; border-radius: 8px; box-sizing: border-box;">
                     <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important; margin-bottom: 2px !important; padding:2px 0 !important; border-bottom:none !important;">
                         <h4 class="dash-chart-title" style="margin:0 !important; font-size:12.5px; font-weight:700;">
                             Target vs Achievement
@@ -555,12 +555,12 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
                             <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#16a34a; border-radius:50%;"></span> Achievement</span>
                         </div>
                     </div>
-                    <div class="dash-top-chart-body" style="height: 172px !important; max-height: 172px !important;">
+                    <div class="dash-top-chart-body" style="height: var(--c2-body, 172px) !important; max-height: var(--c2-body, 172px) !important;">
                         <canvas id="lineChartTargetAchieve" height="172"></canvas>
                     </div>
                 </div>
 
-                <div class="dash-top-chart-card" style="height: 210px; max-height: 210px; margin-bottom: 0px; padding: 6px 12px; border-radius: 8px; box-sizing: border-box;">
+                <div class="dash-top-chart-card" style="height: var(--c2-card, 210px); max-height: var(--c2-card, 210px); margin-bottom: 0px; padding: 6px 12px; border-radius: 8px; box-sizing: border-box;">
                     <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important; margin-bottom: 2px !important; padding:2px 0 !important; border-bottom:none !important;">
                         <h4 class="dash-chart-title" style="margin:0 !important; font-size:12.5px; font-weight:700;">
                             Target vs Projection
@@ -570,14 +570,14 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
                             <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#0072f0; border-radius:50%;"></span> Projection</span>
                         </div>
                     </div>
-                    <div class="dash-top-chart-body" style="height: 172px !important; max-height: 172px !important;">
+                    <div class="dash-top-chart-body" style="height: var(--c2-body, 172px) !important; max-height: var(--c2-body, 172px) !important;">
                         <canvas id="lineChartTargetProject" height="172"></canvas>
                     </div>
                 </div>
             </div>
 
-            <div class="col-lg-4 col-md-5 col-xs-12" style="padding-left: 6px; padding-right: 10px;">
-                <div class="dash-round-card" style="width: 100%; min-height: 277px; margin-bottom: 8px; padding: 8px 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
+            <div class="col-lg-4 col-md-5 col-xs-12" style="padding-left: 4px; padding-right: 14px;">
+                <div class="dash-round-card" style="width: 100%; min-height: var(--c2-ring, 277px); height: var(--c2-ring, auto); margin-bottom: 8px; padding: 8px 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
                     <div class="dash-round-title" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0; font-size:13px; font-weight:700;">
                         <span>My Leads</span>
                         <div class="dash-round-meta" style="display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; color:#64748b;">
@@ -589,7 +589,7 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
                     </div>
                 </div>
 
-                <div class="dash-round-card" style="width: 100%; min-height: 277px; margin-bottom: 0px; padding: 8px 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
+                <div class="dash-round-card" style="width: 100%; min-height: var(--c2-ring, 277px); height: var(--c2-ring, auto); margin-bottom: 0px; padding: 8px 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
                     <div class="dash-round-title" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0; font-size:13px; font-weight:700;">
                         <span>My Orders</span>
                         <div class="dash-round-meta" style="display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; color:#64748b;">
@@ -602,6 +602,31 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
                 </div>
             </div>
         </div>
+<script>
+// Top area fits the screen: same 8px gaps, both columns end on one line, next section starts below.
+(function () {
+    var root = document.getElementById('c2Root'), row = root ? root.querySelector('.c2-toprow') : null;
+    if (!row) return;
+    var MIN = 210, MAX = 460, rowTop = null;
+    function scrolled() { return (document.body.scrollTop || 0) + (window.pageYOffset || 0) > 0; }
+    function fit() {
+        var z = parseFloat(getComputedStyle(document.body).zoom) || 1;
+        if (rowTop === null || !scrolled()) rowTop = row.getBoundingClientRect().top / z;
+        if (!window.matchMedia('(min-width: 992px)').matches) {
+            root.style.removeProperty('--c2-card'); root.style.removeProperty('--c2-body'); root.style.removeProperty('--c2-ring');
+            return;
+        }
+        // Left column: two tile rows (60 + 8 + 60 + 8), chart, 8, chart. Right column: ring, 8, ring.
+        var avail = (window.innerHeight / z) - rowTop - 10;
+        var card = Math.max(MIN, Math.min(MAX, Math.floor((avail - 144) / 2)));
+        root.style.setProperty('--c2-card', card + 'px');
+        root.style.setProperty('--c2-body', (card - 38) + 'px');
+        root.style.setProperty('--c2-ring', (card + 68) + 'px');
+    }
+    fit();
+    $(window).on('resize orientationchange', fit);
+})();
+</script>
 
 <div class="dash-section-divider" style="margin-top: 28px; margin-bottom: 14px;">
             <h3 class="dash-section-title" style="margin-bottom:0;">
@@ -2121,6 +2146,13 @@ $c2_empty = array(
 .dash-c2 .dash-kpi-value { font-size: 19px; margin-bottom: 1px; }
 .dash-c2 .dash-kpi-label { font-size: 13px; }
 .dash-c2 .dash-kpi-sales { font-size: 11.5px; font-weight: 600; }
+/* Top area: one 8px gap everywhere, last cards flush with the column end. */
+.dash-c2 .c2-toprow .dash-kpi-card { margin-bottom: 8px; }
+.dash-c2 .c2-toprow .dash-top-chart-card:last-child { margin-bottom: 0 !important; }
+@media (max-width: 991px) {
+    .dash-c2 .c2-toprow > [class*="col-"] { padding-left: 14px !important; padding-right: 14px !important; }
+    .dash-c2 .c2-toprow > [class*="col-"] + [class*="col-"] { margin-top: 8px; }
+}
 
 /* 3. Message over charts with nothing to show (the chart stays underneath). */
 .dash-c2 .dash-top-chart-body, .dash-c2 .dash-chart-body { position: relative !important; }
