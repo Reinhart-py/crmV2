@@ -68,9 +68,7 @@ $kpi = function ($cls, $href, $icon, $val, $label, $tab = '') {
 ?>
 <link rel="stylesheet" href="<?php echo $b; ?>assets/dist/css/crm-sys.css?v=20261106_7">
 <link rel="stylesheet" href="<?php echo $b; ?>assets/dist/css/crm-dash.css?v=20261107_6">
-<?php $is_fresh = isset($dash_style) && $dash_style === 'fresh'; ?>
-<?php if ($is_fresh) { ?><link rel="stylesheet" href="<?php echo $b; ?>assets/dist/css/crm-dash-fresh.css?v=20261108_1"><?php } ?>
-<div class="content-wrapper sx db<?php echo $is_fresh ? ' db-fresh' : ''; ?>" id="dbRoot" data-key="<?php echo $h($dkey); ?>">
+<div class="content-wrapper sx db" id="dbRoot" data-key="<?php echo $h($dkey); ?>">
   <section class="sx-head">
     <h1><?php echo $h($names[$dkey]); ?><small><?php echo $h(date('F Y', strtotime($win['start']))); ?><?php echo $is_now ? ' &middot; day ' . (int)$win['passed'] . ' of ' . (int)$win['days'] : ''; ?><?php echo $has_team ? ' &middot; ' . $h($scope_lbl) : ''; ?></small></h1>
     <div class="sx-btns">

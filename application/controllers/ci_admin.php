@@ -144,10 +144,10 @@ class Ci_admin extends CI_Controller {
 		}
 		$this->load->model('dashboard_model', 'dash');
 		$uid = (int)$this->session->userdata('manager_id');
-		// The user's choice: Modern (default), Focus, Fresh or Classic.
+		// The user's choice: Modern (default), Classic or Classic 2 (a separate copy of Classic).
 		$style = $this->dash->get_style($uid);
-		if ($style === 'classic') {
-			return $this->dashboard_classic();
+		if ($style === 'classic' || $style === 'classic2') {
+			return $this->dashboard_classic($style === 'classic2');
 		}
 		$role = (int)$this->session->userdata('manager_role');
 		$is_admin = crm_is_full_admin();
@@ -196,8 +196,7 @@ class Ci_admin extends CI_Controller {
 		if ($key === 'kam') {
 			$data['kam_clients'] = $this->dash->kam_clients($uid, $is_admin);
 		}
-		// Same figures for every style. Focus has its own layout; Fresh is the Modern layout with other colours.
-		$this->load->view($style === 'focus' ? 'manager/dash/focus' : 'manager/dash/index', $data);
+		$this->load->view('manager/dash/index', $data);
 	}
 
 	/** One person's open work for the staff tracker (only people the viewer may see). */
@@ -242,8 +241,10 @@ class Ci_admin extends CI_Controller {
 		redirect('manager/dashboard');
 	}
 
-	public function dashboard_classic()
+	/** Classic dashboard. Classic 2 ($copy) is the same data shown with its own copy of the page (manager/dashboard_classic2.php). */
+	public function dashboard_classic($copy = false)
 	{
+		$copy = ($copy === true);
 	  	$data=array();
 		$data['info']=array(
 			'title'=>'Manager Dashboard'
@@ -293,9 +294,9 @@ class Ci_admin extends CI_Controller {
 		$data['dashboard_pipeline'] = $this->ci_admin_model->dashboard_pipeline_summary();
 		$data['mylead_donut'] = $this->ci_admin_model->dashboard_mylead_donut_data();
 		$data['myorder_donut'] = $this->ci_admin_model->dashboard_myorder_donut_data();
-		$data['dash_style'] = 'classic';
+		$data['dash_style'] = $copy ? 'classic2' : 'classic';
 
-		$this->load->view('manager/dashboard',$data);
+		$this->load->view($copy ? 'manager/dashboard_classic2' : 'manager/dashboard',$data);
 	}
 	
   
