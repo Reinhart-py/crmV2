@@ -130,7 +130,86 @@ class Ci_admin extends CI_Controller {
 		$this->load->view('manager/loginpage',$data);
 	}
 	
+	/** Dashboard picked by role: Admin, Sales, Back Office or KAM. The previous dashboard stays at manager/dashboard/classic. */
 	public function dashboard()
+	{
+		$data = array();
+		$data['info'] = array('title' => 'Dashboard');
+		$data['info2'] = $this->if_not_login();
+		if (crm_is_presentation_user()) {
+			redirect('manager/live/presentation');
+		}
+		if (!crm_is_full_admin() && crm_can('start_live') && crm_can('live', 'read')) {
+			redirect('manager/live');
+		}
+		$this->load->model('dashboard_model', 'dash');
+		$uid = (int)$this->session->userdata('manager_id');
+		$role = (int)$this->session->userdata('manager_role');
+		$is_admin = crm_is_full_admin();
+		$all = $is_admin || crm_can('all_data');
+
+		$key = $is_admin ? 'admin' : $this->dash->role_key($role);
+		// Admins can open the other role dashboards to check them.
+		$as = (string)$this->input->get('as');
+		if ($is_admin && in_array($as, array('sales', 'backoffice', 'kam'), true)) $key = $as;
+
+		$win = $this->dash->month_window((string)$this->input->get('m'));
+		$team_ids = $this->dash->scope_ids($uid, $all);
+		$has_team = count($team_ids) > 1;
+		$only_me = $has_team && $this->input->get('me') === '1';
+		$ids = $only_me ? array($uid) : $team_ids;
+
+		$data['dkey'] = $key;
+		$data['is_admin'] = $is_admin;
+		$data['has_team'] = $has_team;
+		$data['only_me'] = $only_me;
+		$data['win'] = $win;
+		$data['uid'] = $uid;
+		$data['late_days'] = 3;
+		$data['my_fu'] = $this->dash->my_followups($uid);
+		$data['my_list'] = $this->dash->my_followup_list($uid, 12);
+		$data['my_tasks'] = $this->dash->open_tasks(array($uid));
+		$data['targets'] = $this->dash->targets($key === 'kam' && !$is_admin ? array($uid) : $ids, $win);
+		$data['tracker'] = ($has_team && !$only_me) ? $this->dash->tracker($ids, $win) : array();
+
+		if ($key === 'admin' || $key === 'sales') {
+			$data['funnel'] = $this->dash->funnel($ids, $win);
+			$data['by_day'] = $this->dash->sales_by_day($ids, $win);
+		}
+		if ($key === 'admin' || $key === 'backoffice' || $key === 'kam') {
+			$data['reviews'] = $this->dash->pending_reviews();
+		}
+		if ($key === 'admin' || $key === 'backoffice') {
+			$data['flow'] = $this->dash->order_flow($data['late_days']);
+			$data['late_orders'] = $this->dash->late_orders($data['late_days'], 12);
+			$data['orders_done'] = $this->dash->orders_done($win);
+		}
+		if ($key === 'kam') {
+			$data['kam_clients'] = $this->dash->kam_clients($uid, $is_admin);
+		}
+		$this->load->view('manager/dash/index', $data);
+	}
+
+	/** One person's open work for the staff tracker (only people the viewer may see). */
+	public function dashboard_person($id = 0)
+	{
+		$this->if_not_login();
+		$this->load->model('dashboard_model', 'dash');
+		$uid = (int)$this->session->userdata('manager_id');
+		$id = (int)$id;
+		$all = crm_is_full_admin() || crm_can('all_data');
+		$this->output->set_content_type('application/json');
+		if ($id <= 0 || !in_array($id, $this->dash->scope_ids($uid, $all), true)) {
+			$this->output->set_status_header(403)->set_output(json_encode(array('ok' => false, 'msg' => 'Not in your team')));
+			return;
+		}
+		$d = $this->dash->person_detail($id);
+		foreach ($d['followups'] as &$r) $r['enc'] = base64_encode($r['id']);
+		unset($r);
+		$this->output->set_output(json_encode(array('ok' => true) + $d));
+	}
+
+	public function dashboard_classic()
 	{
 	  	$data=array();
 		$data['info']=array(
