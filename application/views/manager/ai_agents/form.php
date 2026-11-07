@@ -10,7 +10,7 @@ $days = array_map('intval', explode(',', (string)$v('call_days', '1,2,3,4,5')));
 $base = base_url() . 'manager/';
 ?>
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-campaigns.css?v=20261107_2">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-campaigns.css?v=20261107_11">
 <div class="content-wrapper sx cp">
   <section class="sx-head">
     <h1><?php echo $id ? 'Edit AI agent' : 'New AI agent'; ?><small><?php echo $id ? $h($v('name')) : 'What the agent says, what it aims for, and when it calls'; ?></small></h1>

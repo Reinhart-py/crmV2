@@ -21,7 +21,7 @@ $e_tok = $e['token'] !== '';
 $acc_q = $m['exists'] ? '?acc=' . (int)$m['id'] : '';
 ?>
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-campaigns.css?v=20261107_10">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-campaigns.css?v=20261107_11">
 <div class="content-wrapper sx cp mk">
   <section class="sx-head">
     <h1>Marketing<small>Leads from all your Meta, Google Ads, website and other accounts in one place; posts, Meta Ads and the AI autopilot</small></h1>

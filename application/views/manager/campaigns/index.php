@@ -7,7 +7,7 @@ $base = base_url() . 'manager/';
 $flash = $this->session->flashdata('error_message');
 ?>
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-campaigns.css?v=20261107_2">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-campaigns.css?v=20261107_11">
 <div class="content-wrapper sx cp">
   <section class="sx-head">
     <h1>Campaigns<small>Plan calling campaigns, follow progress and start dialing</small></h1>

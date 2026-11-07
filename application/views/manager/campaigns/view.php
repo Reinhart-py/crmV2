@@ -21,7 +21,7 @@ $filters = array_filter(array(
 ));
 ?>
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-campaigns.css?v=20261107_2">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-campaigns.css?v=20261107_11">
 <div class="content-wrapper sx cp">
   <section class="sx-head">
     <h1><?php echo $h($c['name']); ?>

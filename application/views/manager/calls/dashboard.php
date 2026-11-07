@@ -1,6 +1,4 @@
 <?php require_once(APPPATH . "views/manager/elements/header.php"); ?>
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-dialer.css?v=20261107_2">
-
 <style>
 html, body {
   height: 100% !important;
@@ -8,22 +6,22 @@ html, body {
   overflow: hidden !important;
   margin: 0 !important;
   padding: 0 !important;
-  background: #f2f2f7 !important;
+  background: #f1f5f9 !important;
 }
 .wrapper {
   min-height: 100vh !important;
-  background: #f2f2f7 !important;
+  background: #f1f5f9 !important;
   position: relative !important;
 }
 .content-wrapper.glass-calling-wrapper {
-  background: #f2f2f7 !important;
+  background: #f1f5f9 !important;
   position: relative !important;
   height: calc(100vh - 60px) !important;
   min-height: calc(100vh - 60px) !important;
   max-height: calc(100vh - 60px) !important;
   padding: 12px 16px !important;
-  color: #1d1d1f;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+  color: #0f172a;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
   box-sizing: border-box !important;
   overflow: hidden !important;
   display: flex !important;
@@ -40,7 +38,7 @@ html, body {
   height: 100% !important;
   max-height: 100% !important;
   background: #ffffff;
-  border: 1px solid #e5e5ea;
+  border: 1px solid #e2e8f0;
   border-radius: 14px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
   padding: 10px 6px;
@@ -67,7 +65,7 @@ html, body {
   border-radius: 12px;
   background: transparent;
   border: none;
-  color: #636366;
+  color: #475569;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -80,14 +78,14 @@ html, body {
 }
 
 .crm-dock-btn:hover {
-  background: #f2f2f7;
+  background: #f1f5f9;
   color: #1e3a8a;
 }
 
 .crm-dock-btn.active {
   background: #1e3a8a !important;
   color: #ffffff !important;
-  box-shadow: 0 3px 12px rgba(0, 114, 240, 0.35);
+  box-shadow: 0 3px 12px rgba(30, 58, 138, 0.35);
 }
 
 .crm-dock-btn i {
@@ -107,7 +105,7 @@ html, body {
   top: 0;
   min-width: 190px;
   background: #ffffff;
-  border: 1px solid #e5e5ea;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 6px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
@@ -135,7 +133,7 @@ html, body {
   align-items: center;
   padding: 8px 12px;
   border-radius: 8px;
-  color: #1d1d1f;
+  color: #0f172a;
   font-size: 13px;
   font-weight: 500;
   text-decoration: none !important;
@@ -144,14 +142,14 @@ html, body {
 }
 
 .dock-flyout-item:hover {
-  background: #f2f2f7;
+  background: #f1f5f9;
   color: #1e3a8a;
 }
 
 .apple-segmented-group {
   display: inline-flex;
   align-items: center;
-  background: #ebebf0;
+  background: #eef2f7;
   border-radius: 9px;
   padding: 2px;
   gap: 2px;
@@ -163,7 +161,7 @@ html, body {
   border-radius: 7px;
   background: transparent;
   border: none;
-  color: #636366;
+  color: #475569;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -174,12 +172,12 @@ html, body {
 }
 
 .apple-segment-btn:hover {
-  color: #1d1d1f;
+  color: #0f172a;
 }
 
 .apple-segment-btn.active {
   background: #ffffff !important;
-  color: #1d1d1f !important;
+  color: #0f172a !important;
   font-weight: 600;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
@@ -193,7 +191,7 @@ html, body {
   height: 100% !important;
   max-height: 100% !important;
   background: #ffffff;
-  border: 1px solid #e5e5ea;
+  border: 1px solid #e2e8f0;
   border-radius: 14px;
   box-shadow: 0 2px 14px rgba(0, 0, 0, 0.03);
   box-sizing: border-box !important;
@@ -205,7 +203,7 @@ html, body {
 .middle-header {
   padding: 14px 20px;
   background: #ffffff;
-  border-bottom: 1px solid #f2f2f7;
+  border-bottom: 1px solid #f1f5f9;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -222,15 +220,15 @@ html, body {
 .middle-title {
   font-size: 18px;
   font-weight: 700;
-  color: #1d1d1f;
+  color: #0f172a;
   margin: 0;
   letter-spacing: -0.02em;
 }
 
 .btn-close-middle {
-  background: #f2f2f7;
+  background: #f1f5f9;
   border: none;
-  color: #8e8e93;
+  color: #64748b;
   border-radius: 50%;
   width: 30px;
   height: 30px;
@@ -243,8 +241,8 @@ html, body {
 }
 
 .btn-close-middle:hover {
-  background: #e5e5ea;
-  color: #1d1d1f;
+  background: #e2e8f0;
+  color: #0f172a;
 }
 
 .middle-body {
@@ -264,10 +262,10 @@ html, body {
 }
 
 .dialer-filter-select {
-  background: #f2f2f7;
+  background: #f1f5f9;
   border: 1px solid transparent;
   border-radius: 8px;
-  color: #1d1d1f;
+  color: #0f172a;
   font-size: 12.5px;
   font-weight: 500;
   padding: 8px 14px;
@@ -277,10 +275,10 @@ html, body {
 
 .dialer-search-input {
   flex: 1;
-  background: #f2f2f7;
+  background: #f1f5f9;
   border: 1px solid transparent;
   border-radius: 8px;
-  color: #1d1d1f;
+  color: #0f172a;
   font-size: 13px;
   font-weight: 400;
   padding: 8px 14px;
@@ -291,7 +289,7 @@ html, body {
 .dialer-search-input:focus, .dialer-filter-select:focus {
   background: #ffffff;
   border-color: #1e3a8a;
-  box-shadow: 0 0 0 3px rgba(0, 114, 240, 0.12);
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12);
 }
 
 .queue-table {
@@ -302,37 +300,37 @@ html, body {
 }
 
 .queue-table th {
-  background: #fafafc;
-  color: #8e8e93;
+  background: #f8fafc;
+  color: #64748b;
   font-weight: 600;
   text-transform: uppercase;
   font-size: 11px;
   letter-spacing: 0.5px;
   padding: 10px 14px;
-  border-bottom: 1px solid #e5e5ea;
+  border-bottom: 1px solid #e2e8f0;
   text-align: left;
 }
 
 .queue-table td {
   padding: 12px 14px;
-  border-bottom: 1px solid #f2f2f7;
-  color: #1d1d1f;
+  border-bottom: 1px solid #f1f5f9;
+  color: #0f172a;
   vertical-align: middle;
 }
 
 .queue-table tr:hover td {
-  background: #fafafc;
+  background: #f8fafc;
 }
 
 .queue-table tr.active-row td {
-  background: #f0f7ff !important;
+  background: #eff6ff !important;
 }
 
 .apple-quick-call-btn {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #34c759;
+  background: #16a34a;
   color: #ffffff;
   border: none;
   cursor: pointer;
@@ -340,12 +338,12 @@ html, body {
   align-items: center;
   justify-content: center;
   font-size: 13px;
-  box-shadow: 0 2px 6px rgba(52, 199, 89, 0.35);
+  box-shadow: 0 2px 6px rgba(22, 163, 74, 0.35);
   transition: transform 0.1s ease, background 0.1s ease;
 }
 
 .apple-quick-call-btn:hover {
-  background: #30b753;
+  background: #15803d;
   transform: scale(1.05);
 }
 
@@ -354,8 +352,8 @@ html, body {
 }
 
 .btn-edit-row {
-  background: #f2f2f7;
-  color: #1d1d1f;
+  background: #f1f5f9;
+  color: #0f172a;
   border: none;
   border-radius: 7px;
   padding: 6px 12px;
@@ -367,7 +365,7 @@ html, body {
 }
 
 .btn-edit-row:hover {
-  background: #e5e5ea;
+  background: #e2e8f0;
 }
 
 .colleague-card {
@@ -376,23 +374,23 @@ html, body {
   justify-content: space-between;
   padding: 12px 16px;
   border-radius: 10px;
-  border: 1px solid #f2f2f7;
+  border: 1px solid #f1f5f9;
   background: #ffffff;
   margin-bottom: 8px;
   transition: all 0.12s ease;
 }
 
 .colleague-card:hover {
-  background: #fafafc;
-  border-color: #e5e5ea;
+  background: #f8fafc;
+  border-color: #e2e8f0;
 }
 
 .colleague-avatar {
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: #f2f2f7;
-  color: #1d1d1f;
+  background: #f1f5f9;
+  color: #0f172a;
   font-size: 13px;
   font-weight: 700;
   display: flex;
@@ -402,8 +400,8 @@ html, body {
 }
 
 .sheet-stat-card {
-  background: #fafafc;
-  border: 1px solid #f2f2f7;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
   border-radius: 12px;
   padding: 14px 16px;
   text-align: center;
@@ -412,7 +410,7 @@ html, body {
 .sheet-stat-val {
   font-size: 24px;
   font-weight: 700;
-  color: #1d1d1f;
+  color: #0f172a;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
 }
@@ -420,7 +418,7 @@ html, body {
 .sheet-stat-lbl {
   font-size: 11px;
   font-weight: 600;
-  color: #8e8e93;
+  color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.4px;
   margin-top: 4px;
@@ -431,25 +429,25 @@ html, body {
   border-collapse: separate;
   border-spacing: 0;
   font-size: 12.5px;
-  border: 1px solid #e5e5ea;
+  border: 1px solid #e2e8f0;
   border-radius: 10px;
   overflow: hidden;
 }
 
 .sheet-table th {
-  background: #fafafc;
-  color: #8e8e93;
+  background: #f8fafc;
+  color: #64748b;
   font-weight: 600;
   font-size: 11px;
   padding: 10px 14px;
-  border-bottom: 1px solid #e5e5ea;
+  border-bottom: 1px solid #e2e8f0;
   text-align: left;
 }
 
 .sheet-table td {
   padding: 10px 14px;
-  border-bottom: 1px solid #f2f2f7;
-  color: #1d1d1f;
+  border-bottom: 1px solid #f1f5f9;
+  color: #0f172a;
   font-weight: 500;
 }
 
@@ -466,7 +464,7 @@ html, body {
   height: 100% !important;
   max-height: 100% !important;
   background: #ffffff;
-  border: 1px solid #e5e5ea;
+  border: 1px solid #e2e8f0;
   border-radius: 14px;
   box-shadow: 0 2px 14px rgba(0, 0, 0, 0.03);
   box-sizing: border-box !important;
@@ -492,7 +490,7 @@ html, body {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #8e8e93;
+  color: #64748b;
   font-size: 14px;
 }
 
@@ -522,7 +520,7 @@ html, body {
   width: 100%;
   border: none;
   background: transparent;
-  color: #1d1d1f;
+  color: #0f172a;
   font-size: 32px;
   font-weight: 500;
   text-align: center;
@@ -533,7 +531,7 @@ html, body {
 }
 
 .dialer-num-input::placeholder {
-  color: #c7c7cc;
+  color: #94a3b8;
   font-weight: 400;
   font-size: 18px;
 }
@@ -541,7 +539,7 @@ html, body {
 .dialer-status-sub {
   font-size: 12px;
   font-weight: 500;
-  color: #8e8e93;
+  color: #64748b;
   min-height: 16px;
 }
 
@@ -551,7 +549,7 @@ html, body {
   left: 0;
   right: 0;
   background: #ffffff;
-  border: 1px solid #e5e5ea;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
   max-height: 220px;
@@ -573,15 +571,15 @@ html, body {
 }
 
 .dialer-suggestion-row:hover {
-  background: #f2f2f7;
+  background: #f1f5f9;
 }
 
 .dialer-suggestion-avatar {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #f2f2f7;
-  color: #1d1d1f;
+  background: #f1f5f9;
+  color: #0f172a;
   font-size: 11px;
   font-weight: 700;
   display: flex;
@@ -610,7 +608,7 @@ html, body {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: #f2f2f7;
+  background: #f1f5f9;
   border: none;
   display: flex;
   flex-direction: column;
@@ -623,25 +621,25 @@ html, body {
 }
 
 .dialer-key-btn:hover {
-  background: #e5e5ea;
+  background: #e2e8f0;
 }
 
 .dialer-key-btn:active {
-  background: #d1d1d6;
+  background: #cbd5e1;
   transform: scale(0.94);
 }
 
 .dialer-key-digit {
   font-size: 22px;
   font-weight: 500;
-  color: #1d1d1f;
+  color: #0f172a;
   line-height: 1;
 }
 
 .dialer-key-sub {
   font-size: 8.5px;
   font-weight: 600;
-  color: #8e8e93;
+  color: #64748b;
   letter-spacing: 1px;
   text-transform: uppercase;
   margin-top: 1px;
@@ -662,7 +660,7 @@ html, body {
   border-radius: 50%;
   background: transparent;
   border: none;
-  color: #8e8e93;
+  color: #64748b;
   font-size: 16px;
   display: flex;
   align-items: center;
@@ -672,15 +670,15 @@ html, body {
 }
 
 .keypad-tool-btn:hover {
-  background: #f2f2f7;
-  color: #1d1d1f;
+  background: #f1f5f9;
+  color: #0f172a;
 }
 
 .btn-green-call {
   width: 58px;
   height: 58px;
   border-radius: 50%;
-  background: #34c759;
+  background: #16a34a;
   border: none;
   color: #ffffff;
   font-size: 22px;
@@ -689,11 +687,11 @@ html, body {
   justify-content: center;
   cursor: pointer;
   transition: transform 0.12s ease, background 0.12s ease;
-  box-shadow: 0 4px 14px rgba(52, 199, 89, 0.4);
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.4);
 }
 
 .btn-green-call:hover {
-  background: #30b753;
+  background: #15803d;
   transform: scale(1.04);
 }
 
@@ -702,13 +700,13 @@ html, body {
 }
 
 .btn-green-call.btn-connected {
-  background: #ff3b30 !important;
-  box-shadow: 0 4px 14px rgba(255, 59, 48, 0.4) !important;
+  background: #dc2626 !important;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.4) !important;
 }
 
 .btn-green-call.btn-calling {
-  background: #ff9500 !important;
-  box-shadow: 0 4px 14px rgba(255, 149, 0, 0.4) !important;
+  background: #d97706 !important;
+  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.4) !important;
 }
 
 .dialer-toast {
@@ -800,7 +798,7 @@ html, body {
     display: flex !important;
     width: 100% !important;
     background: #ffffff;
-    border: 1px solid #e5e5ea;
+    border: 1px solid #e2e8f0;
     border-radius: 12px;
     padding: 4px;
     gap: 6px;
@@ -813,7 +811,7 @@ html, body {
     border-radius: 8px;
     border: none;
     background: transparent;
-    color: #636366;
+    color: #475569;
     font-size: 13px;
     font-weight: 600;
     display: inline-flex;
@@ -826,7 +824,7 @@ html, body {
   .btn-dialer-mobile-tab.active {
     background: #1e3a8a !important;
     color: #ffffff !important;
-    box-shadow: 0 2px 8px rgba(0, 114, 240, 0.28) !important;
+    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.28) !important;
   }
   #middleContentArea {
     width: 100% !important;
@@ -870,14 +868,16 @@ html, body {
   }
 }
 </style>
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-dialer.css?v=20261107_6">
 
 <div class="content-wrapper glass-calling-wrapper">
 
   <div class="crm-dialer-dock">
 
     <div class="dock-item-wrapper">
-      <button type="button" class="crm-dock-btn active" id="dockBtnCallHome" title="Dialer Home" onclick="openDialerHome()">
-        <i class="fa fa-phone"></i>
+      <button type="button" class="crm-dock-btn active" id="dockBtnCallHome" title="Today" onclick="openDialerHome()">
+        <i class="fa fa-home"></i>
+        <span class="dock-lbl">Today</span>
       </button>
     </div>
 
@@ -891,7 +891,7 @@ html, body {
     <div class="dock-item-wrapper" id="dockWrapFollowup">
       <button type="button" class="crm-dock-btn" id="dockBtnFollowup" title="Follow-up" onclick="handleDockFollowupClick(event)">
         <i class="fa fa-calendar-check-o"></i>
-        <span class="dock-lbl">Follow-up</span>
+        <span class="dock-lbl">Follow-ups</span>
       </button>
       <div class="dock-flyout-menu" id="flyoutFollowup">
         <a href="javascript:void(0)" class="dock-flyout-item" onclick="selectFollowupMenu('missed', 'All Missed Follow-ups')">
@@ -924,11 +924,11 @@ html, body {
       <div class="dock-flyout-menu" id="flyoutDatabase">
         <a href="javascript:void(0)" class="dock-flyout-item" onclick="selectDatabaseMenu('auto')">
           <i class="fa fa-play-circle" style="margin-right:8px; color:#1e3a8a;"></i>
-          <span>Auto Dialer</span>
+          <span>Auto dialer</span>
         </a>
         <a href="javascript:void(0)" class="dock-flyout-item" onclick="selectDatabaseMenu('manual')">
           <i class="fa fa-keyboard-o" style="margin-right:8px; color:#64748b;"></i>
-          <span>Manual Dialer</span>
+          <span>Manual dialer</span>
         </a>
       </div>
     </div>
@@ -943,11 +943,11 @@ html, body {
           <div class="dock-item-wrapper" id="dockWrapCampaign">
             <button type="button" class="crm-dock-btn" id="dockBtnCampaign" title="Campaign" onclick="handleDockCampaignClick(event)">
               <i class="fa fa-flag-o"></i>
-              <span class="dock-lbl">Campaign</span>
+              <span class="dock-lbl">Campaigns</span>
             </button>
             <div class="dock-flyout-menu" id="flyoutCampaign">
-              <a href="javascript:void(0)" class="dock-flyout-item" onclick="openCampaignView('create')"><span>Create Campaign</span></a>
-              <a href="javascript:void(0)" class="dock-flyout-item" onclick="openCampaignView('list')"><span>View Campaign</span></a>
+              <a href="javascript:void(0)" class="dock-flyout-item" onclick="openCampaignView('create')"><span>New campaign</span></a>
+              <a href="javascript:void(0)" class="dock-flyout-item" onclick="openCampaignView('list')"><span>All campaigns</span></a>
             </div>
           </div>
     <?php if (crm_can('ai_agents', 'read')) { ?>
@@ -970,7 +970,7 @@ html, body {
   <div class="dialer-mobile-nav-bar" id="dialerMobileNavBar">
     <button type="button" class="btn-dialer-mobile-tab active" id="btnTabKeypad" onclick="switchMobileDialerView('keypad')">
       <i class="fa fa-phone"></i>
-      <span>Dialer / Keypad</span>
+      <span>Keypad</span>
     </button>
     <button type="button" class="btn-dialer-mobile-tab" id="btnTabWorkspace" onclick="switchMobileDialerView('workspace')">
       <i class="fa fa-th-list"></i>
@@ -1053,10 +1053,10 @@ html, body {
 
       <div id="middleViewTeam" style="display:none;">
         <div class="middle-filter-bar">
-          <input type="text" id="inputTeamSearch" class="dialer-search-input" placeholder="Type at least 3 letters to search colleague or department..." oninput="filterTeamCards()">
+          <input type="text" id="inputTeamSearch" class="dialer-search-input" placeholder="Search colleague or department" oninput="filterTeamCards()">
         </div>
         <div id="teamColleaguesContainer">
-          <div id="teamSearchPrompt" style="text-align:center; padding:50px 20px; color:#8e8e93; font-size:13px; font-weight:500;">Type at least 3 letters to search colleagues or departments</div>
+          <div id="teamSearchPrompt" style="text-align:center; padding:50px 20px; color:#64748b; font-size:13px; font-weight:500;">Type at least 3 letters to search colleagues or departments</div>
         </div>
       </div>
 
@@ -1087,7 +1087,7 @@ html, body {
               </tr>
             </thead>
             <tbody id="tbodyQueueRecords">
-              <tr><td colspan="5" style="text-align:center; padding:25px; color:#8e8e93;">Loading records...</td></tr>
+              <tr><td colspan="5" style="text-align:center; padding:25px; color:#64748b;">Loading records...</td></tr>
             </tbody>
           </table>
         </div>
@@ -1095,7 +1095,7 @@ html, body {
 
       <div id="middleViewDetails" style="display:none;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-          <h3 style="font-size:16px; font-weight:700; color:#1d1d1f; margin:0;" id="detailsHeaderName">Contact Details</h3>
+          <h3 style="font-size:16px; font-weight:700; color:#0f172a; margin:0;" id="detailsHeaderName">Contact Details</h3>
           <button type="button" class="btn-edit-row" onclick="backToListFromDetails()"><i class="fa fa-arrow-left"></i> Back</button>
         </div>
 
@@ -1108,29 +1108,14 @@ html, body {
           <div class="row">
             <div class="col-md-6">
               <div class="form-group" style="margin-bottom:12px;">
-                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Company Name</label>
-                <input type="text" name="customer" id="editCustomer" class="form-control" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
+                <label style="font-size:12px; font-weight:600; color:#0f172a; margin-bottom:4px; display:block;">Company Name</label>
+                <input type="text" name="customer" id="editCustomer" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:38px;">
               </div>
             </div>
             <div class="col-md-6">
               <div class="form-group" style="margin-bottom:12px;">
-                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Point of Contact</label>
-                <input type="text" name="poc" id="editPoc" class="form-control" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
-              </div>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-6">
-              <div class="form-group" style="margin-bottom:12px;">
-                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Primary Phone</label>
-                <input type="text" name="contact1" id="editContact1" class="form-control" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group" style="margin-bottom:12px;">
-                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Alt Phone</label>
-                <input type="text" name="alt_contact" id="editAltContact" class="form-control" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
+                <label style="font-size:12px; font-weight:600; color:#0f172a; margin-bottom:4px; display:block;">Point of Contact</label>
+                <input type="text" name="poc" id="editPoc" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:38px;">
               </div>
             </div>
           </div>
@@ -1138,14 +1123,29 @@ html, body {
           <div class="row">
             <div class="col-md-6">
               <div class="form-group" style="margin-bottom:12px;">
-                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Email Address</label>
-                <input type="email" name="email" id="editEmail" class="form-control" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
+                <label style="font-size:12px; font-weight:600; color:#0f172a; margin-bottom:4px; display:block;">Primary Phone</label>
+                <input type="text" name="contact1" id="editContact1" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:38px;">
               </div>
             </div>
             <div class="col-md-6">
               <div class="form-group" style="margin-bottom:12px;">
-                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Authority</label>
-                <select name="tl_authority" id="editAuthority" class="form-control" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
+                <label style="font-size:12px; font-weight:600; color:#0f172a; margin-bottom:4px; display:block;">Alt Phone</label>
+                <input type="text" name="alt_contact" id="editAltContact" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:38px;">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group" style="margin-bottom:12px;">
+                <label style="font-size:12px; font-weight:600; color:#0f172a; margin-bottom:4px; display:block;">Email Address</label>
+                <input type="email" name="email" id="editEmail" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:38px;">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group" style="margin-bottom:12px;">
+                <label style="font-size:12px; font-weight:600; color:#0f172a; margin-bottom:4px; display:block;">Authority</label>
+                <select name="tl_authority" id="editAuthority" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:38px;">
                   <option value="">Select Authority</option>
                   <option value="DED">DED</option>
                   <option value="DMCC">DMCC</option>
@@ -1161,14 +1161,14 @@ html, body {
           <div class="row">
             <div class="col-md-6">
               <div class="form-group" style="margin-bottom:12px;">
-                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Location</label>
-                <input type="text" name="location" id="editLocation" class="form-control" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
+                <label style="font-size:12px; font-weight:600; color:#0f172a; margin-bottom:4px; display:block;">Location</label>
+                <input type="text" name="location" id="editLocation" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:38px;">
               </div>
             </div>
             <div class="col-md-6">
               <div class="form-group" style="margin-bottom:12px;">
-                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">DNCR Registry</label>
-                <select name="dnd_status" id="editDndStatus" class="form-control" onchange="toggleDncrDateRow()" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
+                <label style="font-size:12px; font-weight:600; color:#0f172a; margin-bottom:4px; display:block;">DNCR Registry</label>
+                <select name="dnd_status" id="editDndStatus" class="form-control" onchange="toggleDncrDateRow()" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:38px;">
                   <option value="No">No (Clean)</option>
                   <option value="Yes">Yes (DND Active)</option>
                 </select>
@@ -1188,20 +1188,20 @@ html, body {
           <div class="row">
             <div class="col-md-4">
               <div class="form-group" style="margin-bottom:12px;">
-                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Quantity</label>
-                <input type="number" name="qty" id="editQty" value="1" min="1" class="form-control" oninput="calculateMrrTotal()" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
+                <label style="font-size:12px; font-weight:600; color:#0f172a; margin-bottom:4px; display:block;">Quantity</label>
+                <input type="number" name="qty" id="editQty" value="1" min="1" class="form-control" oninput="calculateMrrTotal()" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:38px;">
               </div>
             </div>
             <div class="col-md-4">
               <div class="form-group" style="margin-bottom:12px;">
-                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">MRC</label>
-                <input type="text" name="mrc" id="editMrc" class="form-control" oninput="calculateMrrTotal()" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
+                <label style="font-size:12px; font-weight:600; color:#0f172a; margin-bottom:4px; display:block;">MRC</label>
+                <input type="text" name="mrc" id="editMrc" class="form-control" oninput="calculateMrrTotal()" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:38px;">
               </div>
             </div>
             <div class="col-md-4">
               <div class="form-group" style="margin-bottom:12px;">
-                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Revenue</label>
-                <input type="text" name="revenue" id="editRevenue" class="form-control" oninput="calculateMrrTotal()" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
+                <label style="font-size:12px; font-weight:600; color:#0f172a; margin-bottom:4px; display:block;">Revenue</label>
+                <input type="text" name="revenue" id="editRevenue" class="form-control" oninput="calculateMrrTotal()" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:38px;">
               </div>
             </div>
           </div>
@@ -1209,8 +1209,8 @@ html, body {
           <div class="row">
             <div class="col-md-6">
               <div class="form-group" style="margin-bottom:12px;">
-                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Call Status</label>
-                <select name="status" id="editStatus" class="form-control" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
+                <label style="font-size:12px; font-weight:600; color:#0f172a; margin-bottom:4px; display:block;">Call Status</label>
+                <select name="status" id="editStatus" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:38px;">
                   <?php if(!empty($statuses)){
                     foreach($statuses as $st){ ?>
                       <option value="<?php echo $st['id']; ?>"><?php echo htmlspecialchars($st['status']); ?></option>
@@ -1220,8 +1220,8 @@ html, body {
             </div>
             <div class="col-md-6">
               <div class="form-group" style="margin-bottom:12px;">
-                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Calculated MRR</label>
-                <input type="text" name="mrr" id="editMrr" readonly class="form-control" style="background:#f2f2f7; border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px; font-weight:700;">
+                <label style="font-size:12px; font-weight:600; color:#0f172a; margin-bottom:4px; display:block;">Calculated MRR</label>
+                <input type="text" name="mrr" id="editMrr" readonly class="form-control" style="background:#f1f5f9; border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:38px; font-weight:700;">
               </div>
             </div>
           </div>
@@ -1229,21 +1229,21 @@ html, body {
           <div class="row">
             <div class="col-md-6">
               <div class="form-group" style="margin-bottom:12px;">
-                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Next Follow-up Date</label>
-                <input type="text" name="followup_date" id="editNextFollowup" class="form-control datepicker" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
+                <label style="font-size:12px; font-weight:600; color:#0f172a; margin-bottom:4px; display:block;">Next Follow-up Date</label>
+                <input type="text" name="followup_date" id="editNextFollowup" class="form-control datepicker" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:38px;">
               </div>
             </div>
             <div class="col-md-6">
               <div class="form-group" style="margin-bottom:12px;">
-                <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Follow-up Time</label>
-                <input type="text" name="followup_time" id="editNextFollowupTime" class="form-control" value="11:00 AM" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px; height:38px;">
+                <label style="font-size:12px; font-weight:600; color:#0f172a; margin-bottom:4px; display:block;">Follow-up Time</label>
+                <input type="text" name="followup_time" id="editNextFollowupTime" class="form-control" value="11:00 AM" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:38px;">
               </div>
             </div>
           </div>
 
           <div class="form-group" style="margin-bottom:16px;">
-            <label style="font-size:12px; font-weight:600; color:#1d1d1f; margin-bottom:4px; display:block;">Call Remark</label>
-            <textarea name="remark" id="editRemark" rows="2" class="form-control" style="border-radius:8px; border:1px solid #e5e5ea; font-size:13px;"></textarea>
+            <label style="font-size:12px; font-weight:600; color:#0f172a; margin-bottom:4px; display:block;">Call Remark</label>
+            <textarea name="remark" id="editRemark" rows="2" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px;"></textarea>
           </div>
 
           <div style="display:flex; justify-content:flex-end; gap:8px;">
@@ -1253,113 +1253,95 @@ html, body {
         </form>
       </div>
 
-      <div id="middleViewAutoDialer" style="display:none; padding:15px; height:100%; overflow-y:auto;">
-        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:18px 20px; box-shadow:0 1px 3px rgba(0,0,0,0.04); margin-bottom:16px;">
+      <div id="middleViewAutoDialer" class="ad-view" style="display:none;">
+        <div class="ad-card">
           <div class="ad-campaign-banner" id="campaignBanner" style="display:none;">
             <span>Dialing campaign: <strong id="campaignBannerName"></strong></span>
             <button type="button" class="btn btn-default btn-xs" onclick="exitCampaignDialing()">Exit campaign</button>
-          </div>          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
-            <h3 style="font-size:16px; font-weight:700; color:#0f172a; margin:0; letter-spacing:-0.01em;" id="dialerSetupHeading">
-              <i class="fa fa-play-circle" style="color:#1e3a8a; margin-right:6px;" id="dialerSetupIcon"></i> <span id="dialerSetupTitle">Auto Dialer</span>
-            </h3>
-            <div style="display:flex; gap:6px;">
-              <button type="button" class="btn btn-xs btn-default" onclick="selectAllAutoStages(true)" style="border-radius:6px; font-size:11px; font-weight:600; padding:4px 10px;">Select All</button>
-              <button type="button" class="btn btn-xs btn-default" onclick="selectAllAutoStages(false)" style="border-radius:6px; font-size:11px; font-weight:600; padding:4px 10px;">Clear All</button>
+          </div>
+          <h3 class="ad-title" id="dialerSetupHeading"><i class="fa fa-play-circle" id="dialerSetupIcon"></i><span id="dialerSetupTitle">Who to call</span></h3>
+
+          <div class="ad-step">
+            <div class="ad-step-h">
+              <span>Lead stages</span>
+              <span class="ad-links"><button type="button" onclick="selectAllAutoStages(true)">Select all</button><button type="button" onclick="selectAllAutoStages(false)">Clear</button></span>
+            </div>
+            <div class="ad-stages">
+              <?php if(!empty($statuses)){ foreach($statuses as $st){ ?>
+              <label class="ad-stage"><input type="checkbox" class="cbx-auto-stage" value="<?php echo (int)$st['id']; ?>" checked onchange="updateAutoDialerQueueCount()"><span><?php echo htmlspecialchars($st['status']); ?></span></label>
+              <?php } } ?>
             </div>
           </div>
 
-          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(135px, 1fr)); gap:8px; margin-bottom:14px; padding:12px; background:#f8fafc; border-radius:10px; border:1px solid #f1f5f9;">
-            <?php if(!empty($statuses)){ foreach($statuses as $st){ ?>
-              <label style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:500; color:#334155; margin:0; cursor:pointer;">
-                <input type="checkbox" class="cbx-auto-stage" value="<?php echo (int)$st['id']; ?>" checked onchange="updateAutoDialerQueueCount()" style="margin:0; width:15px; height:15px; accent-color:#1e3a8a;">
-                <span><?php echo htmlspecialchars($st['status']); ?></span>
-              </label>
-            <?php } } ?>
+          <div class="ad-step">
+            <div class="ad-step-h"><span>Records</span></div>
+            <div class="ad-opts">
+              <div class="ad-range-field ad-delay" id="wrapAutoDialTimerDelay">
+                <label for="autoDialTimerDelay">Wait between calls</label>
+                <select id="autoDialTimerDelay" class="form-control">
+                  <option value="3">3 seconds</option>
+                  <option value="60" selected>60 seconds</option>
+                  <option value="90">90 seconds</option>
+                  <option value="120">120 seconds</option>
+                </select>
+              </div>
+              <div class="ad-range" id="wrapDialerRange">
+                <div class="ad-range-field">
+                  <label for="dialerRangeFrom">Start at record</label>
+                  <input type="text" id="dialerRangeFrom" class="form-control crm-numeric-only" inputmode="numeric" maxlength="7" placeholder="1">
+                </div>
+                <div class="ad-range-field">
+                  <label for="dialerRangeTo">End at record</label>
+                  <input type="text" id="dialerRangeTo" class="form-control crm-numeric-only" inputmode="numeric" maxlength="7" placeholder="Last">
+                </div>
+                <div class="ad-range-field ad-range-wide">
+                  <label for="dialerSkipCalled">Already called</label>
+                  <select id="dialerSkipCalled" class="form-control">
+                    <option value="none">Include all records</option>
+                    <option value="today" selected>Skip records called today</option>
+                    <option value="week">Skip records called in the last 7 days</option>
+                    <option value="ever">Skip records ever called</option>
+                  </select>
+                </div>
+                <div class="ad-range-field ad-range-action">
+                  <button type="button" class="btn btn-default" id="btnDialerResume" onclick="resumeDialerRange()" disabled>Resume</button>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div style="display:flex; flex-wrap:wrap; gap:16px; align-items:flex-end; margin-bottom:16px;">
-            <div style="flex:1 1 200px; min-width:180px;" id="wrapAutoDialTimerDelay">
-              <label style="font-size:12px; font-weight:600; color:#334155; margin-bottom:4px; display:block;">Call Delay Interval</label>
-              <select id="autoDialTimerDelay" class="form-control" style="border-radius:8px; border:1px solid #e2e8f0; font-size:13px; height:36px;">
-                <option value="3">3 Seconds</option>
-                <option value="60" selected>60 Seconds</option>
-                <option value="90">90 Seconds</option>
-                <option value="120">120 Seconds</option>
-              </select>
-            </div>
-            <div class="ad-range" id="wrapDialerRange">
-            <div class="ad-range-field">
-              <label for="dialerRangeFrom">Start at record</label>
-              <input type="text" id="dialerRangeFrom" class="form-control crm-numeric-only" inputmode="numeric" maxlength="7" placeholder="1">
-            </div>
-            <div class="ad-range-field">
-              <label for="dialerRangeTo">End at record</label>
-              <input type="text" id="dialerRangeTo" class="form-control crm-numeric-only" inputmode="numeric" maxlength="7" placeholder="Last">
-            </div>
-            <div class="ad-range-field ad-range-wide">
-              <label for="dialerSkipCalled">Already called records</label>
-              <select id="dialerSkipCalled" class="form-control">
-                <option value="none">Include all records</option>
-                <option value="today" selected>Skip records called today</option>
-                <option value="week">Skip records called in last 7 days</option>
-                <option value="ever">Skip records ever called</option>
-              </select>
-            </div>
-            <div class="ad-range-field ad-range-action">
-              <button type="button" class="btn btn-default" id="btnDialerResume" onclick="resumeDialerRange()" disabled>Resume</button>
-            </div>
-          </div>
-          </div>
-
-          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; padding-top:8px; border-top:1px solid #f1f5f9;">
-            <div style="font-size:13px; color:#475569;">
-              Queue Status: <strong id="autoDialerQueueCount" style="color:#0f172a; font-weight:700;">0 records ready</strong>
-            </div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-              <button type="button" id="btnDialerBreak" class="btn btn-sm btn-default btn-dialer-break" onclick="toggleDialerBreak()" style="border-radius:8px; font-weight:600; padding:7px 16px; border:1px solid #cbd5e1;">
-                <i class="fa fa-coffee"></i> Break
-              </button>
-              <button type="button" id="btnStartAutoDial" class="btn btn-sm btn-primary" onclick="startAutoDialSession()" style="background:#1e3a8a; border-color:#1e3a8a; font-weight:600; padding:7px 20px; border-radius:8px;">
-                <i class="fa fa-play"></i> Start Auto Dialing
-              </button>
-              <button type="button" id="btnStartManualDial" class="btn btn-sm btn-primary" onclick="startManualDialSession()" style="display:none; background:#1e3a8a; border-color:#1e3a8a; font-weight:600; padding:7px 20px; border-radius:8px;">
-                <i class="fa fa-play"></i> Start Manual Dialing
-              </button>
-              <button type="button" id="btnPauseAutoDial" class="btn btn-sm btn-default" onclick="toggleAutoDialPause()" style="display:none; border-radius:8px; font-weight:600; padding:7px 16px;">
-                <i class="fa fa-pause"></i> Pause
-              </button>
-              <button type="button" id="btnNextAutoDial" class="btn btn-sm btn-default" onclick="skipToNextAutoLead()" style="display:none; border-radius:8px; font-weight:600; padding:7px 16px;">
-                <i class="fa fa-forward"></i> Skip / Next
-              </button>
-              <button type="button" id="btnStopAutoDial" class="btn btn-sm btn-danger" onclick="stopAutoDialSession()" style="display:none; border-radius:8px; font-weight:600; padding:7px 16px;">
-                <i class="fa fa-stop"></i> Stop Session
-              </button>
+          <div class="ad-foot">
+            <div class="ad-count">Ready to call: <strong id="autoDialerQueueCount">0 records ready</strong></div>
+            <div class="ad-btns">
+              <button type="button" id="btnDialerBreak" class="btn btn-default btn-dialer-break" onclick="toggleDialerBreak()"><i class="fa fa-coffee"></i> Break</button>
+              <button type="button" id="btnStartAutoDial" class="btn btn-primary" onclick="startAutoDialSession()"><i class="fa fa-play"></i> Start dialing</button>
+              <button type="button" id="btnStartManualDial" class="btn btn-primary" onclick="startManualDialSession()" style="display:none;"><i class="fa fa-play"></i> Start dialing</button>
+              <button type="button" id="btnPauseAutoDial" class="btn btn-default" onclick="toggleAutoDialPause()" style="display:none;"><i class="fa fa-pause"></i> Pause</button>
+              <button type="button" id="btnNextAutoDial" class="btn btn-default" onclick="skipToNextAutoLead()" style="display:none;"><i class="fa fa-forward"></i> Skip</button>
+              <button type="button" id="btnStopAutoDial" class="btn btn-danger" onclick="stopAutoDialSession()" style="display:none;"><i class="fa fa-stop"></i> Stop</button>
             </div>
           </div>
         </div>
 
-        <div id="autoDialerLiveCard"  style="display:none; background:#ffffff; border:1px solid #1e3a8a; border-radius:12px; padding:20px; box-shadow:0 4px 14px rgba(0,114,240,0.08);">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <span style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#1e3a8a; background:#eff6ff; padding:3px 10px; border-radius:12px;" id="autoDialProgressBadge">
-              Lead 1 of 0
-            </span>
-            <span style="font-size:12px; color:#64748b;" id="autoDialStageBadge">Stage: -</span>
+        <div id="autoDialerLiveCard" class="ad-live" style="display:none;">
+          <div class="ad-live-top">
+            <span class="ad-live-pos" id="autoDialProgressBadge">Lead 1 of 0</span>
+            <span class="ad-live-stage" id="autoDialStageBadge">Stage: -</span>
           </div>
-          <h4 style="font-size:18px; font-weight:700; color:#0f172a; margin:0 0 6px 0;" id="autoDialClientName">-</h4>
-          <p style="font-size:14px; font-weight:600; color:#334155; margin:0 0 12px 0;" id="autoDialPhone">-</p>
-          <div style="font-size:12px; color:#64748b;" id="autoDialStatusText">Preparing connection...</div>
-
-          <div id="autoDialCountdownWrap" style="display:none; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 14px; margin-top:12px; align-items:center; justify-content:space-between;">
-            <div style="font-size:12px; font-weight:600; color:#0f172a;">
-              <i class="fa fa-clock-o"></i> Next call dialing in <strong id="autoDialCountdownNum" style="font-size:15px; color:#0f172a;">60</strong>s...
-            </div>
-            <div style="display:flex; gap:6px;">
-              <button type="button" class="btn btn-xs btn-success" onclick="triggerImmediateNextAutoLead()" style="border-radius:6px; font-weight:600;"><i class="fa fa-phone"></i> Dial Now</button>
-              <button type="button" class="btn btn-xs btn-default" onclick="toggleAutoDialPause()" style="border-radius:6px; font-weight:600;" id="btnPauseCountdown">Pause</button>
+          <h4 class="ad-live-name" id="autoDialClientName">-</h4>
+          <p class="ad-live-phone" id="autoDialPhone">-</p>
+          <div class="ad-live-status" id="autoDialStatusText">Preparing connection...</div>
+          <div class="ad-live-next" id="autoDialCountdownWrap" style="display:none;">
+            <div><i class="fa fa-clock-o"></i> Next call in <strong id="autoDialCountdownNum">60</strong>s</div>
+            <div class="ad-btns">
+              <button type="button" class="btn btn-sm btn-success" onclick="triggerImmediateNextAutoLead()"><i class="fa fa-phone"></i> Dial now</button>
+              <button type="button" class="btn btn-sm btn-default" onclick="toggleAutoDialPause()" id="btnPauseCountdown">Pause</button>
             </div>
           </div>
         </div>
-      </div><div id="middleViewManualDialer" class="md-view" style="display:none;">
+      </div>
+
+<div id="middleViewManualDialer" class="md-view" style="display:none;">
         <div class="md-card">
           <div class="md-bar">
             <div class="md-bar-left">
@@ -1543,28 +1525,28 @@ html, body {
         <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:12px; margin-bottom:18px;">
           <div class="sheet-stat-card">
             <div class="sheet-stat-val" id="logStatTotal">0</div>
-            <div class="sheet-stat-lbl">Total Outbound</div>
+            <div class="sheet-stat-lbl">Calls made</div>
           </div>
           <div class="sheet-stat-card">
-            <div class="sheet-stat-val" id="logStatConnected" style="color:#34c759;">0</div>
+            <div class="sheet-stat-val" id="logStatConnected" style="color:#16a34a;">0</div>
             <div class="sheet-stat-lbl">Connected</div>
           </div>
           <div class="sheet-stat-card">
             <div class="sheet-stat-val" id="logStatNewCalls" style="color:#1e3a8a;">0</div>
-            <div class="sheet-stat-lbl">New Calls</div>
+            <div class="sheet-stat-lbl">New calls</div>
           </div>
           <div class="sheet-stat-card">
-            <div class="sheet-stat-val" id="logStatFollowups" style="color:#ff9500;">0</div>
+            <div class="sheet-stat-val" id="logStatFollowups" style="color:#d97706;">0</div>
             <div class="sheet-stat-lbl">Follow-ups</div>
           </div>
           <div class="sheet-stat-card">
             <div class="sheet-stat-val" id="logStatDuration">0m</div>
-            <div class="sheet-stat-lbl">Talk Time</div>
+            <div class="sheet-stat-lbl">Talk time</div>
           </div>
         </div>
 
         <div style="margin-bottom:20px;">
-          <h4 style="font-size:13px; font-weight:700; color:#1d1d1f; margin:0 0 10px 0; text-transform:uppercase; letter-spacing:0.5px;">Status Breakdown Sheet</h4>
+          <h4 style="font-size:14px; font-weight:700; color:#0f172a; margin:0 0 10px 0;">Calls by result</h4>
           <table class="sheet-table" id="tableStatusBreakdown">
             <thead>
               <tr>
@@ -1576,13 +1558,13 @@ html, body {
               </tr>
             </thead>
             <tbody id="tbodyStatusBreakdown">
-              <tr><td colspan="5" style="text-align:center; padding:15px; color:#8e8e93;">Loading breakdown...</td></tr>
+              <tr><td colspan="5" style="text-align:center; padding:15px; color:#64748b;">Loading breakdown...</td></tr>
             </tbody>
           </table>
         </div>
 
         <div>
-          <h4 style="font-size:13px; font-weight:700; color:#1d1d1f; margin:0 0 10px 0; text-transform:uppercase; letter-spacing:0.5px;">Recent Outbound Call History</h4>
+          <h4 style="font-size:14px; font-weight:700; color:#0f172a; margin:0 0 10px 0;">Recent calls</h4>
           <div style="overflow-x:auto;">
             <table class="sheet-table" id="tableRecentLogs">
               <thead>
@@ -1597,7 +1579,7 @@ html, body {
                 </tr>
               </thead>
               <tbody id="tbodyRecentLogs">
-                <tr><td colspan="7" style="text-align:center; padding:15px; color:#8e8e93;">Loading history...</td></tr>
+                <tr><td colspan="7" style="text-align:center; padding:15px; color:#64748b;">Loading history...</td></tr>
               </tbody>
             </table>
           </div>
@@ -1611,11 +1593,7 @@ html, body {
   <div class="crm-dialer-panel">
 
     <div class="dialer-window-header">
-      <span style="font-size:13px; font-weight:700; color:#1d1d1f; letter-spacing:-0.01em;">Phone</span>
-      <div class="dialer-window-header-icons">
-        <i class="fa fa-headphones" title="Headset"></i>
-        <i class="fa fa-volume-up" title="Audio"></i>
-      </div>
+      <span style="font-size:14px; font-weight:700; color:#0f172a;">Phone</span>
     </div>
 
     <div class="dialer-top-display">
@@ -1700,16 +1678,16 @@ html, body {
     </div>
 
     <div class="dialer-bottom-actions">
-      <button type="button" class="keypad-tool-btn" title="Settings" onclick="showToast('Audio Ready')">
-        <i class="fa fa-sliders"></i>
+      <button type="button" class="keypad-tool-btn" title="Clear number" aria-label="Clear number" onclick="dialerClearNumber()">
+        <i class="fa fa-times"></i>
       </button>
 
       <button type="button" class="btn-green-call" id="btnToggleCall" onclick="handleCallButtonClick()" title="Call">
         <i class="fa fa-phone"></i>
       </button>
 
-      <button type="button" class="keypad-tool-btn" onclick="dialerBackspace()" title="Delete">
-        <i class="fa fa-chevron-left"></i>
+      <button type="button" class="keypad-tool-btn" onclick="dialerBackspace()" title="Delete last digit" aria-label="Delete last digit">
+        <i class="fa fa-long-arrow-left"></i>
       </button>
     </div>
 
@@ -2000,8 +1978,8 @@ function onDialerInputChange() {
     html += '  <div style="display:flex; align-items:center; gap:8px; min-width:0;">';
     html += '    <div class="dialer-suggestion-avatar">' + initials + '</div>';
     html += '    <div style="min-width:0;">';
-    html += '      <div style="font-size:12.5px; font-weight:600; color:#1d1d1f; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + escapeHtml(m.name) + '</div>';
-    html += '      <div style="font-size:10.5px; color:#8e8e93; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + escapeHtml(m.department || 'Team') + (m.extension ? ' &bull; ' + escapeHtml(m.extension) : '') + '</div>';
+    html += '      <div style="font-size:12.5px; font-weight:600; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + escapeHtml(m.name) + '</div>';
+    html += '      <div style="font-size:10.5px; color:#64748b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + escapeHtml(m.department || 'Team') + (m.extension ? ' &bull; ' + escapeHtml(m.extension) : '') + '</div>';
     html += '    </div>';
     html += '  </div>';
     if (dialNum) {
@@ -2154,7 +2132,7 @@ function openAutoDialerMode() {
   $('.crm-dock-btn').removeClass('active');
   $('#dockBtnDatabase').addClass('active');
   $('#middleAreaTitle').text('Auto Dialer');
-  $('#dialerSetupTitle').text('Auto Dialer - Setup');
+  $('#dialerSetupTitle').text('Who to call');
   $('#dialerSetupIcon').attr('class', 'fa fa-play-circle');
   $('#subnavFollowup').hide();
   $('#subnavLogsPeriod').hide();
@@ -2176,7 +2154,7 @@ function openManualDialerMode() {
   $('.crm-dock-btn').removeClass('active');
   $('#dockBtnDatabase').addClass('active');
   $('#middleAreaTitle').text('Manual Dialer');
-  $('#dialerSetupTitle').text('Manual Dialer - Setup');
+  $('#dialerSetupTitle').text('Who to call');
   $('#dialerSetupIcon').attr('class', 'fa fa-keyboard-o');
   $('#subnavFollowup').hide();
   $('#subnavLogsPeriod').hide();
@@ -2194,7 +2172,7 @@ function openLeadsDialerMode() {
   $('.crm-dock-btn').removeClass('active');
   $('#dockBtnLeads').addClass('active');
   $('#middleAreaTitle').text('Leads Dialer');
-  $('#dialerSetupTitle').text('Leads Dialer - Selection');
+  $('#dialerSetupTitle').text('Who to call');
   $('#dialerSetupIcon').attr('class', 'fa fa-bullhorn');
   $('#subnavFollowup').hide();
   $('#subnavLogsPeriod').hide();
@@ -2211,7 +2189,7 @@ function openFollowupAllFeaturesMode() {
   $('.crm-dock-btn').removeClass('active');
   $('#dockBtnFollowup').addClass('active');
   $('#middleAreaTitle').text('Follow-up - All Features');
-  $('#dialerSetupTitle').text('Follow-up - All Features');
+  $('#dialerSetupTitle').text('Who to call');
   $('#dialerSetupIcon').attr('class', 'fa fa-calendar-check-o');
   $('#subnavFollowup').hide();
   $('#subnavLogsPeriod').hide();
@@ -2260,18 +2238,10 @@ function toggleDialerBreak() {
           clearInterval(autoDialerCountdownInterval);
           autoDialerCountdownInterval = null;
         }
-        $('.btn-dialer-break').html('<i class="fa fa-coffee" style="color:#475569;"></i> <strong>On Break</strong>').css({
-          'background': '#f8fafc',
-          'border-color': '#475569',
-          'color': '#334155'
-        });
+        $('.btn-dialer-break').html('<i class="fa fa-coffee"></i> On break').addClass('is-break');
         showToast('Break started - Break status recorded in Admin Logs');
       } else {
-        $('.btn-dialer-break').html('<i class="fa fa-coffee"></i> Break').css({
-          'background': '#ffffff',
-          'border-color': '#cbd5e1',
-          'color': '#334155'
-        });
+        $('.btn-dialer-break').html('<i class="fa fa-coffee"></i> Break').removeClass('is-break');
         var durMsg = res.duration_minutes ? (' (Duration: ' + res.duration_minutes + 'm)') : '';
         showToast('Resumed work from break' + durMsg);
         if (autoDialerActive && autoDialerPaused) {
@@ -3011,7 +2981,7 @@ function openTeamColleagues() {
     switchMobileDialerView('workspace');
   }
   $('#inputTeamSearch').val('').focus();
-  $('#teamColleaguesContainer').html('<div id="teamSearchPrompt" style="text-align:center; padding:50px 20px; color:#8e8e93; font-size:13px; font-weight:500;">Type at least 3 letters to search colleagues or departments</div>');
+  $('#teamColleaguesContainer').html('<div id="teamSearchPrompt" style="text-align:center; padding:50px 20px; color:#64748b; font-size:13px; font-weight:500;">Type at least 3 letters to search colleagues or departments</div>');
   if (!allColleagues || allColleagues.length === 0) {
     loadTeamColleaguesData(true);
   }
@@ -3019,7 +2989,7 @@ function openTeamColleagues() {
 
 function loadTeamColleaguesData(silent, callback) {
   if (!silent) {
-    $('#teamColleaguesContainer').html('<div style="text-align:center; padding:30px; color:#8e8e93;"><i class="fa fa-spinner fa-spin"></i> Loading directory...</div>');
+    $('#teamColleaguesContainer').html('<div style="text-align:center; padding:30px; color:#64748b;"><i class="fa fa-spinner fa-spin"></i> Loading directory...</div>');
   }
 
   $.ajax({
@@ -3035,14 +3005,14 @@ function loadTeamColleaguesData(silent, callback) {
       } else {
         allColleagues = [];
         if (!silent) {
-          $('#teamColleaguesContainer').html('<div style="text-align:center; padding:30px; color:#ff3b30;">Failed to load team directory.</div>');
+          $('#teamColleaguesContainer').html('<div style="text-align:center; padding:30px; color:#dc2626;">Failed to load team directory.</div>');
         }
       }
     },
     error: function() {
       allColleagues = [];
       if (!silent) {
-        $('#teamColleaguesContainer').html('<div style="text-align:center; padding:30px; color:#ff3b30;">Network error while loading team.</div>');
+        $('#teamColleaguesContainer').html('<div style="text-align:center; padding:30px; color:#dc2626;">Network error while loading team.</div>');
       }
     }
   });
@@ -3051,12 +3021,12 @@ function loadTeamColleaguesData(silent, callback) {
 function filterTeamCards() {
   var q = $('#inputTeamSearch').val().trim().toLowerCase();
   if (q.length < 3) {
-    $('#teamColleaguesContainer').html('<div id="teamSearchPrompt" style="text-align:center; padding:50px 20px; color:#8e8e93; font-size:13px; font-weight:500;">Type at least 3 letters to search colleagues or departments</div>');
+    $('#teamColleaguesContainer').html('<div id="teamSearchPrompt" style="text-align:center; padding:50px 20px; color:#64748b; font-size:13px; font-weight:500;">Type at least 3 letters to search colleagues or departments</div>');
     return;
   }
 
   if (!allColleagues || allColleagues.length === 0) {
-    $('#teamColleaguesContainer').html('<div style="text-align:center; padding:30px; color:#8e8e93;"><i class="fa fa-spinner fa-spin"></i> Loading directory...</div>');
+    $('#teamColleaguesContainer').html('<div style="text-align:center; padding:30px; color:#64748b;"><i class="fa fa-spinner fa-spin"></i> Loading directory...</div>');
     loadTeamColleaguesData(false, function() {
       filterTeamCards();
     });
@@ -3073,7 +3043,7 @@ function filterTeamCards() {
   }
 
   if (matches.length === 0) {
-    $('#teamColleaguesContainer').html('<div style="text-align:center; padding:40px 20px; color:#8e8e93; font-size:13px;">No colleagues or departments matching "' + escapeHtml(q) + '"</div>');
+    $('#teamColleaguesContainer').html('<div style="text-align:center; padding:40px 20px; color:#64748b; font-size:13px;">No colleagues or departments matching "' + escapeHtml(q) + '"</div>');
     return;
   }
 
@@ -3087,8 +3057,8 @@ function filterTeamCards() {
     html += '  <div style="display:flex; align-items:center; gap:12px;">';
     html += '    <div class="colleague-avatar">' + initials + '</div>';
     html += '    <div>';
-    html += '      <div style="font-size:13.5px; font-weight:600; color:#1d1d1f;">' + escapeHtml(m.name) + '</div>';
-    html += '      <div style="font-size:11.5px; color:#8e8e93; font-weight:500;">' + escapeHtml(m.department || 'General') + (m.extension ? ' &bull; Ext: ' + escapeHtml(m.extension) : '') + '</div>';
+    html += '      <div style="font-size:13.5px; font-weight:600; color:#0f172a;">' + escapeHtml(m.name) + '</div>';
+    html += '      <div style="font-size:11.5px; color:#64748b; font-weight:500;">' + escapeHtml(m.department || 'General') + (m.extension ? ' &bull; Ext: ' + escapeHtml(m.extension) : '') + '</div>';
     html += '    </div>';
     html += '  </div>';
 
@@ -3097,7 +3067,7 @@ function filterTeamCards() {
       html += '    <button type="button" class="apple-quick-call-btn" title="Call ' + escapeJs(m.name) + '" onclick="dialColleague(\'' + escapeJs(m.name) + '\', \'' + escapeJs(dialNum) + '\')"><i class="fa fa-phone"></i></button>';
       html += '    <button type="button" class="btn-edit-row" title="Copy Number" onclick="copyNumber(\'' + escapeJs(dialNum) + '\')"><i class="fa fa-copy"></i></button>';
     } else {
-      html += '    <span style="font-size:11.5px; color:#8e8e93;">No phone</span>';
+      html += '    <span style="font-size:11.5px; color:#64748b;">No phone</span>';
     }
     html += '  </div>';
     html += '</div>';
@@ -3170,7 +3140,7 @@ function reloadCurrentQueue() {
 }
 
 function loadQueueData(type, filter, statusVal, searchVal) {
-  $('#tbodyQueueRecords').html('<tr><td colspan="5" style="text-align:center; padding:25px; color:#8e8e93;"><i class="fa fa-spinner fa-spin"></i> Loading records...</td></tr>');
+  $('#tbodyQueueRecords').html('<tr><td colspan="5" style="text-align:center; padding:25px; color:#64748b;"><i class="fa fa-spinner fa-spin"></i> Loading records...</td></tr>');
 
   $.ajax({
     url: '<?php echo base_url(); ?>manager/calls/ajax_get_queue',
@@ -3192,11 +3162,11 @@ function loadQueueData(type, filter, statusVal, searchVal) {
         }
       } else {
         currentQueue = [];
-        $('#tbodyQueueRecords').html('<tr><td colspan="5" style="text-align:center; padding:25px; color:#8e8e93;">No matching records found.</td></tr>');
+        $('#tbodyQueueRecords').html('<tr><td colspan="5" style="text-align:center; padding:25px; color:#64748b;">No matching records found.</td></tr>');
       }
     },
     error: function() {
-      $('#tbodyQueueRecords').html('<tr><td colspan="5" style="text-align:center; padding:25px; color:#ff3b30;">Failed to load records.</td></tr>');
+      $('#tbodyQueueRecords').html('<tr><td colspan="5" style="text-align:center; padding:25px; color:#dc2626;">Failed to load records.</td></tr>');
     }
   });
 }
@@ -3204,7 +3174,7 @@ function loadQueueData(type, filter, statusVal, searchVal) {
 function renderQueueTable(leads) {
   var html = '';
   if (!leads || leads.length === 0) {
-    $('#tbodyQueueRecords').html('<tr><td colspan="5" style="text-align:center; padding:25px; color:#8e8e93;">No contacts found in this list.</td></tr>');
+    $('#tbodyQueueRecords').html('<tr><td colspan="5" style="text-align:center; padding:25px; color:#64748b;">No contacts found in this list.</td></tr>');
     return;
   }
 
@@ -3217,9 +3187,9 @@ function renderQueueTable(leads) {
 
     html += '<tr class="' + (isCurrent ? 'active-row' : '') + '" id="rowLead_' + l.id + '">';
     html += '<td>';
-    html += '<strong style="color:#1d1d1f; font-size:13px;">' + escapeHtml(l.customer || 'Unnamed') + '</strong>';
+    html += '<strong style="color:#0f172a; font-size:13px;">' + escapeHtml(l.customer || 'Unnamed') + '</strong>';
     if (l.poc) {
-      html += '<div style="font-size:11.5px; color:#8e8e93;">' + escapeHtml(l.poc) + '</div>';
+      html += '<div style="font-size:11.5px; color:#64748b;">' + escapeHtml(l.poc) + '</div>';
     }
     html += '</td>';
 
@@ -3228,15 +3198,15 @@ function renderQueueTable(leads) {
       html += '<div><a href="javascript:void(0)" style="color:#1e3a8a; text-decoration:none; font-weight:600;" onclick="quickDialNumber(\'' + escapeJs(p1) + '\', ' + l.id + ')"><i class="fa fa-phone"></i> ' + escapeHtml(p1) + '</a></div>';
     }
     if (p2) {
-      html += '<div><a href="javascript:void(0)" style="color:#8e8e93; text-decoration:none;" onclick="quickDialNumber(\'' + escapeJs(p2) + '\', ' + l.id + ')"><i class="fa fa-mobile"></i> ' + escapeHtml(p2) + '</a></div>';
+      html += '<div><a href="javascript:void(0)" style="color:#64748b; text-decoration:none;" onclick="quickDialNumber(\'' + escapeJs(p2) + '\', ' + l.id + ')"><i class="fa fa-mobile"></i> ' + escapeHtml(p2) + '</a></div>';
     }
     if (!p1 && !p2) {
-      html += '<span style="color:#8e8e93;">No Phone</span>';
+      html += '<span style="color:#64748b;">No Phone</span>';
     }
     html += '</td>';
 
-    html += '<td><span style="font-weight:600; color:#1d1d1f;">' + escapeHtml(l.status_name || 'Open') + '</span></td>';
-    html += '<td style="font-size:11.5px; color:#8e8e93; font-weight:500;">' + escapeHtml(dateTxt) + '</td>';
+    html += '<td><span style="font-weight:600; color:#0f172a;">' + escapeHtml(l.status_name || 'Open') + '</span></td>';
+    html += '<td style="font-size:11.5px; color:#64748b; font-weight:500;">' + escapeHtml(dateTxt) + '</td>';
 
     html += '<td style="text-align:right; white-space:nowrap;">';
     html += '<button type="button" class="apple-quick-call-btn" title="Call" onclick="selectLeadRow(' + i + ', true)"><i class="fa fa-phone"></i></button>';
@@ -3290,7 +3260,7 @@ function applyLeadToDialer(lead, idx) {
   currentIndex = idx || 0;
 
   var custName = lead.customer || 'No Contact';
-  var p1 = lead.phone_primary || lead.contact1 || '';
+  var p1 = firstPhoneNumber(lead.phone_primary || lead.contact1 || '');
 
   $('#dialerChipName').text(custName);
   $('#dialerContactChip').css('display', 'inline-flex');
@@ -3431,8 +3401,8 @@ function changeLogsPeriod(period) {
 
 function loadDailyLogsData(period) {
   period = period || currentLogsPeriod || 'day';
-  $('#tbodyStatusBreakdown').html('<tr><td colspan="5" style="text-align:center; padding:15px; color:#8e8e93;"><i class="fa fa-spinner fa-spin"></i> Loading breakdown...</td></tr>');
-  $('#tbodyRecentLogs').html('<tr><td colspan="7" style="text-align:center; padding:15px; color:#8e8e93;"><i class="fa fa-spinner fa-spin"></i> Loading history...</td></tr>');
+  $('#tbodyStatusBreakdown').html('<tr><td colspan="5" style="text-align:center; padding:15px; color:#64748b;"><i class="fa fa-spinner fa-spin"></i> Loading breakdown...</td></tr>');
+  $('#tbodyRecentLogs').html('<tr><td colspan="7" style="text-align:center; padding:15px; color:#64748b;"><i class="fa fa-spinner fa-spin"></i> Loading history...</td></tr>');
 
   $.ajax({
     url: '<?php echo base_url(); ?>manager/calls/ajax_get_daily_logs',
@@ -3456,7 +3426,7 @@ function loadDailyLogsData(period) {
       }
     },
     error: function() {
-      $('#tbodyStatusBreakdown').html('<tr><td colspan="5" style="text-align:center; padding:15px; color:#ff3b30;">Failed to load statistics.</td></tr>');
+      $('#tbodyStatusBreakdown').html('<tr><td colspan="5" style="text-align:center; padding:15px; color:#dc2626;">Failed to load statistics.</td></tr>');
     }
   });
 }
@@ -3464,16 +3434,16 @@ function loadDailyLogsData(period) {
 function renderStatusBreakdown(items) {
   var html = '';
   if (!items || items.length === 0) {
-    html = '<tr><td colspan="5" style="text-align:center; padding:15px; color:#8e8e93;">No calling activity found for this period.</td></tr>';
+    html = '<tr><td colspan="5" style="text-align:center; padding:15px; color:#64748b;">No calling activity found for this period.</td></tr>';
   } else {
     for (var i = 0; i < items.length; i++) {
       var item = items[i];
       html += '<tr>';
-      html += '  <td><strong style="color:#1d1d1f;">' + escapeHtml(item.status_name) + '</strong></td>';
+      html += '  <td><strong style="color:#0f172a;">' + escapeHtml(item.status_name) + '</strong></td>';
       html += '  <td style="text-align:center; color:#1e3a8a; font-weight:600;">' + item.new_calls + '</td>';
-      html += '  <td style="text-align:center; color:#ff9500; font-weight:600;">' + item.followup_calls + '</td>';
-      html += '  <td style="text-align:center; font-weight:700; color:#1d1d1f;">' + item.total_calls + '</td>';
-      html += '  <td style="text-align:right; font-weight:600; color:#1d1d1f;">' + item.percentage + '%</td>';
+      html += '  <td style="text-align:center; color:#d97706; font-weight:600;">' + item.followup_calls + '</td>';
+      html += '  <td style="text-align:center; font-weight:700; color:#0f172a;">' + item.total_calls + '</td>';
+      html += '  <td style="text-align:right; font-weight:600; color:#0f172a;">' + item.percentage + '%</td>';
       html += '</tr>';
     }
   }
@@ -3483,20 +3453,20 @@ function renderStatusBreakdown(items) {
 function renderRecentLogs(logs) {
   var html = '';
   if (!logs || logs.length === 0) {
-    html = '<tr><td colspan="7" style="text-align:center; padding:15px; color:#8e8e93;">No recent calls found.</td></tr>';
+    html = '<tr><td colspan="7" style="text-align:center; padding:15px; color:#64748b;">No recent calls found.</td></tr>';
   } else {
     for (var i = 0; i < logs.length; i++) {
       var log = logs[i];
       var phone = log.phone_number || '';
       var cust = log.customer_name || (log.lead_customer ? log.lead_customer : 'Direct Call');
-      var cat = log.call_category === 'followup' ? '<span style="color:#ff9500; font-weight:600;">Follow-up</span>' : '<span style="color:#1e3a8a; font-weight:600;">New Call</span>';
+      var cat = log.call_category === 'followup' ? '<span style="color:#d97706; font-weight:600;">Follow-up</span>' : '<span style="color:#1e3a8a; font-weight:600;">New Call</span>';
 
       html += '<tr>';
-      html += '  <td style="font-size:11.5px; color:#8e8e93; font-weight:500;">' + escapeHtml(log.created_at) + '</td>';
-      html += '  <td><strong style="color:#1d1d1f;">' + escapeHtml(cust) + '</strong></td>';
+      html += '  <td style="font-size:11.5px; color:#64748b; font-weight:500;">' + escapeHtml(log.created_at) + '</td>';
+      html += '  <td><strong style="color:#0f172a;">' + escapeHtml(cust) + '</strong></td>';
       html += '  <td><a href="javascript:void(0)" style="color:#1e3a8a; text-decoration:none; font-weight:600;" onclick="quickDialNumber(\'' + escapeJs(phone) + '\')"><i class="fa fa-phone"></i> ' + escapeHtml(phone) + '</a></td>';
       html += '  <td>' + cat + '</td>';
-      html += '  <td><span style="font-weight:600; color:#1d1d1f;">' + escapeHtml(log.disposition || log.call_status) + '</span></td>';
+      html += '  <td><span style="font-weight:600; color:#0f172a;">' + escapeHtml(log.disposition || log.call_status) + '</span></td>';
       html += '  <td>' + (log.duration || 0) + 's</td>';
       html += '  <td style="text-align:right;">';
       html += '    <button type="button" class="apple-quick-call-btn" title="Call" onclick="quickDialNumber(\'' + escapeJs(phone) + '\')"><i class="fa fa-phone"></i></button>';
@@ -3659,6 +3629,19 @@ var TCX_FQDN = <?php echo json_encode((string)$tcx_cfg['pbx_fqdn']); ?>;
 var TCX_WEB = <?php echo !empty($tcx_cfg['auto_open_webclient']) ? 'true' : 'false'; ?>;
 
 // Place the real call: the 3CX web client when it is set up, else the phone app (3CX app / tel: link).
+// First number of a field that holds several ("050... / 04...", "050..., 055...").
+function firstPhoneNumber(v) {
+  var parts = String(v || '').split(/\s*(?:[\/,;|]|\s+or\s+)\s*/i);
+  for (var i = 0; i < parts.length; i++) { if (parts[i].replace(/[^\d]/g, '').length >= 3) return parts[i].trim(); }
+  return String(v || '').trim();
+}
+
+function dialerClearNumber() {
+  if (callState === 'calling' || callState === 'connected') return;
+  $('#dialerInput').val('').focus();
+  $('#dialerSuggestions').hide();
+}
+
 function launch3cxCall(phone) {
   var digits = String(phone || '').replace(/[^\d+]/g, '');
   if (!digits) return;
@@ -3674,7 +3657,8 @@ function launch3cxCall(phone) {
 }
 
 function startDialing() {
-  var phone = $('#dialerInput').val().trim();
+  var phone = firstPhoneNumber($('#dialerInput').val());
+  $('#dialerInput').val(phone);
   if (!phone) {
     showToast('Please enter a phone number');
     return;

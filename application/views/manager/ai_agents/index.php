@@ -44,7 +44,7 @@ $call_row = function ($r, $is_inbox) use ($h, $oc, $when, $base) {
 };
 ?>
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-campaigns.css?v=20261107_2">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-campaigns.css?v=20261107_11">
 <div class="content-wrapper sx cp">
   <section class="sx-head">
     <h1>AI Calling Agents<small>Voice agents call campaign records and pass interested customers back to your team</small></h1>

@@ -7,7 +7,7 @@ $zones = array('Asia/Dubai', 'Asia/Riyadh', 'Asia/Qatar', 'Asia/Kuwait', 'Asia/B
 if (!in_array($s['timezone'], $zones, true)) $zones[] = $s['timezone'];
 ?>
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
-<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-campaigns.css?v=20261107_2">
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-campaigns.css?v=20261107_11">
 <div class="content-wrapper sx cp">
   <section class="sx-head">
     <h1>AI calling settings<small>Voice provider, caller number and limits</small></h1>
