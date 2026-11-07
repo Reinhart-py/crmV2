@@ -165,6 +165,9 @@ class Ci_admin extends CI_Controller {
 
 		$data['dkey'] = $key;
 		$data['dash_style'] = 'modern';
+		// Figures are confidential: never kept in the browser cache or a proxy.
+		$this->output->set_header('Cache-Control: no-store, no-cache, must-revalidate, private');
+		$this->output->set_header('Pragma: no-cache');
 		$data['is_admin'] = $is_admin;
 		$data['has_team'] = $has_team;
 		$data['only_me'] = $only_me;
@@ -208,9 +211,21 @@ class Ci_admin extends CI_Controller {
 			$this->output->set_status_header(403)->set_output(json_encode(array('ok' => false, 'msg' => 'Not in your team')));
 			return;
 		}
+		$this->output->set_header('Cache-Control: no-store, no-cache, must-revalidate, private');
 		$d = $this->dash->person_detail($id);
-		foreach ($d['followups'] as &$r) $r['enc'] = base64_encode($r['id']);
+		// Only what the panel shows: no phone numbers or remarks in full.
+		$mask = function ($p) { $p = preg_replace('/[^0-9+]/', '', (string)$p); return strlen($p) > 4 ? str_repeat('*', strlen($p) - 3) . substr($p, -3) : $p; };
+		$fu = array();
+		foreach ($d['followups'] as $r) $fu[] = array('enc' => base64_encode($r['id']), 'customer' => $r['customer'], 'poc' => $r['poc'], 'lead_id' => $r['lead_id'], 'followup_date' => $r['followup_date']);
+		$d['followups'] = $fu;
+		foreach ($d['calls'] as &$r) { $r['phone_number'] = $mask($r['phone_number']); }
 		unset($r);
+		foreach ($d['done'] as &$r) { $r['followup_remark'] = mb_substr((string)$r['followup_remark'], 0, 80); }
+		unset($r);
+		if ($id !== $uid) {
+			$who = $this->db->select('name')->where('id', $id)->get('ci_user')->row_array();
+			$this->ci_admin_model->log_admin_action('dashboard_view_person', 'Opened staff tracker details of ' . (!empty($who['name']) ? $who['name'] : 'user') . ' (#' . $id . ')');
+		}
 		$this->output->set_output(json_encode(array('ok' => true) + $d));
 	}
 

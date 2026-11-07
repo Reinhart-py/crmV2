@@ -4,7 +4,9 @@ $h = function ($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 $b = base_url();
 $m = base_url() . 'manager/';
 $num = function ($n) { return number_format((float)$n, 0); };
-$money = function ($n) { $n = (float)$n; return 'AED ' . ($n >= 1000000 ? number_format($n / 1000000, 2) . 'M' : number_format($n, 0)); };
+// Amount as plain text (for tooltips) and as a marked span, so "Hide amounts" can cover it.
+$money_t = function ($n) { $n = (float)$n; return 'AED ' . ($n >= 1000000 ? number_format($n / 1000000, 2) . 'M' : number_format($n, 0)); };
+$money = function ($n) use ($money_t) { return '<span class="db-amt">' . $money_t($n) . '</span>'; };
 $pct = function ($a, $t) { return $t > 0 ? (int)round($a * 100 / $t) : 0; };
 $ago = function ($d) {
   if (empty($d) || $d < '2000') return 'Never';
@@ -36,12 +38,39 @@ $next_m = date('Y-m', strtotime($win['start'] . ' +1 month'));
 $is_now = $win['ym'] === date('Y-m');
 $t = $targets;
 $late_tasks = count(array_filter($my_tasks, function ($x) { return $x['_late']; }));
+$fu_url = $m . 'leads/followups?type=';
+$scope_lbl = $dkey === 'kam' && !$is_admin ? 'my numbers' : ($has_team && !$only_me ? ($is_admin ? 'whole company' : 'me and my team') : 'my numbers');
+
+// Totals used by tiles and tab badges.
+$tr_over = 0; $tr_idle = 0; $tr_today = 0; $tr_done = 0; $tr_calls = 0; $tr_late = 0;
+foreach ($tracker as $r) {
+  $tr_over += $r['fu_overdue']; $tr_today += $r['fu_today']; $tr_done += $r['fu_done']; $tr_calls += $r['calls']; $tr_late += $r['tasks_late'];
+  if ($is_now && $r['calls'] == 0 && $r['fu_done'] == 0) $tr_idle++;
+}
+$fl_late = 0; $fl_open = 0;
+if (!empty($flow)) foreach ($flow as $f) { $fl_late += (int)$f['late']; $fl_open += (int)$f['n']; }
+$cl_cold = 0;
+if (!empty($kam_clients)) foreach ($kam_clients as $c) { if ($c['days_since'] === null || $c['days_since'] > 30) $cl_cold++; }
+
+// Tabs for this role: key => [label, badge, badge style]. The first one opens by default.
+$tabs = array();
+if ($dkey === 'sales') $tabs['mine'] = array('My work', $my_fu['overdue'] + $my_fu['today'], 'r');
+if ($dkey === 'backoffice') $tabs['orders'] = array('Orders', $fl_late, 'r');
+if ($dkey === 'kam') $tabs['clients'] = array('Clients', $cl_cold, 'r');
+if ($dkey !== 'backoffice') $tabs['target'] = array($dkey === 'admin' ? 'Overview' : 'Target', 0, '');
+if ($dkey === 'admin') $tabs['orders'] = array('Orders', $fl_late, 'r');
+if ($tracker) $tabs['team'] = array($is_admin && !$only_me ? 'Staff' : 'My team', $tr_over, 'r');
+if ($dkey !== 'sales') $tabs['mine'] = array('My work', $my_fu['overdue'] + $my_fu['today'] + $late_tasks, 'r');
+$first_tab = key($tabs);
+$kpi = function ($cls, $href, $icon, $val, $label, $tab = '') {
+  return '<a class="sx-kpi ' . $cls . '" href="' . $href . '"' . ($tab ? ' data-go="' . $tab . '"' : '') . '><span class="ic"><i class="fa ' . $icon . '"></i></span><div><b>' . $val . '</b><span>' . $label . '</span></div></a>';
+};
 ?>
 <link rel="stylesheet" href="<?php echo $b; ?>assets/dist/css/crm-sys.css?v=20261106_7">
-<link rel="stylesheet" href="<?php echo $b; ?>assets/dist/css/crm-dash.css?v=20261107_2">
-<div class="content-wrapper sx db">
+<link rel="stylesheet" href="<?php echo $b; ?>assets/dist/css/crm-dash.css?v=20261107_6">
+<div class="content-wrapper sx db" id="dbRoot" data-key="<?php echo $h($dkey); ?>">
   <section class="sx-head">
-    <h1><?php echo $h($names[$dkey]); ?><small><?php echo $h(date('F Y', strtotime($win['start']))); ?><?php echo $is_now ? ' &middot; day ' . (int)$win['passed'] . ' of ' . (int)$win['days'] : ''; ?><?php echo $has_team ? ($only_me ? ' &middot; my numbers' : ($is_admin ? ' &middot; whole company' : ' &middot; my team')) : ''; ?></small></h1>
+    <h1><?php echo $h($names[$dkey]); ?><small><?php echo $h(date('F Y', strtotime($win['start']))); ?><?php echo $is_now ? ' &middot; day ' . (int)$win['passed'] . ' of ' . (int)$win['days'] : ''; ?><?php echo $has_team ? ' &middot; ' . $h($scope_lbl) : ''; ?></small></h1>
     <div class="sx-btns">
       <?php if ($is_admin) { ?>
       <div class="sx-chips db-as" title="Open another role's dashboard">
@@ -61,72 +90,66 @@ $late_tasks = count(array_filter($my_tasks, function ($x) { return $x['_late']; 
         <span><?php echo $h(date('M Y', strtotime($win['start']))); ?></span>
         <a class="btn btn-default<?php echo $is_now ? ' disabled' : ''; ?>" href="<?php echo $h($q(array('m' => $next_m === date('Y-m') ? '' : $next_m))); ?>" title="Next month" aria-label="Next month"><i class="fa fa-angle-right"></i></a>
       </div>
+      <button type="button" class="btn btn-default db-hide-btn" id="dbHideAmt" aria-pressed="false" title="Hide amounts on screen (for screen sharing or a shared screen)"><i class="fa fa-eye-slash"></i><span>Hide amounts</span></button>
     </div>
   </section>
 
   <section class="content">
 
+    <div class="sx-kpis">
 <?php
 /* ----------------------------------------------------------- KPI tiles per role */
-$fu_url = $m . 'leads/followups?type=';
 if ($dkey === 'backoffice') {
-  $rv = $reviews; $late_n = 0; foreach ($flow as $f) $late_n += (int)$f['late'];
-  $open_n = 0; foreach ($flow as $f) $open_n += (int)$f['n'];
-?>
-    <div class="sx-kpis">
-      <a class="sx-kpi<?php echo ($rv[0]['n'] + $rv[1]['n']) ? ' a' : ' g'; ?>" href="<?php echo $m; ?>leads/review_leads"><span class="ic"><i class="fa fa-inbox"></i></span><div><b><?php echo $num($rv[0]['n'] + $rv[1]['n']); ?></b><span>Waiting for your review</span></div></a>
-      <a class="sx-kpi" href="<?php echo $m; ?>orders/open"><span class="ic"><i class="fa fa-cogs"></i></span><div><b><?php echo $num($open_n); ?></b><span>Orders in process</span></div></a>
-      <a class="sx-kpi<?php echo $late_n ? ' r' : ' g'; ?>" href="#dbLate"><span class="ic"><i class="fa fa-hourglass-half"></i></span><div><b><?php echo $num($late_n); ?></b><span>Not moved for <?php echo (int)$late_days; ?>+ days</span></div></a>
-      <a class="sx-kpi g" href="<?php echo $m; ?>orders"><span class="ic"><i class="fa fa-check"></i></span><div><b><?php echo $num($orders_done['sales_month']); ?></b><span>Became sales this month</span></div></a>
-    </div>
-<?php } elseif ($dkey === 'admin' && $tracker) {
-  $co = 0; $cl_late = 0; foreach ($tracker as $r) { $co += $r['fu_overdue']; $cl_late += $r['tasks_late']; }
-  $ol = 0; $on = 0; foreach ($flow as $f) { $ol += (int)$f['late']; $on += (int)$f['n']; }
+  $rv = $reviews;
+  echo $kpi(($rv[0]['n'] + $rv[1]['n']) ? 'a' : 'g', $m . 'leads/review_leads', 'fa-inbox', $num($rv[0]['n'] + $rv[1]['n']), 'Waiting for your review');
+  echo $kpi('', '#orders', 'fa-cogs', $num($fl_open), 'Orders in process', 'orders');
+  echo $kpi($fl_late ? 'r' : 'g', '#orders', 'fa-hourglass-half', $num($fl_late), 'Not moved for ' . (int)$late_days . '+ days', 'orders');
+  echo $kpi('g', $m . 'orders', 'fa-check', $num($orders_done['sales_month']), 'Became sales this month');
+} elseif ($dkey === 'admin') {
   $wait = 0; foreach ($reviews as $r) $wait += (int)$r['n'];
+  echo $kpi('g', '#target', 'fa-line-chart', $money($t['achieved']), 'Sales in ' . $h(date('F', strtotime($win['start']))) . ($t['target'] > 0 ? ' &middot; ' . $pct($t['achieved'], $t['target']) . '% of target' : ''), 'target');
+  echo $kpi($tr_over ? 'r' : 'g', '#team', 'fa-exclamation-circle', $num($tr_over), 'Overdue follow-ups, all staff', $tracker ? 'team' : '');
+  echo $kpi($fl_late ? 'a' : '', '#orders', 'fa-cogs', $num($fl_open), 'Orders in process' . ($fl_late ? ', ' . $fl_late . ' stuck' : ''), 'orders');
+  echo $kpi($wait ? 'a' : '', $m . 'leads/review_leads', 'fa-inbox', $num($wait), 'Waiting for a decision');
+} elseif ($dkey === 'kam') {
+  echo $kpi('', '#clients', 'fa-briefcase', $num(count($kam_clients)), 'My clients', 'clients');
+  echo $kpi($cl_cold ? 'r' : 'g', '#clients', 'fa-phone-square', $num($cl_cold), 'No contact in 30 days', 'clients');
+  echo $kpi($late_tasks ? 'a' : 'g', '#mine', 'fa-check-square-o', $num(count($my_tasks)), 'Open tasks' . ($late_tasks ? ', ' . $late_tasks . ' late' : ''), 'mine');
+  echo $kpi($reviews[2]['n'] ? 'a' : '', $m . 'orders/pending_sales_approval', 'fa-gavel', $num($reviews[2]['n']), 'Waiting for sales approval');
+} else {
+  echo $kpi($my_fu['overdue'] ? 'r' : 'g', $fu_url . '1', 'fa-exclamation-circle', $num($my_fu['overdue']), 'Overdue follow-ups' . ($my_fu['oldest'] ? ' &middot; since ' . $h($fmt_d($my_fu['oldest'])) : ''));
+  echo $kpi($my_fu['today'] ? 'a' : '', $fu_url . '3', 'fa-calendar-check-o', $num($my_fu['today']), 'Due today');
+  echo $kpi('', $fu_url . '4', 'fa-calendar', $num($my_fu['next7']), 'Next 7 days');
+  echo $kpi($t['target'] > 0 && $is_now && $t['achieved'] < $t['pace'] ? 'r' : 'g', '#target', 'fa-bullseye', $money($t['achieved']), $t['target'] > 0 ? $pct($t['achieved'], $t['target']) . '% of ' . $money($t['target']) . ' target' : 'Sales this month', 'target');
+}
 ?>
-    <div class="sx-kpis">
-      <a class="sx-kpi g" href="<?php echo $m; ?>orders"><span class="ic"><i class="fa fa-line-chart"></i></span><div><b><?php echo $h($money($t['achieved'])); ?></b><span>Sales in <?php echo $h(date('F', strtotime($win['start']))); ?><?php echo $t['target'] > 0 ? ' &middot; ' . $pct($t['achieved'], $t['target']) . '% of target' : ''; ?></span></div></a>
-      <a class="sx-kpi<?php echo $co ? ' r' : ' g'; ?>" href="#dbTrack"><span class="ic"><i class="fa fa-exclamation-circle"></i></span><div><b><?php echo $num($co); ?></b><span>Overdue follow-ups, all staff</span></div></a>
-      <a class="sx-kpi<?php echo $ol ? ' a' : ''; ?>" href="#dbLate"><span class="ic"><i class="fa fa-cogs"></i></span><div><b><?php echo $num($on); ?></b><span>Orders in process<?php echo $ol ? ', ' . $ol . ' stuck ' . (int)$late_days . '+ days' : ''; ?></span></div></a>
-      <a class="sx-kpi<?php echo $wait ? ' a' : ''; ?>" href="<?php echo $m; ?>leads/review_leads"><span class="ic"><i class="fa fa-inbox"></i></span><div><b><?php echo $num($wait); ?></b><span>Waiting for a decision</span></div></a>
     </div>
-<?php } elseif ($dkey === 'kam') {
-  $cl = $kam_clients; $cold = 0; $never = 0; $ctl = 0;
-  foreach ($cl as $c) { if ($c['days_since'] === null) $never++; elseif ($c['days_since'] > 30) $cold++; $ctl += $c['tasks_late']; }
-?>
-    <div class="sx-kpis">
-      <a class="sx-kpi" href="<?php echo $m; ?>kam"><span class="ic"><i class="fa fa-briefcase"></i></span><div><b><?php echo $num(count($cl)); ?></b><span>My clients</span></div></a>
-      <a class="sx-kpi<?php echo ($cold + $never) ? ' r' : ' g'; ?>" href="#dbClients"><span class="ic"><i class="fa fa-phone-square"></i></span><div><b><?php echo $num($cold + $never); ?></b><span>No contact in 30 days</span></div></a>
-      <a class="sx-kpi<?php echo ($ctl + $late_tasks) ? ' a' : ' g'; ?>" href="<?php echo $m; ?>tasks"><span class="ic"><i class="fa fa-check-square-o"></i></span><div><b><?php echo $num(count($my_tasks)); ?></b><span>Open tasks<?php echo $late_tasks ? ', ' . $late_tasks . ' late' : ''; ?></span></div></a>
-      <a class="sx-kpi<?php echo $reviews[2]['n'] ? ' a' : ''; ?>" href="<?php echo $m; ?>orders/pending_sales_approval"><span class="ic"><i class="fa fa-gavel"></i></span><div><b><?php echo $num($reviews[2]['n']); ?></b><span>Waiting for sales approval</span></div></a>
-    </div>
-<?php } else { ?>
-    <div class="sx-kpis">
-      <a class="sx-kpi<?php echo $my_fu['overdue'] ? ' r' : ' g'; ?>" href="<?php echo $fu_url; ?>1"><span class="ic"><i class="fa fa-exclamation-circle"></i></span><div><b><?php echo $num($my_fu['overdue']); ?></b><span>My overdue follow-ups<?php echo $my_fu['oldest'] ? ' &middot; oldest ' . $h($fmt_d($my_fu['oldest'])) : ''; ?></span></div></a>
-      <a class="sx-kpi<?php echo $my_fu['today'] ? ' a' : ''; ?>" href="<?php echo $fu_url; ?>3"><span class="ic"><i class="fa fa-calendar-check-o"></i></span><div><b><?php echo $num($my_fu['today']); ?></b><span>Due today</span></div></a>
-      <a class="sx-kpi" href="<?php echo $fu_url; ?>4"><span class="ic"><i class="fa fa-calendar"></i></span><div><b><?php echo $num($my_fu['next7']); ?></b><span>Next 7 days</span></div></a>
-      <a class="sx-kpi<?php echo $late_tasks ? ' a' : ''; ?>" href="<?php echo $m; ?>tasks"><span class="ic"><i class="fa fa-check-square-o"></i></span><div><b><?php echo $num(count($my_tasks)); ?></b><span>My open tasks<?php echo $late_tasks ? ', ' . $late_tasks . ' late' : ''; ?></span></div></a>
-    </div>
-<?php } ?>
+
+    <nav class="db-tabs" role="tablist" aria-label="Dashboard sections">
+      <?php foreach ($tabs as $k => $tb) { ?>
+      <button type="button" role="tab" id="dbTab-<?php echo $k; ?>" aria-controls="dbPane-<?php echo $k; ?>" data-tab="<?php echo $k; ?>" class="<?php echo $k === $first_tab ? 'is-on' : ''; ?>" aria-selected="<?php echo $k === $first_tab ? 'true' : 'false'; ?>"><?php echo $h($tb[0]); ?><?php if ($tb[1] > 0) { ?><span class="n <?php echo $tb[2]; ?>"><?php echo $num($tb[1]); ?></span><?php } ?></button>
+      <?php } ?>
+    </nav>
 
 <?php
 /* ----------------------------------------------------------- Target / projection / achievement */
-if ($dkey !== 'backoffice') {
+if (isset($tabs['target'])) {
   $tg = $t['target']; $ac = $t['achieved']; $pr = $t['projection'];
   $gap = max(0, $tg - $ac);
   $ap = $pct($ac, $tg); $pp = $pct($ac + $pr, $tg); $pace = $pct($t['pace'], $tg);
   $behind = $tg > 0 && $is_now && $ac < $t['pace'];
 ?>
+    <div class="db-pane" id="dbPane-target" role="tabpanel" aria-labelledby="dbTab-target"<?php echo $first_tab === 'target' ? '' : ' hidden'; ?>>
     <div class="db-row">
       <div class="sx-card db-target">
-        <div class="sx-card-h"><h3>Target and achievement <small><?php echo $dkey === 'kam' && !$is_admin ? 'my numbers' : ($has_team && !$only_me ? ($is_admin ? 'whole company' : 'me and my team') : 'my numbers'); ?></small></h3>
+        <div class="sx-card-h"><h3>Target and achievement <small><?php echo $h($scope_lbl); ?></small></h3>
           <?php if ($is_admin) { ?><div class="sx-tools"><a class="btn btn-default btn-sm" href="<?php echo $m; ?>hr/targets">Set targets</a></div><?php } ?></div>
         <div class="sx-card-b">
           <div class="db-money">
             <div><span>Target</span><b><?php echo $tg > 0 ? $money($tg) : '<em>Not set</em>'; ?></b></div>
             <div><span>Achieved</span><b class="ok"><?php echo $money($ac); ?></b><small><?php echo $num($t['sales_n']); ?> sale<?php echo $t['sales_n'] == 1 ? '' : 's'; ?><?php echo $tg > 0 ? ' &middot; ' . $ap . '%' : ''; ?></small></div>
             <div><span>Projection</span><b><?php echo $money($pr); ?></b><small><?php echo $num($t['projection_n']); ?> open lead<?php echo $t['projection_n'] == 1 ? '' : 's'; ?> closing this month</small></div>
-            <div><span>Still needed</span><b class="<?php echo $gap > 0 ? 'bad' : 'ok'; ?>"><?php echo $tg > 0 ? $money($gap) : '-'; ?></b><?php if ($tg > 0) { ?><small><?php echo $ac + $pr >= $tg ? 'Projection covers it' : 'Projection short by ' . $h($money($tg - $ac - $pr)); ?></small><?php } ?></div>
+            <div><span>Still needed</span><b class="<?php echo $gap > 0 ? 'bad' : 'ok'; ?>"><?php echo $tg > 0 ? $money($gap) : '-'; ?></b><?php if ($tg > 0) { ?><small><?php echo $ac + $pr >= $tg ? 'Projection covers it' : 'Projection short by ' . $money($tg - $ac - $pr); ?></small><?php } ?></div>
           </div>
           <?php if ($tg > 0) { ?>
           <div class="db-meter" role="img" aria-label="<?php echo $ap; ?>% achieved, <?php echo $pp; ?>% with projection">
@@ -134,8 +157,8 @@ if ($dkey !== 'backoffice') {
             <i class="p" style="left:<?php echo min(100, $ap); ?>%;width:<?php echo max(0, min(100, $pp) - min(100, $ap)); ?>%"></i>
             <?php if ($is_now) { ?><s style="left:<?php echo min(100, $pace); ?>%" title="Where the month should be by today"></s><?php } ?>
           </div>
-          <div class="db-legend"><span><i class="a"></i>Achieved</span><span><i class="p"></i>Projection</span><?php if ($is_now) { ?><span><i class="t"></i>Should be by today: <?php echo $h($money($t['pace'])); ?></span><?php } ?>
-            <?php if ($behind) { ?><span class="chip x">Behind by <?php echo $h($money($t['pace'] - $ac)); ?></span><?php } elseif ($is_now) { ?><span class="chip ok">On track</span><?php } ?></div>
+          <div class="db-legend"><span><i class="a"></i>Achieved</span><span><i class="p"></i>Projection</span><?php if ($is_now) { ?><span><i class="t"></i>Should be by today: <?php echo $money($t['pace']); ?></span><?php } ?>
+            <?php if ($behind) { ?><span class="chip x">Behind by <?php echo $money($t['pace'] - $ac); ?></span><?php } elseif ($is_now) { ?><span class="chip ok">On track</span><?php } ?></div>
           <?php } else { ?>
           <p class="sx-help"><i class="fa fa-info-circle"></i>No target for <?php echo $h(date('F', strtotime($win['start']))); ?>. Targets are set on HR &rsaquo; Targets.</p>
           <?php } ?>
@@ -162,7 +185,7 @@ if ($dkey !== 'backoffice') {
           </div>
           <div class="db-days-h">Sales by day</div>
           <div class="db-days" role="img" aria-label="Sales by day this month">
-            <?php foreach ($by_day as $d => $v) { ?><i style="height:<?php echo $v > 0 ? max(4, round($v * 100 / $mx)) : 0; ?>%" class="<?php echo $is_now && $d == (int)date('j') ? 'today' : ''; ?><?php echo $is_now && $d > (int)date('j') ? ' later' : ''; ?>" title="<?php echo (int)$d . ' ' . $h(date('M', strtotime($win['start']))) . ': ' . $h($money($v)); ?>"></i><?php } ?>
+            <?php foreach ($by_day as $d => $v) { ?><i style="height:<?php echo $v > 0 ? max(4, round($v * 100 / $mx)) : 0; ?>%" class="<?php echo $is_now && $d == (int)date('j') ? 'today' : ''; ?>" data-day="<?php echo (int)$d . ' ' . $h(date('M', strtotime($win['start']))); ?>" data-amt="<?php echo $h($money_t($v)); ?>"></i><?php } ?>
           </div>
           <div class="db-days-x"><span>1</span><span><?php echo (int)ceil($win['days'] / 2); ?></span><span><?php echo (int)$win['days']; ?></span></div>
         </div>
@@ -171,7 +194,7 @@ if ($dkey !== 'backoffice') {
       <div class="sx-card db-side">
         <div class="sx-card-h"><h3>Follow-ups</h3></div>
         <div class="sx-card-b">
-          <div class="db-funnel">
+          <div class="db-funnel three">
             <a href="<?php echo $fu_url; ?>1"><b class="<?php echo $my_fu['overdue'] ? 'bad' : ''; ?>"><?php echo $num($my_fu['overdue']); ?></b><span>Overdue</span></a>
             <a href="<?php echo $fu_url; ?>3"><b><?php echo $num($my_fu['today']); ?></b><span>Due today</span></a>
             <a href="<?php echo $fu_url; ?>4"><b><?php echo $num($my_fu['next7']); ?></b><span>Next 7 days</span></a>
@@ -180,13 +203,15 @@ if ($dkey !== 'backoffice') {
       </div>
       <?php } ?>
     </div>
+    </div>
 <?php } ?>
 
 <?php
-/* ----------------------------------------------------------- Back Office: order flow, reviews, late orders */
-if ($dkey === 'admin' || $dkey === 'backoffice') {
+/* ----------------------------------------------------------- Orders: flow, reviews, late orders */
+if (isset($tabs['orders'])) {
   $fmx = 1; foreach ($flow as $f) $fmx = max($fmx, (int)$f['n']);
 ?>
+    <div class="db-pane" id="dbPane-orders" role="tabpanel" aria-labelledby="dbTab-orders"<?php echo $first_tab === 'orders' ? '' : ' hidden'; ?>>
     <div class="db-row">
       <div class="sx-card">
         <div class="sx-card-h"><h3>Orders in process <small>by stage</small></h3><div class="sx-tools"><a class="btn btn-default btn-sm" href="<?php echo $m; ?>orders/open">Open orders</a></div></div>
@@ -214,10 +239,10 @@ if ($dkey === 'admin' || $dkey === 'backoffice') {
       </div>
     </div>
 
-    <div class="sx-card" id="dbLate">
+    <div class="sx-card">
       <div class="sx-card-h"><h3>Orders not moved for <?php echo (int)$late_days; ?>+ days <small>oldest first</small></h3></div>
       <?php if (!$late_orders) { ?><div class="sx-empty"><i class="fa fa-check-circle-o"></i>Every open order moved in the last <?php echo (int)$late_days; ?> days.</div><?php } else { ?>
-      <div class="sx-table-wrap">
+      <div class="sx-table-wrap db-scroll">
         <table class="sx-table sx-cards">
           <thead><tr><th>Order</th><th>Client</th><th>Stage</th><th>With</th><th>Last moved</th><th class="num">Value</th></tr></thead>
           <tbody>
@@ -228,7 +253,7 @@ if ($dkey === 'admin' || $dkey === 'backoffice') {
               <td data-l="Stage"><span class="chip s"><?php echo $h($o['status']); ?></span></td>
               <td data-l="With"><?php echo $h($o['assignee'] ? $o['assignee'] : 'Not assigned'); ?><span class="sub">by <?php echo $h($o['creator']); ?></span></td>
               <td data-l="Last moved" class="nw"><?php echo $h($fmt_d($o['moved_at'])); ?> <span class="chip x"><?php echo (int)$dl; ?> days</span></td>
-              <td data-l="Value" class="num nw"><?php echo (float)$o['pricing_amount'] > 0 ? $h($money($o['pricing_amount'])) : '-'; ?></td>
+              <td data-l="Value" class="num nw"><?php echo (float)$o['pricing_amount'] > 0 ? $money($o['pricing_amount']) : '-'; ?></td>
             </tr>
           <?php } ?>
           </tbody>
@@ -236,12 +261,14 @@ if ($dkey === 'admin' || $dkey === 'backoffice') {
       </div>
       <?php } ?>
     </div>
+    </div>
 <?php } ?>
 
 <?php
 /* ----------------------------------------------------------- KAM: clients by last contact */
-if ($dkey === 'kam') { ?>
-    <div class="sx-card" id="dbClients">
+if (isset($tabs['clients'])) { ?>
+    <div class="db-pane" id="dbPane-clients" role="tabpanel" aria-labelledby="dbTab-clients"<?php echo $first_tab === 'clients' ? '' : ' hidden'; ?>>
+    <div class="sx-card">
       <div class="sx-card-h"><h3>My clients <small>longest without contact first</small></h3>
         <div class="sx-tools"><input type="search" class="form-control input-sm db-q" data-t="#dbClientTable" placeholder="Search client" aria-label="Search client"><a class="btn btn-default btn-sm" href="<?php echo $m; ?>kam">All clients</a></div></div>
       <?php if (!$kam_clients) { ?><div class="sx-empty"><i class="fa fa-briefcase"></i>No clients are assigned to you yet.</div><?php } else { ?>
@@ -260,37 +287,36 @@ if ($dkey === 'kam') { ?>
           <?php } ?>
           </tbody>
         </table>
+        <div class="sx-empty db-none" style="display:none">Nobody matches.</div>
       </div>
       <?php } ?>
+    </div>
     </div>
 <?php } ?>
 
 <?php
 /* ----------------------------------------------------------- Staff tracker */
-if ($tracker) {
-  $tot = array('o' => 0, 't' => 0, 'd' => 0, 'c' => 0, 'l' => 0, 'idle' => 0);
-  foreach ($tracker as $r) { $tot['o'] += $r['fu_overdue']; $tot['t'] += $r['fu_today']; $tot['d'] += $r['fu_done']; $tot['c'] += $r['calls']; $tot['l'] += $r['tasks_late'];
-    if ($is_now && $r['calls'] == 0 && $r['fu_done'] == 0) $tot['idle']++; }
-?>
+if (isset($tabs['team'])) { ?>
+    <div class="db-pane" id="dbPane-team" role="tabpanel" aria-labelledby="dbTab-team"<?php echo $first_tab === 'team' ? '' : ' hidden'; ?>>
     <div class="sx-card" id="dbTrack">
-      <div class="sx-card-h"><h3>Staff tracker <small><?php echo count($tracker); ?> people &middot; today's work and this month's sales</small></h3>
+      <div class="sx-card-h">
+        <div class="db-sum">
+          <span><b class="bad"><?php echo $num($tr_over); ?></b> overdue</span>
+          <span><b><?php echo $num($tr_today); ?></b> due today</span>
+          <span><b><?php echo $num($tr_done); ?></b> done today</span>
+          <span><b><?php echo $num($tr_calls); ?></b> calls today</span>
+          <span><b class="<?php echo $tr_late ? 'warn' : ''; ?>"><?php echo $num($tr_late); ?></b> late tasks</span>
+        </div>
         <div class="sx-tools">
           <div class="sx-chips db-tf">
-            <button type="button" class="is-on" data-f="">All</button>
-            <button type="button" data-f="late">Overdue follow-ups</button>
-            <button type="button" data-f="idle">No activity today <span class="n"><?php echo (int)$tot['idle']; ?></span></button>
+            <button type="button" class="is-on" data-f="">All <span class="n"><?php echo count($tracker); ?></span></button>
+            <button type="button" data-f="late">Overdue</button>
+            <button type="button" data-f="idle">No activity today <span class="n"><?php echo (int)$tr_idle; ?></span></button>
           </div>
           <input type="search" class="form-control input-sm db-q" data-t="#dbTrackTable" placeholder="Search name" aria-label="Search name">
         </div>
       </div>
-      <div class="db-sum">
-        <span><b class="bad"><?php echo $num($tot['o']); ?></b> overdue follow-ups</span>
-        <span><b><?php echo $num($tot['t']); ?></b> due today</span>
-        <span><b><?php echo $num($tot['d']); ?></b> follow-ups done today</span>
-        <span><b><?php echo $num($tot['c']); ?></b> calls today</span>
-        <span><b class="<?php echo $tot['l'] ? 'warn' : ''; ?>"><?php echo $num($tot['l']); ?></b> late tasks</span>
-      </div>
-      <div class="sx-table-wrap db-scroll tall">
+      <div class="sx-table-wrap db-scroll">
         <table class="sx-table sx-cards db-track" id="dbTrackTable">
           <thead><tr><th>Person</th><th class="num">Overdue</th><th class="num">Due today</th><th class="num">Done today</th><th class="num">Calls today</th><th class="num">Late tasks</th><th>Sales this month</th><th>Last seen</th></tr></thead>
           <tbody>
@@ -305,7 +331,7 @@ if ($tracker) {
               <td data-l="Done today" class="num"><?php echo $r['fu_done'] ? '<b class="ok">' . $num($r['fu_done']) . '</b>' : '<span class="text-muted">0</span>'; ?></td>
               <td data-l="Calls today" class="num"><?php echo $r['calls'] ? $num($r['calls']) . '<span class="sub">' . (int)round($r['talk'] / 60) . ' min talk</span>' : '<span class="text-muted">0</span>'; ?></td>
               <td data-l="Late tasks" class="num"><?php echo $r['tasks_late'] ? '<b class="warn">' . $num($r['tasks_late']) . '</b>' : '<span class="text-muted">0</span>'; ?><?php echo $r['tasks_open'] ? '<span class="sub">of ' . (int)$r['tasks_open'] . ' open</span>' : ''; ?></td>
-              <td data-l="Sales this month" class="db-sales"><?php if ($r['target'] > 0) { ?><span class="db-bar"><i style="width:<?php echo min(100, $sp); ?>%" class="<?php echo $sp >= 100 ? 'ok' : ''; ?>"></i></span><span class="sub"><?php echo $h($money($r['sales'])); ?> of <?php echo $h($money($r['target'])); ?></span><?php } else { echo $r['sales'] > 0 ? $h($money($r['sales'])) : '<span class="text-muted">-</span>'; ?><span class="sub">No target</span><?php } ?></td>
+              <td data-l="Sales this month" class="db-sales"><?php if ($r['target'] > 0) { ?><span class="db-bar"><i style="width:<?php echo min(100, $sp); ?>%" class="<?php echo $sp >= 100 ? 'ok' : ''; ?>"></i></span><span class="sub"><?php echo $money($r['sales']); ?> of <?php echo $money($r['target']); ?></span><?php } else { echo $r['sales'] > 0 ? $money($r['sales']) : '<span class="text-muted">-</span>'; ?><span class="sub">No target</span><?php } ?></td>
               <td data-l="Last seen" class="nw"><?php $ls = $ago($r['last_active_at']); ?><span class="db-seen<?php echo $ls === 'Online' ? ' on' : ''; ?>"><?php echo $h($ls); ?></span></td>
             </tr>
           <?php } ?>
@@ -315,16 +341,18 @@ if ($tracker) {
       </div>
       <div class="sx-card-f"><span class="sx-help"><i class="fa fa-hand-pointer-o"></i>Click a person to see their overdue follow-ups, late tasks and recent calls.</span></div>
     </div>
+    </div>
 <?php } ?>
 
 <?php
 /* ----------------------------------------------------------- My work today */
 ?>
+    <div class="db-pane" id="dbPane-mine" role="tabpanel" aria-labelledby="dbTab-mine"<?php echo $first_tab === 'mine' ? '' : ' hidden'; ?>>
     <div class="db-row">
       <div class="sx-card">
         <div class="sx-card-h"><h3>My follow-ups to do <small>overdue and today, oldest first</small></h3><div class="sx-tools"><a class="btn btn-default btn-sm" href="<?php echo $fu_url; ?>1">All overdue</a></div></div>
         <?php if (!$my_list) { ?><div class="sx-empty"><i class="fa fa-check-circle-o"></i>Nothing overdue or due today.</div><?php } else { ?>
-        <div class="sx-table-wrap">
+        <div class="sx-table-wrap db-scroll">
           <table class="sx-table sx-cards">
             <thead><tr><th>Customer</th><th>Due</th><th>Status</th><th></th></tr></thead>
             <tbody>
@@ -352,6 +380,7 @@ if ($tracker) {
         <?php } ?>
       </div>
     </div>
+    </div>
 
   </section>
 </div>
@@ -359,22 +388,57 @@ if ($tracker) {
 <script>
 (function () {
   var base = '<?php echo $m; ?>';
+  var $root = $('#dbRoot'), key = $root.data('key');
+  function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
   function esc(s) { return $('<div>').text(s == null ? '' : String(s)).html(); }
   function dd(d) { if (!d || d < '2000') return '-'; var x = new Date(String(d).substr(0, 10) + 'T00:00:00'); if (isNaN(x)) return esc(d); var o = { day: '2-digit', month: 'short' }; if (x.getFullYear() !== new Date().getFullYear()) o.year = 'numeric'; return x.toLocaleDateString('en-GB', o); }
 
+  // Tabs: remember the last one per dashboard; a tile can open a tab.
+  function showTab(k, keep) {
+    var $b = $('.db-tabs [data-tab="' + k + '"]');
+    if (!$b.length) return false;
+    $('.db-tabs [data-tab]').removeClass('is-on').attr('aria-selected', 'false');
+    $b.addClass('is-on').attr('aria-selected', 'true');
+    $('.db-pane').attr('hidden', true);
+    $('#dbPane-' + k).removeAttr('hidden');
+    if (keep !== false) store('crm_dash_tab_' + key, k);
+    return true;
+  }
+  $('.db-tabs').on('click', '[data-tab]', function () { showTab($(this).data('tab')); });
+  $('.db-tabs').on('keydown', '[data-tab]', function (e) {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    var $all = $('.db-tabs [data-tab]'), i = $all.index(this) + (e.key === 'ArrowRight' ? 1 : -1);
+    var $n = $all.eq((i + $all.length) % $all.length); $n.focus(); showTab($n.data('tab'));
+  });
+  $('.sx-kpis').on('click', '[data-go]', function (e) { if (showTab($(this).data('go'))) { e.preventDefault(); $('.db-tabs')[0].scrollIntoView({ block: 'nearest' }); } });
+  var h = (location.hash || '').replace('#', '');
+  if (!(h && showTab(h, false))) { var last = store('crm_dash_tab_' + key); if (last) showTab(last, false); }
+
+  // Hide amounts (for screen sharing or a shared screen); remembered on this computer.
+  function setHide(on) {
+    $root.toggleClass('db-hide', on);
+    $('#dbHideAmt').attr('aria-pressed', on ? 'true' : 'false').find('span').text(on ? 'Show amounts' : 'Hide amounts');
+    $('#dbHideAmt i').attr('class', 'fa ' + (on ? 'fa-eye' : 'fa-eye-slash'));
+    $('.db-days i').each(function () { $(this).attr('title', $(this).data('day') + (on ? '' : ': ' + $(this).data('amt'))); });
+    store('crm_dash_hide_amt', on ? '1' : '0');
+  }
+  $('#dbHideAmt').on('click', function () { setHide(!$root.hasClass('db-hide')); });
+  setHide(store('crm_dash_hide_amt') === '1');
+
   // Search boxes filter their table by data-q.
+  function refreshEmpty($t) { $t.siblings('.db-none').toggle($t.find('tbody tr[data-q]:not(.db-hide-q):not(.db-hide-f)').length === 0); }
   $('.db-q').on('input', function () {
     var v = $.trim($(this).val()).toLowerCase(), $t = $($(this).data('t'));
-    $t.find('tbody tr[data-q]').each(function () { $(this).toggleClass('db-hide-q', v !== '' && $(this).data('q').indexOf(v) < 0); });
+    $t.find('tbody tr[data-q]').each(function () { $(this).toggleClass('db-hide-q', v !== '' && String($(this).data('q')).indexOf(v) < 0); });
     $t.find('tr.db-x').remove(); $t.find('tr.db-p').attr('aria-expanded', 'false');
-    $t.siblings('.db-none').toggle($t.find('tbody tr[data-q]:not(.db-hide-q):not(.db-hide-f)').length === 0);
+    refreshEmpty($t);
   });
   $('.db-tf').on('click', 'button', function () {
     var f = $(this).data('f'), $t = $('#dbTrackTable');
     $(this).addClass('is-on').siblings().removeClass('is-on');
     $t.find('tr.db-x').remove(); $t.find('tr.db-p').attr('aria-expanded', 'false');
     $t.find('tbody tr.db-p').each(function () { $(this).toggleClass('db-hide-f', !!f && (' ' + $(this).data('f') + ' ').indexOf(' ' + f + ' ') < 0); });
-    $t.siblings('.db-none').toggle($t.find('tbody tr[data-q]:not(.db-hide-q):not(.db-hide-f)').length === 0);
+    refreshEmpty($t);
   });
 
   // Person drill-down.
@@ -385,7 +449,7 @@ if ($tracker) {
     var cols = $tr.children('td').length;
     var $x = $('<tr class="db-x"><td colspan="' + cols + '"><div class="db-xin">Loading...</div></td></tr>').insertAfter($tr);
     $tr.attr('aria-expanded', 'true');
-    $.getJSON(base + 'dashboard/person/' + $tr.data('id')).done(function (r) {
+    $.ajax({ url: base + 'dashboard/person/' + $tr.data('id'), dataType: 'json', cache: false }).done(function (r) {
       if (!r || !r.ok) { $x.find('.db-xin').text((r && r.msg) || 'Could not load.'); return; }
       var h = '<div class="db-xg">';
       h += '<div><h4>Follow-ups to do <small>' + r.followups.length + (r.followups.length >= 15 ? '+' : '') + '</small></h4>';
@@ -402,7 +466,7 @@ if ($tracker) {
       $.each(r.done, function (i, f) { h += '<p><span>' + esc(f.customer || ('#' + f.lead_id)) + '<small>' + esc(f.followup_result || f.followup_remark) + '</small></span><em>' + dd(f.followup_date) + '</em></p>'; });
       h += '</div></div>';
       $x.find('.db-xin').html(h);
-    }).fail(function () { $x.find('.db-xin').text('Could not load.'); });
+    }).fail(function (x) { $x.find('.db-xin').text(x.status === 403 ? 'You can only open people in your team.' : 'Could not load.'); });
   }
   $('#dbTrackTable').on('click', 'tr.db-p', function (e) { if (!$(e.target).closest('a').length) open($(this)); })
     .on('keydown', 'tr.db-p', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open($(this)); } });
