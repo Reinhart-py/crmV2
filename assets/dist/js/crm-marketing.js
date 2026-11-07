@@ -1,9 +1,12 @@
-/* System > Marketing page. Needs window.MK = { base, cur, canWrite, hasAds }. */
+/* System > Marketing page. Needs window.MK = { base, page, acc, edit, cur, canWrite, hasAds }. acc: Meta account for Posts / Ads / Autopilot; edit: account open in Connections. */
 $(function () {
   var B = MK.base;
   function esc(s) { return $('<div>').text(s == null ? '' : String(s)).html(); }
   function money(v) { return v == null ? '–' : MK.cur + ' ' + Number(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
   function post(url, data, done, btn, msgEl) {
+    // every call names the account it is about (conn=); the Meta account in use unless the caller says otherwise
+    if (typeof data === "string") { if (!/(^|&)conn=/.test(data)) data += (data ? "&" : "") + "conn=" + MK.acc; }
+    else { data = data || {}; if (data.conn == null) data.conn = MK.acc; }
     if (btn) $(btn).prop('disabled', true);
     if (msgEl) $(msgEl).text('Working…');
     return $.post(B + url, data, function (r) {
@@ -44,16 +47,18 @@ $(function () {
 
   /* ---------- leads ---------- */
   function filterLeads() {
-    var q = $.trim($('#lSearch').val()).toLowerCase(), s = $('#lSrc').val(), st = $('#lSt').val(), shown = 0;
+    var q = $.trim($('#lSearch').val()).toLowerCase(), cn = $('#lConn').val(), ow = $('#lOwner').val(), st = $('#lSt').val(), shown = 0;
     $('#leadList > li').each(function () {
-      var ok = (!q || $(this).data('q').indexOf(q) > -1) && (!s || $(this).data('src') === s) && (!st || $(this).data('st') === st);
+      var ok = (!q || String($(this).data('q')).indexOf(q) > -1) && (cn === '' || String($(this).data('conn')) === cn) && (ow === '' || String($(this).data('owner')) === ow) && (!st || $(this).data('st') === st);
+      if (!ok) $(this).find('.lPick').prop('checked', false);
       $(this).toggle(ok);
       if (ok) shown++;
     });
     $('#leadNone').toggle(shown === 0 && $('#leadList > li').length > 0);
+    picked();
   }
   $('#lSearch').on('input', filterLeads);
-  $('#lSrc, #lSt').on('change', filterLeads);
+  $('#lConn, #lOwner, #lSt').on('change', filterLeads);
   $('#btnSync').on('click', function () {
     var b = this;
     $(b).find('i').addClass('fa-spin');
@@ -237,29 +242,105 @@ $(function () {
     }, this, '#campMsg');
   });
 
-  /* ---------- connections ---------- */
+  /* ---------- Meta account picker ---------- */
+  $('#accSel').on('change', function () { location.href = MK.page + '?acc=' + encodeURIComponent(this.value) + location.hash; });
+
+  /* ---------- assigning (several leads, owner + co-workers) ---------- */
+  function picked() {
+    var n = $('#leadList .lPick:checked').length;
+    $('#lPicked').text(n + ' selected');
+    $('#btnAssign').prop('disabled', n === 0);
+    var vis = $('#leadList > li:visible .lPick');
+    $('#lAll').prop('checked', vis.length > 0 && vis.filter(':checked').length === vis.length);
+  }
+  $(document).on('change', '.lPick', picked);
+  $('#lAll').on('change', function () { $('#leadList > li:visible .lPick').prop('checked', this.checked); picked(); });
+  $('#btnAssign').on('click', function () {
+    var n = $('#leadList .lPick:checked').length;
+    $('#asgForm')[0].reset(); $('#asgMsg').text('');
+    $('#agSub').text(n + ' record' + (n === 1 ? '' : 's') + ': choose the owner and the people who work on them too.');
+    openD('#asgDrawer');
+  });
+  $('#gOwner').on('change', function () { $('#asgForm [name="agents[]"]').prop('disabled', false).filter('[value="' + this.value + '"]').prop({ checked: false, disabled: true }); });
+  $('#btnAsgSave').on('click', function () {
+    var ids = $('#leadList .lPick:checked').map(function () { return this.value; }).get();
+    post('ajax_assign', $('#asgForm').serialize() + '&' + $.param({ ids: ids }), function (r) { if (r.reload) setTimeout(function () { location.reload(); }, 700); }, this, '#asgMsg');
+  });
+
+  /* ---------- report ---------- */
+  var repLoaded = false;
+  function repArgs() { return $('#repForm').serialize(); }
+  function loadReport() {
+    repLoaded = true;
+    $('#btnRepCsv').attr('href', B + 'report_csv?' + repArgs());
+    $('#repBody').html('<div class="sx-empty"><i class="fa fa-spinner fa-spin"></i>Loading…</div>');
+    post('ajax_report', repArgs(), function (r) {
+      if (!r.status) { $('#repBody').html('<div class="sx-empty"><i class="fa fa-exclamation-triangle"></i>' + esc(r.message || 'Not available.') + '</div>'); return; }
+      if (!r.rows.length) { $('#repBody').html('<div class="sx-empty"><i class="fa fa-bar-chart"></i>No marketing leads in this period.</div>'); return; }
+      var own = r.group === 'owner', head = { owner: 'Owner', account: 'Account', source: 'Source Name' }[r.group];
+      var cols = [['received', 'Leads'], ['created', 'New records'], ['dup', 'Already in CRM'], ['database', 'In Database'], ['lead', 'In Lead'], ['further', 'Further stage'], ['orders', 'Orders']];
+      if (own) cols.push(['co_work', 'Co-worker on']);
+      var tot = {}, h = '<div class="sx-table-wrap"><table class="sx-table"><thead><tr><th>' + head + '</th>';
+      cols.forEach(function (c) { tot[c[0]] = 0; h += '<th class="num">' + c[1] + '</th>'; });
+      h += '</tr></thead><tbody>';
+      r.rows.forEach(function (x) {
+        h += '<tr><td data-l="' + head + '"><b>' + esc(x.label) + '</b></td>';
+        cols.forEach(function (c) { tot[c[0]] += x[c[0]]; h += '<td class="num" data-l="' + c[1] + '">' + Number(x[c[0]]).toLocaleString() + '</td>'; });
+        h += '</tr>';
+      });
+      h += '</tbody><tfoot><tr><td>Total</td>';
+      cols.forEach(function (c) { h += '<td class="num">' + (c[0] === 'co_work' ? '' : tot[c[0]].toLocaleString()) + '</td>'; });
+      $('#repBody').html(h + '</tr></tfoot></table></div>');
+    }).fail(function () { $('#repBody').html('<div class="sx-empty"><i class="fa fa-exclamation-triangle"></i>The server did not answer. Press Show.</div>'); });
+  }
+  $('#btnRep').on('click', loadReport);
+  $('#repForm').on('change', 'select, input', loadReport);
+  $('.ai-tabs').on('click', 'button[data-tab="report"]', function () { if (!repLoaded) loadReport(); });
+  if (location.hash === '#report') setTimeout(function () { if (!repLoaded) loadReport(); }, 0);
+
+  /* ---------- autopilot ---------- */
+  $(document).on('click', '[data-approve-post]', function () {
+    post('ajax_approve_post', { id: $(this).data('approve-post') }, function (r) { if (r.reload) location.reload(); else alert(r.message); }, this);
+  });
+  $('#apForm').on('submit', function (e) {
+    e.preventDefault();
+    post('ajax_save_autopilot', $(this).serialize(), function (r) { if (r.status) setTimeout(function () { location.hash = 'auto'; location.reload(); }, 700); }, $(this).find('[type=submit]'), '#apMsg');
+  });
+  $('[data-ap-run]').on('click', function () {
+    var w = $(this).data('ap-run');
+    if (!confirm(w === 'ads' ? 'Let Claude review the running campaigns now? With "Make the changes" on, it applies them within your limits.' : 'Let Claude write the missing posts for the next 7 days now?')) return;
+    post('ajax_ap_run', { what: w }, function (r) {
+      $('#apMsg').text(r.message || '');
+      if (r.ok) setTimeout(function () { location.hash = w === 'ads' ? 'ads' : 'posts'; location.reload(); }, 1200);
+    }, this, '#apMsg');
+  });
+
+  /* ---------- connections (accounts) ---------- */
+  function editConn() { return parseInt($('#connForm [name=conn]').val(), 10) || 0; }
   function route() {
-    var r = $('#metaForm [name=route]:checked').val();
+    var r = $('#connForm [name=route]:checked').val();
     $('.rt-fixed').toggle(r !== 'round');
     $('.rt-round').toggle(r === 'round');
   }
-  $('#metaForm [name=route]').on('change', route);
+  $('#connForm [name=route]').on('change', route);
   route();
   function pageChosen() {
-    var o = $('#mPage option:selected'), f = $('#metaForm');
+    var o = $('#mPage option:selected'), f = $('#connForm');
     f.find('[name=page_id]').val(o.val() || '');
     f.find('[name=page_name]').val(o.data('name') || '');
     f.find('[name=ig_id]').val(o.data('ig') || '');
     f.find('[name=ig_name]').val(o.data('ign') || '');
     $('#igHint').text(o.data('ig') ? 'Instagram: @' + o.data('ign') : 'No Instagram account linked to this page.');
+    if (o.data('name') && !$.trim($('#eName').val())) $('#eName').val('Meta – ' + o.data('name'));
   }
   $('#mPage').on('change', pageChosen);
-  $('#mAct').on('change', function () { var c = $('#mAct option:selected').data('cur'); if (c) $('#metaForm [name=currency]').val(c); });
+  $('#mAct').on('change', function () { var c = $('#mAct option:selected').data('cur'); if (c) $('#connForm [name=currency]').val(c); });
   $('#btnDiscover').on('click', function () {
-    post('ajax_discover', { token: $('#mToken').val() }, function (r) {
+    post('ajax_discover', { conn: editConn(), token: $('#mToken').val(), name: $('#eName').val(), source_name: $('#eSrc').val(), ref_month: $('#eRef').val() }, function (r) {
+      if (r.id) $('#connForm [name=conn]').val(r.id);
       if (!r.status) return;
       $('#mToken').val('').attr('placeholder', 'Saved. Leave empty to keep it');
-      var cur = $('#metaForm [name=page_id]').val(), h = '';
+      var cur = $('#connForm [name=page_id]').val(), h = '';
       r.data.pages.forEach(function (p) { h += '<option value="' + esc(p.id) + '" data-name="' + esc(p.name) + '" data-ig="' + esc(p.ig_id) + '" data-ign="' + esc(p.ig_name) + '"' + (p.id === cur ? ' selected' : '') + '>' + esc(p.name) + (p.ig_name ? ' + @' + esc(p.ig_name) : '') + '</option>'; });
       $('#mPage').html(h || '<option value="">No pages found for this token</option>');
       pageChosen();
@@ -270,14 +351,19 @@ $(function () {
       $('#mAct').trigger('change');
     }, this, '#discMsg');
   });
-  $('#metaForm').on('submit', function (e) {
+  function reloadConn(id) { location.href = MK.page + '?edit=' + (id || editConn()) + '#conn'; }
+  $('#connForm').on('submit', function (e) {
     e.preventDefault();
-    post('ajax_save_meta', $(this).serialize(), function (r) { if (r.status) { $('#mToken, #mSecret').val(''); setTimeout(function () { location.hash = 'conn'; location.reload(); }, 600); } }, $(this).find('[type=submit]'), '#metaMsg');
+    post('ajax_save_conn', $(this).serialize(), function (r) { if (r.status) { $('#mToken, #mSecret').val(''); setTimeout(function () { reloadConn(r.id); }, 600); } }, $(this).find('[type=submit]'), '#metaMsg');
   });
-  $('#btnSubscribe').on('click', function () { post('ajax_subscribe', {}, null, this, '#metaMsg'); });
+  $('#btnSubscribe').on('click', function () { post('ajax_subscribe', { conn: editConn() }, null, this, '#metaMsg'); });
   $('#btnDisconnect').on('click', function () {
-    if (!confirm('Disconnect Meta? The token and app secret are removed from the CRM. Leads already taken in stay.')) return;
-    post('ajax_disconnect', {}, function (r) { if (r.status) setTimeout(function () { location.hash = 'conn'; location.reload(); }, 600); }, this, '#metaMsg');
+    if (!confirm('Disconnect this account? Its token and app secret are removed from the CRM and it is switched off. Leads already taken in stay.')) return;
+    post('ajax_disconnect', { conn: editConn() }, function (r) { if (r.status) setTimeout(function () { reloadConn(); }, 600); }, this, '#metaMsg');
+  });
+  $('#btnDelConn').on('click', function () {
+    if (!confirm('Remove the account "' + $('#eName').val() + '"? Its keys are deleted and its unpublished posts stop. Leads and CRM records stay.')) return;
+    post('ajax_delete_conn', { conn: editConn() }, function (r) { if (r.status) setTimeout(function () { location.href = MK.page + '#conn'; }, 600); }, this, '#metaMsg');
   });
   $('#claudeForm').on('submit', function (e) {
     e.preventDefault();
@@ -285,10 +371,14 @@ $(function () {
   });
   $('#btnTestClaude').on('click', function () { post('ajax_test_claude', {}, null, this, '#claudeMsg'); });
   $('#btnRenew').on('click', function () {
-    if (!confirm('Make a new key? Update the links in Meta, Google Ads, your website and the cron job afterwards.')) return;
-    post('ajax_renew_keys', {}, function (r) {
+    if (!confirm('Make a new key for this account? Update its links in Meta, Google Ads, your website or Zapier afterwards.')) return;
+    post('ajax_renew_keys', { conn: editConn() }, function (r) {
       if (!r.status) return;
-      $('#hkMeta').val(r.meta_hook); $('#hkLead').val(r.lead_hook); $('#hkCron').val(r.cron_url); $('#hkVerify').val(r.verify_token); $('#hkKey').val(r.webhook_key);
+      $('#hkMeta').val(r.meta_hook); $('#hkLead').val(r.lead_hook); $('#hkVerify').val(r.verify_token); $('#hkKey').val(r.webhook_key);
     }, this);
+  });
+  $('#btnRenewCron').on('click', function () {
+    if (!confirm('Make a new cron key? Update the cron job on the server afterwards.')) return;
+    post('ajax_renew_keys', { what: 'cron' }, function (r) { if (r.status) $('#hkCron').val(r.cron_url); }, this);
   });
 });

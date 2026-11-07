@@ -257,3 +257,21 @@
 .cp .mk-ai input.form-control { flex: 1 1 220px; }
 [data-theme="dark"] .mk .chip.s { color: #cbd5e1; background: rgba(148, 163, 184, .16); }
 .cp .mk-pw { position: relative; }
+/* Marketing: several accounts, assigning, report */
+.mk .mk-acc { display: inline-flex; align-items: center; gap: 6px; margin: 0; font-weight: 600; font-size: 12.5px; color: var(--cp-mut); }
+.mk .mk-acc select.form-control { width: auto !important; min-width: 180px; height: 34px; }
+.mk .mk-bulk { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 6px 16px; border-bottom: 1px solid var(--cp-soft); font-size: 12.5px; }
+.mk .mk-bulk .mk-all { display: inline-flex; align-items: center; gap: 6px; margin: 0; font-weight: 600; }
+.mk .mk-lead .who.has-pick { position: relative; padding-left: 26px; }
+.mk .mk-lead .mk-pick { position: absolute; left: 0; top: 2px; width: 16px; height: 16px; margin: 0; cursor: pointer; }
+.mk .mk-lbl { display: inline-flex; align-items: center; gap: 6px; margin: 0; font-size: 12.5px; font-weight: 600; color: var(--cp-mut); }
+.mk .mk-lbl .form-control { width: auto !important; }
+.mk .mk-pad { padding: 8px 16px 14px; margin: 0; }
+.mk .mk-accs { padding: 14px 14px 0; }
+.mk .mk-accs-h { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: space-between; margin-bottom: 8px; }
+.mk .mk-add { display: flex; gap: 6px; flex-wrap: wrap; }
+.mk .mk-accs tr.is-on td { background: var(--cp-acc-soft) !important; }
+.mk #repBody .sx-table td.num, .mk #repBody .sx-table th.num { text-align: right !important; }
+.mk #repBody tfoot td { font-weight: 700; padding: 9px 10px; border-top: 2px solid var(--cp-line); font-variant-numeric: tabular-nums; }
+@media (max-width: 767px) { .mk .mk-acc { width: 100%; } .mk .mk-acc select.form-control { flex: 1; min-width: 0; } .mk .mk-lbl { flex: 1 1 45%; } .mk .mk-lbl .form-control { flex: 1; min-width: 0; } }
+.mk .mk-bulk .mk-all span { color: var(--cp-ink); }

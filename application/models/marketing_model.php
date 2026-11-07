@@ -79,6 +79,78 @@ class Marketing_model extends CI_Model
 				PRIMARY KEY (`id`)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 		}
+		// Several accounts per platform. Settings here; tokens stay in ci_integration_settings (row named in secret_ref).
+		if (!$this->db->table_exists('ci_mkt_connections')) {
+			$this->db->query("CREATE TABLE `ci_mkt_connections` (
+				`id` INT(11) NOT NULL AUTO_INCREMENT,
+				`platform` VARCHAR(20) NOT NULL DEFAULT 'meta',
+				`name` VARCHAR(100) NOT NULL DEFAULT '',
+				`source_name` VARCHAR(150) NOT NULL DEFAULT '',
+				`ref_month` VARCHAR(100) NOT NULL DEFAULT '',
+				`config_json` TEXT NULL,
+				`secret_ref` VARCHAR(60) NOT NULL DEFAULT '',
+				`webhook_key` VARCHAR(64) NOT NULL DEFAULT '',
+				`verify_token` VARCHAR(64) NOT NULL DEFAULT '',
+				`status` TINYINT(1) NOT NULL DEFAULT 1,
+				`created_at` DATETIME NOT NULL,
+				`updated_at` DATETIME NOT NULL,
+				PRIMARY KEY (`id`),
+				KEY `idx_mkt_conn_key` (`webhook_key`)
+			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+		}
+		if (!$this->db->field_exists('connection_id', 'ci_mkt_leads')) {
+			$this->db->query("ALTER TABLE `ci_mkt_leads` ADD `connection_id` INT(11) NOT NULL DEFAULT 0 AFTER `source`, ADD KEY `idx_mkt_conn` (`connection_id`)");
+		}
+		if (!$this->db->field_exists('connection_id', 'ci_mkt_posts')) {
+			$this->db->query("ALTER TABLE `ci_mkt_posts` ADD `connection_id` INT(11) NOT NULL DEFAULT 0 AFTER `id`, ADD `auto` TINYINT(1) NOT NULL DEFAULT 0 AFTER `status`");
+		}
+		if ((int)$this->db->count_all('ci_mkt_connections') === 0) $this->migrate_single_meta();
+	}
+
+	/** The one Meta connection of the first version becomes account no. 1 (same webhook key, so outside links keep working). */
+	private function migrate_single_meta()
+	{
+		$row = $this->row('meta');
+		$now = date('Y-m-d H:i:s');
+		$cfg = !empty($row['config_json']) ? json_decode($row['config_json'], true) : array();
+		if (!is_array($cfg)) $cfg = array();
+		$key = !empty($cfg['webhook_key']) ? $cfg['webhook_key'] : '';
+		if ($row && (!empty($row['api_key']) || $key !== '')) {
+			$keep = array_diff_key($cfg, array_flip(array('webhook_key', 'verify_token')));
+			$this->db->insert('ci_mkt_connections', array(
+				'platform' => 'meta', 'name' => !empty($cfg['page_name']) ? substr($cfg['page_name'], 0, 100) : 'Meta',
+				'source_name' => 'Social Media', 'ref_month' => '', 'config_json' => json_encode($keep), 'secret_ref' => 'meta',
+				'webhook_key' => $key !== '' ? $key : bin2hex(random_bytes(16)),
+				'verify_token' => !empty($cfg['verify_token']) ? $cfg['verify_token'] : bin2hex(random_bytes(12)),
+				'status' => !empty($row['status']) ? 1 : 0, 'created_at' => $now, 'updated_at' => $now
+			));
+			$id = (int)$this->db->insert_id();
+			$this->db->where('connection_id', 0)->update('ci_mkt_leads', array('connection_id' => $id));
+			$this->db->where('connection_id', 0)->update('ci_mkt_posts', array('connection_id' => $id));
+		}
+		if ($key !== '') $this->global_cfg(array('cron_key' => $key)); // the cron link stays the same
+	}
+
+	/* ---------- global marketing settings (cron key) ---------- */
+
+	public function global_cfg($changes = null)
+	{
+		$row = $this->row('marketing');
+		$cfg = !empty($row['config_json']) ? json_decode($row['config_json'], true) : array();
+		if (!is_array($cfg)) $cfg = array();
+		if ($changes === null) return $cfg;
+		$cfg = array_merge($cfg, $changes);
+		$now = date('Y-m-d H:i:s');
+		if ($row) $this->db->where('service_name', 'marketing')->update('ci_integration_settings', array('config_json' => json_encode($cfg), 'updated_at' => $now));
+		else $this->db->insert('ci_integration_settings', array('service_name' => 'marketing', 'api_key' => '', 'api_secret' => '', 'endpoint' => '', 'config_json' => json_encode($cfg), 'status' => 1, 'created_at' => $now, 'updated_at' => $now));
+		return $cfg;
+	}
+
+	public function cron_key($renew = false)
+	{
+		$cfg = $this->global_cfg();
+		if ($renew || empty($cfg['cron_key'])) $cfg = $this->global_cfg(array('cron_key' => bin2hex(random_bytes(16))));
+		return $cfg['cron_key'];
 	}
 
 	public function log($action, $detail, $uid = 0)
@@ -98,56 +170,194 @@ class Marketing_model extends CI_Model
 		return $this->db->where('service_name', $service)->get('ci_integration_settings')->row_array();
 	}
 
-	public function meta()
+	/* ---------- accounts (connections) ---------- */
+
+	public static $platforms = array('meta' => 'Meta (Facebook / Instagram)', 'google' => 'Google Ads', 'web' => 'Website / Zapier', 'other' => 'Other platform');
+
+	private static $defaults = array(
+		'app_id' => '', 'page_id' => '', 'page_name' => '', 'ig_id' => '', 'ig_name' => '', 'ad_account_id' => '', 'graph_version' => 'v23.0',
+		'route' => 'fixed', 'owner_id' => 0, 'rr_users' => array(), 'rr_next' => 0, 'agents' => array(),
+		'website' => '', 'privacy_url' => '', 'auto_pause' => 0, 'max_cpl' => 0, 'currency' => 'AED', 'last_sync' => '', 'last_rule' => '',
+		// Claude autopilot
+		'ap_posts' => 'off', 'ap_per_week' => 3, 'ap_time' => '10:00', 'ap_topics' => '', 'ap_images' => '', 'ap_channels' => array('fb'), 'ap_lang' => 'en',
+		'ap_img_next' => 0, 'ap_last_plan' => '', 'ap_ads' => 'off', 'ap_max_daily' => 0, 'ap_step' => 20, 'ap_min_spend' => 0, 'ap_last_ads' => '', 'ap_last_report' => ''
+	);
+	private static $row_fields = array('id', 'platform', 'name', 'source_name', 'ref_month', 'webhook_key', 'verify_token', 'secret_ref', 'token', 'app_secret', 'enabled', 'exists');
+
+	private $cur = 0;
+
+	private function norm($r)
 	{
-		if (isset($this->cache['meta'])) return $this->cache['meta'];
-		$row = $this->row('meta');
-		$cfg = !empty($row['config_json']) ? json_decode($row['config_json'], true) : array();
+		$cfg = !empty($r['config_json']) ? json_decode($r['config_json'], true) : array();
 		if (!is_array($cfg)) $cfg = array();
-		$s = array_merge(array(
-			'app_id' => '', 'page_id' => '', 'page_name' => '', 'ig_id' => '', 'ig_name' => '', 'ad_account_id' => '', 'graph_version' => 'v23.0',
-			'verify_token' => '', 'webhook_key' => '', 'route' => 'fixed', 'owner_id' => 0, 'rr_users' => array(), 'rr_next' => 0,
-			'website' => '', 'privacy_url' => '', 'auto_pause' => 0, 'max_cpl' => 0, 'currency' => 'AED', 'last_sync' => ''
-		), $cfg);
-		$s['token'] = !empty($row['api_key']) ? $row['api_key'] : '';
-		$s['app_secret'] = !empty($row['api_secret']) ? $row['api_secret'] : '';
-		$s['enabled'] = !empty($row['status']);
-		$s['exists'] = !empty($row);
-		return $this->cache['meta'] = $s;
+		$s = array_merge(self::$defaults, array_diff_key($cfg, array_flip(self::$row_fields)));
+		$sec = $r['secret_ref'] !== '' ? $this->row($r['secret_ref']) : null;
+		return array_merge($s, array(
+			'id' => (int)$r['id'], 'platform' => $r['platform'], 'name' => $r['name'], 'source_name' => $r['source_name'], 'ref_month' => $r['ref_month'],
+			'webhook_key' => $r['webhook_key'], 'verify_token' => $r['verify_token'], 'secret_ref' => $r['secret_ref'],
+			'token' => !empty($sec['api_key']) ? $sec['api_key'] : '', 'app_secret' => !empty($sec['api_secret']) ? $sec['api_secret'] : '',
+			'enabled' => (int)$r['status'] === 1, 'exists' => true
+		));
 	}
 
-	/** Writes config keys (and optionally token / secret) for 'meta' without touching the rest. */
-	public function save_meta($cfg_changes, $token = '', $secret = '', $enabled = null)
+	/** All accounts (id => settings), optionally of one platform. */
+	public function connections($platform = '')
+	{
+		if (!isset($this->cache['conns'])) {
+			$this->cache['conns'] = array();
+			foreach ($this->db->order_by('id', 'ASC')->get('ci_mkt_connections')->result_array() as $r) $this->cache['conns'][(int)$r['id']] = $this->norm($r);
+		}
+		if ($platform === '') return $this->cache['conns'];
+		return array_filter($this->cache['conns'], function ($c) use ($platform) { return $c['platform'] === $platform; });
+	}
+
+	/** Makes one account the current one for meta(), graph(), intake() and the rest. */
+	public function use_conn($id)
+	{
+		if ((int)$id === 0) { $this->cur = 0; $this->page_token = null; return true; }
+		$all = $this->connections();
+		if (!isset($all[(int)$id])) return false;
+		if ($this->cur !== (int)$id) $this->page_token = null;
+		$this->cur = (int)$id;
+		return true;
+	}
+
+	public function cur_id() { return $this->cur; }
+
+	/** Settings of the current account; with none chosen, the first Meta account (an empty one if there is none). */
+	public function meta()
+	{
+		$all = $this->connections();
+		if ($this->cur && isset($all[$this->cur])) return $all[$this->cur];
+		foreach (array(true, false) as $need_on) foreach ($all as $c) {
+			if ($c['platform'] === 'meta' && (!$need_on || $c['enabled'])) { $this->cur = $c['id']; $this->page_token = null; return $c; }
+		}
+		return array_merge(self::$defaults, array('id' => 0, 'platform' => 'meta', 'name' => '', 'source_name' => '', 'ref_month' => '', 'webhook_key' => '', 'verify_token' => '',
+			'secret_ref' => '', 'token' => '', 'app_secret' => '', 'enabled' => false, 'exists' => false));
+	}
+
+	/** New account; becomes the current one. Returns its id. */
+	public function create_conn($platform, $fields = array())
+	{
+		$now = date('Y-m-d H:i:s');
+		$this->db->insert('ci_mkt_connections', array(
+			'platform' => isset(self::$platforms[$platform]) ? $platform : 'other',
+			'name' => substr(trim((string)($fields['name'] ?? '')), 0, 100), 'source_name' => substr(trim((string)($fields['source_name'] ?? '')), 0, 150),
+			'ref_month' => substr(trim((string)($fields['ref_month'] ?? '')), 0, 100), 'config_json' => '{}', 'secret_ref' => '',
+			'webhook_key' => bin2hex(random_bytes(16)), 'verify_token' => bin2hex(random_bytes(12)), 'status' => 1, 'created_at' => $now, 'updated_at' => $now
+		));
+		$id = (int)$this->db->insert_id();
+		unset($this->cache['conns']);
+		$this->use_conn($id);
+		return $id;
+	}
+
+	/**
+	 * Saves the current account: config keys, optional token / secret, on-off, and row fields (name, source_name, ref_month).
+	 * Creates a Meta account first when there is none.
+	 */
+	public function save_meta($cfg_changes, $token = '', $secret = '', $enabled = null, $fields = array())
 	{
 		$old = $this->meta();
-		$keep = array_diff_key($old, array_flip(array('token', 'app_secret', 'enabled', 'exists')));
-		$cfg = array_merge($keep, $cfg_changes);
-		if ($cfg['verify_token'] === '') $cfg['verify_token'] = bin2hex(random_bytes(12));
-		if ($cfg['webhook_key'] === '') $cfg['webhook_key'] = bin2hex(random_bytes(16));
-		$row = array('config_json' => json_encode($cfg), 'updated_at' => date('Y-m-d H:i:s'));
-		if ($token !== '') $row['api_key'] = $token;
-		if ($secret !== '') $row['api_secret'] = $secret;
+		if (!$old['exists']) { $this->create_conn('meta', $fields + array('name' => 'Meta', 'source_name' => 'Social Media')); $old = $this->meta(); }
+		$id = $old['id'];
+		$cfg = array_merge(array_diff_key($old, array_flip(self::$row_fields)), array_diff_key($cfg_changes, array_flip(self::$row_fields)));
+		$now = date('Y-m-d H:i:s');
+		$row = array('config_json' => json_encode($cfg), 'updated_at' => $now);
+		foreach (array('name' => 100, 'source_name' => 150, 'ref_month' => 100) as $k => $max) if (isset($fields[$k])) $row[$k] = substr(trim((string)$fields[$k]), 0, $max);
 		if ($enabled !== null) $row['status'] = $enabled ? 1 : 0;
-		if ($old['exists']) {
-			$this->db->where('service_name', 'meta')->update('ci_integration_settings', $row);
-		} else {
-			$row += array('service_name' => 'meta', 'api_key' => '', 'api_secret' => '', 'endpoint' => '', 'status' => 1, 'created_at' => $row['updated_at']);
-			$this->db->insert('ci_integration_settings', $row);
+		if ($token !== '' || $secret !== '') {
+			$ref = $old['secret_ref'];
+			if ($ref === '') { $ref = 'mkt_conn_' . $id; $row['secret_ref'] = $ref; }
+			$sec = array('updated_at' => $now, 'status' => 1);
+			if ($token !== '') $sec['api_key'] = $token;
+			if ($secret !== '') $sec['api_secret'] = $secret;
+			if ($this->row($ref)) $this->db->where('service_name', $ref)->update('ci_integration_settings', $sec);
+			else $this->db->insert('ci_integration_settings', $sec + array('service_name' => $ref, 'api_key' => '', 'api_secret' => '', 'endpoint' => '', 'config_json' => '{}', 'created_at' => $now));
 		}
-		unset($this->cache['meta']);
+		$this->db->where('id', $id)->update('ci_mkt_connections', $row);
+		unset($this->cache['conns']);
 		$this->page_token = null;
+	}
+
+	/** Removes the token and app secret of the current account and switches it off. */
+	public function disconnect()
+	{
+		$m = $this->meta();
+		if (!$m['exists']) return;
+		if ($m['secret_ref'] !== '') $this->db->where('service_name', $m['secret_ref'])->update('ci_integration_settings', array('api_key' => '', 'api_secret' => '', 'status' => 0, 'updated_at' => date('Y-m-d H:i:s')));
+		$this->db->where('id', $m['id'])->update('ci_mkt_connections', array('status' => 0, 'updated_at' => date('Y-m-d H:i:s')));
+		unset($this->cache['conns']);
+		$this->page_token = null;
+	}
+
+	/** Deletes the current account and its keys. Leads already taken in stay; its unpublished posts are stopped. */
+	public function delete_conn()
+	{
+		$m = $this->meta();
+		if (!$m['exists']) return false;
+		if ($m['secret_ref'] !== '') {
+			if ($m['secret_ref'] === 'meta') $this->db->where('service_name', 'meta')->update('ci_integration_settings', array('api_key' => '', 'api_secret' => '', 'status' => 0));
+			else $this->db->where('service_name', $m['secret_ref'])->delete('ci_integration_settings');
+		}
+		$this->db->where('connection_id', $m['id'])->where_in('status', array('Draft', 'Scheduled', 'Review'))->update('ci_mkt_posts', array('status' => 'Failed', 'error' => 'The account was removed.'));
+		$this->db->where('id', $m['id'])->delete('ci_mkt_connections');
+		unset($this->cache['conns']);
+		$this->cur = 0;
+		$this->page_token = null;
+		return true;
 	}
 
 	public function webhook_key()
 	{
-		$m = $this->meta();
-		if ($m['webhook_key'] === '' || $m['verify_token'] === '') { $this->save_meta(array()); $m = $this->meta(); }
-		return $m['webhook_key'];
+		return $this->meta()['webhook_key'];
 	}
 
 	public function renew_keys()
 	{
-		$this->save_meta(array('webhook_key' => bin2hex(random_bytes(16)), 'verify_token' => bin2hex(random_bytes(12))));
+		$m = $this->meta();
+		if (!$m['exists']) return;
+		$this->db->where('id', $m['id'])->update('ci_mkt_connections', array('webhook_key' => bin2hex(random_bytes(16)), 'verify_token' => bin2hex(random_bytes(12)), 'updated_at' => date('Y-m-d H:i:s')));
+		unset($this->cache['conns']);
+	}
+
+	/** Account whose webhook key this is (0 if none). */
+	public function conn_by_key($key)
+	{
+		$key = (string)$key;
+		if ($key === '') return 0;
+		foreach ($this->connections() as $c) if ($c['webhook_key'] !== '' && hash_equals($c['webhook_key'], $key)) return $c['id'];
+		return 0;
+	}
+
+	/** Meta account of a Facebook page (0 if none). */
+	public function conn_by_page($page_id)
+	{
+		foreach ($this->connections('meta') as $c) if ($c['page_id'] !== '' && (string)$c['page_id'] === (string)$page_id) return $c['id'];
+		return 0;
+	}
+
+	/** Puts the source name in the CRM's Data Source list so it can be picked and filtered on everywhere. */
+	public function ensure_source_term($title)
+	{
+		$title = trim((string)$title);
+		if ($title === '') return;
+		$has = $this->db->where('cat_type', 'data_source')->where('title', $title)->where('delete_status', 0)->count_all_results('ci_terms');
+		if (!$has) $this->db->insert('ci_terms', array('parent_id' => 0, 'cat_type' => 'data_source', 'title' => substr($title, 0, 500), 'created' => date('Y-m-d H:i:s'), 'status' => 1, 'delete_status' => 0));
+	}
+
+	public function source_terms()
+	{
+		return array_column($this->db->select('title')->where('cat_type', 'data_source')->where('status', 1)->where('delete_status', 0)->order_by('title', 'ASC')->get('ci_terms')->result_array(), 'title');
+	}
+
+	/** Batch / Ref for a new record: the account's Ref, or "Mon-YY/Source" (the CRM's own pattern) when empty. {month} becomes Mon-YY. */
+	public function ref_for($c)
+	{
+		$mon = date('M-y');
+		$ref = trim((string)($c['ref_month'] ?? ''));
+		if ($ref === '') return $mon . '/' . (($c['source_name'] ?? '') !== '' ? $c['source_name'] : 'Online');
+		return str_replace('{month}', $mon, $ref);
 	}
 
 	public function claude()
@@ -327,7 +537,10 @@ class Marketing_model extends CI_Model
 	 */
 	public function intake($in)
 	{
-		$in = array_merge(array('source' => 'web', 'external_id' => '', 'form_id' => '', 'form_name' => '', 'ad_id' => '', 'ad_name' => '', 'campaign_name' => '', 'platform' => '', 'full_name' => '', 'phone' => '', 'email' => '', 'company' => '', 'city' => '', 'other' => array()), $in);
+		$in = array_merge(array('source' => 'web', 'external_id' => '', 'form_id' => '', 'form_name' => '', 'ad_id' => '', 'ad_name' => '', 'campaign_name' => '', 'platform' => '', 'full_name' => '', 'phone' => '', 'email' => '', 'company' => '', 'city' => '', 'other' => array(), 'no_conn' => false), $in);
+		// the current account (set with use_conn) owns the lead; manual leads may have none
+		$conn = null;
+		if (empty($in['no_conn'])) { $c = $this->meta(); if ($c['exists']) $conn = $c; }
 		if ($in['external_id'] !== '') {
 			$dup = $this->db->select('id, status')->where('source', $in['source'])->where('external_id', $in['external_id'])->get('ci_mkt_leads')->row_array();
 			if ($dup && $dup['status'] !== 'Error') return array('Seen', (int)$dup['id']);
@@ -338,7 +551,8 @@ class Marketing_model extends CI_Model
 			'form_name' => substr($in['form_name'], 0, 150), 'ad_id' => substr($in['ad_id'], 0, 64), 'ad_name' => substr($in['ad_name'], 0, 255),
 			'campaign_name' => substr($in['campaign_name'], 0, 255), 'platform' => substr($in['platform'], 0, 20), 'full_name' => substr(trim($in['full_name']), 0, 150),
 			'phone' => substr(trim($in['phone']), 0, 40), 'email' => substr(trim($in['email']), 0, 150), 'company' => substr(trim($in['company']), 0, 255),
-			'city' => substr(trim($in['city']), 0, 100), 'fields_json' => json_encode($in['other'], JSON_UNESCAPED_UNICODE), 'received_at' => date('Y-m-d H:i:s')
+			'city' => substr(trim($in['city']), 0, 100), 'fields_json' => json_encode($in['other'], JSON_UNESCAPED_UNICODE), 'received_at' => date('Y-m-d H:i:s'),
+			'connection_id' => $conn ? $conn['id'] : 0
 		);
 		if ($row['phone'] === '' && $row['email'] === '') {
 			$row['status'] = 'Error';
@@ -363,8 +577,10 @@ class Marketing_model extends CI_Model
 			$this->db->insert('ci_mkt_leads', $row);
 			return array('Duplicate', (int)$this->db->insert_id());
 		}
-		$owner = $this->next_owner();
-		$labels = array('meta' => 'Meta Lead Ads', 'google' => 'Google Ads', 'web' => 'Website', 'manual' => 'Marketing');
+		$owner = !empty($in['owner']) ? (int)$in['owner'] : $this->next_owner();
+		$labels = array('meta' => 'Meta Lead Ads', 'google' => 'Google Ads', 'web' => 'Website', 'manual' => 'Marketing', 'other' => 'Marketing');
+		$label = $labels[$row['source']] ?? 'Marketing';
+		$co = $conn ? array_values(array_diff(array_map('intval', (array)$conn['agents']), array((int)$owner, 0))) : array();
 		$note = array();
 		if ($row['campaign_name'] !== '') $note[] = 'Campaign: ' . $row['campaign_name'];
 		if ($row['ad_name'] !== '') $note[] = 'Ad: ' . $row['ad_name'];
@@ -373,9 +589,16 @@ class Marketing_model extends CI_Model
 		$lead = array(
 			'customer' => $row['company'] !== '' ? $row['company'] : ($row['full_name'] !== '' ? $row['full_name'] : $row['phone']),
 			'poc' => $row['full_name'], 'contact1' => $row['phone'], 'mobile' => $row['phone'], 'email' => $row['email'], 'city' => $row['city'],
-			'status' => 36, 'lead_assign' => $owner, 'lead_source' => $labels[$row['source']] ?? 'Marketing', 'data_source' => $labels[$row['source']] ?? 'Marketing',
+			'status' => 36, 'lead_assign' => $owner,
+			'lead_source' => $conn && $conn['name'] !== '' ? $conn['name'] : $label,
+			'data_source' => $conn && $conn['source_name'] !== '' ? $conn['source_name'] : $label,
 			'created_by' => $owner, 'admin_status' => 1, 'created' => date('Y-m-d'), 'c_partner' => 'Seven Strokes', 'country' => 0, 'state' => 0
 		);
+		if ($conn) {
+			$lead['data_batch_referral_no'] = substr($this->ref_for($conn), 0, 100);
+			$lead['month'] = date('M-y');
+			if ($co) $lead['agents'] = implode(',', $co);
+		}
 		if ($this->db->field_exists('remark', 'ci_leads')) $lead['remark'] = substr(implode("\n", $note), 0, 2000);
 		$this->db->insert('ci_leads', $lead);
 		$lid = (int)$this->db->insert_id();
@@ -399,7 +622,7 @@ class Marketing_model extends CI_Model
 		if (!$ok) {
 			// keep a trace; the next sync (or webhook retry) takes it in
 			$dup = $this->db->select('id')->where('source', 'meta')->where('external_id', (string)$leadgen_id)->get('ci_mkt_leads')->row_array();
-			if (!$dup) $this->db->insert('ci_mkt_leads', array('source' => 'meta', 'external_id' => substr((string)$leadgen_id, 0, 64), 'form_id' => substr((string)($hint['form_id'] ?? ''), 0, 64), 'status' => 'Error', 'error' => substr('Could not read the lead from Meta. ' . $err, 0, 255), 'received_at' => date('Y-m-d H:i:s')));
+			if (!$dup) $this->db->insert('ci_mkt_leads', array('source' => 'meta', 'connection_id' => (int)$this->meta()['id'], 'external_id' => substr((string)$leadgen_id, 0, 64), 'form_id' => substr((string)($hint['form_id'] ?? ''), 0, 64), 'status' => 'Error', 'error' => substr('Could not read the lead from Meta. ' . $err, 0, 255), 'received_at' => date('Y-m-d H:i:s')));
 			return array('Error', $err);
 		}
 		$f = $this->map_fields($L['field_data'] ?? array());
@@ -472,9 +695,106 @@ class Marketing_model extends CI_Model
 		return $f + array('source' => 'google', 'external_id' => (string)($p['lead_id'] ?? ''), 'form_id' => (string)($p['form_id'] ?? ''), 'campaign_name' => (string)($p['campaign_id'] ?? ''), 'platform' => 'google');
 	}
 
+	/** Pulls new leads of every Meta account that is on. Returns array(new, message). */
+	public function sync_all()
+	{
+		$keep = $this->cur;
+		$new = 0;
+		$errs = array();
+		foreach ($this->connections('meta') as $c) {
+			if (!$c['enabled'] || $c['token'] === '' || $c['page_id'] === '') continue;
+			$this->use_conn($c['id']);
+			list($n, $msg) = $this->sync_leads();
+			$new += $n;
+			if (!$n && $msg !== 'No new leads.') $errs[] = $c['name'] . ': ' . $msg;
+		}
+		$this->cur = $keep;
+		$this->page_token = null;
+		$msg = $new ? $new . ' new lead' . ($new === 1 ? '' : 's') . ' taken in.' : 'No new leads.';
+		return array($new, $msg . ($errs ? ' ' . implode(' ', $errs) : ''));
+	}
+
+	/** Leads of all accounts with the record's current owner and co-workers. */
 	public function leads($where = '1=1', $limit = 200)
 	{
-		return $this->db->query("SELECT M.*, U.name AS owner_name, L.lead_id AS ref FROM ci_mkt_leads M LEFT JOIN ci_user U ON U.id = M.assigned_to LEFT JOIN ci_leads L ON L.id = M.lead_row_id WHERE {$where} ORDER BY M.id DESC LIMIT " . (int)$limit)->result_array();
+		return $this->db->query("SELECT M.*, C.name AS conn_name, C.platform AS conn_platform, L.lead_id AS ref, L.data_source AS crm_source, L.data_batch_referral_no AS batch, L.agents,
+				IF(L.id IS NULL, M.assigned_to, IF(L.lead_assign > 0, L.lead_assign, L.created_by)) AS owner_id, U.name AS owner_name
+			FROM ci_mkt_leads M
+			LEFT JOIN ci_mkt_connections C ON C.id = M.connection_id
+			LEFT JOIN ci_leads L ON L.id = M.lead_row_id
+			LEFT JOIN ci_user U ON U.id = IF(L.id IS NULL, M.assigned_to, IF(L.lead_assign > 0, L.lead_assign, L.created_by))
+			WHERE {$where} ORDER BY M.id DESC LIMIT " . (int)$limit)->result_array();
+	}
+
+	/**
+	 * Gives marketing leads (ci_mkt_leads ids) to one owner plus co-workers who can open and work the record too.
+	 * Only records this module created; "Already in CRM" leads belong to someone else's record. Returns the number changed.
+	 */
+	public function assign($ids, $owner, $agents)
+	{
+		$ids = array_values(array_filter(array_map('intval', (array)$ids)));
+		$owner = (int)$owner;
+		$co = array_values(array_unique(array_diff(array_filter(array_map('intval', (array)$agents)), array($owner))));
+		if (!$ids || $owner <= 0) return 0;
+		$n = 0;
+		foreach ($this->db->select('id, lead_row_id')->where_in('id', $ids)->where('status', 'Created')->where('lead_row_id >', 0)->get('ci_mkt_leads')->result_array() as $r) {
+			$this->db->where('id', (int)$r['lead_row_id'])->update('ci_leads', array('lead_assign' => $owner, 'agents' => implode(',', $co)));
+			$this->db->where('id', (int)$r['id'])->update('ci_mkt_leads', array('assigned_to' => $owner));
+			$n++;
+		}
+		return $n;
+	}
+
+	/**
+	 * Report rows grouped by owner, account or source for leads received between two dates.
+	 * Owner = the CRM record's owner now; "co_work" counts records where the person is a co-worker.
+	 */
+	public function report($from, $to, $group = 'owner', $conn_id = 0)
+	{
+		$from = date('Y-m-d 00:00:00', strtotime($from));
+		$to = date('Y-m-d 23:59:59', strtotime($to));
+		$w = "M.received_at BETWEEN " . $this->db->escape($from) . " AND " . $this->db->escape($to);
+		if ($conn_id > 0) $w .= " AND M.connection_id = " . (int)$conn_id;
+		elseif ($conn_id === -1) $w .= " AND M.connection_id = 0";
+		$rows = $this->db->query("SELECT M.id, M.connection_id, M.status, M.lead_row_id, C.name AS conn_name, C.source_name AS conn_source, L.data_source, L.agents,
+				IF(L.id IS NULL, M.assigned_to, IF(L.lead_assign > 0, L.lead_assign, L.created_by)) AS owner_id, P.pipeline_stage, IFNULL(O.n, 0) AS orders
+			FROM ci_mkt_leads M
+			LEFT JOIN ci_mkt_connections C ON C.id = M.connection_id
+			LEFT JOIN ci_leads L ON L.id = M.lead_row_id
+			LEFT JOIN ci_pipeline P ON P.lead_id = L.id
+			LEFT JOIN (SELECT lead_id, COUNT(*) AS n FROM ci_orders WHERE lead_id > 0 GROUP BY lead_id) O ON O.lead_id = L.id
+			WHERE {$w}")->result_array();
+		$names = array();
+		foreach ($this->db->select('id, name')->get('ci_user')->result_array() as $u) $names[(int)$u['id']] = $u['name'];
+		$blank = array('received' => 0, 'created' => 0, 'dup' => 0, 'err' => 0, 'database' => 0, 'lead' => 0, 'further' => 0, 'orders' => 0, 'co_work' => 0);
+		$out = array();
+		$add = function ($key, $label) use (&$out, $blank) { if (!isset($out[$key])) $out[$key] = array('key' => $key, 'label' => $label) + $blank; };
+		foreach ($rows as $r) {
+			$oid = (int)$r['owner_id'];
+			if ($group === 'account') { $k = 'c' . (int)$r['connection_id']; $label = $r['connection_id'] ? ($r['conn_name'] !== null ? $r['conn_name'] : 'Removed account') : 'Added here'; }
+			elseif ($group === 'source') { $label = $r['data_source'] ?: ($r['conn_source'] ?: 'Marketing'); $k = 's' . strtolower($label); }
+			else { $k = 'u' . $oid; $label = $oid ? ($names[$oid] ?? 'User ' . $oid) : 'No owner'; }
+			$add($k, $label);
+			$o = &$out[$k];
+			$o['received']++;
+			if ($r['status'] === 'Created') {
+				$o['created']++;
+				$st = $r['pipeline_stage'] ?: 'database';
+				if ($st === 'database') $o['database']++; elseif ($st === 'lead') $o['lead']++; else $o['further']++;
+				$o['orders'] += (int)$r['orders'];
+			} elseif ($r['status'] === 'Duplicate') $o['dup']++;
+			elseif ($r['status'] === 'Error') $o['err']++;
+			unset($o);
+			if ($group === 'owner' && $r['status'] === 'Created' && $r['agents'] !== null && $r['agents'] !== '') {
+				foreach (array_unique(array_filter(array_map('intval', explode(',', $r['agents'])))) as $a) {
+					if ($a === $oid) continue;
+					$add('u' . $a, $names[$a] ?? 'User ' . $a);
+					$out['u' . $a]['co_work']++;
+				}
+			}
+		}
+		usort($out, function ($a, $b) { return ($b['received'] <=> $a['received']) ?: strcasecmp($a['label'], $b['label']); });
+		return $out;
 	}
 
 	public function lead_stats()
@@ -492,15 +812,23 @@ class Marketing_model extends CI_Model
 
 	/* ---------- posts ---------- */
 
-	public function posts($limit = 100)
+	/** Posts of one Meta account (the current one by default). */
+	public function posts($limit = 100, $conn_id = null)
 	{
-		return $this->db->query("SELECT P.*, U.name AS by_name FROM ci_mkt_posts P LEFT JOIN ci_user U ON U.id = P.created_by ORDER BY (P.status = 'Scheduled') DESC, COALESCE(P.posted_at, P.scheduled_at, P.created_at) DESC LIMIT " . (int)$limit)->result_array();
+		$cid = $conn_id === null ? (int)$this->meta()['id'] : (int)$conn_id;
+		return $this->db->query("SELECT P.*, U.name AS by_name FROM ci_mkt_posts P LEFT JOIN ci_user U ON U.id = P.created_by WHERE P.connection_id = {$cid}
+			ORDER BY (P.status = 'Review') DESC, (P.status = 'Scheduled') DESC, COALESCE(P.posted_at, P.scheduled_at, P.created_at) DESC LIMIT " . (int)$limit)->result_array();
 	}
 
-	/** Publishes one post row now. Returns array(ok, message). */
+	/** Publishes one post row now (on the account it belongs to). Returns array(ok, message). */
 	public function publish($p)
 	{
+		if (!empty($p['connection_id'])) $this->use_conn((int)$p['connection_id']);
 		$m = $this->meta();
+		if (!$m['exists'] || (!empty($p['connection_id']) && (int)$m['id'] !== (int)$p['connection_id'])) {
+			$this->db->where('id', (int)$p['id'])->update('ci_mkt_posts', array('status' => 'Failed', 'error' => 'The account was removed.'));
+			return array(false, 'The account was removed.');
+		}
 		$ch = explode(',', $p['channels']);
 		$errs = array();
 		$upd = array();
@@ -740,7 +1068,7 @@ class Marketing_model extends CI_Model
 	 * One Claude Messages API call. Returns array(ok, text or message).
 	 * Raw HTTP: this CodeIgniter 2 app has no Composer, so the PHP SDK is not available.
 	 */
-	public function ask_claude($system, $prompt, $max_tokens = 4000)
+	public function ask_claude($system, $prompt, $max_tokens = 4000, $schema = null)
 	{
 		$c = $this->claude();
 		if ($c['api_key'] === '') return array(false, 'Add the Claude API key in Marketing > Connections first.');
@@ -757,6 +1085,8 @@ class Marketing_model extends CI_Model
 			$body['fallbacks'] = 'default';
 			$headers[] = 'anthropic-beta: server-side-fallback-2026-07-01';
 		}
+		// Structured output: the answer is JSON that matches the schema.
+		if ($schema) $body['output_config'] = (isset($body['output_config']) ? $body['output_config'] : array()) + array('format' => array('type' => 'json_schema', 'schema' => $schema));
 		list($code, $raw, $err) = $this->curl('https://api.anthropic.com/v1/messages', 'POST', $headers, json_encode($body), 120);
 		if ($err !== '') return array(false, 'Could not reach Claude: ' . $err);
 		$r = json_decode($raw, true);
@@ -790,5 +1120,190 @@ class Marketing_model extends CI_Model
 	{
 		list($ok, $t) = $this->ask_claude('Reply with the single word OK.', 'Connection check', 1000);
 		return $ok ? array(true, 'Claude is connected.') : array(false, $t);
+	}
+
+	/* ---------- Claude autopilot (per Meta account, run by the cron job) ---------- */
+
+	private function lines($text, $https = false)
+	{
+		$out = array();
+		foreach (preg_split('/\r\n|\r|\n/', (string)$text) as $l) {
+			$l = trim($l);
+			if ($l === '' || ($https && !preg_match('~^https://\S+$~i', $l))) continue;
+			$out[] = $l;
+		}
+		return $out;
+	}
+
+	/** Post times for the next 7 days at $time, one a day at most, skipping days in $taken, spread evenly. */
+	public static function ap_slots($taken, $n, $time, $now)
+	{
+		$days = array();
+		for ($i = 0; $i < 7; $i++) {
+			$d = date('Y-m-d', strtotime("+{$i} day", $now));
+			$t = strtotime($d . ' ' . $time);
+			if ($t === false || $t < $now + 1800 || in_array($d, $taken, true)) continue;
+			$days[] = $t;
+		}
+		if ($n <= 0 || !$days) return array();
+		if ($n >= count($days)) return $days;
+		$out = array();
+		$step = count($days) / $n;
+		for ($k = 0; $k < $n; $k++) $out[] = $days[(int)floor($k * $step)];
+		return $out;
+	}
+
+	/**
+	 * Claude keeps the next 7 days filled with posts for the current account.
+	 * 'auto' schedules them, 'review' leaves them for approval. Returns array(made, message).
+	 */
+	public function ap_plan_posts($force = false)
+	{
+		$m = $this->meta();
+		if (!$m['exists'] || $m['platform'] !== 'meta' || $m['ap_posts'] === 'off') return array(0, 'Post autopilot is off.');
+		if (!$force && $m['ap_last_plan'] !== '' && strtotime($m['ap_last_plan']) > time() - 20 * 3600) return array(0, 'Already planned today.');
+		$topics = $this->lines($m['ap_topics']);
+		if (!$topics) return array(0, 'Add topics for the autopilot first.');
+		if ($this->claude()['api_key'] === '') return array(0, 'Add the Claude API key first.');
+		$now = time();
+		$up = $this->db->query("SELECT scheduled_at FROM ci_mkt_posts WHERE connection_id = ? AND status IN ('Scheduled','Review') AND scheduled_at BETWEEN ? AND ?",
+			array($m['id'], date('Y-m-d H:i:s', $now), date('Y-m-d H:i:s', $now + 7 * 86400)))->result_array();
+		$taken = array_map(function ($r) { return substr($r['scheduled_at'], 0, 10); }, $up);
+		$want = max(1, min(7, (int)$m['ap_per_week']));
+		$slots = self::ap_slots($taken, $want - count($up), preg_match('/^\d{2}:\d{2}$/', $m['ap_time']) ? $m['ap_time'] : '10:00', $now);
+		if (!$slots) { $this->save_meta(array('ap_last_plan' => date('Y-m-d H:i:s'))); return array(0, 'The next 7 days already have posts.'); }
+		$recent = array_column($this->db->query("SELECT message FROM ci_mkt_posts WHERE connection_id = ? AND message <> '' ORDER BY id DESC LIMIT 8", array($m['id']))->result_array(), 'message');
+		$ch = array_values(array_intersect(array('fb', 'ig'), (array)$m['ap_channels'])) ?: array('fb');
+		$where = in_array('ig', $ch, true) ? (in_array('fb', $ch, true) ? 'Facebook and Instagram' : 'Instagram') : 'Facebook';
+		$lang = $m['ap_lang'] === 'ar' ? 'Arabic' : ($m['ap_lang'] === 'both' ? 'English, then the same text in Arabic' : 'English');
+		$n = count($slots);
+		$prompt = "Write {$n} different {$where} posts in {$lang} for the page \"{$m['page_name']}\". Goal: get people to send their details (call, message or fill the form" . ($m['website'] !== '' ? ', or visit ' . $m['website'] : '') . ").\n\n"
+			. "Topics to rotate through (one main topic per post):\n- " . implode("\n- ", $topics) . "\n\n"
+			. "Each post: up to 120 words, short paragraphs, 1-3 fitting emojis at most, one clear call to action, then 3-6 relevant hashtags on the last line."
+			. ($recent ? "\n\nDo not repeat these recent posts:\n---\n" . implode("\n---\n", array_map(function ($t) { return mb_substr($t, 0, 300); }, $recent)) : '');
+		$schema = array('type' => 'object', 'additionalProperties' => false, 'required' => array('posts'), 'properties' => array(
+			'posts' => array('type' => 'array', 'items' => array('type' => 'object', 'additionalProperties' => false, 'required' => array('topic', 'text'),
+				'properties' => array('topic' => array('type' => 'string'), 'text' => array('type' => 'string'))))));
+		list($ok, $raw) = $this->ask_claude($this->claude_system(), $prompt, 8000, $schema);
+		if (!$ok) { $this->log('ap_posts', $m['name'] . ': ' . $raw); return array(0, $raw); }
+		$j = json_decode($raw, true);
+		$posts = is_array($j) && isset($j['posts']) && is_array($j['posts']) ? $j['posts'] : array();
+		$imgs = $this->lines($m['ap_images'], true);
+		$ii = (int)$m['ap_img_next'];
+		$made = 0;
+		$st = $m['ap_posts'] === 'auto' ? 'Scheduled' : 'Review';
+		foreach ($slots as $k => $t) {
+			$text = trim((string)($posts[$k]['text'] ?? ''));
+			if ($text === '') continue;
+			$img = $imgs ? $imgs[$ii++ % count($imgs)] : '';
+			$pc = $img === '' ? array_values(array_diff($ch, array('ig'))) : $ch; // Instagram needs an image
+			if (!$pc) continue;
+			$this->db->insert('ci_mkt_posts', array('connection_id' => $m['id'], 'channels' => implode(',', $pc), 'message' => mb_substr($text, 0, 5000), 'image_url' => $img,
+				'link' => $m['website'], 'status' => $st, 'auto' => 1, 'scheduled_at' => date('Y-m-d H:i:00', $t), 'created_by' => 0, 'created_at' => date('Y-m-d H:i:s')));
+			$made++;
+		}
+		$this->save_meta(array('ap_last_plan' => date('Y-m-d H:i:s'), 'ap_img_next' => $imgs ? $ii % count($imgs) : 0));
+		$msg = $made ? $made . ' post' . ($made === 1 ? '' : 's') . ' written' . ($st === 'Review' ? ', waiting for your approval.' : ' and scheduled.') : 'Claude returned no posts.';
+		$this->log('ap_posts', $m['name'] . ': ' . $msg);
+		return array($made, $msg);
+	}
+
+	/**
+	 * Safety limits for Claude's campaign changes. Only running campaigns with enough spend; pause or budget changes only (never starts
+	 * a campaign); each budget moves at most ap_step % a day; increases are dropped while running budgets would pass ap_max_daily.
+	 */
+	public static function ap_guard($rows, $actions, $cfg)
+	{
+		$by = array();
+		foreach ($rows as $r) $by[(string)$r['id']] = $r;
+		$step = max(5, min(50, (float)$cfg['ap_step'])) / 100;
+		$min_spend = (float)$cfg['ap_min_spend'];
+		$cap = (float)$cfg['ap_max_daily'];
+		$out = array();
+		$seen = array();
+		foreach ((array)$actions as $a) {
+			$id = (string)($a['campaign_id'] ?? '');
+			if (!isset($by[$id]) || isset($seen[$id])) continue;
+			$seen[$id] = 1;
+			$r = $by[$id];
+			$act = (string)($a['action'] ?? 'keep');
+			$why = mb_substr(trim((string)($a['reason'] ?? '')), 0, 200);
+			if ($r['status'] !== 'ACTIVE' || $act === 'keep' || $r['spend'] < $min_spend) continue;
+			if ($act === 'pause') { $out[] = array('id' => $id, 'name' => $r['name'], 'action' => 'pause', 'reason' => $why); continue; }
+			if ($act !== 'budget' || $r['daily_budget'] === null) continue;
+			$old = (float)$r['daily_budget'];
+			$new = max($old * (1 - $step), min($old * (1 + $step), (float)($a['daily_budget'] ?? 0)));
+			$new = max(5, round($new));
+			if (abs($new - $old) < 1) continue;
+			$out[] = array('id' => $id, 'name' => $r['name'], 'action' => 'budget', 'old' => $old, 'budget' => $new, 'reason' => $why);
+		}
+		if ($cap > 0) {
+			$paused = $newb = array();
+			foreach ($out as $o) { if ($o['action'] === 'pause') $paused[$o['id']] = 1; else $newb[$o['id']] = $o['budget']; }
+			$total = 0;
+			foreach ($rows as $r) if ($r['status'] === 'ACTIVE' && !isset($paused[(string)$r['id']]) && $r['daily_budget'] !== null) $total += $newb[(string)$r['id']] ?? (float)$r['daily_budget'];
+			foreach ($out as $k => $o) {
+				if ($total <= $cap) break;
+				if ($o['action'] === 'budget' && $o['budget'] > $o['old']) { $total -= $o['budget'] - $o['old']; unset($out[$k]); }
+			}
+			$out = array_values($out);
+		}
+		return $out;
+	}
+
+	/**
+	 * Claude reviews the current account's campaigns (last 7 days). 'auto' applies the changes that pass ap_guard,
+	 * 'suggest' only writes them down. Returns array(ok, message).
+	 */
+	public function ap_review_ads($force = false)
+	{
+		$m = $this->meta();
+		if (!$m['exists'] || $m['platform'] !== 'meta' || $m['ap_ads'] === 'off') return array(false, 'Ads autopilot is off.');
+		if (!$force && $m['ap_last_ads'] !== '' && strtotime($m['ap_last_ads']) > time() - 20 * 3600) return array(false, 'Already reviewed today.');
+		if ($this->claude()['api_key'] === '') return array(false, 'Add the Claude API key first.');
+		list($ok, $rows, $err) = $this->campaigns('last_7d');
+		if (!$ok) return array(false, $err);
+		$this->save_meta(array('ap_last_ads' => date('Y-m-d H:i:s')));
+		$active = array_values(array_filter($rows, function ($r) { return $r['status'] === 'ACTIVE'; }));
+		if (!$active) { $this->save_meta(array('ap_last_report' => date('d M H:i') . ': no running campaigns.')); return array(true, 'No running campaigns to review.'); }
+		$cur = $m['currency'];
+		$lines = array();
+		foreach ($active as $r) {
+			$lines[] = sprintf('- id %s | %s | budget %s | spend %s %.2f | %d impressions | %d clicks | CTR %.2f%% | %d leads | CPL %s',
+				$r['id'], $r['name'], $r['daily_budget'] !== null ? $cur . ' ' . number_format($r['daily_budget'], 2) . '/day' : 'set on ad sets (cannot change here)', $cur, $r['spend'], $r['impressions'], $r['clicks'], $r['ctr'], $r['leads'], $r['cpl'] !== null ? $cur . ' ' . $r['cpl'] : 'n/a');
+		}
+		$rules = "Limits: each budget may move at most " . (int)$m['ap_step'] . "% today; all running daily budgets together must stay under {$cur} " . number_format((float)$m['ap_max_daily'], 2)
+			. ((float)$m['max_cpl'] > 0 ? "; the target cost per lead is under {$cur} " . number_format((float)$m['max_cpl'], 2) : '')
+			. ((float)$m['ap_min_spend'] > 0 ? "; do not judge campaigns that spent under {$cur} " . number_format((float)$m['ap_min_spend'], 2) : '') . '.';
+		$prompt = "Running Meta lead campaigns, last 7 days:\n" . implode("\n", $lines) . "\n\n{$rules}\n\n"
+			. "For each campaign choose one action: keep, pause (clearly wasting money), or budget (give the new daily budget; raise campaigns with a good cost per lead, lower weak ones). "
+			. "When there is too little data, keep. Then write a summary of at most 4 short sentences for the business owner.";
+		$schema = array('type' => 'object', 'additionalProperties' => false, 'required' => array('actions', 'summary'), 'properties' => array(
+			'summary' => array('type' => 'string'),
+			'actions' => array('type' => 'array', 'items' => array('type' => 'object', 'additionalProperties' => false, 'required' => array('campaign_id', 'action', 'daily_budget', 'reason'), 'properties' => array(
+				'campaign_id' => array('type' => 'string'), 'action' => array('type' => 'string', 'enum' => array('keep', 'pause', 'budget')),
+				'daily_budget' => array('type' => 'number'), 'reason' => array('type' => 'string'))))));
+		list($ok, $raw) = $this->ask_claude("You are a careful Meta Ads performance marketer for a B2B company in the UAE. Base decisions only on the numbers given.", $prompt, 8000, $schema);
+		if (!$ok) { $this->log('ap_ads', $m['name'] . ': ' . $raw); return array(false, $raw); }
+		$j = json_decode($raw, true);
+		if (!is_array($j)) return array(false, 'Claude did not return a usable answer.');
+		$acts = self::ap_guard($rows, $j['actions'] ?? array(), $m);
+		$auto = $m['ap_ads'] === 'auto';
+		$done = array();
+		foreach ($acts as $a) {
+			$what = $a['action'] === 'pause' ? 'pause' : 'budget ' . $cur . ' ' . number_format($a['old'], 0) . ' → ' . number_format($a['budget'], 0) . '/day';
+			if ($auto) {
+				list($ok2, $msg) = $a['action'] === 'pause' ? $this->set_status($a['id'], 'PAUSED') : $this->set_budget($a['id'], $a['budget']);
+				$line = $a['name'] . ': ' . $what . ($ok2 ? '' : ' (failed: ' . $msg . ')') . ($a['reason'] !== '' ? ' — ' . $a['reason'] : '');
+				$this->log('ap_ads', $line);
+			} else {
+				$line = $a['name'] . ': suggest ' . $what . ($a['reason'] !== '' ? ' — ' . $a['reason'] : '');
+			}
+			$done[] = $line;
+		}
+		$report = date('d M H:i') . ($auto ? ' · changes made' : ' · suggestions only') . "\n" . trim((string)($j['summary'] ?? '')) . ($done ? "\n- " . implode("\n- ", $done) : "\nNo changes.");
+		$this->save_meta(array('ap_last_report' => mb_substr($report, 0, 3000)));
+		if (!$auto) $this->log('ap_ads', $m['name'] . ': ' . count($done) . ' suggestion(s)');
+		return array(true, $auto ? (count($done) ? count($done) . ' change(s) made.' : 'Reviewed; nothing to change.') : (count($done) ? count($done) . ' suggestion(s) written.' : 'Reviewed; nothing to change.'));
 	}
 }
