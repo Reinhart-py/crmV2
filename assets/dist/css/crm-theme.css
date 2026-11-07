@@ -659,3 +659,22 @@ input[type="checkbox"]:not(.full-screen-dash *), input[type="radio"]:not(.full-s
 .google-profile-options .gp-sub { list-style: none; margin: 0 0 4px; padding: 0 0 0 26px; }
 .google-profile-options .gp-sub[hidden] { display: none; }
 .google-profile-options .gp-sub .google-profile-item { padding: 7px 12px !important; font-size: 13px !important; }
+
+/* Header: Live, Search and Notifications next to the logo (left group); dialer, data, theme and profile on the right. */
+.header-quick-actions.hqa-left { gap: 6px !important; }
+.hqa-left .notif-dropdown-wrap { margin-right: 0 !important; }
+.hqa-left .smartphone-notif-dropdown { left: 0 !important; right: auto !important; }
+.hqa-left .gs-panel { left: -8px; right: auto; }
+@media (min-width: 992px) {
+  .header-quick-actions.hqa-left { margin-left: 2px !important; }
+}
+@media (max-width: 991px) {
+  .header-quick-actions.hqa-left { margin-left: 2px !important; gap: 4px !important; }
+}
+@media (max-width: 767px) {
+  .hqa-left .smartphone-notif-dropdown { position: fixed !important; left: 12px !important; right: 12px !important; top: 56px !important; width: auto !important; max-width: none !important; }
+  .hqa-left .gs-panel { left: 12px; right: 12px; }
+}
+@media (max-width: 480px) {
+  .header-quick-actions.hqa-left { gap: 2px !important; }
+}

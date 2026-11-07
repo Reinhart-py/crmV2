@@ -57,7 +57,7 @@
 <script src="<?php echo base_url();?>assets/plugins/table_export/js/tableexport.js"></script>
 <link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/jQueryUI/jquery-ui.css?v=20261107">
 <script src="<?php echo base_url();?>assets/bootstrap/js/jquery.validate.js"></script>
-<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-theme.css?v=20261106_4">
+<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-theme.css?v=20261107_5">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-search.css?v=20261107_4">
 <script src="<?php echo base_url();?>assets/dist/js/crm-search.js?v=20261107_2" defer></script>
 
@@ -91,6 +91,54 @@
   </div>
 
   
+  <!-- Live, Search and Notifications sit next to the logo; the rest stay with the profile photo. -->
+  <?php
+    // Same values the menu below works out; needed here first for the Live and Search buttons.
+    $route1 = $this->uri->segment(2);
+    $m_role = (int)$this->session->userdata('manager_role');
+    $current_user_id = (int)$this->session->userdata('manager_id');
+    if (empty($m_role) && $current_user_id === 1) {
+        $m_role = 1;
+    }
+    $is_admin = ($m_role === 1 || $current_user_id === 1);
+    $is_presentation = crm_is_presentation_user($m_role);
+  ?>
+  <div class="header-quick-actions hqa-left">
+    <?php if($is_admin || has_section_perm('live')){ ?>
+    <a href="<?php echo base_url();?>manager/live" class="live-nav-badge <?php echo ($route1 === 'live') ? 'active' : ''; ?>" title="Live Operations Report" style="display:inline-flex; align-items:center; justify-content:center; text-decoration:none; margin-right:8px; padding:4px 12px; border-radius:6px; font-weight:700; font-size:12px; letter-spacing:0.06em; transition:all 0.2s ease;">LIVE</a>
+    <?php } ?>
+    <?php if(!$is_presentation){ ?>
+    <div class="gs-wrap" id="gsWrap">
+      <button type="button" class="global-theme-btn" id="gsToggle" title="Search (press /)" aria-label="Search records" aria-expanded="false" style="margin-right:6px;"><i class="fa fa-search"></i></button>
+      <div class="gs-panel" id="gsPanel" role="dialog" aria-label="Search" hidden>
+        <div class="gs-bar">
+          <i class="fa fa-search" aria-hidden="true"></i>
+          <input type="search" id="gsInput" autocomplete="off" spellcheck="false" placeholder="Company, name, phone, e-mail or number" aria-label="Search" aria-controls="gsResults">
+          <kbd class="gs-kbd">Esc</kbd>
+        </div>
+        <div class="gs-results" id="gsResults" role="listbox"><div class="gs-hint">Type at least 2 letters. Finds Database &amp; Leads, Orders and Tickets you can open.</div></div>
+      </div>
+    </div>
+    <?php } ?>
+    <div class="notif-dropdown-wrap" style="position:relative; display:inline-block; margin-right:6px;">
+      <button type="button" class="global-theme-btn" id="notifBellToggle" title="Notifications" style="position:relative; display:inline-flex; align-items:center; justify-content:center;">
+        <i class="fa fa-bell-o"></i>
+        <span class="notif-badge" id="notifBadge" style="display:none; position:absolute; top:-4px; right:-4px; background:#dc2626; color:#ffffff; font-size:10px; font-weight:700; border-radius:10px; min-width:16px; height:16px; line-height:16px; text-align:center; padding:0 3px;"></span>
+      </button>
+      <div class="smartphone-notif-dropdown" id="smartphoneNotifDropdown" style="display:none; position:absolute; right:0; top:44px; width:440px; max-width:calc(100vw - 24px); background:#ffffff; border:1px solid #cbd5e1; border-radius:4px; box-shadow:0 12px 32px rgba(0,0,0,0.12); z-index:999999; overflow:hidden;">
+        <div style="padding:12px 16px; background:#1e3a8a; color:#ffffff; display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-weight:700; font-size:13.5px; letter-spacing:-0.2px;">Notification Centre</span>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button type="button" id="btnRequestNotifPerm" style="background:rgba(255,255,255,0.2); border:none; color:#ffffff; font-size:11px; font-weight:600; padding:4px 10px; border-radius:3px; cursor:pointer; display:none;">Enable Alerts</button>
+            <button type="button" id="btnMarkNotifRead" style="background:rgba(255,255,255,0.2); border:none; color:#ffffff; font-size:11px; font-weight:600; padding:4px 10px; border-radius:3px; cursor:pointer;">Mark all as read</button>
+          </div>
+        </div>
+        <div id="notifListContainer" style="max-height:440px; overflow-y:auto; padding:8px 10px; background:#f8fafc;">
+          <div style="padding:28px 16px; text-align:center; color:#94a3b8; font-size:12px;">Loading notifications...</div>
+        </div>
+      </div>
+    </div>
+  </div>
   <nav class="navbar navbar-static-top"> 
     <ul class="munk_menu">
       <?php  
@@ -207,22 +255,6 @@
   </nav>
 
   <div class="header-quick-actions">
-    <?php if(!$is_presentation){ ?>
-    <div class="gs-wrap" id="gsWrap">
-      <button type="button" class="global-theme-btn" id="gsToggle" title="Search (press /)" aria-label="Search records" aria-expanded="false" style="margin-right:6px;"><i class="fa fa-search"></i></button>
-      <div class="gs-panel" id="gsPanel" role="dialog" aria-label="Search" hidden>
-        <div class="gs-bar">
-          <i class="fa fa-search" aria-hidden="true"></i>
-          <input type="search" id="gsInput" autocomplete="off" spellcheck="false" placeholder="Company, name, phone, e-mail or number" aria-label="Search" aria-controls="gsResults">
-          <kbd class="gs-kbd">Esc</kbd>
-        </div>
-        <div class="gs-results" id="gsResults" role="listbox"><div class="gs-hint">Type at least 2 letters. Finds Database &amp; Leads, Orders and Tickets you can open.</div></div>
-      </div>
-    </div>
-    <?php } ?>
-    <?php if($is_admin || has_section_perm('live')){ ?>
-    <a href="<?php echo base_url();?>manager/live" class="live-nav-badge <?php echo ($route1 === 'live') ? 'active' : ''; ?>" title="Live Operations Report" style="display:inline-flex; align-items:center; justify-content:center; text-decoration:none; margin-right:8px; padding:4px 12px; border-radius:6px; font-weight:700; font-size:12px; letter-spacing:0.06em; transition:all 0.2s ease;">LIVE</a>
-    <?php } ?>
     <?php if(!$is_presentation && has_section_perm('calls')){ ?>
     <a href="<?php echo base_url();?>manager/calls" class="global-theme-btn" title="Phone Dialer & Calls" style="display:inline-flex; align-items:center; justify-content:center; text-decoration:none; margin-right:6px; color:#1e3a8a;">
       <i class="fa fa-phone"></i>
@@ -233,24 +265,6 @@
       <i class="fa fa-database"></i>
     </a>
     <?php } ?>
-    <div class="notif-dropdown-wrap" style="position:relative; display:inline-block; margin-right:6px;">
-      <button type="button" class="global-theme-btn" id="notifBellToggle" title="Notifications" style="position:relative; display:inline-flex; align-items:center; justify-content:center;">
-        <i class="fa fa-bell-o"></i>
-        <span class="notif-badge" id="notifBadge" style="display:none; position:absolute; top:-4px; right:-4px; background:#dc2626; color:#ffffff; font-size:10px; font-weight:700; border-radius:10px; min-width:16px; height:16px; line-height:16px; text-align:center; padding:0 3px;"></span>
-      </button>
-      <div class="smartphone-notif-dropdown" id="smartphoneNotifDropdown" style="display:none; position:absolute; right:0; top:44px; width:440px; max-width:calc(100vw - 24px); background:#ffffff; border:1px solid #cbd5e1; border-radius:4px; box-shadow:0 12px 32px rgba(0,0,0,0.12); z-index:999999; overflow:hidden;">
-        <div style="padding:12px 16px; background:#1e3a8a; color:#ffffff; display:flex; align-items:center; justify-content:space-between;">
-          <span style="font-weight:700; font-size:13.5px; letter-spacing:-0.2px;">Notification Centre</span>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <button type="button" id="btnRequestNotifPerm" style="background:rgba(255,255,255,0.2); border:none; color:#ffffff; font-size:11px; font-weight:600; padding:4px 10px; border-radius:3px; cursor:pointer; display:none;">Enable Alerts</button>
-            <button type="button" id="btnMarkNotifRead" style="background:rgba(255,255,255,0.2); border:none; color:#ffffff; font-size:11px; font-weight:600; padding:4px 10px; border-radius:3px; cursor:pointer;">Mark all as read</button>
-          </div>
-        </div>
-        <div id="notifListContainer" style="max-height:440px; overflow-y:auto; padding:8px 10px; background:#f8fafc;">
-          <div style="padding:28px 16px; text-align:center; color:#94a3b8; font-size:12px;">Loading notifications...</div>
-        </div>
-      </div>
-    </div>
     <button type="button" class="global-theme-btn" id="globalThemeToggle" title="Toggle Dark/Light Mode">
       <i class="fa fa-moon-o"></i>
     </button>
