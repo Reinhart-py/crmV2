@@ -270,11 +270,11 @@
     </button>
 
     <div class="profile-menu-container">
-      <button type="button" class="profile-avatar-btn" id="profileMenuToggle" aria-haspopup="true" title="Account menu" aria-label="Account menu">
+      <button type="button" class="profile-avatar-btn" id="profileMenuToggle" aria-haspopup="true" aria-label="Account menu">
         <img src="<?php echo base_url() . $user_avatar; ?>" alt="<?php echo htmlspecialchars($current_user_name); ?>" class="profile-avatar-img" />
         <span class="my-sup-unread" id="mySupAvatarBadge" style="display:none; position:absolute; top:-4px; right:-4px;"></span>
       </button>
-      <button type="button" class="profile-caret-btn" id="profileMenuCaret" aria-haspopup="true" aria-expanded="false" title="Account menu"><span class="crm-collapse-caret" aria-hidden="true"></span></button>
+      <button type="button" class="profile-caret-btn" id="profileMenuCaret" aria-haspopup="true" aria-expanded="false" aria-label="Account menu"><span class="crm-collapse-caret" aria-hidden="true"></span></button>
 
       <div class="google-profile-dropdown" id="googleProfileDropdown">
         <div class="google-profile-card">
@@ -746,11 +746,13 @@ $(function() {
     tip.setAttribute('role', 'tooltip');
     document.body.appendChild(tip);
     function place() {
-      var w = tip.offsetWidth, h = tip.offsetHeight, x = mx + 12, y = my + 18;
+      // The page can be scaled (body zoom); work in screen pixels, then convert back.
+      var z = parseFloat(getComputedStyle(document.body).zoom) || 1;
+      var w = tip.offsetWidth * z, h = tip.offsetHeight * z, x = mx + 12, y = my + 18;
       if (x + w > window.innerWidth - 6) x = Math.max(6, mx - w - 10);
       if (y + h > window.innerHeight - 6) y = Math.max(6, my - h - 10);
-      tip.style.left = x + 'px';
-      tip.style.top = y + 'px';
+      tip.style.left = (x / z) + 'px';
+      tip.style.top = (y / z) + 'px';
     }
     function hide() {
       clearTimeout(timer);
