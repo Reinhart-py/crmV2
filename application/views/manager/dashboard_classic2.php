@@ -2159,12 +2159,21 @@ $c2_empty = array(
 /* 9. Hide amounts. */
 .dash-c2 .c2-hide-btn { flex: none; display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 9px; border: 1px solid #cbd5e1; border-radius: 5px; background: #fff; color: #334155; font-size: 12px; font-weight: 600; cursor: pointer; }
 .dash-c2 .c2-hide-btn:hover { border-color: #1e3a8a; color: #1e3a8a; }
-.dash-c2 .c2-hide-btn[aria-pressed="true"] { background: #1e3a8a; border-color: #1e3a8a; color: #fff; }
-.dash-c2.c2-hidden .c2-amt { filter: blur(5px); user-select: none; }
-.dash-c2.c2-hidden .c2-money canvas { filter: blur(6px); }
-.dash-c2 .c2-hidden-note { display: none; position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%); z-index: 3; padding: 6px 12px; border-radius: 6px; background: #1e3a8a; color: #fff; font-size: 12.5px; font-weight: 600; white-space: nowrap; pointer-events: none; }
-.dash-c2.c2-hidden .c2-money .c2-hidden-note { display: block; }
-.dash-c2.c2-hidden .c2-money .c2-nodata { display: none; }
+.dash-c2 .c2-hide-btn[aria-pressed="true"] { background: #eef2ff; border-color: #c7d2fe; color: #1e3a8a; }
+/* Tile amounts read "AED •••••" while hidden (text swapped in the script). */
+.dash-c2.c2-hidden .c2-amt { letter-spacing: .08em; }
+/* Charts with amounts: a plain panel covers the chart area; title and legend stay visible. */
+.dash-c2 .c2-mask { display: none; position: absolute; inset: 0; z-index: 3; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: #f8fafc; border-radius: 6px; text-align: center; }
+.dash-c2.c2-hidden .c2-money .c2-mask { display: flex; }
+.dash-c2.c2-hidden .c2-money canvas, .dash-c2.c2-hidden .c2-money .c2-nodata { visibility: hidden; }
+.dash-c2 .c2-mask .c2-mask-ic { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: #e0e7ff; color: #1e3a8a; font-size: 15px; }
+.dash-c2 .c2-mask b { font-size: 13px; font-weight: 700; color: #334155; }
+.dash-c2 .c2-mask button { border: 0; background: none; padding: 0; color: #1e40af; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.dash-c2 .c2-mask button:hover { text-decoration: underline; }
+[data-theme="dark"] .dash-c2 .c2-mask { background: #111827; }
+[data-theme="dark"] .dash-c2 .c2-mask .c2-mask-ic { background: rgba(59, 130, 246, .18); color: #93c5fd; }
+[data-theme="dark"] .dash-c2 .c2-mask b { color: #e2e8f0; }
+[data-theme="dark"] .dash-c2 .c2-mask button { color: #93c5fd; }
 /* 10. Fold a section. */
 .dash-c2 .c2-fold { flex: none; display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 10px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff; color: #475569; font-size: 12.5px; font-weight: 600; cursor: pointer; }
 .dash-c2 .c2-fold:hover { border-color: #1e3a8a; color: #1e3a8a; }
@@ -2182,7 +2191,8 @@ $c2_empty = array(
 [data-theme="dark"] .dash-c2 .c2-bar { background: rgba(17, 24, 39, .96); border-color: #1f2937; }
 [data-theme="dark"] .dash-c2 .c2-bar-links a { color: #cbd5e1; }
 [data-theme="dark"] .dash-c2 .c2-bar-links a:hover { background: rgba(148, 163, 184, .12); color: #fff; }
-[data-theme="dark"] .dash-c2 .c2-bar-links a.is-on, [data-theme="dark"] .dash-c2 .c2-hide-btn[aria-pressed="true"] { background: #3b82f6; border-color: #3b82f6; color: #fff; }
+[data-theme="dark"] .dash-c2 .c2-bar-links a.is-on { background: #3b82f6; border-color: #3b82f6; color: #fff; }
+[data-theme="dark"] .dash-c2 .c2-hide-btn[aria-pressed="true"] { background: rgba(59, 130, 246, .18); border-color: rgba(59, 130, 246, .45); color: #bfdbfe; }
 [data-theme="dark"] .dash-c2 .c2-hide-btn, [data-theme="dark"] .dash-c2 .c2-fold { background: transparent; border-color: #334155; color: #cbd5e1; }
 [data-theme="dark"] .dash-c2 .c2-nodata { background: rgba(17, 24, 39, .92); border-color: #334155; color: #94a3b8; }
 [data-theme="dark"] .dash-c2 .col-md-6 > .crm-modern-stat-card .crm-modern-stat-chip { border-bottom-color: #1f2937 !important; }
@@ -2202,7 +2212,7 @@ $(function () {
     // 9. Charts that show amounts are covered by "Hide amounts".
     $.each(empty, function (id, msg) {
         var $body = $('#' + id).parent();
-        $body.addClass('c2-money').append('<div class="c2-hidden-note">Amounts hidden</div>');
+        $body.addClass('c2-money').append('<div class="c2-mask"><span class="c2-mask-ic"><i class="fa fa-eye-slash"></i></span><b>Amounts hidden</b><button type="button" class="c2-mask-show">Show amounts</button></div>');
         if (msg) $body.append($('<div class="c2-nodata"></div>').text(msg));
     });
 
@@ -2260,11 +2270,19 @@ $(function () {
     // 9. Hide amounts, remembered on this computer.
     function setHide(on) {
         $root.toggleClass('c2-hidden', on);
+        // Tile amounts: "AED 2,500" becomes "AED •••••" and comes back as it was.
+        $root.find('.c2-amt').each(function () {
+            var $a = $(this);
+            if ($a.data('c2orig') === undefined) $a.data('c2orig', $a.text());
+            var orig = String($a.data('c2orig'));
+            $a.text(on ? orig.replace(/[\d.,]+[KMB]?/i, '•••••') : orig);
+        });
         $('#c2HideAmt').attr('aria-pressed', on ? 'true' : 'false').find('span').text(on ? 'Show amounts' : 'Hide amounts');
         $('#c2HideAmt i').attr('class', 'fa ' + (on ? 'fa-eye' : 'fa-eye-slash'));
         store('crm_c2_hide_amt', on ? '1' : '0');
     }
     $('#c2HideAmt').on('click', function () { setHide(!$root.hasClass('c2-hidden')); });
+    $root.on('click', '.c2-mask-show', function () { setHide(false); });
     setHide(store('crm_c2_hide_amt') === '1');
 });
 </script>
