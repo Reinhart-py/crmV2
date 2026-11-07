@@ -2156,10 +2156,9 @@ $c2_empty = array(
 .dash-c2 .dash-kpi-col3, .dash-c2 .dash-kpi-col4 { background: linear-gradient(135deg, rgba(15, 138, 128, .66) 0%, rgba(15, 118, 110, .88) 100%), #0f766e url("<?php echo base_url(); ?>assets/background-auth.jpg") 30% 40% / 460px auto no-repeat !important; box-shadow: 0 4px 12px rgba(15, 118, 110, .22) !important; }
 .dash-c2 .dash-kpi-col1:hover, .dash-c2 .dash-kpi-col2:hover { box-shadow: 0 8px 18px rgba(30, 58, 138, .35) !important; }
 .dash-c2 .dash-kpi-col3:hover, .dash-c2 .dash-kpi-col4:hover { box-shadow: 0 8px 18px rgba(15, 118, 110, .35) !important; }
-/* Same wave picture as the sign-in page: shows through the tiles, and very light behind the whole page. */
+/* Same wave picture as the sign-in page shows through the tiles. Page behind the cards is plain white. */
 .dash-c2 .dash-kpi-col2, .dash-c2 .dash-kpi-col4 { background-position: 0 0, 70% 60% !important; }
-.content-wrapper.dash-c2 { background: linear-gradient(rgba(248, 250, 252, .84), rgba(248, 250, 252, .84)), #f8fafc url("<?php echo base_url(); ?>assets/background-auth.jpg") center / cover no-repeat fixed !important; }
-[data-theme="dark"] .content-wrapper.dash-c2 { background: linear-gradient(rgba(11, 15, 25, .92), rgba(11, 15, 25, .92)), #0b0f19 url("<?php echo base_url(); ?>assets/background-auth.jpg") center / cover no-repeat fixed !important; }
+html:not([data-theme="dark"]) .content-wrapper.dash-c2 { background: #ffffff !important; }
 /* White cards: the same picture under a strong white wash, like the right side of the sign-in page. */
 .dash-c2 .dash-top-chart-card, .dash-c2 .dash-round-card, .dash-c2 .dash-chart-card, .dash-c2 .crm-modern-stat-card { background: linear-gradient(rgba(255, 255, 255, .91), rgba(255, 255, 255, .91)), #ffffff url("<?php echo base_url(); ?>assets/background-auth.jpg") center / cover no-repeat !important; }
 [data-theme="dark"] .dash-c2 .dash-top-chart-card, [data-theme="dark"] .dash-c2 .dash-round-card, [data-theme="dark"] .dash-c2 .dash-chart-card, [data-theme="dark"] .dash-c2 .crm-modern-stat-card { background: linear-gradient(rgba(17, 24, 39, .90), rgba(17, 24, 39, .90)), #111827 url("<?php echo base_url(); ?>assets/background-auth.jpg") center / cover no-repeat !important; }
