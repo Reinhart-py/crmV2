@@ -216,11 +216,25 @@
 
 </style>
 
-<div class="content-wrapper full-screen-dash">
+<div class="content-wrapper full-screen-dash dash-c2" id="c2Root">
 
-    
+
 
     <div class="dash-content-body">
+
+<!-- Classic 2: section links, Hide amounts -->
+<nav class="c2-bar" id="c2Bar" aria-label="Dashboard sections">
+    <div class="c2-bar-links">
+        <a href="#c2-top" data-sec="c2-top">Overview</a>
+        <a href="#c2-activity" data-sec="c2-activity">Activity</a>
+        <a href="#c2-database" data-sec="c2-database">Database</a>
+        <a href="#c2-leads" data-sec="c2-leads">Leads</a>
+        <a href="#c2-orders" data-sec="c2-orders">Orders</a>
+        <a href="#c2-achievement" data-sec="c2-achievement">Achievement</a>
+    </div>
+    <button type="button" class="c2-hide-btn" id="c2HideAmt" aria-pressed="false" title="Hide amounts on screen (for screen sharing)"><i class="fa fa-eye-slash"></i> <span>Hide amounts</span></button>
+</nav>
+<div id="c2-top" class="c2-anchor"></div>
 
 <div id="donutHoverTooltip" style="display:none; position:fixed; z-index:99999; pointer-events:none; background:#12072b; color:#ffffff; border-radius:6px; padding:9px 13px; font-size:11.5px; box-shadow:0 10px 28px rgba(0,0,0,0.45); border:1px solid rgba(255,255,255,0.18); min-width:170px; line-height:1.4;">
     <div style="display:flex; justify-content:space-between; margin-bottom:3px; gap:12px;">
@@ -248,7 +262,9 @@ if (!function_exists('render_donut_chart_svg')) {
             $GLOBALS['crm_donut_frame'] = array($r_out + $pad, $r_out + $pad);
             $vb = ($cx - $r_out - $pad) . ' ' . ($cy - $r_out - $pad) . ' ' . (2 * ($r_out + $pad)) . ' ' . (2 * ($r_out + $pad));
             if ($frame) $vb = ($cx - $frame[0]) . ' ' . ($cy - $frame[1]) . ' ' . (2 * $frame[0]) . ' ' . (2 * $frame[1]);
-            return '<svg viewBox="' . $vb . '" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="position:absolute; left:0; top:0; width:100%; height:100%; display:block;" aria-label="No ' . strtolower($type) . ' data yet"><circle cx="' . $cx . '" cy="' . $cy . '" r="' . (($r_out + $r_in) / 2) . '" fill="none" stroke="#e2e8f0" stroke-width="' . ($r_out - $r_in) . '" /></svg>';
+            // Classic 2: a smaller ring with a short message in the middle.
+            $empty_txt = 'No ' . strtolower($type) . 's yet';
+            return '<svg viewBox="' . $vb . '" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="position:absolute; left:0; top:0; width:100%; height:100%; display:block;" aria-label="' . $empty_txt . '"><circle class="c2-empty-ring" cx="' . $cx . '" cy="' . $cy . '" r="' . round(($r_out + $r_in) / 2 * 0.62) . '" fill="none" stroke="#e2e8f0" stroke-width="' . round(($r_out - $r_in) * 0.45) . '" /><text class="c2-empty-text" x="' . $cx . '" y="' . ($cy + 5) . '" text-anchor="middle" font-size="15" font-weight="600" fill="#64748b" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif">' . $empty_txt . '</text></svg>';
         }
         $n = count($items);
         $current_angle = -M_PI / 2;
@@ -485,7 +501,7 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
                                 <div style="min-width:0; flex:1;">
                                     <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_leads']) ? (int)$dashboard_count['count_leads'] : 0; ?></div>
                                     <div class="dash-kpi-label">My Leads</div>
-                                    <div class="dash-kpi-sales"><?php echo $curr . ' ' . number_format((float)(isset($dashboard_count['sales_amount']) ? $dashboard_count['sales_amount'] : 0), 2); ?></div>
+                                    <div class="dash-kpi-sales c2-amt"><?php echo $curr . ' ' . number_format((float)(isset($dashboard_count['sales_amount']) ? $dashboard_count['sales_amount'] : 0), 0); ?></div>
                                 </div>
                                 <div class="dash-kpi-icon"><i class="fa fa-bullseye"></i></div>
                             </div>
@@ -497,7 +513,7 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
                                 <div style="min-width:0; flex:1;">
                                     <div class="dash-kpi-value"><?php echo isset($dashboard_count['count_orders']) ? (int)$dashboard_count['count_orders'] : 0; ?></div>
                                     <div class="dash-kpi-label">My Orders</div>
-                                    <div class="dash-kpi-sales"><?php echo $curr . ' ' . number_format((float)(isset($dashboard_count['sales_amount']) ? $dashboard_count['sales_amount'] : 0), 2); ?></div>
+                                    <div class="dash-kpi-sales c2-amt"><?php echo $curr . ' ' . number_format((float)(isset($dashboard_count['sales_amount']) ? $dashboard_count['sales_amount'] : 0), 0); ?></div>
                                 </div>
                                 <div class="dash-kpi-icon"><i class="fa fa-shopping-cart"></i></div>
                             </div>
@@ -509,7 +525,7 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
                                 <div style="min-width:0; flex:1;">
                                     <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_leads']) ? (int)$dashboard_Tcount['count_leads'] : 0; ?></div>
                                     <div class="dash-kpi-label">Team Leads</div>
-                                    <div class="dash-kpi-sales"><?php echo $curr . ' ' . number_format((float)(isset($dashboard_Tcount['sales_amount']) ? $dashboard_Tcount['sales_amount'] : 0), 2); ?></div>
+                                    <div class="dash-kpi-sales c2-amt"><?php echo $curr . ' ' . number_format((float)(isset($dashboard_Tcount['sales_amount']) ? $dashboard_Tcount['sales_amount'] : 0), 0); ?></div>
                                 </div>
                                 <div class="dash-kpi-icon"><i class="fa fa-bullseye"></i></div>
                             </div>
@@ -521,7 +537,7 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
                                 <div style="min-width:0; flex:1;">
                                     <div class="dash-kpi-value"><?php echo isset($dashboard_Tcount['count_orders']) ? (int)$dashboard_Tcount['count_orders'] : 0; ?></div>
                                     <div class="dash-kpi-label">Team Orders</div>
-                                    <div class="dash-kpi-sales"><?php echo $curr . ' ' . number_format((float)(isset($dashboard_Tcount['sales_amount']) ? $dashboard_Tcount['sales_amount'] : 0), 2); ?></div>
+                                    <div class="dash-kpi-sales c2-amt"><?php echo $curr . ' ' . number_format((float)(isset($dashboard_Tcount['sales_amount']) ? $dashboard_Tcount['sales_amount'] : 0), 0); ?></div>
                                 </div>
                                 <div class="dash-kpi-icon"><i class="fa fa-shopping-cart"></i></div>
                             </div>
@@ -1296,6 +1312,7 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
             </div>
         </div>
 
+        <div id="c2-leads" class="c2-anchor"></div>
         <div class="row" style="margin-top: 6px;">
             <div class="col-md-6 col-xs-12">
                 <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
@@ -2067,6 +2084,189 @@ $(function () {
         $('#donutHoverTooltip').hide();
         $(this).attr('stroke-width', '2').css('opacity', '1');
     });
+</script>
+
+<?php
+/* ---------------------------------------------------------------------------
+   Classic 2 only: look and convenience. Charts, figures and links are unchanged.
+   --------------------------------------------------------------------------- */
+$c2_zero = function () {
+    foreach (func_get_args() as $arr) {
+        foreach ((array)$arr as $v) { if ((float)$v != 0) return false; }
+    }
+    return true;
+};
+$c2_ach_my = isset($dashboard_achievement_my) ? (array)$dashboard_achievement_my : array();
+$c2_ach_team = isset($dashboard_achievement_team) ? (array)$dashboard_achievement_team : array();
+$c2_pro_my = !empty($dashboard_MyPro['lead_number']) ? $dashboard_MyPro['lead_number'] : array();
+$c2_pro_team = !empty($dashboard_TeamPro['lead_number']) ? $dashboard_TeamPro['lead_number'] : array();
+// Which charts have nothing to show (every value is 0): they get a short message on top.
+$c2_empty = array(
+    'lineChartTargetAchieve' => $c2_zero(isset($c2_ach_my['target']) ? $c2_ach_my['target'] : array(), isset($c2_ach_my['achievement']) ? $c2_ach_my['achievement'] : array()) ? 'No target or achievement in these months' : '',
+    'lineChartTargetProject' => $c2_zero(isset($c2_ach_my['target']) ? $c2_ach_my['target'] : array(), $c2_pro_my) ? 'No target or projection in these months' : '',
+    'barChartAchieveMy' => $c2_zero(isset($c2_ach_my['target']) ? $c2_ach_my['target'] : array(), isset($c2_ach_my['achievement']) ? $c2_ach_my['achievement'] : array()) ? 'No target or achievement in these months' : '',
+    'barChartAchieveTeam' => $c2_zero(isset($c2_ach_team['target']) ? $c2_ach_team['target'] : array(), isset($c2_ach_team['achievement']) ? $c2_ach_team['achievement'] : array()) ? 'No target or achievement in these months' : '',
+    'barChart2' => $c2_zero(isset($projection_target_my) ? $projection_target_my : array(), $c2_pro_my) ? 'No target or projection in these months' : '',
+    'barChart4' => $c2_zero(isset($projection_target_team) ? $projection_target_team : array(), $c2_pro_team) ? 'No target or projection in these months' : '',
+);
+?>
+<style>
+/* 1. Tiles: "My" in navy, "Team" in teal. */
+.dash-c2 .dash-kpi-col1, .dash-c2 .dash-kpi-col2 { background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%) !important; box-shadow: 0 4px 12px rgba(30, 58, 138, .22) !important; }
+.dash-c2 .dash-kpi-col3, .dash-c2 .dash-kpi-col4 { background: linear-gradient(135deg, #0f8a80 0%, #0f766e 100%) !important; box-shadow: 0 4px 12px rgba(15, 118, 110, .22) !important; }
+.dash-c2 .dash-kpi-col1:hover, .dash-c2 .dash-kpi-col2:hover { box-shadow: 0 8px 18px rgba(30, 58, 138, .35) !important; }
+.dash-c2 .dash-kpi-col3:hover, .dash-c2 .dash-kpi-col4:hover { box-shadow: 0 8px 18px rgba(15, 118, 110, .35) !important; }
+/* 2. Bigger labels and amounts. */
+.dash-c2 .dash-kpi-card { height: 66px; min-height: 66px; }
+.dash-c2 .dash-kpi-value { font-size: 20px; }
+.dash-c2 .dash-kpi-label { font-size: 13px; }
+.dash-c2 .dash-kpi-sales { font-size: 11.5px; font-weight: 600; }
+
+/* 3. Message over charts with nothing to show (the chart stays underneath). */
+.dash-c2 .dash-top-chart-body, .dash-c2 .dash-chart-body { position: relative !important; }
+.dash-c2 .c2-nodata { position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%); z-index: 2; padding: 6px 12px; border-radius: 6px; background: rgba(255, 255, 255, .92); border: 1px solid #e2e8f0; color: #64748b; font-size: 12.5px; font-weight: 600; white-space: nowrap; pointer-events: none; }
+/* 4. Empty ring is smaller (drawn in PHP) and its text follows the theme. */
+[data-theme="dark"] .dash-c2 .c2-empty-text { fill: #94a3b8; }
+[data-theme="dark"] .dash-c2 .c2-empty-ring { stroke: #1f2937; }
+
+/* 5. Activity cards: titles shown in full. */
+.dash-c2 .crm-op-7col-row .crm-modern-stat-card .card-top { flex-wrap: wrap !important; align-items: flex-start !important; }
+.dash-c2 .crm-op-7col-row .crm-modern-stat-card .card-title { white-space: normal !important; overflow: visible !important; text-overflow: clip !important; font-size: 11.5px !important; flex: 1 1 auto; min-width: 0; }
+.dash-c2 .crm-op-7col-row .crm-modern-stat-card .card-title a, .dash-c2 .crm-op-7col-row .crm-modern-stat-card .card-title span { white-space: normal; }
+@media (max-width: 1279px) and (min-width: 768px) {
+    .dash-c2 .crm-op-7col-row { flex-wrap: wrap !important; }
+    .dash-c2 .crm-op-7col-row > .crm-col-7 { flex: 0 0 25% !important; width: 25% !important; max-width: 25% !important; min-width: 25% !important; margin-bottom: 6px; }
+}
+
+/* 6. State lists (Database, Leads, Orders): plain rows with a thin line. */
+.dash-c2 .col-md-6 > .crm-modern-stat-card .crm-modern-stat-grid { column-gap: 18px !important; row-gap: 0 !important; }
+.dash-c2 .col-md-6 > .crm-modern-stat-card .crm-modern-stat-chip { background: transparent !important; border: 0 !important; border-bottom: 1px solid #eef2f7 !important; border-radius: 0 !important; padding: 7px 2px !important; }
+.dash-c2 .col-md-6 > .crm-modern-stat-card .crm-modern-stat-chip:hover { background: #f8fafc !important; }
+/* 7. Zero in grey, other counts in bold. */
+.dash-c2 .col-md-6 > .crm-modern-stat-card .crm-modern-stat-chip .badge { border: 0 !important; background: transparent !important; font-size: 13px !important; font-weight: 800 !important; color: #1e3a8a !important; padding: 2px 4px !important; }
+.dash-c2 .col-md-6 > .crm-modern-stat-card .crm-modern-stat-chip.c2-zero span:first-child { color: #94a3b8 !important; font-weight: 600 !important; }
+.dash-c2 .col-md-6 > .crm-modern-stat-card .crm-modern-stat-chip.c2-zero .badge { color: #cbd5e1 !important; font-weight: 600 !important; }
+
+/* 8. Section bar (stays at the top while scrolling). */
+.dash-c2 .c2-bar { position: sticky; top: var(--c2-top, 0px); z-index: 20; display: flex; align-items: center; gap: 10px; margin: 2px 0 8px; padding: 5px 6px; background: rgba(255, 255, 255, .96); border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 1px 3px rgba(0, 0, 0, .04); }
+.dash-c2 .c2-bar-links { display: flex; gap: 2px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.dash-c2 .c2-bar-links::-webkit-scrollbar { display: none; }
+.dash-c2 .c2-bar-links a { flex: none; padding: 5px 11px; border-radius: 6px; color: #334155; font-size: 13px; font-weight: 600; text-decoration: none; white-space: nowrap; }
+.dash-c2 .c2-bar-links a:hover { background: #f1f5f9; color: #0f172a; }
+.dash-c2 .c2-bar-links a.is-on { background: #1e3a8a; color: #fff; }
+.dash-c2 .c2-anchor { height: 0; }
+.dash-c2 .c2-anchor, .dash-c2 .dash-section-divider { scroll-margin-top: calc(var(--c2-top, 0px) + 54px); }
+/* 9. Hide amounts. */
+.dash-c2 .c2-hide-btn { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 11px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; color: #334155; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.dash-c2 .c2-hide-btn:hover { border-color: #1e3a8a; color: #1e3a8a; }
+.dash-c2 .c2-hide-btn[aria-pressed="true"] { background: #1e3a8a; border-color: #1e3a8a; color: #fff; }
+.dash-c2.c2-hidden .c2-amt { filter: blur(5px); user-select: none; }
+.dash-c2.c2-hidden .c2-money canvas { filter: blur(6px); }
+.dash-c2 .c2-hidden-note { display: none; position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%); z-index: 3; padding: 6px 12px; border-radius: 6px; background: #1e3a8a; color: #fff; font-size: 12.5px; font-weight: 600; white-space: nowrap; pointer-events: none; }
+.dash-c2.c2-hidden .c2-money .c2-hidden-note { display: block; }
+.dash-c2.c2-hidden .c2-money .c2-nodata { display: none; }
+/* 10. Fold a section. */
+.dash-c2 .c2-fold { flex: none; display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 10px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff; color: #475569; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.dash-c2 .c2-fold:hover { border-color: #1e3a8a; color: #1e3a8a; }
+.dash-c2 .c2-fold i { transition: transform .15s; }
+.dash-c2 .dash-section-divider.is-folded .c2-fold i { transform: rotate(-90deg); }
+.dash-c2 .c2-folded { display: none !important; }
+
+@media (max-width: 767px) {
+    .dash-c2 .c2-hide-btn span { display: none; }
+    .dash-c2 .c2-bar { margin-left: 4px; margin-right: 4px; }
+}
+
+/* Dark mode */
+[data-theme="dark"] .dash-c2 .dash-section-title span:last-child, [data-theme="dark"] .dash-c2 .crm-modern-stat-card .card-title { color: #f1f5f9 !important; }
+[data-theme="dark"] .dash-c2 .c2-bar { background: rgba(17, 24, 39, .96); border-color: #1f2937; }
+[data-theme="dark"] .dash-c2 .c2-bar-links a { color: #cbd5e1; }
+[data-theme="dark"] .dash-c2 .c2-bar-links a:hover { background: rgba(148, 163, 184, .12); color: #fff; }
+[data-theme="dark"] .dash-c2 .c2-bar-links a.is-on, [data-theme="dark"] .dash-c2 .c2-hide-btn[aria-pressed="true"] { background: #3b82f6; border-color: #3b82f6; color: #fff; }
+[data-theme="dark"] .dash-c2 .c2-hide-btn, [data-theme="dark"] .dash-c2 .c2-fold { background: transparent; border-color: #334155; color: #cbd5e1; }
+[data-theme="dark"] .dash-c2 .c2-nodata { background: rgba(17, 24, 39, .92); border-color: #334155; color: #94a3b8; }
+[data-theme="dark"] .dash-c2 .col-md-6 > .crm-modern-stat-card .crm-modern-stat-chip { border-bottom-color: #1f2937 !important; }
+[data-theme="dark"] .dash-c2 .col-md-6 > .crm-modern-stat-card .crm-modern-stat-chip:hover { background: rgba(148, 163, 184, .06) !important; }
+[data-theme="dark"] .dash-c2 .col-md-6 > .crm-modern-stat-card .crm-modern-stat-chip span:first-child { color: #e2e8f0 !important; }
+[data-theme="dark"] .dash-c2 .col-md-6 > .crm-modern-stat-card .crm-modern-stat-chip .badge { color: #93c5fd !important; }
+[data-theme="dark"] .dash-c2 .col-md-6 > .crm-modern-stat-card .crm-modern-stat-chip.c2-zero span:first-child { color: #64748b !important; }
+[data-theme="dark"] .dash-c2 .col-md-6 > .crm-modern-stat-card .crm-modern-stat-chip.c2-zero .badge { color: #475569 !important; }
+</style>
+<script>
+$(function () {
+    var $root = $('#c2Root');
+    function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
+
+    // 3. Charts with nothing to show.
+    var empty = <?php echo json_encode($c2_empty); ?>;
+    // 9. Charts that show amounts are covered by "Hide amounts".
+    $.each(empty, function (id, msg) {
+        var $body = $('#' + id).parent();
+        $body.addClass('c2-money').append('<div class="c2-hidden-note">Amounts hidden</div>');
+        if (msg) $body.append($('<div class="c2-nodata"></div>').text(msg));
+    });
+
+    // 7. Rows with 0 are greyed out.
+    $root.find('.col-md-6 > .crm-modern-stat-card .crm-modern-stat-chip').each(function () {
+        $(this).toggleClass('c2-zero', $.trim($(this).find('.badge').text()) === '0');
+    });
+
+    // 8 and 10. Sections: ids for the bar, and a Hide / Show button on each heading.
+    var ids = { 'Operational Activity': 'c2-activity', 'Database States': 'c2-database', 'Orders': 'c2-orders', 'Achievement and Projection': 'c2-achievement' };
+    $root.find('.dash-section-divider').each(function () {
+        var $d = $(this), title = $.trim($d.find('.dash-section-title > span:last-child').text()), id = ids[title];
+        if (!id) return;
+        $d.attr('id', id);
+        var $btn = $('<button type="button" class="c2-fold" aria-expanded="true"><i class="fa fa-chevron-down"></i> <span>Hide</span></button>');
+        $d.append($btn);
+        function fold(on, keep) {
+            $d.toggleClass('is-folded', on);
+            $d.nextUntil('.dash-section-divider').not('.dash-drilldown-panel').toggleClass('c2-folded', on);
+            $btn.attr('aria-expanded', on ? 'false' : 'true').find('span').text(on ? 'Show' : 'Hide');
+            if (keep !== false) store('crm_c2_fold_' + id, on ? '1' : '0');
+        }
+        $btn.on('click', function () { fold(!$d.hasClass('is-folded')); });
+        if (store('crm_c2_fold_' + id) === '1') fold(true, false);
+        $d.data('c2fold', fold);
+    });
+
+    // Keep the bar just under the top header.
+    function setTop() {
+        var $hd = $('.main-header').first(), pos = $hd.css('position');
+        var h = (pos === 'fixed' || pos === 'sticky') ? ($hd[0] ? $hd[0].offsetHeight : 0) : 0;
+        $root[0].style.setProperty('--c2-top', h + 'px');
+    }
+    setTop(); $(window).on('resize', setTop);
+
+    // Section links: open a folded section, scroll to it, mark the one in view.
+    $('#c2Bar').on('click', 'a[data-sec]', function (e) {
+        var id = $(this).data('sec'), $t = $('#' + id);
+        if (!$t.length) return;
+        e.preventDefault();
+        var $d = $t.hasClass('dash-section-divider') ? $t : $t.prevAll('.dash-section-divider').first();
+        if ($d.hasClass('is-folded') && $d.data('c2fold')) $d.data('c2fold')(false);
+        $t[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    var secs = ['c2-top', 'c2-activity', 'c2-database', 'c2-leads', 'c2-orders', 'c2-achievement'];
+    function markOn() {
+        var line = (parseInt(getComputedStyle($root[0]).getPropertyValue('--c2-top'), 10) || 0) + 90, cur = 'c2-top';
+        $.each(secs, function (i, id) { var el = document.getElementById(id); if (el && !$(el).hasClass('c2-folded') && el.getBoundingClientRect().top <= line) cur = id; });
+        $('#c2Bar a').removeClass('is-on').filter('[data-sec="' + cur + '"]').addClass('is-on');
+    }
+    // Any scrolling element (the page, or body when it scrolls itself).
+    var markT = null;
+    markOn(); document.addEventListener('scroll', function () { clearTimeout(markT); markT = setTimeout(markOn, 60); }, { passive: true, capture: true });
+
+    // 9. Hide amounts, remembered on this computer.
+    function setHide(on) {
+        $root.toggleClass('c2-hidden', on);
+        $('#c2HideAmt').attr('aria-pressed', on ? 'true' : 'false').find('span').text(on ? 'Show amounts' : 'Hide amounts');
+        $('#c2HideAmt i').attr('class', 'fa ' + (on ? 'fa-eye' : 'fa-eye-slash'));
+        store('crm_c2_hide_amt', on ? '1' : '0');
+    }
+    $('#c2HideAmt').on('click', function () { setHide(!$root.hasClass('c2-hidden')); });
+    setHide(store('crm_c2_hide_amt') === '1');
+});
 </script>
 
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>
