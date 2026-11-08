@@ -121,14 +121,14 @@
 }
 .dash-top-chart-body {
     position: relative !important;
-    height: 184px !important;
-    max-height: 184px !important;
+    height: var(--c1-body, 184px) !important;
+    max-height: var(--c1-body, 184px) !important;
     padding: 0 !important;
     overflow: hidden !important;
 }
 .dash-top-chart-body canvas {
-    height: 184px !important;
-    max-height: 184px !important;
+    height: var(--c1-body, 184px) !important;
+    max-height: var(--c1-body, 184px) !important;
     width: 100% !important;
 }
 [data-theme="dark"] .dash-round-meta {
@@ -429,7 +429,7 @@ render_donut_chart_svg($order_items, 480, 260, 240, 130, 120, 72, 'Order');
 $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($donut_frame[1], $GLOBALS['crm_donut_frame'][1]));
 ?>
 
-        <div class="row" style="margin-top: 4px; margin-bottom: 8px;">
+        <div class="row" id="c1TopRow" style="margin-top: 4px; margin-bottom: 8px;">
             <div class="col-lg-8 col-md-7 col-xs-12" style="padding-left: 10px; padding-right: 6px;">
                 <div class="row" style="margin-left:-3px; margin-right:-3px;">
                     <div class="col-xs-3" style="padding-left:3px; padding-right:3px;">
@@ -529,7 +529,7 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
                     </div>
                 </div>
 
-                <div class="dash-top-chart-card" style="height: 222px; max-height: 222px; margin-bottom: 8px; padding: 6px 12px; border-radius: 8px; box-sizing: border-box;">
+                <div class="dash-top-chart-card" style="height: var(--c1-card, 222px); max-height: var(--c1-card, 222px); margin-bottom: 8px; padding: 6px 12px; border-radius: 8px; box-sizing: border-box;">
                     <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important; margin-bottom: 2px !important; padding:2px 0 !important; border-bottom:none !important;">
                         <h4 class="dash-chart-title" style="margin:0 !important; font-size:12.5px; font-weight:700;">
                             Target vs Achievement
@@ -539,12 +539,12 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
                             <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#16a34a; border-radius:50%;"></span> Achievement</span>
                         </div>
                     </div>
-                    <div class="dash-top-chart-body" style="height: 184px !important; max-height: 184px !important;">
+                    <div class="dash-top-chart-body" style="height: var(--c1-body, 184px) !important; max-height: var(--c1-body, 184px) !important;">
                         <canvas id="lineChartTargetAchieve" height="184"></canvas>
                     </div>
                 </div>
 
-                <div class="dash-top-chart-card" style="height: 222px; max-height: 222px; margin-bottom: 0px; padding: 6px 12px; border-radius: 8px; box-sizing: border-box;">
+                <div class="dash-top-chart-card" style="height: var(--c1-card, 222px); max-height: var(--c1-card, 222px); margin-bottom: 0px; padding: 6px 12px; border-radius: 8px; box-sizing: border-box;">
                     <div class="dash-chart-header" style="display:flex !important; justify-content:space-between !important; align-items:center !important; width:100% !important; margin-bottom: 2px !important; padding:2px 0 !important; border-bottom:none !important;">
                         <h4 class="dash-chart-title" style="margin:0 !important; font-size:12.5px; font-weight:700;">
                             Target vs Projection
@@ -554,14 +554,14 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
                             <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#0072f0; border-radius:50%;"></span> Projection</span>
                         </div>
                     </div>
-                    <div class="dash-top-chart-body" style="height: 184px !important; max-height: 184px !important;">
+                    <div class="dash-top-chart-body" style="height: var(--c1-body, 184px) !important; max-height: var(--c1-body, 184px) !important;">
                         <canvas id="lineChartTargetProject" height="184"></canvas>
                     </div>
                 </div>
             </div>
 
             <div class="col-lg-4 col-md-5 col-xs-12" style="padding-left: 6px; padding-right: 10px;">
-                <div class="dash-round-card" style="width: 100%; min-height: 289px; margin-bottom: 8px; padding: 8px 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
+                <div class="dash-round-card" style="width: 100%; min-height: var(--c1-ring, 289px); margin-bottom: 8px; padding: 8px 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
                     <div class="dash-round-title" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0; font-size:13px; font-weight:700;">
                         <span>My Leads</span>
                         <div class="dash-round-meta" style="display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; color:#64748b;">
@@ -573,7 +573,7 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
                     </div>
                 </div>
 
-                <div class="dash-round-card" style="width: 100%; min-height: 289px; margin-bottom: 0px; padding: 8px 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
+                <div class="dash-round-card" style="width: 100%; min-height: var(--c1-ring, 289px); margin-bottom: 0px; padding: 8px 12px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
                     <div class="dash-round-title" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0; font-size:13px; font-weight:700;">
                         <span>My Orders</span>
                         <div class="dash-round-meta" style="display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; color:#64748b;">
@@ -586,6 +586,45 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
                 </div>
             </div>
         </div>
+<script>
+// Top area fits the screen when it is short (for example with the bookmark bar showing). Never larger than the normal size.
+(function () {
+    var row = document.getElementById('c1TopRow');
+    if (!row) return;
+    var chart = row.querySelector('.dash-top-chart-card');
+    var MIN = 150, MAX = 222, SPARE = 14, cur = 0;
+    function scrolled() { return (document.body.scrollTop || 0) + (window.pageYOffset || 0) > 0; }
+    function clamp(v) { return Math.max(MIN, Math.min(MAX, v)); }
+    function clear() { cur = 0; row.style.removeProperty('--c1-card'); row.style.removeProperty('--c1-body'); row.style.removeProperty('--c1-ring'); }
+    function apply(card) {
+        cur = card;
+        if (card >= MAX) { clear(); cur = MAX; return; }
+        row.style.setProperty('--c1-card', card + 'px');
+        row.style.setProperty('--c1-body', (card - 38) + 'px');
+        row.style.setProperty('--c1-ring', (card + 67) + 'px');
+    }
+    function fit(redraw) {
+        if (scrolled()) return;
+        var z = parseFloat(getComputedStyle(document.body).zoom) || 1, before = cur;
+        if (!chart || !window.matchMedia('(min-width: 992px)').matches) { clear(); return; }
+        // Left column: tiles, chart, 8px, chart. Right column: two rings of the same total height.
+        var rowTop = row.getBoundingClientRect().top / z;
+        var tiles = (chart.getBoundingClientRect().top / z) - rowTop;
+        var avail = (window.innerHeight / z) - rowTop - SPARE;
+        apply(clamp(Math.floor((avail - tiles - 8) / 2)));
+        // Check against the real layout and shrink if anything still runs past the screen.
+        var bottom = 0, kids = row.children;
+        for (var i = 0; i < kids.length; i++) bottom = Math.max(bottom, kids[i].getBoundingClientRect().bottom);
+        var over = (bottom - window.innerHeight) / z + SPARE;
+        if (over > 0) apply(clamp(cur - Math.ceil(over / 2)));
+        // Charts drawn before a late change need a redraw at the new height.
+        if (redraw === true && cur !== before) window.dispatchEvent(new Event('resize'));
+    }
+    fit();
+    $(window).on('resize orientationchange', function () { fit(); });
+    $(window).on('load', function () { fit(true); setTimeout(function () { fit(true); }, 600); });
+})();
+</script>
 
 <div class="dash-section-divider" style="margin-top: 28px; margin-bottom: 14px;">
             <h3 class="dash-section-title" style="margin-bottom:0;">
