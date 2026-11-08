@@ -678,3 +678,13 @@ input[type="checkbox"]:not(.full-screen-dash *), input[type="radio"]:not(.full-s
 @media (max-width: 480px) {
   .header-quick-actions.hqa-left { gap: 2px !important; }
 }
+
+/* Header logo: trimmed logo for light mode, white-ink copy for dark mode */
+.main-header .main-logo img.logo-dark,
+.crm-sidebar-header img.logo-dark { display: none !important; }
+.main-header .main-logo img.logo-light,
+.crm-sidebar-header img.logo-light { display: block !important; }
+html[data-theme="dark"] .main-header .main-logo img.logo-light,
+html[data-theme="dark"] .crm-sidebar-header img.logo-light { display: none !important; }
+html[data-theme="dark"] .main-header .main-logo img.logo-dark,
+html[data-theme="dark"] .crm-sidebar-header img.logo-dark { display: block !important; }

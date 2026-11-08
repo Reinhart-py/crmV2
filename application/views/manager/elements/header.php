@@ -57,7 +57,8 @@
 <script src="<?php echo base_url();?>assets/plugins/table_export/js/tableexport.js"></script>
 <link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/jQueryUI/jquery-ui.css?v=20261107">
 <script src="<?php echo base_url();?>assets/bootstrap/js/jquery.validate.js"></script>
-<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-theme.css?v=20261107_5">
+<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-theme.css?v=20261108_1">
+<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-modes.css?v=20261108_4">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-search.css?v=20261107_4">
 <script src="<?php echo base_url();?>assets/dist/js/crm-search.js?v=20261107_2" defer></script>
 
@@ -86,7 +87,8 @@
 
   <div class="main-logo">
     <a href="<?php echo base_url(); ?>manager/dashboard"> 
-      <img src="<?php echo base_url(); ?>assets/logo.png" alt="7 Strokes" />
+      <img src="<?php echo base_url(); ?>assets/logo-header.png" alt="7 Strokes" class="logo-light" />
+      <img src="<?php echo base_url(); ?>assets/logo-header-dark.png" alt="7 Strokes" class="logo-dark" />
     </a> 
   </div>
 
@@ -655,7 +657,8 @@ $(function() {
 <aside class="main-sidebar"> 
   
   <div class="crm-sidebar-header">
-    <img src="<?php echo base_url(); ?>assets/logo.png" alt="7 Strokes" />
+    <img src="<?php echo base_url(); ?>assets/logo-header.png" alt="7 Strokes" class="logo-light" />
+    <img src="<?php echo base_url(); ?>assets/logo-header-dark.png" alt="7 Strokes" class="logo-dark" />
     <button type="button" class="crm-sidebar-close" id="crmSidebarClose" aria-label="Close navigation">&times;</button>
   </div>
   
