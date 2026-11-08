@@ -2444,7 +2444,14 @@ $(function () {
 .dash-c2 .c3-pct-bar em { position: absolute; top: -3px; width: 2px; height: 13px; margin-left: -1px; background: #0072f0; border-radius: 1px; }
 .dash-c2 .c3-pct-pro { color: #0072f0; }
 @media (max-width: 1279px) { .dash-c2 .c3-pct-pro { display: none; } .dash-c2 .c3-pct-bar { width: 70px; } }
-@media (max-width: 520px) { .dash-c2 .c3-pct-bar { display: none; } .dash-c2 .c3-pct { margin: 0 6px; } }
+/* Narrow screens: the % goes on its own line under the title and the card grows, so the chart is not cut. */
+@media (max-width: 991px) {
+    .dash-c2 .c3-toprow-pct, .dash-c2 .c2-toprow .dash-top-chart-card { height: auto !important; max-height: none !important; }
+    .dash-c2 .c2-toprow .dash-chart-header { flex-wrap: wrap; row-gap: 4px; }
+    .dash-c2 .c3-pct { order: 3; flex: 1 0 100%; margin: 0; }
+    .dash-c2 .c3-pct-pro { display: inline; }
+    .dash-c2 .c3-pct-bar { width: 110px; }
+}
 
 .dash-c2 .c3-pipe-row { margin-left: 0; margin-right: 0; }
 .dash-c2 .c3-col-l { padding-left: 14px; padding-right: 4px; }

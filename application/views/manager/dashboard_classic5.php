@@ -2005,10 +2005,15 @@ $(function () {
     function barIndex(chart, bars) { return (chart && chart.datasets && chart.datasets[0] && bars && bars.length) ? chart.datasets[0].bars.indexOf(bars[0]) : -1; }
     var shortScale = "<%= Number(value) >= 1000000 ? (Number(value) / 1000000).toLocaleString() + 'M' : (Number(value) >= 1000 ? (Number(value) / 1000).toLocaleString() + 'K' : Number(value).toLocaleString()) %>";
 
+    // Classic 5: chart text and grid colours follow light / dark mode.
+    function c5Dark() { return document.documentElement.getAttribute('data-theme') === 'dark'; }
+    function c5Ink() { return c5Dark() ? '#cbd5e1' : '#1e293b'; }
+    function c5Grid() { return c5Dark() ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.04)'; }
+
     var chartOptions = {
         scaleBeginAtZero: true,
         scaleShowGridLines: true,
-        scaleGridLineColor: 'rgba(0,0,0,.04)',
+        scaleGridLineColor: c5Grid(),
         scaleGridLineWidth: 1,
         scaleShowHorizontalLines: true,
         scaleShowVerticalLines: false,
@@ -2020,7 +2025,7 @@ $(function () {
         maintainAspectRatio: false,
         scaleFontSize: isMobileAndroid ? 10 : 12,
         scaleFontStyle: '600',
-        scaleFontColor: '#1e293b',
+        scaleFontColor: c5Ink(),
         scaleFontFamily: "'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif"
     };
 
@@ -2207,10 +2212,10 @@ $(function () {
             pointDot: true,
             pointDotRadius: 3,
             datasetStrokeWidth: 2,
-            scaleGridLineColor: 'rgba(0,0,0,.04)',
+            scaleGridLineColor: c5Grid(),
             scaleFontSize: isMobileAndroid ? 10 : 12,
             scaleFontStyle: '600',
-            scaleFontColor: '#0f172a',
+            scaleFontColor: c5Ink(),
             scaleLabel: "<%= Number(value).toLocaleString() %>"
         }));
     }
@@ -2251,10 +2256,10 @@ $(function () {
             pointDot: true,
             pointDotRadius: 3,
             datasetStrokeWidth: 2,
-            scaleGridLineColor: 'rgba(0,0,0,.04)',
+            scaleGridLineColor: c5Grid(),
             scaleFontSize: isMobileAndroid ? 10 : 12,
             scaleFontStyle: '600',
-            scaleFontColor: '#0f172a',
+            scaleFontColor: c5Ink(),
             scaleLabel: "<%= Number(value).toLocaleString() %>"
         }));
     }
@@ -2320,10 +2325,10 @@ $(function () {
             data = [{ value: 1, color: '#e2e8f0', label: 'Empty' }];
         } else {
             if (m > 0) data.push({ value: m, color: '#dc2626', label: 'All Missed' });
-            if (l > 0) data.push({ value: l, color: '#f97316', label: 'Last 7 Days' });
-            if (t > 0) data.push({ value: t, color: '#0ea5e9', label: 'Today' });
+            if (l > 0) data.push({ value: l, color: '#ea580c', label: 'Last 7 Days' });
+            if (t > 0) data.push({ value: t, color: '#0284c7', label: 'Today' });
             if (n > 0) data.push({ value: n, color: '#2563eb', label: 'Next 7 Days' });
-            if (f > 0) data.push({ value: f, color: '#16a34a', label: 'All Future' });
+            if (f > 0) data.push({ value: f, color: '#15803d', label: 'All Future' });
         }
         var chartInst = new Chart(ctx).Doughnut(data, {
             percentageInnerCutout: 52,
@@ -2614,13 +2619,20 @@ $(function () {
 .dash-c2 .c3-pct { display: inline-flex; align-items: center; gap: 7px; margin: 0 10px; min-width: 0; font-size: 10.5px; font-weight: 600; color: #475569; white-space: nowrap; }
 .dash-c2 .c3-pct-lbl b { color: #0f172a; font-size: 11.5px; }
 .dash-c2 .c3-pct-lbl b.is-met { color: #16a34a; }
-.dash-c2 .c3-pct-none { color: #94a3b8; }
+.dash-c2 .c3-pct-none { color: #64748b; }
 .dash-c2 .c3-pct-bar { position: relative; width: 110px; height: 7px; border-radius: 999px; background: #e2e8f0; }
 .dash-c2 .c3-pct-bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; background: linear-gradient(90deg, #22c55e, #16a34a); }
 .dash-c2 .c3-pct-bar em { position: absolute; top: -3px; width: 2px; height: 13px; margin-left: -1px; background: #0072f0; border-radius: 1px; }
 .dash-c2 .c3-pct-pro { color: #0072f0; }
 @media (max-width: 1279px) { .dash-c2 .c3-pct-pro { display: none; } .dash-c2 .c3-pct-bar { width: 70px; } }
-@media (max-width: 520px) { .dash-c2 .c3-pct-bar { display: none; } .dash-c2 .c3-pct { margin: 0 6px; } }
+/* Narrow screens: the % goes on its own line under the title and the card grows, so the chart is not cut. */
+@media (max-width: 991px) {
+    .dash-c2 .c3-toprow-pct, .dash-c2 .c2-toprow .dash-top-chart-card { height: auto !important; max-height: none !important; }
+    .dash-c2 .c2-toprow .dash-chart-header { flex-wrap: wrap; row-gap: 4px; }
+    .dash-c2 .c3-pct { order: 3; flex: 1 0 100%; margin: 0; }
+    .dash-c2 .c3-pct-pro { display: inline; }
+    .dash-c2 .c3-pct-bar { width: 110px; }
+}
 
 .dash-c2 .c3-pipe-row { margin-left: 0; margin-right: 0; }
 .dash-c2 .c3-col-l { padding-left: 14px; padding-right: 4px; }
@@ -2646,10 +2658,10 @@ $(function () {
 .dash-c2 .c3-s2 { border-top: 3px solid #0072f0; } .dash-c2 .c3-s2 .c3-step-name i { color: #0072f0; } .dash-c2 .c3-s2 .c3-step-bar i { background: #0072f0; }
 .dash-c2 .c3-s3 { border-top: 3px solid #0f8a80; } .dash-c2 .c3-s3 .c3-step-name i { color: #0f8a80; } .dash-c2 .c3-s3 .c3-step-bar i { background: #0f8a80; }
 .dash-c2 .c3-s4 { border-top: 3px solid #16a34a; } .dash-c2 .c3-s4 .c3-step-name i { color: #16a34a; } .dash-c2 .c3-s4 .c3-step-bar i { background: #16a34a; }
-.dash-c2 .c3-arrow { flex: none; display: flex; align-items: center; justify-content: center; width: 22px; color: #94a3b8; }
+.dash-c2 .c3-arrow { flex: none; display: flex; align-items: center; justify-content: center; width: 22px; color: #64748b; }
 .dash-c2 .c3-arrow i { font-size: 20px; line-height: 1; }
 .dash-c2 .c3-arrow span { font-size: 10.5px; font-weight: 700; color: #475569; }
-.dash-c2 .c3-note { margin-top: 8px; font-size: 10.5px; color: #94a3b8; }
+.dash-c2 .c3-note { margin-top: 8px; font-size: 10.5px; color: #64748b; }
 .dash-c2 .c3-clo { width: 100%; border-collapse: collapse; font-size: 12px; }
 .dash-c2 .c3-clo th { font-size: 10.5px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .03em; text-align: center; padding: 0 4px 6px; }
 .dash-c2 .c3-clo td { padding: 5px 4px; border-top: 1px solid #eef2f7; color: #334155; font-weight: 600; }
@@ -2688,6 +2700,20 @@ $(function () {
     });
     try { var sc = localStorage.getItem('crm_c5_pipe_scope'); if (sc === 'my') $('.c5-scope button[data-scope="my"]').trigger('click'); } catch (e) {}
     $('#c5Refresh').on('click', function () { $(this).find('i').addClass('fa-spin'); location.reload(); });
+    // Charts already drawn take the new text colour when light / dark mode is switched.
+    function c5ChartColours() {
+        if (!window.Chart || !Chart.instances) return;
+        var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+        var ink = dark ? '#cbd5e1' : '#1e293b', grid = dark ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.04)';
+        $.each(Chart.instances, function (id, ch) {
+            if (!ch || !ch.scale) return;
+            ch.scale.textColor = ink; ch.scale.gridLineColor = grid;
+            ch.options.scaleFontColor = ink; ch.options.scaleGridLineColor = grid;
+            ch.update();
+        });
+    }
+    if (window.MutationObserver) new MutationObserver(c5ChartColours).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    $(window).on('load', function () { setTimeout(c5ChartColours, 50); });
     $('#c2Root .dash-section-divider[id]').each(function () {
         var id = this.id;
         $(this).nextUntil('.dash-section-divider').addClass('c5-in-' + id);
@@ -2696,18 +2722,19 @@ $(function () {
 </script>
 <style>
 /* Classic 5 only. */
-/* 2. One set of status colours: missed red, last 7 days orange, today sky blue, next 7 days blue, future green. */
+/* 2. One set of status colours: missed red, last 7 days orange, today sky blue, next 7 days blue, future green.
+   Deep enough that white numbers on them stay readable in light and dark mode. */
 .dash-c5 .badge.bg-red, .dash-c5 .crm-modern-stat-chip .badge.bg-red { background: #dc2626 !important; background-color: #dc2626 !important; color: #fff !important; }
-.dash-c5 .badge.bg-orange, .dash-c5 .crm-modern-stat-chip .badge.bg-orange { background: #f97316 !important; background-color: #f97316 !important; color: #fff !important; }
-.dash-c5 .badge.bg-skyblue, .dash-c5 .crm-modern-stat-chip .badge.bg-skyblue { background: #0ea5e9 !important; background-color: #0ea5e9 !important; color: #fff !important; }
+.dash-c5 .badge.bg-orange, .dash-c5 .crm-modern-stat-chip .badge.bg-orange { background: #ea580c !important; background-color: #ea580c !important; color: #fff !important; }
+.dash-c5 .badge.bg-skyblue, .dash-c5 .crm-modern-stat-chip .badge.bg-skyblue { background: #0284c7 !important; background-color: #0284c7 !important; color: #fff !important; }
 .dash-c5 .badge.bg-blue, .dash-c5 .crm-modern-stat-chip .badge.bg-blue { background: #2563eb !important; background-color: #2563eb !important; color: #fff !important; }
-.dash-c5 .badge.bg-green, .dash-c5 .crm-modern-stat-chip .badge.bg-green { background: #16a34a !important; background-color: #16a34a !important; color: #fff !important; }
+.dash-c5 .badge.bg-green, .dash-c5 .crm-modern-stat-chip .badge.bg-green { background: #15803d !important; background-color: #15803d !important; color: #fff !important; }
 .dash-c5 .crm-seg-bar .crm-seg { opacity: 1 !important; }
 .dash-c5 .crm-seg-bar .crm-seg.seg-missed { background: #dc2626 !important; }
-.dash-c5 .crm-seg-bar .crm-seg.seg-last7 { background: #f97316 !important; }
-.dash-c5 .crm-seg-bar .crm-seg.seg-today { background: #0ea5e9 !important; }
+.dash-c5 .crm-seg-bar .crm-seg.seg-last7 { background: #ea580c !important; }
+.dash-c5 .crm-seg-bar .crm-seg.seg-today { background: #0284c7 !important; }
 .dash-c5 .crm-seg-bar .crm-seg.seg-next7 { background: #2563eb !important; }
-.dash-c5 .crm-seg-bar .crm-seg.seg-future { background: #16a34a !important; }
+.dash-c5 .crm-seg-bar .crm-seg.seg-future { background: #15803d !important; }
 
 /* 3. One colour per section: card top line, heading mark and the dot in the section bar. */
 .dash-c5 { --c5-pipe: #0072f0; --c5-team: #7c3aed; --c5-act: #0f8a80; --c5-db: #0891b2; --c5-ord: #ea580c; --c5-ach: #16a34a; }
@@ -2741,9 +2768,9 @@ $(function () {
 .dash-c5 .c5-attn-i.c5-sky { background: #f0f9ff; border-color: #bae6fd; color: #0369a1; }
 .dash-c5 .c5-attn-i.c5-orange { background: #fff7ed; border-color: #fed7aa; color: #c2410c; }
 .dash-c5 .c5-attn-i.c5-blue { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
-.dash-c5 .c5-attn-i.is-zero { background: transparent; border-color: #e2e8f0; color: #94a3b8; }
+.dash-c5 .c5-attn-i.is-zero { background: transparent; border-color: #e2e8f0; color: #64748b; }
 .dash-c5 a.c5-attn-i:hover { filter: brightness(.96); }
-.dash-c5 .c5-upd { flex: none; font-size: 11px; font-weight: 600; color: #94a3b8; white-space: nowrap; }
+.dash-c5 .c5-upd { flex: none; font-size: 11px; font-weight: 600; color: #64748b; white-space: nowrap; }
 .dash-c5 .c5-refresh { flex: none; width: 24px; height: 22px; padding: 0; border: 1px solid #cbd5e1; border-radius: 5px; background: #fff; color: #334155; cursor: pointer; }
 .dash-c5 .c5-refresh:hover { background: #f1f5f9; }
 @media (max-width: 1499px) { .dash-c5 .c5-attn-i span { display: none; } }
@@ -2752,8 +2779,8 @@ $(function () {
 
 /* 8. Change against last month on the tiles. */
 .dash-c5 .c5-chg { display: inline-block; margin-left: 4px; padding: 0 5px; border-radius: 999px; font-size: 9.5px; font-weight: 700; line-height: 15px; vertical-align: 1px; background: rgba(255, 255, 255, .2); color: #fff; white-space: nowrap; }
-.dash-c5 .c5-chg.is-up { background: rgba(134, 239, 172, .28); }
-.dash-c5 .c5-chg.is-down { background: rgba(254, 202, 202, .3); }
+.dash-c5 .c5-chg.is-up { background: rgba(21, 128, 61, .75); }
+.dash-c5 .c5-chg.is-down { background: rgba(185, 28, 28, .7); }
 
 /* 9. My / Team on the pipeline. */
 .dash-c5 .c5-scope { display: inline-flex; padding: 2px; border: 1px solid #cbd5e1; border-radius: 999px; background: #fff; }
@@ -2776,8 +2803,8 @@ $(function () {
 .dash-c5 .c5-card .card-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 10px; }
 .dash-c5 .c5-card .card-total-pill { flex: none; white-space: nowrap; }
 .dash-c5 .c5-card .card-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-.dash-c5 .c5-note { margin-top: auto; padding-top: 8px; font-size: 10.5px; color: #94a3b8; }
-.dash-c5 .c5-empty { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 120px; font-size: 12px; font-weight: 600; color: #94a3b8; }
+.dash-c5 .c5-note { margin-top: auto; padding-top: 8px; font-size: 10.5px; color: #64748b; }
+.dash-c5 .c5-empty { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 120px; font-size: 12px; font-weight: 600; color: #64748b; }
 .dash-c5 .c5-lb { list-style: none; margin: 0; padding: 0; }
 .dash-c5 .c5-lb li { display: flex; gap: 8px; align-items: flex-start; padding: 5px 0; border-top: 1px solid #eef2f7; }
 .dash-c5 .c5-lb li:first-child { border-top: 0; }
@@ -2799,7 +2826,7 @@ $(function () {
 .dash-c5 .c5-ag { padding: 6px 0; }
 .dash-c5 .c5-ag-top { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; color: #334155; }
 .dash-c5 .c5-ag-top b { color: #0f172a; font-size: 13px; }
-.dash-c5 .c5-ag-top em { font-style: normal; font-size: 10.5px; color: #94a3b8; margin-left: 4px; }
+.dash-c5 .c5-ag-top em { font-style: normal; font-size: 10.5px; color: #64748b; margin-left: 4px; }
 .dash-c5 .c5-ag-ok .c5-ag-bar i { background: #16a34a; }
 .dash-c5 .c5-ag-mid .c5-ag-bar i { background: #f97316; }
 .dash-c5 .c5-ag-old .c5-ag-bar i { background: #dc2626; }
@@ -2810,13 +2837,13 @@ $(function () {
 .dash-c5 .c5-ytd-who { font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: #64748b; margin-bottom: 4px; }
 .dash-c5 .c5-ytd-figs { display: flex; gap: 18px; flex-wrap: wrap; }
 .dash-c5 .c5-ytd-figs > div { display: flex; flex-direction: column; }
-.dash-c5 .c5-ytd-figs span { font-size: 10.5px; font-weight: 600; color: #94a3b8; }
+.dash-c5 .c5-ytd-figs span { font-size: 10.5px; font-weight: 600; color: #64748b; }
 .dash-c5 .c5-ytd-figs b { font-size: 16px; font-weight: 800; color: #0f172a; }
 .dash-c5 .c5-ytd-figs b.is-met { color: #16a34a; }
 .dash-c5 .c5-ytd-bar { width: 100%; margin: 8px 0 6px; }
 .dash-c5 .c5-ytd-line { font-size: 11.5px; color: #64748b; }
 .dash-c5 .c5-ytd-line b { color: #0f172a; }
-.dash-c5 .c5-dot { margin: 0 6px; color: #cbd5e1; }
+.dash-c5 .c5-dot { margin: 0 6px; color: #94a3b8; }
 
 /* 13. Softer navy and teal tiles, with a thin light edge at the top. */
 .dash-c5 .dash-kpi-col1, .dash-c5 .dash-kpi-col2 { background: linear-gradient(135deg, rgba(49, 82, 168, .66) 0%, rgba(36, 60, 128, .88) 100%), #253c80 url("<?php echo base_url(); ?>assets/background-auth.jpg") 30% 40% / 460px auto no-repeat !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 4px 12px rgba(36, 60, 128, .2) !important; }
@@ -2830,6 +2857,7 @@ $(function () {
 .dash-c5 .c3-clo tbody tr:hover td { background: rgba(241, 245, 249, .8); }
 
 /* Dark mode. */
+[data-theme="dark"] .dash-c5 .dash-chart-legend, [data-theme="dark"] .dash-c5 .dash-chart-legend span { color: #cbd5e1 !important; }
 [data-theme="dark"] .dash-c5 .c5-attn-i.c5-red { background: rgba(220, 38, 38, .15); border-color: rgba(248, 113, 113, .35); color: #fca5a5; }
 [data-theme="dark"] .dash-c5 .c5-attn-i.c5-sky { background: rgba(14, 165, 233, .15); border-color: rgba(56, 189, 248, .35); color: #7dd3fc; }
 [data-theme="dark"] .dash-c5 .c5-attn-i.c5-orange { background: rgba(249, 115, 22, .15); border-color: rgba(251, 146, 60, .35); color: #fdba74; }
@@ -2844,6 +2872,7 @@ $(function () {
 [data-theme="dark"] .dash-c5 .c5-lb-amt, [data-theme="dark"] .dash-c5 .c5-ag-top { color: #cbd5e1; }
 [data-theme="dark"] .dash-c5 .c5-ytd-figs b.is-met { color: #4ade80; }
 [data-theme="dark"] .dash-c5 .c5-spark-dot { fill: #111827; }
+[data-theme="dark"] .dash-c5 .c2-empty-ring { stroke: #334155; }
 [data-theme="dark"] .dash-c5 .c3-clo tbody tr:hover td { background: rgba(31, 41, 55, .8); }
 [data-theme="dark"] .dash-c5 .c3-step:hover { box-shadow: 0 6px 14px rgba(0, 0, 0, .35); }
 </style>
