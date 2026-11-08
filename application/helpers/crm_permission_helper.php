@@ -52,6 +52,9 @@ if (!function_exists('crm_perm_catalog')) {
 					'all_data' => array('label' => 'All company data', 'desc' => 'See and choose anyone\'s records in reports, Assign Database, Import and transfers, not only own team', 'levels' => 'r'),
 					'support_desk' => array('label' => 'Support desk', 'desc' => 'Handle every ticket as support staff and get open-ticket alerts', 'levels' => 'r'),
 					'start_live' => array('label' => 'Start on Live screen', 'desc' => 'Open the Live Operations Report instead of the Dashboard after sign-in (also needs Live Operations Report)', 'levels' => 'r'),
+					'dash6_company' => array('label' => 'Dashboard: Company view', 'desc' => 'On Classic 6, also open the Admin view (whole company by branch, business category and department)', 'levels' => 'r'),
+					'dash6_backoffice' => array('label' => 'Dashboard: Back Office view', 'desc' => 'On Classic 6, also open the Back Office view (order processing, documents, reviews)', 'levels' => 'r'),
+					'dash6_kam' => array('label' => 'Dashboard: KAM view', 'desc' => 'On Classic 6, also open the KAM view (own clients, contact, upselling)', 'levels' => 'r'),
 				),
 			),
 			'my_zone' => array(

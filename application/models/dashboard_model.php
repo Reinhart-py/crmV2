@@ -27,7 +27,7 @@ class Dashboard_model extends CI_Model {
 	/** Dashboards a user can pick (modern is the default). */
 	public function styles()
 	{
-		return array('modern', 'classic', 'classic2', 'classic3', 'classic5');
+		return array('modern', 'classic', 'classic2', 'classic3', 'classic5', 'classic6');
 	}
 
 	public function set_style($uid, $style)

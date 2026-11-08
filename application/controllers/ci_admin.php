@@ -146,7 +146,7 @@ class Ci_admin extends CI_Controller {
 		$uid = (int)$this->session->userdata('manager_id');
 		// The user's choice: Modern (default), Classic, Classic 2 (a separate copy of Classic) Classic 3 (a separate copy of Classic 2) or Classic 5 (a copy of Classic 3 with extra blocks).
 		$style = $this->dash->get_style($uid);
-		if ($style === 'classic' || $style === 'classic2' || $style === 'classic3' || $style === 'classic5') {
+		if ($style === 'classic' || $style === 'classic2' || $style === 'classic3' || $style === 'classic5' || $style === 'classic6') {
 			return $this->dashboard_classic($style === 'classic' ? false : $style);
 		}
 		$role = (int)$this->session->userdata('manager_role');
@@ -241,10 +241,10 @@ class Ci_admin extends CI_Controller {
 		redirect('manager/dashboard');
 	}
 
-	/** Classic dashboard. Classic 2 / 3 / 5 ($copy) are the same data shown with their own copy of the page (manager/dashboard_classic2.php, _classic3.php, _classic5.php). Classic 5 also loads a few extra blocks. */
+	/** Classic dashboard. Classic 2 / 3 / 5 / 6 ($copy) are the same data shown with their own copy of the page (manager/dashboard_classic2.php, _classic3.php, _classic5.php). Classic 5 also loads a few extra blocks. */
 	public function dashboard_classic($copy = false)
 	{
-		$copy = ($copy === true) ? 'classic2' : (in_array($copy, array('classic2', 'classic3', 'classic5'), true) ? $copy : false);
+		$copy = ($copy === true) ? 'classic2' : (in_array($copy, array('classic2', 'classic3', 'classic5', 'classic6'), true) ? $copy : false);
 	  	$data=array();
 		$data['info']=array(
 			'title'=>'Manager Dashboard'
@@ -299,6 +299,16 @@ class Ci_admin extends CI_Controller {
 			// Extra blocks shown only on Classic 5.
 			$this->load->model('dashboard5_model', 'dash5');
 			$data['c5'] = $this->dash5->extras();
+		}
+		if ($copy === 'classic6') {
+			// Classic 6: the Classic 5 page plus one view per department (?view=a / s / b / k), only the views this user may open.
+			$this->load->model('dashboard5_model', 'dash5');
+			$this->load->model('dashboard6_model', 'dash6');
+			$data['c5'] = $this->dash5->extras();
+			$c6 = $this->dash6->allowed();
+			$v = (string)$this->input->get('view');
+			if (!in_array($v, $c6['views'], true)) $v = in_array($c6['own'], $c6['views'], true) ? $c6['own'] : 's';
+			$data['c6'] = $this->dash6->build($v) + array('views' => $c6['views'], 'own' => $c6['own'], 'names' => $this->dash6->names());
 		}
 
 		$this->load->view($copy ? 'manager/dashboard_' . $copy : 'manager/dashboard',$data);
