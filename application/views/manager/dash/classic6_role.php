@@ -30,6 +30,17 @@ if (!function_exists('c6_h')) {
     }
 }
 ?>
+<?php
+/* Charts (Chart.js, drawn by the script at the end of this file). Sets: [label, colour, values]. */
+$c6_charts = array();
+$c6_chart = function ($id, $title, $icon, $color, $type, $labels, $sets, $isAmt, $note) use (&$c6_charts) {
+    $c6_charts[$id] = array('type' => $type, 'labels' => array_values($labels), 'amt' => $isAmt, 'sets' => array());
+    $leg = '';
+    foreach ($sets as $st) { $c6_charts[$id]['sets'][] = array('label' => $st[0], 'color' => $st[1], 'data' => array_map('floatval', array_values($st[2]))); $leg .= '<span><i style="background:' . $st[1] . ';"></i> ' . c6_h($st[0]) . '</span>'; }
+    return '<div class="col-md-6 col-xs-12"><div class="crm-modern-stat-card c5-card c6-chart-card"><div class="card-top"><h4 class="card-title"><i class="fa ' . $icon . '" style="color:' . $color . ';"></i> ' . $title . '</h4><span class="c6-leg">' . $leg . '</span></div>'
+        . '<div class="c6-chart' . ($isAmt ? ' is-amt' : '') . '"><canvas id="' . $id . '"></canvas></div><div class="c5-note">' . $note . '</div></div></div>';
+};
+?>
 <div id="c2-top" class="c2-anchor"></div>
 <?php if ($c6v === 'a') { $co = $c6['co']; $t = $co['tiles']; $pct = $t['target'] > 0 ? (int)round($t['sales_amt'] / $t['target'] * 100) : null; ?>
 <div class="c6-tiles">
@@ -49,6 +60,14 @@ if (!function_exists('c6_h')) {
         echo c6_tile($m . 'orders/open', 'dash-kpi-col4', number_format(array_sum(array_map(function ($f) { return (int)$f['n']; }, $co['flow']))), 'With Back Office', 'Open orders in processing', 'fa-briefcase');
         ?>
     </div>
+</div>
+
+<?php echo c6_divider('c6-charts', 'Sales and Orders'); $mo = $co['monthly']; ?>
+<div class="row c6-row c6-eq">
+    <?php
+    echo $c6_chart('c6cCoSales', 'Sales vs Target', 'fa-line-chart', '#16a34a', 'bar', $mo['labels'], array(array('Target', '#00c6f0', $mo['target']), array('Sales', '#16a34a', $mo['sales'])), true, 'Whole company, last 6 months (' . $curr . '). ' . (int)array_sum($mo['sales_n']) . ' sales in 6 months.');
+    echo $c6_chart('c6cCoOrders', 'Orders Received per Month', 'fa-bar-chart', '#0072f0', 'bar', $mo['labels'], array(array('Orders', '#0072f0', $mo['orders_in']), array('Sales', '#0f8a80', $mo['sales_n'])), false, 'New orders and sales made each month.');
+    ?>
 </div>
 
 <?php echo c6_divider('c6-branch', 'Branches'); ?>
@@ -189,6 +208,14 @@ if (!function_exists('c6_h')) {
     </div>
 </div>
 
+<?php echo c6_divider('c6-charts', 'Orders per Month'); $mo = $bo['monthly']; ?>
+<div class="row c6-row c6-eq">
+    <?php
+    echo $c6_chart('c6cBoMonth', 'Received, Completed and Cancelled', 'fa-bar-chart', '#0072f0', 'bar', $mo['labels'], array(array('Received', '#0072f0', $mo['received']), array('Completed', '#16a34a', $mo['completed']), array('Cancelled', '#dc2626', $mo['cancelled'])), false, 'Last 6 months. Completed = order became a sale.');
+    echo $c6_chart('c6cBoDone', 'Completed against Received', 'fa-line-chart', '#16a34a', 'line', $mo['labels'], array(array('Completed', '#16a34a', $mo['completed']), array('Received', '#0072f0', $mo['received'])), false, 'Completed should keep up with received.');
+    ?>
+</div>
+
 <?php echo c6_divider('c6-orders', 'Order Processing'); ?>
 <div class="row c5-team-row">
     <div class="col-lg-3 col-sm-6 col-xs-12">
@@ -319,6 +346,14 @@ if (!function_exists('c6_h')) {
         echo c6_tile($m . 'orders/pending_sales_approval', 'dash-kpi-col4', number_format($km['wait']['onboarding'] + $km['wait']['approval']), 'Waiting on KAM', $km['wait']['onboarding'] . ' onboarding, ' . $km['wait']['approval'] . ' approval', 'fa-share');
         ?>
     </div>
+</div>
+
+<?php echo c6_divider('c6-charts', 'Upselling per Month'); $mo = $km['monthly']; ?>
+<div class="row c6-row c6-eq">
+    <?php
+    echo $c6_chart('c6cKmUp', 'Upselling Sales', 'fa-line-chart', '#16a34a', 'bar', $mo['labels'], array(array('Upselling sales', '#16a34a', $mo['upsell'])), true, 'Sales on my clients after onboarding, last 6 months (' . $curr . '). ' . (int)array_sum($mo['upsell_n']) . ' sales.');
+    echo $c6_chart('c6cKmOrd', 'Orders from My Clients', 'fa-bar-chart', '#0072f0', 'bar', $mo['labels'], array(array('Orders', '#0072f0', $mo['orders']), array('Upselling sales', '#0f8a80', $mo['upsell_n'])), false, 'All new orders on my clients each month.');
+    ?>
 </div>
 
 <?php echo c6_divider('c6-clients', 'My Clients'); ?>
@@ -476,3 +511,52 @@ echo c6_divider('c6-track', 'Follow-ups and Meetings');
     </div>
     <?php } ?>
 </div>
+<script>
+var c6Charts = <?php echo json_encode($c6_charts); ?>, c6Curr = <?php echo json_encode($curr); ?>;
+$(function () {
+    // Classic 6 charts (Chart.js 1.x). Text and grid follow light / dark mode and are redrawn when the mode changes.
+    var drawn = [];
+    function dark() { return document.documentElement.getAttribute('data-theme') === 'dark' || document.body.getAttribute('data-theme') === 'dark'; }
+    function rgba(hex, a) { var n = parseInt(hex.slice(1), 16); return 'rgba(' + (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')'; }
+    window.c6Short = function (v) { v = Number(v); return v >= 1000000 ? (v / 1000000).toFixed(1).replace('.0', '') + 'M' : (v >= 1000 ? Math.round(v / 1000) + 'k' : v.toLocaleString()); };
+    function draw() {
+        if (typeof Chart === 'undefined') return;
+        $.each(drawn, function (i, c) { c.destroy(); }); drawn = [];
+        var dk = dark();
+        $.each(c6Charts, function (id, c) {
+            var el = document.getElementById(id); if (!el) return;
+            var line = c.type === 'line';
+            var data = { labels: c.labels, datasets: $.map(c.sets, function (s) {
+                return line ? { label: s.label, fillColor: rgba(s.color, .12), strokeColor: s.color, pointColor: s.color, pointStrokeColor: dk ? '#111827' : '#fff', data: s.data }
+                            : { label: s.label, fillColor: rgba(s.color, .82), strokeColor: s.color, highlightFill: s.color, highlightStroke: s.color, data: s.data };
+            }) };
+            var o = { responsive: true, maintainAspectRatio: false, animation: false, scaleBeginAtZero: true,
+                scaleFontColor: dk ? '#cbd5e1' : '#1e293b', scaleFontSize: 11, scaleFontStyle: '600', scaleGridLineColor: dk ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.05)',
+                scaleShowVerticalLines: false, barValueSpacing: 8, barDatasetSpacing: 1, barStrokeWidth: 1, bezierCurveTension: .3, pointDotRadius: 3, datasetStrokeWidth: 2 };
+            if (c.amt) {
+                o.scaleLabel = "<%= window.c6Short(value) %>";
+                o.tooltipTemplate = "<%if (label){%><%=label%>: <%}%>" + c6Curr + " <%= Number(value).toLocaleString() %>";
+                o.multiTooltipTemplate = "<%= datasetLabel %>: " + c6Curr + " <%= Number(value).toLocaleString() %>";
+            } else {
+                o.multiTooltipTemplate = "<%= datasetLabel %>: <%= value %>";
+            }
+            var ctx = el.getContext('2d');
+            drawn.push(line ? new Chart(ctx).Line(data, o) : new Chart(ctx).Bar(data, o));
+        });
+    }
+    draw();
+    if (window.MutationObserver) {
+        var mo = new MutationObserver(function () { draw(); });
+        mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+        mo.observe(document.body, { attributes: true, attributeFilter: ['data-theme'] });
+    }
+});
+</script>
+<style>
+.dash-c6 .c6-chart { position: relative; height: 200px; margin-top: 4px; }
+.dash-c6 .c6-leg { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px 10px; font-size: 10.5px; font-weight: 600; color: #475569; }
+.dash-c6 .c6-leg span { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.dash-c6 .c6-leg i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
+[data-theme="dark"] .dash-c6 .c6-leg { color: #cbd5e1; }
+.dash-c6.c2-hidden .c6-chart.is-amt canvas { filter: blur(6px); }
+</style>

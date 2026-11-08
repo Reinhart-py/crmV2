@@ -141,6 +141,26 @@ class Dashboard6_model extends CI_Model {
 
 	/* ---------------------------------------------------------------- 6A: whole company */
 
+	/** Last 6 calendar months, oldest first: ym, label, first day. */
+	private function months6()
+	{
+		$out = array();
+		for ($i = 5; $i >= 0; $i--) {
+			$t = strtotime(date('Y-m-01') . " -$i months");
+			$out[date('Y-m', $t)] = array('ym' => date('Y-m', $t), 'label' => date('M-y', $t));
+		}
+		return $out;
+	}
+
+	/** Fill a list of month keys from rows (k => value), zero where missing. */
+	private function by_month($months, $rows, $col, $float = false)
+	{
+		$v = array();
+		foreach ($months as $k => $mo) $v[$k] = 0;
+		foreach ($rows as $r) { if (isset($v[$r['k']])) $v[$r['k']] = $float ? round((float)$r[$col], 2) : (int)$r[$col]; }
+		return array_values($v);
+	}
+
 	public function company()
 	{
 		$win = $this->dash->month_window(date('Y-m'));
@@ -234,6 +254,17 @@ class Dashboard6_model extends CI_Model {
 		// Department health: Back Office queue and KAM contact.
 		$kam = $this->kam_summary($this->dash->kam_clients($this->uid, true));
 
+		// Charts: last 6 months, sales against target and orders received.
+		$mo = $this->months6(); $m1 = reset($mo); $m1 = $m1['ym'] . '-01 00:00:00';
+		$sd = "COALESCE(O.sales_converted_at, O.created_at)";
+		$ms = $this->db->query("SELECT DATE_FORMAT($sd, '%Y-%m') AS k, COUNT(*) AS n, SUM(O.pricing_amount) AS amt
+			FROM ci_orders O WHERE " . crm_order_is_sale_sql('O') . " AND $sd >= '$m1' GROUP BY k")->result_array();
+		$mi = $this->db->query("SELECT DATE_FORMAT(O.created_at, '%Y-%m') AS k, COUNT(*) AS n FROM ci_orders O WHERE O.created_at >= '$m1' GROUP BY k")->result_array();
+		$mt = $this->db->query("SELECT period_month AS k, SUM(target_amount) AS amt FROM ci_hr_targets WHERE status = 'Active' AND period_month IN ('" . implode("','", array_keys($mo)) . "') GROUP BY period_month")->result_array();
+		$monthly = array('labels' => array_values(array_map(function ($x) { return $x['label']; }, $mo)),
+			'sales' => $this->by_month($mo, $ms, 'amt', true), 'sales_n' => $this->by_month($mo, $ms, 'n'),
+			'target' => $this->by_month($mo, $mt, 'amt', true), 'orders_in' => $this->by_month($mo, $mi, 'n'));
+
 		// People to check: most missed follow-ups and late tasks first.
 		$track = array_slice(array_values(array_filter($this->dash->tracker($this->team_ids(), $win), function ($r) { return $r['fu_overdue'] > 0 || $r['tasks_late'] > 0; })), 0, 8);
 
@@ -251,6 +282,7 @@ class Dashboard6_model extends CI_Model {
 			'kam' => $kam,
 			'track' => $track,
 			'month' => date('M-y'),
+			'monthly' => $monthly,
 		);
 	}
 
@@ -302,7 +334,16 @@ class Dashboard6_model extends CI_Model {
 		$cat = $this->db->query("SELECT LOWER(COALESCE(NULLIF(vertical_code, ''), 'other')) AS k, COUNT(*) AS n
 			FROM ci_orders O WHERE " . crm_order_open_sql('O') . " AND O.status != 'Cancelled' GROUP BY k ORDER BY n DESC")->result_array();
 
+		// Charts: last 6 months, orders received, completed (made a sale) and cancelled.
+		$mo = $this->months6(); $m1 = reset($mo); $m1 = $m1['ym'] . '-01 00:00:00';
+		$mi = $this->db->query("SELECT DATE_FORMAT(created_at, '%Y-%m') AS k, COUNT(*) AS n FROM ci_orders WHERE created_at >= '$m1' GROUP BY k")->result_array();
+		$md = $this->db->query("SELECT DATE_FORMAT(COALESCE(sales_converted_at, updated_at), '%Y-%m') AS k, COUNT(*) AS n FROM ci_orders WHERE status = 'Sales' AND COALESCE(sales_converted_at, updated_at) >= '$m1' GROUP BY k")->result_array();
+		$mc = $this->db->query("SELECT DATE_FORMAT(COALESCE(updated_at, created_at), '%Y-%m') AS k, COUNT(*) AS n FROM ci_orders WHERE status = 'Cancelled' AND COALESCE(updated_at, created_at) >= '$m1' GROUP BY k")->result_array();
+		$monthly = array('labels' => array_values(array_map(function ($x) { return $x['label']; }, $mo)),
+			'received' => $this->by_month($mo, $mi, 'n'), 'completed' => $this->by_month($mo, $md, 'n'), 'cancelled' => $this->by_month($mo, $mc, 'n'));
+
 		return array(
+			'monthly' => $monthly,
 			'tiles' => array('open' => $open, 'late' => $late, 'mine' => $mine, 'reviews' => $rv, 'done' => $this->dash->orders_done($win)),
 			'flow' => $flow,
 			'late_list' => $this->dash->late_orders(3, 8),
@@ -343,7 +384,9 @@ class Dashboard6_model extends CI_Model {
 		if (!$ids) {
 			// No clients: nothing to count (an empty list must not match orders or tasks with no client).
 			$wait = $this->db->query("SELECT SUM(status = 'Onboarding') AS onboarding, SUM(status = 'Pending Sales Approval') AS approval FROM ci_orders")->row_array();
+			$mo = $this->months6(); $z = array_fill(0, count($mo), 0);
 			return array('sum' => $sum, 'list' => array(), 'upsell' => array('open' => 0, 'sales_n' => 0, 'sales_amt' => 0.0, 'clients' => 0, 'one_service' => 0),
+				'monthly' => array('labels' => array_values(array_map(function ($x) { return $x['label']; }, $mo)), 'upsell' => $z, 'upsell_n' => $z, 'orders' => $z),
 				'wait' => array_map('intval', (array)$wait), 'tasks' => array());
 		}
 		// Upselling: orders on my existing clients made after onboarding (onboarded date, else when the KAM client record was made).
@@ -370,7 +413,18 @@ class Dashboard6_model extends CI_Model {
 			FROM ci_tasks T WHERE T.client_id IN ($in) AND (T.status IS NULL OR T.status NOT IN ('Completed','Closed','Done','Cancelled'))
 			ORDER BY T.followup_date ASC LIMIT 8")->result_array();
 
+		// Charts: last 6 months on my clients, upselling sales (after onboarding) and all orders received.
+		$mo = $this->months6(); $m1 = reset($mo); $m1 = $m1['ym'] . '-01 00:00:00';
+		$sd = "COALESCE(O.sales_converted_at, O.created_at)";
+		$mu = $this->db->query("SELECT DATE_FORMAT($sd, '%Y-%m') AS k, COUNT(*) AS n, SUM(O.pricing_amount) AS amt
+			FROM ci_orders O JOIN ci_kam_client_details K ON K.lead_id = O.lead_id LEFT JOIN ci_pipeline P ON P.lead_id = O.lead_id
+			WHERE O.lead_id IN ($in) AND O.created_at > COALESCE(P.onboarded_at, K.created_at) AND " . crm_order_is_sale_sql('O') . " AND $sd >= '$m1' GROUP BY k")->result_array();
+		$mi = $this->db->query("SELECT DATE_FORMAT(O.created_at, '%Y-%m') AS k, COUNT(*) AS n FROM ci_orders O WHERE O.lead_id IN ($in) AND O.created_at >= '$m1' GROUP BY k")->result_array();
+		$monthly = array('labels' => array_values(array_map(function ($x) { return $x['label']; }, $mo)),
+			'upsell' => $this->by_month($mo, $mu, 'amt', true), 'upsell_n' => $this->by_month($mo, $mu, 'n'), 'orders' => $this->by_month($mo, $mi, 'n'));
+
 		return array(
+			'monthly' => $monthly,
 			'sum' => $sum,
 			'list' => array_slice($clients, 0, 10),
 			'upsell' => array('open' => (int)$up['open_n'], 'sales_n' => (int)$up['sales_n'], 'sales_amt' => (float)$up['sales_amt'], 'clients' => (int)$up['clients'], 'one_service' => $one),
@@ -396,6 +450,7 @@ class Dashboard6_model extends CI_Model {
 		if ($view === 'a') $out['co'] = $this->company();
 		if ($view === 'b') $out['bo'] = $this->backoffice();
 		if ($view === 'k') $out['km'] = $this->kam();
+		if ($view === 's' || $view === 'k') $out['meet_next'] = $this->meetings_next(false, 8);
 		if ($view === 's') {
 			$this->load->model('dashboard5_model', 'dash5');
 			$x = $this->dash5->extras();
@@ -410,6 +465,8 @@ class Dashboard6_model extends CI_Model {
 				'sales_amt' => isset($cnt['sales_amount']) ? (float)$cnt['sales_amount'] : 0,
 				'target' => $tg, 'achieved' => $ac,
 				'pipe' => $x['pipeline_my'], 'top' => $x['leaderboard'], 'calls' => $x['calls'], 'ageing' => $x['ageing'],
+				'change' => $x['tile_change'], 'weekly' => $x['weekly'],
+				'ach' => array('labels' => isset($ach['labels']) ? array_values($ach['labels']) : array(), 'target' => isset($ach['target']) ? array_values($ach['target']) : array(), 'achieved' => isset($ach['achievement']) ? array_values($ach['achievement']) : array()),
 			);
 		}
 		return $out;

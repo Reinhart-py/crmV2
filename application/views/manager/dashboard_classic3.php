@@ -2402,11 +2402,20 @@ $(function () {
         var $d = $t.hasClass('dash-section-divider') ? $t : $t.prevAll('.dash-section-divider').first();
         if ($d.hasClass('is-folded') && $d.data('c2fold')) $d.data('c2fold')(false);
         $t[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Mark the clicked link now; the last sections may be too short to reach the top line.
+        markPin = Date.now() + 1200; setTimeout(markOn, 1300);
+        $('#c2Bar a').removeClass('is-on').filter('[data-sec="' + id + '"]').addClass('is-on');
     });
     var secs = ['c2-top', 'c3-pipeline', 'c2-activity', 'c2-database', 'c2-leads', 'c2-orders', 'c2-achievement'];
+    var markPin = 0;
     function markOn() {
+        if (Date.now() < markPin) return;
         var line = (parseInt(getComputedStyle($root[0]).getPropertyValue('--c2-top'), 10) || 0) + 90, cur = 'c2-top';
         $.each(secs, function (i, id) { var el = document.getElementById(id); if (el && !$(el).hasClass('c2-folded') && el.getBoundingClientRect().top <= line) cur = id; });
+        // At the bottom of the page the last sections cannot scroll up to the line: mark the last one on screen.
+        var b = document.body, se = b.scrollTop > 0 ? b : (document.scrollingElement || document.documentElement);
+        var end = se.scrollTop > 0 && se.scrollTop + se.clientHeight >= se.scrollHeight - 4;
+        if (end) $.each(secs, function (i, id) { var el = document.getElementById(id); if (el && !$(el).hasClass('c2-folded') && el.getBoundingClientRect().top < window.innerHeight - 40) cur = id; });
         $('#c2Bar a').removeClass('is-on').filter('[data-sec="' + cur + '"]').addClass('is-on');
     }
     // Any scrolling element (the page, or body when it scrolls itself).

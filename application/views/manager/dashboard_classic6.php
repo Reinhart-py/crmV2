@@ -239,9 +239,9 @@ if (!function_exists('c5_chg')) {
 $c6v = isset($c6['view']) ? $c6['view'] : 's';
 $c6_links = array(
     's' => array('c2-top' => 'Overview', 'c3-pipeline' => 'Pipeline', 'c5-team' => 'Team', 'c2-activity' => 'Activity', 'c2-database' => 'Database', 'c2-achievement' => 'Achievement'),
-    'a' => array('c2-top' => 'Overview', 'c6-branch' => 'Branches', 'c6-cat' => 'Categories', 'c6-dept' => 'Departments', 'c6-track' => 'Follow-ups'),
-    'b' => array('c2-top' => 'Overview', 'c6-orders' => 'Orders', 'c6-docs' => 'Documents', 'c6-track' => 'Follow-ups'),
-    'k' => array('c2-top' => 'Overview', 'c6-clients' => 'Clients', 'c6-upsell' => 'Upselling', 'c6-track' => 'Follow-ups'),
+    'a' => array('c2-top' => 'Overview', 'c6-charts' => 'Charts', 'c6-branch' => 'Branches', 'c6-cat' => 'Categories', 'c6-dept' => 'Departments', 'c6-track' => 'Follow-ups'),
+    'b' => array('c2-top' => 'Overview', 'c6-charts' => 'Charts', 'c6-orders' => 'Orders', 'c6-docs' => 'Documents', 'c6-track' => 'Follow-ups'),
+    'k' => array('c2-top' => 'Overview', 'c6-charts' => 'Charts', 'c6-clients' => 'Clients', 'c6-upsell' => 'Upselling', 'c6-track' => 'Follow-ups'),
 );
 $c6_links = $c6_links[$c6v];
 ?>
@@ -2600,11 +2600,20 @@ $(function () {
         var $d = $t.hasClass('dash-section-divider') ? $t : $t.prevAll('.dash-section-divider').first();
         if ($d.hasClass('is-folded') && $d.data('c2fold')) $d.data('c2fold')(false);
         $t[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Mark the clicked link now; the last sections may be too short to reach the top line.
+        markPin = Date.now() + 1200; setTimeout(markOn, 1300);
+        $('#c2Bar .c2-bar-links a').removeClass('is-on').filter('[data-sec="' + id + '"]').addClass('is-on');
     });
     var secs = <?php echo json_encode(array_keys($c6_links)); ?>;
+    var markPin = 0;
     function markOn() {
+        if (Date.now() < markPin) return;
         var line = (parseInt(getComputedStyle($root[0]).getPropertyValue('--c2-top'), 10) || 0) + 90, cur = 'c2-top';
         $.each(secs, function (i, id) { var el = document.getElementById(id); if (el && !$(el).hasClass('c2-folded') && el.getBoundingClientRect().top <= line) cur = id; });
+        // At the bottom of the page the last sections cannot scroll up to the line: mark the last one on screen.
+        var b = document.body, se = b.scrollTop > 0 ? b : (document.scrollingElement || document.documentElement);
+        var end = se.scrollTop > 0 && se.scrollTop + se.clientHeight >= se.scrollHeight - 4;
+        if (end) $.each(secs, function (i, id) { var el = document.getElementById(id); if (el && !$(el).hasClass('c2-folded') && el.getBoundingClientRect().top < window.innerHeight - 40) cur = id; });
         $('#c2Bar .c2-bar-links a').removeClass('is-on').filter('[data-sec="' + cur + '"]').addClass('is-on');
     }
     // Any scrolling element (the page, or body when it scrolls itself).
