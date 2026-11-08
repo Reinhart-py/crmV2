@@ -163,7 +163,7 @@ if ($v === 's') {
     <div class="m6-bar">
         <?php if (count($m6['views']) > 1) { ?>
         <nav class="m6-views" aria-label="Dashboard view">
-            <?php foreach ($m6['views'] as $vk) { ?><a href="<?php echo $m; ?>dashboard?view=<?php echo $vk; ?>" class="<?php echo $vk === $v ? 'is-on' : ''; ?>"<?php echo $vk === $v ? ' aria-current="page"' : ''; ?>><?php echo $names[$vk]; ?></a><?php } ?>
+            <?php foreach ($m6['views'] as $vk) { ?><a href="<?php echo $m; ?>dashboard?view=<?php echo $vk; ?>" class="<?php echo $vk === $v ? 'is-on' : ''; ?>"<?php echo $vk === $v ? ' aria-current="page"' : ''; ?>><?php echo $vk === $v ? '<i class="fa fa-check"></i> ' : ''; ?><?php echo $names[$vk]; ?></a><?php } ?>
         </nav>
         <?php } ?>
         <h2 class="m6-title"><?php echo $names[$v]; ?> <span><?php echo $titles[$v] . ' &middot; ' . date('D d M'); ?></span></h2>
@@ -209,8 +209,9 @@ $(function () {
 .m6 .m6-views { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid var(--m6-line); border-radius: 8px; background: var(--m6-bg); }
 .m6 .m6-views a { padding: 3px 12px; border-radius: 6px; font-size: 12.5px; font-weight: 700; color: var(--m6-ink2); text-decoration: none; white-space: nowrap; }
 .m6 .m6-views a:hover { background: var(--m6-soft); color: var(--m6-ink); }
-.m6 .m6-views a.is-on { background: #1e3a8a; color: #fff; }
-[data-theme="dark"] .m6 .m6-views a.is-on { background: #3b82f6; }
+.m6 .m6-views a.is-on { background: #0f766e; color: #fff; box-shadow: 0 1px 4px rgba(15, 118, 110, .45); }
+.m6 .m6-views a.is-on i { font-size: 10px; margin-right: 2px; }
+[data-theme="dark"] .m6 .m6-views a.is-on { background: #14b8a6; color: #04201d; box-shadow: 0 1px 6px rgba(20, 184, 166, .5); }
 .m6 .m6-title { flex: 1; min-width: 0; margin: 0; font-size: 16px; font-weight: 800; color: var(--m6-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .m6 .m6-title span { margin-left: 6px; font-size: 12px; font-weight: 600; color: var(--m6-mute); }
 .m6 .m6-upd { font-size: 11px; font-weight: 600; color: var(--m6-mute); white-space: nowrap; }

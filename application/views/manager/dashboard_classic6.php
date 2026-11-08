@@ -256,7 +256,7 @@ $c6_links = $c6_links[$c6v];
     <?php if (!empty($c6['views']) && count($c6['views']) > 1) { ?>
     <div class="c6-views" role="group" aria-label="Dashboard view">
         <?php foreach ($c6['views'] as $vk) { ?>
-        <a href="<?php echo base_url(); ?>manager/dashboard?view=<?php echo $vk; ?>" class="<?php echo $vk === $c6v ? 'is-on' : ''; ?>"<?php echo $vk === $c6v ? ' aria-current="page"' : ''; ?> title="<?php echo $c6['names'][$vk] . ' view' . ($vk === $c6['own'] ? ' (yours)' : ''); ?>"><?php echo $c6['names'][$vk]; ?></a>
+        <a href="<?php echo base_url(); ?>manager/dashboard?view=<?php echo $vk; ?>" class="<?php echo $vk === $c6v ? 'is-cur' : ''; ?>"<?php echo $vk === $c6v ? ' aria-current="page"' : ''; ?> title="<?php echo $c6['names'][$vk] . ' view' . ($vk === $c6['own'] ? ' (yours)' : ''); ?>"><?php echo $vk === $c6v ? '<i class="fa fa-check"></i> ' : ''; ?><?php echo $c6['names'][$vk]; ?></a>
         <?php } ?>
     </div>
     <?php } ?>
@@ -2605,7 +2605,7 @@ $(function () {
     function markOn() {
         var line = (parseInt(getComputedStyle($root[0]).getPropertyValue('--c2-top'), 10) || 0) + 90, cur = 'c2-top';
         $.each(secs, function (i, id) { var el = document.getElementById(id); if (el && !$(el).hasClass('c2-folded') && el.getBoundingClientRect().top <= line) cur = id; });
-        $('#c2Bar a').removeClass('is-on').filter('[data-sec="' + cur + '"]').addClass('is-on');
+        $('#c2Bar .c2-bar-links a').removeClass('is-on').filter('[data-sec="' + cur + '"]').addClass('is-on');
     }
     // Any scrolling element (the page, or body when it scrolls itself).
     var markT = null;
@@ -2915,7 +2915,8 @@ $(function () {
 .dash-c6 .c6-views { flex: none; display: inline-flex; gap: 2px; padding: 2px; border: 1px solid #cbd5e1; border-radius: 7px; background: #f8fafc; }
 .dash-c6 .c6-views a { padding: 1px 10px; line-height: 18px; border-radius: 5px; font-size: 12px; font-weight: 700; color: #334155; text-decoration: none !important; white-space: nowrap; }
 .dash-c6 .c6-views a:hover { background: #e2e8f0; color: #0f172a; }
-.dash-c6 .c6-views a.is-on { background: #0f172a; color: #fff; }
+.dash-c6 .c6-views a.is-cur { background: #0f766e; color: #fff; box-shadow: 0 1px 4px rgba(15, 118, 110, .45); }
+.dash-c6 .c6-views a.is-cur i { font-size: 10px; margin-right: 2px; }
 @media (max-width: 767px) { .dash-c6 .c2-bar { flex-wrap: wrap; } .dash-c6 .c6-views { flex: 1 0 100%; } .dash-c6 .c6-views a { flex: 1; text-align: center; padding: 1px 4px; } }
 
 /* Tiles and card rows on the department views. */
@@ -2992,7 +2993,7 @@ $(function () {
 [data-theme="dark"] .dash-c6 .c6-views { background: #111827; border-color: #334155; }
 [data-theme="dark"] .dash-c6 .c6-views a { color: #cbd5e1; }
 [data-theme="dark"] .dash-c6 .c6-views a:hover { background: rgba(148, 163, 184, .15); color: #fff; }
-[data-theme="dark"] .dash-c6 .c6-views a.is-on { background: #f1f5f9; color: #0f172a; }
+[data-theme="dark"] .dash-c6 .c6-views a.is-cur { background: #14b8a6; color: #04201d; box-shadow: 0 1px 6px rgba(20, 184, 166, .5); }
 [data-theme="dark"] .dash-c6 .c6-tbl a { color: #93c5fd; }
 [data-theme="dark"] .dash-c6 .c6-items li { border-top-color: #1f2937; }
 [data-theme="dark"] .dash-c6 .c6-it-main .c6-name { color: #f1f5f9; }
