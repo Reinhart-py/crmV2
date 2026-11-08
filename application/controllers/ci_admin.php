@@ -144,10 +144,10 @@ class Ci_admin extends CI_Controller {
 		}
 		$this->load->model('dashboard_model', 'dash');
 		$uid = (int)$this->session->userdata('manager_id');
-		// The user's choice: Modern (default), Classic or Classic 2 (a separate copy of Classic).
+		// The user's choice: Modern (default), Classic, Classic 2 (a separate copy of Classic) or Classic 3 (a separate copy of Classic 2).
 		$style = $this->dash->get_style($uid);
-		if ($style === 'classic' || $style === 'classic2') {
-			return $this->dashboard_classic($style === 'classic2');
+		if ($style === 'classic' || $style === 'classic2' || $style === 'classic3') {
+			return $this->dashboard_classic($style === 'classic' ? false : $style);
 		}
 		$role = (int)$this->session->userdata('manager_role');
 		$is_admin = crm_is_full_admin();
@@ -241,10 +241,10 @@ class Ci_admin extends CI_Controller {
 		redirect('manager/dashboard');
 	}
 
-	/** Classic dashboard. Classic 2 ($copy) is the same data shown with its own copy of the page (manager/dashboard_classic2.php). */
+	/** Classic dashboard. Classic 2 / Classic 3 ($copy) are the same data shown with their own copy of the page (manager/dashboard_classic2.php, manager/dashboard_classic3.php). */
 	public function dashboard_classic($copy = false)
 	{
-		$copy = ($copy === true);
+		$copy = ($copy === true) ? 'classic2' : (($copy === 'classic2' || $copy === 'classic3') ? $copy : false);
 	  	$data=array();
 		$data['info']=array(
 			'title'=>'Manager Dashboard'
@@ -294,9 +294,9 @@ class Ci_admin extends CI_Controller {
 		$data['dashboard_pipeline'] = $this->ci_admin_model->dashboard_pipeline_summary();
 		$data['mylead_donut'] = $this->ci_admin_model->dashboard_mylead_donut_data();
 		$data['myorder_donut'] = $this->ci_admin_model->dashboard_myorder_donut_data();
-		$data['dash_style'] = $copy ? 'classic2' : 'classic';
+		$data['dash_style'] = $copy ? $copy : 'classic';
 
-		$this->load->view($copy ? 'manager/dashboard_classic2' : 'manager/dashboard',$data);
+		$this->load->view($copy ? 'manager/dashboard_' . $copy : 'manager/dashboard',$data);
 	}
 	
   
