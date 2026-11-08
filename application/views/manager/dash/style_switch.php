@@ -1,7 +1,7 @@
 <?php
-// Dashboard choice (Modern / Classic / Classic 2 / Classic 3), shown in the profile menu. Saved per user in ci_user_prefs.
+// Dashboard choice (Modern / Classic / Classic 2 / Classic 3 / Classic 5), shown in the profile menu. Saved per user in ci_user_prefs.
 $ds_now = 'modern';
-$ds_list = array('modern' => 'Modern', 'classic' => 'Classic', 'classic2' => 'Classic 2', 'classic3' => 'Classic 3');
+$ds_list = array('modern' => 'Modern', 'classic' => 'Classic', 'classic2' => 'Classic 2', 'classic3' => 'Classic 3', 'classic5' => 'Classic 5');
 $ds_ci =& get_instance();
 $ds_uid = (int)$ds_ci->session->userdata('manager_id');
 if ($ds_uid > 0 && $ds_ci->db->table_exists('ci_user_prefs')) {
@@ -22,7 +22,7 @@ if ($ds_uid > 0 && $ds_ci->db->table_exists('ci_user_prefs')) {
 .ds-switch { margin: 0; cursor: default; padding-right: 8px !important; flex-wrap: wrap; row-gap: 6px; }
 .ds-switch .ds-top { display: inline-flex; align-items: center; gap: inherit; flex: 1 0 100%; white-space: nowrap; }
 .ds-switch .ds-top > i { width: 18px; text-align: center; flex: none; }
-.ds-switch .ds-seg { display: flex; width: 100%; padding: 2px; flex: none; border: 1px solid var(--crm-line, #e2e8f0); border-radius: 999px; }
+.ds-switch .ds-seg { display: flex; flex-wrap: wrap; gap: 2px; width: 100%; padding: 2px; flex: none; border: 1px solid var(--crm-line, #e2e8f0); border-radius: 14px; }
 .ds-switch .ds-seg button { flex: 1 1 auto; height: 24px; padding: 0 3px; border: 0; border-radius: 999px; background: transparent; color: var(--crm-ink-2, #334155); font-size: 11px; white-space: nowrap; font-weight: 600; cursor: pointer; }
 .ds-switch .ds-seg button:hover { color: var(--crm-ocean, #1e3a8a); }
 .ds-switch .ds-seg button.is-on { background: var(--crm-ocean, #1e3a8a); color: #fff; cursor: default; }

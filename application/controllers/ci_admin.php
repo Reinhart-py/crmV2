@@ -144,9 +144,9 @@ class Ci_admin extends CI_Controller {
 		}
 		$this->load->model('dashboard_model', 'dash');
 		$uid = (int)$this->session->userdata('manager_id');
-		// The user's choice: Modern (default), Classic, Classic 2 (a separate copy of Classic) or Classic 3 (a separate copy of Classic 2).
+		// The user's choice: Modern (default), Classic, Classic 2 (a separate copy of Classic) Classic 3 (a separate copy of Classic 2) or Classic 5 (a copy of Classic 3 with extra blocks).
 		$style = $this->dash->get_style($uid);
-		if ($style === 'classic' || $style === 'classic2' || $style === 'classic3') {
+		if ($style === 'classic' || $style === 'classic2' || $style === 'classic3' || $style === 'classic5') {
 			return $this->dashboard_classic($style === 'classic' ? false : $style);
 		}
 		$role = (int)$this->session->userdata('manager_role');
@@ -241,10 +241,10 @@ class Ci_admin extends CI_Controller {
 		redirect('manager/dashboard');
 	}
 
-	/** Classic dashboard. Classic 2 / Classic 3 ($copy) are the same data shown with their own copy of the page (manager/dashboard_classic2.php, manager/dashboard_classic3.php). */
+	/** Classic dashboard. Classic 2 / 3 / 5 ($copy) are the same data shown with their own copy of the page (manager/dashboard_classic2.php, _classic3.php, _classic5.php). Classic 5 also loads a few extra blocks. */
 	public function dashboard_classic($copy = false)
 	{
-		$copy = ($copy === true) ? 'classic2' : (($copy === 'classic2' || $copy === 'classic3') ? $copy : false);
+		$copy = ($copy === true) ? 'classic2' : (in_array($copy, array('classic2', 'classic3', 'classic5'), true) ? $copy : false);
 	  	$data=array();
 		$data['info']=array(
 			'title'=>'Manager Dashboard'
@@ -295,6 +295,11 @@ class Ci_admin extends CI_Controller {
 		$data['mylead_donut'] = $this->ci_admin_model->dashboard_mylead_donut_data();
 		$data['myorder_donut'] = $this->ci_admin_model->dashboard_myorder_donut_data();
 		$data['dash_style'] = $copy ? $copy : 'classic';
+		if ($copy === 'classic5') {
+			// Extra blocks shown only on Classic 5.
+			$this->load->model('dashboard5_model', 'dash5');
+			$data['c5'] = $this->dash5->extras();
+		}
 
 		$this->load->view($copy ? 'manager/dashboard_' . $copy : 'manager/dashboard',$data);
 	}
