@@ -1083,4 +1083,66 @@ class Ci_admin_report extends CI_Controller {
 
 		$this->load->view('manager/report/company_projections', $data);
 	}
+
+	/**
+	 * Analysis Reports: Sales, Back Office, KAM and Admin reports with a chart and a table each.
+	 * Who sees which reports follows the dashboard rule: Admin all; Back Office and KAM their own plus Sales;
+	 * everyone else Sales; more given in Access Rights (Analysis Reports: Admin / Back Office / KAM).
+	 */
+	public function analysis($view = '', $slug = '')
+	{
+		$this->if_not_login();
+		$this->load->model('analysis_model', 'ana');
+		$al = $this->ana->allowed();
+		$names = $this->ana->names();
+		$cat = $this->ana->catalog();
+		if (!in_array($view, $al['views'], true)) {
+			if ($view !== '') { redirect('manager/reports/analysis'); return; }
+			$view = in_array($al['own'], $al['views'], true) ? $al['own'] : $al['views'][0];
+		}
+		if (!isset($cat[$view][$slug])) $slug = key($cat[$view]);
+
+		$d1 = $this->_q('d1'); $d2 = $this->_q('d2');
+		$d1 = ($d1 !== '' && strtotime($d1)) ? date('Y-m-d', strtotime($d1)) : date('Y-m-01');
+		$d2 = ($d2 !== '' && strtotime($d2)) ? date('Y-m-d', strtotime($d2)) : date('Y-m-d');
+		if ($d2 < $d1) { $t = $d1; $d1 = $d2; $d2 = $t; }
+		$people = ($view === 's') ? $this->ana->people() : array();
+		$person = (int)$this->_q('person');
+		if (!isset($people[$person])) $person = 0;
+
+		$rep = $this->ana->run($view, $slug, array('d1' => $d1, 'd2' => $d2, 'person' => $person));
+		$can_export = crm_is_full_admin() || crm_can('all_data');
+
+		if ($this->_q('export') === 'csv' && $rep) {
+			if (!$can_export) { show_error('Downloading reports is for Administrators.', 403); return; }
+			header('Content-Type: text/csv; charset=utf-8');
+			header('Content-Disposition: attachment; filename="' . $slug . '_' . $d1 . '_' . $d2 . '.csv"');
+			$out = fopen('php://output', 'w');
+			fputcsv($out, array_map(function ($c) { return $c[1]; }, $rep['cols']));
+			$list = $rep['rows']; if (!empty($rep['total'])) $list[] = $rep['total'];
+			foreach ($list as $r) {
+				$line = array();
+				foreach ($rep['cols'] as $c) { $v = isset($r[$c[0]]) ? $r[$c[0]] : ''; $line[] = is_float($v) ? round($v, 2) : $v; }
+				fputcsv($out, $line);
+			}
+			fclose($out);
+			exit;
+		}
+
+		$data = array();
+		$data['info'] = array('title' => 'Analysis Reports', 'page_heading' => 'Analysis Reports');
+		$data['names'] = $names;
+		$data['views'] = $al['views'];
+		$data['view'] = $view;
+		$data['cat'] = $cat[$view];
+		$data['slug'] = $slug;
+		$data['rep'] = $rep;
+		$data['d1'] = $d1;
+		$data['d2'] = $d2;
+		$data['person'] = $person;
+		$data['people'] = $people;
+		$data['is_all'] = $this->ana->is_all();
+		$data['can_export'] = $can_export;
+		$this->load->view('manager/report/analysis', $data);
+	}
 }
