@@ -57,8 +57,40 @@ class Ci_admin extends CI_Controller {
 			echo json_encode(array('status' => 'expired'));
 		}
 		exit;
-	}	
-	
+	}
+
+	/** Logout popup: signed-in time, today's attendance, and what is still due today (own follow-ups and meetings). */
+	public function logout_info()
+	{
+		header('Content-Type: application/json');
+		$uid = (int)$this->session->userdata('manager_id');
+		if ($uid <= 0) { echo json_encode(array('ok' => false)); exit; }
+		$t = date('Y-m-d');
+		$out = array('ok' => true, 'since' => '', 'clock_in' => '', 'clocked_out' => false, 'fu_today' => 0, 'fu_missed' => 0, 'mt_today' => 0);
+
+		$row = $this->db->query("SELECT COALESCE(login_time, created_at) AS t FROM ci_admin_logs WHERE user_id = $uid AND activity = 'login' AND status = 'SUCCESS' ORDER BY id DESC LIMIT 1")->row_array();
+		if (!empty($row['t'])) $out['since'] = date('c', strtotime($row['t']));
+
+		if ($this->db->table_exists('ci_attendance')) {
+			$att = $this->db->query("SELECT in_time, out_time FROM ci_attendance WHERE user_id = $uid AND attendance_date = '$t' ORDER BY id DESC LIMIT 1")->row_array();
+			if (!empty($att['in_time'])) {
+				$out['clock_in'] = date('H:i', strtotime($att['in_time']));
+				$out['clocked_out'] = !empty($att['out_time']);
+			}
+		}
+
+		$mine = "(A.lead_assign = $uid OR (A.created_by = $uid AND (A.lead_assign = 0 OR A.lead_assign IS NULL)) OR (A.agents IS NOT NULL AND A.agents != '' AND FIND_IN_SET($uid, A.agents) > 0))";
+		$open = "A.status NOT IN (42,43,44) AND (A.company_status IS NULL OR LOWER(A.company_status) != 'closed')";
+		$c = $this->db->query("SELECT
+				SUM(A.followup_date = '$t') AS fu_today,
+				SUM(A.followup_date >= '2000-01-01' AND A.followup_date < '$t') AS fu_missed,
+				SUM(A.m_date = '$t') AS mt_today
+			FROM ci_leads A WHERE $open AND $mine")->row_array();
+		foreach (array('fu_today', 'fu_missed', 'mt_today') as $k) $out[$k] = (int)(isset($c[$k]) ? $c[$k] : 0);
+		echo json_encode($out);
+		exit;
+	}
+
 	public function index()
 	{
 		// Site root and /manager: someone already signed in goes to their start page

@@ -114,64 +114,9 @@ $('.datepicker2').datepicker({
   
  
 </script>
-<script>
-$(document).on("click", ".logout, a[href*='manager/logout']", function(e){       
-    if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-    swal({
-        title: "Are you sure?",
-        text: "You want to logout!",
-        type: "warning",
-        showCancelButton: true,
-        confirmButtonClass: "btn-danger",
-        confirmButtonText: "Yes",
-        cancelButtonText: "No",
-        closeOnConfirm: false,
-        closeOnCancel: true
-    },
-    function(isConfirm) {
-        if (isConfirm) {
-            function sendLogout(geoData) {
-                var postPayload = geoData || {};
-                $.ajax({
-                    url: '<?php echo base_url(); ?>manager/logout',
-                    type: 'POST',
-                    data: postPayload,
-                    error: function() {
-                        window.location.href = '<?php echo base_url(); ?>manager/login';
-                    },
-                    success: function(data) {
-                        swal("Logged Out!", "", "success");
-                        setTimeout(function() {
-                            window.location.href = '<?php echo base_url(); ?>manager/login';
-                        }, 500);
-                    }
-                });
-            }
-
-            if ('geolocation' in navigator) {
-                navigator.geolocation.getCurrentPosition(function(pos) {
-                    sendLogout({
-                        latitude: pos.coords.latitude,
-                        longitude: pos.coords.longitude,
-                        accuracy: pos.coords.accuracy,
-                        location_status: 'granted'
-                    });
-                }, function(err) {
-                    sendLogout({
-                        location_status: (err.code === 1 ? 'denied' : (err.code === 2 ? 'unavailable' : 'timeout'))
-                    });
-                }, { timeout: 2500, enableHighAccuracy: true });
-            } else {
-                sendLogout({ location_status: 'unsupported' });
-            }
-        } 
-    });
-    return false;
-});
-</script>
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-logout.css?v=20261108_1">
+<script>window.CRM_LO = { base: '<?php echo base_url(); ?>', csrf: '<?php echo $this->security->get_csrf_token_name(); ?>' };</script>
+<script src="<?php echo base_url(); ?>assets/dist/js/crm-logout.js?v=20261108_1"></script>
 
 <script src="<?php echo base_url(); ?>assets/dist/js/jquery.slimmenu.js"></script> 
 <script>
