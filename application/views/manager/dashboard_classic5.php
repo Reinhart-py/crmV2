@@ -248,8 +248,6 @@ if (!function_exists('c5_chg')) {
         <a href="#c5-team" data-sec="c5-team">Team</a>
         <a href="#c2-activity" data-sec="c2-activity">Activity</a>
         <a href="#c2-database" data-sec="c2-database">Database</a>
-        <a href="#c2-leads" data-sec="c2-leads">Leads</a>
-        <a href="#c2-orders" data-sec="c2-orders">Orders</a>
         <a href="#c2-achievement" data-sec="c2-achievement">Achievement</a>
     </div>
 <?php
@@ -1521,12 +1519,13 @@ if (!function_exists('c5_mins')) {
                 <span class="dash-section-title-icon">
                     <span></span><span></span>
                 </span>
-                <span>Database States</span>
+                <span>Database, Leads and Orders</span>
             </h3>
         </div>
 
-        <div class="row">
-            <div class="col-md-6 col-xs-12">
+        <!-- Classic 5: Database, Leads and Orders side by side, My on the first row and Team on the second. -->
+        <div class="row c5-states-row">
+            <div class="col-md-4 col-xs-12">
                 <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-database" style="color:#0072f0;"></i> My Database States</h4>
@@ -1558,44 +1557,7 @@ if (!function_exists('c5_mins')) {
                     </ul>
                 </div>
             </div>
-
-            <div class="col-md-6 col-xs-12">
-                <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
-                    <div class="card-top">
-                        <h4 class="card-title"><i class="fa fa-database" style="color:#0072f0;"></i> Team Database States</h4>
-                        <span class="card-total-pill"><?php echo number_format($team_db_total); ?> Total</span>
-                    </div>
-                    <div class="crm-seg-bar">
-                        <?php if (!empty($dashboard_db_state_team) && $team_db_total > 0) {
-                            foreach($dashboard_db_state_team as $li) {
-                                $pct = round(((int)$li['lead_count'] / $team_db_total) * 100, 1);
-                                if ($pct > 0) {
-                                    echo '<div class="crm-seg" style="width:' . $pct . '%; opacity:0.85;" title="' . htmlspecialchars($li['status']) . ': ' . (int)$li['lead_count'] . '"></div>';
-                                }
-                            }
-                        } else { ?>
-                            <div class="crm-seg" style="width:100%; opacity:0.3;"></div>
-                        <?php } ?>
-                    </div>
-                    <ul class="crm-modern-stat-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:6px;">
-                        <?php if (!empty($dashboard_db_state_team)) { foreach($dashboard_db_state_team as $li) { ?>
-                            <li style="margin:0;">
-                                <a href="<?php echo base_url(); ?>manager/team/database?status%5B%5D=<?php echo $li['status_id']; ?>" class="crm-modern-stat-chip" style="padding:6px 9px;">
-                                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;" title="<?php echo htmlspecialchars($li['status']); ?>"><?php echo htmlspecialchars($li['status']); ?></span>
-                                    <span class="badge" style="background:var(--crm-card-bg, #ffffff); color:var(--crm-text, #0f172a); border:1px solid var(--crm-border, #cbd5e1); font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;"><?php echo (int)$li['lead_count']; ?></span>
-                                </a>
-                            </li>
-                        <?php } } else { ?>
-                            <li style="grid-column: 1 / -1;"><span class="text-muted" style="font-size:12px;">No team database records found</span></li>
-                        <?php } ?>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div id="c2-leads" class="c2-anchor"></div>
-        <div class="row" style="margin-top: 6px;">
-            <div class="col-md-6 col-xs-12">
+            <div class="col-md-4 col-xs-12">
                 <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-bullseye" style="color:#0072f0;"></i> My Lead States</h4>
@@ -1627,53 +1589,7 @@ if (!function_exists('c5_mins')) {
                     </ul>
                 </div>
             </div>
-
-            <div class="col-md-6 col-xs-12">
-                <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
-                    <div class="card-top">
-                        <h4 class="card-title"><i class="fa fa-bullseye" style="color:#0072f0;"></i> Team Lead States</h4>
-                        <span class="card-total-pill"><?php echo number_format($team_lead_total); ?> Total</span>
-                    </div>
-                    <div class="crm-seg-bar">
-                        <?php if (!empty($dashboard_lead_state_team) && $team_lead_total > 0) {
-                            foreach($dashboard_lead_state_team as $li) {
-                                $pct = round(((int)$li['lead_count'] / $team_lead_total) * 100, 1);
-                                if ($pct > 0) {
-                                    echo '<div class="crm-seg" style="width:' . $pct . '%; opacity:0.85;" title="' . htmlspecialchars($li['status']) . ': ' . (int)$li['lead_count'] . '"></div>';
-                                }
-                            }
-                        } else { ?>
-                            <div class="crm-seg" style="width:100%; opacity:0.3;"></div>
-                        <?php } ?>
-                    </div>
-                    <ul class="crm-modern-stat-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:6px;">
-                        <?php if (!empty($dashboard_lead_state_team)) { foreach($dashboard_lead_state_team as $li) { ?>
-                            <li style="margin:0;">
-                                <a href="<?php echo base_url(); ?>manager/team/leads?status%5B%5D=<?php echo $li['status_id']; ?>" class="crm-modern-stat-chip" style="padding:6px 9px;">
-                                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;" title="<?php echo htmlspecialchars($li['status']); ?>"><?php echo htmlspecialchars($li['status']); ?></span>
-                                    <span class="badge" style="background:var(--crm-card-bg, #ffffff); color:var(--crm-text, #0f172a); border:1px solid var(--crm-border, #cbd5e1); font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;"><?php echo (int)$li['lead_count']; ?></span>
-                                </a>
-                            </li>
-                        <?php } } else { ?>
-                            <li style="grid-column: 1 / -1;"><span class="text-muted" style="font-size:12px;">No team leads found</span></li>
-                        <?php } ?>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        
-<div class="dash-section-divider" style="margin-top: 18px; margin-bottom: 12px;">
-            <h3 class="dash-section-title" style="margin-bottom:0;">
-                <span class="dash-section-title-icon">
-                    <span></span><span></span>
-                </span>
-                <span>Orders</span>
-            </h3>
-        </div>
-
-        <div class="row">
-            <div class="col-md-6 col-xs-12">
+            <div class="col-md-4 col-xs-12">
                 <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-shopping-cart" style="color:#0072f0;"></i> My Orders</h4>
@@ -1705,8 +1621,74 @@ if (!function_exists('c5_mins')) {
                     </ul>
                 </div>
             </div>
+        </div>
 
-            <div class="col-md-6 col-xs-12">
+        <div class="row c5-states-row" style="margin-top: 6px;">
+            <div class="col-md-4 col-xs-12">
+                <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-database" style="color:#0072f0;"></i> Team Database States</h4>
+                        <span class="card-total-pill"><?php echo number_format($team_db_total); ?> Total</span>
+                    </div>
+                    <div class="crm-seg-bar">
+                        <?php if (!empty($dashboard_db_state_team) && $team_db_total > 0) {
+                            foreach($dashboard_db_state_team as $li) {
+                                $pct = round(((int)$li['lead_count'] / $team_db_total) * 100, 1);
+                                if ($pct > 0) {
+                                    echo '<div class="crm-seg" style="width:' . $pct . '%; opacity:0.85;" title="' . htmlspecialchars($li['status']) . ': ' . (int)$li['lead_count'] . '"></div>';
+                                }
+                            }
+                        } else { ?>
+                            <div class="crm-seg" style="width:100%; opacity:0.3;"></div>
+                        <?php } ?>
+                    </div>
+                    <ul class="crm-modern-stat-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:6px;">
+                        <?php if (!empty($dashboard_db_state_team)) { foreach($dashboard_db_state_team as $li) { ?>
+                            <li style="margin:0;">
+                                <a href="<?php echo base_url(); ?>manager/team/database?status%5B%5D=<?php echo $li['status_id']; ?>" class="crm-modern-stat-chip" style="padding:6px 9px;">
+                                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;" title="<?php echo htmlspecialchars($li['status']); ?>"><?php echo htmlspecialchars($li['status']); ?></span>
+                                    <span class="badge" style="background:var(--crm-card-bg, #ffffff); color:var(--crm-text, #0f172a); border:1px solid var(--crm-border, #cbd5e1); font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;"><?php echo (int)$li['lead_count']; ?></span>
+                                </a>
+                            </li>
+                        <?php } } else { ?>
+                            <li style="grid-column: 1 / -1;"><span class="text-muted" style="font-size:12px;">No team database records found</span></li>
+                        <?php } ?>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-4 col-xs-12">
+                <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-bullseye" style="color:#0072f0;"></i> Team Lead States</h4>
+                        <span class="card-total-pill"><?php echo number_format($team_lead_total); ?> Total</span>
+                    </div>
+                    <div class="crm-seg-bar">
+                        <?php if (!empty($dashboard_lead_state_team) && $team_lead_total > 0) {
+                            foreach($dashboard_lead_state_team as $li) {
+                                $pct = round(((int)$li['lead_count'] / $team_lead_total) * 100, 1);
+                                if ($pct > 0) {
+                                    echo '<div class="crm-seg" style="width:' . $pct . '%; opacity:0.85;" title="' . htmlspecialchars($li['status']) . ': ' . (int)$li['lead_count'] . '"></div>';
+                                }
+                            }
+                        } else { ?>
+                            <div class="crm-seg" style="width:100%; opacity:0.3;"></div>
+                        <?php } ?>
+                    </div>
+                    <ul class="crm-modern-stat-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:6px;">
+                        <?php if (!empty($dashboard_lead_state_team)) { foreach($dashboard_lead_state_team as $li) { ?>
+                            <li style="margin:0;">
+                                <a href="<?php echo base_url(); ?>manager/team/leads?status%5B%5D=<?php echo $li['status_id']; ?>" class="crm-modern-stat-chip" style="padding:6px 9px;">
+                                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:4px;" title="<?php echo htmlspecialchars($li['status']); ?>"><?php echo htmlspecialchars($li['status']); ?></span>
+                                    <span class="badge" style="background:var(--crm-card-bg, #ffffff); color:var(--crm-text, #0f172a); border:1px solid var(--crm-border, #cbd5e1); font-weight:700; border-radius:4px; padding:2px 7px; font-size:11px; flex-shrink:0;"><?php echo (int)$li['lead_count']; ?></span>
+                                </a>
+                            </li>
+                        <?php } } else { ?>
+                            <li style="grid-column: 1 / -1;"><span class="text-muted" style="font-size:12px;">No team leads found</span></li>
+                        <?php } ?>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-4 col-xs-12">
                 <div class="crm-modern-stat-card" style="margin-bottom: 12px;">
                     <div class="card-top">
                         <h4 class="card-title"><i class="fa fa-shopping-cart" style="color:#0072f0;"></i> Team Orders</h4>
@@ -2557,12 +2539,12 @@ $(function () {
     });
 
     // 7. Rows with 0 are greyed out.
-    $root.find('.col-md-6 > .crm-modern-stat-card .crm-modern-stat-chip').each(function () {
+    $root.find('.col-md-6 > .crm-modern-stat-card .crm-modern-stat-chip, .col-md-4 > .crm-modern-stat-card .crm-modern-stat-chip').each(function () {
         $(this).toggleClass('c2-zero', $.trim($(this).find('.badge').text()) === '0');
     });
 
     // 8 and 10. Sections: ids for the bar, and a Hide / Show button on each heading.
-    var ids = { 'Pipeline and Closures': 'c3-pipeline', 'Team and Trends': 'c5-team', 'Operational Activity': 'c2-activity', 'Database States': 'c2-database', 'Orders': 'c2-orders', 'Achievement and Projection': 'c2-achievement' };
+    var ids = { 'Pipeline and Closures': 'c3-pipeline', 'Team and Trends': 'c5-team', 'Operational Activity': 'c2-activity', 'Database, Leads and Orders': 'c2-database', 'Achievement and Projection': 'c2-achievement' };
     $root.find('.dash-section-divider').each(function () {
         var $d = $(this), title = $.trim($d.find('.dash-section-title > span:last-child').text()), id = ids[title];
         if (!id) return;
@@ -2597,7 +2579,7 @@ $(function () {
         if ($d.hasClass('is-folded') && $d.data('c2fold')) $d.data('c2fold')(false);
         $t[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
-    var secs = ['c2-top', 'c3-pipeline', 'c5-team', 'c2-activity', 'c2-database', 'c2-leads', 'c2-orders', 'c2-achievement'];
+    var secs = ['c2-top', 'c3-pipeline', 'c5-team', 'c2-activity', 'c2-database', 'c2-achievement'];
     function markOn() {
         var line = (parseInt(getComputedStyle($root[0]).getPropertyValue('--c2-top'), 10) || 0) + 90, cur = 'c2-top';
         $.each(secs, function (i, id) { var el = document.getElementById(id); if (el && !$(el).hasClass('c2-folded') && el.getBoundingClientRect().top <= line) cur = id; });
@@ -2778,6 +2760,9 @@ $(function () {
 .dash-c5 .c5-scope button { height: 20px; padding: 0 10px; border: 0; border-radius: 999px; background: transparent; color: #334155; font-size: 11px; font-weight: 700; cursor: pointer; }
 .dash-c5 .c5-scope button.is-on { background: #0072f0; color: #fff; }
 .dash-c5 .c3-pipe[hidden] { display: none !important; }
+
+/* Database, Leads and Orders: the three cards in a row share one height. */
+@media (min-width: 992px) { .dash-c5 .c5-states-row { display: flex; } .dash-c5 .c5-states-row > [class*="col-"] { float: none; display: flex; } .dash-c5 .c5-states-row .crm-modern-stat-card { width: 100%; } }
 
 /* New cards. */
 .dash-c5 .c5-team-row { margin-left: 0; margin-right: 0; }
