@@ -2922,6 +2922,10 @@ $(function () {
 .dash-c6 .c6-tiles { padding: 4px 10px 0; }
 .dash-c6 .c6-tile-row { margin-left: 0; margin-right: 0; }
 .dash-c6 .c6-tile-col { padding-left: 4px; padding-right: 4px; }
+.dash-c6 .c6-tile-row { display: flex; flex-wrap: wrap; }
+.dash-c6 .c6-tile-row::before, .dash-c6 .c6-tile-row::after { display: none; }
+.dash-c6 .c6-tile-col { float: none; display: flex; }
+.dash-c6 .c6-tile-col > .dash-kpi-card { width: 100%; }
 .dash-c6 .c6-tiles .dash-kpi-card { height: 64px; min-height: 64px; margin-bottom: 8px; }
 .dash-c6 .c6-tiles .dash-kpi-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dash-c6 .c6-tiles .dash-kpi-sales { font-size: 11px; opacity: .92; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -2942,6 +2946,8 @@ $(function () {
     .dash-c6 .c5-card .card-top { flex-wrap: wrap; row-gap: 4px; }
     .dash-c6 .c5-card .card-title { flex: 1 0 100%; }
     .dash-c6 .c6-tbl .c6-amt-col { min-width: 90px; }
+    .dash-c6 .c6-tiles .dash-kpi-card { height: auto; min-height: 64px; }
+    .dash-c6 .c6-tiles .dash-kpi-label { white-space: normal; line-height: 1.2; }
 }
 .dash-c6 .c6-tbl td + td { width: auto; text-align: center; white-space: nowrap; }
 .dash-c6 .c6-tbl th:first-child { text-align: left; }

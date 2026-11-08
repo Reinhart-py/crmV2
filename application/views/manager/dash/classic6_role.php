@@ -141,7 +141,7 @@ if (!function_exists('c6_h')) {
         <div class="crm-modern-stat-card c5-card">
             <div class="card-top">
                 <h4 class="card-title"><i class="fa fa-handshake-o" style="color:#7c3aed;"></i> KAM: Clients by Last Contact</h4>
-                <span class="card-total-pill"><?php echo $co['kam']['total']; ?> clients</span>
+                <span class="card-total-pill"><?php echo $co['kam']['total'] . ($co['kam']['total'] == 1 ? ' client' : ' clients'); ?></span>
             </div>
             <?php $kb = $co['kam']['buckets']; echo c6_bars(array(
                 array('0 to 7 days', $kb['d7'], '', '', 'c5-ag-ok'), array('8 to 30 days', $kb['d30'], '', '', 'c5-ag-mid'),
@@ -263,7 +263,7 @@ if (!function_exists('c6_h')) {
         <div class="crm-modern-stat-card c5-card">
             <div class="card-top">
                 <h4 class="card-title"><i class="fa fa-file-text-o" style="color:#0891b2;"></i> Documents Pending</h4>
-                <span class="card-total-pill"><?php echo $bo['docs']['orders']; ?> orders</span>
+                <span class="card-total-pill"><?php echo $bo['docs']['orders'] . ($bo['docs']['orders'] == 1 ? ' order' : ' orders'); ?></span>
             </div>
             <?php if (empty($bo['docs']['list'])) { ?><div class="c5-empty">All documents collected</div><?php } else { ?>
             <div class="c6-tbl-wrap">
@@ -328,7 +328,7 @@ if (!function_exists('c6_h')) {
         <div class="crm-modern-stat-card c5-card">
             <div class="card-top">
                 <h4 class="card-title"><i class="fa fa-hourglass-half" style="color:#ea580c;"></i> Clients by Last Contact</h4>
-                <span class="card-total-pill"><?php echo $s['total']; ?> clients</span>
+                <span class="card-total-pill"><?php echo $s['total'] . ($s['total'] == 1 ? ' client' : ' clients'); ?></span>
             </div>
             <?php echo c6_bars(array(
                 array('0 to 7 days', $b['d7'], '', '', 'c5-ag-ok'), array('8 to 30 days', $b['d30'], '', '', 'c5-ag-mid'),

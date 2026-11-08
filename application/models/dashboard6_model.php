@@ -346,14 +346,14 @@ class Dashboard6_model extends CI_Model {
 			return array('sum' => $sum, 'list' => array(), 'upsell' => array('open' => 0, 'sales_n' => 0, 'sales_amt' => 0.0, 'clients' => 0, 'one_service' => 0),
 				'wait' => array_map('intval', (array)$wait), 'tasks' => array());
 		}
-		// Upselling: orders on my existing clients (lead already onboarded), made after onboarding.
+		// Upselling: orders on my existing clients made after onboarding (onboarded date, else when the KAM client record was made).
 		$up = $this->db->query("SELECT
 				SUM(" . crm_order_open_sql('O') . " AND O.status != 'Cancelled') AS open_n,
 				SUM(" . crm_order_is_sale_sql('O') . " AND COALESCE(O.sales_converted_at, O.created_at) >= '$s 00:00:00' AND COALESCE(O.sales_converted_at, O.created_at) <= '$e 23:59:59') AS sales_n,
 				SUM(CASE WHEN " . crm_order_is_sale_sql('O') . " AND COALESCE(O.sales_converted_at, O.created_at) >= '$s 00:00:00' AND COALESCE(O.sales_converted_at, O.created_at) <= '$e 23:59:59' THEN O.pricing_amount ELSE 0 END) AS sales_amt,
 				COUNT(DISTINCT O.lead_id) AS clients
-			FROM ci_orders O JOIN ci_pipeline P ON P.lead_id = O.lead_id
-			WHERE O.lead_id IN ($in) AND P.onboarded_at IS NOT NULL AND O.created_at > P.onboarded_at")->row_array();
+			FROM ci_orders O JOIN ci_kam_client_details K ON K.lead_id = O.lead_id LEFT JOIN ci_pipeline P ON P.lead_id = O.lead_id
+			WHERE O.lead_id IN ($in) AND O.created_at > COALESCE(P.onboarded_at, K.created_at)")->row_array();
 		$services = array();
 		foreach ($this->db->query("SELECT O.lead_id, COUNT(DISTINCT LOWER(COALESCE(NULLIF(O.vertical_code, ''), 'other'))) AS n
 			FROM ci_orders O WHERE O.lead_id IN ($in) AND O.status != 'Cancelled' GROUP BY O.lead_id")->result_array() as $r) {
