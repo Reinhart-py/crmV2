@@ -261,6 +261,7 @@ $route['manager/system/qoc'] = 'ci_admin_system/qc';
 $route['manager/system/ajax_save_qc'] = 'ci_admin_system/ajax_save_qc';
 $route['manager/system/ajax_save_qc_remarks'] = 'ci_admin_system/ajax_save_qc_remarks';
 $route['manager/ping'] = "ci_admin/ping";
+$route['manager/logout-info'] = "ci_admin/logout_info";
 
 $route['manager/back-office'] = 'ci_admin_leads/review_leads';
 $route['manager/back-office/(:any)'] = 'ci_admin_leads/review_leads/$1';
