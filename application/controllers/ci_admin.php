@@ -149,6 +149,7 @@ class Ci_admin extends CI_Controller {
 		if ($style === 'classic' || $style === 'classic2' || $style === 'classic3' || $style === 'classic5' || $style === 'classic6') {
 			return $this->dashboard_classic($style === 'classic' ? false : $style);
 		}
+		if ($style === 'modern6') return $this->dashboard_modern6();
 		$role = (int)$this->session->userdata('manager_role');
 		$is_admin = crm_is_full_admin();
 		$all = $is_admin || crm_can('all_data');
@@ -239,6 +240,22 @@ class Ci_admin extends CI_Controller {
 			$this->dash->set_style((int)$this->session->userdata('manager_id'), (string)$this->input->post('style'));
 		}
 		redirect('manager/dashboard');
+	}
+
+	/** Modern 6: a short version of Classic 6. Same views per department and the same rights, one screen each. */
+	private function dashboard_modern6()
+	{
+		$data = array();
+		$data['info'] = array('title' => 'Dashboard');
+		$data['info2'] = $this->if_not_login();
+		$this->load->model('dashboard6_model', 'dash6');
+		$c6 = $this->dash6->allowed();
+		$v = (string)$this->input->get('view');
+		if (!in_array($v, $c6['views'], true)) $v = in_array($c6['own'], $c6['views'], true) ? $c6['own'] : 's';
+		$data['m6'] = $this->dash6->build_short($v) + array('views' => $c6['views'], 'own' => $c6['own'], 'names' => $this->dash6->names());
+		$data['dash_style'] = 'modern6';
+		$this->output->set_header('Cache-Control: no-store, no-cache, must-revalidate, private');
+		$this->load->view('manager/dashboard_modern6', $data);
 	}
 
 	/** Classic dashboard. Classic 2 / 3 / 5 / 6 ($copy) are the same data shown with their own copy of the page (manager/dashboard_classic2.php, _classic3.php, _classic5.php). Classic 5 also loads a few extra blocks. */

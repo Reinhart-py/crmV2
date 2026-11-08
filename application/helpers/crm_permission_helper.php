@@ -37,6 +37,9 @@ if (!function_exists('crm_perm_catalog')) {
 				'icon' => '<rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect>',
 				'items' => array(
 					'dashboard' => array('label' => 'Dashboard', 'desc' => 'Home page with pipeline counts and charts', 'pages' => array('dashboard'), 'levels' => 'r'),
+					'dash6_company' => array('label' => 'Dashboard: Admin view', 'desc' => 'Classic 6 and Modern 6: also open the Admin view (whole company by branch, business category and department). Admins always have it', 'levels' => 'r'),
+					'dash6_backoffice' => array('label' => 'Dashboard: Back Office view', 'desc' => 'Classic 6 and Modern 6: also open the Back Office view (order processing, documents, reviews). Back Office users always have it', 'levels' => 'r'),
+					'dash6_kam' => array('label' => 'Dashboard: KAM view', 'desc' => 'Classic 6 and Modern 6: also open the KAM view (own clients, contact, upselling). KAM users always have it', 'levels' => 'r'),
 					'calls' => array('label' => 'Phone Dialer & Calls', 'desc' => 'Dialer, softphone and call logs (phone button in the top bar)', 'pages' => array('calls')),
 					'live' => array('label' => 'Live Operations Report', 'desc' => 'LIVE button in the top bar and the TV presentation screen', 'pages' => array('live'), 'levels' => 'r'),
 					'help_support' => array('label' => 'Help & Support', 'desc' => 'Help topics and chat with support (profile menu)', 'fallback' => 'dashboard', 'pages' => array('help'), 'levels' => 'r'),
@@ -52,9 +55,6 @@ if (!function_exists('crm_perm_catalog')) {
 					'all_data' => array('label' => 'All company data', 'desc' => 'See and choose anyone\'s records in reports, Assign Database, Import and transfers, not only own team', 'levels' => 'r'),
 					'support_desk' => array('label' => 'Support desk', 'desc' => 'Handle every ticket as support staff and get open-ticket alerts', 'levels' => 'r'),
 					'start_live' => array('label' => 'Start on Live screen', 'desc' => 'Open the Live Operations Report instead of the Dashboard after sign-in (also needs Live Operations Report)', 'levels' => 'r'),
-					'dash6_company' => array('label' => 'Dashboard: Company view', 'desc' => 'On Classic 6, also open the Admin view (whole company by branch, business category and department)', 'levels' => 'r'),
-					'dash6_backoffice' => array('label' => 'Dashboard: Back Office view', 'desc' => 'On Classic 6, also open the Back Office view (order processing, documents, reviews)', 'levels' => 'r'),
-					'dash6_kam' => array('label' => 'Dashboard: KAM view', 'desc' => 'On Classic 6, also open the KAM view (own clients, contact, upselling)', 'levels' => 'r'),
 				),
 			),
 			'my_zone' => array(

@@ -1,7 +1,7 @@
 <?php
 // Dashboard choice (Modern / Classic / Classic 2 / Classic 3 / Classic 5 / Classic 6), shown in the profile menu. Saved per user in ci_user_prefs.
 $ds_now = 'modern';
-$ds_list = array('modern' => 'Modern', 'classic' => 'Classic', 'classic2' => 'Classic 2', 'classic3' => 'Classic 3', 'classic5' => 'Classic 5', 'classic6' => 'Classic 6');
+$ds_list = array('modern' => 'Modern', 'classic' => 'Classic', 'classic2' => 'Classic 2', 'classic3' => 'Classic 3', 'classic5' => 'Classic 5', 'classic6' => 'Classic 6', 'modern6' => 'Modern 6');
 $ds_ci =& get_instance();
 $ds_uid = (int)$ds_ci->session->userdata('manager_id');
 if ($ds_uid > 0 && $ds_ci->db->table_exists('ci_user_prefs')) {

@@ -379,6 +379,42 @@ class Dashboard6_model extends CI_Model {
 		);
 	}
 
+	/**
+	 * Modern 6: the same views, short. Follow-ups / meetings for every view, plus the chosen view's figures.
+	 * Sales gets its own small set (tiles, pipeline, top this month, calls) instead of the full Classic 5 page.
+	 */
+	public function build_short($view)
+	{
+		$out = array('view' => $view, 'is_all' => $this->is_all);
+		$out['fu_my'] = $this->ci_admin_model->dashboard_followups(0);
+		$out['m_my'] = $this->ci_admin_model->dashboard_meetings(0);
+		$out['fu_team'] = $this->team_counts('followup_date');
+		$out['m_team'] = $this->team_counts('m_date');
+		$out['agenda_my'] = $this->agenda(false, 8);
+		$out['agenda_team'] = $this->agenda(true, 8);
+		$out['fu_done'] = $this->fu_done();
+		if ($view === 'a') $out['co'] = $this->company();
+		if ($view === 'b') $out['bo'] = $this->backoffice();
+		if ($view === 'k') $out['km'] = $this->kam();
+		if ($view === 's') {
+			$this->load->model('dashboard5_model', 'dash5');
+			$x = $this->dash5->extras();
+			$cnt = $this->ci_admin_model->dashboard_countdata();
+			$ach = $this->ci_admin_model->dashboard_achievement_graph(0);
+			$tg = !empty($ach['target']) ? (float)end($ach['target']) : 0;
+			$ac = !empty($ach['achievement']) ? (float)end($ach['achievement']) : 0;
+			$out['sa'] = array(
+				'leads' => isset($cnt['count_leads']) ? (int)$cnt['count_leads'] : 0,
+				'orders' => isset($cnt['count_orders']) ? (int)$cnt['count_orders'] : 0,
+				'db' => isset($cnt['count_database']) ? (int)$cnt['count_database'] : 0,
+				'sales_amt' => isset($cnt['sales_amount']) ? (float)$cnt['sales_amount'] : 0,
+				'target' => $tg, 'achieved' => $ac,
+				'pipe' => $x['pipeline_my'], 'top' => $x['leaderboard'], 'calls' => $x['calls'], 'ageing' => $x['ageing'],
+			);
+		}
+		return $out;
+	}
+
 	/** Everything the chosen view needs. */
 	public function build($view)
 	{
