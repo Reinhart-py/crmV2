@@ -226,6 +226,7 @@
 <nav class="c2-bar" id="c2Bar" aria-label="Dashboard sections">
     <div class="c2-bar-links">
         <a href="#c2-top" data-sec="c2-top">Overview</a>
+        <a href="#c3-pipeline" data-sec="c3-pipeline">Pipeline</a>
         <a href="#c2-activity" data-sec="c2-activity">Activity</a>
         <a href="#c2-database" data-sec="c2-database">Database</a>
         <a href="#c2-leads" data-sec="c2-leads">Leads</a>
@@ -550,6 +551,24 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
                         <h4 class="dash-chart-title" style="margin:0 !important; font-size:12.5px; font-weight:700;">
                             Target vs Achievement
                         </h4>
+<?php
+// This month: achievement and projection as a share of the target (same numbers as the charts).
+$c3_t = !empty($dashboard_achievement_my['target']) ? (float)end($dashboard_achievement_my['target']) : 0;
+$c3_a = !empty($dashboard_achievement_my['achievement']) ? (float)end($dashboard_achievement_my['achievement']) : 0;
+$c3_p = isset($dashboard_MyPro['lead_number']['pt_0']) ? (float)$dashboard_MyPro['lead_number']['pt_0'] : 0;
+$c3_m = !empty($dashboard_achievement_my['labels']) ? end($dashboard_achievement_my['labels']) : date('M-y');
+$c3_ap = $c3_t > 0 ? (int)round($c3_a / $c3_t * 100) : 0;
+$c3_pp = $c3_t > 0 ? (int)round($c3_p / $c3_t * 100) : 0;
+?>
+                        <div class="c3-pct" title="<?php echo $c3_t > 0 ? htmlspecialchars($c3_m . ': achieved ' . $c3_ap . '% of target, projection ' . $c3_pp . '% of target') : 'No target set for ' . htmlspecialchars($c3_m); ?>">
+                            <?php if ($c3_t > 0) { ?>
+                            <span class="c3-pct-lbl"><?php echo htmlspecialchars($c3_m); ?> <b class="<?php echo $c3_ap >= 100 ? 'is-met' : ''; ?>"><?php echo $c3_ap; ?>%</b></span>
+                            <span class="c3-pct-bar"><i style="width: <?php echo min(100, $c3_ap); ?>%;"></i><em style="left: <?php echo min(100, $c3_pp); ?>%;"></em></span>
+                            <span class="c3-pct-pro">Projection <?php echo $c3_pp; ?>%</span>
+                            <?php } else { ?>
+                            <span class="c3-pct-lbl c3-pct-none">No target for <?php echo htmlspecialchars($c3_m); ?></span>
+                            <?php } ?>
+                        </div>
                         <div class="dash-chart-legend" style="display:inline-flex; align-items:center; gap:10px; font-size:10.5px; font-weight:600; color:#475569;">
                             <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#00c6f0; border-radius:50%;"></span> Target</span>
                             <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block; width:8px; height:8px; background-color:#16a34a; border-radius:50%;"></span> Achievement</span>
@@ -642,6 +661,80 @@ $donut_frame = array(max($donut_frame[0], $GLOBALS['crm_donut_frame'][0]), max($
     $(window).on('load', function () { fit(true); setTimeout(function () { fit(true); }, 600); });
 })();
 </script>
+
+<div class="dash-section-divider" style="margin-top: 28px; margin-bottom: 14px;">
+            <h3 class="dash-section-title" style="margin-bottom:0;">
+                <span class="dash-section-title-icon">
+                    <span></span><span></span>
+                </span>
+                <span>Pipeline and Closures</span>
+            </h3>
+        </div>
+
+<?php
+$c3_pipe = isset($dashboard_pipeline) ? (array)$dashboard_pipeline : array();
+$c3_steps = array(
+    'database' => array('Database', 'fa-database'),
+    'leads'    => array('Leads', 'fa-bullseye'),
+    'orders'   => array('Open Orders', 'fa-shopping-cart'),
+    'sales'    => array('Sales', 'fa-check-circle'),
+);
+$c3_max = 0;
+foreach ($c3_steps as $k => $v) { $c3_max = max($c3_max, isset($c3_pipe[$k]['count']) ? (int)$c3_pipe[$k]['count'] : 0); }
+$c3_clo_rows = array(
+    'total_missed'   => array('All Missed', 'bg-red'),
+    'total_lastweek' => array('Last 7 Days', 'bg-orange'),
+    'total_today'    => array('Today', 'bg-skyblue'),
+    'total_nextweek' => array('Next 7 Days', 'bg-blue'),
+    'total_future'   => array('All Future', 'bg-green'),
+);
+$c3_clo_my = isset($dashboard_c) ? (array)$dashboard_c : array();
+$c3_clo_team = isset($dashboard_Tc) ? (array)$dashboard_Tc : array();
+?>
+        <div class="row c3-pipe-row">
+            <div class="col-lg-8 col-md-7 col-xs-12 c3-col-l">
+                <div class="crm-modern-stat-card c3-card">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-filter" style="color:#0072f0;"></i> Sales Pipeline</h4>
+                        <span class="card-total-pill">Open now</span>
+                    </div>
+                    <div class="c3-pipe">
+                        <?php $c3_i = 0; $c3_prev = null; foreach ($c3_steps as $k => $v) {
+                            $cnt = isset($c3_pipe[$k]['count']) ? (int)$c3_pipe[$k]['count'] : 0;
+                            $val = isset($c3_pipe[$k]['value']) ? (float)$c3_pipe[$k]['value'] : 0;
+                            if ($c3_prev !== null) { ?>
+                        <div class="c3-arrow" aria-hidden="true"><i class="fa fa-angle-right"></i></div>
+                            <?php } ?>
+                        <div class="c3-step c3-s<?php echo ++$c3_i; ?>">
+                            <div class="c3-step-name"><i class="fa <?php echo $v[1]; ?>"></i> <?php echo $v[0]; ?></div>
+                            <div class="c3-step-num"><?php echo number_format($cnt); ?></div>
+                            <div class="c3-step-amt c2-amt"><?php echo $curr . ' ' . number_format($val, 0); ?></div>
+                            <div class="c3-step-bar"><i style="width: <?php echo $c3_max > 0 ? max($cnt > 0 ? 3 : 0, (int)round($cnt / $c3_max * 100)) : 0; ?>%;"></i></div>
+                        </div>
+                        <?php $c3_prev = $cnt; } ?>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-5 col-xs-12 c3-col-r">
+                <div class="crm-modern-stat-card c3-card">
+                    <div class="card-top">
+                        <h4 class="card-title"><i class="fa fa-flag-checkered" style="color:#16a34a;"></i> Closures</h4>
+                        <span class="card-total-pill">By close date</span>
+                    </div>
+                    <table class="c3-clo">
+                        <thead><tr><th></th><th>My</th><th>Team</th></tr></thead>
+                        <tbody>
+                        <?php foreach ($c3_clo_rows as $k => $r) {
+                            $my = isset($c3_clo_my[$k]) ? (int)$c3_clo_my[$k] : 0;
+                            $tm = isset($c3_clo_team[$k]) ? (int)$c3_clo_team[$k] : 0; ?>
+                            <tr><td><?php echo $r[0]; ?></td><td><span class="badge <?php echo $r[1] . ($my === 0 ? ' c3-zero' : ''); ?>"><?php echo $my; ?></span></td><td><span class="badge <?php echo $r[1] . ($tm === 0 ? ' c3-zero' : ''); ?>"><?php echo $tm; ?></span></td></tr>
+                        <?php } ?>
+                        </tbody>
+                        <tfoot><tr><td>Total</td><td><?php echo isset($c3_clo_my['total_all']) ? (int)$c3_clo_my['total_all'] : 0; ?></td><td><?php echo isset($c3_clo_team['total_all']) ? (int)$c3_clo_team['total_all'] : 0; ?></td></tr></tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
 
 <div class="dash-section-divider" style="margin-top: 28px; margin-bottom: 14px;">
             <h3 class="dash-section-title" style="margin-bottom:0;">
@@ -2275,7 +2368,7 @@ $(function () {
     });
 
     // 8 and 10. Sections: ids for the bar, and a Hide / Show button on each heading.
-    var ids = { 'Operational Activity': 'c2-activity', 'Database States': 'c2-database', 'Orders': 'c2-orders', 'Achievement and Projection': 'c2-achievement' };
+    var ids = { 'Pipeline and Closures': 'c3-pipeline', 'Operational Activity': 'c2-activity', 'Database States': 'c2-database', 'Orders': 'c2-orders', 'Achievement and Projection': 'c2-achievement' };
     $root.find('.dash-section-divider').each(function () {
         var $d = $(this), title = $.trim($d.find('.dash-section-title > span:last-child').text()), id = ids[title];
         if (!id) return;
@@ -2310,7 +2403,7 @@ $(function () {
         if ($d.hasClass('is-folded') && $d.data('c2fold')) $d.data('c2fold')(false);
         $t[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
-    var secs = ['c2-top', 'c2-activity', 'c2-database', 'c2-leads', 'c2-orders', 'c2-achievement'];
+    var secs = ['c2-top', 'c3-pipeline', 'c2-activity', 'c2-database', 'c2-leads', 'c2-orders', 'c2-achievement'];
     function markOn() {
         var line = (parseInt(getComputedStyle($root[0]).getPropertyValue('--c2-top'), 10) || 0) + 90, cur = 'c2-top';
         $.each(secs, function (i, id) { var el = document.getElementById(id); if (el && !$(el).hasClass('c2-folded') && el.getBoundingClientRect().top <= line) cur = id; });
@@ -2339,5 +2432,72 @@ $(function () {
     setHide(store('crm_c2_hide_amt') === '1');
 });
 </script>
+
+<style>
+/* Classic 3 only: this month's % in the chart header, Sales Pipeline, Closures. */
+.dash-c2 .c3-pct { display: inline-flex; align-items: center; gap: 7px; margin: 0 10px; min-width: 0; font-size: 10.5px; font-weight: 600; color: #475569; white-space: nowrap; }
+.dash-c2 .c3-pct-lbl b { color: #0f172a; font-size: 11.5px; }
+.dash-c2 .c3-pct-lbl b.is-met { color: #16a34a; }
+.dash-c2 .c3-pct-none { color: #94a3b8; }
+.dash-c2 .c3-pct-bar { position: relative; width: 110px; height: 7px; border-radius: 999px; background: #e2e8f0; }
+.dash-c2 .c3-pct-bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; background: linear-gradient(90deg, #22c55e, #16a34a); }
+.dash-c2 .c3-pct-bar em { position: absolute; top: -3px; width: 2px; height: 13px; margin-left: -1px; background: #0072f0; border-radius: 1px; }
+.dash-c2 .c3-pct-pro { color: #0072f0; }
+@media (max-width: 1279px) { .dash-c2 .c3-pct-pro { display: none; } .dash-c2 .c3-pct-bar { width: 70px; } }
+@media (max-width: 520px) { .dash-c2 .c3-pct-bar { display: none; } .dash-c2 .c3-pct { margin: 0 6px; } }
+
+.dash-c2 .c3-pipe-row { margin-left: 0; margin-right: 0; }
+.dash-c2 .c3-col-l { padding-left: 14px; padding-right: 4px; }
+.dash-c2 .c3-col-r { padding-left: 4px; padding-right: 14px; }
+@media (min-width: 992px) {
+    .dash-c2 .c3-pipe-row { display: flex; }
+    .dash-c2 .c3-pipe-row > [class*="col-"] { float: none; display: flex; }
+    .dash-c2 .c3-pipe-row .c3-card { width: 100%; }
+}
+@media (max-width: 991px) {
+    .dash-c2 .c3-col-l, .dash-c2 .c3-col-r { padding-left: 14px; padding-right: 14px; }
+}
+.dash-c2 .c3-card { margin-bottom: 8px !important; display: flex; flex-direction: column; }
+.dash-c2 .c3-card .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.dash-c2 .c3-pipe { display: flex; align-items: stretch; gap: 6px; flex: 1; }
+.dash-c2 .c3-step { flex: 1 1 0; min-width: 0; padding: 10px 12px; border-radius: 8px; border: 1px solid #e2e8f0; background: rgba(255, 255, 255, .75); }
+.dash-c2 .c3-step-name { font-size: 11.5px; font-weight: 700; color: #475569; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dash-c2 .c3-step-num { font-size: 22px; font-weight: 800; line-height: 1.2; margin-top: 4px; color: #0f172a; }
+.dash-c2 .c3-step-amt { font-size: 11.5px; font-weight: 600; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dash-c2 .c3-step-bar { height: 5px; margin-top: 8px; border-radius: 999px; background: #eef2f7; overflow: hidden; }
+.dash-c2 .c3-step-bar i { display: block; height: 100%; border-radius: 999px; }
+.dash-c2 .c3-s1 { border-top: 3px solid #1e3a8a; } .dash-c2 .c3-s1 .c3-step-name i { color: #1e3a8a; } .dash-c2 .c3-s1 .c3-step-bar i { background: #1e3a8a; }
+.dash-c2 .c3-s2 { border-top: 3px solid #0072f0; } .dash-c2 .c3-s2 .c3-step-name i { color: #0072f0; } .dash-c2 .c3-s2 .c3-step-bar i { background: #0072f0; }
+.dash-c2 .c3-s3 { border-top: 3px solid #0f8a80; } .dash-c2 .c3-s3 .c3-step-name i { color: #0f8a80; } .dash-c2 .c3-s3 .c3-step-bar i { background: #0f8a80; }
+.dash-c2 .c3-s4 { border-top: 3px solid #16a34a; } .dash-c2 .c3-s4 .c3-step-name i { color: #16a34a; } .dash-c2 .c3-s4 .c3-step-bar i { background: #16a34a; }
+.dash-c2 .c3-arrow { flex: none; display: flex; align-items: center; justify-content: center; width: 22px; color: #94a3b8; }
+.dash-c2 .c3-arrow i { font-size: 20px; line-height: 1; }
+.dash-c2 .c3-arrow span { font-size: 10.5px; font-weight: 700; color: #475569; }
+.dash-c2 .c3-note { margin-top: 8px; font-size: 10.5px; color: #94a3b8; }
+.dash-c2 .c3-clo { width: 100%; border-collapse: collapse; font-size: 12px; }
+.dash-c2 .c3-clo th { font-size: 10.5px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .03em; text-align: center; padding: 0 4px 6px; }
+.dash-c2 .c3-clo td { padding: 5px 4px; border-top: 1px solid #eef2f7; color: #334155; font-weight: 600; }
+.dash-c2 .c3-clo td + td { text-align: center; width: 70px; }
+.dash-c2 .c3-clo .badge { min-width: 34px; }
+.dash-c2 .c3-clo .badge.c3-zero { opacity: .45; }
+.dash-c2 .c3-clo tfoot td { border-top: 2px solid #e2e8f0; font-weight: 800; color: #0f172a; }
+@media (max-width: 767px) {
+    .dash-c2 .c3-pipe { flex-wrap: wrap; }
+    .dash-c2 .c3-step { flex: 1 1 40%; }
+    .dash-c2 .c3-arrow { display: none; }
+}
+[data-theme="dark"] .dash-c2 .c3-pct { color: #94a3b8; }
+[data-theme="dark"] .dash-c2 .c3-pct-lbl b { color: #f1f5f9; }
+[data-theme="dark"] .dash-c2 .c3-pct-lbl b.is-met { color: #4ade80; }
+[data-theme="dark"] .dash-c2 .c3-pct-bar, [data-theme="dark"] .dash-c2 .c3-step-bar { background: #1f2937; }
+[data-theme="dark"] .dash-c2 .c3-pct-pro { color: #60a5fa; }
+[data-theme="dark"] .dash-c2 .c3-pct-bar em { background: #60a5fa; }
+[data-theme="dark"] .dash-c2 .c3-step { background: rgba(17, 24, 39, .7); border-color: #1f2937; }
+[data-theme="dark"] .dash-c2 .c3-step-name, [data-theme="dark"] .dash-c2 .c3-arrow span { color: #cbd5e1; }
+[data-theme="dark"] .dash-c2 .c3-step-num, [data-theme="dark"] .dash-c2 .c3-clo tfoot td { color: #f1f5f9; }
+[data-theme="dark"] .dash-c2 .c3-step-amt, [data-theme="dark"] .dash-c2 .c3-clo th { color: #94a3b8; }
+[data-theme="dark"] .dash-c2 .c3-clo td { color: #e2e8f0; border-top-color: #1f2937; }
+[data-theme="dark"] .dash-c2 .c3-clo tfoot td { border-top-color: #334155; }
+</style>
 
 <?php require_once(APPPATH."views/manager/elements/footer.php"); ?>
