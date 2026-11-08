@@ -18,11 +18,11 @@
             <div class="box-header">
             <h3 class="box-title pull-left" style="text-transform:capitalize">Custom Report</h3>
             <div class="pull-right">
-            <a href="<?php echo base_url(); ?>manager/verticals/report/fixed/1" class="btn btn-danger">All Missed</a>
-            <a href="<?php echo base_url(); ?>manager/verticals/report/fixed/2" class="btn btn-danger">Last 7 Days</a>
-            <a href="<?php echo base_url(); ?>manager/verticals/report/fixed/3" class="btn btn-danger">Today</a>
-            <a href="<?php echo base_url(); ?>manager/verticals/report/fixed/4" class="btn btn-danger">Next 7 Days</a>
-            <a href="<?php echo base_url(); ?>manager/verticals/report/fixed/5" class="btn btn-danger">All Future</a>
+            <a href="<?php echo base_url(); ?>manager/verticals/followups?type=1" class="btn btn-danger">All Missed</a>
+            <a href="<?php echo base_url(); ?>manager/verticals/followups?type=2" class="btn btn-danger">Last 7 Days</a>
+            <a href="<?php echo base_url(); ?>manager/verticals/followups?type=3" class="btn btn-danger">Today</a>
+            <a href="<?php echo base_url(); ?>manager/verticals/followups?type=4" class="btn btn-danger">Next 7 Days</a>
+            <a href="<?php echo base_url(); ?>manager/verticals/followups?type=5" class="btn btn-danger">All Future</a>
             </div>
             </div>
             <!-- /.box-header -->
