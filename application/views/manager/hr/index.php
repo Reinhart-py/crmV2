@@ -310,7 +310,10 @@
         <div class="box-header with-border">
           <h3 class="box-title">Targets Assignment</h3>
           <div class="box-tools pull-right">
-            <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalAssignTarget">
+            <a href="<?php echo base_url(); ?>manager/hr/targets/set" class="btn btn-primary btn-sm">
+              <i class="fa fa-users"></i> Set targets for many people
+            </a>
+            <button type="button" class="btn btn-default btn-sm" data-toggle="modal" data-target="#modalAssignTarget">
               <i class="fa fa-plus"></i> Assign New Target
             </button>
           </div>

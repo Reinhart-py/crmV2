@@ -40,7 +40,7 @@ class Ci_admin_hr extends CI_Controller {
 		// HR pages: each needs its own permission (View to open, Full to change).
 		$page_keys = array(
 			'index' => 'hr',
-			'targets' => 'hr_targets', 'add_target' => 'hr_targets', 'delete_target' => 'hr_targets',
+			'targets' => 'hr_targets', 'add_target' => 'hr_targets', 'delete_target' => 'hr_targets', 'target_bulk' => 'hr_targets', 'target_bulk_save' => 'hr_targets',
 			'lifecycle' => 'hr_lifecycle', 'update_lifecycle' => 'hr_lifecycle',
 			'attendance' => 'hr_attendance', 'ajax_clock' => 'hr_attendance', 'attendance_save' => 'hr_attendance',
 			'shifts' => 'hr_shifts', 'add_shift' => 'hr_shifts', 'assign_shift' => 'hr_shifts',
@@ -357,6 +357,120 @@ class Ci_admin_hr extends CI_Controller {
 			$this->db->where('id', $id)->delete('ci_hr_targets');
 			$this->session->set_flashdata('message', 'Target successfully deleted.');
 		}
+		redirect('manager/hr/targets');
+	}
+
+	/** Set targets for many people and many months on one page. */
+	public function target_bulk()
+	{
+		$this->_hr_tables();
+		$data = array();
+		$data['info'] = array('title' => 'Set Targets - HR', 'page_heading' => 'Set Targets');
+		$data['can_edit'] = $this->is_admin || crm_can('hr_targets', 'write');
+		$data['see_pay'] = $this->is_admin || crm_can('hr_salary', 'read');
+
+		$this->db->select('U.id, U.name, U.department, U.office, R.title AS role_title')
+			->from('ci_user U')
+			->join('ci_roles R', 'R.id = U.user_type', 'left')
+			->where($this->_active_sql('U'), null, false)
+			->where("(R.role_type IS NULL OR R.role_type <> 'system')", null, false);
+		$people = $this->db->order_by('U.name', 'ASC')->get()->result_array();
+
+		$ids = array();
+		foreach ($people as $p) $ids[] = (int)$p['id'];
+		$sal = $data['see_pay'] ? $this->_salaries_on($people, date('Y-m-t')) : array();
+
+		// Each person's latest target (to copy) and the targets already set from this month on
+		$last = array(); $set = array();
+		if ($ids) {
+			$rows = $this->db->select('user_id, period_month, target_amount, target_calls, target_leads, target_meetings')
+				->where_in('user_id', $ids)->where('status', 'Active')
+				->order_by('period_month ASC, id ASC')->get('ci_hr_targets')->result_array();
+			foreach ($rows as $r) {
+				$u = (int)$r['user_id'];
+				$last[$u] = $r;
+				if ($r['period_month'] >= date('Y-m')) $set[$u][] = $r['period_month'];
+			}
+		}
+		foreach ($people as &$p) {
+			$u = (int)$p['id'];
+			$p['salary'] = isset($sal[$u]) ? (float)$sal[$u]['total'] : null;
+			$p['last'] = isset($last[$u]) ? $last[$u] : null;
+			$p['set'] = isset($set[$u]) ? array_values(array_unique($set[$u])) : array();
+		}
+		unset($p);
+		$data['people'] = $people;
+		$data['set'] = $this->_hr_settings();
+		$this->load->view('manager/hr/target_bulk', $data);
+	}
+
+	/** Save the targets from the Set Targets page: one row per person and month. */
+	public function target_bulk_save()
+	{
+		if ($this->input->server('REQUEST_METHOD') !== 'POST') { redirect('manager/hr/targets/set'); return; }
+		$back = 'manager/hr/targets/set';
+		$from = (string)$this->input->post('from_month');
+		$to = (string)$this->input->post('to_month');
+		if (!preg_match('/^\d{4}-\d{2}$/', $from) || !preg_match('/^\d{4}-\d{2}$/', $to)) {
+			$this->session->set_flashdata('error_message', 'Please choose the months.');
+			redirect($back); return;
+		}
+		if ($to < $from) { $x = $from; $from = $to; $to = $x; }
+		$months = array();
+		for ($m = $from; $m <= $to && count($months) < 24; $m = date('Y-m', strtotime($m . '-01 +1 month'))) $months[] = $m;
+
+		$replace = $this->input->post('existing') !== 'keep';
+		$notes = trim((string)$this->input->post('notes'));
+		$rows = (array)$this->input->post('t');
+		$cur_uid = (int)$this->session->userdata('manager_id');
+		$cur_name = (string)$this->session->userdata('manager_name');
+		$valid = array();
+		foreach ($this->db->select('id')->where($this->_active_sql(), null, false)->get('ci_user')->result_array() as $r) $valid[(int)$r['id']] = true;
+
+		$added = 0; $updated = 0; $kept = 0; $people = 0;
+		$num = function ($v) { return max(0, (float)str_replace(',', '', (string)$v)); };
+		foreach ($rows as $uid => $r) {
+			$uid = (int)$uid;
+			if (empty($r['on']) || !isset($valid[$uid])) continue;
+			$vals = array(
+				'target_amount' => round($num(isset($r['amount']) ? $r['amount'] : 0), 2),
+				'target_calls' => (int)$num(isset($r['calls']) ? $r['calls'] : 0),
+				'target_leads' => (int)$num(isset($r['leads']) ? $r['leads'] : 0),
+				'target_meetings' => (int)$num(isset($r['meetings']) ? $r['meetings'] : 0),
+			);
+			if (!array_sum($vals)) continue;
+			$people++;
+			foreach ($months as $m) {
+				$old = $this->db->where('user_id', $uid)->where('period_month', $m)->where('status', 'Active')
+					->order_by('id', 'ASC')->get('ci_hr_targets')->result_array();
+				if ($old) {
+					if (!$replace) { $kept++; continue; }
+					$this->db->where('id', (int)$old[0]['id'])->update('ci_hr_targets', $vals + array('notes' => $notes, 'assigned_by' => $cur_uid, 'updated_at' => date('Y-m-d H:i:s')));
+					// Dashboards add up every active target of a month, so a second one for the same month would count twice
+					for ($i = 1; $i < count($old); $i++) $this->db->where('id', (int)$old[$i]['id'])->update('ci_hr_targets', array('status' => 'Replaced'));
+					$updated++;
+				} else {
+					$this->db->insert('ci_hr_targets', $vals + array(
+						'user_id' => $uid, 'target_type' => 'monthly', 'period_month' => $m,
+						'start_date' => $m . '-01', 'end_date' => date('Y-m-t', strtotime($m . '-01')),
+						'notes' => $notes, 'status' => 'Active', 'assigned_by' => $cur_uid, 'created_at' => date('Y-m-d H:i:s'),
+					));
+					$added++;
+				}
+			}
+			$when = count($months) > 1 ? date('M Y', strtotime($from . '-01')) . ' to ' . date('M Y', strtotime($to . '-01')) : date('F Y', strtotime($from . '-01'));
+			$this->ci_admin_model->add_notification($uid, 'target_assigned', 'Target set',
+				"{$cur_name} set your target for {$when}: AED " . number_format($vals['target_amount'], 2) . " a month, calls {$vals['target_calls']}, leads {$vals['target_leads']}, meetings {$vals['target_meetings']}.",
+				base_url('manager/hr/targets'), 'fa fa-bullseye', '#0072f0');
+		}
+		if (!$people) {
+			$this->session->set_flashdata('error_message', 'Nothing saved: tick at least one person and enter a target.');
+			redirect($back); return;
+		}
+		$msg = "Targets saved for {$people} " . ($people == 1 ? 'person' : 'people') . ' over ' . count($months) . ' ' . (count($months) == 1 ? 'month' : 'months') . ": {$added} new";
+		if ($updated) $msg .= ", {$updated} changed";
+		if ($kept) $msg .= ", {$kept} left as they were";
+		$this->session->set_flashdata('message', $msg . '.');
 		redirect('manager/hr/targets');
 	}
 
