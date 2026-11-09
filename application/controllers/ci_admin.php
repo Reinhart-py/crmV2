@@ -263,7 +263,7 @@ class Ci_admin extends CI_Controller {
 		$this->output->set_output(json_encode(array('ok' => true) + $d));
 	}
 
-	/** Save the user's choice of CRM look: Classic or Modern (My Profile). Only the look changes. */
+	/** Save the user's choice of CRM look: Classic or Modern (profile menu). Only the look changes. */
 	public function crm_view_save()
 	{
 		$this->if_not_login();
@@ -276,9 +276,10 @@ class Ci_admin extends CI_Controller {
 			}
 			$this->db->query("INSERT INTO ci_user_prefs (user_id, crm_view, updated_at) VALUES (?, ?, NOW()) ON DUPLICATE KEY UPDATE crm_view = VALUES(crm_view), updated_at = NOW()", array($uid, $v));
 			$this->session->set_userdata('crm_view', $v);
-			$this->session->set_flashdata('message', $v === 'modern' ? 'CRM view changed to Modern.' : 'CRM view changed to Classic.');
 		}
-		redirect('manager/profile');
+		// Back to the page the switch was used on (profile menu); only CRM pages
+		$ret = trim((string)$this->input->post('return'), '/');
+		redirect(preg_match('#^manager(/[A-Za-z0-9_\-/]*)?$#', $ret) ? $ret : 'manager/dashboard');
 	}
 
 	/** Save the user's choice of Modern or Classic dashboard. */
