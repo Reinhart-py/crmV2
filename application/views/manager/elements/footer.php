@@ -132,6 +132,7 @@ $('.datepicker2').datepicker({
     
 <script>
 $(document).ready(function() {
+    window.crmSideBound = true;
     $(document).on('click', '#crmMobileHamburger', function(e) {
         e.preventDefault();
         e.stopPropagation();

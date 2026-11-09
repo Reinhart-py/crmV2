@@ -782,6 +782,24 @@ $(function() {
   document.querySelectorAll('.main-sidebar .sidebar-menu > li > a').forEach(function (a) {
     var t = a.querySelector('span'); if (t && !a.getAttribute('data-tip')) a.setAttribute('data-tip', t.textContent.trim());
   });
+  // Pages that do not load the footer (Phone Dialer) still need the side pane to open groups and the phone menu
+  document.addEventListener('click', function (e) {
+    if (window.crmSideBound) return;
+    var body = document.body, el = e.target;
+    if (el.closest('#crmMobileHamburger')) { e.preventDefault(); body.classList.toggle('sidebar-open'); return; }
+    if (el.closest('#crmSidebarClose')) { e.preventDefault(); body.classList.remove('sidebar-open'); return; }
+    var a = el.closest('.main-sidebar .sidebar-menu > li.treeview > a');
+    if (a) {
+      e.preventDefault();
+      var li = a.parentNode, open = li.classList.contains('menu-open') || li.classList.contains('is-expanded');
+      document.querySelectorAll('.main-sidebar .sidebar-menu > li.treeview').forEach(function (o) {
+        o.classList.remove('menu-open', 'is-expanded'); var u = o.querySelector(':scope > .treeview-menu'); if (u) u.style.display = 'none';
+      });
+      if (!open) { li.classList.add('menu-open', 'is-expanded'); var m = li.querySelector(':scope > .treeview-menu'); if (m) m.style.display = 'block'; }
+      return;
+    }
+    if (body.classList.contains('sidebar-open') && !el.closest('.main-sidebar')) body.classList.remove('sidebar-open');
+  });
 })();
 </script>
 <?php } ?>
