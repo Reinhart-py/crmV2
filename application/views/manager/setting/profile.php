@@ -115,6 +115,17 @@ $pf_badge = function ($status) {
     .my-profile .pf-grid { grid-template-columns:1fr 1fr; }
   }
   @media (max-width: 420px) { .my-profile .pf-grid { grid-template-columns:1fr; } }
+  .my-profile .pf-head-r { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .my-profile .pf-view { display:inline-flex; align-items:center; gap:8px; margin:0; }
+  .my-profile .pf-view-l { font-size:12px; font-weight:600; color:#64748b; }
+  .my-profile .pf-view-seg { display:inline-flex; padding:3px; gap:2px; border:1px solid #e2e8f0; border-radius:999px; background:#f8fafc; }
+  .my-profile .pf-view-seg button { border:0; background:transparent; padding:5px 14px; border-radius:999px; font-size:12.5px; font-weight:600; color:#475569; cursor:pointer; }
+  .my-profile .pf-view-seg button:hover { color:#1e3a8a; }
+  .my-profile .pf-view-seg button.is-on { background:#1e3a8a; color:#fff; cursor:default; }
+  [data-theme="dark"] .my-profile .pf-view-seg { background:#0f172a; border-color:#334155; }
+  [data-theme="dark"] .my-profile .pf-view-seg button { color:#cbd5e1; }
+  [data-theme="dark"] .my-profile .pf-view-seg button.is-on { background:#2563eb; color:#fff; }
+  html.crm-modern .my-profile .pf-view-seg button.is-on { background:var(--md2-fill, #4f46e5); }
 </style>
 
 <div class="content-wrapper">
@@ -137,10 +148,21 @@ $pf_badge = function ($status) {
           <div class="pf-mail"><?php echo htmlspecialchars($p_info['email'] ?? ''); ?></div>
         </div>
       </div>
-      <label class="btn btn-sm btn-default" style="margin-bottom:0; cursor:pointer;" title="Upload or replace your profile photo">
-        <i class="fa fa-camera"></i> Change Photo
-        <input type="file" id="ajaxAvatarInput" accept="image/jpeg,image/png,image/webp" style="display:none;" />
-      </label>
+      <div class="pf-head-r">
+        <?php $pf_view = crm_view(); ?>
+        <form class="pf-view" method="post" action="<?php echo base_url(); ?>manager/crm-view">
+          <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
+          <span class="pf-view-l">CRM view</span>
+          <span class="pf-view-seg" role="group" aria-label="CRM view">
+            <button type="submit" name="view" value="classic" class="<?php echo $pf_view === 'classic' ? 'is-on' : ''; ?>" aria-pressed="<?php echo $pf_view === 'classic' ? 'true' : 'false'; ?>" title="Menu across the top">Classic</button>
+            <button type="submit" name="view" value="modern" class="<?php echo $pf_view === 'modern' ? 'is-on' : ''; ?>" aria-pressed="<?php echo $pf_view === 'modern' ? 'true' : 'false'; ?>" title="Menu in a side pane, new colours">Modern</button>
+          </span>
+        </form>
+        <label class="btn btn-sm btn-default" style="margin-bottom:0; cursor:pointer;" title="Upload or replace your profile photo">
+          <i class="fa fa-camera"></i> Change Photo
+          <input type="file" id="ajaxAvatarInput" accept="image/jpeg,image/png,image/webp" style="display:none;" />
+        </label>
+      </div>
     </div>
 
     <ul class="pf-tabs" id="pfTabs" role="tablist">

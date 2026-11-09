@@ -1,5 +1,6 @@
+<?php $crm_view_now = function_exists('crm_view') ? crm_view() : 'classic'; $crm_is_modern = ($crm_view_now === 'modern'); ?>
 <!DOCTYPE html>
-<html>
+<html<?php echo $crm_is_modern ? ' class="crm-modern"' : ''; ?>>
 <head>
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -59,6 +60,7 @@
 <script src="<?php echo base_url();?>assets/bootstrap/js/jquery.validate.js"></script>
 <link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-theme.css?v=20261108_1">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-modes.css?v=20261108_4">
+<?php if ($crm_is_modern) { ?><link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-modern.css?v=20261110_6"><?php } ?>
 <link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-search.css?v=20261107_4">
 <script src="<?php echo base_url();?>assets/dist/js/crm-search.js?v=20261107_2" defer></script>
 
@@ -71,10 +73,13 @@
     if (theme === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark');
     }
+<?php if ($crm_is_modern) { ?>
+    try { if (localStorage.getItem('crm_side_mini') === '1') document.documentElement.classList.add('crm-side-mini'); } catch (e) {}
+<?php } ?>
 })();
 </script>
 </head>
-<body class="hold-transition skin-blue sidebar-mini">
+<body class="hold-transition skin-blue sidebar-mini<?php if ($crm_is_modern) { echo ' crm-modern'; $crm_seg2 = (string)$this->uri->segment(2); if ($crm_seg2 === '' || $crm_seg2 === 'dashboard') echo ' crm-dash-page'; } ?>">
 <div class="wrapper">
 
 <header class="main-header"> 
@@ -660,6 +665,7 @@ $(function() {
     <img src="<?php echo base_url(); ?>assets/logo-header.png" alt="7 Strokes" class="logo-light" />
     <img src="<?php echo base_url(); ?>assets/logo-header-dark.png" alt="7 Strokes" class="logo-dark" />
     <button type="button" class="crm-sidebar-close" id="crmSidebarClose" aria-label="Close navigation">&times;</button>
+    <?php if ($crm_is_modern) { ?><button type="button" class="md2-mini-btn" id="md2MiniBtn" title="Make the side pane smaller or larger" aria-label="Make the side pane smaller or larger"><i class="fa fa-angle-double-left"></i></button><?php } ?>
   </div>
   
   
@@ -729,10 +735,53 @@ $(function() {
       <?php } ?>
     </ul>
   </section>
-  
-   
-  
+  <?php if ($crm_is_modern) { ?>
+  <a class="md2-me" href="<?php echo base_url(); ?>manager/profile" title="My Profile">
+    <img src="<?php echo base_url() . $user_avatar; ?>" alt="" />
+    <span><b><?php echo htmlspecialchars($current_user_name); ?></b><?php if (!empty($current_user_role_name)) { ?><small><?php echo htmlspecialchars($current_user_role_name); ?></small><?php } ?></span>
+  </a>
+  <?php } ?>
 </aside>
+<?php if ($crm_is_modern) { ?>
+<script>
+(function () {
+  // Side pane: mark the page you are on, open its group, and remember a smaller pane.
+  function clean(href) { try { var u = new URL(href, location.href); return u.origin === location.origin ? u.pathname.replace(/\/index\.php/, '').replace(/\/+$/, '') : ''; } catch (e) { return ''; } }
+  function mark() {
+  var here = clean(location.href);
+  // A page with a tab row (HR, Reports ...) belongs to the side link that opens any of its tabs
+  var tabs = {};
+  document.querySelectorAll('.content-wrapper .sx-tabs a[href]').forEach(function (a) { var p = clean(a.href); if (p) tabs[p] = 1; });
+  var best = null, bestLen = 0, tabHit = null;
+  document.querySelectorAll('.main-sidebar .sidebar-menu a[href]').forEach(function (a) {
+    var p = clean(a.href);
+    if (!p) return;
+    if (!tabHit && tabs[p]) tabHit = a;
+    if ((here === p || here.indexOf(p + '/') === 0) && p.length > bestLen) { best = a; bestLen = p.length; }
+  });
+  if (tabHit && (!best || clean(best.href) !== here)) best = tabHit;
+  if (best) {
+    best.classList.add('is-current');
+    var g = best.closest('li.treeview');
+    if (g) {
+      document.querySelectorAll('.main-sidebar .sidebar-menu > li.treeview').forEach(function (o) { if (o !== g) { o.classList.remove('active', 'menu-open'); var u2 = o.querySelector('.treeview-menu'); if (u2) u2.style.display = ''; } });
+      g.classList.add('active', 'menu-open'); var ul = g.querySelector('.treeview-menu'); if (ul) ul.style.display = 'block';
+    }
+  }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mark); else mark();
+  var btn = document.getElementById('md2MiniBtn');
+  if (btn) btn.addEventListener('click', function () {
+    var on = document.documentElement.classList.toggle('crm-side-mini');
+    try { localStorage.setItem('crm_side_mini', on ? '1' : '0'); } catch (e) {}
+  });
+  // Small pane: hovering a group shows its links beside it
+  document.querySelectorAll('.main-sidebar .sidebar-menu > li > a').forEach(function (a) {
+    var t = a.querySelector('span'); if (t && !a.getAttribute('data-tip')) a.setAttribute('data-tip', t.textContent.trim());
+  });
+})();
+</script>
+<?php } ?>
 
 <!-- Hover help on every page: the text from title="..." shows right next to the cursor (the browser's own hover text can appear far away).
      The title is only taken off while hovering and put back after, so forms and other scripts still see it. -->

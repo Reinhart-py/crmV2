@@ -1,0 +1,366 @@
+/* =========================================================================
+   Modern CRM view (My Profile > CRM view > Modern).
+   Loaded only for people who picked Modern. Classic is untouched.
+   Look only: side pane, top bar and colours. No page works differently.
+   Dashboards keep their own look: page styles below skip body.crm-dash-page.
+   ========================================================================= */
+
+html.crm-modern {
+  --md2-side-w: 256px;
+  --md2-mini-w: 76px;
+  --md2-canvas: #f4f6fb;
+  --md2-surface: #ffffff;
+  --md2-surface-2: #f8fafc;
+  --md2-line: #e4e8f1;
+  --md2-line-2: #eef1f6;
+  --md2-ink: #111827;
+  --md2-ink-2: #344054;
+  --md2-muted: #667085;
+  --md2-fill: #4f46e5;
+  --md2-fill-h: #4338ca;
+  --md2-soft: #eef2ff;
+  --md2-soft-line: #c7d2fe;
+  --md2-accent-text: #4338ca;
+  --md2-ring: rgba(79, 70, 229, .16);
+  --md2-shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 1px 3px rgba(16, 24, 40, .06);
+  --md2-shadow-lg: 0 12px 32px rgba(16, 24, 40, .12);
+  --md2-side-bg: linear-gradient(180deg, #131a3a 0%, #0d1330 55%, #0b1027 100%);
+  --md2-side-ink: #c9d0e6;
+  --md2-side-muted: #8b94b5;
+  --md2-side-hover: rgba(255, 255, 255, .06);
+  --md2-side-on: rgba(129, 140, 248, .20);
+  --md2-side-bar: #a5b4fc;
+  --md2-side-line: rgba(255, 255, 255, .07);
+  --md2-radius: 12px;
+}
+html.crm-modern[data-theme="dark"] {
+  --md2-canvas: #0a0f1d;
+  --md2-surface: #111a2e;
+  --md2-surface-2: #0e1628;
+  --md2-line: #1f2b46;
+  --md2-line-2: #18223a;
+  --md2-ink: #eef2ff;
+  --md2-ink-2: #cdd5e8;
+  --md2-muted: #94a0bd;
+  --md2-fill: #6366f1;
+  --md2-fill-h: #4f46e5;
+  --md2-soft: rgba(99, 102, 241, .16);
+  --md2-soft-line: rgba(129, 140, 248, .35);
+  --md2-accent-text: #a5b4fc;
+  --md2-ring: rgba(129, 140, 248, .25);
+  --md2-shadow: 0 1px 2px rgba(0, 0, 0, .3);
+  --md2-shadow-lg: 0 14px 36px rgba(0, 0, 0, .45);
+  --md2-side-bg: linear-gradient(180deg, #0b1124 0%, #080d1d 100%);
+  --md2-side-line: rgba(255, 255, 255, .06);
+}
+
+html.crm-modern body { font-family: 'Inter', 'Plus Jakarta Sans', -apple-system, 'Segoe UI', Roboto, sans-serif; }
+
+/* ---------- Side pane (desktop: always shown; phone: the slide-in menu) ---------- */
+html.crm-modern body .main-sidebar {
+  background: var(--md2-side-bg) !important;
+  color: var(--md2-side-ink) !important;
+  border-right: 1px solid var(--md2-side-line) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding-top: 0 !important;
+}
+html.crm-modern body .main-sidebar .crm-sidebar-header {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px;
+  min-height: 64px;
+  padding: 12px 14px 12px 18px !important;
+  background: transparent !important;
+  border-bottom: 1px solid var(--md2-side-line) !important;
+  flex: none;
+}
+html.crm-modern body .main-sidebar .crm-sidebar-header img { max-height: 44px !important; width: auto !important; }
+html.crm-modern body .main-sidebar .crm-sidebar-header .logo-light { display: none !important; }
+html.crm-modern body .main-sidebar .crm-sidebar-header .logo-dark { display: inline-block !important; }
+html.crm-modern body .main-sidebar .crm-sidebar-close { color: var(--md2-side-muted) !important; }
+html.crm-modern body .main-sidebar .crm-sidebar-close:hover { color: #fff !important; background: var(--md2-side-hover) !important; }
+html.crm-modern .md2-mini-btn {
+  display: none; width: 30px; height: 30px; border: 1px solid var(--md2-side-line); border-radius: 8px;
+  background: rgba(255, 255, 255, .04); color: var(--md2-side-muted); cursor: pointer; align-items: center; justify-content: center; font-size: 15px; flex: none;
+}
+html.crm-modern .md2-mini-btn:hover { color: #fff; background: var(--md2-side-hover); }
+
+html.crm-modern body .main-sidebar .sidebar {
+  flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; padding: 10px 0 12px !important; background: transparent !important;
+  scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, .15) transparent;
+}
+html.crm-modern body .main-sidebar .sidebar-menu { background: transparent !important; padding: 0 !important; margin: 0 !important; }
+html.crm-modern body .main-sidebar .sidebar-menu > li { background: transparent !important; border: 0 !important; margin: 0 !important; }
+html.crm-modern body .main-sidebar .sidebar-menu > li > a {
+  display: flex !important; align-items: center !important; gap: 10px;
+  margin: 2px 10px !important; padding: 9px 12px !important; border-radius: 10px !important; border: 0 !important;
+  color: var(--md2-side-ink) !important; background: transparent !important;
+  font-size: 13.5px !important; font-weight: 600 !important; letter-spacing: 0 !important; line-height: 1.3 !important;
+  transition: background .15s ease, color .15s ease;
+}
+html.crm-modern body .main-sidebar .sidebar-menu > li > a > span:not(.pull-right-container):not(.cb-unread) { flex: 1 1 auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+html.crm-modern body .main-sidebar .sidebar-menu > li > a .crm-svg-ico,
+html.crm-modern body .main-sidebar .sidebar-menu > li > a > i.fa { margin-right: 0 !important; width: 18px; height: 18px; text-align: center; font-size: 15px; line-height: 18px; flex: none; color: var(--md2-side-muted) !important; opacity: 1; }
+html.crm-modern body .main-sidebar .sidebar-menu > li > a .pull-right-container { position: static !important; margin-left: auto; display: inline-flex; }
+html.crm-modern body .main-sidebar .sidebar-menu > li > a .sidebar-arrow { color: var(--md2-side-muted) !important; transition: transform .2s ease; font-size: 14px; }
+html.crm-modern body .main-sidebar .sidebar-menu > li.menu-open > a .sidebar-arrow { transform: rotate(-90deg); }
+html.crm-modern body .main-sidebar .sidebar-menu > li > a:hover { background: var(--md2-side-hover) !important; color: #fff !important; }
+html.crm-modern body .main-sidebar .sidebar-menu > li > a:hover .crm-svg-ico { color: #fff !important; }
+html.crm-modern body .main-sidebar .sidebar-menu > li.active > a {
+  background: var(--md2-side-on) !important; color: #fff !important;
+}
+html.crm-modern body .main-sidebar .sidebar-menu > li.active > a .crm-svg-ico,
+html.crm-modern body .main-sidebar .sidebar-menu > li.active > a > i.fa { color: var(--md2-side-bar) !important; }
+
+html.crm-modern body .main-sidebar .sidebar-menu > li > ul.treeview-menu.treeview-menu {
+  background: transparent !important; margin: 2px 10px 6px 30px !important; padding: 2px 0 2px 10px !important;
+  border-left: 1px solid var(--md2-side-line) !important; list-style: none; box-shadow: none !important;
+}
+html.crm-modern body .main-sidebar .sidebar-menu .treeview-menu > li { margin: 0 !important; background: transparent !important; }
+html.crm-modern body .main-sidebar .sidebar-menu .treeview-menu > li > a {
+  display: flex !important; align-items: center; gap: 8px; padding: 7px 10px !important; margin: 1px 0 !important; border-radius: 8px !important;
+  color: var(--md2-side-muted) !important; background: transparent !important; font-size: 13px !important; font-weight: 500 !important; border: 0 !important;
+}
+html.crm-modern body .main-sidebar .sidebar-menu .treeview-menu > li > a > i.fa { width: 16px; text-align: center; font-size: 13px; color: inherit !important; opacity: .85; margin: 0 !important; }
+html.crm-modern body .main-sidebar .sidebar-menu .treeview-menu > li > a:hover { color: #fff !important; background: var(--md2-side-hover) !important; }
+html.crm-modern body .main-sidebar .sidebar-menu .treeview-menu > li > a.is-current {
+  color: #fff !important; background: rgba(129, 140, 248, .16) !important; font-weight: 600 !important; box-shadow: inset 2px 0 0 var(--md2-side-bar);
+}
+
+/* Your name at the bottom of the side pane */
+html.crm-modern .md2-me {
+  display: flex; align-items: center; gap: 10px; margin: 8px 10px 12px; padding: 9px 10px; border-radius: 12px;
+  background: rgba(255, 255, 255, .05); border: 1px solid var(--md2-side-line); color: #fff !important; text-decoration: none !important; flex: none;
+}
+html.crm-modern .md2-me:hover { background: rgba(255, 255, 255, .09); }
+html.crm-modern .md2-me img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex: none; background: #fff; }
+html.crm-modern .md2-me span { display: flex; flex-direction: column; min-width: 0; }
+html.crm-modern .md2-me b { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
+html.crm-modern .md2-me small { font-size: 11px; color: var(--md2-side-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- Desktop layout ---------- */
+@media (min-width: 992px) {
+  html.crm-modern body .main-sidebar {
+    position: fixed !important; top: 0 !important; bottom: 0 !important; left: 0 !important;
+    width: var(--md2-side-w) !important; max-width: none !important; min-height: 0 !important;
+    transform: none !important; z-index: 1045 !important; box-shadow: none !important; overflow: visible !important;
+    transition: width .2s ease !important;
+  }
+  html.crm-modern body { padding-left: var(--md2-side-w) !important; transition: padding-left .2s ease; }
+  html.crm-modern body .main-sidebar .crm-sidebar-close { display: none !important; }
+  html.crm-modern .md2-mini-btn { display: inline-flex; }
+
+  /* Top bar: menu moves to the side pane, so only the quick buttons stay */
+  html.crm-modern body .main-header {
+    background: color-mix(in srgb, var(--md2-surface) 88%, transparent) !important;
+    -webkit-backdrop-filter: saturate(160%) blur(10px); backdrop-filter: saturate(160%) blur(10px);
+    border-bottom: 1px solid var(--md2-line) !important; box-shadow: none !important; padding: 0 !important;
+  }
+  html.crm-modern body .main-header .main-header-bar { justify-content: space-between !important; min-height: 60px !important; padding: 0 22px !important; }
+  html.crm-modern body .main-header .main-logo,
+  html.crm-modern body .main-header .navbar.navbar-static-top,
+  html.crm-modern body .main-header .crm-mobile-hamburger { display: none !important; }
+  html.crm-modern body .main-header .header-quick-actions { position: static !important; transform: none !important; top: auto !important; right: auto !important; left: auto !important; }
+  html.crm-modern body .main-header .header-quick-actions.hqa-left { margin-right: auto !important; }
+
+  /* Small side pane: icons only, links open beside it on hover */
+  html.crm-modern.crm-side-mini { --md2-side-w: var(--md2-mini-w); }
+  html.crm-modern.crm-side-mini body .main-sidebar .crm-sidebar-header { flex-direction: column; justify-content: center !important; padding: 12px 8px !important; }
+  html.crm-modern.crm-side-mini body .main-sidebar .crm-sidebar-header img { max-height: 22px !important; max-width: 56px !important; }
+  html.crm-modern.crm-side-mini .md2-mini-btn i { transform: rotate(180deg); }
+  html.crm-modern.crm-side-mini body .main-sidebar .sidebar { overflow: visible !important; }
+  html.crm-modern.crm-side-mini body .main-sidebar .sidebar-menu > li { position: relative; }
+  html.crm-modern.crm-side-mini body .main-sidebar .sidebar-menu > li > a { justify-content: center; padding: 11px 0 !important; }
+  html.crm-modern.crm-side-mini body .main-sidebar .sidebar-menu > li > a > span,
+  html.crm-modern.crm-side-mini body .main-sidebar .sidebar-menu > li > a .pull-right-container { display: none !important; }
+  html.crm-modern.crm-side-mini body .main-sidebar .sidebar-menu > li > ul.treeview-menu.treeview-menu {
+    display: none !important; position: absolute; left: calc(100% - 4px); top: 0; min-width: 230px; margin: 0 !important; padding: 8px !important;
+    background: #141b3a !important; border: 1px solid var(--md2-side-line) !important; border-radius: 12px; box-shadow: 0 16px 36px rgba(0, 0, 0, .35) !important; z-index: 2000;
+  }
+  html.crm-modern.crm-side-mini body .main-sidebar .sidebar-menu > li:hover > ul.treeview-menu.treeview-menu { display: block !important; }
+  html.crm-modern.crm-side-mini body .main-sidebar .sidebar-menu > li:not(.treeview) > a:hover::after {
+    content: attr(data-tip); position: absolute; left: calc(100% + 6px); top: 50%; transform: translateY(-50%); white-space: nowrap;
+    background: #141b3a; color: #fff; font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 8px; box-shadow: 0 8px 20px rgba(0, 0, 0, .3); z-index: 2000;
+  }
+  html.crm-modern.crm-side-mini .md2-me { justify-content: center; padding: 8px 0; }
+  html.crm-modern.crm-side-mini .md2-me span { display: none; }
+}
+
+/* ---------- Phone and tablet: slide-in pane with the same look ---------- */
+@media (max-width: 991px) {
+  html.crm-modern body .main-sidebar { width: 280px !important; }
+  html.crm-modern body .main-header {
+    background: var(--md2-surface) !important; border-bottom: 1px solid var(--md2-line) !important; box-shadow: none !important;
+  }
+}
+
+/* ---------- Top bar buttons (desktop; phones keep their compact sizes) ---------- */
+@media (min-width: 992px) {
+html.crm-modern body .main-header .global-theme-btn {
+  width: 38px !important; height: 38px !important; border-radius: 10px !important;
+  background: var(--md2-surface-2) !important; border: 1px solid var(--md2-line) !important; color: var(--md2-ink-2) !important;
+  box-shadow: none !important; transition: background .15s, color .15s, border-color .15s;
+}
+html.crm-modern body .main-header .global-theme-btn:hover { background: var(--md2-soft) !important; color: var(--md2-accent-text) !important; border-color: var(--md2-soft-line) !important; }
+html.crm-modern body .main-header .live-nav-badge {
+  height: 38px; padding: 0 14px !important; border-radius: 10px !important; border: 1px solid var(--md2-soft-line) !important;
+  background: var(--md2-soft) !important; color: var(--md2-accent-text) !important;
+}
+html.crm-modern body .main-header .live-nav-badge.active { background: var(--md2-fill) !important; color: #fff !important; border-color: var(--md2-fill) !important; }
+html.crm-modern body .main-header .profile-avatar-img { border-radius: 10px !important; }
+}
+
+/* ---------- Pages (not the dashboards) ---------- */
+html.crm-modern body:not(.crm-dash-page) {
+  --crm-ocean: var(--md2-fill);
+  --crm-ocean-hover: var(--md2-fill-h);
+  --crm-ocean-soft: var(--md2-soft);
+  --crm-ocean-line: var(--md2-soft-line);
+  --crm-accent: var(--md2-fill);
+  --crm-accent-hover: var(--md2-fill-h);
+  --crm-accent-light: var(--md2-soft);
+  --crm-pill-active: var(--md2-fill);
+  --crm-ink: var(--md2-ink);
+  --crm-ink-2: var(--md2-ink-2);
+  --crm-muted: var(--md2-muted);
+  --crm-line: var(--md2-line);
+  --crm-line-soft: var(--md2-line-2);
+  --crm-surface: var(--md2-surface);
+  --crm-canvas: var(--md2-canvas);
+  --crm-radius: 10px;
+  background: var(--md2-canvas) !important;
+}
+html.crm-modern body:not(.crm-dash-page) .wrapper,
+html.crm-modern body:not(.crm-dash-page) .content-wrapper { background: var(--md2-canvas) !important; }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper { padding-top: 6px; }
+
+html.crm-modern body:not(.crm-dash-page) .content-header > h1,
+html.crm-modern body:not(.crm-dash-page) .sx .sx-head h1 {
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif !important; font-size: 22px !important; font-weight: 700 !important;
+  letter-spacing: -.02em !important; color: var(--md2-ink) !important;
+}
+html.crm-modern body:not(.crm-dash-page) .content-header > .breadcrumb { background: transparent !important; }
+html.crm-modern body:not(.crm-dash-page) .content-header > .breadcrumb > li > a { color: var(--md2-muted) !important; }
+
+/* Boxes and cards */
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .box,
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .sx-card,
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .panel {
+  background: var(--md2-surface) !important; border: 1px solid var(--md2-line) !important; border-top: 1px solid var(--md2-line) !important;
+  border-radius: var(--md2-radius) !important; box-shadow: var(--md2-shadow) !important;
+}
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .box > .box-header,
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .panel > .panel-heading {
+  background: transparent !important; border-bottom-color: var(--md2-line-2) !important; border-radius: var(--md2-radius) var(--md2-radius) 0 0 !important;
+}
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .box > .box-header .box-title {
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; font-weight: 700 !important; color: var(--md2-ink) !important; letter-spacing: -.01em;
+}
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .box > .box-footer { background: var(--md2-surface-2) !important; border-top-color: var(--md2-line-2) !important; border-radius: 0 0 var(--md2-radius) var(--md2-radius) !important; }
+
+/* Tables */
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .table > thead > tr > th,
+html.crm-modern body:not(.crm-dash-page) .content-wrapper table.sx-table thead th {
+  background: var(--md2-surface-2) !important; color: var(--md2-muted) !important;
+  font-size: 11.5px !important; font-weight: 700 !important; text-transform: uppercase; letter-spacing: .045em;
+  border-bottom: 1px solid var(--md2-line) !important; border-top: 0 !important;
+}
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .table > thead > tr > th a,
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .table > thead > tr > th span { color: var(--md2-muted) !important; }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper table.dataTable thead .sorting:after,
+html.crm-modern body:not(.crm-dash-page) .content-wrapper table.dataTable thead .sorting_asc:after,
+html.crm-modern body:not(.crm-dash-page) .content-wrapper table.dataTable thead .sorting_desc:after { color: var(--md2-muted) !important; }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .table > tbody > tr > td { border-color: var(--md2-line-2) !important; }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .table-hover > tbody > tr:hover,
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .table-hover > tbody > tr:hover > td { background: color-mix(in srgb, var(--md2-soft) 55%, transparent) !important; }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .table-striped > tbody > tr:nth-of-type(odd) { background: color-mix(in srgb, var(--md2-surface-2) 70%, transparent); }
+
+/* Buttons */
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .btn,
+html.crm-modern body:not(.crm-dash-page) .modal .btn { border-radius: 9px !important; font-weight: 600 !important; }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .btn-primary,
+html.crm-modern body:not(.crm-dash-page) .modal .btn-primary,
+html.crm-modern[data-theme="dark"] body:not(.crm-dash-page) .content-wrapper .btn-primary,
+html.crm-modern[data-theme="dark"] body:not(.crm-dash-page) .modal .btn-primary {
+  background: var(--md2-fill) !important; border-color: var(--md2-fill) !important; color: #fff !important;
+  box-shadow: 0 1px 2px rgba(79, 70, 229, .25) !important;
+}
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .btn-primary:hover,
+html.crm-modern body:not(.crm-dash-page) .modal .btn-primary:hover { background: var(--md2-fill-h) !important; border-color: var(--md2-fill-h) !important; }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .btn-default,
+html.crm-modern body:not(.crm-dash-page) .modal .btn-default {
+  background: var(--md2-surface) !important; border-color: var(--md2-line) !important; color: var(--md2-ink-2) !important;
+}
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .btn-default:hover,
+html.crm-modern body:not(.crm-dash-page) .modal .btn-default:hover { background: var(--md2-surface-2) !important; border-color: var(--md2-soft-line) !important; color: var(--md2-accent-text) !important; }
+
+/* Forms */
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .form-control,
+html.crm-modern body:not(.crm-dash-page) .modal .form-control,
+html.crm-modern body:not(.crm-dash-page) .select2-container--default .select2-selection--single,
+html.crm-modern body:not(.crm-dash-page) .select2-container--default .select2-selection--multiple {
+  border-radius: 9px !important; border-color: var(--md2-line) !important; box-shadow: none !important;
+}
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .form-control:focus,
+html.crm-modern body:not(.crm-dash-page) .modal .form-control:focus {
+  border-color: var(--md2-fill) !important; box-shadow: 0 0 0 3px var(--md2-ring) !important;
+}
+
+/* Tabs, pills, pagination */
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .nav-tabs { border-bottom-color: var(--md2-line) !important; }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .nav-tabs > li > a { border: 0 !important; border-bottom: 2px solid transparent !important; border-radius: 0 !important; color: var(--md2-muted) !important; font-weight: 600; background: transparent !important; }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .nav-tabs > li.active > a { color: var(--md2-accent-text) !important; border-bottom-color: var(--md2-fill) !important; }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .nav-tabs-custom { border-radius: var(--md2-radius) !important; box-shadow: var(--md2-shadow) !important; background: var(--md2-surface) !important; }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .nav-tabs-custom > .nav-tabs > li.active { border-top-color: var(--md2-fill) !important; }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .nav-pills > li > a { border-radius: 9px !important; }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .pagination > li > a,
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .pagination > li > span { border-color: var(--md2-line) !important; color: var(--md2-ink-2) !important; background: var(--md2-surface) !important; }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .pagination > .active > a,
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .pagination > .active > span,
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .dataTables_paginate .paginate_button.current {
+  background: var(--md2-fill) !important; border-color: var(--md2-fill) !important; color: #fff !important;
+}
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .pagination > li:first-child > a,
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .pagination > li:first-child > span { border-radius: 9px 0 0 9px !important; }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .pagination > li:last-child > a,
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .pagination > li:last-child > span { border-radius: 0 9px 9px 0 !important; }
+
+/* Page tab bars (HR, Reports, System ...) */
+html.crm-modern body:not(.crm-dash-page) .sx .sx-tabs a.is-on,
+html.crm-modern body:not(.crm-dash-page) .sx .sx-chips .is-on { background: var(--md2-fill) !important; border-color: var(--md2-fill) !important; color: #fff !important; }
+html.crm-modern body:not(.crm-dash-page) .sx .sx-kpi { border-radius: var(--md2-radius) !important; box-shadow: var(--md2-shadow) !important; border-color: var(--md2-line) !important; background: var(--md2-surface) !important; }
+
+/* Pop-ups and menus */
+html.crm-modern .modal-content { border-radius: 16px !important; border: 1px solid var(--md2-line) !important; box-shadow: var(--md2-shadow-lg) !important; overflow: hidden; }
+html.crm-modern .modal-header { border-bottom-color: var(--md2-line-2) !important; }
+html.crm-modern .modal-footer { border-top-color: var(--md2-line-2) !important; background: var(--md2-surface-2); }
+html.crm-modern .dropdown-menu { border-radius: 12px !important; border-color: var(--md2-line) !important; box-shadow: var(--md2-shadow-lg) !important; padding: 6px !important; }
+html.crm-modern .dropdown-menu > li > a { border-radius: 8px; }
+html.crm-modern body .google-profile-dropdown { border-radius: 16px !important; border-color: var(--md2-line) !important; box-shadow: var(--md2-shadow-lg) !important; }
+html.crm-modern body .smartphone-notif-dropdown { border-radius: 14px !important; border-color: var(--md2-line) !important; box-shadow: var(--md2-shadow-lg) !important; }
+html.crm-modern body .smartphone-notif-dropdown > div:first-child { background: var(--md2-fill) !important; }
+
+/* Footer bar */
+html.crm-modern body:not(.crm-dash-page) .crm-global-footer { background: transparent !important; border-top-color: var(--md2-line) !important; }
+
+/* Links */
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .table a:not(.btn):not(.label) { color: var(--md2-ink); }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .table a:not(.btn):not(.label):hover { color: var(--md2-accent-text); }
+
+/* Dark mode: page canvas and cards follow the Modern colours */
+html.crm-modern[data-theme="dark"] body:not(.crm-dash-page) .content-wrapper .box,
+html.crm-modern[data-theme="dark"] body:not(.crm-dash-page) .content-wrapper .sx-card,
+html.crm-modern[data-theme="dark"] body:not(.crm-dash-page) .content-wrapper .panel { background: var(--md2-surface) !important; border-color: var(--md2-line) !important; }
+html.crm-modern[data-theme="dark"] body .main-header { background: color-mix(in srgb, var(--md2-surface) 90%, transparent) !important; }
+html.crm-modern[data-theme="dark"] body:not(.crm-dash-page) .content-wrapper .btn-default,
+html.crm-modern[data-theme="dark"] body:not(.crm-dash-page) .modal .btn-default { background: var(--md2-surface-2) !important; color: var(--md2-ink-2) !important; }
+html.crm-modern[data-theme="dark"] .modal-content { background: var(--md2-surface) !important; }
+
+/* Tables that fold columns away on a narrow screen: room for the + button */
+/* :is(#md2-x, ...) lifts this above the list pages' own spacing rule, which counts as an id */
+html.crm-modern body:not(.crm-dash-page) :is(#md2-x, table).dataTable.dtr-inline.collapsed > tbody > tr > :is(td, th):first-child { position: relative; padding-left: 32px !important; }

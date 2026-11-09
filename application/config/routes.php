@@ -13,6 +13,7 @@ $route['manager/logout'] = "ci_admin/logout";
 $route['manager/dashboard'] = "ci_admin/dashboard";
 $route['manager/dashboard/classic'] = "ci_admin/dashboard_classic";
 $route['manager/dashboard/style'] = "ci_admin/dashboard_style";
+$route['manager/crm-view'] = "ci_admin/crm_view_save";
 $route['manager/dashboard/person/(:num)'] = "ci_admin/dashboard_person/$1";
 $route['manager/search'] = "ci_admin_search/index";
 $route['manager/profile'] = "ci_admin/admin_profile";

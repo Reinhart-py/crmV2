@@ -855,3 +855,24 @@ if (!function_exists('crm_dt_json')) {
 		return $j === false ? '[]' : $j;
 	}
 }
+
+if (!function_exists('crm_view')) {
+	/**
+	 * The person's choice of CRM look: 'classic' (default) or 'modern'. Only the look changes, never what a page does.
+	 * Saved in ci_user_prefs.crm_view and kept in the session so it is read once per sign-in.
+	 */
+	function crm_view()
+	{
+		$ci =& get_instance();
+		$v = $ci->session->userdata('crm_view');
+		if ($v === 'classic' || $v === 'modern') return $v;
+		$v = 'classic';
+		$uid = (int)$ci->session->userdata('manager_id');
+		if ($uid > 0 && $ci->db->table_exists('ci_user_prefs') && $ci->db->field_exists('crm_view', 'ci_user_prefs')) {
+			$r = $ci->db->select('crm_view')->where('user_id', $uid)->get('ci_user_prefs')->row_array();
+			if (!empty($r) && $r['crm_view'] === 'modern') $v = 'modern';
+		}
+		if ($uid > 0) $ci->session->set_userdata('crm_view', $v);
+		return $v;
+	}
+}
