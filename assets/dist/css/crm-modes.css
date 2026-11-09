@@ -408,3 +408,28 @@ html:not([data-theme="dark"]) :is(.content-wrapper, .content) [style*="color:#94
 html:not([data-theme="dark"]) .main-sidebar .sidebar-menu > li.active > a,
 html:not([data-theme="dark"]) .main-sidebar .sidebar-menu > li.menu-open > a,
 html:not([data-theme="dark"]) .main-sidebar .sidebar-menu > li > a:hover { color: #1d4ed8 !important; }
+
+/* Self Training > Manage and Events > Manage: form cards stayed white in dark mode */
+html[data-theme="dark"] .sm-page .sm-card,
+html[data-theme="dark"] .em-page .em-card { background: var(--md-surface) !important; border-color: var(--md-line) !important; }
+html[data-theme="dark"] .em-page .em-years { background: var(--md-surface-2) !important; border-color: var(--md-line) !important; }
+html[data-theme="dark"] .sm-page .sm-card h4,
+html[data-theme="dark"] .em-page .em-card h4,
+html[data-theme="dark"] .sm-page .sm-item-main b { color: var(--md-ink) !important; }
+html[data-theme="dark"] .sm-page .sm-card h4 i,
+html[data-theme="dark"] .em-page .em-card h4 i { color: var(--md-blue) !important; }
+html[data-theme="dark"] .sm-page label,
+html[data-theme="dark"] .em-page .em-card label { color: var(--md-ink-2) !important; }
+html[data-theme="dark"] .em-page .em-card label small,
+html[data-theme="dark"] .sm-page .sm-hint,
+html[data-theme="dark"] .sm-page .sm-item-meta { color: var(--md-muted) !important; }
+html[data-theme="dark"] .sm-page .sm-types span { background: var(--md-surface-2); border-color: var(--md-line) !important; color: var(--md-ink-2) !important; }
+html[data-theme="dark"] .sm-page .sm-types input:checked + span { color: var(--md-ink) !important; }
+html[data-theme="dark"] .sm-page .sm-item { border-color: var(--md-line); }
+html[data-theme="dark"] .sm-page .sm-item.is-archived { background: var(--md-surface-2); }
+
+/* Phone Dialer: "All logs" link and the text under Auto dialer */
+html[data-theme="dark"] .dh-sec-h a { color: var(--md-blue) !important; }
+html[data-theme="dark"] .em-page .em-years a { color: var(--md-ink-2) !important; }
+/* :is(#md-x, ...) lifts this above the general faint-text rule */
+html[data-theme="dark"] :is(#md-x, .dh-act).dh-act-main small { color: rgba(255, 255, 255, .85) !important; }

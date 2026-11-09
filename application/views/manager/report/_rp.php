@@ -27,7 +27,8 @@ $csv_url = function () { $q = $_GET; $q['export'] = 'csv'; return '?' . http_bui
 .rp-table td.nw{white-space:nowrap}
 .rp-table tr.rp-grp td{background:#f8fafc;font-weight:700;color:#0f172a}
 .rp-table tfoot td{font-weight:700;background:#f8fafc}
-.rp-muted{color:#94a3b8}
+.rp-muted{color:#64748b}
+[data-theme="dark"] .rp-muted{color:#94a3b8}
 .rp-wrap{max-width:420px;white-space:normal;word-break:break-word}
 .rp-count{font-size:12px;color:var(--crm-text-muted,#64748b);margin:0 0 8px}
 .rp-empty{margin:0}

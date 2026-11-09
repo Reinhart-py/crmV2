@@ -8,7 +8,7 @@ $weekend = array_filter(explode(',', $set['weekend']));
 <style>
   .hs-days { display: flex; gap: 6px; flex-wrap: wrap; }
   .hs-days label { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border: 1px solid var(--crm-line, #e2e8f0); border-radius: 999px; cursor: pointer; margin: 0; font-weight: 600; }
-  .hs-days label.is-on { background: var(--crm-ocean, #1e3a8a); border-color: var(--crm-ocean, #1e3a8a); color: #fff; }
+  .hs-days label.is-on { background: var(--crm-ocean, #1e3a8a); border-color: var(--crm-ocean, #1e3a8a); color: #fff !important; }
   .hs-days input { position: absolute; opacity: 0; pointer-events: none; }
   .sx .sx-grid .help-block { font-size: 12px; margin: 4px 0 0; color: var(--crm-muted, #64748b); }
 </style>

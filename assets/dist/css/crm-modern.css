@@ -32,6 +32,9 @@ html.crm-modern {
   --md2-side-bar: #a5b4fc;
   --md2-side-line: rgba(255, 255, 255, .07);
   --md2-radius: 12px;
+  --md2-bar: rgba(255, 255, 255, .9);
+  --md2-row-hover: rgba(238, 242, 255, .6);
+  --md2-row-alt: rgba(248, 250, 252, .75);
 }
 html.crm-modern[data-theme="dark"] {
   --md2-canvas: #0a0f1d;
@@ -52,6 +55,9 @@ html.crm-modern[data-theme="dark"] {
   --md2-shadow-lg: 0 14px 36px rgba(0, 0, 0, .45);
   --md2-side-bg: linear-gradient(180deg, #0b1124 0%, #080d1d 100%);
   --md2-side-line: rgba(255, 255, 255, .06);
+  --md2-bar: rgba(17, 26, 46, .92);
+  --md2-row-hover: rgba(99, 102, 241, .10);
+  --md2-row-alt: rgba(255, 255, 255, .025);
 }
 
 html.crm-modern body { font-family: 'Inter', 'Plus Jakarta Sans', -apple-system, 'Segoe UI', Roboto, sans-serif; }
@@ -157,7 +163,7 @@ html.crm-modern .md2-me small { font-size: 11px; color: var(--md2-side-muted); w
 
   /* Top bar: menu moves to the side pane, so only the quick buttons stay */
   html.crm-modern body .main-header {
-    background: color-mix(in srgb, var(--md2-surface) 88%, transparent) !important;
+    background: var(--md2-bar) !important;
     -webkit-backdrop-filter: saturate(160%) blur(10px); backdrop-filter: saturate(160%) blur(10px);
     border-bottom: 1px solid var(--md2-line) !important; box-shadow: none !important; padding: 0 !important;
   }
@@ -277,8 +283,8 @@ html.crm-modern body:not(.crm-dash-page) .content-wrapper table.dataTable thead 
 html.crm-modern body:not(.crm-dash-page) .content-wrapper table.dataTable thead .sorting_desc:after { color: var(--md2-muted) !important; }
 html.crm-modern body:not(.crm-dash-page) .content-wrapper .table > tbody > tr > td { border-color: var(--md2-line-2) !important; }
 html.crm-modern body:not(.crm-dash-page) .content-wrapper .table-hover > tbody > tr:hover,
-html.crm-modern body:not(.crm-dash-page) .content-wrapper .table-hover > tbody > tr:hover > td { background: color-mix(in srgb, var(--md2-soft) 55%, transparent) !important; }
-html.crm-modern body:not(.crm-dash-page) .content-wrapper .table-striped > tbody > tr:nth-of-type(odd) { background: color-mix(in srgb, var(--md2-surface-2) 70%, transparent); }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .table-hover > tbody > tr:hover > td { background: var(--md2-row-hover) !important; }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .table-striped > tbody > tr:nth-of-type(odd) { background: var(--md2-row-alt); }
 
 /* Buttons */
 html.crm-modern body:not(.crm-dash-page) .content-wrapper .btn,
@@ -356,7 +362,6 @@ html.crm-modern body:not(.crm-dash-page) .content-wrapper .table a:not(.btn):not
 html.crm-modern[data-theme="dark"] body:not(.crm-dash-page) .content-wrapper .box,
 html.crm-modern[data-theme="dark"] body:not(.crm-dash-page) .content-wrapper .sx-card,
 html.crm-modern[data-theme="dark"] body:not(.crm-dash-page) .content-wrapper .panel { background: var(--md2-surface) !important; border-color: var(--md2-line) !important; }
-html.crm-modern[data-theme="dark"] body .main-header { background: color-mix(in srgb, var(--md2-surface) 90%, transparent) !important; }
 html.crm-modern[data-theme="dark"] body:not(.crm-dash-page) .content-wrapper .btn-default,
 html.crm-modern[data-theme="dark"] body:not(.crm-dash-page) .modal .btn-default { background: var(--md2-surface-2) !important; color: var(--md2-ink-2) !important; }
 html.crm-modern[data-theme="dark"] .modal-content { background: var(--md2-surface) !important; }
