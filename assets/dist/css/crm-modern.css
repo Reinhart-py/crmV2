@@ -1,62 +1,79 @@
 /* =========================================================================
-   Modern CRM view (My Profile > CRM view > Modern).
+   Modern CRM view (profile menu > CRM view > Modern).
    Loaded only for people who picked Modern. Classic is untouched.
    Look only: side pane, top bar and colours. No page works differently.
    Dashboards keep their own look: page styles below skip body.crm-dash-page.
    ========================================================================= */
 
 html.crm-modern {
-  --md2-side-w: 256px;
-  --md2-mini-w: 76px;
-  --md2-canvas: #f4f6fb;
+  --md2-side-w: 228px;
+  --md2-mini-w: 68px;
+  --md2-canvas: #f5f7fb;
   --md2-surface: #ffffff;
-  --md2-surface-2: #f8fafc;
-  --md2-line: #e4e8f1;
-  --md2-line-2: #eef1f6;
-  --md2-ink: #111827;
-  --md2-ink-2: #344054;
-  --md2-muted: #667085;
-  --md2-fill: #4f46e5;
-  --md2-fill-h: #4338ca;
-  --md2-soft: #eef2ff;
-  --md2-soft-line: #c7d2fe;
-  --md2-accent-text: #4338ca;
-  --md2-ring: rgba(79, 70, 229, .16);
-  --md2-shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 1px 3px rgba(16, 24, 40, .06);
-  --md2-shadow-lg: 0 12px 32px rgba(16, 24, 40, .12);
-  --md2-side-bg: linear-gradient(180deg, #131a3a 0%, #0d1330 55%, #0b1027 100%);
-  --md2-side-ink: #c9d0e6;
-  --md2-side-muted: #8b94b5;
-  --md2-side-hover: rgba(255, 255, 255, .06);
-  --md2-side-on: rgba(129, 140, 248, .20);
-  --md2-side-bar: #a5b4fc;
-  --md2-side-line: rgba(255, 255, 255, .07);
-  --md2-radius: 12px;
-  --md2-bar: rgba(255, 255, 255, .9);
-  --md2-row-hover: rgba(238, 242, 255, .6);
-  --md2-row-alt: rgba(248, 250, 252, .75);
+  --md2-surface-2: #f9fafc;
+  --md2-line: #e6e9f2;
+  --md2-line-2: #eff2f7;
+  --md2-ink: #1e2533;
+  --md2-ink-2: #3a4458;
+  --md2-muted: #687286;
+  --md2-fill: #5468e7;
+  --md2-fill-h: #4357d6;
+  --md2-soft: #eef1fe;
+  --md2-soft-line: #d3dafb;
+  --md2-accent-text: #3d50c8;
+  --md2-ring: rgba(84, 104, 231, .15);
+  --md2-shadow: 0 1px 2px rgba(31, 41, 79, .03), 0 2px 10px rgba(31, 41, 79, .045);
+  --md2-shadow-lg: 0 14px 34px rgba(31, 41, 79, .10);
+  --md2-side-bg: linear-gradient(180deg, #fcfdff 0%, #f6f8fe 100%);
+  --md2-side-ink: #2b3447;
+  --md2-side-strong: #18203a;
+  --md2-side-muted: #5f6a80;
+  --md2-side-sub: #3e475a;
+  --md2-side-ico: #6f7ca0;
+  --md2-side-hover: #eef1fb;
+  --md2-side-on: #e7ebfd;
+  --md2-side-on-ink: #3446c4;
+  --md2-side-bar: #5468e7;
+  --md2-side-line: #e6e9f3;
+  --md2-side-card: #ffffff;
+  --md2-side-flyout: #ffffff;
+  --md2-radius: 14px;
+  --md2-bar: rgba(255, 255, 255, .92);
+  --md2-row-hover: rgba(238, 241, 254, .7);
+  --md2-row-alt: rgba(249, 250, 252, .8);
 }
 html.crm-modern[data-theme="dark"] {
-  --md2-canvas: #0a0f1d;
-  --md2-surface: #111a2e;
-  --md2-surface-2: #0e1628;
-  --md2-line: #1f2b46;
-  --md2-line-2: #18223a;
-  --md2-ink: #eef2ff;
-  --md2-ink-2: #cdd5e8;
-  --md2-muted: #94a0bd;
-  --md2-fill: #6366f1;
-  --md2-fill-h: #4f46e5;
-  --md2-soft: rgba(99, 102, 241, .16);
-  --md2-soft-line: rgba(129, 140, 248, .35);
-  --md2-accent-text: #a5b4fc;
-  --md2-ring: rgba(129, 140, 248, .25);
-  --md2-shadow: 0 1px 2px rgba(0, 0, 0, .3);
-  --md2-shadow-lg: 0 14px 36px rgba(0, 0, 0, .45);
-  --md2-side-bg: linear-gradient(180deg, #0b1124 0%, #080d1d 100%);
-  --md2-side-line: rgba(255, 255, 255, .06);
-  --md2-bar: rgba(17, 26, 46, .92);
-  --md2-row-hover: rgba(99, 102, 241, .10);
+  --md2-canvas: #0e1525;
+  --md2-surface: #151e33;
+  --md2-surface-2: #121a2d;
+  --md2-line: #243050;
+  --md2-line-2: #1c2741;
+  --md2-ink: #eef1fa;
+  --md2-ink-2: #d2d9ea;
+  --md2-muted: #a0abc6;
+  --md2-fill: #6d7ff0;
+  --md2-fill-h: #5c6fe6;
+  --md2-soft: rgba(109, 127, 240, .16);
+  --md2-soft-line: rgba(140, 155, 245, .35);
+  --md2-accent-text: #b4c0ff;
+  --md2-ring: rgba(140, 155, 245, .25);
+  --md2-shadow: 0 1px 2px rgba(0, 0, 0, .25);
+  --md2-shadow-lg: 0 14px 36px rgba(0, 0, 0, .4);
+  --md2-side-bg: linear-gradient(180deg, #172036 0%, #131b2e 100%);
+  --md2-side-ink: #e3e8f5;
+  --md2-side-strong: #ffffff;
+  --md2-side-muted: #a9b3cc;
+  --md2-side-sub: #cdd4e6;
+  --md2-side-ico: #9fabcb;
+  --md2-side-hover: rgba(255, 255, 255, .07);
+  --md2-side-on: rgba(109, 127, 240, .24);
+  --md2-side-on-ink: #ffffff;
+  --md2-side-bar: #9aa8ff;
+  --md2-side-line: rgba(255, 255, 255, .08);
+  --md2-side-card: rgba(255, 255, 255, .05);
+  --md2-side-flyout: #1a2440;
+  --md2-bar: rgba(21, 30, 51, .92);
+  --md2-row-hover: rgba(109, 127, 240, .10);
   --md2-row-alt: rgba(255, 255, 255, .025);
 }
 
@@ -79,74 +96,80 @@ html.crm-modern body .main-sidebar .crm-sidebar-header {
   align-items: center !important;
   justify-content: space-between !important;
   gap: 8px;
-  min-height: 64px;
-  padding: 12px 14px 12px 18px !important;
+  min-height: 60px;
+  padding: 10px 12px 10px 16px !important;
   background: transparent !important;
   border-bottom: 1px solid var(--md2-side-line) !important;
   flex: none;
 }
-html.crm-modern body .main-sidebar .crm-sidebar-header img { max-height: 44px !important; width: auto !important; }
-html.crm-modern body .main-sidebar .crm-sidebar-header .logo-light { display: none !important; }
-html.crm-modern body .main-sidebar .crm-sidebar-header .logo-dark { display: inline-block !important; }
+html.crm-modern body .main-sidebar .crm-sidebar-header img { max-height: 40px !important; width: auto !important; }
+html.crm-modern body .main-sidebar .crm-sidebar-header .logo-light { display: inline-block !important; }
+html.crm-modern body .main-sidebar .crm-sidebar-header .logo-dark { display: none !important; }
+html.crm-modern[data-theme="dark"] body .main-sidebar .crm-sidebar-header .logo-light { display: none !important; }
+html.crm-modern[data-theme="dark"] body .main-sidebar .crm-sidebar-header .logo-dark { display: inline-block !important; }
 html.crm-modern body .main-sidebar .crm-sidebar-close { color: var(--md2-side-muted) !important; }
-html.crm-modern body .main-sidebar .crm-sidebar-close:hover { color: #fff !important; background: var(--md2-side-hover) !important; }
+html.crm-modern body .main-sidebar .crm-sidebar-close:hover { color: var(--md2-side-strong) !important; background: var(--md2-side-hover) !important; }
 html.crm-modern .md2-mini-btn {
   display: none; width: 30px; height: 30px; border: 1px solid var(--md2-side-line); border-radius: 8px;
-  background: rgba(255, 255, 255, .04); color: var(--md2-side-muted); cursor: pointer; align-items: center; justify-content: center; font-size: 15px; flex: none;
+  background: var(--md2-side-card); color: var(--md2-side-muted); cursor: pointer; align-items: center; justify-content: center; font-size: 15px; flex: none;
 }
-html.crm-modern .md2-mini-btn:hover { color: #fff; background: var(--md2-side-hover); }
+html.crm-modern .md2-mini-btn:hover { color: var(--md2-side-strong); background: var(--md2-side-hover); }
 
 html.crm-modern body .main-sidebar .sidebar {
   flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; padding: 10px 0 12px !important; background: transparent !important;
-  scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, .15) transparent;
+  scrollbar-width: thin; scrollbar-color: rgba(100, 116, 139, .3) transparent;
 }
 html.crm-modern body .main-sidebar .sidebar-menu { background: transparent !important; padding: 0 !important; margin: 0 !important; }
 html.crm-modern body .main-sidebar .sidebar-menu > li { background: transparent !important; border: 0 !important; margin: 0 !important; }
 html.crm-modern body .main-sidebar .sidebar-menu > li > a {
-  display: flex !important; align-items: center !important; gap: 10px;
-  margin: 2px 10px !important; padding: 9px 12px !important; border-radius: 10px !important; border: 0 !important;
+  display: flex !important; align-items: center !important; gap: 11px;
+  margin: 1px 8px !important; padding: 8px 10px !important; border-radius: 10px !important; border: 0 !important;
   color: var(--md2-side-ink) !important; background: transparent !important;
-  font-size: 13.5px !important; font-weight: 600 !important; letter-spacing: 0 !important; line-height: 1.3 !important;
+  font-size: 14px !important; font-weight: 600 !important; letter-spacing: 0 !important; line-height: 1.3 !important;
   transition: background .15s ease, color .15s ease;
 }
 html.crm-modern body .main-sidebar .sidebar-menu > li > a > span:not(.pull-right-container):not(.cb-unread) { flex: 1 1 auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 html.crm-modern body .main-sidebar .sidebar-menu > li > a .crm-svg-ico,
-html.crm-modern body .main-sidebar .sidebar-menu > li > a > i.fa { margin-right: 0 !important; width: 18px; height: 18px; text-align: center; font-size: 15px; line-height: 18px; flex: none; color: var(--md2-side-muted) !important; opacity: 1; }
+html.crm-modern body .main-sidebar .sidebar-menu > li > a > i.fa { margin-right: 0 !important; width: 18px; height: 18px; text-align: center; font-size: 15px; line-height: 18px; flex: none; color: var(--md2-side-ico) !important; opacity: 1; }
 html.crm-modern body .main-sidebar .sidebar-menu > li > a .pull-right-container { position: static !important; margin-left: auto; display: inline-flex; }
-html.crm-modern body .main-sidebar .sidebar-menu > li > a .sidebar-arrow { color: var(--md2-side-muted) !important; transition: transform .2s ease; font-size: 14px; }
+html.crm-modern body .main-sidebar .sidebar-menu > li > a .sidebar-arrow { color: var(--md2-side-ico) !important; transition: transform .2s ease; font-size: 14px; }
 html.crm-modern body .main-sidebar .sidebar-menu > li.menu-open > a .sidebar-arrow { transform: rotate(-90deg); }
-html.crm-modern body .main-sidebar .sidebar-menu > li > a:hover { background: var(--md2-side-hover) !important; color: #fff !important; }
-html.crm-modern body .main-sidebar .sidebar-menu > li > a:hover .crm-svg-ico { color: #fff !important; }
+html.crm-modern body .main-sidebar .sidebar-menu > li > a:hover { background: var(--md2-side-hover) !important; color: var(--md2-side-strong) !important; }
+html.crm-modern body .main-sidebar .sidebar-menu > li > a:hover .crm-svg-ico,
+html.crm-modern body .main-sidebar .sidebar-menu > li > a:hover > i.fa { color: var(--md2-side-bar) !important; }
 html.crm-modern body .main-sidebar .sidebar-menu > li.active > a {
-  background: var(--md2-side-on) !important; color: #fff !important;
+  background: var(--md2-side-on) !important; color: var(--md2-side-on-ink) !important;
 }
 html.crm-modern body .main-sidebar .sidebar-menu > li.active > a .crm-svg-ico,
-html.crm-modern body .main-sidebar .sidebar-menu > li.active > a > i.fa { color: var(--md2-side-bar) !important; }
+html.crm-modern body .main-sidebar .sidebar-menu > li.active > a > i.fa,
+html.crm-modern body .main-sidebar .sidebar-menu > li.active > a .sidebar-arrow { color: var(--md2-side-bar) !important; }
 
 html.crm-modern body .main-sidebar .sidebar-menu > li > ul.treeview-menu.treeview-menu {
-  background: transparent !important; margin: 2px 10px 6px 30px !important; padding: 2px 0 2px 10px !important;
+  background: transparent !important; margin: 2px 8px 6px 25px !important; padding: 2px 0 2px 8px !important;
   border-left: 1px solid var(--md2-side-line) !important; list-style: none; box-shadow: none !important;
 }
 html.crm-modern body .main-sidebar .sidebar-menu .treeview-menu > li { margin: 0 !important; background: transparent !important; }
 html.crm-modern body .main-sidebar .sidebar-menu .treeview-menu > li > a {
-  display: flex !important; align-items: center; gap: 8px; padding: 7px 10px !important; margin: 1px 0 !important; border-radius: 8px !important;
-  color: var(--md2-side-muted) !important; background: transparent !important; font-size: 13px !important; font-weight: 500 !important; border: 0 !important;
+  display: flex !important; align-items: center; gap: 8px; padding: 6px 9px !important; margin: 1px 0 !important; border-radius: 8px !important;
+  color: var(--md2-side-sub) !important; background: transparent !important; font-size: 13.5px !important; font-weight: 500 !important; border: 0 !important;
 }
-html.crm-modern body .main-sidebar .sidebar-menu .treeview-menu > li > a > i.fa { width: 16px; text-align: center; font-size: 13px; color: inherit !important; opacity: .85; margin: 0 !important; }
-html.crm-modern body .main-sidebar .sidebar-menu .treeview-menu > li > a:hover { color: #fff !important; background: var(--md2-side-hover) !important; }
+html.crm-modern body .main-sidebar .sidebar-menu .treeview-menu > li > a > i.fa { width: 16px; text-align: center; font-size: 13px; color: var(--md2-side-ico) !important; opacity: 1; margin: 0 !important; }
+html.crm-modern body .main-sidebar .sidebar-menu .treeview-menu > li > a:hover { color: var(--md2-side-strong) !important; background: var(--md2-side-hover) !important; }
 html.crm-modern body .main-sidebar .sidebar-menu .treeview-menu > li > a.is-current {
-  color: #fff !important; background: rgba(129, 140, 248, .16) !important; font-weight: 600 !important; box-shadow: inset 2px 0 0 var(--md2-side-bar);
+  color: var(--md2-side-on-ink) !important; background: var(--md2-side-on) !important; font-weight: 600 !important; box-shadow: inset 2px 0 0 var(--md2-side-bar);
 }
+html.crm-modern body .main-sidebar .sidebar-menu .treeview-menu > li > a.is-current > i.fa { color: var(--md2-side-bar) !important; }
 
 /* Your name at the bottom of the side pane */
 html.crm-modern .md2-me {
-  display: flex; align-items: center; gap: 10px; margin: 8px 10px 12px; padding: 9px 10px; border-radius: 12px;
-  background: rgba(255, 255, 255, .05); border: 1px solid var(--md2-side-line); color: #fff !important; text-decoration: none !important; flex: none;
+  display: flex; align-items: center; gap: 10px; margin: 8px 8px 10px; padding: 8px 9px; border-radius: 12px;
+  background: var(--md2-side-card); border: 1px solid var(--md2-side-line); color: var(--md2-side-strong) !important; text-decoration: none !important; flex: none;
+  box-shadow: 0 1px 2px rgba(31, 41, 79, .04);
 }
-html.crm-modern .md2-me:hover { background: rgba(255, 255, 255, .09); }
+html.crm-modern .md2-me:hover { background: var(--md2-side-hover); }
 html.crm-modern .md2-me img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex: none; background: #fff; }
 html.crm-modern .md2-me span { display: flex; flex-direction: column; min-width: 0; }
-html.crm-modern .md2-me b { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
+html.crm-modern .md2-me b { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--md2-side-strong); }
 html.crm-modern .md2-me small { font-size: 11px; color: var(--md2-side-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* ---------- Desktop layout ---------- */
@@ -186,12 +209,12 @@ html.crm-modern .md2-me small { font-size: 11px; color: var(--md2-side-muted); w
   html.crm-modern.crm-side-mini body .main-sidebar .sidebar-menu > li > a .pull-right-container { display: none !important; }
   html.crm-modern.crm-side-mini body .main-sidebar .sidebar-menu > li > ul.treeview-menu.treeview-menu {
     display: none !important; position: absolute; left: calc(100% - 4px); top: 0; min-width: 230px; margin: 0 !important; padding: 8px !important;
-    background: #141b3a !important; border: 1px solid var(--md2-side-line) !important; border-radius: 12px; box-shadow: 0 16px 36px rgba(0, 0, 0, .35) !important; z-index: 2000;
+    background: var(--md2-side-flyout) !important; border: 1px solid var(--md2-side-line) !important; border-radius: 12px; box-shadow: 0 16px 36px rgba(31, 41, 79, .16) !important; z-index: 2000;
   }
   html.crm-modern.crm-side-mini body .main-sidebar .sidebar-menu > li:hover > ul.treeview-menu.treeview-menu { display: block !important; }
   html.crm-modern.crm-side-mini body .main-sidebar .sidebar-menu > li:not(.treeview) > a:hover::after {
     content: attr(data-tip); position: absolute; left: calc(100% + 6px); top: 50%; transform: translateY(-50%); white-space: nowrap;
-    background: #141b3a; color: #fff; font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 8px; box-shadow: 0 8px 20px rgba(0, 0, 0, .3); z-index: 2000;
+    background: var(--md2-side-flyout); color: var(--md2-side-strong); border: 1px solid var(--md2-side-line); font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 8px; box-shadow: 0 8px 20px rgba(31, 41, 79, .14); z-index: 2000;
   }
   html.crm-modern.crm-side-mini .md2-me { justify-content: center; padding: 8px 0; }
   html.crm-modern.crm-side-mini .md2-me span { display: none; }
@@ -199,7 +222,7 @@ html.crm-modern .md2-me small { font-size: 11px; color: var(--md2-side-muted); w
 
 /* ---------- Phone and tablet: slide-in pane with the same look ---------- */
 @media (max-width: 991px) {
-  html.crm-modern body .main-sidebar { width: 280px !important; }
+  html.crm-modern body .main-sidebar { width: 264px !important; }
   html.crm-modern body .main-header {
     background: var(--md2-surface) !important; border-bottom: 1px solid var(--md2-line) !important; box-shadow: none !important;
   }
@@ -208,17 +231,17 @@ html.crm-modern .md2-me small { font-size: 11px; color: var(--md2-side-muted); w
 /* ---------- Top bar buttons (desktop; phones keep their compact sizes) ---------- */
 @media (min-width: 992px) {
 html.crm-modern body .main-header .global-theme-btn {
-  width: 38px !important; height: 38px !important; border-radius: 10px !important;
+  width: 38px !important; height: 38px !important; border-radius: 12px !important;
   background: var(--md2-surface-2) !important; border: 1px solid var(--md2-line) !important; color: var(--md2-ink-2) !important;
   box-shadow: none !important; transition: background .15s, color .15s, border-color .15s;
 }
 html.crm-modern body .main-header .global-theme-btn:hover { background: var(--md2-soft) !important; color: var(--md2-accent-text) !important; border-color: var(--md2-soft-line) !important; }
 html.crm-modern body .main-header .live-nav-badge {
-  height: 38px; padding: 0 14px !important; border-radius: 10px !important; border: 1px solid var(--md2-soft-line) !important;
+  height: 38px; padding: 0 14px !important; border-radius: 12px !important; border: 1px solid var(--md2-soft-line) !important;
   background: var(--md2-soft) !important; color: var(--md2-accent-text) !important;
 }
 html.crm-modern body .main-header .live-nav-badge.active { background: var(--md2-fill) !important; color: #fff !important; border-color: var(--md2-fill) !important; }
-html.crm-modern body .main-header .profile-avatar-img { border-radius: 10px !important; }
+html.crm-modern body .main-header .profile-avatar-img { border-radius: 12px !important; }
 }
 
 /* ---------- Pages (not the dashboards) ---------- */
@@ -238,7 +261,7 @@ html.crm-modern body:not(.crm-dash-page) {
   --crm-line-soft: var(--md2-line-2);
   --crm-surface: var(--md2-surface);
   --crm-canvas: var(--md2-canvas);
-  --crm-radius: 10px;
+  --crm-radius: 12px;
   background: var(--md2-canvas) !important;
 }
 html.crm-modern body:not(.crm-dash-page) .wrapper,
@@ -247,7 +270,7 @@ html.crm-modern body:not(.crm-dash-page) .content-wrapper { padding-top: 6px; }
 
 html.crm-modern body:not(.crm-dash-page) .content-header > h1,
 html.crm-modern body:not(.crm-dash-page) .sx .sx-head h1 {
-  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif !important; font-size: 22px !important; font-weight: 700 !important;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif !important; font-size: 22px !important; font-weight: 600 !important;
   letter-spacing: -.02em !important; color: var(--md2-ink) !important;
 }
 html.crm-modern body:not(.crm-dash-page) .content-header > .breadcrumb { background: transparent !important; }
@@ -265,7 +288,7 @@ html.crm-modern body:not(.crm-dash-page) .content-wrapper .panel > .panel-headin
   background: transparent !important; border-bottom-color: var(--md2-line-2) !important; border-radius: var(--md2-radius) var(--md2-radius) 0 0 !important;
 }
 html.crm-modern body:not(.crm-dash-page) .content-wrapper .box > .box-header .box-title {
-  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; font-weight: 700 !important; color: var(--md2-ink) !important; letter-spacing: -.01em;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; font-weight: 600 !important; color: var(--md2-ink) !important; letter-spacing: -.01em;
 }
 html.crm-modern body:not(.crm-dash-page) .content-wrapper .box > .box-footer { background: var(--md2-surface-2) !important; border-top-color: var(--md2-line-2) !important; border-radius: 0 0 var(--md2-radius) var(--md2-radius) !important; }
 
@@ -273,7 +296,7 @@ html.crm-modern body:not(.crm-dash-page) .content-wrapper .box > .box-footer { b
 html.crm-modern body:not(.crm-dash-page) .content-wrapper .table > thead > tr > th,
 html.crm-modern body:not(.crm-dash-page) .content-wrapper table.sx-table thead th {
   background: var(--md2-surface-2) !important; color: var(--md2-muted) !important;
-  font-size: 11.5px !important; font-weight: 700 !important; text-transform: uppercase; letter-spacing: .045em;
+  font-size: 11.5px !important; font-weight: 600 !important; text-transform: uppercase; letter-spacing: .04em;
   border-bottom: 1px solid var(--md2-line) !important; border-top: 0 !important;
 }
 html.crm-modern body:not(.crm-dash-page) .content-wrapper .table > thead > tr > th a,
@@ -288,13 +311,13 @@ html.crm-modern body:not(.crm-dash-page) .content-wrapper .table-striped > tbody
 
 /* Buttons */
 html.crm-modern body:not(.crm-dash-page) .content-wrapper .btn,
-html.crm-modern body:not(.crm-dash-page) .modal .btn { border-radius: 9px !important; font-weight: 600 !important; }
+html.crm-modern body:not(.crm-dash-page) .modal .btn { border-radius: 11px !important; font-weight: 500 !important; }
 html.crm-modern body:not(.crm-dash-page) .content-wrapper .btn-primary,
 html.crm-modern body:not(.crm-dash-page) .modal .btn-primary,
 html.crm-modern[data-theme="dark"] body:not(.crm-dash-page) .content-wrapper .btn-primary,
 html.crm-modern[data-theme="dark"] body:not(.crm-dash-page) .modal .btn-primary {
   background: var(--md2-fill) !important; border-color: var(--md2-fill) !important; color: #fff !important;
-  box-shadow: 0 1px 2px rgba(79, 70, 229, .25) !important;
+  box-shadow: 0 1px 2px rgba(84, 104, 231, .22) !important;
 }
 html.crm-modern body:not(.crm-dash-page) .content-wrapper .btn-primary:hover,
 html.crm-modern body:not(.crm-dash-page) .modal .btn-primary:hover { background: var(--md2-fill-h) !important; border-color: var(--md2-fill-h) !important; }
@@ -310,7 +333,7 @@ html.crm-modern body:not(.crm-dash-page) .content-wrapper .form-control,
 html.crm-modern body:not(.crm-dash-page) .modal .form-control,
 html.crm-modern body:not(.crm-dash-page) .select2-container--default .select2-selection--single,
 html.crm-modern body:not(.crm-dash-page) .select2-container--default .select2-selection--multiple {
-  border-radius: 9px !important; border-color: var(--md2-line) !important; box-shadow: none !important;
+  border-radius: 11px !important; border-color: var(--md2-line) !important; box-shadow: none !important;
 }
 html.crm-modern body:not(.crm-dash-page) .content-wrapper .form-control:focus,
 html.crm-modern body:not(.crm-dash-page) .modal .form-control:focus {
@@ -323,7 +346,7 @@ html.crm-modern body:not(.crm-dash-page) .content-wrapper .nav-tabs > li > a { b
 html.crm-modern body:not(.crm-dash-page) .content-wrapper .nav-tabs > li.active > a { color: var(--md2-accent-text) !important; border-bottom-color: var(--md2-fill) !important; }
 html.crm-modern body:not(.crm-dash-page) .content-wrapper .nav-tabs-custom { border-radius: var(--md2-radius) !important; box-shadow: var(--md2-shadow) !important; background: var(--md2-surface) !important; }
 html.crm-modern body:not(.crm-dash-page) .content-wrapper .nav-tabs-custom > .nav-tabs > li.active { border-top-color: var(--md2-fill) !important; }
-html.crm-modern body:not(.crm-dash-page) .content-wrapper .nav-pills > li > a { border-radius: 9px !important; }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .nav-pills > li > a { border-radius: 11px !important; }
 html.crm-modern body:not(.crm-dash-page) .content-wrapper .pagination > li > a,
 html.crm-modern body:not(.crm-dash-page) .content-wrapper .pagination > li > span { border-color: var(--md2-line) !important; color: var(--md2-ink-2) !important; background: var(--md2-surface) !important; }
 html.crm-modern body:not(.crm-dash-page) .content-wrapper .pagination > .active > a,
@@ -332,9 +355,9 @@ html.crm-modern body:not(.crm-dash-page) .content-wrapper .dataTables_paginate .
   background: var(--md2-fill) !important; border-color: var(--md2-fill) !important; color: #fff !important;
 }
 html.crm-modern body:not(.crm-dash-page) .content-wrapper .pagination > li:first-child > a,
-html.crm-modern body:not(.crm-dash-page) .content-wrapper .pagination > li:first-child > span { border-radius: 9px 0 0 9px !important; }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .pagination > li:first-child > span { border-radius: 11px 0 0 11px !important; }
 html.crm-modern body:not(.crm-dash-page) .content-wrapper .pagination > li:last-child > a,
-html.crm-modern body:not(.crm-dash-page) .content-wrapper .pagination > li:last-child > span { border-radius: 0 9px 9px 0 !important; }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .pagination > li:last-child > span { border-radius: 0 11px 11px 0 !important; }
 
 /* Page tab bars (HR, Reports, System ...) */
 html.crm-modern body:not(.crm-dash-page) .sx .sx-tabs a.is-on,
@@ -342,10 +365,10 @@ html.crm-modern body:not(.crm-dash-page) .sx .sx-chips .is-on { background: var(
 html.crm-modern body:not(.crm-dash-page) .sx .sx-kpi { border-radius: var(--md2-radius) !important; box-shadow: var(--md2-shadow) !important; border-color: var(--md2-line) !important; background: var(--md2-surface) !important; }
 
 /* Pop-ups and menus */
-html.crm-modern .modal-content { border-radius: 16px !important; border: 1px solid var(--md2-line) !important; box-shadow: var(--md2-shadow-lg) !important; overflow: hidden; }
+html.crm-modern .modal-content { border-radius: 18px !important; border: 1px solid var(--md2-line) !important; box-shadow: var(--md2-shadow-lg) !important; overflow: hidden; }
 html.crm-modern .modal-header { border-bottom-color: var(--md2-line-2) !important; }
 html.crm-modern .modal-footer { border-top-color: var(--md2-line-2) !important; background: var(--md2-surface-2); }
-html.crm-modern .dropdown-menu { border-radius: 12px !important; border-color: var(--md2-line) !important; box-shadow: var(--md2-shadow-lg) !important; padding: 6px !important; }
+html.crm-modern .dropdown-menu { border-radius: 14px !important; border-color: var(--md2-line) !important; box-shadow: var(--md2-shadow-lg) !important; padding: 6px !important; }
 html.crm-modern .dropdown-menu > li > a { border-radius: 8px; }
 html.crm-modern body .google-profile-dropdown { border-radius: 16px !important; border-color: var(--md2-line) !important; box-shadow: var(--md2-shadow-lg) !important; }
 html.crm-modern body .smartphone-notif-dropdown { border-radius: 14px !important; border-color: var(--md2-line) !important; box-shadow: var(--md2-shadow-lg) !important; }
@@ -369,3 +392,32 @@ html.crm-modern[data-theme="dark"] .modal-content { background: var(--md2-surfac
 /* Tables that fold columns away on a narrow screen: room for the + button */
 /* :is(#md2-x, ...) lifts this above the list pages' own spacing rule, which counts as an id */
 html.crm-modern body:not(.crm-dash-page) :is(#md2-x, table).dataTable.dtr-inline.collapsed > tbody > tr > :is(td, th):first-child { position: relative; padding-left: 32px !important; }
+
+/* Side pane: win over the shared light/dark menu colours (crm-modes.css) so the pane keeps one soft look */
+html.crm-modern body .main-sidebar :is(#md2-x, .sidebar-menu) > li > a { width: auto !important; }
+html.crm-modern body .main-sidebar :is(#md2-x, .sidebar-menu) > li.menu-open:not(.active) > a,
+html.crm-modern body .main-sidebar :is(#md2-x, .sidebar-menu) > li:not(.active) > a:hover { color: var(--md2-side-strong) !important; }
+html.crm-modern body .main-sidebar :is(#md2-x, .sidebar-menu) > li.active > a { color: var(--md2-side-on-ink) !important; }
+html.crm-modern body .main-sidebar :is(#md2-x, .sidebar-menu) > li > ul.treeview-menu.treeview-menu { background: transparent !important; border-left-color: var(--md2-side-line) !important; }
+html.crm-modern body .main-sidebar :is(#md2-x, .sidebar-menu) .treeview-menu > li > a { color: var(--md2-side-sub) !important; }
+html.crm-modern body .main-sidebar :is(#md2-x, .sidebar-menu) .treeview-menu > li > a:hover { color: var(--md2-side-strong) !important; }
+html.crm-modern body .main-sidebar :is(#md2-x, .sidebar-menu) .treeview-menu > li > a.is-current { color: var(--md2-side-on-ink) !important; }
+@media (min-width: 992px) {
+  html.crm-modern.crm-side-mini body .main-sidebar :is(#md2-x, .sidebar-menu) > li > ul.treeview-menu.treeview-menu { background: var(--md2-side-flyout) !important; border-left-color: var(--md2-side-line) !important; }
+}
+
+/* Softer text and corners on the pages (Modern only, dashboards keep their own look) */
+html.crm-modern body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper { color: var(--md2-ink-2); }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper label,
+html.crm-modern body:not(.crm-dash-page) .modal label { font-weight: 600; }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper h1,
+html.crm-modern body:not(.crm-dash-page) .content-wrapper h2,
+html.crm-modern body:not(.crm-dash-page) .content-wrapper h3,
+html.crm-modern body:not(.crm-dash-page) .content-wrapper h4 { font-weight: 600; }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .label,
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .badge { border-radius: 999px; font-weight: 600; }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .alert { border-radius: 12px; }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .dataTables_paginate .paginate_button { border-radius: 10px !important; }
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .dataTables_filter input,
+html.crm-modern body:not(.crm-dash-page) .content-wrapper .dataTables_length select { border-radius: 10px !important; }
