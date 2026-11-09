@@ -59,7 +59,7 @@
 <link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/jQueryUI/jquery-ui.css?v=20261107">
 <script src="<?php echo base_url();?>assets/bootstrap/js/jquery.validate.js"></script>
 <link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-theme.css?v=20261108_1">
-<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-modes.css?v=20261110_3">
+<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-modes.css?v=20261110_4">
 <?php if ($crm_is_modern) { ?><link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-modern.css?v=20261110_7"><?php } ?>
 <link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-search.css?v=20261107_4">
 <script src="<?php echo base_url();?>assets/dist/js/crm-search.js?v=20261107_2" defer></script>

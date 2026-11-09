@@ -433,3 +433,6 @@ html[data-theme="dark"] .dh-sec-h a { color: var(--md-blue) !important; }
 html[data-theme="dark"] .em-page .em-years a { color: var(--md-ink-2) !important; }
 /* :is(#md-x, ...) lifts this above the general faint-text rule */
 html[data-theme="dark"] :is(#md-x, .dh-act).dh-act-main small { color: rgba(255, 255, 255, .85) !important; }
+
+/* Lists on desktop show every column; a wide list scrolls sideways inside its box */
+.crm-dt-scroll { overflow-x: auto; max-width: 100%; }

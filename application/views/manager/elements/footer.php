@@ -21,6 +21,18 @@
   }
   if (window.innerWidth < 992) {
     $.extend(true, $.fn.dataTable.defaults, { responsive: true });
+  } else {
+    // Desktop: every column stays in view (no folding into a + row); a wide list scrolls sideways instead.
+    // This runs on <body>, so it comes before the fold plugin's own check on the document.
+    $(document.body).on('preInit.dt', function (e, settings) {
+      if (e.namespace !== 'dt' || !settings || !settings.oInit) return;
+      settings.oInit.responsive = false;
+    });
+    $(document.body).on('init.dt', function (e, settings) {
+      if (e.namespace !== 'dt' || !settings || !settings.nTable) return;
+      var $t = $(settings.nTable);
+      if (!$t.parent().hasClass('crm-dt-scroll')) $t.wrap('<div class="crm-dt-scroll"></div>');
+    });
   }
   $(function () {
     setTimeout(function () {
