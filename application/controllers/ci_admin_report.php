@@ -178,6 +178,92 @@ class Ci_admin_report extends CI_Controller {
 		$this->load->view('manager/report/followup_report', $data);
 	}
 
+	/** Calling report: calls, connected and talk time per day, week or month, and per person (own and team; Admin everyone). */
+	public function calls()
+	{
+		$data = array();
+		$data['info'] = array('title' => 'Calling Report', 'page_heading' => 'Calling Report');
+		$data['info2'] = $this->if_not_login();
+		$by = $this->_q('by');
+		if (!in_array($by, array('day', 'week', 'month'), true)) $by = 'day';
+		if (!isset($_GET['d1']) && !isset($_GET['d2'])) {
+			// First open: this month by day, the last 12 weeks by week, this year by month
+			if ($by === 'week') { $d1 = date('Y-m-d', strtotime('monday this week') - 11 * 7 * 86400); $d2 = date('Y-m-d'); }
+			elseif ($by === 'month') { $d1 = date('Y-01-01'); $d2 = date('Y-m-d'); }
+			else { $d1 = date('Y-m-01'); $d2 = date('Y-m-d'); }
+		} else {
+			list($d1, $d2) = $this->_period();
+		}
+		$people = $this->report_model->insight_people();
+		$person = (int)$this->_q('person');
+		if ($person > 0 && !isset($people[$person])) $person = 0;
+		$who = $person > 0 ? array($person => $people[$person]) : $people;
+		$internal = $this->_q('internal') === '1';
+
+		$in = $who ? implode(',', array_map('intval', array_keys($who))) : '-1';
+		$where = "L.user_id IN ({$in}) AND L.created_at BETWEEN " . $this->db->escape($d1 . ' 00:00:00') . " AND " . $this->db->escape($d2 . ' 23:59:59')
+			. ($internal ? '' : " AND (L.is_internal = 0 OR L.is_internal IS NULL)");
+		// Same rule as the Phone Dialer: a call counts as connected when marked Connected or it has talk time
+		$conn = "(L.disposition = 'Connected' OR L.duration > 0)";
+		$key = $by === 'month' ? "DATE_FORMAT(L.created_at, '%Y-%m-01')" : ($by === 'week' ? "DATE_SUB(DATE(L.created_at), INTERVAL WEEKDAY(L.created_at) DAY)" : "DATE(L.created_at)");
+		$sums = "COUNT(*) AS calls, SUM(CASE WHEN {$conn} THEN 1 ELSE 0 END) AS connected, COALESCE(SUM(CASE WHEN {$conn} THEN L.duration ELSE 0 END), 0) AS talk,
+			SUM(CASE WHEN L.call_category = 'followup' THEN 1 ELSE 0 END) AS followups";
+
+		$found = array();
+		foreach ($this->db->query("SELECT {$key} AS p, {$sums}, COUNT(DISTINCT L.user_id) AS people FROM ci_call_logs L WHERE {$where} GROUP BY p")->result_array() as $r) {
+			$found[$r['p']] = $r;
+		}
+		// Every day / week / month in the range gets a row, also the ones with no calls
+		$periods = array();
+		$t = strtotime($d1);
+		if ($by === 'week') $t = strtotime('monday this week', $t);
+		if ($by === 'month') $t = strtotime(date('Y-m-01', $t));
+		$end = strtotime($d2);
+		while ($t <= $end && count($periods) < 800) {
+			$p = date('Y-m-d', $t);
+			$next = $by === 'month' ? strtotime('+1 month', $t) : ($by === 'week' ? $t + 7 * 86400 : $t + 86400);
+			$from = max($p, $d1);
+			$to = min(date('Y-m-d', $next - 86400), $d2);
+			$r = isset($found[$p]) ? $found[$p] : array('calls' => 0, 'connected' => 0, 'talk' => 0, 'followups' => 0, 'people' => 0);
+			$periods[] = array('p' => $p, 'from' => $from, 'to' => $to, 'calls' => (int)$r['calls'], 'connected' => (int)$r['connected'],
+				'talk' => (int)$r['talk'], 'followups' => (int)$r['followups'], 'people' => (int)$r['people']);
+			$t = $next;
+		}
+		$periods = array_reverse($periods);
+
+		$rows = array();
+		foreach ($this->db->query("SELECT L.user_id AS uid, {$sums}, COUNT(DISTINCT DATE(L.created_at)) AS days, MAX(L.created_at) AS last_call
+			FROM ci_call_logs L WHERE {$where} GROUP BY L.user_id")->result_array() as $r) {
+			$uid = (int)$r['uid'];
+			if (!isset($who[$uid])) continue;
+			$rows[] = array('name' => $who[$uid]['name'], 'uid' => $uid, 'calls' => (int)$r['calls'], 'connected' => (int)$r['connected'], 'talk' => (int)$r['talk'],
+				'followups' => (int)$r['followups'], 'days' => (int)$r['days'], 'last_call' => $r['last_call']);
+		}
+		usort($rows, function ($a, $b) { return $b['calls'] - $a['calls'] ?: strcmp($a['name'], $b['name']); });
+
+		if ($this->input->get('export') === 'csv') {
+			$hms = function ($s) { $s = (int)$s; return sprintf('%d:%02d:%02d', floor($s / 3600), floor($s / 60) % 60, $s % 60); };
+			$rate = function ($r) { return $r['calls'] > 0 ? round($r['connected'] * 100 / $r['calls']) . '%' : ''; };
+			if ($this->_q('part') === 'people') {
+				$this->_csv('calling-report-people', array(
+					'Person' => 'name', 'Calls' => 'calls', 'Connected' => 'connected', 'Not connected' => function ($r) { return $r['calls'] - $r['connected']; },
+					'Connect rate' => $rate, 'Talk time' => function ($r) use ($hms) { return $hms($r['talk']); }, 'Follow-up calls' => 'followups',
+					'Days with calls' => 'days', 'Last call' => 'last_call',
+				), $rows);
+			}
+			$this->_csv('calling-report-' . ($by === 'day' ? 'daily' : ($by === 'week' ? 'weekly' : 'monthly')), array(
+				'From' => 'from', 'To' => 'to', 'Calls' => 'calls', 'Connected' => 'connected', 'Not connected' => function ($r) { return $r['calls'] - $r['connected']; },
+				'Connect rate' => $rate, 'Talk time' => function ($r) use ($hms) { return $hms($r['talk']); }, 'Follow-up calls' => 'followups', 'People calling' => 'people',
+			), $periods);
+		}
+
+		$data['periods'] = $periods;
+		$data['rows'] = $rows;
+		$data['f'] = array('by' => $by, 'd1' => $d1, 'd2' => $d2, 'person' => $person, 'internal' => $internal);
+		$data['people'] = $people;
+		$this->load->view('manager/report/calling_report', $data);
+	}
+
 	public function performanceReportDep()
 	{
 		$data = array();

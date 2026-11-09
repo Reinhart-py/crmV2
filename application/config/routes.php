@@ -90,6 +90,7 @@ $route['manager/leads/report'] = "ci_admin_report/leads";
 $route['manager/performance-report'] = 'ci_admin_report/performanceReportDep';
 $route['manager/performance-report/individual'] = 'ci_admin_report/performanceReportIndividual';
 $route['manager/reports/followups'] = 'ci_admin_report/followup';
+$route['manager/reports/calls'] = 'ci_admin_report/calls';
 
 
 
