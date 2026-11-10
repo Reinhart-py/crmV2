@@ -34,7 +34,7 @@
 
       <?php if(isset($_GET['timeout'])) { ?>
         <div class="auth-alert auth-alert-warning">
-          Your session expired after 5 minutes of inactivity. Please sign in again.
+          Your session expired after 30 minutes of inactivity. Please sign in again.
         </div>
       <?php } ?>
 

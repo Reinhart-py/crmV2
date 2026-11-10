@@ -2921,10 +2921,10 @@ public function dashboard_MyPro($table='ci_leads'){
 		$manager_id = (int)$this->session->userdata('manager_id');
 		if (!empty($manager_id)) {
 			$last_activity = $this->session->userdata('last_activity_time');
-			$timeout_seconds = 300; 
+			$timeout_seconds = 1800; // 30 minutes
 
 			if (!empty($last_activity) && (time() - $last_activity) > $timeout_seconds) {
-				$this->log_admin_action('session_timeout', 'Logged out due to 5 minutes of inactivity', 'TIMEOUT', $manager_id);
+				$this->log_admin_action('session_timeout', 'Logged out due to 30 minutes of inactivity', 'TIMEOUT', $manager_id);
 				$this->db->where('id', $manager_id)->update('ci_user', array('is_online' => 0));
 				$this->session->unset_userdata('manager_id');
 				$this->session->unset_userdata('manager_email');

@@ -268,11 +268,11 @@ $(document).ready(function() {
         initUniversalPasswordToggles();
     });
 
-    // Sign out after 5 minutes without activity. Activity in any open CRM tab counts (shared through localStorage);
+    // Sign out after 30 minutes without activity. Activity in any open CRM tab counts (shared through localStorage);
     // a warning shows for the last 60 seconds. Live Support sets crmIdleExempt while the agent is on duty,
     // which keeps every tab signed in.
     (function () {
-        var MAX = 300000, WARN = 60000, KEY = 'crmLastAct', last = Date.now(), wrote = 0, bar = null, gone = false;
+        var MAX = 1800000, WARN = 60000, KEY = 'crmLastAct', last = Date.now(), wrote = 0, bar = null, gone = false;
         function shared() { try { return parseInt(localStorage.getItem(KEY), 10) || 0; } catch (e) { return 0; } }
         function mark(force) {
             last = Date.now();
