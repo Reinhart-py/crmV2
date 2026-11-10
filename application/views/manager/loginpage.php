@@ -22,9 +22,29 @@
         </a>
       </div>
      <div class="auth-panel-inner">
-      <div class="auth-brand"><img src="<?php echo base_url(); ?>assets/logo.png" alt="Seven Strokes"></div>
+<?php
+      // Client logo and name from the 7strokes portal subscription: the stored portal answer
+      // (works when the CRM is opened directly), else ?brand=&company= on the portal's link.
+      // Only logos served by the portal set in Subscription settings are shown.
+      $client_logo = ''; $client_name = '';
+      $CI =& get_instance();
+      $CI->load->model('subscription_model');
+      $sub_row = $CI->subscription_model->row();
+      if ($sub_row) {
+        $portal = rtrim(trim((string)$sub_row['endpoint']), '/');
+        $last = (isset($sub_row['config']['last_result']) && is_array($sub_row['config']['last_result'])) ? $sub_row['config']['last_result'] : array();
+        $cand = !empty($last['logoUrl']) ? (string)$last['logoUrl'] : (isset($_GET['brand']) ? (string)$_GET['brand'] : '');
+        if ($portal !== '' && strpos($cand, $portal . '/brand/') === 0 && preg_match('~/brand/[a-f0-9]{24}$~', $cand)) $client_logo = $cand;
+        $client_name = !empty($last['company']) ? (string)$last['company'] : (isset($_GET['company']) ? substr((string)$_GET['company'], 0, 120) : '');
+      }
+      ?>
+      <?php if ($client_logo) { ?>
+      <div class="auth-brand auth-brand-client"><img src="<?php echo htmlspecialchars($client_logo, ENT_QUOTES); ?>" alt="<?php echo htmlspecialchars($client_name ?: 'Company logo', ENT_QUOTES); ?>" style="max-height:72px;max-width:220px;width:auto;object-fit:contain"></div>
+      <?php } else { ?>
+      <div class="auth-brand"><img src="<?php echo base_url(); ?>assets/logo.png" alt="Sales CRM"></div>
+      <?php } ?>
       <h1 class="auth-title">Sign In</h1>
-      <p class="auth-sub">Get access to your account</p>
+      <p class="auth-sub"><?php echo $client_name !== '' ? htmlspecialchars($client_name, ENT_QUOTES) . ' · Sales CRM' : 'Get access to your account'; ?></p>
 
       <?php if(isset($_GET['conflict'])) { ?>
         <div class="auth-alert auth-alert-danger">
