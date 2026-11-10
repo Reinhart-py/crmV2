@@ -1,7 +1,7 @@
 <?php
-// CRM view choice (Classic / Modern), shown in the profile menu under the Dashboard choice. Saved per user in ci_user_prefs.
+// CRM view choice (Modern / Classic), shown in the profile menu under the Dashboard choice. Saved per user in ci_user_prefs.
 $vs_ci =& get_instance();
-$vs_now = function_exists('crm_view') ? crm_view() : 'classic';
+$vs_now = function_exists('crm_view') ? crm_view() : 'modern';
 $vs_back = trim(preg_replace('~^/?(index\.php/)?~', '', $vs_ci->uri->uri_string()), '/');
 ?>
 <form class="google-profile-item ds-switch" method="post" action="<?php echo base_url(); ?>manager/crm-view">
@@ -9,8 +9,8 @@ $vs_back = trim(preg_replace('~^/?(index\.php/)?~', '', $vs_ci->uri->uri_string(
   <input type="hidden" name="return" value="<?php echo htmlspecialchars($vs_back, ENT_QUOTES, 'UTF-8'); ?>">
   <span class="ds-top"><i class="fa fa-columns"></i><span>CRM view</span></span>
   <span class="ds-seg" role="group" aria-label="CRM view">
-    <button type="submit" name="view" value="classic" class="<?php echo $vs_now === 'classic' ? 'is-on' : ''; ?>" aria-pressed="<?php echo $vs_now === 'classic' ? 'true' : 'false'; ?>" title="Menu across the top">Classic</button>
     <button type="submit" name="view" value="modern" class="<?php echo $vs_now === 'modern' ? 'is-on' : ''; ?>" aria-pressed="<?php echo $vs_now === 'modern' ? 'true' : 'false'; ?>" title="Menu in a side pane, new colours">Modern</button>
+    <button type="submit" name="view" value="classic" class="<?php echo $vs_now === 'classic' ? 'is-on' : ''; ?>" aria-pressed="<?php echo $vs_now === 'classic' ? 'true' : 'false'; ?>" title="Menu across the top">Classic</button>
   </span>
 </form>
 <style>

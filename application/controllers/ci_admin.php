@@ -271,9 +271,7 @@ class Ci_admin extends CI_Controller {
 			$uid = (int)$this->session->userdata('manager_id');
 			$v = $this->input->post('view') === 'modern' ? 'modern' : 'classic';
 			$this->load->model('dashboard_model', 'dash'); // makes sure ci_user_prefs exists
-			if (!$this->db->field_exists('crm_view', 'ci_user_prefs')) {
-				$this->db->query("ALTER TABLE ci_user_prefs ADD COLUMN crm_view VARCHAR(10) NOT NULL DEFAULT 'classic'");
-			}
+			$this->dash->prefs_columns();
 			$this->db->query("INSERT INTO ci_user_prefs (user_id, crm_view, updated_at) VALUES (?, ?, NOW()) ON DUPLICATE KEY UPDATE crm_view = VALUES(crm_view), updated_at = NOW()", array($uid, $v));
 			$this->session->set_userdata('crm_view', $v);
 		}

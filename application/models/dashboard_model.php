@@ -8,20 +8,35 @@
  */
 class Dashboard_model extends CI_Model {
 
+	const DEFAULT_STYLE = 'classic6'; // dashboard for anyone who has not picked one
+
 	public function __construct()
 	{
 		parent::__construct();
 		$this->load->model('ci_admin_model');
 		// Each user's choice of dashboard: modern (default) or classic. Kept in its own table (ci_user is at its row-size limit).
 		if (!$this->db->table_exists('ci_user_prefs')) {
-			$this->db->query("CREATE TABLE IF NOT EXISTS ci_user_prefs (user_id INT(11) NOT NULL PRIMARY KEY, dash_style VARCHAR(10) NOT NULL DEFAULT 'modern', updated_at DATETIME NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+			$this->db->query("CREATE TABLE IF NOT EXISTS ci_user_prefs (user_id INT(11) NOT NULL PRIMARY KEY, dash_style VARCHAR(10) NULL DEFAULT NULL, updated_at DATETIME NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 		}
 	}
 
 	public function get_style($uid)
 	{
 		$r = $this->db->select('dash_style')->where('user_id', (int)$uid)->get('ci_user_prefs')->row_array();
-		return (!empty($r) && in_array($r['dash_style'], $this->styles(), true)) ? $r['dash_style'] : 'modern';
+		return (!empty($r) && in_array($r['dash_style'], $this->styles(), true)) ? $r['dash_style'] : self::DEFAULT_STYLE;
+	}
+
+	/**
+	 * Dashboard and CRM look are empty (NULL) until the person picks one, so saving one choice never fixes the other.
+	 * Until then: Modern CRM look and the Classic 6 dashboard.
+	 */
+	public function prefs_columns()
+	{
+		$cols = array();
+		foreach ($this->db->query("SELECT column_name AS c, is_nullable AS n FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'ci_user_prefs'")->result_array() as $r) $cols[strtolower($r['c'])] = $r['n'];
+		if (!isset($cols['crm_view'])) $this->db->query('ALTER TABLE ci_user_prefs ADD COLUMN crm_view VARCHAR(10) NULL DEFAULT NULL');
+		elseif ($cols['crm_view'] !== 'YES') $this->db->query('ALTER TABLE ci_user_prefs MODIFY crm_view VARCHAR(10) NULL DEFAULT NULL');
+		if (isset($cols['dash_style']) && $cols['dash_style'] !== 'YES') $this->db->query('ALTER TABLE ci_user_prefs MODIFY dash_style VARCHAR(10) NULL DEFAULT NULL');
 	}
 
 	/** Dashboards a user can pick (modern is the default). */
@@ -32,7 +47,8 @@ class Dashboard_model extends CI_Model {
 
 	public function set_style($uid, $style)
 	{
-		$style = in_array($style, $this->styles(), true) ? $style : 'modern';
+		$style = in_array($style, $this->styles(), true) ? $style : self::DEFAULT_STYLE;
+		$this->prefs_columns();
 		$this->db->query('INSERT INTO ci_user_prefs (user_id, dash_style, updated_at) VALUES (?, ?, NOW()) ON DUPLICATE KEY UPDATE dash_style = VALUES(dash_style), updated_at = NOW()', array((int)$uid, $style));
 		return $style;
 	}
