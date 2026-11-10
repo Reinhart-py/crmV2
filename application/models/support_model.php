@@ -374,7 +374,8 @@ class Support_model extends CI_Model {
 	}
 
 	/** Sends the request (and any chat so far) to the IT mailbox, then marks the chat as emailed. */
-	public function email_it($chat, $reason)
+	/** Emails the support mailbox. $from: where the request came from; $done: note shown to the person (default: the offline message). */
+	public function email_it($chat, $reason, $from = 'the CRM sign-in page', $done = null)
 	{
 		$this->load->model('mail_model');
 		$to = $this->it_email();
@@ -389,7 +390,7 @@ class Support_model extends CI_Model {
 			$who = $m['sender'] === 'visitor' ? $chat['name'] : ($m['sender'] === 'agent' ? ($m['agent_name'] ?: 'Support') : 'System');
 			$transcript .= '<p style="margin:0 0 8px;"><span style="color:#64748b;font-size:12px;">' . $h(substr($m['created_at'], 11, 5)) . ' ' . $h($who) . ':</span><br>' . $h($m['body']) . '</p>';
 		}
-		$msg = '<p><strong>New support request from the CRM sign-in page.</strong></p>'
+		$msg = '<p><strong>New support request from ' . $h($from) . '.</strong></p>'
 			. '<p style="color:#64748b;">' . $h($reason) . ' Please contact the person below.</p>'
 			. '<table cellpadding="0" cellspacing="0" style="margin:12px 0 18px;font-size:14px;">' . $rows . '</table>'
 			. '<p style="margin:0 0 6px;"><strong>Issue</strong></p>'
@@ -408,7 +409,7 @@ class Support_model extends CI_Model {
 			'email_error' => $ok ? null : substr($this->mail_model->last_error, 0, 255),
 		));
 		$this->add_message($chat['id'], 'system', $ok
-			? $this->offline_text($chat)
+			? ($done !== null ? $done : $this->offline_text($chat))
 			: 'Support is not available right now and we could not send your request automatically. Please email ' . $to . ' with your details.');
 		return $ok;
 	}

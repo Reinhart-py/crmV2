@@ -214,6 +214,62 @@ class Ci_admin_support extends CI_Controller {
 		$this->json(array('ok' => true));
 	}
 
+	/** GET: is anyone on live chat now, and does the user have a chat that is still open? */
+	public function my_support_status()
+	{
+		if (!$this->me()) return $this->json(array('ok' => false, 'error' => 'Session expired. Please sign in again.'), 401);
+		$chat = $this->support_model->user_chat($this->uid);
+		$u = $this->db->select('email, c_email')->where('id', $this->uid)->get('ci_user')->row_array();
+		$this->json(array(
+			'ok' => true,
+			'online' => $this->support_model->agents_online() > 0,
+			'open' => $chat && in_array($chat['status'], array('waiting', 'active'), true),
+			'email' => !empty($u['c_email']) ? $u['c_email'] : (!empty($u['email']) ? $u['email'] : ''),
+		));
+	}
+
+	/** POST: email, body -> live chat is offline: the message is saved with the user's chat and emailed to the support mailbox. */
+	public function my_support_message()
+	{
+		if (!$this->me()) return $this->json(array('ok' => false, 'error' => 'Session expired. Please sign in again.'), 401);
+		if ($this->input->server('REQUEST_METHOD') !== 'POST') return $this->json(array('ok' => false, 'error' => 'Invalid request.'), 405);
+		$body = trim(strip_tags((string)$this->input->post('body')));
+		$email = trim((string)$this->input->post('email'));
+		$errors = array();
+		if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors['email'] = 'Please enter a valid email address.';
+		if (mb_strlen($body) < 10) $errors['body'] = 'Please write your message (at least 10 characters).';
+		if (mb_strlen($body) > 3000) $errors['body'] = 'Please keep the message under 3000 characters.';
+		if ($errors) return $this->json(array('ok' => false, 'errors' => $errors), 400);
+
+		$chat = $this->support_model->user_chat($this->uid);
+		// One message every 2 minutes per person
+		if ($chat && $chat['status'] === 'emailed' && !empty($chat['emailed_at']) && strtotime($chat['emailed_at']) > time() - 120) {
+			return $this->json(array('ok' => false, 'error' => 'Your last message was sent a moment ago. Please wait two minutes before sending another.'), 429);
+		}
+		// Someone came online meanwhile: it goes to live chat instead
+		if ($this->support_model->agents_online() > 0) {
+			return $this->json(array('ok' => false, 'online' => true, 'error' => 'Live chat is now available. Please send your message in the chat.'), 409);
+		}
+
+		$u = $this->db->select('name, mobile')->where('id', $this->uid)->get('ci_user')->row_array();
+		$details = array('name' => !empty($u['name']) ? $u['name'] : 'CRM user', 'phone' => !empty($u['mobile']) ? $u['mobile'] : '', 'email' => $email);
+		if ($chat && in_array($chat['status'], array('waiting', 'active'), true)) {
+			$this->support_model->add_message($chat['id'], 'visitor', $body);
+			$this->db->where('id', (int)$chat['id'])->update('ci_support_chats', array('email' => $email));
+		} elseif ($chat) {
+			$chat = $this->support_model->reopen_chat($chat, $body, $details);
+		} else {
+			$chat = $this->support_model->create_chat($details['name'], $details['phone'], $email, $body, $this->input->ip_address(), $this->input->user_agent());
+			$this->db->where('id', (int)$chat['id'])->update('ci_support_chats', array('user_id' => $this->uid));
+		}
+		$this->db->where('id', (int)$chat['id'])->update('ci_support_chats', array('issue' => $body)); // the email shows this message as the issue
+		$chat = $this->support_model->get_chat($chat['id']);
+		$sent = $this->support_model->email_it($chat, 'Live chat was offline when this message was sent.', 'a signed-in CRM user (Help & Support)',
+			'Live chat was offline. Your message has been sent to the support team, who will get back to you at ' . $email . ' at the earliest.');
+		$this->ci_admin_model->log_admin_action('support', 'Support message sent while live chat was offline (' . $chat['ref_no'] . ')');
+		$this->json(array('ok' => true, 'sent' => (bool)$sent, 'ref_no' => $chat['ref_no']));
+	}
+
 	/** GET: number of support replies the user has not seen (profile badge). */
 	public function my_support_unread()
 	{

@@ -5,10 +5,11 @@ $hp_cats = array();
 foreach ($topics as $tp) { $hp_cats[$tp['category']] = true; }
 ?>
 <style>
-  .hp-page .hp-intro { margin:0 0 12px; font-size:13px; color:#64748b; }
+  .hp-intro { margin:2px 0 0; font-size:13px; color:#64748b; text-align:left; }
+  [data-theme="dark"] .hp-intro { color:#94a3b8; }
   .hp-page .hp-switch { display:none; }
   .hp-page .hp-grid { display:grid; grid-template-columns:minmax(0, 7fr) minmax(0, 5fr); gap:16px; align-items:start; }
-  .hp-page .hp-card { background:#fff; border:1px solid #e2e8f0; border-radius:10px; display:flex; flex-direction:column; height:calc(100vh - 190px); min-height:420px; overflow:hidden; }
+  .hp-page .hp-card { background:#fff; border:1px solid #e2e8f0; border-radius:10px; display:flex; flex-direction:column; height:calc(100vh - 160px); min-height:420px; overflow:hidden; }
   .hp-page .hp-card-head { padding:12px 16px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
   .hp-page .hp-card-head h4 { margin:0; font-size:15px; font-weight:700; color:#0f172a; display:flex; align-items:center; gap:8px; }
   .hp-page .hp-card-head h4 i { color:#1e3a8a; }
@@ -38,6 +39,23 @@ foreach ($topics as $tp) { $hp_cats[$tp['category']] = true; }
   .hp-page .ms-empty { margin:auto; color:#94a3b8; font-size:14px; text-align:center; padding:0 10px; }
   .hp-page .ms-compose { display:flex; gap:8px; padding:12px; border-top:1px solid #e2e8f0; }
   .hp-page .ms-compose textarea { resize:none; height:44px; }
+  /* Live chat offline: send a message instead */
+  .hp-page .ms-off { padding:12px 14px; border-top:1px solid #e2e8f0; background:#fff; }
+  .hp-page .ms-off-note { display:flex; gap:9px; align-items:flex-start; background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; border-radius:10px; padding:9px 11px; font-size:13px; line-height:1.45; margin-bottom:10px; }
+  .hp-page .ms-off-note i { margin-top:3px; }
+  .hp-page .ms-off label { font-size:12px; font-weight:600; color:#475569; margin:0 0 3px; }
+  .hp-page .ms-off .form-group { margin-bottom:8px; }
+  .hp-page .ms-off textarea { resize:vertical; min-height:70px; }
+  .hp-page .ms-off .ms-err { color:#b91c1c; font-size:12px; margin-top:3px; }
+  .hp-page .ms-off .has-error .form-control { border-color:#dc2626; }
+  .hp-page .ms-off-done { background:#ecfdf5; border:1px solid #a7f3d0; color:#065f46; border-radius:10px; padding:10px 12px; font-size:13px; line-height:1.45; }
+  .hp-page .ms-live { display:inline-flex; align-items:center; gap:6px; }
+  .hp-page .ms-live::before { content:""; width:8px; height:8px; border-radius:50%; background:#94a3b8; }
+  .hp-page .ms-live.is-on::before { background:#22c55e; }
+  [data-theme="dark"] .hp-page .ms-off { background:transparent; border-top-color:rgba(255,255,255,.08); }
+  [data-theme="dark"] .hp-page .ms-off label { color:#cbd5e1; }
+  [data-theme="dark"] .hp-page .ms-off-note { background:rgba(251,146,60,.12); border-color:rgba(251,146,60,.35); color:#fdba74; }
+  [data-theme="dark"] .hp-page .ms-off-done { background:rgba(16,185,129,.12); border-color:rgba(16,185,129,.35); color:#6ee7b7; }
   @media (max-width: 991px) {
     .hp-page .hp-switch { display:grid; grid-template-columns:1fr 1fr; border:1px solid #cbd5e1; border-radius:8px; overflow:hidden; margin-bottom:12px; background:#fff; }
     .hp-page .hp-switch button { border:0; background:#fff; padding:9px 6px; font-weight:700; color:#475569; display:inline-flex; align-items:center; justify-content:center; gap:6px; }
@@ -52,9 +70,9 @@ foreach ($topics as $tp) { $hp_cats[$tp['category']] = true; }
 <div class="content-wrapper">
   <section class="content-header">
     <h1><?php echo $info['page_heading']; ?></h1>
+    <p class="hp-intro">Look for an answer in the help topics, or chat with the support team.</p>
   </section>
   <section class="content hp-page">
-    <p class="hp-intro">Look for an answer in the help topics, or chat with the support team.</p>
 
     <div class="hp-switch" role="tablist">
       <button type="button" data-show="hpTopics" class="active" role="tab"><i class="fa fa-book"></i> Help Topics</button>
@@ -109,11 +127,20 @@ foreach ($topics as $tp) { $hp_cats[$tp['category']] = true; }
 
       <!-- Chat with support -->
       <div class="hp-card hp-chat" id="hpChat">
-        <div class="hp-card-head"><h4><i class="fa fa-comments"></i> Chat with Support</h4><small id="msRef"></small></div>
+        <div class="hp-card-head"><h4><i class="fa fa-comments"></i> Chat with Support</h4><small><span class="ms-live" id="msLive"></span> <span id="msRef"></span></small></div>
         <div class="ms-msgs" id="msMsgs" aria-live="polite"><div class="ms-empty" id="msEmpty">Type your message below to chat with support.</div></div>
         <form class="ms-compose" id="msCompose">
           <textarea class="form-control" id="msText" maxlength="2000" placeholder="Type your message" aria-label="Message"></textarea>
           <button type="submit" class="btn btn-primary" aria-label="Send message"><i class="fa fa-paper-plane"></i></button>
+        </form>
+        <form class="ms-off" id="msOffline" style="display:none;" novalidate>
+          <div class="ms-off-note"><i class="fa fa-clock-o"></i><span>Live chat is offline right now. Kindly send us a message and we will get back to you at the earliest.</span></div>
+          <div id="msOffFields">
+            <div class="form-group" id="msOffEmailG"><label for="msOffEmail">Your email</label><input type="email" class="form-control input-sm" id="msOffEmail" maxlength="150"><div class="ms-err" id="msOffEmailE"></div></div>
+            <div class="form-group" id="msOffBodyG"><label for="msOffBody">Message</label><textarea class="form-control" id="msOffBody" maxlength="3000" placeholder="Tell us what you need help with"></textarea><div class="ms-err" id="msOffBodyE"></div></div>
+            <button type="submit" class="btn btn-primary btn-sm" id="msOffSend"><i class="fa fa-envelope"></i> Send message</button>
+          </div>
+          <div class="ms-off-done" id="msOffDone" style="display:none;"></div>
         </form>
       </div>
     </div>
@@ -184,8 +211,8 @@ foreach ($topics as $tp) { $hp_cats[$tp['category']] = true; }
       .then(function (r) { return r.json(); })
       .then(function (r) {
         if (!r.ok) return;
-        r.messages.forEach(function (m) { lastId = Math.max(lastId, m.id); add(m); });
-        el('msRef').textContent = r.ref_no ? r.ref_no + (r.status === 'closed' ? ' · closed (send a message to reopen)' : '') : '';
+        r.messages.forEach(function (m) { if (m.id <= lastId) return; lastId = m.id; add(m); });
+        el('msRef').textContent = r.ref_no ? '· ' + r.ref_no + (r.status === 'closed' ? ' · closed (send a message to reopen)' : '') : '';
         if (window.crmMySupBadge) window.crmMySupBadge(0);
         timer = setTimeout(poll, 3000);
       })
@@ -207,7 +234,63 @@ foreach ($topics as $tp) { $hp_cats[$tp['category']] = true; }
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); el('msCompose').requestSubmit(); }
   });
 
+  /* ---- Is anyone on live chat? If not, the user sends a message by email instead ---- */
+  var offline = null, emailSet = false;
+  function setMode(isOffline) {
+    offline = isOffline;
+    el('msCompose').style.display = isOffline ? 'none' : '';
+    el('msOffline').style.display = isOffline ? '' : 'none';
+    el('msLive').className = 'ms-live' + (isOffline ? '' : ' is-on');
+    el('msLive').textContent = isOffline ? 'Offline' : 'Online';
+    if (el('msEmpty')) el('msEmpty').textContent = isOffline ? 'Live chat is offline. Send us a message below.' : 'Type your message below to chat with support.';
+  }
+  function status() {
+    fetch(BASE + 'status', { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        if (!r.ok) return;
+        if (!emailSet && r.email) { el('msOffEmail').value = r.email; emailSet = true; }
+        if (offline !== !r.online) setMode(!r.online);
+      })
+      .catch(function () {})
+      .then(function () { setTimeout(status, 20000); });
+  }
+  function fieldErr(name, msg) {
+    var g = el('msOff' + name + 'G'), e = el('msOff' + name + 'E');
+    g.classList.toggle('has-error', !!msg); e.textContent = msg || '';
+  }
+  el('msOffline').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var email = el('msOffEmail').value.trim(), body = el('msOffBody').value.trim(), bad = false;
+    fieldErr('Email', ''); fieldErr('Body', '');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { fieldErr('Email', 'Please enter a valid email address.'); bad = true; }
+    if (body.length < 10) { fieldErr('Body', 'Please write your message (at least 10 characters).'); bad = true; }
+    if (bad) return;
+    var btn = el('msOffSend'); btn.disabled = true;
+    var b = new URLSearchParams({ email: email, body: body }); b.append(CSRF_NAME, csrf());
+    fetch(BASE + 'message', { method: 'POST', credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: b })
+      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        btn.disabled = false;
+        if (r.ok) {
+          el('msOffBody').value = '';
+          el('msOffFields').style.display = 'none';
+          var d = el('msOffDone');
+          d.textContent = 'Thank you. Your message has been sent (ref. ' + r.ref_no + '). We will get back to you at ' + email + ' at the earliest.';
+          d.style.display = '';
+          setTimeout(function () { d.style.display = 'none'; el('msOffFields').style.display = ''; }, 15000);
+          poll();
+          return;
+        }
+        if (r.online) { setMode(false); el('msText').value = body; el('msOffBody').value = ''; el('msText').focus(); alert(r.error); return; }
+        if (r.errors) { fieldErr('Email', r.errors.email); fieldErr('Body', r.errors.body); return; }
+        alert(r.error || 'Message not sent.');
+      })
+      .catch(function () { btn.disabled = false; alert('Could not reach the server.'); });
+  });
+
   window.crmIdleExempt = true; // keep the session while the chat is open
+  status();
   poll();
 })();
 </script>
