@@ -21,3 +21,11 @@ $hook['post_controller_constructor'][] = array(
 	'filename' => 'crm_permission_guard.php',
 	'filepath' => 'hooks',
 );
+
+// Record tracking: who changed which field of a lead, order, KAM client... (see application/hooks/crm_track_db.php)
+$hook['pre_system'][] = array(
+	'class'    => '',
+	'function' => 'crm_track_db',
+	'filename' => 'crm_track_db.php',
+	'filepath' => 'hooks',
+);

@@ -243,6 +243,12 @@ $route['manager/system/admin-logs/(:num)'] = "ci_admin_system/logs/$1";
 $route['manager/system/admin_logs'] = "ci_admin_system/logs";
 $route['manager/system/admin_logs/(:num)'] = "ci_admin_system/logs/$1";
 $route['manager/admin-logs/live-location'] = "ci_admin_system/live_location";
+// System > Activity: Record Tracking and User Activity
+$route['manager/system/record-tracking'] = 'ci_admin_tracking/records';
+$route['manager/system/record-tracking/(lead|order|kam|backoffice|ticket)/(:num)'] = 'ci_admin_tracking/record/$1/$2';
+$route['manager/system/user-activity'] = 'ci_admin_tracking/users';
+$route['manager/system/user-activity/(:num)'] = 'ci_admin_tracking/user/$1';
+$route['manager/activity/ping'] = 'ci_admin_tracking/ping';
 $route['manager/admin-logs/live_location'] = "ci_admin_system/live_location";
 $route['manager/system/live-location'] = "ci_admin_system/live_location";
 $route['manager/system/live_location'] = "ci_admin_system/live_location";

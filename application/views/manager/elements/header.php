@@ -277,11 +277,11 @@
     </button>
 
     <div class="profile-menu-container">
-      <button type="button" class="profile-avatar-btn" id="profileMenuToggle" aria-haspopup="true" aria-label="Account menu">
+      <button type="button" class="profile-avatar-btn" id="profileMenuToggle" aria-haspopup="true" aria-label="Profile" title="Profile">
         <img src="<?php echo base_url() . $user_avatar; ?>" alt="<?php echo htmlspecialchars($current_user_name); ?>" class="profile-avatar-img" />
         <span class="my-sup-unread" id="mySupAvatarBadge" style="display:none; position:absolute; top:-4px; right:-4px;"></span>
       </button>
-      <button type="button" class="profile-caret-btn" id="profileMenuCaret" aria-haspopup="true" aria-expanded="false" aria-label="Account menu"><span class="crm-collapse-caret" aria-hidden="true"></span></button>
+      <button type="button" class="profile-caret-btn" id="profileMenuCaret" aria-haspopup="true" aria-expanded="false" aria-label="Profile" title="Profile"><span class="crm-collapse-caret" aria-hidden="true"></span></button>
 
       <div class="google-profile-dropdown" id="googleProfileDropdown">
         <div class="google-profile-card">
@@ -862,5 +862,33 @@ $(function() {
     window.addEventListener('blur', hide);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+<script>
+/* User activity (System > Activity > User Activity): once a minute, if the person clicked, typed or scrolled
+   in the last minute (or is on a call in the dialler), the minute is recorded. Nothing else is sent. */
+(function () {
+  if (window.crmActPing) return;
+  window.crmActPing = true;
+  var URL = '<?php echo base_url(); ?>manager/activity/ping';
+  var NAME = '<?php echo $this->security->get_csrf_token_name(); ?>';
+  var last = Date.now();
+  function seen() { last = Date.now(); }
+  ['mousemove', 'mousedown', 'keydown', 'wheel', 'scroll', 'touchstart'].forEach(function (e) {
+    document.addEventListener(e, seen, { passive: true, capture: true });
+  });
+  function onCall() {
+    try { return typeof callState !== 'undefined' && /^(calling|connected|wrapup)$/.test(callState); } catch (e) { return false; }
+  }
+  function send() {
+    var m = document.cookie.match(/(?:^|;\s*)csrf_cookie_name=([^;]+)/);
+    var b = new URLSearchParams({ page: location.pathname.replace(/^.*?\/manager\//, '').slice(0, 120) });
+    if (m) b.append(NAME, decodeURIComponent(m[1]));
+    fetch(URL, { method: 'POST', body: b, credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' }, keepalive: true }).catch(function () {});
+  }
+  setTimeout(send, 2000);
+  setInterval(function () {
+    if (onCall() || (document.visibilityState === 'visible' && Date.now() - last < 60000)) send();
+  }, 60000);
 })();
 </script>

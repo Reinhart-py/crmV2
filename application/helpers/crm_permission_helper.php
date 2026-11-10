@@ -202,6 +202,8 @@ if (!function_exists('crm_perm_catalog')) {
 					'assigned_leads' => array('label' => 'Allotted Database', 'tab' => 'database', 'desc' => 'Allotted and non-allotted records', 'nav' => array(array('assigned-leads', 'Allotted Database', 'fa-tasks'), array('assigned-leads?alloc_filter=non_allotted', 'Non-Allotted Database', 'fa-folder-open-o')), 'pages' => array('assigned-leads')),
 					'admin_logs' => array('label' => 'Admin Logs', 'tab' => 'activity', 'desc' => 'Audit log of changes', 'nav' => array(array('admin-logs', 'Admin Logs', 'fa-history')), 'pages' => array('admin-logs', 'system/admin-logs', 'system/admin_logs'), 'levels' => 'r'),
 					'live_location' => array('label' => 'Live Location', 'tab' => 'activity', 'desc' => 'Where staff signed in from', 'fallback' => 'admin_logs', 'nav' => array(array('admin-logs/live-location', 'Live Location', 'fa-map-marker')), 'pages' => array('admin-logs/live-location', 'admin-logs/live_location', 'system/live-location', 'system/live_location'), 'levels' => 'r'),
+					'record_tracking' => array('label' => 'Record Tracking', 'tab' => 'activity', 'desc' => 'Every change to leads, database records, orders, KAM clients, back office and tickets: who changed what and when', 'nav' => array(array('system/record-tracking', 'Record Tracking', 'fa-search')), 'pages' => array('system/record-tracking'), 'levels' => 'r'),
+					'user_activity' => array('label' => 'User Activity', 'tab' => 'activity', 'desc' => 'When each person was working or idle, with their calls and record changes, by day', 'nav' => array(array('system/user-activity', 'User Activity', 'fa-line-chart')), 'pages' => array('system/user-activity'), 'levels' => 'r'),
 					'system_assignee' => array('label' => 'Assignee Management', 'tab' => 'clients', 'desc' => 'Move clients between owners', 'nav' => array(array('system/assign', 'Assignee Management', 'fa-random')), 'pages' => array('system/assign', 'system/assignee')),
 					'system_kam_clients' => array('label' => 'KAM Clients (all)', 'tab' => 'clients', 'desc' => 'Every KAM client in the company', 'fallback' => 'kam_clients', 'nav' => array(array('system/kam_clients', 'KAM Clients', 'fa-briefcase')), 'pages' => array('system/kam_clients', 'system/kam-clients')),
 					'calling_api' => array('label' => 'Calling API', 'tab' => 'integrations', 'desc' => 'Phone provider settings', 'nav' => array(array('system/calling-api', 'Calling API', 'fa-phone-square')), 'pages' => array('system/calling-api', 'system/calling_api')),
@@ -525,6 +527,8 @@ if (!function_exists('crm_tab_groups')) {
 			'activity' => array('label' => 'Activity', 'icon' => 'fa-history', 'tabs' => array(
 				array('admin_logs', 'admin-logs', 'Admin Logs', 'fa-history'),
 				array('live_location', 'system/live-location', 'Live Location', 'fa-map-marker'),
+				array('record_tracking', 'system/record-tracking', 'Record Tracking', 'fa-search'),
+				array('user_activity', 'system/user-activity', 'User Activity', 'fa-line-chart'),
 			)),
 			'clients' => array('label' => 'Clients & Owners', 'icon' => 'fa-briefcase', 'tabs' => array(
 				array('system_kam_clients', 'system/kam_clients', 'KAM Clients', 'fa-briefcase'),
@@ -859,7 +863,7 @@ if (!function_exists('crm_dt_json')) {
 
 if (!function_exists('crm_view')) {
 	/**
-	 * The person's choice of CRM look: 'classic' (default) or 'modern'. Only the look changes, never what a page does.
+	 * The person's choice of CRM look: 'modern' (default until they pick) or 'classic'. Only the look changes, never what a page does.
 	 * Saved in ci_user_prefs.crm_view and kept in the session so it is read once per sign-in.
 	 */
 	function crm_view()
@@ -867,11 +871,11 @@ if (!function_exists('crm_view')) {
 		$ci =& get_instance();
 		$v = $ci->session->userdata('crm_view');
 		if ($v === 'classic' || $v === 'modern') return $v;
-		$v = 'classic';
+		$v = 'modern'; // until the person picks a look
 		$uid = (int)$ci->session->userdata('manager_id');
 		if ($uid > 0 && $ci->db->table_exists('ci_user_prefs') && $ci->db->field_exists('crm_view', 'ci_user_prefs')) {
 			$r = $ci->db->select('crm_view')->where('user_id', $uid)->get('ci_user_prefs')->row_array();
-			if (!empty($r) && $r['crm_view'] === 'modern') $v = 'modern';
+			if (!empty($r) && $r['crm_view'] === 'classic') $v = 'classic';
 		}
 		if ($uid > 0) $ci->session->set_userdata('crm_view', $v);
 		return $v;
