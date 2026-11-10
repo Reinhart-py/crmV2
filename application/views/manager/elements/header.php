@@ -10,8 +10,8 @@
 <link rel="icon" type="image/png" sizes="32x32" href="<?php echo base_url(); ?>assets/logo.png">
 <link rel="icon" type="image/png" sizes="16x16" href="<?php echo base_url(); ?>assets/logo.png">
 <link rel="apple-touch-icon" href="<?php echo base_url(); ?>assets/logo.png">
-<meta property="og:title" content="<?php echo !empty($info['title']) ? htmlspecialchars($info['title']) : 'Seven Strokes CRM'; ?>">
-<meta property="og:description" content="Seven Strokes CRM Platform">
+<meta property="og:title" content="<?php echo !empty($info['title']) ? htmlspecialchars($info['title']) : 'Sales CRM'; ?>">
+<meta property="og:description" content="Sales CRM Platform">
 <meta property="og:image" content="<?php echo base_url(); ?>assets/logo.png">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
@@ -745,6 +745,37 @@ $(function() {
   </a>
   <?php } ?>
 </aside>
+<?php
+// Sales CRM subscription notice for admins (only when the portal check is switched on)
+$crm_sub_note = '';
+if (function_exists('crm_is_full_admin') && crm_is_full_admin()) {
+  $this->load->model('subscription_model');
+  $crm_sub = $this->subscription_model->state();
+  if (empty($crm_sub['skipped'])) {
+    $crm_sub_days = $this->subscription_model->days_left($crm_sub);
+    $crm_sub_link = !empty($crm_sub['accountUrl']) ? $crm_sub['accountUrl'] : (!empty($crm_sub['subscribeUrl']) ? $crm_sub['subscribeUrl'] : '');
+    if (empty($crm_sub['allowed'])) {
+      $crm_sub_note = 'The Sales CRM subscription is not active' . (!empty($crm_sub['reason']) ? ' (' . rtrim($crm_sub['reason'], '. ') . ')' : '') . '. Staff cannot sign in until it is renewed.';
+    } elseif ($crm_sub_days !== null && $crm_sub_days <= 7) {
+      $crm_sub_note = 'The Sales CRM subscription ends ' . ($crm_sub_days <= 0 ? 'today' : 'in ' . $crm_sub_days . ' day' . ($crm_sub_days == 1 ? '' : 's')) . ' (' . date('d M Y', strtotime($crm_sub['validUntil'])) . '). Renew it to keep staff signed in.';
+    }
+  }
+}
+if ($crm_sub_note !== '') { ?>
+<div id="crmSubNote" class="crm-sub-note" role="status"><i class="fa fa-exclamation-triangle"></i> <span><?php echo htmlspecialchars($crm_sub_note); ?></span><?php if ($crm_sub_link !== '') { ?> <a href="<?php echo htmlspecialchars($crm_sub_link); ?>" target="_blank" rel="noopener">Renew on 7strokes</a><?php } ?></div>
+<style>
+  .crm-sub-note { margin:10px 20px 0; padding:9px 14px; border-radius:10px; background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; font-size:13px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .crm-sub-note a { font-weight:700; color:#c2410c; text-decoration:underline; }
+  [data-theme="dark"] .crm-sub-note { background:rgba(234,88,12,.12); border-color:rgba(234,88,12,.35); color:#fdba74; }
+  [data-theme="dark"] .crm-sub-note a { color:#fb923c; }
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var n = document.getElementById('crmSubNote'), w = document.querySelector('.content-wrapper');
+  if (n && w) w.insertBefore(n, w.firstChild);
+});
+</script>
+<?php } ?>
 <?php if ($crm_is_modern) { ?>
 <script>
 (function () {

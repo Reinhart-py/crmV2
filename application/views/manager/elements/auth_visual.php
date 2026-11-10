@@ -4,7 +4,7 @@
         <!-- 1. Welcome text -->
         <div class="av-group av-top">
           <p class="av-kicker">Welcome to</p>
-          <h2 class="av-title">Seven Strokes CRM</h2>
+          <h2 class="av-title">Sales CRM</h2>
           <p class="av-sub">One platform for your accounting, auditing and consulting business: from the first call to the final sale.</p>
         </div>
 

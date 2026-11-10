@@ -25,7 +25,7 @@ class Mail_model extends CI_Model {
 			'user' => 'no-reply@storeyourcode.com',
 			'pass' => 'noreply@123#',
 			'from_email' => 'no-reply@storeyourcode.com',
-			'from_name' => 'Seven Strokes CRM',
+			'from_name' => 'Sales CRM',
 			'source' => 'built-in default',
 		);
 
@@ -37,7 +37,7 @@ class Mail_model extends CI_Model {
 				'user' => (string)getenv('SMTP_USER'),
 				'pass' => (string)getenv('SMTP_PASS'),
 				'from_email' => getenv('SMTP_FROM_EMAIL') ?: (string)getenv('SMTP_USER'),
-				'from_name' => getenv('SMTP_FROM_NAME') ?: 'Seven Strokes CRM',
+				'from_name' => getenv('SMTP_FROM_NAME') ?: 'Sales CRM',
 				'source' => '.env',
 			);
 		}
@@ -53,7 +53,7 @@ class Mail_model extends CI_Model {
 					'user' => isset($c['smtp_user']) ? trim($c['smtp_user']) : '',
 					'pass' => isset($c['smtp_pass']) ? $c['smtp_pass'] : '',
 					'from_email' => !empty($c['from_email']) ? trim($c['from_email']) : (isset($c['smtp_user']) ? trim($c['smtp_user']) : ''),
-					'from_name' => !empty($c['from_name']) ? trim($c['from_name']) : 'Seven Strokes CRM',
+					'from_name' => !empty($c['from_name']) ? trim($c['from_name']) : 'Sales CRM',
 					'source' => 'System > Integrations',
 				);
 			}
@@ -77,7 +77,7 @@ class Mail_model extends CI_Model {
 			. '<table cellpadding="0" cellspacing="0" width="560" style="background:#ffffff;border-radius:8px;border:1px solid #e2e8f0;">'
 			. '<tr><td style="padding:24px 28px 8px;"><img src="' . $logo . '" alt="Seven Strokes" width="80" height="56" style="display:block;border:0;"></td></tr>'
 			. '<tr><td style="padding:8px 28px 24px;color:#0f172a;font-size:15px;line-height:1.6;">' . $message . '</td></tr>'
-			. '<tr><td style="padding:14px 28px;border-top:1px solid #e2e8f0;color:#64748b;font-size:12px;">Seven Strokes CRM. This is an automated message, please do not reply.</td></tr>'
+			. '<tr><td style="padding:14px 28px;border-top:1px solid #e2e8f0;color:#64748b;font-size:12px;">Sales CRM. This is an automated message, please do not reply.</td></tr>'
 			. '</table></td></tr></table>';
 
 		require_once(APPPATH . 'libraries/phpmailer/PHPMailerAutoload.php');

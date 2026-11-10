@@ -137,7 +137,7 @@ class Ci_admin_hr extends CI_Controller {
 	{
 		$data = array();
 		$data['info'] = array(
-			'title' => 'HR Management - Seven Strokes CRM',
+			'title' => 'HR Management - Sales CRM',
 			'page_heading' => 'HR Management'
 		);
 		$data['active_tab'] = 'overview';

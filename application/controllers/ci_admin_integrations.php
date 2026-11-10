@@ -50,7 +50,7 @@ class Ci_admin_integrations extends CI_Controller {
 			$settings[$row['service_name']] = $row;
 		}
 
-		$default_services = array('groq', 'pbx_3cx', 'email_smtp', 'whatsapp', 'schedule_cron', 'helpdesk');
+		$default_services = array('groq', 'pbx_3cx', 'email_smtp', 'whatsapp', 'schedule_cron', 'helpdesk', 'subscription');
 		foreach ($default_services as $srv) {
 			if (!isset($settings[$srv])) {
 				$settings[$srv] = array(
@@ -157,7 +157,7 @@ class Ci_admin_integrations extends CI_Controller {
 		}
 		$this->load->model('mail_model');
 		$cfg = $this->mail_model->smtp_config();
-		$resp = $this->mail_model->sendmail($to, 'Seven Strokes CRM test email', array(), '<p>This is a test email from Seven Strokes CRM.</p><p>If you can read this, password reset emails will be delivered the same way.</p>');
+		$resp = $this->mail_model->sendmail($to, 'Sales CRM test email', array(), '<p>This is a test email from Sales CRM.</p><p>If you can read this, password reset emails will be delivered the same way.</p>');
 		if ($resp === 'ok') {
 			echo json_encode(array('status' => true, 'message' => 'Test email sent to ' . $to . ' via ' . $cfg['host'] . ':' . $cfg['port'] . ' (' . $cfg['source'] . '). Check the inbox and spam folder.'));
 		} else {
@@ -188,6 +188,33 @@ class Ci_admin_integrations extends CI_Controller {
 		$config = !empty($row['config_json']) ? json_decode($row['config_json'], true) : array();
 		if (!is_array($config)) {
 			$config = array();
+		}
+
+		if ($service === 'subscription') {
+			// Ask the 7strokes portal now (does not switch the check on or off)
+			$this->load->model('subscription_model');
+			if (!$this->subscription_model->enabled($this->subscription_model->row())) {
+				$r2 = $this->subscription_model->row();
+				$c2 = isset($r2['config']) ? $r2['config'] : array();
+				if (trim((string)$row['endpoint']) === '' || trim((string)$row['api_secret']) === '' || empty($c2['account_email'])) {
+					echo json_encode(array('status' => false, 'message' => 'Fill in the portal address, app secret and account email, then save.'));
+					return;
+				}
+				$ans = $this->subscription_model->ask($r2);
+			} else {
+				$ans = $this->subscription_model->state(true);
+			}
+			if (!empty($ans['allowed'])) {
+				$txt = 'Subscription active';
+				if (!empty($ans['role']) && $ans['role'] === 'staff') $txt .= ' (portal staff account)';
+				if (!empty($ans['plan'])) $txt .= ', plan ' . $ans['plan'] . (!empty($ans['cycle']) ? ' (' . $ans['cycle'] . ')' : '');
+				if (!empty($ans['status'])) $txt .= ', ' . $ans['status'];
+				if (!empty($ans['validUntil'])) $txt .= ', valid until ' . date('d M Y', strtotime($ans['validUntil']));
+				echo json_encode(array('status' => true, 'message' => $txt . '.' . ((int)$row['status'] === 1 ? '' : ' The check is off; set Status to On and save to make the CRM follow it.')));
+			} else {
+				echo json_encode(array('status' => false, 'message' => !empty($ans['reason']) ? $ans['reason'] : 'The portal says the subscription is not active.'));
+			}
+			return;
 		}
 
 		if ($service === 'groq') {

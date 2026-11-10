@@ -50,7 +50,7 @@ class Ci_admin_orders extends CI_Controller {
 
 		if ($scope === 'my') {
 			$data['info'] = array(
-				'title' => 'My Orders - Seven Strokes CRM',
+				'title' => 'My Orders - Sales CRM',
 				'page_heading' => 'My Orders'
 			);
 			$this->db->where("(O.created_by = {$cur_uid} OR O.assigned_to = {$cur_uid} OR A.created_by = {$cur_uid} OR A.lead_assign = {$cur_uid} OR FIND_IN_SET({$cur_uid}, A.agents) > 0 OR O.lead_id IN (SELECT lead_id FROM ci_lead_transfers WHERE from_user_id = {$cur_uid} OR to_user_id = {$cur_uid}) OR O.lead_id IN (SELECT lead_id FROM ci_pipeline WHERE conversion_requested_by = {$cur_uid} OR order_requested_by = {$cur_uid}) OR O.lead_id IN (SELECT lead_id FROM ci_pipeline_logs WHERE action_by = {$cur_uid}))");
@@ -59,7 +59,7 @@ class Ci_admin_orders extends CI_Controller {
 			$reset_url = base_url('manager/orders/my');
 		} elseif ($scope === 'team') {
 			$data['info'] = array(
-				'title' => 'Team Orders - Seven Strokes CRM',
+				'title' => 'Team Orders - Sales CRM',
 				'page_heading' => 'Team Orders'
 			);
 			$can_edit_orders = false;
@@ -78,7 +78,7 @@ class Ci_admin_orders extends CI_Controller {
 			}
 		} elseif ($status_filter === 'sales' || $status_filter === 'Sales') {
 			$data['info'] = array(
-				'title' => 'View Sales - Seven Strokes CRM',
+				'title' => 'View Sales - Sales CRM',
 				'page_heading' => 'View Sales'
 			);
 			$this->db->where(crm_order_is_sale_sql('O'), NULL, FALSE);

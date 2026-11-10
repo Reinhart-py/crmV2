@@ -20,7 +20,7 @@ class Support extends CI_Controller {
 	public function index()
 	{
 		$data = array();
-		$data['info'] = array('title' => 'Support - Seven Strokes CRM');
+		$data['info'] = array('title' => 'Support - Sales CRM');
 		$data['online'] = $this->support_model->agents_online() > 0;
 		$data['it_email'] = $this->support_model->it_email();
 		$this->load->view('support/index', $data);

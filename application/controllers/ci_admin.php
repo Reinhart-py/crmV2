@@ -125,6 +125,16 @@ class Ci_admin extends CI_Controller {
 			$data['users']= $this->comman_model->getAll(array('c_username'=>$email,'c_password'=>$password,'status'=>1),'','ci_user','first');
 			if(!empty($data['users']))
 			{
+				// Sales CRM subscription on the 7strokes portal (only when switched on in Third-Party API > Subscription).
+				// Admins can still sign in to sort it out; everyone else waits until it is renewed.
+				require_once APPPATH . 'helpers/crm_permission_helper.php';
+				$this->load->model('subscription_model');
+				$sub = $this->subscription_model->state();
+				if (empty($sub['allowed']) && !crm_is_full_admin((int)$data['users']['id'])) {
+					$this->ci_admin_model->log_admin_action('login_failed', 'Sign-in refused, Sales CRM subscription not active: ' . $email, 'FAILED', $data['users']['id'], $data['users']['name']);
+					$this->session->set_flashdata('error_message', 'The Sales CRM subscription is not active' . (!empty($sub['reason']) ? ' (' . rtrim($sub['reason'], '. ') . ')' : '') . '. Please ask your administrator to renew it.');
+					redirect("manager/login");
+				}
 				$session_token = md5(uniqid(mt_rand(), true));
 				$client_ip = $this->ci_admin_model->get_client_ip();
 
@@ -462,12 +472,12 @@ class Ci_admin extends CI_Controller {
 			$link = base_url() . 'manager/bnr54dfdf/' . $token;
 			$name = htmlspecialchars($user['name']);
 			$mail_str = '<p>Hello ' . $name . ',</p>'
-				. '<p>We received a request to reset the password of your Seven Strokes CRM account (<strong>' . htmlspecialchars($user['c_username']) . '</strong>).</p>'
+				. '<p>We received a request to reset the password of your Sales CRM account (<strong>' . htmlspecialchars($user['c_username']) . '</strong>).</p>'
 				. '<p style="margin:24px 0;"><a href="' . $link . '" style="background:#1e3a8a;color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:6px;font-weight:bold;display:inline-block;">Reset Password</a></p>'
 				. '<p>This link is valid for 15 minutes and can be used once. If the button does not work, copy this address into your browser:<br><span style="color:#1e3a8a;word-break:break-all;">' . $link . '</span></p>'
 				. '<p>If you did not request a password reset, you can ignore this email. Your password will not change.</p>';
 
-			$resp = $this->mail_model->sendmail($to, 'Reset your Seven Strokes CRM password', array(), $mail_str, $user['name']);
+			$resp = $this->mail_model->sendmail($to, 'Reset your Sales CRM password', array(), $mail_str, $user['name']);
 
 			if ($resp !== 'ok') {
 				// Do not leave a live token behind for an email that never went out.

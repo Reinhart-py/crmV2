@@ -8,8 +8,8 @@
   <link rel="shortcut icon" href="<?php echo base_url(); ?>assets/logo.png" type="image/png">
   <link rel="icon" type="image/png" href="<?php echo base_url(); ?>assets/logo.png">
   <link rel="apple-touch-icon" href="<?php echo base_url(); ?>assets/logo.png">
-  <meta property="og:title" content="<?php echo !empty($info['title']) ? htmlspecialchars($info['title']) : 'Seven Strokes CRM - Reset Password'; ?>">
-  <meta property="og:description" content="Seven Strokes CRM Platform">
+  <meta property="og:title" content="<?php echo !empty($info['title']) ? htmlspecialchars($info['title']) : 'Sales CRM - Reset Password'; ?>">
+  <meta property="og:description" content="Sales CRM Platform">
   <meta property="og:image" content="<?php echo base_url(); ?>assets/logo.png">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
