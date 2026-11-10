@@ -1792,8 +1792,17 @@ class Ci_admin_calls extends CI_Controller
 		);
 	}
 
+	/** HR link: a rep on approved leave today cannot run the auto-dialler. Returns the message, or ''. */
+	private function _hr_leave_block()
+	{
+		if (!$this->db->table_exists('ci_suite_leave')) return '';
+		$this->load->model('suite_link_model');
+		return in_array((int)$this->session->userdata('manager_id'), $this->suite_link_model->on_leave_ids(), true) ? 'You are on approved leave today (from HR), so the auto-dialler is paused.' : '';
+	}
+
 	public function ajax_start_autodial_session()
 	{
+		if (($leave_msg = $this->_hr_leave_block()) !== '') { echo json_encode(array('status' => false, 'message' => $leave_msg)); return; }
 		$user_id = (int)$this->session->userdata('manager_id');
 		$cooldown = (int)$this->input->post('cooldown') ?: 60;
 		$status_filter = trim((string)$this->input->post('status_filter')) ?: 'all';
@@ -1947,6 +1956,7 @@ class Ci_admin_calls extends CI_Controller
 
 	public function ajax_autodial_resume()
 	{
+		if (($leave_msg = $this->_hr_leave_block()) !== '') { echo json_encode(array('status' => false, 'message' => $leave_msg)); return; }
 		$user_id = (int)$this->session->userdata('manager_id');
 		$sess = $this->db->where('user_id', $user_id)->get('ci_dialer_sessions')->row_array();
 		if (!empty($sess)) {
@@ -1977,6 +1987,7 @@ class Ci_admin_calls extends CI_Controller
 
 	public function ajax_autodial_next()
 	{
+		if (($leave_msg = $this->_hr_leave_block()) !== '') { echo json_encode(array('status' => false, 'message' => $leave_msg)); return; }
 		$user_id = (int)$this->session->userdata('manager_id');
 		$sess = $this->db->where('user_id', $user_id)->get('ci_dialer_sessions')->row_array();
 		if (empty($sess) || $sess['status'] === 'stopped') {

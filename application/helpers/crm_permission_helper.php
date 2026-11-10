@@ -207,7 +207,7 @@ if (!function_exists('crm_perm_catalog')) {
 					'system_assignee' => array('label' => 'Assignee Management', 'tab' => 'clients', 'desc' => 'Move clients between owners', 'nav' => array(array('system/assign', 'Assignee Management', 'fa-random')), 'pages' => array('system/assign', 'system/assignee')),
 					'system_kam_clients' => array('label' => 'KAM Clients (all)', 'tab' => 'clients', 'desc' => 'Every KAM client in the company', 'fallback' => 'kam_clients', 'nav' => array(array('system/kam_clients', 'KAM Clients', 'fa-briefcase')), 'pages' => array('system/kam_clients', 'system/kam-clients')),
 					'calling_api' => array('label' => 'Calling API', 'tab' => 'integrations', 'desc' => 'Phone provider settings', 'nav' => array(array('system/calling-api', 'Calling API', 'fa-phone-square')), 'pages' => array('system/calling-api', 'system/calling_api')),
-					'integrations' => array('label' => 'Third-Party API', 'tab' => 'integrations', 'desc' => 'Email SMTP, helpdesk and other integrations', 'nav' => array(array('system/integrations', 'Third-Party API', 'fa-plug')), 'pages' => array('system/integrations', 'integrations')),
+					'integrations' => array('label' => 'Third-Party API', 'tab' => 'integrations', 'desc' => 'Email SMTP, helpdesk and other integrations', 'nav' => array(array('system/integrations', 'Third-Party API', 'fa-plug')), 'pages' => array('system/integrations', 'integrations', 'system/hr-link')),
 					'marketing' => array('label' => 'Marketing', 'desc' => 'Leads from Meta, Google Ads and website forms, Facebook and Instagram posts, Meta Ads control and the Claude writing helper; Full can connect accounts, post and change ads', 'nav' => array(array('system/marketing', 'Marketing', 'fa-bullhorn')), 'pages' => array('system/marketing')),
 					'qc_panel' => array('label' => 'QC Panel', 'desc' => 'Quality check of the CRM pages', 'nav' => array(array('system/qc', 'QC Panel', 'fa-check-square-o')), 'pages' => array('system/qc', 'system/qoc')),
 				),
@@ -537,6 +537,7 @@ if (!function_exists('crm_tab_groups')) {
 			'integrations' => array('label' => 'Integrations', 'icon' => 'fa-plug', 'tabs' => array(
 				array('calling_api', 'system/calling-api', 'Calling API', 'fa-phone-square'),
 				array('integrations', 'system/integrations', 'Third-Party API', 'fa-plug'),
+				array('integrations', 'system/hr-link', 'HR link', 'fa-handshake-o'),
 			)),
 			'hr_people' => array('label' => 'Staff', 'icon' => 'fa-users', 'tabs' => array(
 				array('hr_staff', 'hr/staff', 'Staff', 'fa-id-card-o'),

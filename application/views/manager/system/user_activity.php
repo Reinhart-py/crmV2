@@ -11,6 +11,9 @@ foreach ($rows as $r) {
   $k_work += $r['stats']['work']; $k_idle += $r['stats']['idle'];
 }
 $tm_ = function ($m) use ($tm) { return $m ? date('h:i A', $tm->ts($m)) : ''; };
+// HR link: people on approved leave on the day shown
+$hr_leave = array();
+if ($this->db->table_exists('ci_suite_leave')) { $this->load->model('suite_link_model'); $hr_leave = array_flip($this->suite_link_model->on_leave_ids($one_day ? $from : $to)); }
 $range_q = 'from=' . $from . '&to=' . $to . ($dept ? '&dept=' . $dept : '') . ($q !== '' ? '&q=' . rawurlencode($q) : '');
 ?>
 <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-sys.css?v=20261106_7">
@@ -91,7 +94,7 @@ $range_q = 'from=' . $from . '&to=' . $to . ($dept ? '&dept=' . $dept : '') . ($
                 <div class="who">
                   <span class="av"><?php echo $h(strtoupper(substr(trim($r['name']) !== '' ? trim($r['name']) : '?', 0, 1))); ?></span>
                   <div>
-                    <a class="nm" href="<?php echo $link; ?>"><?php echo $h($r['name']); ?></a>
+                    <a class="nm" href="<?php echo $link; ?>"><?php echo $h($r['name']); ?></a><?php if (isset($hr_leave[(int)$r['id']])) { ?> <span class="ua-leave" style="display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;font-size:11px;font-weight:600;background:#fef3c7;color:#92400e;">On leave</span><?php } ?>
                     <div class="sub"><?php echo $h($r['dept'] ? $r['dept'] : 'No department'); ?></div>
                   </div>
                 </div>

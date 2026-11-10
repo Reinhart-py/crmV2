@@ -452,6 +452,20 @@ class Ci_admin_orders extends CI_Controller {
 			$data['operations_staff'] = $data['staff_list'];
 		}
 
+		// HR link: an admin approves the commission on an approved order and sends it to HR payroll
+		$data['hr_comm'] = null;
+		if (crm_is_full_admin() && $this->db->table_exists('ci_integration_settings')) {
+			$this->load->model('suite_link_model');
+			if ($this->suite_link_model->is_on()) {
+				$data['hr_comm'] = array(
+					'row' => $this->suite_link_model->commission($order['id']),
+					'open' => strtolower((string)$order['approval_status']) === 'approved' && !in_array($order['status'], array('Cancelled', 'Rejected', 'Lost'), true),
+					'reps' => $this->db->query("SELECT id, name FROM ci_user WHERE status = 1 AND (email LIKE '%@%' OR c_username LIKE '%@%') ORDER BY name")->result_array(),
+					'missing' => $this->suite_link_model->missing(),
+				);
+			}
+		}
+
 		$this->load->view('manager/orders/view', $data);
 	}
 
@@ -531,6 +545,15 @@ class Ci_admin_orders extends CI_Controller {
 		redirect('manager/orders/view/' . $id);
 	}
 
+	/** HR link: take a sent commission back out of HR payroll when the order is cancelled, rejected or lost. Returns a note for the message. */
+	private function _hr_withdraw($order_id, $why)
+	{
+		if (!$this->db->table_exists('ci_suite_commission')) return '';
+		$this->load->model('suite_link_model');
+		list($ok, $msg) = $this->suite_link_model->withdraw_commission((int)$order_id, (int)$this->session->userdata('manager_id'), $why);
+		return $msg !== '' ? ' Commission: ' . $msg : '';
+	}
+
 	public function reject($id = 0)
 	{
 		$id = (int)$id;
@@ -582,7 +605,8 @@ class Ci_admin_orders extends CI_Controller {
 		if (!empty($order['lead_id'])) {
 			$this->db->where('lead_id', (int)$order['lead_id'])->where('order_request_status', 'pending_sales_approval')->update('ci_pipeline', array('order_request_status' => 'rejected', 'updated_at' => $now));
 		}
-		$this->session->set_flashdata('message', "Order #{$order['order_no']} has been marked rejected.");
+		$hr_note = $this->_hr_withdraw($id, 'order rejected');
+		$this->session->set_flashdata('message', "Order #{$order['order_no']} has been marked rejected." . $hr_note);
 		redirect('manager/orders/view/' . $id);
 	}
 
@@ -644,7 +668,8 @@ class Ci_admin_orders extends CI_Controller {
 			'created_at' => $now
 		));
 
-		$this->session->set_flashdata('message', "Order status updated to '{$status}'.");
+		$hr_note = in_array($status, array('Cancelled', 'Rejected', 'Lost'), true) ? $this->_hr_withdraw($id, 'order ' . strtolower($status)) : '';
+		$this->session->set_flashdata('message', "Order status updated to '{$status}'." . $hr_note);
 		redirect('manager/orders/view/' . $id);
 	}
 

@@ -64,6 +64,43 @@
           </div>
         </div>
 
+        <?php if (!empty($hr_comm)) { $hc = $hr_comm['row']; $hc_sent = !empty($hc) && in_array($hc['state'], array('sent', 'withdraw_failed'), true); ?>
+        <div class="box box-default rec-card">
+          <div class="box-header"><h3 class="box-title">Commission (HR payroll)</h3></div>
+          <div class="box-body" style="padding:10px 14px 12px;">
+            <?php if (!empty($hc)) { ?>
+              <p style="margin:0 0 8px;font-size:13px;"><b><?php echo $hc['state'] === 'sent' ? 'Sent to HR' : $ov_h(ucfirst(str_replace('_', ' ', $hc['state']))); ?>:</b> AED <?php echo number_format((float)$hc['amount'], 2); ?> for <?php echo $ov_h($hc['email']); ?>, payroll month <?php echo $ov_h($hc['month']); ?>. <span class="text-muted"><?php echo $ov_h($hc['hr_message']); ?></span></p>
+            <?php } ?>
+            <?php if ($hr_comm['missing'] !== '') { ?>
+              <p class="text-muted" style="margin:0;"><?php echo $ov_h($hr_comm['missing']); ?></p>
+            <?php } elseif (!$hr_comm['open']) { ?>
+              <p class="text-muted" style="margin:0;">A commission can be approved once the order is approved. Cancelled, rejected or lost orders have none<?php echo $hc_sent ? '; the commission is withdrawn from HR when the order is cancelled' : ''; ?>.</p>
+              <?php if ($hc_sent) { ?>
+              <form method="post" action="<?php echo base_url(); ?>manager/system/hr-link/commission/<?php echo (int)$order['id']; ?>" style="margin-top:8px;" onsubmit="return confirm('Take this commission out of HR payroll?');">
+                <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>"><input type="hidden" name="do" value="withdraw">
+                <button type="submit" class="btn btn-default btn-sm">Withdraw from HR</button>
+              </form>
+              <?php } ?>
+            <?php } else { $hc_user = !empty($hc) ? (int)$hc['user_id'] : (int)$order['created_by']; ?>
+              <form method="post" action="<?php echo base_url(); ?>manager/system/hr-link/commission/<?php echo (int)$order['id']; ?>" style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;" onsubmit="return confirm('Approve this commission and send it to HR payroll?');">
+                <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>">
+                <div><label style="display:block;font-size:12px;margin:0 0 3px;">Salesperson</label><select name="user_id" class="form-control" required style="min-width:180px;"><option value="">Choose...</option><?php foreach ($hr_comm['reps'] as $r) { ?><option value="<?php echo (int)$r['id']; ?>"<?php echo (int)$r['id'] === $hc_user ? ' selected' : ''; ?>><?php echo $ov_h($r['name']); ?></option><?php } ?></select></div>
+                <div><label style="display:block;font-size:12px;margin:0 0 3px;">Payroll month</label><input type="month" name="month" class="form-control" required value="<?php echo $ov_h(!empty($hc) ? $hc['month'] : date('Y-m')); ?>"></div>
+                <div><label style="display:block;font-size:12px;margin:0 0 3px;">Amount (AED)</label><input type="number" name="amount" class="form-control" required min="0.01" step="0.01"<?php echo (float)$order['pricing_amount'] > 0 ? ' max="' . (float)$order['pricing_amount'] . '"' : ''; ?> value="<?php echo !empty($hc) ? $ov_h($hc['amount']) : ''; ?>" style="width:140px;"></div>
+                <button type="submit" class="btn btn-primary btn-sm" style="height:34px;"><?php echo !empty($hc) && $hc['state'] !== 'withdrawn' ? 'Update in HR' : 'Approve and send to HR'; ?></button>
+              </form>
+              <?php if ($hc_sent) { ?>
+              <form method="post" action="<?php echo base_url(); ?>manager/system/hr-link/commission/<?php echo (int)$order['id']; ?>" style="margin-top:8px;" onsubmit="return confirm('Take this commission out of HR payroll?');">
+                <input type="hidden" name="<?php echo $this->security->get_csrf_token_name(); ?>" value="<?php echo $this->security->get_csrf_hash(); ?>"><input type="hidden" name="do" value="withdraw">
+                <button type="submit" class="btn btn-default btn-sm">Withdraw from HR</button>
+              </form>
+              <?php } ?>
+              <p class="text-muted" style="margin:8px 0 0;font-size:12px;">Only the salesperson's email, the month, the amount and the order number go to HR. Sending again updates the same payroll line.</p>
+            <?php } ?>
+          </div>
+        </div>
+        <?php } ?>
+
         <div class="box box-default rec-card">
           <div class="box-header"><h3 class="box-title">History</h3></div>
           <div class="box-body" style="padding:6px 14px 10px;">

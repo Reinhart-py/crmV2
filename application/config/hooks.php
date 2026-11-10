@@ -37,3 +37,10 @@ $hook['post_controller_constructor'][] = array(
 	'filename' => 'crm_subscription_guard.php',
 	'filepath' => 'hooks',
 );
+
+$hook['post_controller_constructor'][] = array(
+	'class'    => '',
+	'function' => 'crm_suite_guard',
+	'filename' => 'crm_suite_guard.php',
+	'filepath' => 'hooks',
+);

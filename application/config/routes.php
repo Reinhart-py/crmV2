@@ -357,6 +357,9 @@ $route['manager/system/integrations/ajax_send_test_email'] = 'ci_admin_integrati
 $route['manager/integrations'] = 'ci_admin_integrations/index';
 
 $route['api/subscription/events'] = 'subscription_events/index';
+$route['api/suite/app-events'] = 'suite_events/index';
+$route['manager/system/hr-link'] = 'ci_admin_suite/index';
+$route['manager/system/hr-link/(:any)'] = 'ci_admin_suite/$1';
 $route['api/calls/recording_webhook'] = 'ci_admin_calls/recording_webhook';
 $route['api/calls/cdr_webhook'] = 'ci_admin_calls/cdr_webhook';
 $route['api/calls/process_ai'] = 'ci_admin_calls/ajax_process_ai';

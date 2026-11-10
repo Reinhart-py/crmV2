@@ -668,6 +668,11 @@ class Marketing_model extends CI_Model
 		if ($m['route'] === 'round' && $users) {
 			$active = array_map('intval', array_column($this->db->select('id')->where('status', 1)->where_in('id', $users)->get('ci_user')->result_array(), 'id'));
 			$users = array_values(array_intersect($users, $active));
+			// HR link: people on approved leave today are skipped
+			if ($users && $this->db->table_exists('ci_suite_leave')) {
+				$this->load->model('suite_link_model');
+				$users = array_values(array_diff($users, $this->suite_link_model->on_leave_ids()));
+			}
 			if ($users) {
 				$i = ((int)$m['rr_next']) % count($users);
 				$this->save_meta(array('rr_next' => $i + 1));
