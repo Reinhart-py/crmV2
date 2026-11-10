@@ -536,6 +536,13 @@ html, body {
   font-size: 18px;
 }
 
+.dl-dncr { display:flex; align-items:flex-start; gap:8px; margin-top:8px; padding:8px 10px; border-radius:10px; background:#fef2f2; border:1px solid #fecaca; color:#b91c1c; font-size:12px; line-height:1.4; text-align:left; }
+.dl-dncr i { margin-top:2px; }
+.dl-dncr-tag { display:inline-flex; align-items:center; gap:5px; margin-left:8px; padding:2px 8px; border-radius:999px; background:#dc2626; color:#fff; font-size:11px; font-weight:700; letter-spacing:.02em; vertical-align:middle; }
+.dialer-status-sub[data-state="dncr"] { color:#b91c1c !important; font-weight:700; }
+#btnToggleCall.is-dncr { background:#94a3b8 !important; border-color:#94a3b8 !important; cursor:not-allowed; }
+[data-theme="dark"] .dl-dncr { background:rgba(220,38,38,.14); border-color:rgba(248,113,113,.4); color:#fca5a5; }
+[data-theme="dark"] .dialer-status-sub[data-state="dncr"] { color:#fca5a5 !important; }
 .dialer-status-sub {
   font-size: 12px;
   font-weight: 500;
@@ -1095,7 +1102,7 @@ html, body {
 
       <div id="middleViewDetails" style="display:none;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-          <h3 style="font-size:16px; font-weight:700; color:#0f172a; margin:0;" id="detailsHeaderName">Contact Details</h3>
+          <h3 style="font-size:16px; font-weight:700; color:#0f172a; margin:0;" id="detailsHeaderName">Contact Details</h3><span class="dl-dncr-tag" id="detailsDncrTag" style="display:none;" title="Do Not Call Register: calling is not allowed"><i class="fa fa-ban"></i> DNCR - do not call</span>
           <button type="button" class="btn-edit-row" onclick="backToListFromDetails()"><i class="fa fa-arrow-left"></i> Back</button>
         </div>
 
@@ -1607,6 +1614,7 @@ html, body {
         <div id="dialerSuggestions" class="dialer-suggestions-popover" style="display:none;"></div>
       </div>
       <div class="dialer-status-sub" id="dialerStatusSubtitle" data-state="idle">Ready to call</div>
+      <div class="dl-dncr" id="dialerDncrNote" style="display:none;" role="alert"><i class="fa fa-ban"></i><span><strong>DNCR</strong> - Do Not Call Register. This contact cannot be called.</span></div>
     </div>
 
     <div class="dl-script" id="dlScript" style="display:none;">
@@ -1940,6 +1948,7 @@ function dialerBackspace() {
 
 function onDialerInputChange() {
   var val = $('#dialerInput').val().trim();
+  if (!isDncrLead(activeLead)) markDncr(false);
   if (val.length < 3) {
     $('#dialerSuggestions').hide().empty();
     return;
@@ -2006,6 +2015,7 @@ function selectDialerSuggestion(name, targetNum, dept) {
     phone_primary: targetNum,
     status_name: 'Internal Team'
   };
+  markDncr(false);
 }
 
 function handleDialerInputKey(e) {
@@ -2847,6 +2857,7 @@ function dialCurrentAutoLead() {
   var fillingMode = $('#autoDialFillingMode').val();
   if (fillingMode === 'manual') {
     activeLead = l;
+    markDncr(isDncrLead(l));
     currentIndex = autoDialerIndex;
     $('#dialerChipName').text(l.customer || 'No Contact');
     $('#dialerContactChip').css('display', 'inline-flex');
@@ -3083,6 +3094,7 @@ function dialColleague(name, targetNum) {
     phone_primary: targetNum,
     status_name: 'Internal Team'
   };
+  markDncr(false);
 
   $('#dialerInput').val(targetNum);
   $('#dialerChipName').text(name + ' (Colleague)');
@@ -3267,6 +3279,7 @@ function applyLeadToDialer(lead, idx) {
   $('#dialerInput').val(p1);
 
   populateDetailsForm(lead);
+  markDncr(isDncrLead(lead));
   if (activeCampaign) renderCampaignScript();
 }
 
@@ -3275,6 +3288,7 @@ function populateDetailsForm(l) {
   $('#editLeadId').val(l.id || 0);
   $('#editCallLogId').val(0);
   $('#detailsHeaderName').text(l.customer || 'Contact Details');
+  $('#detailsDncrTag').toggle(isDncrLead(l));
 
   $('#editCustomer').val(l.customer || '');
   $('#editPoc').val(l.poc || '');
@@ -3663,22 +3677,21 @@ function startDialing() {
     showToast('Please enter a phone number');
     return;
   }
+  if (dialChecking) return;
+  // DNCR: blocked here first, and again on the server below
+  if (activeLead && isDncrLead(activeLead) && !activeLead.is_internal) {
+    showDncrBlock('DNCR: ' + (activeLead.customer || 'this contact') + ' is on the Do Not Call Register. It cannot be called by anyone.');
+    return;
+  }
   // A previous call still waiting for its result is saved as Connected first.
   if (pendingCall) finishCall(0, true);
-  launch3cxCall(phone);
-
-  callState = 'calling';
-  activeCallLogId = 0;
-  callConnectedSeconds = 0;
-  if (window.innerWidth <= 991) {
-    switchMobileDialerView('keypad');
-  }
-  $('#btnToggleCall').removeClass('btn-connected').addClass('btn-calling');
-  setCallStatus('calling', 'Calling ' + phone + '...');
 
   var isInternal = (activeLead && activeLead.is_internal) ? 1 : 0;
   var category = isInternal ? 'internal' : (activeQueueType === 'followup' ? 'followup' : 'new_call');
 
+  // The server checks the number against the DNCR list before the phone dials.
+  dialChecking = true;
+  setCallStatus('calling', 'Checking ' + phone + '...');
   $.ajax({
     url: '<?php echo base_url(); ?>manager/calls/ajax_initiate_call',
     type: 'POST',
@@ -3691,6 +3704,13 @@ function startDialing() {
     },
     dataType: 'json',
     success: function(res) {
+      dialChecking = false;
+      if (res && res.dncr) {
+        if (activeLead) activeLead.is_dncr = true;
+        showDncrBlock(res.message);
+        return;
+      }
+      beginDialing(phone);
       if (res && res.status) {
         activeCallLogId = res.call_log_id || 0;
         onCallConnected();
@@ -3701,11 +3721,47 @@ function startDialing() {
       }
     },
     error: function() {
+      dialChecking = false;
+      beginDialing(phone);
       setTimeout(function() {
         onCallConnected();
       }, 1200);
     }
   });
+}
+
+var dialChecking = false;
+function beginDialing(phone) {
+  launch3cxCall(phone);
+  callState = 'calling';
+  activeCallLogId = 0;
+  callConnectedSeconds = 0;
+  if (window.innerWidth <= 991) {
+    switchMobileDialerView('keypad');
+  }
+  $('#btnToggleCall').removeClass('btn-connected').addClass('btn-calling');
+  setCallStatus('calling', 'Calling ' + phone + '...');
+}
+
+/* DNCR (Do Not Call Register): these contacts are never called */
+function isDncrLead(l) {
+  if (!l) return false;
+  if (l.is_dncr === true || l.is_dncr == 1) return true;
+  var d = String(l.dnd_status || '').trim().toLowerCase();
+  return l.status == 46 || d === 'yes' || d === 'y' || d === 'dncr' || d === 'dnd';
+}
+function showDncrBlock(msg) {
+  callState = 'idle';
+  $('#btnToggleCall').removeClass('btn-calling btn-connected');
+  setCallStatus('idle', 'DNCR - not allowed to call');
+  $('#dialerStatusSubtitle').attr('data-state', 'dncr');
+  markDncr(true);
+  showToast(msg || 'DNCR: this number is on the Do Not Call Register. It cannot be called.');
+}
+function markDncr(on) {
+  $('#dialerDncrNote').toggle(!!on);
+  $('#detailsDncrTag').toggle(!!on);
+  $('#btnToggleCall').toggleClass('is-dncr', !!on).attr('title', on ? 'DNCR - calling is not allowed' : 'Call');
 }
 
 function onCallConnected() {

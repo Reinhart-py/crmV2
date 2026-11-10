@@ -166,6 +166,36 @@ class Ci_admin_calls extends CI_Controller
 		}
 	}
 
+	/** SQL test for a lead on the DNCR list (Do Not Call Register): DNCR/DND set to Yes, or status DNCR / DND. */
+	private function _dncr_sql($a = 'A')
+	{
+		return "($a.status = 46 OR LOWER(TRIM($a.dnd_status)) IN ('yes', 'y', 'dncr', 'dnd'))";
+	}
+
+	/** The DNCR lead for this lead id or phone number, or null. A DNCR number must not be called by anyone. */
+	private function _dncr_match($phone, $lead_id = 0)
+	{
+		$lead_id = (int)$lead_id;
+		if ($lead_id > 0) {
+			$row = $this->db->query("SELECT A.id, A.customer FROM ci_leads A WHERE A.id = $lead_id AND " . $this->_dncr_sql())->row_array();
+			if ($row) return $row;
+		}
+		$digits = preg_replace('/\D/', '', (string)$phone);
+		if (strlen($digits) < 7) return null;
+		$tail = $this->db->escape_like_str(substr($digits, -9)); // last 9 digits: the same number with or without 971 / 0
+		$like = array();
+		foreach (array('contact1', 'alt_contact', 'contact2', 'mobile') as $col) {
+			$like[] = "REGEXP_REPLACE(IFNULL(A.$col, ''), '[^0-9]', '') LIKE '%$tail%'";
+		}
+		$row = $this->db->query("SELECT A.id, A.customer FROM ci_leads A WHERE " . $this->_dncr_sql() . " AND (" . implode(' OR ', $like) . ") ORDER BY A.id DESC LIMIT 1")->row_array();
+		return $row ? $row : null;
+	}
+
+	private function _dncr_message($row)
+	{
+		return 'DNCR: this number is on the Do Not Call Register' . (!empty($row['customer']) ? ' (' . $row['customer'] . ')' : '') . '. It cannot be called by anyone.';
+	}
+
 	private function _extract_lead_phones($lead)
 	{
 		$raw_phones = array();
@@ -779,6 +809,7 @@ class Ci_admin_calls extends CI_Controller
 		$lead['has_two_numbers'] = $extracted['has_two'];
 		$lead['history'] = $history;
 		$lead['dispatch'] = $dispatch;
+		$lead['is_dncr'] = ($this->_dncr_match('', $lead['id']) !== null);
 
 		echo json_encode(array('status' => true, 'lead' => $lead));
 	}
@@ -793,6 +824,15 @@ class Ci_admin_calls extends CI_Controller
 		if (empty($phone)) {
 			echo json_encode(array('status' => false, 'message' => 'Phone number is required to place a call'));
 			return;
+		}
+
+		// DNCR numbers are never called (calls to colleagues are not checked)
+		if ((int)$this->input->post('is_internal') !== 1) {
+			$dncr = $this->_dncr_match($phone, $lead_id);
+			if ($dncr) {
+				echo json_encode(array('status' => false, 'dncr' => true, 'customer' => $dncr['customer'], 'message' => $this->_dncr_message($dncr)));
+				return;
+			}
 		}
 
 		if ($lead_id > 0 && empty($customer_name)) {
@@ -2151,7 +2191,7 @@ class Ci_admin_calls extends CI_Controller
 
 		$escaped = $this->db->escape_like_str($query);
 		$contacts = $this->db->query("
-			SELECT id, customer, poc, contact1, alt_contact, email, status, remark
+			SELECT id, customer, poc, contact1, alt_contact, email, status, remark, " . $this->_dncr_sql('ci_leads') . " AS is_dncr
 			FROM ci_leads
 			WHERE customer LIKE '%{$escaped}%' 
 			   OR poc LIKE '%{$escaped}%' 
