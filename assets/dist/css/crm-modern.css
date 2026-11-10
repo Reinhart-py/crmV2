@@ -24,18 +24,18 @@ html.crm-modern {
   --md2-ring: rgba(84, 104, 231, .15);
   --md2-shadow: 0 1px 2px rgba(31, 41, 79, .03), 0 2px 10px rgba(31, 41, 79, .045);
   --md2-shadow-lg: 0 14px 34px rgba(31, 41, 79, .10);
-  --md2-side-bg: linear-gradient(180deg, #fcfdff 0%, #f6f8fe 100%);
-  --md2-side-ink: #2b3447;
+  --md2-side-bg: linear-gradient(180deg, #e4e9ff 0%, #dce2fc 50%, #d3d9f6 100%);
+  --md2-side-ink: #252d47;
   --md2-side-strong: #18203a;
-  --md2-side-muted: #5f6a80;
-  --md2-side-sub: #3e475a;
-  --md2-side-ico: #6f7ca0;
-  --md2-side-hover: #eef1fb;
-  --md2-side-on: #e7ebfd;
+  --md2-side-muted: #56607c;
+  --md2-side-sub: #353e5c;
+  --md2-side-ico: #5d6aa3;
+  --md2-side-hover: rgba(255, 255, 255, .55);
+  --md2-side-on: #ffffff;
   --md2-side-on-ink: #3446c4;
   --md2-side-bar: #5468e7;
-  --md2-side-line: #e6e9f3;
-  --md2-side-card: #ffffff;
+  --md2-side-line: #c9d1f2;
+  --md2-side-card: rgba(255, 255, 255, .75);
   --md2-side-flyout: #ffffff;
   --md2-radius: 14px;
   --md2-bar: rgba(255, 255, 255, .92);
@@ -59,19 +59,19 @@ html.crm-modern[data-theme="dark"] {
   --md2-ring: rgba(140, 155, 245, .25);
   --md2-shadow: 0 1px 2px rgba(0, 0, 0, .25);
   --md2-shadow-lg: 0 14px 36px rgba(0, 0, 0, .4);
-  --md2-side-bg: linear-gradient(180deg, #172036 0%, #131b2e 100%);
+  --md2-side-bg: linear-gradient(180deg, #1e2650 0%, #19203f 50%, #151a33 100%);
   --md2-side-ink: #e3e8f5;
   --md2-side-strong: #ffffff;
   --md2-side-muted: #a9b3cc;
   --md2-side-sub: #cdd4e6;
   --md2-side-ico: #9fabcb;
-  --md2-side-hover: rgba(255, 255, 255, .07);
-  --md2-side-on: rgba(109, 127, 240, .24);
+  --md2-side-hover: rgba(255, 255, 255, .08);
+  --md2-side-on: rgba(140, 155, 255, .22);
   --md2-side-on-ink: #ffffff;
   --md2-side-bar: #9aa8ff;
-  --md2-side-line: rgba(255, 255, 255, .08);
+  --md2-side-line: rgba(160, 175, 255, .14);
   --md2-side-card: rgba(255, 255, 255, .05);
-  --md2-side-flyout: #1a2440;
+  --md2-side-flyout: #1e2650;
   --md2-bar: rgba(21, 30, 51, .92);
   --md2-row-hover: rgba(109, 127, 240, .10);
   --md2-row-alt: rgba(255, 255, 255, .025);
@@ -422,3 +422,8 @@ html.crm-modern body:not(.crm-dash-page) .content-wrapper .alert { border-radius
 html.crm-modern body:not(.crm-dash-page) .content-wrapper .dataTables_paginate .paginate_button { border-radius: 10px !important; }
 html.crm-modern body:not(.crm-dash-page) .content-wrapper .dataTables_filter input,
 html.crm-modern body:not(.crm-dash-page) .content-wrapper .dataTables_length select { border-radius: 10px !important; }
+
+/* Side pane: the selected item sits on a white pill with a soft shadow (light mode) */
+html.crm-modern:not([data-theme="dark"]) body .main-sidebar :is(#md2-x, .sidebar-menu) > li.active > a,
+html.crm-modern:not([data-theme="dark"]) body .main-sidebar :is(#md2-x, .sidebar-menu) .treeview-menu > li > a.is-current { box-shadow: 0 1px 3px rgba(52, 70, 196, .12) !important; }
+html.crm-modern:not([data-theme="dark"]) body .main-sidebar :is(#md2-x, .sidebar-menu) .treeview-menu > li > a.is-current { box-shadow: inset 2px 0 0 var(--md2-side-bar), 0 1px 3px rgba(52, 70, 196, .12) !important; }
