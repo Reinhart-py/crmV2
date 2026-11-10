@@ -208,7 +208,7 @@ $base = base_url() . 'manager/';
             <?php } ?>
             <div class="form-group">
               <label for="fScript">Call script</label>
-              <textarea id="fScript" name="script" class="form-control script" placeholder="Hello {contact}, this is {agent} from 7 Strokes. I'm calling {customer} about…&#10;&#10;Key points:&#10;- …&#10;&#10;If they are interested: book a meeting / send the offer"><?php echo $h($v('script')); ?></textarea>
+              <textarea id="fScript" name="script" class="form-control script" placeholder="Hello {contact}, this is {agent} from our company. I'm calling {customer} about…&#10;&#10;Key points:&#10;- …&#10;&#10;If they are interested: book a meeting / send the offer"><?php echo $h($v('script')); ?></textarea>
               <div class="tokens" aria-label="Insert a field">
                 <button type="button" data-t="{contact}" title="Contact person">{contact}</button>
                 <button type="button" data-t="{customer}" title="Company name">{customer}</button>

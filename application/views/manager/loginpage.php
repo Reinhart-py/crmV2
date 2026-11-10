@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+<?php require_once APPPATH . 'helpers/crm_brand_helper.php'; ?><!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title><?php echo $info['title']; ?></title>
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-  <link rel="shortcut icon" href="<?php echo base_url(); ?>assets/logo.png" type="image/png">
-  <link rel="icon" type="image/png" href="<?php echo base_url(); ?>assets/logo.png">
+  <link rel="shortcut icon" href="<?php echo base_url(); ?>assets/sales-crm-mark.png" type="image/png">
+  <link rel="icon" type="image/png" href="<?php echo base_url(); ?>assets/sales-crm-mark.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-auth.css?v=20261105_17">
@@ -23,7 +23,7 @@
       </div>
      <div class="auth-panel-inner">
 <?php
-      // Client logo and name from the 7strokes portal subscription: the stored portal answer
+      // Client logo and name from the subscription portal: the stored portal answer
       // (works when the CRM is opened directly), else ?brand=&company= on the portal's link.
       // Only logos served by the portal set in Subscription settings are shown.
       $client_logo = ''; $client_name = '';
@@ -42,7 +42,7 @@
       <?php if ($client_logo) { ?>
       <div class="auth-brand auth-brand-client"><img src="<?php echo htmlspecialchars($client_logo, ENT_QUOTES); ?>" alt="<?php echo htmlspecialchars($client_name ?: 'Company logo', ENT_QUOTES); ?>" style="max-height:72px;max-width:220px;width:auto;object-fit:contain"></div>
       <?php } else { ?>
-      <div class="auth-brand"><img src="<?php echo base_url(); ?>assets/logo.png" alt="Sales CRM"></div>
+      <div class="auth-brand"><?php echo crm_brand_mark('auth'); ?></div>
       <?php } ?>
       <h1 class="auth-title">Sign In</h1>
       <p class="auth-sub"><?php echo $client_name !== '' ? htmlspecialchars($client_name, ENT_QUOTES) . ' · Sales CRM' : 'Get access to your account'; ?></p>
@@ -107,7 +107,7 @@
         <button type="submit" class="auth-btn" id="loginBtn">Sign In</button>
       </form>
      </div>
-      <div class="auth-foot">&copy; <?php echo date('Y'); ?> Seven Strokes</div>
+      <div class="auth-foot">&copy; <?php echo date('Y'); ?> <?php $crm_b = crm_brand(); echo htmlspecialchars($crm_b['name'], ENT_QUOTES, 'UTF-8'); ?></div>
     </main>
   </div>
 

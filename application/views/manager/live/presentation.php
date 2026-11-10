@@ -5,7 +5,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Live Presentation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="shortcut icon" href="<?php echo base_url(); ?>assets/logo.png" type="image/png">
+  <link rel="shortcut icon" href="<?php echo base_url(); ?>assets/sales-crm-mark.png" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -201,7 +201,7 @@
   <div class="tv">
     <div class="tv-head">
       <div class="tv-brand">
-        <img src="<?php echo base_url(); ?>assets/logo.png" alt="">
+        <?php require_once APPPATH . 'helpers/crm_brand_helper.php'; echo crm_brand_mark('tv'); ?>
         <div>
           <h1>Live Dashboard</h1>
         </div>

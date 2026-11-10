@@ -739,7 +739,7 @@ class Marketing_model extends CI_Model
 			'status' => 36, 'lead_assign' => $owner,
 			'lead_source' => $conn && $conn['name'] !== '' ? $conn['name'] : $label,
 			'data_source' => $conn && $conn['source_name'] !== '' ? $conn['source_name'] : $label,
-			'created_by' => $owner, 'admin_status' => 1, 'created' => date('Y-m-d'), 'c_partner' => 'Seven Strokes', 'country' => 0, 'state' => 0
+			'created_by' => $owner, 'admin_status' => 1, 'created' => date('Y-m-d'), 'c_partner' => crm_brand_company(), 'country' => 0, 'state' => 0
 		);
 		if ($conn) {
 			$lead['data_batch_referral_no'] = substr($this->ref_for($conn), 0, 100);

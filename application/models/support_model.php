@@ -12,7 +12,7 @@ class Support_model extends CI_Model {
 	const AGENT_TIMEOUT_SECONDS = 90;   // agent counts as online if the inbox pinged within this time
 	const NO_REPLY_SECONDS = 180;       // waiting chat with no agent reply is emailed to IT after this
 	const MAX_REQUESTS_PER_HOUR = 5;    // per IP address
-	const DEFAULT_IT_EMAIL = 'it@7strokes.ae';
+	const DEFAULT_IT_EMAIL = ''; // no built-in address: each client sets its own
 
 	function __construct()
 	{
@@ -189,7 +189,7 @@ class Support_model extends CI_Model {
 		return 60 * $s['no_reply_minutes'];
 	}
 
-	/** IT mailbox: Chatbot settings, else Integrations > Helpdesk "support email", else it@7strokes.ae. */
+	/** IT mailbox: Chatbot settings, else Integrations > Helpdesk "support email", else the CRM's own sending address (SMTP "from email"). */
 	public function it_email()
 	{
 		$s = $this->settings();
@@ -200,6 +200,11 @@ class Support_model extends CI_Model {
 		$cfg = !empty($row['config_json']) ? json_decode($row['config_json'], true) : array();
 		if (!empty($cfg['support_email']) && filter_var($cfg['support_email'], FILTER_VALIDATE_EMAIL)) {
 			return $cfg['support_email'];
+		}
+		$row = $this->db->where('service_name', 'email_smtp')->get('ci_integration_settings')->row_array();
+		$cfg = !empty($row['config_json']) ? json_decode($row['config_json'], true) : array();
+		foreach (array('from_email', 'smtp_user') as $k) {
+			if (!empty($cfg[$k]) && filter_var($cfg[$k], FILTER_VALIDATE_EMAIL)) return $cfg[$k];
 		}
 		return self::DEFAULT_IT_EMAIL;
 	}

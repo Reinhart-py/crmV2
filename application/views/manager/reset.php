@@ -1,19 +1,19 @@
-<!DOCTYPE html>
+<?php require_once APPPATH . 'helpers/crm_brand_helper.php'; ?><!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title><?php echo $info['title']; ?></title>
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-  <link rel="shortcut icon" href="<?php echo base_url(); ?>assets/logo.png" type="image/png">
-  <link rel="icon" type="image/png" href="<?php echo base_url(); ?>assets/logo.png">
-  <link rel="apple-touch-icon" href="<?php echo base_url(); ?>assets/logo.png">
+  <link rel="shortcut icon" href="<?php echo base_url(); ?>assets/sales-crm-mark.png" type="image/png">
+  <link rel="icon" type="image/png" href="<?php echo base_url(); ?>assets/sales-crm-mark.png">
+  <link rel="apple-touch-icon" href="<?php echo base_url(); ?>assets/sales-crm-mark.png">
   <meta property="og:title" content="<?php echo !empty($info['title']) ? htmlspecialchars($info['title']) : 'Sales CRM - Reset Password'; ?>">
   <meta property="og:description" content="Sales CRM Platform">
-  <meta property="og:image" content="<?php echo base_url(); ?>assets/logo.png">
+  <meta property="og:image" content="<?php echo base_url(); ?>assets/sales-crm-mark.png">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="<?php echo base_url(); ?>assets/logo.png">
+  <meta name="twitter:image" content="<?php echo base_url(); ?>assets/sales-crm-mark.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-auth.css?v=20261105_17">
@@ -29,7 +29,7 @@
         </a>
       </div>
      <div class="auth-panel-inner">
-      <div class="auth-brand"><img src="<?php echo base_url(); ?>assets/logo.png" alt="Seven Strokes"></div>
+      <div class="auth-brand"><?php echo crm_brand_mark('auth'); ?></div>
       <h1 class="auth-title">Set New Password</h1>
       <p class="auth-sub">Choose a new password for your CRM account.</p>
       <?php echo get_message($this->session->flashdata('error_message'),'error_message'); ?> <?php echo get_message($this->session->flashdata('message'),'message'); ?>
@@ -54,7 +54,7 @@
       </form>
       <p class="auth-alt"><a href="<?php echo base_url(); ?>manager/login" class="auth-link">Back to Sign In</a></p>
      </div>
-      <div class="auth-foot">&copy; <?php echo date('Y'); ?> Seven Strokes</div>
+      <div class="auth-foot">&copy; <?php echo date('Y'); ?> <?php $crm_b = crm_brand(); echo htmlspecialchars($crm_b['name'], ENT_QUOTES, 'UTF-8'); ?></div>
     </main>
   </div>
 </body>

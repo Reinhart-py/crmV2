@@ -70,12 +70,16 @@ class Mail_model extends CI_Model {
 		$this->last_error = '';
 		$cfg = $this->smtp_config();
 
-		// Logo travels inside the email (cid:), so it shows even where the CRM address is not reachable.
-		$logo_file = FCPATH . 'assets/email-logo.png';
-		$logo = 'cid:crm-logo';
+		// The client's logo from the subscription portal, else the Sales CRM mark (sent inside the email) with the company name.
+		$brand = function_exists('crm_brand') ? crm_brand() : array('name' => 'Sales CRM', 'logo' => '');
+		$brand_name = htmlspecialchars($brand['name'], ENT_QUOTES, 'UTF-8');
+		$logo_file = $brand['logo'] === '' ? FCPATH . 'assets/sales-crm-mark.png' : '';
+		$head = $brand['logo'] !== ''
+			? '<img src="' . htmlspecialchars($brand['logo'], ENT_QUOTES, 'UTF-8') . '" alt="' . $brand_name . '" height="48" style="display:block;border:0;max-height:48px;width:auto;">'
+			: '<table cellpadding="0" cellspacing="0"><tr><td style="padding-right:10px;"><img src="cid:crm-logo" alt="" width="36" height="36" style="display:block;border:0;"></td><td style="font-size:18px;font-weight:bold;color:#1e3a8a;">' . $brand_name . '</td></tr></table>';
 		$full_msg = '<table cellpadding="0" cellspacing="0" width="100%" style="background:#f1f5f9;padding:24px 0;font-family:Arial,Helvetica,sans-serif;"><tr><td align="center">'
 			. '<table cellpadding="0" cellspacing="0" width="560" style="background:#ffffff;border-radius:8px;border:1px solid #e2e8f0;">'
-			. '<tr><td style="padding:24px 28px 8px;"><img src="' . $logo . '" alt="Seven Strokes" width="80" height="56" style="display:block;border:0;"></td></tr>'
+			. '<tr><td style="padding:24px 28px 8px;">' . $head . '</td></tr>'
 			. '<tr><td style="padding:8px 28px 24px;color:#0f172a;font-size:15px;line-height:1.6;">' . $message . '</td></tr>'
 			. '<tr><td style="padding:14px 28px;border-top:1px solid #e2e8f0;color:#64748b;font-size:12px;">Sales CRM. This is an automated message, please do not reply.</td></tr>'
 			. '</table></td></tr></table>';
@@ -113,8 +117,8 @@ class Mail_model extends CI_Model {
 		}
 		$mail->Subject = $subject;
 		$mail->msgHTML($full_msg);
-		if (is_file($logo_file)) {
-			$mail->addStringEmbeddedImage(file_get_contents($logo_file), 'crm-logo', 'seven-strokes.png', 'base64', 'image/png');
+		if ($logo_file !== '' && is_file($logo_file)) {
+			$mail->addStringEmbeddedImage(file_get_contents($logo_file), 'crm-logo', 'logo.png', 'base64', 'image/png');
 		}
 		$mail->AltBody = trim(html_entity_decode(strip_tags(str_replace(array('<br>', '<br/>', '<br />', '</p>'), "\n", $message))));
 

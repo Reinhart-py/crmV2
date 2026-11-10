@@ -125,7 +125,7 @@ class Ci_admin extends CI_Controller {
 			$data['users']= $this->comman_model->getAll(array('c_username'=>$email,'c_password'=>$password,'status'=>1),'','ci_user','first');
 			if(!empty($data['users']))
 			{
-				// Sales CRM subscription on the 7strokes portal (only when switched on in Third-Party API > Subscription).
+				// Sales CRM subscription on the subscription portal (only when switched on in Third-Party API > Subscription).
 				// Admins can still sign in to sort it out; everyone else waits until it is renewed.
 				require_once APPPATH . 'helpers/crm_permission_helper.php';
 				$this->load->model('subscription_model');
@@ -494,7 +494,7 @@ class Ci_admin extends CI_Controller {
 		$this->load->view('manager/forgot', $data);
 	}
 
-	/** j***@7strokes.ae */
+	/** j***@example.com */
 	private function mask_email($email)
 	{
 		$at = strpos($email, '@');
@@ -822,7 +822,7 @@ class Ci_admin extends CI_Controller {
 		$this->if_not_login();
 		$data = array();
 		$data['info'] = array(
-			'title' => 'CRM Sitemap - Seven Strokes',
+			'title' => 'CRM Sitemap',
 			'page_heading' => 'CRM Sitemap & Directory'
 		);
 		$data['info2'] = $this->if_not_login();

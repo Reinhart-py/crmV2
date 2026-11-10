@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Seven Strokes CRM - Executive Full-Screen Dashboard & Pill Navigation
+   Sales CRM - Executive Full-Screen Dashboard & Pill Navigation
    ========================================================================== */
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
 
@@ -1440,7 +1440,7 @@ ul.munk_menu > li > ul > li > a i {
   }
 }
 
-/* Android, Mobile & Tablet (max-width: 991px): 3-line hamburger bar on far left, 7 Strokes logo directly beside it, actions right-aligned */
+/* Android, Mobile & Tablet (max-width: 991px): 3-line hamburger bar on far left, logo directly beside it, actions right-aligned */
 @media (max-width: 991px) {
   .main-header-bar {
     display: flex !important;

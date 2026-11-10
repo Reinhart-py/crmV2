@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+<?php require_once APPPATH . 'helpers/crm_brand_helper.php'; ?><!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title><?php echo htmlspecialchars($info['title']); ?></title>
   <meta content="width=device-width, initial-scale=1" name="viewport">
-  <link rel="shortcut icon" href="<?php echo base_url(); ?>assets/logo.png" type="image/png">
-  <link rel="icon" type="image/png" href="<?php echo base_url(); ?>assets/logo.png">
+  <link rel="shortcut icon" href="<?php echo base_url(); ?>assets/sales-crm-mark.png" type="image/png">
+  <link rel="icon" type="image/png" href="<?php echo base_url(); ?>assets/sales-crm-mark.png">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="<?php echo base_url(); ?>assets/dist/css/crm-auth.css?v=20261105_17">
 </head>
@@ -23,7 +23,7 @@
       </div>
 
       <div class="auth-panel-inner sp-inner">
-        <div class="auth-brand"><img src="<?php echo base_url(); ?>assets/logo.png" alt="Seven Strokes"></div>
+        <div class="auth-brand"><?php echo crm_brand_mark('auth'); ?></div>
         <h1 class="auth-title">Support</h1>
         <p class="auth-sub" id="spIntro">
           <?php if ($online) { ?>
@@ -96,7 +96,7 @@
 
         <p class="auth-alt">You can also email <a class="auth-link" href="mailto:<?php echo htmlspecialchars($it_email); ?>"><?php echo htmlspecialchars($it_email); ?></a></p>
       </div>
-      <div class="auth-foot">&copy; <?php echo date('Y'); ?> Seven Strokes</div>
+      <div class="auth-foot">&copy; <?php echo date('Y'); ?> <?php $crm_b = crm_brand(); echo htmlspecialchars($crm_b['name'], ENT_QUOTES, 'UTF-8'); ?></div>
     </main>
   </div>
 
@@ -218,7 +218,7 @@
       n.textContent = 'Support is not available right now. Your request ' + (ref || '') + ' has been sent to our IT team (' + IT_EMAIL + '). They will get back to you on the phone number you gave.';
     } else if (st === 'closed') {
       n.hidden = false;
-      n.textContent = 'This chat has ended. Thank you for contacting Seven Strokes.';
+      n.textContent = 'This chat has ended. Thank you for contacting us.';
     } else {
       n.hidden = true;
     }

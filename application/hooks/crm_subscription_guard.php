@@ -4,7 +4,7 @@
  * Sales CRM subscription guard (post_controller_constructor hook).
  *
  * Only works when the check is switched on (System > Integrations > Third-Party API > Subscription).
- * If the 7strokes portal says the subscription is not active, staff who are signed in are signed out
+ * If the subscription portal says the subscription is not active, staff who are signed in are signed out
  * with a message; full admins stay in (they see a notice and can renew). The portal's answer is kept
  * for an hour, so this costs one settings read per page.
  */

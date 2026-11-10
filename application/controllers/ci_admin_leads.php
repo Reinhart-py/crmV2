@@ -2919,7 +2919,7 @@ $data['info2']=$this->if_not_login();
 			'city' => $city,
 			'poc2' => $poc2,
 			'contact2' => $contact2,
-			'c_partner' => !empty($c_partner) ? $c_partner : 'Seven Strokes',
+			'c_partner' => !empty($c_partner) ? $c_partner : crm_brand_company(),
 			'otc' => $otc,
 			'lead_cat' => $lead_cat,
 			'lead_assign' => $assigned_user_id,
@@ -3007,7 +3007,7 @@ $data['info2']=$this->if_not_login();
 		fputcsv($output, $headers);
 
 		$sample_row = array(
-			'admin@7strokes.com',
+			'agent@example.com',
 			'Sample Enterprise LLC',
 			'John Doe',
 			'+971 50 123 4567',

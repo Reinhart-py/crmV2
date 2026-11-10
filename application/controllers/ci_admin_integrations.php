@@ -191,7 +191,7 @@ class Ci_admin_integrations extends CI_Controller {
 		}
 
 		if ($service === 'subscription') {
-			// Ask the 7strokes portal now (does not switch the check on or off)
+			// Ask the subscription portal now (does not switch the check on or off)
 			$this->load->model('subscription_model');
 			if (!$this->subscription_model->enabled($this->subscription_model->row())) {
 				$r2 = $this->subscription_model->row();

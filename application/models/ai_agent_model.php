@@ -108,7 +108,7 @@ class Ai_agent_model extends CI_Model
 		$cfg = !empty($row['config_json']) ? json_decode($row['config_json'], true) : array();
 		if (!is_array($cfg)) $cfg = array();
 		$s = array_merge(array(
-			'provider' => '', 'phone_number_id' => '', 'from_number' => '', 'country_code' => '971', 'company' => '7 Strokes',
+			'provider' => '', 'phone_number_id' => '', 'from_number' => '', 'country_code' => '971', 'company' => crm_brand_company(),
 			'timezone' => 'Asia/Dubai', 'concurrency' => 3, 'webhook_key' => '', 'model' => 'gpt-4o-mini',
 			'google_project' => '', 'google_location' => 'global', 'google_agent_id' => '', 'google_language' => 'en'
 		), $cfg);
@@ -147,7 +147,7 @@ class Ai_agent_model extends CI_Model
 			'phone_number_id' => substr(trim($in['phone_number_id']), 0, 100),
 			'from_number' => $this->e164($in['from_number'], preg_replace('/\D/', '', $in['country_code']) ?: '971'),
 			'country_code' => substr(preg_replace('/\D/', '', $in['country_code']), 0, 4) ?: '971',
-			'company' => substr(trim($in['company']), 0, 100) ?: '7 Strokes',
+			'company' => substr(trim($in['company']), 0, 100) ?: crm_brand_company(),
 			'timezone' => in_array($in['timezone'], timezone_identifiers_list(), true) ? $in['timezone'] : 'Asia/Dubai',
 			'concurrency' => max(1, min(20, (int)$in['concurrency'])),
 			'model' => preg_match('~^[\w.\-]{2,60}$~', $in['model']) ? $in['model'] : 'gpt-4o-mini',
@@ -181,7 +181,7 @@ class Ai_agent_model extends CI_Model
 	public function renew_webhook_key()
 	{
 		$s = $this->settings();
-		if (!$s['exists']) $this->save_settings(array('provider' => '', 'phone_number_id' => '', 'from_number' => '', 'country_code' => '971', 'company' => '7 Strokes', 'timezone' => 'Asia/Dubai', 'concurrency' => 3, 'model' => 'gpt-4o-mini', 'endpoint' => '', 'enabled' => 0), '');
+		if (!$s['exists']) $this->save_settings(array('provider' => '', 'phone_number_id' => '', 'from_number' => '', 'country_code' => '971', 'company' => crm_brand_company(), 'timezone' => 'Asia/Dubai', 'concurrency' => 3, 'model' => 'gpt-4o-mini', 'endpoint' => '', 'enabled' => 0), '');
 		$row = $this->db->where('service_name', 'ai_voice')->get('ci_integration_settings')->row_array();
 		$cfg = json_decode($row['config_json'], true) ?: array();
 		$cfg['webhook_key'] = bin2hex(random_bytes(16));
@@ -248,7 +248,7 @@ class Ai_agent_model extends CI_Model
 	public function build_prompt($a, $call = array())
 	{
 		$s = $this->settings();
-		$company = $s['company'];
+		$company = trim((string)$s['company']) !== '' ? $s['company'] : 'our company';
 		$fill = function ($t) use ($a, $call, $company) {
 			return strtr((string)$t, array(
 				'{contact}' => !empty($call['contact']) ? $call['contact'] : 'the customer',
@@ -292,7 +292,7 @@ class Ai_agent_model extends CI_Model
 		return strtr($t, array(
 			'{contact}' => !empty($call['contact']) ? $call['contact'] : 'there',
 			'{customer}' => !empty($call['customer']) ? $call['customer'] : 'your company',
-			'{agent}' => $a['name'], '{company}' => $s['company']
+			'{agent}' => $a['name'], '{company}' => (trim((string)$s['company']) !== '' ? $s['company'] : 'our company')
 		));
 	}
 

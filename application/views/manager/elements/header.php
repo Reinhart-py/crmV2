@@ -1,21 +1,21 @@
-<?php $crm_view_now = function_exists('crm_view') ? crm_view() : 'classic'; $crm_is_modern = ($crm_view_now === 'modern'); ?>
+<?php require_once APPPATH . 'helpers/crm_brand_helper.php'; ?><?php $crm_view_now = function_exists('crm_view') ? crm_view() : 'classic'; $crm_is_modern = ($crm_view_now === 'modern'); ?>
 <!DOCTYPE html>
 <html<?php echo $crm_is_modern ? ' class="crm-modern"' : ''; ?>>
 <head>
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
     
-<link rel="shortcut icon" href="<?php echo base_url(); ?>assets/logo.png" type="image/png">
-<link rel="icon" type="image/png" sizes="64x64" href="<?php echo base_url(); ?>assets/logo.png">
-<link rel="icon" type="image/png" sizes="32x32" href="<?php echo base_url(); ?>assets/logo.png">
-<link rel="icon" type="image/png" sizes="16x16" href="<?php echo base_url(); ?>assets/logo.png">
-<link rel="apple-touch-icon" href="<?php echo base_url(); ?>assets/logo.png">
+<link rel="shortcut icon" href="<?php echo base_url(); ?>assets/sales-crm-mark.png" type="image/png">
+<link rel="icon" type="image/png" sizes="64x64" href="<?php echo base_url(); ?>assets/sales-crm-mark.png">
+<link rel="icon" type="image/png" sizes="32x32" href="<?php echo base_url(); ?>assets/sales-crm-mark.png">
+<link rel="icon" type="image/png" sizes="16x16" href="<?php echo base_url(); ?>assets/sales-crm-mark.png">
+<link rel="apple-touch-icon" href="<?php echo base_url(); ?>assets/sales-crm-mark.png">
 <meta property="og:title" content="<?php echo !empty($info['title']) ? htmlspecialchars($info['title']) : 'Sales CRM'; ?>">
 <meta property="og:description" content="Sales CRM Platform">
-<meta property="og:image" content="<?php echo base_url(); ?>assets/logo.png">
+<meta property="og:image" content="<?php echo base_url(); ?>assets/sales-crm-mark.png">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="<?php echo base_url(); ?>assets/logo.png">
+<meta name="twitter:image" content="<?php echo base_url(); ?>assets/sales-crm-mark.png">
 
     
 <title><?php echo htmlspecialchars((string)$info['title'], ENT_QUOTES, 'UTF-8', false); ?></title>
@@ -62,7 +62,7 @@
 <link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-modes.css?v=20261110_5">
 <?php if ($crm_is_modern) { ?><link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-modern.css?v=20261110_21"><?php } ?>
 <link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-search.css?v=20261107_4">
-<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-soft.css?v=20261111_1">
+<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-soft.css?v=20261111_3">
 <script src="<?php echo base_url();?>assets/dist/js/crm-search.js?v=20261107_2" defer></script>
 
 
@@ -93,8 +93,7 @@
 
   <div class="main-logo">
     <a href="<?php echo base_url(); ?>manager/dashboard"> 
-      <img src="<?php echo base_url(); ?>assets/logo-header.png" alt="7 Strokes" class="logo-light" />
-      <img src="<?php echo base_url(); ?>assets/logo-header-dark.png" alt="7 Strokes" class="logo-dark" />
+      <?php echo crm_brand_mark('header'); ?>
     </a> 
   </div>
 
@@ -439,7 +438,7 @@ $(function() {
       try {
         var notif = new Notification(n.title, {
           body: n.message,
-          icon: '<?php echo base_url(); ?>assets/logo.png'
+          icon: '<?php echo base_url(); ?>assets/sales-crm-mark.png'
         });
         notif.onclick = function() {
           window.focus();
@@ -666,8 +665,7 @@ $(function() {
 <aside class="main-sidebar"> 
   
   <div class="crm-sidebar-header">
-    <img src="<?php echo base_url(); ?>assets/logo-header.png" alt="7 Strokes" class="logo-light" />
-    <img src="<?php echo base_url(); ?>assets/logo-header-dark.png" alt="7 Strokes" class="logo-dark" />
+    <?php echo crm_brand_mark('header'); ?>
     <button type="button" class="crm-sidebar-close" id="crmSidebarClose" aria-label="Close navigation">&times;</button>
     <?php if ($crm_is_modern) { ?><button type="button" class="md2-mini-btn" id="md2MiniBtn" title="Make the side pane smaller or larger" aria-label="Make the side pane smaller or larger"><i class="fa fa-angle-double-left"></i></button><?php } ?>
   </div>
@@ -763,7 +761,7 @@ if (function_exists('crm_is_full_admin') && crm_is_full_admin()) {
   }
 }
 if ($crm_sub_note !== '') { ?>
-<div id="crmSubNote" class="crm-sub-note" role="status"><i class="fa fa-exclamation-triangle"></i> <span><?php echo htmlspecialchars($crm_sub_note); ?></span><?php if ($crm_sub_link !== '') { ?> <a href="<?php echo htmlspecialchars($crm_sub_link); ?>" target="_blank" rel="noopener">Renew on 7strokes</a><?php } ?></div>
+<div id="crmSubNote" class="crm-sub-note" role="status"><i class="fa fa-exclamation-triangle"></i> <span><?php echo htmlspecialchars($crm_sub_note); ?></span><?php if ($crm_sub_link !== '') { ?> <a href="<?php echo htmlspecialchars($crm_sub_link); ?>" target="_blank" rel="noopener">Renew subscription</a><?php } ?></div>
 <style>
   .crm-sub-note { margin:10px 20px 0; padding:9px 14px; border-radius:10px; background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; font-size:13px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
   .crm-sub-note a { font-weight:700; color:#c2410c; text-decoration:underline; }

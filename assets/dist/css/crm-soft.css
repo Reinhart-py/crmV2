@@ -121,3 +121,14 @@ html.crm-modern .md2-me { border-radius: 14px !important; }
 .full-screen-dash :is(.card-total-pill, .badge) { border-radius: 999px !important; }
 .full-screen-dash .btn { border-radius: var(--soft-r-sm) !important; }
 .full-screen-dash canvas { border-radius: 8px; }
+
+/* ---------- Company mark in the top bar (Classic view) ---------- */
+.main-header .main-logo .crm-mark b { max-width: 160px; }
+.main-header .main-logo .crm-mark img.crm-mark-ico, .main-header .main-logo img.crm-client-logo { height: auto !important; }
+@media (min-width: 992px) and (max-width: 1280px) {
+  .main-header .main-logo .crm-mark b { display: none; }
+}
+/* Small side pane: icon / logo only */
+html.crm-modern.crm-side-mini .main-sidebar .crm-sidebar-header .crm-mark b { display: none; }
+html.crm-modern .main-sidebar .crm-sidebar-header .crm-mark { min-width: 0; }
+html.crm-modern .main-sidebar .crm-sidebar-header .crm-mark b { max-width: 150px; }

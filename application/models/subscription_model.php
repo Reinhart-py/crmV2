@@ -1,9 +1,9 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 /**
- * Sales CRM subscription on the 7strokes portal (the landing page).
+ * Sales CRM subscription on the subscription portal (where the client signed up).
  *
  * Settings: System > Integrations > Third-Party API > Subscription (ci_integration_settings, service 'subscription'):
- *   endpoint            portal address, e.g. https://7strokes.ae or http://localhost:8000
+ *   endpoint            portal address, e.g. https://portal.example.com or http://localhost:8000
  *   api_secret          the portal's app secret (portal/data/app-secret)
  *   config.account_email the subscribing company's account email on the portal
  *   config.product      product on the portal (default 'crm')
@@ -59,7 +59,7 @@ class Subscription_model extends CI_Model
 			return $j;
 		}
 		if ($code === 401) return array('allowed' => false, 'reachable' => true, 'reason' => 'The portal did not accept the app secret. Check it on the Subscription settings.');
-		return array('allowed' => false, 'reachable' => false, 'reason' => 'The 7strokes portal could not be reached' . ($err ? ' (' . $err . ')' : ($code ? ' (answer ' . $code . ')' : '')) . '.');
+		return array('allowed' => false, 'reachable' => false, 'reason' => 'The subscription portal could not be reached' . ($err ? ' (' . $err . ')' : ($code ? ' (answer ' . $code . ')' : '')) . '.');
 	}
 
 	/**

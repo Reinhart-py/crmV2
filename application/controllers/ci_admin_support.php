@@ -319,7 +319,7 @@ class Ci_admin_support extends CI_Controller {
 			return $this->json(array('ok' => false, 'error' => 'Chat not found.'), 404);
 		}
 		if ($chat['status'] !== 'closed') {
-			$this->support_model->add_message($chat['id'], 'system', 'Support closed the chat. Thank you for contacting Seven Strokes.');
+			$this->support_model->add_message($chat['id'], 'system', 'Support closed the chat. Thank you for contacting us.');
 			$this->support_model->set_status($chat['id'], 'closed', (int)$chat['agent_id'] === 0 ? array('agent_id' => $this->uid) : array());
 		}
 		$this->json(array('ok' => true));

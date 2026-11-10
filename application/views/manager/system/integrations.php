@@ -14,7 +14,7 @@ $tabs = array(
   'whatsapp' => array('WhatsApp Business', 'fa-whatsapp'),
   'schedule_cron' => array('Schedules & reminders', 'fa-clock-o'),
   'helpdesk' => array('Help centre', 'fa-life-ring'),
-  'subscription' => array('Subscription (7strokes)', 'fa-id-card-o'),
+  'subscription' => array('Subscription', 'fa-id-card-o'),
 );
 $n_on = 0; foreach ($tabs as $k => $t) if ($on($k)) $n_on++;
 $cron_key = $S['schedule_cron']['api_key'] !== '' ? $S['schedule_cron']['api_key'] : bin2hex(random_bytes(12));
@@ -142,7 +142,7 @@ $foot = function ($srv, $test_label) use ($can_edit) {
                 <div class="form-group"><label>Port</label><input type="number" name="config[smtp_port]" class="form-control" value="<?php echo $x($cv('email_smtp', 'smtp_port', '587')); ?>" required /></div>
                 <div class="form-group"><label>Username</label><input type="text" name="config[smtp_user]" class="form-control" value="<?php echo $x($cv('email_smtp', 'smtp_user')); ?>" /></div>
                 <div class="form-group"><label>Password</label><input type="password" name="config[smtp_pass]" class="form-control" autocomplete="new-password" placeholder="<?php echo $cv('email_smtp', 'smtp_pass') !== '' ? 'Saved - leave blank to keep it' : 'Enter the SMTP password'; ?>" /></div>
-                <div class="form-group"><label>From email</label><input type="email" name="config[from_email]" class="form-control" value="<?php echo $x($cv('email_smtp', 'from_email', 'noreply@7strokes.com')); ?>" /></div>
+                <div class="form-group"><label>From email</label><input type="email" name="config[from_email]" class="form-control" value="<?php echo $x($cv('email_smtp', 'from_email')); ?>" placeholder="noreply@yourcompany.com" /></div>
                 <div class="form-group"><label>From name</label><input type="text" name="config[from_name]" class="form-control" value="<?php echo $x($cv('email_smtp', 'from_name', 'Sales CRM')); ?>" /></div>
                 <div class="form-group"><label>Encryption</label>
                   <select name="config[smtp_crypto]" class="form-control">
@@ -202,7 +202,7 @@ $foot = function ($srv, $test_label) use ($can_edit) {
                 <div class="form-group wide"><label>Daily reminder address (run once a day from the server's cron)</label><div class="in-copy"><input type="text" class="form-control mono" readonly value="<?php echo base_url(); ?>cron/daily_schedule_reminders?key=<?php echo $x($cron_key); ?>" /><button type="button" class="btn btn-default in-copy-btn" title="Copy"><i class="fa fa-copy"></i></button></div></div>
                 <?php } ?>
                 <div class="form-group"><label>Remind this many days before</label><input type="number" min="1" max="30" name="config[notice_days]" class="form-control" value="<?php echo $x($cv('schedule_cron', 'notice_days', '3')); ?>" required /></div>
-                <div class="form-group"><label>Admin notification email</label><input type="email" name="config[notify_email]" class="form-control" value="<?php echo $x($cv('schedule_cron', 'notify_email', 'compliance@7strokes.com')); ?>" /></div>
+                <div class="form-group"><label>Admin notification email</label><input type="email" name="config[notify_email]" class="form-control" value="<?php echo $x($cv('schedule_cron', 'notify_email')); ?>" placeholder="compliance@yourcompany.com" /></div>
                 <div class="form-group"><label>Daily sending</label><?php echo $status_sel('schedule_cron', 'Running', 'Paused'); ?></div>
               </div></div>
               </fieldset>
@@ -219,8 +219,8 @@ $foot = function ($srv, $test_label) use ($can_edit) {
               <input type="hidden" name="service_name" value="helpdesk" />
               <fieldset <?php echo $can_edit ? '' : 'disabled'; ?>>
               <div class="sx-card-b"><div class="in-grid">
-                <div class="form-group"><label>Support email</label><input type="email" name="config[support_email]" class="form-control" value="<?php echo $x($cv('helpdesk', 'support_email', 'support@7strokes.com')); ?>" required /></div>
-                <div class="form-group"><label>Escalation manager email</label><input type="email" name="config[escalation_email]" class="form-control" value="<?php echo $x($cv('helpdesk', 'escalation_email', 'escalations@7strokes.com')); ?>" /></div>
+                <div class="form-group"><label>Support email</label><input type="email" name="config[support_email]" class="form-control" value="<?php echo $x($cv('helpdesk', 'support_email')); ?>" placeholder="support@yourcompany.com" required /></div>
+                <div class="form-group"><label>Escalation manager email</label><input type="email" name="config[escalation_email]" class="form-control" value="<?php echo $x($cv('helpdesk', 'escalation_email')); ?>" placeholder="escalations@yourcompany.com" /></div>
                 <div class="form-group wide"><label>External ticket portal (optional)</label><input type="url" name="endpoint" class="form-control" placeholder="https://support.example.com" value="<?php echo $x($S['helpdesk']['endpoint']); ?>" /></div>
                 <div class="form-group"><label>Status</label><?php echo $status_sel('helpdesk'); ?></div>
               </div></div>
@@ -230,18 +230,18 @@ $foot = function ($srv, $test_label) use ($can_edit) {
           </div>
         </div>
 
-        <!-- Sales CRM subscription on the 7strokes portal -->
+        <!-- Sales CRM subscription on the subscription portal -->
         <?php $sub_last = $cv('subscription', 'last_result', array()); $sub_at = (int)$cv('subscription', 'last_check_at', 0); ?>
         <div class="in-pane" id="tab_subscription">
           <div class="sx-card">
-            <div class="sx-card-h"><h3><i class="fa fa-id-card-o"></i> Sales CRM subscription (7strokes portal)</h3><div class="sx-tools"><?php echo $stat('subscription', 'Check on', 'Check off'); ?></div></div>
-            <div class="sx-card-b" style="padding-bottom:0;"><p class="sx-help"><i class="fa fa-info-circle"></i> When the check is on, the CRM asks the 7strokes portal whether the company's Sales CRM subscription is active. If it is not, staff cannot sign in (admins still can, to renew). If the portal cannot be reached, the CRM keeps working on the last good answer for 24 hours. With the check off, the CRM works on its own as before.</p>
+            <div class="sx-card-h"><h3><i class="fa fa-id-card-o"></i> Sales CRM subscription</h3><div class="sx-tools"><?php echo $stat('subscription', 'Check on', 'Check off'); ?></div></div>
+            <div class="sx-card-b" style="padding-bottom:0;"><p class="sx-help"><i class="fa fa-info-circle"></i> When the check is on, the CRM asks the subscription portal whether the company's Sales CRM subscription is active. If it is not, staff cannot sign in (admins still can, to renew). If the portal cannot be reached, the CRM keeps working on the last good answer for 24 hours. With the check off, the CRM works on its own as before.</p>
             <?php if ($sub_at && is_array($sub_last)) { ?><p class="sx-help">Last answer from the portal (<?php echo date('d M Y, h:i A', $sub_at); ?>): <b><?php echo !empty($sub_last['allowed']) ? 'active' : 'not active'; ?></b><?php echo !empty($sub_last['plan']) ? ', plan ' . $x($sub_last['plan']) : ''; ?><?php echo !empty($sub_last['validUntil']) ? ', valid until ' . date('d M Y', strtotime($sub_last['validUntil'])) : ''; ?><?php echo empty($sub_last['allowed']) && !empty($sub_last['reason']) ? ' - ' . $x($sub_last['reason']) : ''; ?></p><?php } ?></div>
             <form action="<?php echo base_url(); ?>manager/system/integrations/save" method="post" autocomplete="off">
               <input type="hidden" name="service_name" value="subscription" />
               <fieldset <?php echo $can_edit ? '' : 'disabled'; ?>>
               <div class="sx-card-b"><div class="in-grid">
-                <div class="form-group wide"><label>Portal address</label><input type="url" name="endpoint" class="form-control" placeholder="https://7strokes.ae" value="<?php echo $x($S['subscription']['endpoint'] ?: 'http://localhost:8000'); ?>" required /></div>
+                <div class="form-group wide"><label>Portal address</label><input type="url" name="endpoint" class="form-control" placeholder="https://portal.example.com" value="<?php echo $x($S['subscription']['endpoint'] ?: 'http://localhost:8000'); ?>" required /></div>
                 <div class="form-group wide"><label>Portal app secret</label><input type="password" name="api_secret" class="form-control" autocomplete="new-password" placeholder="<?php echo !empty($S['subscription']['api_secret']) ? 'Saved - leave blank to keep it' : 'From the portal (data/app-secret)'; ?>" /></div>
                 <div class="form-group"><label>Company account email on the portal</label><input type="email" name="config[account_email]" class="form-control" value="<?php echo $x($cv('subscription', 'account_email')); ?>" /></div>
                 <div class="form-group"><label>Product on the portal</label><input type="text" name="config[product]" class="form-control mono" value="<?php echo $x($cv('subscription', 'product', 'crm')); ?>" /></div>

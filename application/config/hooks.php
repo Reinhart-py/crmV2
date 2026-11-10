@@ -30,7 +30,7 @@ $hook['pre_system'][] = array(
 	'filepath' => 'hooks',
 );
 
-// Sales CRM subscription on the 7strokes portal: see application/hooks/crm_subscription_guard.php
+// Sales CRM subscription on the subscription portal: see application/hooks/crm_subscription_guard.php
 $hook['post_controller_constructor'][] = array(
 	'class'    => '',
 	'function' => 'crm_subscription_guard',
