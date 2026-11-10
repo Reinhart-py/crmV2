@@ -35,7 +35,8 @@
         $last = (isset($sub_row['config']['last_result']) && is_array($sub_row['config']['last_result'])) ? $sub_row['config']['last_result'] : array();
         $cand = !empty($last['logoUrl']) ? (string)$last['logoUrl'] : (isset($_GET['brand']) ? (string)$_GET['brand'] : '');
         if ($portal !== '' && strpos($cand, $portal . '/brand/') === 0 && preg_match('~/brand/[a-f0-9]{24}$~', $cand)) $client_logo = $cand;
-        $client_name = !empty($last['company']) ? (string)$last['company'] : (isset($_GET['company']) ? substr((string)$_GET['company'], 0, 120) : '');
+        // The name comes only from the portal's own answer, never from the link (anyone can edit a link).
+        $client_name = !empty($last['company']) ? substr((string)$last['company'], 0, 120) : '';
       }
       ?>
       <?php if ($client_logo) { ?>
