@@ -134,7 +134,8 @@ class Ci_admin_calls extends CI_Controller
 		$this->db->where('(A.status_category IS NULL OR (LOWER(A.status_category) NOT LIKE "%won%" AND LOWER(A.status_category) NOT LIKE "%closed%"))');
 
 		$this->db->where('(A.dnd_status IS NULL OR (LOWER(A.dnd_status) != "dncr" AND LOWER(A.dnd_status) != "dnd" AND LOWER(A.dnd_status) != "yes" AND LOWER(A.dnd_status) != "y"))');
-		$this->db->where('(A.remark IS NULL OR (LOWER(A.remark) NOT LIKE "%dncr%" AND LOWER(A.remark) NOT LIKE "%dnd%"))');
+		// DNCR / DND written as a word in the remark (not inside words like "Wednesday").
+		$this->db->where("(A.remark IS NULL OR LOWER(A.remark) NOT REGEXP '(^|[^a-z])(dncr|dnd)([^a-z]|$)')", null, false);
 
 		switch ($status_filter) {
 			case 'follow_up':
