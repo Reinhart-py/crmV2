@@ -125,10 +125,17 @@ class Ci_admin extends CI_Controller {
 			$data['users']= $this->comman_model->getAll(array('c_username'=>$email,'c_password'=>$password,'status'=>1),'','ci_user','first');
 			if(!empty($data['users']))
 			{
+				// Login disabled, or marked as left (on the staff profile or by the HR link): no sign-in
+				require_once APPPATH . 'helpers/crm_permission_helper.php';
+				$closed = crm_account_closed_msg((int)$data['users']['id']);
+				if ($closed !== '') {
+					$this->ci_admin_model->log_admin_action('login_failed', 'Sign-in refused, login disabled or left: ' . $email, 'FAILED', $data['users']['id'], $data['users']['name']);
+					$this->session->set_flashdata('error_message', $closed);
+					redirect('manager/login');
+				}
 				// Sales CRM subscription on the subscription portal (only when switched on in Third-Party API > Subscription).
 				// Asked fresh at every sign-in. Stopped by the portal (payment issue): nobody signs in, they go to the renew page.
 				// Portal can't be asked properly (wrong secret, down): admins can still sign in to sort it out.
-				require_once APPPATH . 'helpers/crm_permission_helper.php';
 				$this->load->model('subscription_model');
 				$sub = $this->subscription_model->state(true);
 				if (empty($sub['allowed']) && !empty($sub['portal_refused'])) {
@@ -142,15 +149,6 @@ class Ci_admin extends CI_Controller {
 					$this->ci_admin_model->log_admin_action('login_failed', 'Sign-in refused, Sales CRM subscription not active: ' . $email, 'FAILED', $data['users']['id'], $data['users']['name']);
 					$this->session->set_flashdata('error_message', 'The Sales CRM subscription is not active' . (!empty($sub['reason']) ? ' (' . rtrim($sub['reason'], '. ') . ')' : '') . '. Please ask your administrator to renew it.');
 					redirect("manager/login");
-				}
-				// HR link: someone HR marked as left cannot sign in (until an admin uses Rejoin on their profile)
-				if ($this->db->table_exists('ci_suite_staff')) {
-					$this->load->model('suite_link_model');
-					if ($this->suite_link_model->blocked((int)$data['users']['id'])) {
-						$this->ci_admin_model->log_admin_action('login_failed', 'Sign-in refused, left in HR: ' . $email, 'FAILED', $data['users']['id'], $data['users']['name']);
-						$this->session->set_flashdata('error_message', 'Your account has been closed. Please contact your administrator.');
-						redirect('manager/login');
-					}
 				}
 				$session_token = md5(uniqid(mt_rand(), true));
 				$client_ip = $this->ci_admin_model->get_client_ip();

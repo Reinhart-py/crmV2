@@ -882,3 +882,22 @@ if (!function_exists('crm_view')) {
 		return $v;
 	}
 }
+
+if (!function_exists('crm_account_closed_msg')) {
+	/**
+	 * Why this user may not use the CRM: login disabled on the staff profile, or marked as left
+	 * (staff profile "Left", or the HR link). Returns the sign-in message, or '' when the account is open.
+	 */
+	function crm_account_closed_msg($uid)
+	{
+		$ci =& get_instance();
+		if (!isset($ci->db)) $ci->load->database();
+		$u = $ci->db->select('admin_status')->where('id', (int)$uid)->get('ci_user')->row_array();
+		if (!$u) return '';
+		if ($ci->db->table_exists('ci_user_exit') && $ci->db->where('user_id', (int)$uid)->count_all_results('ci_user_exit') > 0) {
+			return 'Your account has been closed. Please contact your administrator.';
+		}
+		if ((int)$u['admin_status'] !== 1) return 'Your login is disabled. Please contact your administrator.';
+		return '';
+	}
+}

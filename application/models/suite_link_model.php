@@ -522,13 +522,6 @@ class Suite_link_model extends CI_Model
 		return array_map('intval', array_column($this->db->query('SELECT DISTINCT user_id FROM ci_suite_leave WHERE user_id > 0 AND start_date <= ? AND end_date >= ?', array($day, $day))->result_array(), 'user_id'));
 	}
 
-	/** True when HR says this user left and they have not rejoined in the CRM. */
-	public function blocked($uid)
-	{
-		$this->ensure();
-		return $this->db->query("SELECT 1 FROM ci_suite_staff S JOIN ci_user_exit X ON X.user_id = S.user_id WHERE S.user_id = ? AND S.state = 'exited' LIMIT 1", array((int)$uid))->num_rows() > 0;
-	}
-
 	/* ---------------- lists for the page ---------------- */
 
 	public function lists()
