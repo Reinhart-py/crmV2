@@ -1,0 +1,123 @@
+/*
+ * Text and corners for every page, both views (Classic and Modern), light and dark.
+ * Loaded last. The TV presentation (.full-screen-dash) keeps its own look.
+ *
+ * Text:    Inter for reading text, Plus Jakarta Sans for titles; 14px base.
+ * Corners: cards 16px, small cards / menus 12px, buttons and fields 10px, side pane rounded on the right.
+ */
+:root, html.crm-modern, html.crm-modern[data-theme="dark"] {
+  --soft-font: 'Inter', 'Plus Jakarta Sans', -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --soft-title: 'Plus Jakarta Sans', 'Inter', -apple-system, 'Segoe UI', sans-serif;
+  --soft-r-lg: 16px;
+  --soft-r-md: 12px;
+  --soft-r-sm: 10px;
+  --crm-radius: 10px;
+  --md2-radius: 16px;
+}
+
+/* ---------- Text ---------- */
+body:not(.full-screen-dash) {
+  font-family: var(--soft-font) !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "cv11", "ss01";
+}
+body:not(.full-screen-dash) .content-wrapper :is(h1, h2, h3, h4, h5, .box-title, .modal-title, .sx-card-h h3) {
+  font-family: var(--soft-title) !important;
+  letter-spacing: -.01em;
+}
+body:not(.full-screen-dash) .content-wrapper :is(h1, h2, h3, h4, .box-title, .modal-title, .sx-card-h h3) { font-weight: 700 !important; }
+.modal .modal-title { font-family: var(--soft-title) !important; font-weight: 700 !important; font-size: 17px !important; }
+
+/* Numbers line up in tables and figures */
+.content-wrapper :is(table, .sx-kpi b, .small-box h3, .info-box-number) { font-variant-numeric: tabular-nums; }
+
+/* Body text, fields and buttons */
+.content-wrapper :is(p, li, dd, .help-block, .sx-help):not(.full-screen-dash *) { line-height: 1.55; }
+.content-wrapper label:not(.full-screen-dash *) { font-size: 13px; font-weight: 600; }
+.form-control:not(.full-screen-dash *),
+.select2-container--default .select2-selection--single .select2-selection__rendered,
+.select2-container--default .select2-selection--multiple { font-size: 14px !important; }
+.btn:not(.full-screen-dash *):not(.btn-xs):not(.btn-sm) { font-size: 13.5px !important; }
+.btn-sm:not(.full-screen-dash *) { font-size: 12.5px !important; }
+
+/* Tables */
+.content-wrapper .table > tbody > tr > td:not(.full-screen-dash *) { font-size: 13.5px !important; line-height: 1.5; }
+.content-wrapper .table > thead > tr > th:not(.full-screen-dash *) { font-size: 12.5px !important; font-weight: 600 !important; letter-spacing: .01em; }
+.content-wrapper .table.crm-list-table > tbody > tr > td:not(.full-screen-dash *) { font-size: 14px !important; }
+
+/* Menus */
+.dropdown-menu > li > a, .google-profile-dropdown a { font-size: 13.5px; }
+html.crm-modern body .main-sidebar .sidebar-menu > li > a { font-size: 14px !important; }
+html.crm-modern body .main-sidebar .sidebar-menu .treeview-menu > li > a { font-size: 13.5px !important; }
+
+/* ---------- Rounded corners ---------- */
+/* Cards and panels */
+.content-wrapper :is(.box, .sx-card, .panel, .info-box, .small-box, .nav-tabs-custom, .md-card, .well):not(.full-screen-dash *) { border-radius: var(--soft-r-lg) !important; }
+.content-wrapper .box > .box-header:not(.full-screen-dash *),
+.content-wrapper .panel > .panel-heading:not(.full-screen-dash *),
+.content-wrapper .sx-card > .sx-card-h:not(.full-screen-dash *) { border-radius: var(--soft-r-lg) var(--soft-r-lg) 0 0 !important; }
+.content-wrapper .box > .box-footer:not(.full-screen-dash *),
+.content-wrapper .panel > .panel-footer:not(.full-screen-dash *),
+.content-wrapper .sx-card > .sx-card-f:not(.full-screen-dash *) { border-radius: 0 0 var(--soft-r-lg) var(--soft-r-lg) !important; }
+.content-wrapper .small-box > .small-box-footer:not(.full-screen-dash *) { border-radius: 0 0 var(--soft-r-lg) var(--soft-r-lg); }
+.content-wrapper .info-box .info-box-icon:not(.full-screen-dash *) { border-radius: var(--soft-r-lg) 0 0 var(--soft-r-lg) !important; }
+
+/* Small cards, figures, notes */
+.content-wrapper :is(.sx-kpi, .alert, .callout, .db-funnel a, .pf-empty, .cv-empty, .crm-summary, .pf-details):not(.full-screen-dash *) { border-radius: var(--soft-r-md) !important; }
+.content-wrapper .sx-kpi .ic:not(.full-screen-dash *) { border-radius: var(--soft-r-sm) !important; }
+
+/* Charts: the drawing area and the frame around it */
+.content-wrapper canvas:not(.full-screen-dash *) { border-radius: var(--soft-r-sm); }
+.content-wrapper :is(.chart, .chart-container, .chart-responsive, [class*="chart-wrap"], [class*="chart-box"], [class*="-chart"]):not(canvas):not(.full-screen-dash *) { border-radius: var(--soft-r-md); }
+
+/* Buttons and fields */
+.btn:not(.full-screen-dash *) { border-radius: var(--soft-r-sm) !important; }
+.btn-group > .btn:not(:first-child):not(:last-child) { border-radius: 0 !important; }
+.btn-group > .btn:first-child:not(:last-child):not(.dropdown-toggle) { border-top-right-radius: 0 !important; border-bottom-right-radius: 0 !important; }
+.btn-group > .btn:last-child:not(:first-child), .btn-group > .dropdown-toggle:not(:first-child) { border-top-left-radius: 0 !important; border-bottom-left-radius: 0 !important; }
+.form-control:not(.full-screen-dash *),
+.select2-container--default .select2-selection,
+.input-group-addon,
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select { border-radius: var(--soft-r-sm) !important; }
+.input-group > .form-control:not(:last-child), .input-group > .input-group-addon:not(:last-child), .input-group-btn:not(:last-child) > .btn { border-top-right-radius: 0 !important; border-bottom-right-radius: 0 !important; }
+.input-group > .form-control:not(:first-child), .input-group > .input-group-addon:not(:first-child), .input-group-btn:not(:first-child) > .btn { border-top-left-radius: 0 !important; border-bottom-left-radius: 0 !important; }
+.select2-dropdown { border-radius: var(--soft-r-sm) !important; overflow: hidden; }
+.pagination > li > a, .pagination > li > span, .dataTables_paginate .paginate_button { border-radius: var(--soft-r-sm) !important; margin: 0 2px; }
+.content-wrapper :is(.label, .badge):not(.full-screen-dash *) { border-radius: 999px !important; }
+
+/* Pop-ups and menus */
+.modal-content { border-radius: 18px !important; overflow: hidden; }
+.dropdown-menu, .popover, .datepicker.dropdown-menu, .ui-datepicker, .bootstrap-timepicker-widget { border-radius: var(--soft-r-md) !important; }
+.dropdown-menu > li > a { border-radius: 8px; }
+.tooltip-inner { border-radius: 8px !important; }
+
+/* Top bar menu and tabs */
+ul.munk_menu { border-radius: 999px !important; }
+ul.munk_menu > li > a { border-radius: 999px !important; }
+ul.munk_menu ul { border-radius: var(--soft-r-md) !important; }
+.content-wrapper .nav-tabs > li > a { border-radius: var(--soft-r-sm) var(--soft-r-sm) 0 0; }
+.content-wrapper .nav-pills > li > a { border-radius: var(--soft-r-sm) !important; }
+
+/* Side pane (Modern view): rounded on the right, menu items rounded */
+@media (min-width: 768px) {
+  html.crm-modern body .main-sidebar {
+    border-radius: 0 22px 22px 0 !important;
+    box-shadow: 4px 0 24px rgba(31, 41, 79, .06);
+  }
+}
+html.crm-modern body .main-sidebar .sidebar-menu > li > a { border-radius: 12px !important; }
+html.crm-modern body .main-sidebar .sidebar-menu .treeview-menu > li > a { border-radius: 10px !important; }
+html.crm-modern .md2-me { border-radius: 14px !important; }
+
+/* ---------- Dashboards (fitted to the screen: same text size as before, softer corners) ---------- */
+.content-wrapper.full-screen-dash { font-size: 13px; }
+.full-screen-dash :is(.crm-modern-stat-card, .dash-kpi-card, .c5-card, .c3-card, .dash-chart-card, .dash-top-chart-card, .dash-round-card, .c6-chart-card, .dash-drilldown-panel, .sx-card, .box) { border-radius: 14px !important; }
+.full-screen-dash :is(.card-total-pill, .badge) { border-radius: 999px !important; }
+.full-screen-dash .btn { border-radius: var(--soft-r-sm) !important; }
+.full-screen-dash canvas { border-radius: 8px; }
