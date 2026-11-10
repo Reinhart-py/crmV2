@@ -126,10 +126,18 @@ class Ci_admin extends CI_Controller {
 			if(!empty($data['users']))
 			{
 				// Sales CRM subscription on the subscription portal (only when switched on in Third-Party API > Subscription).
-				// Admins can still sign in to sort it out; everyone else waits until it is renewed.
+				// Asked fresh at every sign-in. Stopped by the portal (payment issue): nobody signs in, they go to the renew page.
+				// Portal can't be asked properly (wrong secret, down): admins can still sign in to sort it out.
 				require_once APPPATH . 'helpers/crm_permission_helper.php';
 				$this->load->model('subscription_model');
-				$sub = $this->subscription_model->state();
+				$sub = $this->subscription_model->state(true);
+				if (empty($sub['allowed']) && !empty($sub['portal_refused'])) {
+					$this->ci_admin_model->log_admin_action('login_failed', 'Sign-in refused, Sales CRM subscription paused: ' . $email, 'FAILED', $data['users']['id'], $data['users']['name']);
+					$renew = $this->subscription_model->renew_url($sub);
+					if ($renew !== '') redirect($renew);
+					$this->session->set_flashdata('error_message', 'Access paused: payment issue with the Sales CRM subscription. Please renew it, or check with your administrator.');
+					redirect('manager/login');
+				}
 				if (empty($sub['allowed']) && !crm_is_full_admin((int)$data['users']['id'])) {
 					$this->ci_admin_model->log_admin_action('login_failed', 'Sign-in refused, Sales CRM subscription not active: ' . $email, 'FAILED', $data['users']['id'], $data['users']['name']);
 					$this->session->set_flashdata('error_message', 'The Sales CRM subscription is not active' . (!empty($sub['reason']) ? ' (' . rtrim($sub['reason'], '. ') . ')' : '') . '. Please ask your administrator to renew it.');

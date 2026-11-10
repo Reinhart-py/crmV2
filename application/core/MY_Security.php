@@ -15,7 +15,8 @@ class MY_Security extends CI_Security {
         'api/ai-calls/cron',
         'api/marketing/meta',
         'api/marketing/lead',
-        'api/marketing/cron'
+        'api/marketing/cron',
+        'api/subscription/events'
     );
 
     public function csrf_verify()

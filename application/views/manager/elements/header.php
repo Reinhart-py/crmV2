@@ -32,6 +32,23 @@
 
 <script src="<?php echo base_url(); ?>assets/plugins/jQuery/jquery-2.2.3.min.js"></script>
 <script src="<?php echo base_url(); ?>assets/bootstrap/js/bootstrap.min.js"></script>
+<script>
+/* Subscription stopped: any background call answers 401 SUBSCRIPTION_INACTIVE; open the renew page (or sign-in). */
+(function () {
+  var gone = false;
+  function go(j) { if (gone || !j || j.code !== 'SUBSCRIPTION_INACTIVE') return; gone = true; location.replace(j.redirect || '<?php echo base_url(); ?>manager/login'); }
+  if (window.jQuery) jQuery(document).ajaxError(function (e, xhr) { if (xhr && xhr.status === 401) { var j = xhr.responseJSON; if (!j) { try { j = JSON.parse(xhr.responseText); } catch (er) {} } go(j); } });
+  if (window.fetch) {
+    var f = window.fetch;
+    window.fetch = function () {
+      return f.apply(this, arguments).then(function (r) {
+        if (r.status === 401) { try { r.clone().json().then(go, function () {}); } catch (er) {} }
+        return r;
+      });
+    };
+  }
+})();
+</script>
 <script src="<?php echo base_url();?>assets/plugins/jQueryUI/jquery-ui.js"></script>
 
 

@@ -11,12 +11,14 @@
  *
  * The portal answers GET <endpoint>/api/entitlement?product=crm&email=... (Bearer app secret)
  * with { allowed, reason, subscribeUrl, accountUrl, status, plan, validUntil }.
- * The answer is kept for an hour; if the portal can't be reached, the last good answer counts for 24 hours.
+ * An "allowed" answer is kept for 60 seconds; a refusal is never kept (asked again on the next page).
+ * If the portal can't be reached, the last good answer counts for 24 hours.
+ * The portal also pushes every change to api/subscription/events (see handle_event).
  */
 class Subscription_model extends CI_Model
 {
 	const SERVICE = 'subscription';
-	const FRESH_SEC = 3600;
+	const FRESH_SEC = 60;
 	const OFFLINE_OK_SEC = 86400;
 
 	public function row()
@@ -56,6 +58,8 @@ class Subscription_model extends CI_Model
 		if ($code === 200 && is_array($j) && array_key_exists('allowed', $j)) {
 			$j['allowed'] = (bool)$j['allowed'];
 			$j['reachable'] = true;
+			// The portal itself says the subscription has stopped (payment failed, trial ended, cancelled...)
+			$j['portal_refused'] = !$j['allowed'];
 			return $j;
 		}
 		if ($code === 401) return array('allowed' => false, 'reachable' => true, 'reason' => 'The portal did not accept the app secret. Check it on the Subscription settings.');
@@ -73,13 +77,17 @@ class Subscription_model extends CI_Model
 		$c = $r['config'];
 		$last = isset($c['last_result']) && is_array($c['last_result']) ? $c['last_result'] : null;
 		$at = isset($c['last_check_at']) ? (int)$c['last_check_at'] : 0;
-		if (!$force && $last && time() - $at < self::FRESH_SEC) return $last + array('checked_at' => $at);
+		if (!$force && $last && empty($last['portal_refused']) && time() - $at < self::FRESH_SEC) return $last + array('checked_at' => $at);
 
 		$ans = $this->ask($r);
 		if (!$ans['reachable']) {
-			// Portal down: keep working on the last good answer for a day
+			// Portal down: keep working on the last good answer for a day (asked again after a minute, so pages stay quick)
 			$ok_at = isset($c['last_ok_at']) ? (int)$c['last_ok_at'] : 0;
-			if ($last && !empty($last['allowed']) && time() - $ok_at < self::OFFLINE_OK_SEC) return $last + array('checked_at' => $at, 'offline' => true);
+			if ($last && !empty($last['allowed']) && time() - $ok_at < self::OFFLINE_OK_SEC) {
+				$c['last_check_at'] = time();
+				$this->db->where('id', (int)$r['id'])->update('ci_integration_settings', array('config_json' => json_encode($c)));
+				return $last + array('checked_at' => time(), 'offline' => true);
+			}
 		}
 		unset($ans['reachable']);
 		$c['last_result'] = $ans;
@@ -87,6 +95,59 @@ class Subscription_model extends CI_Model
 		if (!empty($ans['allowed'])) $c['last_ok_at'] = time();
 		$this->db->where('id', (int)$r['id'])->update('ci_integration_settings', array('config_json' => json_encode($c)));
 		return $ans + array('checked_at' => time());
+	}
+
+	/** The portal's renew page for this answer, only when it is on the portal set in Subscription (…/renew). */
+	public function renew_url($st)
+	{
+		$r = $this->row();
+		$portal = $r ? rtrim(trim((string)$r['endpoint']), '/') : '';
+		$u = !empty($st['subscribeUrl']) ? (string)$st['subscribeUrl'] : '';
+		if ($portal === '' || $u === '') return '';
+		if ($u !== $portal . '/renew' && strpos($u, $portal . '/renew?') !== 0) return '';
+		return $u;
+	}
+
+	/**
+	 * A change pushed by the portal (POST api/subscription/events).
+	 * Returns array(http code, message). Signature: X-Suite-Signature = "sha256=" HMAC-SHA256 of "<timestamp>.<raw body>"
+	 * with the app secret; X-Suite-Timestamp no more than 5 minutes old.
+	 */
+	public function handle_event($raw, $ts, $sig)
+	{
+		$r = $this->row();
+		if (!$r || trim((string)$r['api_secret']) === '') return array(404, 'Subscription is not set up.');
+		$ts = (int)$ts;
+		if ($ts <= 0 || abs(time() - $ts) > 300) return array(401, 'Old or missing timestamp.');
+		$want = 'sha256=' . hash_hmac('sha256', $ts . '.' . $raw, trim($r['api_secret']));
+		if (!is_string($sig) || !hash_equals($want, trim($sig))) return array(401, 'Bad signature.');
+
+		$e = json_decode($raw, true);
+		$d = is_array($e) && isset($e['data']) && is_array($e['data']) ? $e['data'] : null;
+		if (!$d || !array_key_exists('allowed', $d)) return array(400, 'No subscription data.');
+		$c = $r['config'];
+		$product = !empty($c['product']) ? $c['product'] : 'crm';
+		if (isset($d['product']) && $d['product'] !== $product) return array(200, 'Other product, ignored.');
+		// Only this company's subscription counts (the account email set in Subscription)
+		$mine = strtolower(trim(isset($c['account_email']) ? (string)$c['account_email'] : ''));
+		$emails = isset($d['emails']) && is_array($d['emails']) ? array_map(function ($x) { return strtolower(trim((string)$x)); }, $d['emails']) : array();
+		if ($mine === '' || !in_array($mine, $emails, true)) return array(200, 'Other company, ignored.');
+
+		if (empty($d['allowed'])) {
+			$last = isset($c['last_result']) && is_array($c['last_result']) ? $c['last_result'] : array();
+			$c['last_result'] = array(
+				'allowed' => false, 'portal_refused' => true,
+				'reason' => isset($d['reason']) ? (string)$d['reason'] : 'The subscription is not active.',
+				'status' => isset($d['status']) ? (string)$d['status'] : '',
+				'subscribeUrl' => isset($d['renewUrl']) ? (string)$d['renewUrl'] : '',
+				'company' => isset($e['company']['name']) ? (string)$e['company']['name'] : (isset($last['company']) ? $last['company'] : ''),
+				'logoUrl' => isset($last['logoUrl']) ? $last['logoUrl'] : '',
+			);
+		}
+		// Either way the next page asks the portal again
+		$c['last_check_at'] = 0;
+		$this->db->where('id', (int)$r['id'])->update('ci_integration_settings', array('config_json' => json_encode($c)));
+		return array(200, 'ok');
 	}
 
 	/** Days left on the subscription (null when unknown). */
