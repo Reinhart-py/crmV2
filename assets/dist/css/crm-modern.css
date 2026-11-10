@@ -132,8 +132,9 @@ html.crm-modern body .main-sidebar .sidebar-menu > li > a > span:not(.pull-right
 html.crm-modern body .main-sidebar .sidebar-menu > li > a .crm-svg-ico,
 html.crm-modern body .main-sidebar .sidebar-menu > li > a > i.fa { margin-right: 0 !important; width: 18px; height: 18px; text-align: center; font-size: 15px; line-height: 18px; flex: none; color: var(--md2-side-ico) !important; opacity: 1; }
 html.crm-modern body .main-sidebar .sidebar-menu > li > a .pull-right-container { position: static !important; margin-left: auto; display: inline-flex; }
-html.crm-modern body .main-sidebar .sidebar-menu > li > a .sidebar-arrow { color: var(--md2-side-ico) !important; transition: transform .2s ease; font-size: 14px; }
-html.crm-modern body .main-sidebar .sidebar-menu > li.menu-open > a .sidebar-arrow { transform: rotate(-90deg); }
+html.crm-modern body .main-sidebar .sidebar-menu > li > a .sidebar-arrow { color: var(--md2-side-ico) !important; transition: transform .2s ease; font-size: 14px; transform: rotate(180deg) !important; }
+html.crm-modern body .main-sidebar .sidebar-menu > li.menu-open > a .sidebar-arrow,
+html.crm-modern body .main-sidebar .sidebar-menu > li.is-expanded > a .sidebar-arrow { transform: rotate(-90deg) !important; }
 html.crm-modern body .main-sidebar .sidebar-menu > li > a:hover { background: var(--md2-side-hover) !important; color: var(--md2-side-strong) !important; }
 html.crm-modern body .main-sidebar .sidebar-menu > li > a:hover .crm-svg-ico,
 html.crm-modern body .main-sidebar .sidebar-menu > li > a:hover > i.fa { color: var(--md2-side-bar) !important; }
