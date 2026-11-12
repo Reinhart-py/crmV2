@@ -208,6 +208,45 @@ class Subscription_model extends CI_Model
 		return $list;
 	}
 
+	/**
+	 * Where this company's own copies of HR & Payroll and E-Invoicing live (each client has its own copy).
+	 * Asks GET <portal>/api/apps?company=<id> (app secret). Returns array('hr' => url or '', 'einvoicing' => url or ''),
+	 * '' when the company has no copy yet; null when the portal could not be asked (not set up, or no answer).
+	 * Kept 5 minutes in the user's session (1 minute when there was no answer), so pages stay quick.
+	 */
+	public function app_copies()
+	{
+		$r = $this->row();
+		$cid = $r ? $this->company_id($r) : 0;
+		if (!$this->enabled($r) || $cid <= 0) return null;
+		$portal = rtrim(trim($r['endpoint']), '/');
+		$cache = $this->session->userdata('crm_portal_apps');
+		if (is_array($cache) && isset($cache['company'], $cache['portal'], $cache['at']) && array_key_exists('apps', $cache) && (int)$cache['company'] === $cid
+			&& $cache['portal'] === $portal && time() - (int)$cache['at'] < ($cache['apps'] === null ? 60 : 300)) return $cache['apps'];
+		$ch = curl_init($portal . '/api/apps?company=' . $cid);
+		curl_setopt_array($ch, array(
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_TIMEOUT => 4,
+			CURLOPT_CONNECTTIMEOUT => 3,
+			CURLOPT_HTTPHEADER => array('Authorization: Bearer ' . trim($r['api_secret']), 'Accept: application/json'),
+		));
+		$body = curl_exec($ch);
+		$code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
+		$j = $code === 200 && is_string($body) ? json_decode($body, true) : null;
+		$apps = null;
+		if (is_array($j) && isset($j['apps']) && is_array($j['apps']) && (int)(isset($j['company']) ? $j['company'] : 0) === $cid) {
+			$apps = array();
+			foreach (array('hr', 'einvoicing') as $k) {
+				$a = isset($j['apps'][$k]) && is_array($j['apps'][$k]) ? $j['apps'][$k] : array();
+				$u = !empty($a['ready']) && isset($a['appUrl']) && is_string($a['appUrl']) ? trim($a['appUrl']) : '';
+				$apps[$k] = preg_match('~^https?://[^\s"\'<>]+$~i', $u) ? $u : '';
+			}
+		}
+		$this->session->set_userdata('crm_portal_apps', array('company' => $cid, 'portal' => $portal, 'at' => time(), 'apps' => $apps));
+		return $apps;
+	}
+
 	/** Days left on the subscription (null when unknown). */
 	public function days_left($st)
 	{

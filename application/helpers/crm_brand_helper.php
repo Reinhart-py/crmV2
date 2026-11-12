@@ -92,22 +92,29 @@ if (!function_exists('crm_app_mark')) {
 }
 
 if (!function_exists('crm_suite_apps')) {
-	/** The other apps of the suite, opened from the company menu. Links go to each app's page on the portal. */
+	/**
+	 * The other apps of the suite, opened from the company menu.
+	 * HR & Payroll and E-Invoicing: each client has its own copy, so the link goes to this company's copy
+	 * (HR: the address set in Integrations > HR link first). When the portal says the company has no copy yet,
+	 * the app is left out. When the portal can't be asked, the links go to the app's page on the portal.
+	 */
 	function crm_suite_apps()
 	{
 		$b = crm_brand();
 		if ($b['portal'] === '') return array();
 		$p = $b['portal'];
-		$hr = $p . '/hr';
 		$ci =& get_instance();
+		$ci->load->model('subscription_model');
+		$copies = $ci->subscription_model->app_copies();
+		$hr = $copies === null ? $p . '/hr' : $copies['hr'];
+		$einv = $copies === null ? $p . '/einvoicing' : $copies['einvoicing'];
 		$r = $ci->db->select('endpoint')->where('service_name', 'hr_link')->get('ci_integration_settings')->row_array();
 		if ($r && preg_match('~^https?://~i', trim((string)$r['endpoint']))) $hr = rtrim(trim((string)$r['endpoint']), '/') . '/';
-		return array(
-			array('crm', 'Sales CRM', 'fa-line-chart', '#12a594', base_url() . 'manager/dashboard', true),
-			array('hr', 'HR & Payroll', 'fa-users', '#7a5af5', $hr, false),
-			array('accounting', 'Accounting', 'fa-calculator', '#0b6fa4', $p . '/accounting', false),
-			array('einvoicing', 'E-Invoicing', 'fa-file-text-o', '#e0861a', $p . '/einvoicing', false),
-		);
+		$apps = array(array('crm', 'Sales CRM', 'fa-line-chart', '#12a594', base_url() . 'manager/dashboard', true));
+		if ($hr !== '') $apps[] = array('hr', 'HR & Payroll', 'fa-users', '#7a5af5', $hr, false);
+		$apps[] = array('accounting', 'Accounting', 'fa-calculator', '#0b6fa4', $p . '/accounting', false);
+		if ($einv !== '') $apps[] = array('einvoicing', 'E-Invoicing', 'fa-file-text-o', '#e0861a', $einv, false);
+		return $apps;
 	}
 }
 
