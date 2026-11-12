@@ -79,7 +79,7 @@
 <link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-modes.css?v=20261110_5">
 <?php if ($crm_is_modern) { ?><link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-modern.css?v=20261110_21"><?php } ?>
 <link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-search.css?v=20261107_4">
-<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-soft.css?v=20261111_3">
+<link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-soft.css?v=20261112_3">
 <script src="<?php echo base_url();?>assets/dist/js/crm-search.js?v=20261107_2" defer></script>
 
 
@@ -109,9 +109,9 @@
   </button>
 
   <div class="main-logo">
-    <a href="<?php echo base_url(); ?>manager/dashboard"> 
-      <?php echo crm_brand_mark('header'); ?>
-    </a> 
+    <a href="<?php echo base_url(); ?>manager/dashboard">
+      <?php echo crm_app_mark(); ?>
+    </a>
   </div>
 
   
@@ -279,6 +279,7 @@
   </nav>
 
   <div class="header-quick-actions">
+    <?php if (!$is_presentation) echo crm_org_switcher($is_admin); ?>
     <?php if(!$is_presentation && has_section_perm('calls')){ ?>
     <a href="<?php echo base_url();?>manager/calls" class="global-theme-btn" title="Phone Dialer & Calls" style="display:inline-flex; align-items:center; justify-content:center; text-decoration:none; margin-right:6px; color:#1e3a8a;">
       <i class="fa fa-phone"></i>
@@ -419,7 +420,19 @@ $(function() {
     $('#profileMenuCaret').attr('aria-expanded', open ? 'true' : 'false');
   });
 
+  // Company menu (company, plan, other suite apps)
+  $(document).on('click', '#crmOrgBtn', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var open = !$('#crmOrg').hasClass('is-open');
+    $('#crmOrg').toggleClass('is-open', open);
+    $(this).attr('aria-expanded', open ? 'true' : 'false');
+    if (open) $('#googleProfileDropdown').fadeOut(120);
+  });
+  $(document).on('keydown', function(e) { if (e.key === 'Escape') { $('#crmOrg').removeClass('is-open'); $('#crmOrgBtn').attr('aria-expanded', 'false'); } });
+
   $(document).on('click', function(e) {
+    if (!$(e.target).closest('#crmOrg').length) { $('#crmOrg').removeClass('is-open'); $('#crmOrgBtn').attr('aria-expanded', 'false'); }
     if (!$(e.target).closest('.profile-menu-container').length) {
       $('#googleProfileDropdown').fadeOut(120);
     }
@@ -682,7 +695,7 @@ $(function() {
 <aside class="main-sidebar"> 
   
   <div class="crm-sidebar-header">
-    <?php echo crm_brand_mark('header'); ?>
+    <?php echo crm_app_mark(); ?>
     <button type="button" class="crm-sidebar-close" id="crmSidebarClose" aria-label="Close navigation">&times;</button>
     <?php if ($crm_is_modern) { ?><button type="button" class="md2-mini-btn" id="md2MiniBtn" title="Make the side pane smaller or larger" aria-label="Make the side pane smaller or larger"><i class="fa fa-angle-double-left"></i></button><?php } ?>
   </div>
