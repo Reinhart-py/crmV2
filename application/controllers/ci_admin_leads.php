@@ -3269,6 +3269,12 @@ $data['info2']=$this->if_not_login();
 			return;
 		}
 
+		// Copy (admins only): the selected records stay where they are; each chosen person gets a copy of their own
+		if ($this->input->post('mode') === 'copy') {
+			$this->_bulk_copy($lead_ids, $this->input->post('target_users'));
+			return;
+		}
+
 		$target_user_id = (int)$target_user;
 		if ($target_user_id <= 0) {
 			$this->session->set_flashdata('error_message', 'Please select a valid target user to transfer the leads to.');
@@ -3338,6 +3344,118 @@ $data['info2']=$this->if_not_login();
 
 		$this->session->set_flashdata('success_message', "Successfully transferred $transferred_count lead(s) to $target_name.");
 		redirect('manager/database-transfer');
+	}
+
+	/**
+	 * Copy selected records to one or more people (Admin only). The originals are not changed.
+	 * Each copy is a new record owned by that person, with the same details. A person who already
+	 * owns the record, or already got a copy of it, is skipped. Every copy is kept in ci_lead_copies.
+	 */
+	private function _bulk_copy($lead_ids, $target_users)
+	{
+		$back = 'manager/database-transfer' . ((int)$this->input->post('from_user') > 0 ? '?from_user=' . (int)$this->input->post('from_user') : '');
+		if (!crm_is_full_admin()) {
+			$this->session->set_flashdata('error_message', 'Only an admin can copy records.');
+			redirect($back);
+			return;
+		}
+		$manager_id = (int)$this->session->userdata('manager_id');
+		$manager_name = $this->session->userdata('manager_name');
+
+		$ids = array_values(array_unique(array_filter(array_map('intval', (array)$lead_ids))));
+		$tids = array_values(array_unique(array_filter(array_map('intval', is_array($target_users) ? $target_users : array()))));
+		if (!$ids) {
+			$this->session->set_flashdata('error_message', 'No records selected to copy.');
+			redirect($back);
+			return;
+		}
+		if (!$tids) {
+			$this->session->set_flashdata('error_message', 'Please choose at least one person to copy the records to.');
+			redirect($back);
+			return;
+		}
+		if (count($ids) > 5000 || count($tids) > 50) {
+			$this->session->set_flashdata('error_message', 'Too many at once: copy up to 5,000 records to up to 50 people at a time.');
+			redirect($back);
+			return;
+		}
+		// Only active users can receive copies
+		$targets = $this->db->select('id, name')->where_in('id', $tids)->where('status', 1)->get('ci_user')->result_array();
+		if (!$targets) {
+			$this->session->set_flashdata('error_message', 'Please choose at least one active user.');
+			redirect($back);
+			return;
+		}
+
+		if (!$this->db->table_exists('ci_lead_copies')) {
+			$this->db->query("CREATE TABLE IF NOT EXISTS ci_lead_copies (
+				id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+				lead_id INT NOT NULL,
+				new_lead_id INT NOT NULL,
+				from_user_id INT NOT NULL DEFAULT 0,
+				to_user_id INT NOT NULL,
+				copied_by INT NOT NULL,
+				created_at DATETIME NOT NULL,
+				KEY idx_lead_to (lead_id, to_user_id),
+				KEY idx_new (new_lead_id)
+			) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+		}
+
+		$leads = $this->db->where_in('id', $ids)->get('ci_leads')->result_array();
+		$now_dt = date('Y-m-d H:i:s');
+		$made = 0; $skipped = 0; $names = array();
+
+		$this->db->trans_start();
+		foreach ($targets as $t) {
+			$tid = (int)$t['id'];
+			$given = 0;
+			// Records this person already has a copy of (copies of copies count too)
+			$have = array();
+			foreach ($this->db->select('lead_id')->where('to_user_id', $tid)->where_in('lead_id', $ids)->get('ci_lead_copies')->result_array() as $h) $have[(int)$h['lead_id']] = true;
+			foreach ($leads as $l) {
+				$lid = (int)$l['id'];
+				$owner = !empty($l['lead_assign']) ? (int)$l['lead_assign'] : (int)$l['created_by'];
+				if ($owner === $tid || isset($have[$lid])) { $skipped++; continue; }
+				$row = $l;
+				unset($row['id']);
+				$row['lead_id'] = 100000000;
+				$row['created_by'] = $tid;
+				$row['lead_assign'] = $tid;
+				$row['agents'] = '';
+				$row['edited_by'] = $manager_id;
+				$row['modified'] = date('Y-m-d');
+				$this->db->insert('ci_leads', $row);
+				$new_id = (int)$this->db->insert_id();
+				if ($new_id <= 0) { $skipped++; continue; }
+				$this->db->where('id', $new_id)->update('ci_leads', array('lead_id' => 100000000 + $new_id));
+				$this->db->insert('ci_lead_copies', array(
+					'lead_id' => $lid, 'new_lead_id' => $new_id, 'from_user_id' => $owner,
+					'to_user_id' => $tid, 'copied_by' => $manager_id, 'created_at' => $now_dt,
+				));
+				$made++; $given++;
+			}
+			if ($given) $names[] = $t['name'] . ' (' . $given . ')';
+		}
+		$this->db->trans_complete();
+
+		if (!$this->db->trans_status()) {
+			$this->session->set_flashdata('error_message', 'The copy could not be finished. Nothing was copied. Please try again.');
+			redirect($back);
+			return;
+		}
+
+		$this->ci_admin_model->log_admin_action(
+			'lead_copy',
+			"Copied " . count($leads) . " record(s) to " . count($targets) . " user(s): $made copies made" . ($names ? ' - ' . implode(', ', $names) : '') . ($skipped ? ", $skipped skipped" : ''),
+			'SUCCESS',
+			$manager_id,
+			$manager_name
+		);
+
+		$msg = $made ? "Made $made cop" . ($made === 1 ? 'y' : 'ies') . ': ' . implode(', ', $names) . '.' : 'No copies were made.';
+		if ($skipped) $msg .= " $skipped skipped because that person already owns the record or already has a copy of it.";
+		$this->session->set_flashdata($made ? 'success_message' : 'error_message', $msg);
+		redirect($back);
 	}
 }
 

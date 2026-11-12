@@ -71,11 +71,23 @@
                 <div class="box">
                     <div class="box-header with-border" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; padding:10px 15px;">
                         <h3 class="box-title" style="margin:0; font-size:16px; font-weight:600;">Database Records</h3>
+                        <?php $can_copy = crm_is_full_admin(); ?>
                         <form method="post" action="<?php echo base_url(); ?>manager/leads/bulk-transfer" id="formBulkTransfer" class="form-inline" style="margin:0;">
                             <div id="inlineTransferLeadInputs"></div>
+                            <?php if ($can_copy) { ?>
+                            <input type="hidden" name="mode" id="dt_mode" value="transfer">
+                            <input type="hidden" name="from_user" value="<?php echo (int)$from_user; ?>">
+                            <div id="copyTargetInputs"></div>
+                            <?php } ?>
                             <div style="display:inline-flex; align-items:center; gap:8px; flex-wrap:wrap; max-width:100%;">
                                 <span id="selectedCountText" class="label label-default" style="font-size:12px; font-weight:600; padding:4px 8px;">0 selected</span>
-                                
+                                <?php if ($can_copy) { ?>
+                                <div class="btn-group btn-group-sm dt-mode" role="group" aria-label="Transfer or copy">
+                                    <button type="button" class="btn btn-default active" data-mode="transfer" title="Move the records to one person. The current owner no longer has them.">Transfer</button>
+                                    <button type="button" class="btn btn-default" data-mode="copy" title="Give a copy to one or more people. The original records stay where they are.">Copy</button>
+                                </div>
+                                <?php } ?>
+
                                 <div style="position:relative; display:inline-block; max-width:100%;">
                                     <div class="input-group input-group-sm" style="width:240px; max-width:100%;">
                                         <input type="text" id="transfer_user_search" class="form-control" placeholder="Type 3+ letters to search..." autocomplete="off">
@@ -88,9 +100,12 @@
                                 </div>
 
                                 <button type="submit" id="btnConfirmTransfer" class="btn btn-sm btn-primary" disabled style="background:#1e3a8a; border-color:#1e3a8a; font-weight:600;">
-                                    <i class="fa fa-exchange"></i> Transfer
+                                    <i class="fa fa-exchange"></i> <span id="btnTransferText">Transfer</span>
                                 </button>
                             </div>
+                            <?php if ($can_copy) { ?>
+                            <div id="copyTargetChips" class="dt-chips" style="display:none;"></div>
+                            <?php } ?>
                         </form>
                     </div>
                     <div class="box-body">
@@ -162,6 +177,10 @@
                                                             data-toggle="tooltip" title="Edit">Edit</a> </li>
                                                     <li> <a href="javascript:void(0);" onclick="transferSingleLead(<?php echo $li['id']; ?>, '<?php echo addslashes(htmlspecialchars($li['customer'])); ?>')">
                                                             <i class="fa fa-exchange" style="color:#1e3a8a; margin-right:4px;"></i> Transfer</a> </li>
+                                                    <?php if ($can_copy) { ?>
+                                                    <li> <a href="javascript:void(0);" onclick="copySingleLead(<?php echo (int)$li['id']; ?>)">
+                                                            <i class="fa fa-copy" style="color:#1e3a8a; margin-right:4px;"></i> Copy</a> </li>
+                                                    <?php } ?>
                                                 </ul>
                                             </div>
                                         </td>
@@ -181,8 +200,17 @@
     </section>
 </div>
 
+<style>
+.dt-mode .btn { font-weight: 600; }
+.dt-mode .btn.active { background: #1e3a8a; border-color: #1e3a8a; color: #fff; box-shadow: none; }
+.dt-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.dt-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 4px 3px 10px; border-radius: 999px; background: #eef2ff; color: #1e3a8a; font-size: 12px; font-weight: 600; }
+.dt-chip button { border: 0; background: transparent; color: #64748b; font-size: 15px; line-height: 1; padding: 0 4px; cursor: pointer; }
+.dt-chip button:hover { color: #dc2626; }
+[data-theme="dark"] .dt-chip { background: #1e293b; color: #c7d2fe; }
+</style>
 <script>
-var transferUsers = <?php 
+var transferUsers = <?php
   $clean_tu = array();
   if(!empty($users_list)){
     foreach($users_list as $u){
@@ -195,6 +223,9 @@ var transferUsers = <?php
   }
   echo json_encode($clean_tu);
 ?>;
+
+var dtMode = 'transfer';
+var copyTargets = [];
 
 $(function() {
     function syncTransferState() {
@@ -215,10 +246,10 @@ $(function() {
         });
 
         var targetUser = $('#target_user_val').val();
-        if (count > 0 && targetUser !== '') {
-            $('#btnConfirmTransfer').prop('disabled', false);
-        } else {
-            $('#btnConfirmTransfer').prop('disabled', true);
+        var ready = dtMode === 'copy' ? copyTargets.length > 0 : targetUser !== '';
+        $('#btnConfirmTransfer').prop('disabled', !(count > 0 && ready));
+        if (dtMode === 'copy') {
+            $('#btnTransferText').text(copyTargets.length > 1 ? 'Copy to ' + copyTargets.length + ' people' : 'Copy');
         }
 
         var total = $('.lead-check').length;
@@ -277,6 +308,15 @@ $(function() {
                 });
 
                 item.addEventListener("click", function() {
+                    if (dtMode === 'copy') {
+                        // Copy: several people can be chosen; each shows as a chip
+                        if (!copyTargets.some(function(x) { return x.id === u.id; })) copyTargets.push(u);
+                        searchInput.value = "";
+                        dropdown.style.display = "none";
+                        renderCopyTargets();
+                        searchInput.focus();
+                        return;
+                    }
                     searchInput.value = u.name;
                     hiddenInput.value = u.id;
                     dropdown.style.display = "none";
@@ -307,6 +347,44 @@ $(function() {
         }
     });
 
+    // Transfer / Copy switch (admins only)
+    function renderCopyTargets() {
+        var chips = $('#copyTargetChips').empty();
+        var inputs = $('#copyTargetInputs').empty();
+        copyTargets.forEach(function(u) {
+            inputs.append($('<input type="hidden" name="target_users[]">').val(u.id));
+            var chip = $('<span class="dt-chip"></span>').html(u.name + ' ');
+            var x = $('<button type="button" title="Remove">&times;</button>').on('click', function() {
+                copyTargets = copyTargets.filter(function(y) { return y.id !== u.id; });
+                renderCopyTargets();
+            });
+            chips.append(chip.append(x));
+        });
+        chips.toggle(dtMode === 'copy' && copyTargets.length > 0);
+        syncTransferState();
+    }
+    window.renderCopyTargets = renderCopyTargets;
+
+    window.setDtMode = function(mode) {
+        dtMode = mode === 'copy' ? 'copy' : 'transfer';
+        $('#dt_mode').val(dtMode);
+        $('.dt-mode .btn').removeClass('active').filter('[data-mode="' + dtMode + '"]').addClass('active');
+        $('#btnConfirmTransfer i').attr('class', dtMode === 'copy' ? 'fa fa-copy' : 'fa fa-exchange');
+        $('#btnTransferText').text(dtMode === 'copy' ? 'Copy' : 'Transfer');
+        $('#transfer_user_search').attr('placeholder', dtMode === 'copy' ? 'Add people: type 3+ letters...' : 'Type 3+ letters to search...').val('');
+        $('#target_user_val').val('');
+        if (dtMode === 'transfer') copyTargets = [];
+        renderCopyTargets();
+    };
+    $('.dt-mode .btn').on('click', function() { setDtMode($(this).data('mode')); });
+
+    $('#formBulkTransfer').on('submit', function(e) {
+        if (dtMode !== 'copy') return;
+        var n = $('#inlineTransferLeadInputs input').length;
+        var names = copyTargets.map(function(u) { return $('<div>').html(u.name).text(); }).join(', ');
+        if (!confirm('Copy ' + n + ' record' + (n === 1 ? '' : 's') + ' to ' + names + '?\n\nThe original records stay where they are. Each person gets their own copy.')) e.preventDefault();
+    });
+
     if (!$.fn.DataTable.isDataTable('#example_lead')) {
         $('#example_lead').DataTable({
             "pageLength": 50,
@@ -318,6 +396,11 @@ $(function() {
         });
     }
 });
+
+function copySingleLead(id) {
+    if (window.setDtMode && dtMode !== 'copy') setDtMode('copy');
+    transferSingleLead(id, '');
+}
 
 function transferSingleLead(id, customerName) {
     $('.lead-check').prop('checked', false);
@@ -331,11 +414,8 @@ function transferSingleLead(id, customerName) {
     $('#selectedCountText').text('1 selected').removeClass('label-default').addClass('label-primary');
 
     var targetUser = $('#target_user_val').val();
-    if (targetUser !== '') {
-        $('#btnConfirmTransfer').prop('disabled', false);
-    } else {
-        $('#btnConfirmTransfer').prop('disabled', true);
-    }
+    var ready = dtMode === 'copy' ? copyTargets.length > 0 : targetUser !== '';
+    $('#btnConfirmTransfer').prop('disabled', !ready);
     $('#transfer_user_search').focus();
     $('html, body').animate({
         scrollTop: $('#formBulkTransfer').offset().top - 80
