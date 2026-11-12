@@ -167,12 +167,18 @@ img.crm-org-logo { width: 24px; height: 24px; border-radius: 6px; object-fit: co
 .crm-org-app.is-on { border-color: #c7d2fe; background: rgba(59,91,219,.06); }
 .crm-org-app .ico { width: 28px; height: 28px; border-radius: 8px; flex: none; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; }
 .crm-org-app > span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crm-org-list { display: flex; flex-direction: column; gap: 2px; max-height: 220px; overflow-y: auto; }
+.crm-org-co { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-radius: 10px; text-decoration: none !important; color: var(--crm-text, #0f172a) !important; font-size: 13px; font-weight: 600; }
+.crm-org-co:hover { background: var(--crm-bg-soft, #f1f5f9); }
+.crm-org-co > span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crm-org-co small { display: block; font-size: 11px; font-weight: 500; color: #64748b; }
+.crm-org-co.is-off { opacity: .7; }
 .crm-org-link { display: flex; align-items: center; gap: 8px; margin-top: 8px; padding: 10px 8px 4px; border-top: 1px solid var(--crm-border, #e2e8f0); font-size: 13px; font-weight: 600; color: #1e3a8a !important; text-decoration: none !important; }
 [data-theme="dark"] .crm-org-btn { background: #1e293b; border-color: #334155; color: #f8fafc; }
 [data-theme="dark"] .crm-org-menu { background: #0f172a; border-color: #334155; box-shadow: 0 16px 40px rgba(0,0,0,.5); }
 [data-theme="dark"] .crm-org-head { background: #1e293b; }
-[data-theme="dark"] .crm-org-head b, [data-theme="dark"] .crm-org-app { color: #f1f5f9 !important; }
-[data-theme="dark"] .crm-org-app:hover { background: #1e293b; }
+[data-theme="dark"] .crm-org-head b, [data-theme="dark"] .crm-org-app, [data-theme="dark"] .crm-org-co { color: #f1f5f9 !important; }
+[data-theme="dark"] .crm-org-app:hover, [data-theme="dark"] .crm-org-co:hover { background: #1e293b; }
 [data-theme="dark"] .crm-org-app.is-on { border-color: #334155; background: rgba(99,102,241,.12); }
 [data-theme="dark"] .crm-org-link { color: #93c5fd !important; border-color: #334155; }
 

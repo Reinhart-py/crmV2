@@ -38,11 +38,27 @@ class Subscription_model extends CI_Model
 		return $r && (int)$r['status'] === 1 && trim((string)$r['endpoint']) !== '' && trim((string)$r['api_secret']) !== '' && !empty($r['config']['account_email']);
 	}
 
-	/** Ask the portal now. Returns the portal's answer plus 'reachable'. */
-	public function ask($r)
+	/**
+	 * The portal company this CRM belongs to (0 until the portal has answered once).
+	 * One portal sign-in can own several companies; this CRM serves only this one.
+	 */
+	public function company_id($r = null)
+	{
+		$r = $r ?: $this->row();
+		if (!$r) return 0;
+		$c = $r['config'];
+		if (!empty($c['company_id'])) return (int)$c['company_id'];
+		return isset($c['last_result']['companyId']) ? (int)$c['last_result']['companyId'] : 0;
+	}
+
+	/** Ask the portal now. Returns the portal's answer plus 'reachable'. $email: whose answer (default: the account email). */
+	public function ask($r, $email = null)
 	{
 		$product = !empty($r['config']['product']) ? $r['config']['product'] : 'crm';
-		$url = rtrim(trim($r['endpoint']), '/') . '/api/entitlement?product=' . rawurlencode($product) . '&email=' . rawurlencode(strtolower(trim($r['config']['account_email'])));
+		$email = $email !== null ? $email : $r['config']['account_email'];
+		$url = rtrim(trim($r['endpoint']), '/') . '/api/entitlement?product=' . rawurlencode($product) . '&email=' . rawurlencode(strtolower(trim($email)));
+		$cid = $this->company_id($r);
+		if ($cid > 0) $url .= '&company=' . $cid;
 		$ch = curl_init($url);
 		curl_setopt_array($ch, array(
 			CURLOPT_RETURNTRANSFER => true,
@@ -90,6 +106,8 @@ class Subscription_model extends CI_Model
 			}
 		}
 		unset($ans['reachable']);
+		// Remember this CRM's company the first time the portal names it, so later answers are always for it
+		if (empty($c['company_id']) && !empty($ans['companyId'])) $c['company_id'] = (int)$ans['companyId'];
 		$c['last_result'] = $ans;
 		$c['last_check_at'] = time();
 		if (!empty($ans['allowed'])) $c['last_ok_at'] = time();
@@ -132,6 +150,9 @@ class Subscription_model extends CI_Model
 		$mine = strtolower(trim(isset($c['account_email']) ? (string)$c['account_email'] : ''));
 		$emails = isset($d['emails']) && is_array($d['emails']) ? array_map(function ($x) { return strtolower(trim((string)$x)); }, $d['emails']) : array();
 		if ($mine === '' || !in_array($mine, $emails, true)) return array(200, 'Other company, ignored.');
+		// The account email may own other companies too: only this CRM's company counts
+		$cid = $this->company_id($r);
+		if ($cid > 0 && isset($e['company']['id']) && (int)$e['company']['id'] !== $cid) return array(200, 'Other company, ignored.');
 
 		if (empty($d['allowed'])) {
 			$last = isset($c['last_result']) && is_array($c['last_result']) ? $c['last_result'] : array();
@@ -148,6 +169,43 @@ class Subscription_model extends CI_Model
 		$c['last_check_at'] = 0;
 		$this->db->where('id', (int)$r['id'])->update('ci_integration_settings', array('config_json' => json_encode($c)));
 		return array(200, 'ok');
+	}
+
+	/**
+	 * The portal companies the signed-in user belongs to, for the company menu:
+	 * list of array(id, name, logoUrl, appUrl, current, allowed). Kept 5 minutes in the user's session.
+	 * Links are kept only when they point to this portal's /go/ page.
+	 */
+	public function companies_for($email)
+	{
+		$email = strtolower(trim((string)$email));
+		$r = $this->row();
+		if ($email === '' || !$this->enabled($r)) return array();
+		$cache = $this->session->userdata('crm_portal_companies');
+		if (is_array($cache) && isset($cache['email'], $cache['at'], $cache['list']) && $cache['email'] === $email && time() - (int)$cache['at'] < 300) return $cache['list'];
+		$ans = $this->ask($r, $email);
+		$portal = rtrim(trim((string)$r['endpoint']), '/');
+		$cid = $this->company_id($r);
+		$list = array();
+		if (!empty($ans['reachable']) && isset($ans['companies']) && is_array($ans['companies'])) {
+			foreach (array_slice($ans['companies'], 0, 50) as $x) {
+				if (!is_array($x) || empty($x['id'])) continue;
+				$url = isset($x['appUrl']) ? (string)$x['appUrl'] : '';
+				if (strpos($url, $portal . '/go/') !== 0) $url = '';
+				$logo = isset($x['logoUrl']) ? (string)$x['logoUrl'] : '';
+				if ($logo !== '' && !preg_match('~^' . preg_quote($portal, '~') . '/brand/[a-f0-9]{24}$~', $logo)) $logo = '';
+				$list[] = array(
+					'id' => (int)$x['id'],
+					'name' => substr(trim((string)(isset($x['name']) ? $x['name'] : '')), 0, 120),
+					'logoUrl' => $logo,
+					'appUrl' => $url,
+					'current' => (int)$x['id'] === $cid,
+					'allowed' => !empty($x['allowed']),
+				);
+			}
+		}
+		$this->session->set_userdata('crm_portal_companies', array('email' => $email, 'at' => time(), 'list' => $list));
+		return $list;
 	}
 
 	/** Days left on the subscription (null when unknown). */

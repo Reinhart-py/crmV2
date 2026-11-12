@@ -137,6 +137,21 @@ if (!function_exists('crm_org_switcher')) {
 			. $badge . '<span class="crm-org-name">' . $h($b['company']) . '</span><i class="fa fa-angle-down crm-org-caret" aria-hidden="true"></i></button>'
 			. '<div class="crm-org-menu" id="crmOrgMenu" role="menu">'
 			. '<div class="crm-org-head">' . $badge . '<div><b>' . $h($b['company']) . '</b>' . ($plan !== '' ? '<small>' . $h($plan) . '</small>' : '') . '</div><i class="fa fa-check crm-org-tick" title="Current company"></i></div>';
+		// Other companies this user belongs to on the portal. Picking one goes through the portal, which checks membership and the subscription.
+		$ci =& get_instance();
+		$ci->load->model('subscription_model');
+		$mine = $ci->subscription_model->companies_for($ci->session->userdata('manager_email'));
+		$others = array_values(array_filter($mine, function ($x) { return !$x['current'] && $x['appUrl'] !== ''; }));
+		if ($others) {
+			$o .= '<div class="crm-org-label">Your other companies</div><div class="crm-org-list">';
+			foreach ($others as $x) {
+				$ini = strtoupper(mb_substr($x['name'] !== '' ? $x['name'] : '?', 0, 1));
+				$ic = $x['logoUrl'] !== '' ? '<img class="crm-org-logo" src="' . $h($x['logoUrl']) . '" alt="">' : '<span class="crm-org-initial">' . $h($ini) . '</span>';
+				$o .= '<a class="crm-org-co' . ($x['allowed'] ? '' : ' is-off') . '" href="' . $h($x['appUrl']) . '" target="_blank" rel="noopener">' . $ic
+					. '<span>' . $h($x['name']) . ($x['allowed'] ? '' : '<small>No Sales CRM plan</small>') . '</span></a>';
+			}
+			$o .= '</div>';
+		}
 		$apps = crm_suite_apps();
 		if ($apps) {
 			$o .= '<div class="crm-org-label">Apps</div><div class="crm-org-apps">';

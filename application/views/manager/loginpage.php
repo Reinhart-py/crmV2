@@ -26,14 +26,17 @@
       // Client logo and name from the subscription portal: the stored portal answer
       // (works when the CRM is opened directly), else ?brand=&company= on the portal's link.
       // Only logos served by the portal set in Subscription settings are shown.
-      $client_logo = ''; $client_name = '';
+      $client_logo = ''; $client_name = ''; $other_company = false;
       $CI =& get_instance();
       $CI->load->model('subscription_model');
       $sub_row = $CI->subscription_model->row();
       if ($sub_row) {
         $portal = rtrim(trim((string)$sub_row['endpoint']), '/');
         $last = (isset($sub_row['config']['last_result']) && is_array($sub_row['config']['last_result'])) ? $sub_row['config']['last_result'] : array();
-        $cand = !empty($last['logoUrl']) ? (string)$last['logoUrl'] : (isset($_GET['brand']) ? (string)$_GET['brand'] : '');
+        // Sent here from the portal for a different company than the one this CRM belongs to
+        $my_cid = $CI->subscription_model->company_id($sub_row);
+        $other_company = $my_cid > 0 && isset($_GET['companyId']) && ctype_digit((string)$_GET['companyId']) && (int)$_GET['companyId'] !== $my_cid;
+        $cand = !empty($last['logoUrl']) ? (string)$last['logoUrl'] : ((isset($_GET['brand']) && !$other_company) ? (string)$_GET['brand'] : '');
         if ($portal !== '' && strpos($cand, $portal . '/brand/') === 0 && preg_match('~/brand/[a-f0-9]{24}$~', $cand)) $client_logo = $cand;
         // The name comes only from the portal's own answer, never from the link (anyone can edit a link).
         $client_name = !empty($last['company']) ? substr((string)$last['company'], 0, 120) : '';
@@ -46,6 +49,12 @@
       <?php } ?>
       <h1 class="auth-title">Sign In</h1>
       <p class="auth-sub"><?php echo $client_name !== '' ? htmlspecialchars($client_name, ENT_QUOTES) . ' · Sales CRM' : 'Get access to your account'; ?></p>
+
+      <?php if($other_company) { ?>
+        <div class="auth-alert auth-alert-warning">
+          This Sales CRM belongs to <?php echo $client_name !== '' ? '<b>' . htmlspecialchars($client_name, ENT_QUOTES) . '</b>' : 'another company'; ?>. The company you picked does not use it. Please ask your administrator for that company's Sales CRM address.
+        </div>
+      <?php } ?>
 
       <?php if(isset($_GET['conflict'])) { ?>
         <div class="auth-alert auth-alert-danger">
