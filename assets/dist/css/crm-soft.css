@@ -177,7 +177,7 @@ img.crm-org-logo { width: 24px; height: 24px; border-radius: 6px; object-fit: co
 [data-theme="dark"] .crm-org-link { color: #93c5fd !important; border-color: #334155; }
 
 /* Narrower screens: company as a round badge, app name stays */
-@media (max-width: 1280px) {
+@media (max-width: 1699px) {
   .crm-org-btn { padding: 0 6px 0 3px; gap: 4px; }
   .crm-org-name { display: none; }
 }
@@ -192,10 +192,10 @@ img.crm-org-logo { width: 24px; height: 24px; border-radius: 6px; object-fit: co
 @media (max-width: 400px) {
   .main-header .main-logo .crm-app-mark b { display: none; }
 }
-@media (min-width: 992px) and (max-width: 1280px) {
+@media (min-width: 992px) and (max-width: 1366px) {
   .main-header .main-logo .crm-app-mark b { display: none; }
 }
-@media (max-width: 1280px) {
+@media (max-width: 1699px) {
   .crm-org { margin-right: 5px; }
   .crm-org-btn { width: 30px; height: 30px; padding: 0; justify-content: center; border-radius: 50%; }
   .crm-org-caret { display: none; }

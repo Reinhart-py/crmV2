@@ -84,10 +84,10 @@ if (!function_exists('crm_brand_mark')) {
 }
 
 if (!function_exists('crm_app_mark')) {
-	/** Top bar and side pane: the app itself (Sales CRM icon and "CRM"); the company sits in the company menu. */
+	/** Top bar and side pane: the app itself (Sales CRM icon and name); the company sits in the company menu. */
 	function crm_app_mark()
 	{
-		return '<span class="crm-app-mark" title="Sales CRM"><img class="crm-app-ico" src="' . base_url() . 'assets/sales-crm-mark.svg" alt=""><b>CRM</b></span>';
+		return '<span class="crm-app-mark" title="Sales CRM"><img class="crm-app-ico" src="' . base_url() . 'assets/sales-crm-mark.svg" alt=""><b>Sales CRM</b></span>';
 	}
 }
 
