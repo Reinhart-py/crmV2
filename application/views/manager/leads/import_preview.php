@@ -84,7 +84,7 @@ $show_max = 1000;
         </div>
       </div>
     </form>
-    <p class="sx-help"><i class="fa fa-info-circle"></i> Duplicates are found by phone number (last 9 digits), company name (ignoring spaces and punctuation) or email. The import is kept as one batch: you can undo it from the Import page while nobody has worked on the records.</p>
+    <p class="sx-help"><i class="fa fa-info-circle"></i> A row is a duplicate when it has the same phone number (any number in any phone column; +971, 00971 or a leading 0 do not matter), the same email, or the same company name (ignoring capitals, spaces, punctuation and words such as LLC, FZE, Trading, Est.). Lead Finder and adding a record by hand use the same rules. The import is kept as one batch: you can undo it from the Import page while nobody has worked on the records.</p>
   </section>
 </div>
 

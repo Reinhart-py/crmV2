@@ -903,35 +903,50 @@ function __construct()
 		$uid = (int)$this->session->userdata('manager_id');
 		if ($uid <= 0 || (!crm_can('database', 'write') && !crm_can('leads', 'write'))) { echo json_encode(array('status' => 'ok', 'matches' => array())); return; }
 
+		// Same rules as Import Database and Lead Finder (helpers/crm_dedupe_helper.php)
+		require_once APPPATH . 'helpers/crm_dedupe_helper.php';
 		$phones = array();
-		foreach ((array)$this->input->get('phone') as $p) { $p = self::_imp_phone($p); if ($p !== '') $phones[$p] = true; }
-		$email = strtolower(trim((string)$this->input->get('email')));
-		if ($email !== '' && strpos($email, '@') === false) $email = '';
-		$company = self::_imp_company($this->input->get('company'));
+		foreach ((array)$this->input->get('phone') as $p) foreach (crm_dup_phone_keys($p) as $k) $phones[$k] = true;
+		$emails = array_flip(crm_dup_emails($this->input->get('email')));
+		$company = crm_dup_name_core($this->input->get('company'));
 
+		// Narrow down in SQL (a wide match is fine), then check each candidate with the shared rules
 		$or = array();
-		if ($phones) {
-			$in = implode(',', array_map(array($this->db, 'escape'), array_map('strval', array_keys($phones))));
-			foreach (array('contact1', 'contact2', 'alt_contact', 'mobile') as $c) $or[] = "RIGHT(REGEXP_REPLACE(IFNULL(A.$c,''), '[^0-9]', ''), 9) IN ($in)";
+		$pcols = crm_dup_phone_columns();
+		foreach (array_slice(array_keys($phones), 0, 5) as $k) foreach ($pcols as $col) $or[] = "REGEXP_REPLACE(IFNULL(A.$col,''), '[^0-9]', '') LIKE " . $this->db->escape('%' . $k . '%');
+		foreach (array_slice(array_keys($emails), 0, 3) as $e) $or[] = 'LOWER(A.email) LIKE ' . $this->db->escape('%' . $e . '%');
+		if ($company !== '') {
+			// The longest word of the name that is not LLC, Trading, etc. must appear in the record's name
+			$words = preg_split('/[^a-z0-9\x{0600}-\x{06FF}]+/u', strtolower(str_replace('&', ' ', (string)$this->input->get('company'))), -1, PREG_SPLIT_NO_EMPTY);
+			$words = array_diff($words, crm_dup_name_noise());
+			usort($words, function ($x, $y) { return mb_strlen($y) - mb_strlen($x); });
+			$w = $words ? $words[0] : $company;
+			$or[] = 'LOWER(A.customer) LIKE ' . $this->db->escape('%' . $w . '%');
 		}
-		if ($email !== '') $or[] = 'LOWER(TRIM(A.email)) = ' . $this->db->escape($email);
-		if ($company !== '') $or[] = "LOWER(REGEXP_REPLACE(IFNULL(A.customer,''), '[^A-Za-z0-9]', '')) = " . $this->db->escape($company);
 		if (!$or) { echo json_encode(array('status' => 'ok', 'matches' => array())); return; }
 
-		$rows = $this->db->query("SELECT A.id, A.lead_id, A.customer, A.contact1, A.contact2, A.alt_contact, A.mobile, A.email, A.agents, P.pipeline_stage,
+		$cand =$this->db->query("SELECT A.id, A.lead_id, A.customer, A." . implode(', A.', $pcols) . ", A.email, A.agents, P.pipeline_stage,
 				IF(A.lead_assign > 0, A.lead_assign, A.created_by) AS owner_id, U.name AS owner
 			FROM ci_leads A LEFT JOIN ci_pipeline P ON P.lead_id = A.id LEFT JOIN ci_user U ON U.id = IF(A.lead_assign > 0, A.lead_assign, A.created_by)
-			WHERE " . implode(' OR ', $or) . " ORDER BY A.id DESC LIMIT 6")->result_array();
+			WHERE " . implode(' OR ', array_unique($or)) . " ORDER BY A.id DESC LIMIT 300")->result_array();
+		$rows = array();
+		foreach ($cand as $r) {
+			$why = array();
+			foreach ($pcols as $col) foreach (crm_dup_phone_keys($r[$col]) as $k) if (isset($phones[$k])) $why['phone'] = 'phone';
+			foreach (crm_dup_emails($r['email']) as $e) if (isset($emails[$e])) $why['email'] = 'e-mail';
+			if ($company !== '' && crm_dup_name_core($r['customer']) === $company) $why['company'] = 'company name';
+			if (!$why) continue;
+			$r['_why'] = $why;
+			$rows[] = $r;
+			if (count($rows) >= 6) break;
+		}
 
 		$role = (int)$this->session->userdata('manager_role');
 		$see_all = ($role === 1 || $uid === 1 || crm_can('all_data') || has_section_perm('back_office') || has_section_perm('lead_review'));
 		$team = array_map('intval', (array)$this->ci_admin_model->fetchTeamList($uid, ''));
 		$out = array();
 		foreach ($rows as $r) {
-			$why = array();
-			foreach (array('contact1', 'contact2', 'alt_contact', 'mobile') as $c) { $p = self::_imp_phone($r[$c]); if ($p !== '' && isset($phones[$p])) { $why['phone'] = 'phone'; } }
-			if ($email !== '' && strtolower(trim((string)$r['email'])) === $email) $why['email'] = 'e-mail';
-			if ($company !== '' && self::_imp_company($r['customer']) === $company) $why['company'] = 'company name';
+			$why = $r['_why'];
 			$owner = (int)$r['owner_id'];
 			$agents = array_map('intval', explode(',', (string)$r['agents']));
 			$can_open = ($see_all || $owner === $uid || in_array($owner, $team, true) || in_array($uid, $agents, true));
@@ -2648,46 +2663,38 @@ $data['info2']=$this->if_not_login();
 		}
 		fclose($handle);
 
-		// Duplicates: phone (last 9 digits), company name (letters and digits only) or email
+		// Duplicates: the CRM's shared rules (helpers/crm_dedupe_helper.php), the same as Lead Finder and the
+		// check when adding a record by hand: same phone (any number in any phone column), email or company name.
+		require_once APPPATH . 'helpers/crm_dedupe_helper.php';
 		$keys = array('phone' => array(), 'company' => array(), 'email' => array());
 		foreach ($rows as &$r) {
 			$r['keys'] = array('phone' => array(), 'company' => array(), 'email' => array());
 			if ($r['state'] === 'err') continue;
 			$d = $r['data'];
-			foreach (array('contact1', 'contact2', 'alt_contact') as $f) {
-				$p = self::_imp_phone(isset($d[$f]) ? $d[$f] : '');
-				if ($p !== '') $r['keys']['phone'][$p] = true;
+			foreach (crm_dup_phone_columns() as $f) {
+				foreach (crm_dup_phone_keys(isset($d[$f]) ? $d[$f] : '') as $p) $r['keys']['phone'][$p] = true;
 			}
-			$c = self::_imp_company($d['customer']);
+			$c = crm_dup_name_core($d['customer']);
 			if ($c !== '') $r['keys']['company'][$c] = true;
-			$e = strtolower(trim((string)$d['email']));
-			if ($e !== '' && strpos($e, '@') !== false) $r['keys']['email'][$e] = true;
+			foreach (crm_dup_emails(isset($d['email']) ? $d['email'] : '') as $e) $r['keys']['email'][$e] = true;
 			foreach ($r['keys'] as $k => $set) foreach ($set as $v => $_) $keys[$k][$v] = true;
 		}
 		unset($r);
 
+		$hit = crm_dup_find($keys);
+		$ids = array();
+		foreach ($hit as $set) foreach ($set as $id) $ids[$id] = true;
+		$recs = array();
+		foreach (array_chunk(array_keys($ids), 500) as $chunk) {
+			foreach ($this->db->select('id, lead_id, customer, lead_assign')->where_in('id', $chunk)->get('ci_leads')->result_array() as $l) $recs[(int)$l['id']] = $l;
+		}
 		$found = array('phone' => array(), 'company' => array(), 'email' => array());
-		$sql_expr = array(
-			'phone' => array("RIGHT(REGEXP_REPLACE(contact1, '[^0-9]', ''), 9)", "RIGHT(REGEXP_REPLACE(contact2, '[^0-9]', ''), 9)", "RIGHT(REGEXP_REPLACE(alt_contact, '[^0-9]', ''), 9)", "RIGHT(REGEXP_REPLACE(mobile, '[^0-9]', ''), 9)"),
-			'company' => array("LOWER(REGEXP_REPLACE(customer, '[^A-Za-z0-9]', ''))"),
-			'email' => array('LOWER(TRIM(email))'),
-		);
 		$owners = array();
-		foreach ($sql_expr as $kind => $exprs) {
-			foreach (array_chunk(array_keys($keys[$kind]), 400) as $chunk) {
-				$in = implode(',', array_map(array($this->db, 'escape'), array_map('strval', $chunk)));
-				$sel = array();
-				foreach ($exprs as $i => $ex) $sel[] = $ex . ' AS k' . $i;
-				$where = array();
-				foreach ($exprs as $ex) $where[] = $ex . ' IN (' . $in . ')';
-				$res = $this->db->query('SELECT id, lead_id, customer, lead_assign, ' . implode(', ', $sel) . ' FROM ci_leads WHERE ' . implode(' OR ', $where) . ' ORDER BY id')->result_array();
-				foreach ($res as $l) {
-					foreach ($exprs as $i => $ex) {
-						$v = (string)$l['k' . $i];
-						if ($v !== '' && isset($keys[$kind][$v]) && !isset($found[$kind][$v])) $found[$kind][$v] = $l;
-					}
-					$owners[(int)$l['lead_assign']] = true;
-				}
+		foreach ($hit as $kind => $set) {
+			foreach ($set as $v => $id) {
+				if (!isset($recs[$id])) continue;
+				$found[$kind][$v] = $recs[$id];
+				$owners[(int)$recs[$id]['lead_assign']] = true;
 			}
 		}
 		$owner_name = array();
