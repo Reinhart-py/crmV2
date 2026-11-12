@@ -119,6 +119,36 @@ class Ci_admin_integrations extends CI_Controller {
 			}
 		}
 
+		// Subscription: every company has its own Sales CRM, so this CRM stays tied to one portal company.
+		// Saving the form keeps that company and the portal's last answer (they are not form fields).
+		if ($service === 'subscription') {
+			$old_cid = !empty($old_cfg['company_id']) ? (int)$old_cfg['company_id'] : (isset($old_cfg['last_result']['companyId']) ? (int)$old_cfg['last_result']['companyId'] : 0);
+			$cid = isset($config['company_id']) ? (int)$config['company_id'] : 0;
+			if ($cid <= 0) $cid = !empty($old_cfg['company_id']) ? (int)$old_cfg['company_id'] : 0;
+			if ($cid > 0) $config['company_id'] = $cid; else unset($config['company_id']);
+			// A new company number is checked with the portal first: a wrong number would lock everyone out.
+			if ($cid > 0 && $cid !== $old_cid) {
+				$this->load->model('subscription_model');
+				$ans = $this->subscription_model->ask(array('endpoint' => $endpoint, 'api_secret' => $api_secret, 'config' => $config), isset($config['account_email']) ? (string)$config['account_email'] : '');
+				$ok = !empty($ans['reachable']) && isset($ans['companyId']) && (int)$ans['companyId'] === $cid;
+				if (!$ok && !empty($ans['reachable']) && isset($ans['companies']) && is_array($ans['companies'])) {
+					foreach ($ans['companies'] as $co) if (is_array($co) && isset($co['id']) && (int)$co['id'] === $cid) $ok = true;
+				}
+				if (!$ok) {
+					$why = empty($ans['reachable']) ? 'the portal could not be reached' : (!empty($ans['reason']) ? rtrim((string)$ans['reason'], '. ') : 'the portal does not know this company for the account email');
+					$this->session->set_flashdata('error_message', 'Not saved: company number ' . $cid . ' could not be confirmed (' . $why . '). Check the number on the portal.');
+					redirect('manager/system/integrations#tab_subscription');
+					return;
+				}
+			}
+			if ($cid <= 0 || $cid === $old_cid) {
+				foreach (array('last_result', 'last_check_at', 'last_ok_at') as $k) {
+					if (isset($old_cfg[$k])) $config[$k] = $old_cfg[$k];
+				}
+			}
+			$this->session->unset_userdata(array('crm_portal_apps' => '', 'crm_portal_companies' => ''));
+		}
+
 		$data_update = array(
 			'endpoint' => $endpoint,
 			'api_key' => $api_key,

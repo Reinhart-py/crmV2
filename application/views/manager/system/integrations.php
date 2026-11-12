@@ -245,6 +245,9 @@ $foot = function ($srv, $test_label) use ($can_edit) {
                 <div class="form-group wide"><label>Portal app secret</label><input type="password" name="api_secret" class="form-control" autocomplete="new-password" placeholder="<?php echo !empty($S['subscription']['api_secret']) ? 'Saved - leave blank to keep it' : 'From the portal (data/app-secret)'; ?>" /></div>
                 <div class="form-group"><label>Company account email on the portal</label><input type="email" name="config[account_email]" class="form-control" value="<?php echo $x($cv('subscription', 'account_email')); ?>" /></div>
                 <div class="form-group"><label>Product on the portal</label><input type="text" name="config[product]" class="form-control mono" value="<?php echo $x($cv('subscription', 'product', 'crm')); ?>" /></div>
+                <?php $sub_cid = (int)$cv('subscription', 'company_id', 0); if (!$sub_cid && is_array($sub_last) && !empty($sub_last['companyId'])) $sub_cid = (int)$sub_last['companyId']; ?>
+                <div class="form-group"><label>Company number on the portal</label><input type="number" min="1" step="1" name="config[company_id]" class="form-control mono" value="<?php echo $sub_cid ?: ''; ?>" placeholder="Taken from the portal's first answer" />
+                  <small class="sx-help" style="display:block;margin-top:4px;">This Sales CRM is for this one company<?php echo is_array($sub_last) && !empty($sub_last['company']) ? ' (now: ' . $x($sub_last['company']) . ')' : ''; ?>. Each company has its own Sales CRM.</small></div>
                 <div class="form-group"><label>Status</label><?php echo $status_sel('subscription', 'On', 'Off'); ?></div>
               </div></div>
               </fieldset>
