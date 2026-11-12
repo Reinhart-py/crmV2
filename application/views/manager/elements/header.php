@@ -49,7 +49,7 @@
   }
 })();
 </script>
-<script src="<?php echo base_url();?>assets/plugins/jQueryUI/jquery-ui.js"></script>
+<script src="<?php echo base_url();?>assets/plugins/jQueryUI/jquery-ui.min.js"></script>
 
 
 <link rel="stylesheet" href="<?php echo base_url();?>assets/bootstrap/spacing.css">
@@ -67,12 +67,14 @@
 <link rel="stylesheet" href="<?php echo base_url();?>assets/bootstrap/developer.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/multiselect/multiselect.css">
 <link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-dashboard.css?v=20261105_3">
+<?php if (!empty($crm_table_export)) { /* Excel export buttons (about 450 KB): only on pages that use tableExport() */ ?>
 <link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/plugins/table_export/css/tableexport.css" />
 
 <script src="<?php echo base_url();?>assets/plugins/table_export/FileSaver.min.js"></script>
 <script src="<?php echo base_url();?>assets/plugins/table_export/Blob.min.js"></script>
 <script src="<?php echo base_url();?>assets/plugins/table_export/xls.core.min.js"></script>
 <script src="<?php echo base_url();?>assets/plugins/table_export/js/tableexport.js"></script>
+<?php } ?>
 <link rel="stylesheet" href="<?php echo base_url();?>assets/plugins/jQueryUI/jquery-ui.css?v=20261107">
 <script src="<?php echo base_url();?>assets/bootstrap/js/jquery.validate.js"></script>
 <link rel="stylesheet" href="<?php echo base_url();?>assets/dist/css/crm-theme.css?v=20261108_1">

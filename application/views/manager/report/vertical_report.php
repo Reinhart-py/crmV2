@@ -1,4 +1,4 @@
-<?php require_once(APPPATH."views/manager/elements/header.php"); ?>
+<?php $crm_table_export = true; require_once(APPPATH."views/manager/elements/header.php"); ?>
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper"> 
  

@@ -9,7 +9,7 @@ class Ci_admin_model extends CI_model {
 	}
 	
 	   public function dashboard_countdata(){
-		if (!$this->db->field_exists('currency', 'ci_user')) {
+		if (!crm_column_ok('ci_user', 'currency')) {
 			$this->db->query("SET SESSION innodb_strict_mode=0");
 			$this->db->query("ALTER TABLE `ci_user` MODIFY `department` TEXT, MODIFY `office` TEXT, MODIFY `visa_type` TEXT, MODIFY `visa_by` TEXT");
 			$this->db->query("ALTER TABLE `ci_user` ADD `currency` VARCHAR(10) NOT NULL DEFAULT 'AED'");
@@ -3807,12 +3807,27 @@ if (!function_exists('chatbot_rights')) {
 		);
 	}
 }
+if (!function_exists('crm_column_ok')) {
+	/**
+	 * True when $table has column $col. A "LIMIT 0" probe returns no rows and costs well under a millisecond,
+	 * where SHOW COLUMNS (field_exists) takes about 10 ms. A missing table or column just returns false.
+	 */
+	function crm_column_ok($table, $col) {
+		$ci =& get_instance();
+		$debug = $ci->db->db_debug;
+		$ci->db->db_debug = false;
+		$q = $ci->db->query('SELECT `' . str_replace('`', '', $col) . '` FROM `' . str_replace('`', '', $table) . '` LIMIT 0');
+		$ci->db->db_debug = $debug;
+		return $q !== false;
+	}
+}
 if (!function_exists('chatbot_ensure_column')) {
 	function chatbot_ensure_column() {
 		static $done = false;
 		if ($done) return;
 		$ci =& get_instance();
-		if (!$ci->db->field_exists('chatbot_permissions', 'ci_user_permissions')) {
+		// Quick probe instead of SHOW COLUMNS (this runs on every page)
+		if (!crm_column_ok('ci_user_permissions', 'chatbot_permissions')) {
 			$ci->db->query("ALTER TABLE ci_user_permissions ADD COLUMN chatbot_permissions TEXT NULL");
 		}
 		$done = true;
