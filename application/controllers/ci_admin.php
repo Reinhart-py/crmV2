@@ -173,6 +173,12 @@ class Ci_admin extends CI_Controller {
 				);		
 				$this->session->set_userdata($user_data);
 				$this->ci_admin_model->log_admin_action('login', 'User logged in successfully (IP: ' . $client_ip . ')', 'SUCCESS', $data['users']['id'], $data['users']['name']);
+				// A Lead Finder review link opened before signing in: go back to it.
+				$lf_after = (string)$this->session->userdata('lf_after_login');
+				if ($lf_after !== '') {
+					$this->session->unset_userdata('lf_after_login');
+					if (preg_match('#^manager/leads/lead-finder(/review/\d+)?$#', $lf_after)) redirect($lf_after);
+				}
 				// Presentation (TV screen) users land on the Live presentation.
 				redirect(crm_is_presentation_user($data['users']['user_type']) ? 'manager/live/presentation' : 'manager/dashboard');
 			}

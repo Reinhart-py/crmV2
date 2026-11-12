@@ -2,6 +2,19 @@
 
 All notable changes, features, bug fixes, and refinements for the Seven Strokes CRM repository are documented in this file.
 
+### [v1.84.0] - 2026-11-11
+- **Timestamp**: `2026-11-11 +0400`
+- **Summary**: Lead Finder link: leads found in the Lead Finder app are checked for duplicates and approved before they reach the database.
+- **Highlights**:
+  - **Database > Lead Finder** (new tab, new right "Lead Finder"): batches sent from the Lead Finder app, each lead sorted into **New** (nothing identifying matches), **Possible duplicate** (some details match) or **Duplicate** (already in the database), with counts. Approve all at once per group or row by row; give the added leads to yourself, a team member or the Non-Allotted Database.
+  - **Duplicate check on 9 fields** against every record: company name (ignoring LLC/FZE/Trading...), phone (all 5 phone columns; +971 / 00971 / 0 prefixes ignored), email, website domain, listing id (Google / 2GIS / directory id in the source link), address, map location (120 m), city, country. Name, phone and email use the same rules as Import Database (`helpers/crm_dedupe_helper.php`). Duplicate = the same phone, or the same email, or the same company name (as in Import Database); also 5 or more fields matching (setting, 3–9), the same listing, or a similar name with the same website. Other matches are Possible. Inside one batch, a later lead with the same phone, email, company name or listing as an earlier one is a duplicate. When several records match equally, the oldest is shown.
+  - **Duplicates need Full access** to Lead Finder: "Add anyway" requires a written reason (kept on the record and in Admin Logs); "Fill in existing record" only fills empty fields of the matching record. Read access can add New and Possible leads only; the server enforces this.
+  - **Only the sender** (or an administrator / all-data user) can open a batch; the review link returns there after sign-in. Batches expire after 7 days; lead details of closed batches are removed after 30 days.
+  - Added leads form one import batch, so **Database > Import > Undo** works for them. **Data Source** always comes from Lists > Data Source (Google Maps uses the existing "Google Maps"; another platform is added to the list once, logged in Admin Logs; a disabled value falls back to "Other"). **Batch / Referral No** is `<Mon-yy>/<Data Source>/LF-<batch>`, e.g. `Nov-26/Google Maps/LF-12`, matching the Database report's Mon-yy/Source grouping and traceable to the Lead Finder batch. Rating, added date and listing id go in Remarks.
+  - **Integrations > Lead Finder link**: on/off, duplicate threshold, batch size, link key (make new key), and the list of users who can send.
+  - API (signed, CSRF-exempt): `POST api/lead-finder/check`, `POST api/lead-finder/stage`.
+  - Files: `controllers/lead_finder_api.php`, `controllers/ci_admin_lead_finder.php`, `models/lead_finder_model.php`, views `leads/lead_finder_review.php`, `leads/lead_finder_list.php`, `system/lead_finder_link.php`; small edits to routes, `MY_Security.php`, `crm_permission_helper.php` and the sign-in redirect in `ci_admin.php`.
+
 ### [v1.83.0] - 2026-11-06
 - **Timestamp**: `2026-11-06 +0400`
 - **Author**: Reinhart-py

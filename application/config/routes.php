@@ -46,6 +46,12 @@ $route['manager/terms/save'] = "ci_admin_terms/save";
 $route['manager/terms/toggle/(:num)'] = "ci_admin_terms/toggle/$1";
 $route['manager/terms/(:any)'] = "ci_admin_terms/$1";
 
+// Lead Finder: leads sent from the Lead Finder app, checked for duplicates, approved here
+$route['manager/leads/lead-finder'] = 'ci_admin_lead_finder/index';
+$route['manager/leads/lead-finder/(:any)'] = 'ci_admin_lead_finder/$1';
+$route['manager/system/lead-finder'] = 'ci_admin_lead_finder/settings';
+$route['manager/system/lead-finder/(save|regenerate)'] = 'ci_admin_lead_finder/$1';
+$route['api/lead-finder/(check|stage)'] = 'lead_finder_api/$1';
 $route['manager/leads/import'] = "ci_admin_leads/import";
 $route['manager/leads/import_action'] = "ci_admin_leads/import_action";
 $route['manager/leads/import_confirm'] = "ci_admin_leads/import_confirm";

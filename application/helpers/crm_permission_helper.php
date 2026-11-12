@@ -198,6 +198,7 @@ if (!function_exists('crm_perm_catalog')) {
 					'roles' => array('label' => 'Roles & Permissions', 'desc' => 'This page. Full lets the person change roles and user rights', 'nav' => array(array('roles', 'Roles & Permissions', 'fa-shield')), 'pages' => array('roles'), 'write' => array('roles/add')),
 					'terms' => array('label' => 'Lists', 'desc' => 'Choices offered in forms: Industry, Products, Lead Temperature, Business Category...; Full can add, rename and disable', 'nav' => array(array('terms', 'Lists', 'fa-list')), 'pages' => array('terms', 'categories', 'category-tree'), 'write' => array('terms/add')),
 					'leads_import' => array('label' => 'Import Database', 'tab' => 'database', 'desc' => 'Upload records from a file', 'nav' => array(array('leads/import', 'Import Database', 'fa-upload')), 'pages' => array('leads/import'), 'levels' => 'r'),
+					'lead_finder' => array('label' => 'Lead Finder', 'tab' => 'database', 'desc' => 'Send leads from the Lead Finder app and add them after the duplicate check (new and possible duplicates). Full can also add confirmed duplicates (with a reason) and fill in empty fields of existing records', 'nav' => array(array('leads/lead-finder', 'Lead Finder', 'fa-search-plus')), 'pages' => array('leads/lead-finder')),
 					'leads_export' => array('label' => 'Export Database', 'tab' => 'database', 'desc' => 'Download records to a file, filtered by staff, status, category and more', 'nav' => array(array('leads/export', 'Export Database', 'fa-download')), 'pages' => array('leads/export'), 'levels' => 'r'),
 					'assigned_leads' => array('label' => 'Allotted Database', 'tab' => 'database', 'desc' => 'Allotted and non-allotted records', 'nav' => array(array('assigned-leads', 'Allotted Database', 'fa-tasks'), array('assigned-leads?alloc_filter=non_allotted', 'Non-Allotted Database', 'fa-folder-open-o')), 'pages' => array('assigned-leads')),
 					'admin_logs' => array('label' => 'Admin Logs', 'tab' => 'activity', 'desc' => 'Audit log of changes', 'nav' => array(array('admin-logs', 'Admin Logs', 'fa-history')), 'pages' => array('admin-logs', 'system/admin-logs', 'system/admin_logs'), 'levels' => 'r'),
@@ -207,7 +208,7 @@ if (!function_exists('crm_perm_catalog')) {
 					'system_assignee' => array('label' => 'Assignee Management', 'tab' => 'clients', 'desc' => 'Move clients between owners', 'nav' => array(array('system/assign', 'Assignee Management', 'fa-random')), 'pages' => array('system/assign', 'system/assignee')),
 					'system_kam_clients' => array('label' => 'KAM Clients (all)', 'tab' => 'clients', 'desc' => 'Every KAM client in the company', 'fallback' => 'kam_clients', 'nav' => array(array('system/kam_clients', 'KAM Clients', 'fa-briefcase')), 'pages' => array('system/kam_clients', 'system/kam-clients')),
 					'calling_api' => array('label' => 'Calling API', 'tab' => 'integrations', 'desc' => 'Phone provider settings', 'nav' => array(array('system/calling-api', 'Calling API', 'fa-phone-square')), 'pages' => array('system/calling-api', 'system/calling_api')),
-					'integrations' => array('label' => 'Third-Party API', 'tab' => 'integrations', 'desc' => 'Email SMTP, helpdesk and other integrations', 'nav' => array(array('system/integrations', 'Third-Party API', 'fa-plug')), 'pages' => array('system/integrations', 'integrations', 'system/hr-link')),
+					'integrations' => array('label' => 'Third-Party API', 'tab' => 'integrations', 'desc' => 'Email SMTP, helpdesk and other integrations', 'nav' => array(array('system/integrations', 'Third-Party API', 'fa-plug')), 'pages' => array('system/integrations', 'integrations', 'system/hr-link', 'system/lead-finder')),
 					'marketing' => array('label' => 'Marketing', 'desc' => 'Leads from Meta, Google Ads and website forms, Facebook and Instagram posts, Meta Ads control and the Claude writing helper; Full can connect accounts, post and change ads', 'nav' => array(array('system/marketing', 'Marketing', 'fa-bullhorn')), 'pages' => array('system/marketing')),
 					'qc_panel' => array('label' => 'QC Panel', 'desc' => 'Quality check of the CRM pages', 'nav' => array(array('system/qc', 'QC Panel', 'fa-check-square-o')), 'pages' => array('system/qc', 'system/qoc')),
 				),
@@ -521,6 +522,7 @@ if (!function_exists('crm_tab_groups')) {
 			'database' => array('label' => 'Database', 'icon' => 'fa-database', 'tabs' => array(
 				array('leads_import', 'leads/import', 'Import', 'fa-upload'),
 				array('leads_export', 'leads/export', 'Export', 'fa-download'),
+				array('lead_finder', 'leads/lead-finder', 'Lead Finder', 'fa-search-plus'),
 				array('assigned_leads', 'assigned-leads', 'Allotted', 'fa-tasks'),
 				array('assigned_leads', 'assigned-leads?alloc_filter=non_allotted', 'Non-allotted', 'fa-folder-open-o'),
 			)),
@@ -538,6 +540,7 @@ if (!function_exists('crm_tab_groups')) {
 				array('calling_api', 'system/calling-api', 'Calling API', 'fa-phone-square'),
 				array('integrations', 'system/integrations', 'Third-Party API', 'fa-plug'),
 				array('integrations', 'system/hr-link', 'HR link', 'fa-handshake-o'),
+				array('integrations', 'system/lead-finder', 'Lead Finder link', 'fa-search-plus'),
 			)),
 			'hr_people' => array('label' => 'Staff', 'icon' => 'fa-users', 'tabs' => array(
 				array('hr_staff', 'hr/staff', 'Staff', 'fa-id-card-o'),

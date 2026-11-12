@@ -17,7 +17,9 @@ class MY_Security extends CI_Security {
         'api/marketing/lead',
         'api/marketing/cron',
         'api/subscription/events',
-        'api/suite/app-events'
+        'api/suite/app-events',
+        'api/lead-finder/check',
+        'api/lead-finder/stage'
     );
 
     public function csrf_verify()
