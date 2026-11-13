@@ -482,7 +482,8 @@ class Ci_admin extends CI_Controller {
 
 			// Allow one new link per minute so the mailbox is not flooded.
 			$parts = explode('_', (string)$user['fotp']);
-			if (count($parts) >= 2 && ((int)$parts[1] - time()) > 840) {
+			// (A first-time set-password link lasts longer; it never blocks asking for a normal reset link.)
+			if (count($parts) >= 2 && ((int)$parts[1] - time()) > 840 && ((int)$parts[1] - time()) <= 900) {
 				$this->session->set_flashdata('message', 'A reset link was sent less than a minute ago. Please check your inbox and spam folder.');
 				redirect('manager/login');
 			}
